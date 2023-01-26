@@ -42,6 +42,8 @@ import {
   isIntrinsicElementFromString,
   isIntrinsicHTMLElement,
   isIntrinsicHTMLElementString,
+  isImportedOrigin,
+  isSameFileOrigin,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -83,11 +85,11 @@ export function isUtopiaAPIComponent(elementName: JSXElementName, imports: Impor
 export function isUtopiaAPIComponentFromMetadata(
   elementInstanceMetadata: ElementInstanceMetadata,
 ): boolean {
-  const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
-  if (foundImportInfo == null) {
+  const foundImportInfo = elementInstanceMetadata.importInfo
+  if (foundImportInfo == null || isSameFileOrigin(foundImportInfo)) {
     return false
   } else {
-    return foundImportInfo.path === 'utopia-api'
+    return foundImportInfo.filePath === 'utopia-api'
   }
 }
 
@@ -130,9 +132,11 @@ export function isGivenUtopiaElementFromMetadata(
   elementInstanceMetadata: ElementInstanceMetadata,
   componentName: string,
 ): boolean {
-  const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
-  if (foundImportInfo != null) {
-    return foundImportInfo.path === 'utopia-api' && foundImportInfo.originalName === componentName
+  const foundImportInfo = elementInstanceMetadata.importInfo
+  if (foundImportInfo != null && isImportedOrigin(foundImportInfo)) {
+    return (
+      foundImportInfo.filePath === 'utopia-api' && foundImportInfo.exportedName === componentName
+    )
   } else {
     return false
   }
@@ -180,8 +184,8 @@ export function isAnimatedElement(
   elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
   const importInfo = elementInstanceMetadata?.importInfo
-  if (importInfo != null && isRight(importInfo)) {
-    return importInfo.value.path === 'react-spring' && importInfo.value.originalName === 'animated'
+  if (importInfo != null && isImportedOrigin(importInfo)) {
+    return importInfo.filePath === 'react-spring' && importInfo.exportedName === 'animated'
   } else {
     return false
   }
@@ -206,7 +210,11 @@ function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolea
   }
 }
 
-export function importInfoFromImportDetails(name: JSXElementName, imports: Imports): ImportInfo {
+export function importInfoFromImportDetails(
+  name: JSXElementName,
+  imports: Imports,
+  filePath: string,
+): ImportInfo {
   const baseVariable = name.baseVariable
 
   const err = mapDropNulls((pathOrModuleName) => {
@@ -226,7 +234,7 @@ export function importInfoFromImportDetails(name: JSXElementName, imports: Impor
     }
   }, Object.keys(imports))
 
-  const foundImportDetail = err[0] ?? createNotImported()
+  const foundImportDetail = err[0] ?? createNotImported(filePath, baseVariable)
 
   return foundImportDetail
 }
@@ -235,8 +243,8 @@ export function getFilePathForImportedComponent(
   element: ElementInstanceMetadata | null,
 ): string | null {
   const importInfo = element?.importInfo
-  if (importInfo != null && isRight(importInfo)) {
-    return importInfo.value.path
+  if (importInfo != null && isImportedOrigin(importInfo)) {
+    return importInfo.filePath
   } else {
     return null
   }
@@ -252,8 +260,8 @@ export function isImportedComponent(
   elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
   const importInfo = elementInstanceMetadata?.importInfo
-  if (importInfo != null && isRight(importInfo)) {
-    const importKey = importInfo.value.path
+  if (importInfo != null && isImportedOrigin(importInfo)) {
+    const importKey = importInfo.filePath
     return !importKey.startsWith('.') && !importKey.startsWith('/')
   } else {
     return false
@@ -431,9 +439,17 @@ export function canUpdateRevisionsState(
     case RevisionsState.BothMatch:
       return true
     case RevisionsState.ParsedAhead:
-      return updated === RevisionsState.ParsedAhead || updated === RevisionsState.BothMatch
+      return (
+        updated === RevisionsState.ParsedAhead ||
+        updated === RevisionsState.ParsedAheadNeedsReparsing ||
+        updated === RevisionsState.BothMatch
+      )
     case RevisionsState.CodeAhead:
       return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
+    case RevisionsState.ParsedAheadNeedsReparsing:
+      return (
+        updated === RevisionsState.ParsedAheadNeedsReparsing || updated === RevisionsState.BothMatch
+      )
     default:
       const _exhaustiveCheck: never = existing
       throw new Error(`Invalid revisions state ${existing}`)
@@ -452,24 +468,40 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   )
 }
 
-export function canUpdateFile(updated: ProjectFile, existing: ProjectFile | null): boolean {
-  if (existing == null) {
-    return true
+export function updateFileIfPossible(
+  updated: ProjectFile,
+  existing: ProjectFile | null,
+): ProjectFile | 'cant-update' {
+  if (existing == null || !isTextFile(existing)) {
+    return updated
   }
 
-  if (isTextFile(existing)) {
-    return (
-      isTextFile(updated) &&
-      isTextFile(existing) &&
-      isOlderThan(existing, updated) &&
-      canUpdateRevisionsState(
-        updated.fileContents.revisionsState,
-        existing.fileContents.revisionsState,
-      )
+  if (
+    isTextFile(updated) &&
+    isOlderThan(existing, updated) &&
+    canUpdateRevisionsState(
+      updated.fileContents.revisionsState,
+      existing.fileContents.revisionsState,
     )
+  ) {
+    // we should not overwrite RevisionsState.ParsedAheadNeedsReparsing with RevisionsState.ParsedAhead, because we don't want to lose that
+    // the file needs reparsing
+    if (
+      existing.fileContents.revisionsState === RevisionsState.ParsedAheadNeedsReparsing &&
+      updated.fileContents.revisionsState === RevisionsState.ParsedAhead
+    ) {
+      return {
+        ...updated,
+        fileContents: {
+          ...updated.fileContents,
+          revisionsState: RevisionsState.ParsedAheadNeedsReparsing,
+        },
+      }
+    }
+    return updated
   }
 
-  return true
+  return 'cant-update'
 }
 
 export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {

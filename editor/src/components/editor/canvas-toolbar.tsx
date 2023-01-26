@@ -31,13 +31,15 @@ import {
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
-  useEnterDrawToInsertForSpan,
+  useEnterTextEditMode,
 } from './insert-callbacks'
+import { useDispatch } from './store/dispatch-context'
 import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
-import { useEditorState, useRefEditorState } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import { togglePanel } from './actions/action-creators'
 
 export const CanvasToolbar = React.memo(() => {
-  const dispatch = useEditorState((store) => store.dispatch, 'CanvasToolbar dispatch')
+  const dispatch = useDispatch()
   const theme = useColorTheme()
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -47,11 +49,12 @@ export const CanvasToolbar = React.memo(() => {
   const imgInsertion = useCheckInsertModeForElementType('img')
   const insertImgCallback = useEnterDrawToInsertForImage()
   const spanInsertion = useCheckInsertModeForElementType('span')
-  const insertSpanCallback = useEnterDrawToInsertForSpan()
+  const insertSpanCallback = useEnterTextEditMode()
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
   const insertMenuMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'CanvasToolbar insertMenuMode',
   )
@@ -84,7 +87,12 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([wrapInView(selectedViewsRef.current, 'default-empty-div')])
   }, [dispatch, selectedViewsRef])
 
+  const clickSelectModeButton = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.selectMode())])
+  }, [dispatch])
+
   const insertMenuSelected = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
     'CanvasToolbar insertMenuSelected',
   )
@@ -98,7 +106,11 @@ export const CanvasToolbar = React.memo(() => {
     dispatch(actions)
   }, [dispatch, insertMenuSelected])
 
-  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'CanvasToolbar zoomLevel')
+  const zoomLevel = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'CanvasToolbar zoomLevel',
+  )
 
   const zoomIn = React.useCallback(
     () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
@@ -110,6 +122,7 @@ export const CanvasToolbar = React.memo(() => {
   )
 
   const isLiveMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
     'TopMenu isLiveMode',
   )
@@ -125,20 +138,20 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([resetCanvas()])
   }, [dispatch])
 
-  const isCodeEditorVisible = useEditorState(
-    (store) => store.editor.interfaceDesigner.codePaneVisible,
-    'CanvasToolbar isCodeEditorVisible',
-  )
   const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
-    [dispatch, isCodeEditorVisible],
+    () => dispatch([togglePanel('codeEditor')]),
+    [dispatch],
   )
+
+  const toggleInspectorVisible = React.useCallback(() => {
+    dispatch([togglePanel('rightmenu')])
+  }, [dispatch])
 
   return (
     <FlexColumn
       style={{
         position: 'absolute',
-        top: 48,
+        top: 12,
         left: 12,
         alignItems: 'stretch',
         width: 64,
@@ -151,7 +164,41 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
-        {/* TODO is there a component for this subheading? */}
+        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
+        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
+          <Tooltip title='Select' placement='bottom'>
+            <InsertModeButton
+              iconType='pointer'
+              iconCategory='tools'
+              onClick={clickSelectModeButton}
+            />
+          </Tooltip>
+          <Tooltip title='Insert text' placement='bottom'>
+            <InsertModeButton
+              iconType='pure-text'
+              primary={spanInsertion}
+              onClick={insertSpanCallback}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom in' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-plus'
+              iconCategory='semantic'
+              onClick={zoomIn}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom out' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-minus'
+              iconCategory='semantic'
+              onClick={zoomOut}
+            />
+          </Tooltip>
+        </FlexRow>
+      </FlexColumn>
+      <Divider />
+      {/* ------------------------------------ */}
+      <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Insert div' placement='bottom'>
@@ -160,22 +207,13 @@ export const CanvasToolbar = React.memo(() => {
           <Tooltip title='Insert image' placement='bottom'>
             <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
           </Tooltip>
-          <Tooltip title='Insert text' placement='bottom'>
-            <InsertModeButton
-              iconType='text'
-              primary={spanInsertion}
-              onClick={insertSpanCallback}
-            />
-          </Tooltip>
           <Tooltip title='Insert button' placement='bottom'>
             <InsertModeButton
-              iconType='button'
+              iconType='clickable'
               primary={buttonInsertion}
               onClick={insertButtonCallback}
             />
           </Tooltip>
-          {/* TODO I have to find a better spacer */}
-          <IcnSpacer height={0} width={'100%'} />
           <Tooltip title='Choose and insert a component' placement='bottom'>
             <InsertModeButton
               iconType='componentinstance'
@@ -229,30 +267,9 @@ export const CanvasToolbar = React.memo(() => {
       <Divider />
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Zoom</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom in' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-plus'
-              iconCategory='semantic'
-              onClick={zoomIn}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom out' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-minus'
-              iconCategory='semantic'
-              onClick={zoomOut}
-            />
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-      <Divider />
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Editor</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Toggle between live and edit mode' placement='bottom'>
+          <Tooltip title='Toggle Live Mode' placement='bottom'>
             <InsertModeButton
               iconType='playbutton'
               iconCategory='semantic'
@@ -268,11 +285,18 @@ export const CanvasToolbar = React.memo(() => {
               onClick={resetCanvasCallback}
             />
           </Tooltip>
-          <Tooltip title='Show/hide code editor' placement='bottom'>
+          <Tooltip title='Toggle Code Editor (⌘⌥1)' placement='bottom'>
             <InsertModeButton
               iconType='codymccodeface-larger'
               iconCategory='semantic'
               onClick={toggleCodeEditorVisible}
+            />
+          </Tooltip>
+          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
+            <InsertModeButton
+              iconType='inspector-larger'
+              iconCategory='semantic'
+              onClick={toggleInspectorVisible}
             />
           </Tooltip>
         </FlexRow>
@@ -292,6 +316,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const canvasInLiveMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
     'CanvasToolbar canvasInLiveMode',
   )

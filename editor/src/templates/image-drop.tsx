@@ -238,7 +238,7 @@ function actionsForDroppedImage(
   })
   return {
     actions: saveImageActions,
-    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null),
+    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null, false),
     imageAssetInfo: {
       uid: newUID,
       fileType: image.fileType,
@@ -321,7 +321,7 @@ function updateImageSrcsActions(
       ? null
       : EditorActions.setProperty(
           fromString(path),
-          PP.create(['src']),
+          PP.create('src'),
           jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
         )
   }, Object.entries(allElementProps))

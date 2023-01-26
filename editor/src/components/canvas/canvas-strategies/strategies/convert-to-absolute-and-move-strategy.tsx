@@ -32,7 +32,11 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { CanvasFrameAndTarget } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
-import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -49,6 +53,7 @@ import { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { styleStringInArray } from '../../../../utils/common-constants'
 
 export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -270,11 +275,11 @@ function filterPinsToSet(
     return ['top', 'left', 'width', 'height']
   } else {
     const horizontalProps = (['left', 'right', 'width'] as Array<LayoutPinnedProp>).filter((p) => {
-      const prop = getLayoutProperty(p, right(element.props), ['style'])
+      const prop = getLayoutProperty(p, right(element.props), styleStringInArray)
       return isRight(prop) && prop.value != null
     })
     const verticalProps = (['top', 'bottom', 'height'] as Array<LayoutPinnedProp>).filter((p) => {
-      const prop = getLayoutProperty(p, right(element.props), ['style'])
+      const prop = getLayoutProperty(p, right(element.props), styleStringInArray)
       return isRight(prop) && prop.value != null
     })
 
@@ -413,6 +418,7 @@ function createUpdatePinsCommands(
     path,
   )?.specialSizeMeasurements
   const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
+  const parentFlexDirection = specialSizeMeasurements?.parentFlexDirection ?? null
   const frameWithoutMargin = getFrameWithoutMargin(frame, specialSizeMeasurements)
   const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
   const fullFrame = getFullFrame(updatedFrame)
@@ -425,11 +431,14 @@ function createUpdatePinsCommands(
       setCssLengthProperty(
         'always',
         path,
-        stylePropPathMappingFn(framePin, ['style']),
-        pinValue,
-        isHorizontalPoint(framePointForPinnedProp(framePin))
-          ? parentFrame?.width
-          : parentFrame?.height,
+        stylePropPathMappingFn(framePin, styleStringInArray),
+        setValueKeepingOriginalUnit(
+          pinValue,
+          isHorizontalPoint(framePointForPinnedProp(framePin))
+            ? parentFrame?.width
+            : parentFrame?.height,
+        ),
+        parentFlexDirection,
       ),
     )
   })

@@ -125,11 +125,7 @@ export function reduxDevtoolsSendActions(
   newStore: EditorStoreFull,
   isTransient: boolean,
 ): void {
-  if (
-    maybeDevTools != null &&
-    sendActionUpdates &&
-    isFeatureEnabled('Debug mode – Redux Devtools')
-  ) {
+  if (maybeDevTools != null && sendActionUpdates && isFeatureEnabled('Debug – Redux Devtools')) {
     // filter out the actions we are not interested in
     const filteredActions = mapDropNulls((action) => {
       switch (action.action) {
@@ -179,31 +175,19 @@ export function reduxDevtoolsSendInitialState(newStore: EditorStoreFull): void {
 }
 
 export function reduxDevtoolsLogMessage(message: string, optionalPayload?: any): void {
-  if (
-    maybeDevTools != null &&
-    sendActionUpdates &&
-    isFeatureEnabled('Debug mode – Redux Devtools')
-  ) {
+  if (maybeDevTools != null && sendActionUpdates && isFeatureEnabled('Debug – Redux Devtools')) {
     maybeDevTools.send({ type: `🟢 ${message}`, payload: optionalPayload }, lastDispatchedStore)
   }
 }
 
 export function reduxDevtoolsLogError(message: string, optionalPayload?: any): void {
-  if (
-    maybeDevTools != null &&
-    sendActionUpdates &&
-    isFeatureEnabled('Debug mode – Redux Devtools')
-  ) {
+  if (maybeDevTools != null && sendActionUpdates && isFeatureEnabled('Debug – Redux Devtools')) {
     maybeDevTools.send({ type: `🔴 ${message}`, payload: optionalPayload }, lastDispatchedStore)
   }
 }
 
 export function reduxDevtoolsUpdateState(message: string, newStore: EditorStoreFull): void {
-  if (
-    maybeDevTools != null &&
-    sendActionUpdates &&
-    isFeatureEnabled('Debug mode – Redux Devtools')
-  ) {
+  if (maybeDevTools != null && sendActionUpdates && isFeatureEnabled('Debug – Redux Devtools')) {
     const sanitizedStore = sanitizeLoggedState(newStore)
     maybeDevTools.send(`🟣 ${message}`, sanitizedStore)
     lastDispatchedStore = sanitizedStore

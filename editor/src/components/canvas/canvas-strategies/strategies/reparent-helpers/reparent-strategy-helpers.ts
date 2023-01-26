@@ -1,4 +1,7 @@
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import {
+  ElementSupportsChildren,
+  MetadataUtils,
+} from '../../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
 import { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
@@ -54,6 +57,7 @@ export function findReparentStrategies(
   cmdPressed: boolean,
   pointOnCanvas: CanvasPoint,
   allowSmallerParent: AllowSmallerParent,
+  elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
   const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
@@ -65,6 +69,7 @@ export function findReparentStrategies(
     metadata,
     canvasState.startingAllElementProps,
     allowSmallerParent,
+    elementSupportsChildren,
   )
 
   if (targetParent == null) {
@@ -92,7 +97,7 @@ export function findReparentStrategies(
 export interface ReparentTarget {
   shouldReparent: boolean
   newParent: ElementPath
-  shouldReorder: boolean
+  shouldShowPositionIndicator: boolean
   newIndex: number
   shouldConvertToInline: Direction | 'do-not-convert'
   defaultReparentType: ReparentStrategy
@@ -101,7 +106,7 @@ export interface ReparentTarget {
 export function reparentTarget(
   shouldReparent: boolean,
   newParent: ElementPath,
-  shouldReorder: boolean,
+  shouldShowPositionIndicator: boolean,
   newIndex: number,
   shouldConvertToInline: Direction | 'do-not-convert',
   defaultReparentType: ReparentStrategy,
@@ -109,7 +114,7 @@ export function reparentTarget(
   return {
     shouldReparent: shouldReparent,
     newParent: newParent,
-    shouldReorder: shouldReorder,
+    shouldShowPositionIndicator: shouldShowPositionIndicator,
     newIndex: newIndex,
     shouldConvertToInline: shouldConvertToInline,
     defaultReparentType: defaultReparentType,

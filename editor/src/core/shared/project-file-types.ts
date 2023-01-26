@@ -27,8 +27,8 @@ export interface ElementPath {
 
 export type PropertyPathPart = string | number
 
-export type PropertyPath = {
-  propertyElements: Array<PropertyPathPart>
+export type PropertyPath<T extends Array<PropertyPathPart> = Array<PropertyPathPart>> = {
+  propertyElements: T
 }
 
 export type PackageType = 'base' | 'svg' | 'app'
@@ -520,12 +520,15 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type RevisionsStateType = 'PARSED_AHEAD' | 'CODE_AHEAD' | 'BOTH_MATCH'
+export type RevisionsStateType = ParsedAheadRevisionsState | 'CODE_AHEAD' | 'BOTH_MATCH'
+
+export type ParsedAheadRevisionsState = 'PARSED_AHEAD' | 'PARSED_AHEAD_NEEDS_REPARSING'
 
 export const RevisionsState = {
   ParsedAhead: 'PARSED_AHEAD',
   CodeAhead: 'CODE_AHEAD',
   BothMatch: 'BOTH_MATCH',
+  ParsedAheadNeedsReparsing: 'PARSED_AHEAD_NEEDS_REPARSING',
 } as const
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
@@ -592,6 +595,18 @@ export function isTextFile(projectFile: ProjectFile | null): projectFile is Text
 
 export function isParsedTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
   return isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
+}
+
+export function getParsedContentsFromTextFile(
+  projectFile: ProjectFile | null,
+): ParseSuccess | null {
+  if (!isTextFile(projectFile)) {
+    return null
+  }
+  if (!isParseSuccess(projectFile.fileContents.parsed)) {
+    return null
+  }
+  return projectFile.fileContents.parsed
 }
 
 interface EvalResult {
@@ -714,18 +729,3 @@ export type NodeModules = {
 
 // Key here is the full filename.
 export type ProjectContents = { [filepath: string]: ProjectFile }
-
-export type ElementOriginType =
-  // Completely statically defined element with a known single place in the hierarchy.
-  | 'statically-defined'
-  // An element generated from within some arbitrary code, but for which we have access to the definition.
-  | 'generated-static-definition-present'
-  // Something from somewhere, for which we probably have access to the bounds.
-  | 'unknown-element'
-
-export function isUnknownOrGeneratedElement(elementOriginType: ElementOriginType): boolean {
-  return (
-    elementOriginType === 'unknown-element' ||
-    elementOriginType === 'generated-static-definition-present'
-  )
-}

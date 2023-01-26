@@ -6,7 +6,7 @@ import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 
-const overflowProp = [PP.create(['style', 'overflow'])]
+const overflowProp = [PP.create('style', 'overflow')]
 
 const OverflowControlOptions: Array<OptionChainOption<boolean>> = [
   {

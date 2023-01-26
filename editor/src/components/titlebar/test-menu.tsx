@@ -17,7 +17,7 @@ import {
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
@@ -45,6 +45,7 @@ export const TestMenu = React.memo(() => {
 
   function useRequestVSCodeStatus(): () => void {
     const vscodeState = useEditorState(
+      Substores.restOfEditor,
       (store) => ({
         vscodeReady: store.editor.vscodeReady,
         loadingScreenVisible: store.editor.vscodeLoadingScreenVisible,

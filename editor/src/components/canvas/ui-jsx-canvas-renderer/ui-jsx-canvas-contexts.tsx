@@ -30,6 +30,7 @@ interface RerenderUtopiaContextProps {
   displayNoneInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
+  editedText: ElementPath | null
 }
 
 export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>({
@@ -39,6 +40,7 @@ export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>(
     displayNoneInstances: [],
     canvasIsLive: false,
     shouldIncludeCanvasRootInTheSpy: false,
+    editedText: null,
   },
 })
 

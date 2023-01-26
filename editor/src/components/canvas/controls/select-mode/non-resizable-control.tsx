@@ -1,16 +1,20 @@
 import React from 'react'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorStorePatched } from '../../../editor/store/editor-state'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { EdgePosition } from '../../canvas-types'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-const selectedElementsSelector = (store: EditorStorePatched) => store.editor.selectedViews
+const selectedElementsSelector = (store: { editor: { selectedViews: ElementPath[] } }) =>
+  store.editor.selectedViews
+
 export const NonResizableControl = controlForStrategyMemoized(() => {
   const selectedElements = useEditorState(
+    Substores.selectedViews,
     selectedElementsSelector,
     'NonResizableControl selectedElements',
   )
@@ -67,7 +71,11 @@ const NonResizablePointOffset = NonResizablePointSize / 2
 const NonResizablePoint = React.memo(
   React.forwardRef<HTMLDivElement, NonResizablePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
-    const scale = useEditorState((store) => store.editor.canvas.scale, 'NonResizablePoint scale')
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'NonResizablePoint scale',
+    )
 
     return (
       <div

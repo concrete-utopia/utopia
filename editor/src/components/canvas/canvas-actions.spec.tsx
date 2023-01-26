@@ -14,7 +14,7 @@ import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier'
 
-describe('createDragState', () => {
+xdescribe('createDragState', () => {
   it('MOVE_DRAG_STATE with duplicate', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

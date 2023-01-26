@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../utils/common-constants'
 import {
   JSXAttributes,
   jsxAttributeValue,
@@ -21,7 +22,7 @@ describe('roundAttributeLayoutValues', () => {
         emptyComments,
       ),
     })
-    const actualResult = roundAttributeLayoutValues(['style'], attributes)
+    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
     const expectedResult: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -67,7 +68,7 @@ describe('roundAttributeLayoutValues', () => {
         emptyComments,
       ),
     })
-    const actualResult = roundAttributeLayoutValues(['style'], attributes)
+    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
     const expectedResult: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -85,7 +86,7 @@ describe('roundAttributeLayoutValues', () => {
     const attributes: JSXAttributes = jsxAttributesFromMap({
       sizeOfHat: jsxAttributeValue(123.456, emptyComments),
     })
-    const actualResult = roundAttributeLayoutValues(['style'], attributes)
+    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
     const expectedResult: JSXAttributes = jsxAttributesFromMap({
       sizeOfHat: jsxAttributeValue(123.456, emptyComments),
     })
@@ -103,7 +104,7 @@ describe('roundAttributeLayoutValues', () => {
         emptyComments,
       ),
     })
-    const actualResult = roundAttributeLayoutValues(['style'], attributes)
+    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
     expect(actualResult).toBe(attributes)
   })
 })

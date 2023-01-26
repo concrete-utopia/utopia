@@ -1,3 +1,4 @@
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
@@ -12,12 +13,16 @@ import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
   CSSNumber,
+  FlexDirection,
   parseCSSPercent,
   parseCSSPx,
   printCSSNumber,
 } from '../../inspector/common/css-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
+import { deleteValuesAtPath } from './delete-properties-command'
+
+type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'
@@ -25,7 +30,8 @@ export interface AdjustCssLengthProperty extends BaseCommand {
   property: PropertyPath
   valuePx: number
   parentDimensionPx: number | undefined
-  createIfNonExistant: boolean
+  parentFlexDirection: FlexDirection | null
+  createIfNonExistant: CreateIfNotExistant
 }
 
 export function adjustCssLengthProperty(
@@ -34,7 +40,8 @@ export function adjustCssLengthProperty(
   property: PropertyPath,
   valuePx: number,
   parentDimensionPx: number | undefined,
-  createIfNonExistant: boolean,
+  parentFlexDirection: FlexDirection | null,
+  createIfNonExistant: CreateIfNotExistant,
 ): AdjustCssLengthProperty {
   return {
     type: 'ADJUST_CSS_LENGTH_PROPERTY',
@@ -43,6 +50,7 @@ export function adjustCssLengthProperty(
     property: property,
     valuePx: valuePx,
     parentDimensionPx: parentDimensionPx,
+    parentFlexDirection: parentFlexDirection,
     createIfNonExistant: createIfNonExistant,
   }
 }
@@ -51,10 +59,18 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   editorState: EditorState,
   command: AdjustCssLengthProperty,
 ) => {
+  // in case of width or height change, delete min, max and flex props
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    command.target,
+    command.property,
+    command.parentFlexDirection,
+  )
+
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
-    editorState,
+    editorStateWithPropsDeleted,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       return getModifiableJSXAttributeAtPath(element.props, command.property)
@@ -73,7 +89,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   const valueProbablyExpression = isLeft(simpleValueResult)
   const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
 
-  if (targetPropertyNonExistant && !command.createIfNonExistant) {
+  if (
+    targetPropertyNonExistant &&
+    command.createIfNonExistant === 'do-not-create-if-doesnt-exist'
+  ) {
     return {
       editorStatePatches: [],
       commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
@@ -96,7 +115,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
   if (isRight(parsePxResult)) {
     return updatePixelValueByPixel(
-      editorState,
+      editorStateWithPropsDeleted,
       command.target,
       command.property,
       parsePxResult.value,
@@ -107,7 +126,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
   if (isRight(parsePercentResult)) {
     return updatePercentageValueByPixel(
-      editorState,
+      editorStateWithPropsDeleted,
       command.target,
       command.property,
       command.parentDimensionPx,
@@ -116,8 +135,13 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
     )
   }
 
-  if (command.createIfNonExistant) {
-    return setPixelValue(editorState, command.target, command.property, command.valuePx)
+  if (command.createIfNonExistant === 'create-if-not-existing') {
+    return setPixelValue(
+      editorStateWithPropsDeleted,
+      command.target,
+      command.property,
+      command.valuePx,
+    )
   }
 
   // fallback return
@@ -259,4 +283,48 @@ function updatePercentageValueByPixel(
       targetProperty,
     )} by ${byValue}`,
   }
+}
+
+const FlexSizeProperties: Array<PropertyPath> = [
+  PP.create('style', 'flex'),
+  PP.create('style', 'flexGrow'),
+  PP.create('style', 'flexShrink'),
+  PP.create('style', 'flexBasis'),
+]
+
+export function deleteConflictingPropsForWidthHeight(
+  editorState: EditorState,
+  target: ElementPath,
+  propertyPath: PropertyPath,
+  parentFlexDirection: FlexDirection | null,
+): EditorState {
+  let propertiesToDelete: Array<PropertyPath> = []
+
+  const parentFlexDimension =
+    parentFlexDirection == null
+      ? null
+      : MetadataUtils.flexDirectionToSimpleFlexDirection(parentFlexDirection).direction
+
+  switch (PP.lastPart(propertyPath)) {
+    case 'width':
+      propertiesToDelete = [PP.create('style', 'minWidth'), PP.create('style', 'maxWidth')]
+      if (parentFlexDimension === 'horizontal') {
+        propertiesToDelete.push(...FlexSizeProperties)
+      }
+      break
+    case 'height':
+      propertiesToDelete = [PP.create('style', 'minHeight'), PP.create('style', 'maxHeight')]
+      if (parentFlexDimension === 'vertical') {
+        propertiesToDelete.push(...FlexSizeProperties)
+      }
+      break
+  }
+
+  const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
+    editorState,
+    target,
+    propertiesToDelete,
+  )
+
+  return editorStateWithPropsDeleted
 }

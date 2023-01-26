@@ -31,7 +31,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { getFullFrame } from '../../frame'
 import {
   InspectorInfo,
@@ -46,6 +46,7 @@ import React from 'react'
 import { CSSNumber, cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const VerticalPropPreference: Array<LayoutPinnedProp> = ['top', 'height', 'bottom']
@@ -251,7 +252,7 @@ export interface UsePinTogglingResult {
 }
 
 export function usePinToggling(): UsePinTogglingResult {
-  const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
+  const dispatch = useDispatch()
   const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
     return store.editor.jsxMetadata
@@ -267,6 +268,7 @@ export function usePinToggling(): UsePinTogglingResult {
   })
 
   const elementFrames = useEditorState(
+    Substores.fullStore,
     (store): ReadonlyArray<Frame> => {
       const jsxElements = selectedViewsRef.current.map((path) => {
         const rootComponents = getJSXComponentsAndImportsForPathFromState(

@@ -41,6 +41,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 import { TestAppUID, TestSceneUID } from '../../../components/canvas/ui-jsx.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {
@@ -180,7 +181,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const elementWithin = firstChild.elementsWithin['bbb']
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
-              PP.create(['style']),
+              PP.create('style'),
               jsxAttributeValue({ left: 20, top: 300 }, emptyComments),
             )
             forEachRight(newAttributes, (updated) => {

@@ -2,17 +2,19 @@
 /** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
-import { useColorTheme } from '../../../uuiui'
+import { AlternateColorThemeComponent, useColorTheme } from '../../../uuiui'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedMode = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.topmenu.formulaBarMode,
     'ModeToggleButton selectedMode',
   )
-  const dispatch = useEditorState((store) => store.dispatch, 'ModeToggleButton dispatch')
+  const dispatch = useDispatch()
   const toggleMode = React.useCallback(
     (mode: 'css' | 'content') => {
       dispatch([updateFormulaBarMode(mode)], 'everyone')
@@ -43,7 +45,7 @@ export const ModeToggleButton = React.memo(() => {
       </Button>
       <Button
         style={{
-          background: colorTheme.inverted.neutralForeground.value,
+          background: colorTheme.bg2.value,
         }}
         selected={selectedMode === 'content'}
         width={45}

@@ -15,6 +15,7 @@ export interface InsertionSubject {
   defaultSize: Size
   importsToAdd: Imports
   parent: InsertionParent
+  textEdit: boolean
 }
 
 export function insertionSubject(
@@ -23,6 +24,7 @@ export function insertionSubject(
   size: Size | null,
   importsToAdd: Imports,
   parent: InsertionParent,
+  textEdit: boolean,
 ): InsertionSubject {
   return {
     uid: uid,
@@ -30,6 +32,7 @@ export function insertionSubject(
     defaultSize: size ?? DefaultInsertSize,
     importsToAdd: importsToAdd,
     parent: parent,
+    textEdit: textEdit,
   }
 }
 
@@ -86,12 +89,27 @@ export interface SelectMode {
   controlId: string | null
 }
 
+export interface TextEditMode {
+  type: 'textEdit'
+  editedText: ElementPath
+  cursorPosition: Coordinates | null
+  elementState: TextEditableElementState
+  selectOnFocus: 'select-all-on-focus' | 'no-text-selection'
+}
+
+export type TextEditableElementState = 'existing' | 'new'
+
+export interface Coordinates {
+  x: number
+  y: number
+}
+
 export interface LiveCanvasMode {
   type: 'live'
   controlId: string | null
 }
 
-export type Mode = InsertMode | SelectMode | LiveCanvasMode
+export type Mode = InsertMode | SelectMode | LiveCanvasMode | TextEditMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
@@ -113,6 +131,20 @@ export const EditorModes = {
       controlId: controlId,
     }
   },
+  textEditMode: function (
+    editedText: ElementPath,
+    cursorPosition: Coordinates | null,
+    elementState: TextEditableElementState,
+    selectOnFocus: 'select-all-on-focus' | 'no-text-selection',
+  ): TextEditMode {
+    return {
+      type: 'textEdit',
+      editedText: editedText,
+      cursorPosition: cursorPosition,
+      elementState: elementState,
+      selectOnFocus: selectOnFocus,
+    }
+  },
 }
 
 export function isInsertMode(value: Mode): value is InsertMode {
@@ -124,6 +156,9 @@ export function isSelectMode(value: Mode): value is SelectMode {
 export function isLiveMode(value: Mode): value is LiveCanvasMode {
   return value.type === 'live'
 }
+export function isTextEditMode(value: Mode): value is TextEditMode {
+  return value.type === 'textEdit'
+}
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {
   switch (mode.type) {
@@ -131,6 +166,7 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
       return EditorModes.liveMode()
     case 'select':
     case 'insert':
+    case 'textEdit':
       return EditorModes.selectMode()
   }
 }

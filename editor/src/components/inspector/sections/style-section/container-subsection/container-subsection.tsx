@@ -1,13 +1,11 @@
 import React from 'react'
 import {
   FlexRow,
-  H1,
-  H2,
   Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
 } from '../../../../../uuiui'
-import { SeeMoreButton, SeeMoreHOC, useToggle } from '../../../widgets/see-more'
+import { SeeMoreHOC, useToggle } from '../../../widgets/see-more'
 import { PaddingRow } from '../../layout-section/layout-system-subsection/layout-system-controls'
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
@@ -34,7 +32,6 @@ export const ContainerSubsection = React.memo(() => {
           onClick={toggleSeeMoreVisible}
         />
       </InspectorSubsectionHeader>
-
       <OpacityRow />
       <OverflowRow />
       <RadiusRow />

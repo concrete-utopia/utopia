@@ -1,4 +1,5 @@
 import React from 'react'
+import { FlexWrap } from 'utopia-api/core'
 import { Icn, IcnProps } from './icn'
 
 const makeIcon = (
@@ -149,6 +150,27 @@ export const InspectorSectionIcons = {
     width: 16,
     height: 16,
   }),
+  SplitFull: makeIcon({
+    category: 'inspector',
+    type: 'split-full',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
+  SplitHalf: makeIcon({
+    category: 'inspector',
+    type: 'split-half',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
+  SplitQuarter: makeIcon({
+    category: 'inspector',
+    type: 'split-quarter',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
 }
 
 export const SmallerIcons = {
@@ -179,6 +201,16 @@ export const Icons = {
   EyeStrikethrough: makeIcon({ type: 'eye-strikethrough', color: 'main' }),
   EyeOpen: makeIcon({ type: 'eyeopen', color: 'main' }),
   FourDots: makeIcon({ type: 'fourdots', color: 'main' }),
+  FlexRow: makeIcon({
+    type: 'flexDirection-row-regular-nowrap',
+    color: 'main',
+    category: 'layout/flex',
+  }),
+  FlexColumn: makeIcon({
+    type: 'flexDirection-column-regular-nowrap',
+    color: 'main',
+    category: 'layout/flex',
+  }),
 
   Downloaded: makeIcon({ type: 'downloaded', color: 'main', width: 18, height: 18 }),
   Gear: makeIcon({ type: 'gear', color: 'main' }),
@@ -189,6 +221,7 @@ export const Icons = {
   LockOpen: makeIcon({ type: 'lockopen', color: 'main' }),
   Dot: makeIcon({ type: 'dot', color: 'main' }),
   Pin: makeIcon({ type: 'pin', color: 'main' }),
+  Pipette: makeIcon({ type: 'pipette', color: 'main' }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
   Play: makeIcon({ type: 'play', color: 'main' }),

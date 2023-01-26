@@ -7,6 +7,7 @@ import {
 } from '../../../core/workers/common/project-file-utils'
 import {
   createParseFile,
+  createPrintAndReparseFile,
   createPrintCode,
   getParseResult,
   ParseOrPrint,
@@ -16,7 +17,7 @@ import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import Utils from '../../../utils/utils'
-import { CanvasAction } from '../../canvas/canvas-types'
+import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
@@ -62,7 +63,8 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { CanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import * as EP from '../../../core/shared/element-path'
+import { isTextEditMode } from '../editor-modes'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -89,11 +91,11 @@ export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): st
 
 function processAction(
   dispatchEvent: EditorDispatch,
-  working: EditorStoreUnpatched,
+  editorStoreUnpatched: EditorStoreUnpatched,
   action: EditorAction,
   spyCollector: UiJsxCanvasContextData,
 ): EditorStoreUnpatched {
-  const workingHistory = working.history
+  let working = editorStoreUnpatched
   // Sidestep around the local actions so that we definitely run them locally.
   if (action.action === 'TRANSIENT_ACTIONS') {
     // Drill into the array.
@@ -101,10 +103,10 @@ function processAction(
   } else if (action.action === 'ATOMIC') {
     // Drill into the array.
     return processActions(dispatchEvent, working, action.actions, spyCollector)
-  } else if (action.action === 'UNDO' && !History.canUndo(workingHistory)) {
+  } else if (action.action === 'UNDO' && !History.canUndo(working.history)) {
     // Bail early and make no changes.
     return working
-  } else if (action.action === 'REDO' && !History.canRedo(workingHistory)) {
+  } else if (action.action === 'REDO' && !History.canRedo(working.history)) {
     // Bail early and make no changes.
     return working
   } else if (action.action === 'SET_SHORTCUT') {
@@ -132,62 +134,65 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_USER_CONFIGURATION(action, working.userState),
     }
-  } else {
-    // Process action on the JS side.
-    const editorAfterUpdateFunction = runLocalEditorAction(
-      working.unpatchedEditor,
-      working.unpatchedDerived,
-      working.userState,
-      working.workers,
-      action as EditorAction,
-      workingHistory,
-      dispatchEvent,
-      spyCollector,
-      working.builtInDependencies,
-    )
-    const editorAfterCanvas = runLocalCanvasAction(
-      dispatchEvent,
-      editorAfterUpdateFunction,
-      working.unpatchedDerived,
-      working.builtInDependencies,
-      action as CanvasAction,
-    )
-    let editorAfterNavigator = runLocalNavigatorAction(
-      editorAfterCanvas,
-      working.unpatchedDerived,
-      action as LocalNavigatorAction,
-    )
+  }
 
-    let newStateHistory: StateHistory
-    switch (action.action) {
-      case 'UNDO':
-        newStateHistory = History.undo(workingHistory)
-        break
-      case 'REDO':
-        newStateHistory = History.redo(workingHistory)
-        break
-      case 'NEW':
-      case 'LOAD':
-        const derivedState = deriveState(editorAfterNavigator, null)
-        newStateHistory = History.init(editorAfterNavigator, derivedState)
-        break
-      default:
-        newStateHistory = workingHistory
-        break
-    }
+  if (action.action === 'UPDATE_CHILD_TEXT') {
+    working = UPDATE_FNS.UPDATE_CHILD_TEXT(action, working)
+  }
 
-    return {
-      unpatchedEditor: editorAfterNavigator,
-      unpatchedDerived: working.unpatchedDerived,
-      strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
-      history: newStateHistory,
-      userState: working.userState,
-      workers: working.workers,
-      persistence: working.persistence,
-      dispatch: dispatchEvent,
-      alreadySaved: working.alreadySaved,
-      builtInDependencies: working.builtInDependencies,
-    }
+  // Process action on the JS side.
+  const editorAfterUpdateFunction = runLocalEditorAction(
+    working.unpatchedEditor,
+    working.unpatchedDerived,
+    working.userState,
+    working.workers,
+    action as EditorAction,
+    working.history,
+    dispatchEvent,
+    spyCollector,
+    working.builtInDependencies,
+  )
+  const editorAfterCanvas = runLocalCanvasAction(
+    dispatchEvent,
+    editorAfterUpdateFunction,
+    working.unpatchedDerived,
+    working.builtInDependencies,
+    action as CanvasAction,
+  )
+  let editorAfterNavigator = runLocalNavigatorAction(
+    editorAfterCanvas,
+    working.unpatchedDerived,
+    action as LocalNavigatorAction,
+  )
+
+  let newStateHistory: StateHistory
+  switch (action.action) {
+    case 'UNDO':
+      newStateHistory = History.undo(working.history)
+      break
+    case 'REDO':
+      newStateHistory = History.redo(working.history)
+      break
+    case 'NEW':
+    case 'LOAD':
+      const derivedState = deriveState(editorAfterNavigator, null)
+      newStateHistory = History.init(editorAfterNavigator, derivedState)
+      break
+    default:
+      newStateHistory = working.history
+      break
+  }
+
+  return {
+    unpatchedEditor: editorAfterNavigator,
+    unpatchedDerived: working.unpatchedDerived,
+    strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+    history: newStateHistory,
+    userState: working.userState,
+    workers: working.workers,
+    persistence: working.persistence,
+    alreadySaved: working.alreadySaved,
+    builtInDependencies: working.builtInDependencies,
   }
 }
 
@@ -238,7 +243,20 @@ function maybeRequestModelUpdate(
   let existingUIDs: Set<string> = emptySet()
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
-      if (codeNeedsParsing(file.fileContents.revisionsState)) {
+      if (
+        codeNeedsParsing(file.fileContents.revisionsState) &&
+        codeNeedsPrinting(file.fileContents.revisionsState) &&
+        isParseSuccess(file.fileContents.parsed)
+      ) {
+        filesToUpdate.push(
+          createPrintAndReparseFile(
+            fullPath,
+            file.fileContents.parsed,
+            PRODUCTION_ENV,
+            file.lastRevisedTime,
+          ),
+        )
+      } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
           ? file.fileContents.parsed
           : file.lastParseSuccess
@@ -286,6 +304,14 @@ function maybeRequestModelUpdate(
                 fileResult.filename,
                 fileResult.printResult,
                 fileResult.highlightBounds,
+                fileResult.lastRevisedTime,
+              )
+            case 'printandreparseresult':
+              return EditorActions.workerCodeAndParsedUpdate(
+                fileResult.filename,
+                fileResult.printResult,
+                fileResult.highlightBounds,
+                fileResult.parsedResult,
                 fileResult.lastRevisedTime,
               )
             default:
@@ -501,7 +527,6 @@ export function editorDispatch(
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
-    dispatch: boundDispatch,
     nothingChanged: result.nothingChanged,
     entireUpdateFinished: Promise.all([
       result.entireUpdateFinished,
@@ -642,7 +667,9 @@ function editorDispatchInner(
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
-    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
+      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
+    PERFORMANCE_MARKS_ALLOWED
 
   if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')
@@ -676,19 +703,7 @@ function editorDispatchInner(
       domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
     if (metadataChanged) {
       if (result.unpatchedEditor.canvas.dragState != null) {
-        result = {
-          ...result,
-          unpatchedEditor: {
-            ...result.unpatchedEditor,
-            canvas: {
-              ...result.unpatchedEditor.canvas,
-              dragState: {
-                ...result.unpatchedEditor.canvas.dragState,
-                metadata: reconstructJSXMetadata(result.unpatchedEditor),
-              },
-            },
-          },
-        }
+        throw new Error('canvas.dragState should not be used anymore!')
       } else if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
@@ -771,7 +786,6 @@ function editorDispatchInner(
       userState: result.userState,
       workers: storedState.workers,
       persistence: storedState.persistence,
-      dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       alreadySaved: storedState.alreadySaved,

@@ -5,8 +5,7 @@ import { InteractionCanvasState } from '../canvas-strategy-types'
 export function supportsStyle(canvasState: InteractionCanvasState, element: ElementPath): boolean {
   return MetadataUtils.targetUsesProperty(
     canvasState.projectContents,
-    canvasState.openFile,
-    element,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
     'style',
   )
 }
@@ -17,8 +16,7 @@ export function honoursPropsSize(
 ): boolean {
   return MetadataUtils.targetHonoursPropsSize(
     canvasState.projectContents,
-    canvasState.openFile,
-    element,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
   )
 }
 
@@ -28,7 +26,6 @@ export function honoursPropsPosition(
 ): boolean {
   return MetadataUtils.targetHonoursPropsPosition(
     canvasState.projectContents,
-    canvasState.openFile,
-    element,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
   )
 }

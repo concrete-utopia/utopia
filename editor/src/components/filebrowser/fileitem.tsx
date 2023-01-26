@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag */
 import { jsx } from '@emotion/react'
 import * as Path from 'path'
 import pathParse from 'path-parse'
@@ -29,6 +30,7 @@ import {
   UtopiaTheme,
   SimpleFlexRow,
   Button,
+  FlexRow,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
@@ -48,6 +50,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { GithubFileStatus } from '../../core/shared/github'
 import { getFilenameParts } from '../images'
 import { getConflictMenuItems } from '../../core/shared/github-ui'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -414,17 +417,24 @@ class FileBrowserItemInner extends React.PureComponent<
         labelColor = colorTheme.primary.value
       }
       return (
-        <div
-          style={{
-            ...flexRowStyle,
-            marginLeft: 6,
-            color: labelColor,
-          }}
-          onDoubleClick={this.onDoubleClickFilename}
-        >
-          <span>{this.state.filename}</span>
-          {this.props.typeInformation != null ? <span>: {this.props.typeInformation}</span> : null}
-        </div>
+        <>
+          <span
+            onDoubleClick={this.onDoubleClickFilename}
+            style={{
+              marginLeft: 6,
+              display: 'inline-block',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              color: labelColor,
+            }}
+          >
+            {this.state.filename}
+          </span>
+          {this.props.typeInformation != null ? (
+            <span style={{ color: labelColor }}>: {this.props.typeInformation}</span>
+          ) : null}
+        </>
       )
     }
   }
@@ -739,35 +749,54 @@ class FileBrowserItemInner extends React.PureComponent<
             height: UtopiaTheme.layout.rowHeight.smaller,
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             opacity: this.props.isDragging ? 0.5 : undefined,
             backgroundColor: getBackground(),
             borderRadius: 2,
             position: 'relative',
           }}
         >
-          <ExpandableIndicator
-            key='expandable-indicator'
-            visible={
-              this.props.type === 'file' &&
-              this.props.fileType != null &&
-              this.props.fileType === 'DIRECTORY'
-            }
-            collapsed={this.props.collapsed}
-            selected={false}
-            onMouseDown={this.toggleCollapse}
-          />
-          {this.props.connectDragPreview(
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              overflow: 'hidden',
+            }}
+          >
+            <ExpandableIndicator
+              key='expandable-indicator'
+              visible={
+                this.props.type === 'file' &&
+                this.props.fileType != null &&
+                this.props.fileType === 'DIRECTORY'
+              }
+              collapsed={this.props.collapsed}
+              selected={false}
+              onMouseDown={this.toggleCollapse}
+            />
+            {this.props.connectDragPreview(
+              <div
+                style={{
+                  ...flexRowStyle,
+                  overflow: 'hidden',
+                }}
+              >
+                {this.renderIcon()}
+                {this.renderLabel()}
+                {this.renderModifiedIcon()}
+              </div>,
+            )}
+          </div>
+          {this.props.type === 'file' ? (
             <div
               style={{
-                ...flexRowStyle,
-                overflowX: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
+                flexDirection: 'row',
+                marginRight: '2px',
               }}
             >
-              {this.renderIcon()}
-              {this.renderLabel()}
-              {this.renderModifiedIcon()}
               {this.props.isUploadedAssetFile ? (
                 <span
                   style={{
@@ -780,22 +809,18 @@ class FileBrowserItemInner extends React.PureComponent<
                   S3
                 </span>
               ) : null}
-            </div>,
-          )}
-          {this.props.type === 'file' ? (
-            <SimpleFlexRow style={{ position: 'absolute', right: '0px' }}>
               {displayAddFolder ? (
-                <Button style={{ marginRight: '2px' }} onClick={this.showAddingFolderRow}>
+                <Button onClick={this.showAddingFolderRow}>
                   <Icons.NewFolder style={fileIconStyle} tooltipText='Add New Folder' />
                 </Button>
               ) : null}
               {displayAddTextFile ? (
-                <Button style={{ marginRight: '2px' }} onClick={this.showAddingFileRow}>
+                <Button onClick={this.showAddingFileRow}>
                   <Icons.NewTextFile style={fileIconStyle} tooltipText='Add Code File' />
                 </Button>
               ) : null}
               {displayDelete ? (
-                <Button style={{ marginRight: '2px' }} onClick={this.delete}>
+                <Button onClick={this.delete}>
                   <Icons.Cross tooltipText='Delete' />
                 </Button>
               ) : null}
@@ -813,7 +838,7 @@ class FileBrowserItemInner extends React.PureComponent<
                 </span>
               ) : null}
               {this.renderGithubStatus()}
-            </SimpleFlexRow>
+            </div>
           ) : null}
         </div>
         {this.state.adding == null
@@ -874,7 +899,7 @@ class FileBrowserItemInner extends React.PureComponent<
 }
 
 export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrowserItemProps) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'FileBrowserItem dispatch')
+  const dispatch = useDispatch()
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({

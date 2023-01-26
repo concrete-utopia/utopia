@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -35,10 +36,11 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
+import { colorTheme } from '../../../../uuiui'
 
 export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
-const StyleGapProp = stylePropPathMappingFn('gap', ['style'])
+const StyleGapProp = stylePropPathMappingFn('gap', styleStringInArray)
 
 export const FlexGapTearThreshold: number = -25
 
@@ -108,7 +110,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       resizeControl,
       controlWithProps({
         control: FloatingIndicator,
-        props: props,
+        props: { ...props, color: colorTheme.gapControls.value },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),

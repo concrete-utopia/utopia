@@ -4,6 +4,7 @@ import {
   combine3EqualityCalls,
   combine4EqualityCalls,
   combine5EqualityCalls,
+  combine6EqualityCalls,
   createCallFromEqualsFunction,
   createCallWithShallowEquals,
   createCallWithTripleEquals,
@@ -154,7 +155,7 @@ export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint
   )
 
 export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState> =
-  combine5EqualityCalls(
+  combine6EqualityCalls(
     (state) => state.minimised,
     createCallWithTripleEquals(),
     (state) => state.dropTargetHint,
@@ -165,13 +166,23 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
     nullableDeepEquality(ElementPathKeepDeepEquality),
     (state) => state.highlightedTargets,
     ElementPathArrayKeepDeepEquality,
-    (minimised, dropTargetHint, collapsedViews, renamingTarget, highlightedTargets) => {
+    (state) => state.hiddenInNavigator,
+    ElementPathArrayKeepDeepEquality,
+    (
+      minimised,
+      dropTargetHint,
+      collapsedViews,
+      renamingTarget,
+      highlightedTargets,
+      hiddenInNavigator,
+    ) => {
       return {
         minimised: minimised,
         dropTargetHint: dropTargetHint,
         collapsedViews: collapsedViews,
         renamingTarget: renamingTarget,
-        highlightedTargets,
+        highlightedTargets: highlightedTargets,
+        hiddenInNavigator: hiddenInNavigator,
       }
     },
   )

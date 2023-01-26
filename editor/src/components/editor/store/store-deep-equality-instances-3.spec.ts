@@ -5,7 +5,6 @@ import {
   createNotImported,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  FoundImportInfo,
   ImportInfo,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
@@ -172,8 +171,9 @@ describe('SidesKeepDeepEquality', () => {
 })
 
 describe('ImportInfoKeepDeepEquality', () => {
-  const oldNotImportedValue: ImportInfo = createNotImported()
-  const newSameNotImportedValue: ImportInfo = createNotImported()
+  const originalFilePath = '/utopia/storyboard.js'
+  const oldNotImportedValue: ImportInfo = createNotImported(originalFilePath, 'Card')
+  const newSameNotImportedValue: ImportInfo = createNotImported(originalFilePath, 'Card')
 
   const oldValue: ImportInfo = createImportedFrom('old', 'old', 'old')
   const newSameValue: ImportInfo = createImportedFrom('old', 'old', 'old')
@@ -202,15 +202,6 @@ describe('ImportInfoKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = ImportInfoKeepDeepEquality(oldValue, newDifferentValue)
-    expect((result.value as Right<FoundImportInfo>).value.variableName).toBe(
-      (newDifferentValue as Right<FoundImportInfo>).value.variableName,
-    )
-    expect((result.value as Right<FoundImportInfo>).value.originalName).toBe(
-      (oldValue as Right<FoundImportInfo>).value.originalName,
-    )
-    expect((result.value as Right<FoundImportInfo>).value.path).toBe(
-      (oldValue as Right<FoundImportInfo>).value.path,
-    )
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })
@@ -262,6 +253,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentFlexGap: 0,
     flexGap: 11,
     flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
     globalContentBox: canvasRectangle({
@@ -280,6 +273,10 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 30,
       left: 40,
     },
+    fontSize: '16',
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecorationLine: 'none',
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -327,6 +324,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentFlexGap: 0,
     flexGap: 11,
     flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
     globalContentBox: canvasRectangle({
@@ -345,6 +344,10 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 30,
       left: 40,
     },
+    fontSize: '16',
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecorationLine: 'none',
   }
 
   it('same reference returns the same reference', () => {
@@ -447,6 +450,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentFlexGap: 0,
       flexGap: 11,
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
       globalContentBox: canvasRectangle({
@@ -465,6 +470,10 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 30,
         left: 40,
       },
+      fontSize: '16',
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textDecorationLine: 'none',
     },
     computedStyle: {
       a: 'a',
@@ -540,6 +549,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentFlexGap: 0,
       flexGap: 11,
       flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
       globalContentBox: canvasRectangle({
@@ -558,6 +569,10 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 30,
         left: 40,
       },
+      fontSize: '16',
+      fontWeight: '400',
+      fontStyle: 'normal',
+      textDecorationLine: 'none',
     },
     computedStyle: {
       a: 'a',
@@ -659,6 +674,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexGap: 0,
         flexGap: 11,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -677,6 +694,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontSize: '16',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
@@ -754,6 +775,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexDirection: 'row',
         flexGap: 11,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -772,6 +795,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontSize: '16',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',
@@ -849,6 +876,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentFlexGap: 0,
         flexGap: 11,
         flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
         globalContentBox: canvasRectangle({
@@ -867,6 +896,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 30,
           left: 40,
         },
+        fontSize: '16',
+        fontWeight: '400',
+        fontStyle: 'normal',
+        textDecorationLine: 'none',
       },
       computedStyle: {
         a: 'a',

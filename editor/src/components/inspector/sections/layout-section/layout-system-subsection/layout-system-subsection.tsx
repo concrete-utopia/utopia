@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { jsx, css } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   LayoutSystemControl,
@@ -9,11 +9,7 @@ import {
   useLayoutSystemData,
 } from './layout-system-controls'
 import { FlexContainerControls } from '../flex-container-subsection/flex-container-subsection'
-import { PropertyLabel } from '../../../widgets/property-label'
-import {
-  DetectedLayoutSystem,
-  SpecialSizeMeasurements,
-} from '../../../../../core/shared/element-template'
+import { SpecialSizeMeasurements } from '../../../../../core/shared/element-template'
 import {
   FlexRow,
   Icons,
@@ -22,9 +18,11 @@ import {
   SquareButton,
   useColorTheme,
 } from '../../../../../uuiui'
-import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
-import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
+
+const LayoutSystemSectionTitle = () =>
+  isFeatureEnabled('Nine block control') ? 'Layout System Props' : 'Layout System'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -70,7 +68,7 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
           }}
         >
           <InspectorSectionIcons.LayoutSystem />
-          <span>Layout System</span>
+          <span>{LayoutSystemSectionTitle()}</span>
         </FlexRow>
         {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
         {!layoutSectionOpen && (

@@ -99,7 +99,6 @@ export function baseAbsoluteReparentStrategy(
             const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
               return isAllowedToReparent(
                 canvasState.projectContents,
-                canvasState.openFile,
                 canvasState.startingMetadata,
                 selectedElement,
               )

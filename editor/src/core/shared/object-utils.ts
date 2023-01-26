@@ -107,7 +107,7 @@ export function mapValues<U, V>(
 }
 
 type ValueOf<T> = T[keyof T]
-export function objectMap<T, K extends keyof T, U>(
+export function objectMap<T extends Record<string, unknown>, K extends keyof T, U>(
   transform: (t: ValueOf<T>, key: K) => U,
   obj: T,
 ): {
@@ -226,7 +226,7 @@ export function objectFlattenKeys(obj: any): Array<string> {
 
 // From https://github.com/ramda/ramda/blob/v0.27.0/source/omit.js
 export function omit<K extends string | number, T extends Record<K, any>>(
-  keys: Array<K>,
+  keys: ReadonlyArray<K>,
   obj: T,
 ): Omit<T, K> {
   var result = {} as T
@@ -261,7 +261,7 @@ export function omitWithPredicate<T extends MapLike<any>>(
   return result
 }
 
-export function pick<T, K extends keyof T>(keys: Array<K>, obj: T): Pick<T, K> {
+export function pick<T, K extends keyof T>(keys: ReadonlyArray<K>, obj: T): Pick<T, K> {
   var result = {} as Pick<T, K>
 
   fastForEach(keys, (key) => {

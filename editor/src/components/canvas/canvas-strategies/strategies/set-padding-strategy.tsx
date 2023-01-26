@@ -53,8 +53,10 @@ import {
 } from '../../controls/select-mode/controls-common'
 import { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
+import { styleStringInArray } from '../../../../utils/common-constants'
+import { elementHasOnlyTextChildren } from '../../canvas-utils'
 
-const StylePaddingProp = stylePropPathMappingFn('padding', ['style'])
+const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingTop',
   'paddingBottom',
@@ -82,7 +84,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   const canShowPadding = canShowCanvasPropControl(
     canvasState.projectContents,
-    canvasState.openFile ?? null,
     element,
     canvasState.scale,
   ).has('padding')
@@ -152,10 +153,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
 
       if (originalBoundingBox == null || filteredSelectedElements.length !== 1) {
-        return strategyApplicationResult([
-          setCursorCommand(pickCursorFromEdge(edgePiece)),
-          updateHighlightedViews('mid-interaction', []),
-        ])
+        return emptyStrategyApplicationResult
       }
 
       const selectedElement = filteredSelectedElements[0]
@@ -203,10 +201,15 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           ...basicCommands,
           deleteProperties('always', selectedElement, [
             StylePaddingProp,
-            stylePropPathMappingFn(paddingPropInteractedWith, ['style']),
+            stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
           ]),
           ...nonZeroPropsToAdd.map(([p, value]) =>
-            setProperty('always', selectedElement, stylePropPathMappingFn(p, ['style']), value),
+            setProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(p, styleStringInArray),
+              value,
+            ),
           ),
         ])
       }
@@ -218,7 +221,9 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         return strategyApplicationResult([
           ...basicCommands,
           ...IndividualPaddingProps.map((p) =>
-            deleteProperties('always', selectedElement, [stylePropPathMappingFn(p, ['style'])]),
+            deleteProperties('always', selectedElement, [
+              stylePropPathMappingFn(p, styleStringInArray),
+            ]),
           ),
           setProperty('always', selectedElement, StylePaddingProp, paddingString),
         ])
@@ -228,10 +233,15 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ...basicCommands,
         deleteProperties('always', selectedElement, [
           StylePaddingProp,
-          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, ['style'])),
+          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
         ]),
         ...nonZeroPropsToAdd.map(([p, value]) =>
-          setProperty('always', selectedElement, stylePropPathMappingFn(p, ['style']), value),
+          setProperty(
+            'always',
+            selectedElement,
+            stylePropPathMappingFn(p, styleStringInArray),
+            value,
+          ),
         ),
       ])
     },
@@ -288,17 +298,13 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
 
   if (
     !elementIsIntrinsicElement &&
-    shouldShowControls({
-      propAvailableFromStyle: elementHasNonzeroPaddingFromProps,
-      measurementsNonZero: elementHasNonzeroPaddingFromMeasurements,
-    })
+    shouldShowControls(elementHasNonzeroPaddingFromProps, elementHasNonzeroPaddingFromMeasurements)
   ) {
     return true
   }
 
-  const children = MetadataUtils.getChildren(metadata, path)
-  if (children.length === 0) {
-    return false
+  if (elementHasOnlyTextChildren(element)) {
+    return true
   }
 
   const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(

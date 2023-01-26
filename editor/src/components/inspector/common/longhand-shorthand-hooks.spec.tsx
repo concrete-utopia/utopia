@@ -16,10 +16,17 @@ import {
 import { EditorStorePatched } from '../../editor/store/editor-state'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { EditorStateContext } from '../../editor/store/store-hook'
+import {
+  createStoresAndState,
+  EditorStateContext,
+  OriginalMainEditorStateContext,
+  UtopiaStoreAPI,
+} from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
+import { DispatchContext } from '../../editor/store/dispatch-context'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 
@@ -32,7 +39,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
   attributeMetadatas: Array<StyleAttributeMetadata>,
 ) {
   const props = styleObjectExpressions.map(
-    (styleExpression) => getPropsForStyleProp(styleExpression, ['style'])!,
+    (styleExpression) => getPropsForStyleProp(styleExpression, styleStringInArray)!,
   )
 
   const mockDispatch = jest.fn()
@@ -42,7 +49,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
     const InspectorContextProvider = makeInspectorHookContextProvider(
       [TestSelectedComponent],
       props,
-      ['style'],
+      styleStringInArray,
       spiedProps,
       computedStyles,
       attributeMetadatas,
@@ -56,23 +63,21 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       userState: null as any,
       workers: null as any,
       persistence: null as any,
-      dispatch: mockDispatch,
       alreadySaved: false,
       builtInDependencies: [],
       storeName: 'editor-store',
     }
 
-    const storeHook = create<
-      EditorStorePatched,
-      SetState<EditorStorePatched>,
-      GetState<EditorStorePatched>,
-      Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-    >(subscribeWithSelector(() => initialEditorStore))
+    const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)
 
     return (
-      <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
-        <InspectorContextProvider>{children}</InspectorContextProvider>
-      </EditorStateContext.Provider>
+      <DispatchContext.Provider value={mockDispatch}>
+        <OriginalMainEditorStateContext.Provider value={storeHook}>
+          <EditorStateContext.Provider value={storeHook}>
+            <InspectorContextProvider>{children}</InspectorContextProvider>
+          </EditorStateContext.Provider>
+        </OriginalMainEditorStateContext.Provider>
+      </DispatchContext.Provider>
     )
   }
 
@@ -293,7 +298,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(100, emptyComments),
           ),
         ],
@@ -316,7 +321,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'padding']),
+            PP.create('style', 'padding'),
             jsxAttributeValue('8px 8px 8px 50px', emptyComments),
           ),
         ],
@@ -339,7 +344,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingRight']),
+            PP.create('style', 'paddingRight'),
             jsxAttributeValue(5, emptyComments),
           ),
         ],
@@ -362,7 +367,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(8, emptyComments),
           ),
         ],
@@ -385,7 +390,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(8, emptyComments),
           ),
         ],
@@ -409,7 +414,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           unsetProperty(TestSelectedComponent, { propertyElements: ['style', 'paddingLeft'] }),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(16, emptyComments),
           ),
         ],
@@ -433,7 +438,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           unsetProperty(TestSelectedComponent, { propertyElements: ['style', 'paddingLeft'] }),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'padding']),
+            PP.create('style', 'padding'),
             jsxAttributeValue('4px 8px 4px 18px', emptyComments),
           ),
         ],
@@ -455,7 +460,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
     const paddingLeft = hookResult.paddingLeft
     paddingLeft.onUnsetValues()
     expect(mockDispatch.mock.calls).toEqual([
-      [[unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft']))]],
+      [[unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft'))]],
     ])
   })
 
@@ -473,21 +478,21 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'padding')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingTop']),
+            PP.create('style', 'paddingTop'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingRight']),
+            PP.create('style', 'paddingRight'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingBottom']),
+            PP.create('style', 'paddingBottom'),
             jsxAttributeValue(10, emptyComments),
           ),
         ],
@@ -509,10 +514,10 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(undefined, emptyComments),
           ),
         ],
@@ -534,21 +539,21 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'padding')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingTop']),
+            PP.create('style', 'paddingTop'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingRight']),
+            PP.create('style', 'paddingRight'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingBottom']),
+            PP.create('style', 'paddingBottom'),
             jsxAttributeValue(10, emptyComments),
           ),
         ],
@@ -570,21 +575,21 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'padding')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingTop']),
+            PP.create('style', 'paddingTop'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingRight']),
+            PP.create('style', 'paddingRight'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingBottom']),
+            PP.create('style', 'paddingBottom'),
             jsxAttributeValue(10, emptyComments),
           ),
         ],
@@ -606,10 +611,10 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(undefined, emptyComments),
           ),
         ],
@@ -631,10 +636,10 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingLeft']),
+            PP.create('style', 'paddingLeft'),
             jsxAttributeValue(undefined, emptyComments),
           ),
         ],
@@ -656,21 +661,21 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'padding')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingTop']),
+            PP.create('style', 'paddingTop'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingRight']),
+            PP.create('style', 'paddingRight'),
             jsxAttributeValue(25, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingBottom']),
+            PP.create('style', 'paddingBottom'),
             jsxAttributeValue(10, emptyComments),
           ),
         ],
@@ -692,21 +697,21 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'paddingLeft')),
+          unsetProperty(TestSelectedComponent, PP.create('style', 'padding')),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingTop']),
+            PP.create('style', 'paddingTop'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingRight']),
+            PP.create('style', 'paddingRight'),
             jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
-            PP.create(['style', 'paddingBottom']),
+            PP.create('style', 'paddingBottom'),
             jsxAttributeValue(10, emptyComments),
           ),
         ],

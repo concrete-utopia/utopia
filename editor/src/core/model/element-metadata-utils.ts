@@ -12,7 +12,11 @@ import {
   uniqBy,
   mapAndFilter,
 } from '../shared/array-utils'
-import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import {
+  intrinsicHTMLElementNamesThatSupportChildren,
+  TextElements,
+  VoidElementsToFilter,
+} from '../shared/dom-utils'
 import {
   alternativeEither,
   Either,
@@ -42,6 +46,7 @@ import {
   isIntrinsicHTMLElement,
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
+  isImportedOrigin,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -59,14 +64,7 @@ import {
   zeroCanvasRect,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import {
-  ElementOriginType,
-  Imports,
-  isUnknownOrGeneratedElement,
-  NodeModules,
-  PropertyPath,
-  ElementPath,
-} from '../shared/project-file-types'
+import { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {
@@ -98,7 +96,7 @@ import {
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
-import { findUnderlyingTargetComponentImplementation } from '../../components/custom-code/code-file'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
   Direction,
   FlexDirection,
@@ -122,49 +120,15 @@ export const getChildrenOfCollapsedViews = (
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
+export type ElementSupportsChildren =
+  | 'supportsChildren'
+  | 'hasOnlyTextChildren'
+  | 'doesNotSupportChildren'
+
 export const MetadataUtils = {
-  getElementOriginType(
-    elements: Array<UtopiaJSXComponent>,
-    target: ElementPath,
-  ): ElementOriginType {
+  isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    if (staticTarget == null) {
-      return 'unknown-element'
-    } else {
-      if (EP.pathsEqual(target, staticTarget)) {
-        return 'statically-defined'
-      } else {
-        const element = findJSXElementChildAtPath(elements, staticTarget)
-        if (element != null && isJSXElement(element)) {
-          return 'generated-static-definition-present'
-        } else {
-          return 'unknown-element'
-        }
-      }
-    }
-  },
-  anyUnknownOrGeneratedElements(
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    openFile: string | null,
-    targets: Array<ElementPath>,
-  ): boolean {
-    return targets.some((target) => {
-      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
-        target,
-        projectContents,
-        nodeModules,
-        openFile,
-        'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath, underlyingDynamicTarget) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(success),
-            underlyingDynamicTarget,
-          )
-        },
-      )
-      return isUnknownOrGeneratedElement(elementOriginType)
-    })
+    return !EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
@@ -186,11 +150,9 @@ export const MetadataUtils = {
     return (
       element != null &&
       element.importInfo != null &&
-      foldEither(
-        (_) => false,
-        (info) => info.path === 'utopia-api' && info.originalName === 'Scene',
-        element.importInfo,
-      )
+      isImportedOrigin(element.importInfo) &&
+      element.importInfo.filePath === 'utopia-api' &&
+      element.importInfo.exportedName === 'Scene'
     )
   },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
@@ -278,6 +240,18 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
+  isPositionFixed(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'fixed'
+  },
+  isPositionStatic(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.position === 'static'
+  },
+  isPositionSticky(instance: ElementInstanceMetadata | null): boolean {
+    return (
+      instance?.specialSizeMeasurements.position === 'sticky' ||
+      instance?.specialSizeMeasurements.position === '-webkit-sticky'
+    )
+  },
   isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'relative'
   },
@@ -326,7 +300,7 @@ export const MetadataUtils = {
     if (element != null) {
       forEachRight(element.element, (elem) => {
         if (isJSXElement(elem)) {
-          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
+          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create('role'))
           forEachRight(attrResult, (value) => {
             if (value === 'button') {
               buttonRoleFound = true
@@ -344,6 +318,20 @@ export const MetadataUtils = {
   isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isButtonFromMetadata(instance)
+  },
+  isTextFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    if (element == null) {
+      return false
+    }
+    const isTextElement = foldEither(
+      (elementString) => TextElements.includes(elementString),
+      (elementInstance) =>
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
+      element.element,
+    )
+    {
+      return isTextElement
+    }
   },
   getYogaSizeProps(
     target: ElementPath,
@@ -521,7 +509,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
   },
   getRootViews(
@@ -559,7 +547,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleChildren
   },
   getChildren(
@@ -753,39 +741,48 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     instance: ElementInstanceMetadata,
   ): boolean {
+    return (
+      this.targetElementSupportsChildrenAlsoText(projectContents, instance) === 'supportsChildren'
+    )
+  },
+  targetElementSupportsChildrenAlsoText(
+    projectContents: ProjectContentTreeRoot,
+    instance: ElementInstanceMetadata,
+  ): ElementSupportsChildren {
     return foldEither(
-      (elementString) => intrinsicHTMLElementNamesThatSupportChildren.includes(elementString),
+      (elementString) =>
+        intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
+          ? 'supportsChildren'
+          : 'doesNotSupportChildren',
       (element) => {
         if (elementOnlyHasTextChildren(element)) {
           // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
-          return false
+          return 'hasOnlyTextChildren'
         } else {
           if (isJSXElement(element)) {
             if (isIntrinsicElement(element.name)) {
               return intrinsicHTMLElementNamesThatSupportChildren.includes(
                 element.name.baseVariable,
               )
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             } else if (isUtopiaAPIComponentFromMetadata(instance)) {
               // Explicitly prevent components / elements that we *know* don't support children
-              return (
-                isViewLikeFromMetadata(instance) ||
+              return isViewLikeFromMetadata(instance) ||
                 isSceneFromMetadata(instance) ||
                 EP.isStoryboardPath(instance.elementPath)
-              )
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             } else {
-              return MetadataUtils.targetUsesProperty(
-                projectContents,
-                openFile,
-                instance.elementPath,
-                'children',
-              )
+              return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
+                ? 'supportsChildren'
+                : 'doesNotSupportChildren'
             }
           }
           // We don't know at this stage
-          return true
+          return 'supportsChildren'
         }
       },
       instance.element,
@@ -793,34 +790,40 @@ export const MetadataUtils = {
   },
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): boolean {
+    return (
+      this.targetSupportsChildrenAlsoText(projectContents, metadata, target) !==
+      'doesNotSupportChildren'
+    )
+  },
+  targetSupportsChildrenAlsoText(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
-      return true
+      return 'supportsChildren'
     } else {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       return instance == null
-        ? false
-        : MetadataUtils.targetElementSupportsChildren(projectContents, openFile, instance)
+        ? 'doesNotSupportChildren'
+        : MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
     }
   },
   targetUsesProperty(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
     property: string,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -832,17 +835,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsSize(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -854,17 +854,14 @@ export const MetadataUtils = {
   },
   targetHonoursPropsPosition(
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
-    target: ElementPath,
+    metadata: ElementInstanceMetadata | null,
   ): boolean {
-    if (openFile == null) {
+    if (metadata == null) {
       return false
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementation(
+      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
-        {},
-        openFile,
-        target,
+        metadata.importInfo,
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
@@ -873,6 +870,43 @@ export const MetadataUtils = {
         return componentHonoursPropsPosition(underlyingComponent)
       }
     }
+  },
+  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
+    if (target == null) {
+      return false
+    }
+    const children = MetadataUtils.getChildren(metadata, target)
+    const hasNonEditableChildren = children
+      .map((c) =>
+        foldEither(
+          () => null,
+          (v) => (isJSXElement(v) ? v.name.baseVariable : null),
+          c.element,
+        ),
+      )
+      .some((e) => e !== 'br')
+    return children.length === 0 || !hasNonEditableChildren
+  },
+  targetTextEditableAndHasText(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): boolean {
+    if (!MetadataUtils.targetTextEditable(metadata, target)) {
+      return false
+    }
+
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      return false
+    }
+
+    if (isRight(element.element) && isJSXElement(element.element.value)) {
+      const elementValue = element.element.value
+      return (
+        elementValue.children.length >= 1 && elementValue.children.some((c) => isJSXTextBlock(c))
+      )
+    }
+    return false
   },
   getTextContentOfElement(element: ElementInstanceMetadata): string | null {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
@@ -950,6 +984,7 @@ export const MetadataUtils = {
     (
       metadata: ElementInstanceMetadataMap,
       collapsedViews: Array<ElementPath>,
+      hiddenInNavigator: Array<ElementPath>,
     ): {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
@@ -969,13 +1004,18 @@ export const MetadataUtils = {
       function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
         if (subTree != null) {
           const path = subTree.path
+          const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           navigatorTargets.push(path)
-          if (!collapsedAncestor) {
+          if (
+            !collapsedAncestor &&
+            !isHiddenInNavigator &&
+            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+          ) {
             visibleNavigatorTargets.push(path)
           }
 
           const isCollapsed = EP.containsPath(path, collapsedViews)
-          const newCollapsedAncestor = collapsedAncestor || isCollapsed
+          const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
           let unfurledComponents: Array<ElementPathTree> = []
           fastForEach(subTree.children, (child) => {
@@ -1008,6 +1048,18 @@ export const MetadataUtils = {
       maxSize: 1,
     },
   ),
+  isElementTypeHiddenInNavigator(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element == null) {
+      return false
+    } else {
+      return foldEither(
+        (l) => VoidElementsToFilter.includes(l),
+        (r) => (isJSXElement(r) ? VoidElementsToFilter.includes(r.name.baseVariable) : false),
+        element.element,
+      )
+    }
+  },
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,
     path: ElementPath,
@@ -1310,10 +1362,6 @@ export const MetadataUtils = {
       ...spyOnlyElements,
     }
   },
-  isStaticElement(elements: Array<UtopiaJSXComponent>, target: ElementPath): boolean {
-    const originType = this.getElementOriginType(elements, target)
-    return originType === 'statically-defined'
-  },
   removeElementMetadataChild(
     target: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -1521,10 +1569,6 @@ export const MetadataUtils = {
     }
   },
   isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
-    if (element?.isEmotionOrStyledComponent) {
-      return false
-    }
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
@@ -1533,6 +1577,10 @@ export const MetadataUtils = {
     if (isImported) {
       return false
     }
+    if (element?.isEmotionOrStyledComponent) {
+      return false
+    }
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
       return true

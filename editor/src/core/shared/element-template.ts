@@ -25,6 +25,7 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -911,7 +912,7 @@ export function jsxElementName(
 ): JSXElementName {
   return {
     baseVariable: baseVariable,
-    propertyPath: PP.create(propertyPathParts),
+    propertyPath: PP.createFromArray(propertyPathParts),
   }
 }
 
@@ -1511,28 +1512,60 @@ export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntr
 export type ElementInstanceMetadataMap = { [key: string]: Readonly<ElementInstanceMetadata> }
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
-export type FoundImportInfo = {
+export interface SameFileOrigin {
+  type: 'SAME_FILE_ORIGIN'
+  filePath: string
   variableName: string
-  originalName: string | null
-  path: string
 }
 
-export type ImportInfo = Either<'NOT_IMPORTED', FoundImportInfo>
+export function isSameFileOrigin(importInfo: ImportInfo): importInfo is SameFileOrigin {
+  return importInfo.type === 'SAME_FILE_ORIGIN'
+}
+
+export function sameFileOrigin(filePath: string, variableName: string): SameFileOrigin {
+  return {
+    type: 'SAME_FILE_ORIGIN',
+    filePath: filePath,
+    variableName: variableName,
+  }
+}
+
+export interface ImportedOrigin {
+  type: 'IMPORTED_ORIGIN'
+  filePath: string
+  variableName: string
+  exportedName: string | null
+}
+
+export function isImportedOrigin(importInfo: ImportInfo): importInfo is ImportedOrigin {
+  return importInfo.type === 'IMPORTED_ORIGIN'
+}
+
+export function importedOrigin(
+  filePath: string,
+  variableName: string,
+  exportedName: string | null,
+): ImportedOrigin {
+  return {
+    type: 'IMPORTED_ORIGIN',
+    filePath: filePath,
+    variableName: variableName,
+    exportedName: exportedName,
+  }
+}
+
+export type ImportInfo = SameFileOrigin | ImportedOrigin
 
 export function createImportedFrom(
   variableName: string,
   originalName: string | null,
   path: string,
 ): ImportInfo {
-  return right({
-    variableName: variableName,
-    originalName: originalName,
-    path: path,
-  })
+  return importedOrigin(path, variableName, originalName)
 }
 
-export function createNotImported(): ImportInfo {
-  return left('NOT_IMPORTED')
+export function createNotImported(path: string, variableName: string): ImportInfo {
+  return sameFileOrigin(path, variableName)
 }
 
 export interface ElementInstanceMetadata {
@@ -1603,6 +1636,8 @@ export interface SpecialSizeMeasurements {
   parentFlexGap: number
   flexGap: number | null
   flexDirection: FlexDirection | null
+  justifyContent: FlexJustifyContent | null
+  alignItems: FlexAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
@@ -1611,6 +1646,10 @@ export interface SpecialSizeMeasurements {
   parentTextDirection: TextDirection | null
   hasTransform: boolean
   borderRadius: Sides | null
+  fontSize: string | null
+  fontWeight: string | null
+  fontStyle: string | null
+  textDecorationLine: string | null
 }
 
 export function specialSizeMeasurements(
@@ -1635,6 +1674,8 @@ export function specialSizeMeasurements(
   parentFlexGap: number,
   flexGap: number | null,
   flexDirection: FlexDirection | null,
+  justifyContent: FlexJustifyContent | null,
+  alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
@@ -1643,6 +1684,10 @@ export function specialSizeMeasurements(
   parentTextDirection: TextDirection | null,
   hasTransform: boolean,
   borderRadius: Sides | null,
+  fontSize: string | null,
+  fontWeight: string | null,
+  fontStyle: string | null,
+  textDecorationLine: string | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1666,6 +1711,8 @@ export function specialSizeMeasurements(
     parentFlexGap,
     flexGap,
     flexDirection,
+    justifyContent,
+    alignItems,
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
@@ -1674,6 +1721,10 @@ export function specialSizeMeasurements(
     parentTextDirection,
     hasTransform,
     borderRadius,
+    fontSize,
+    fontWeight,
+    fontStyle,
+    textDecorationLine,
   }
 }
 
@@ -1702,6 +1753,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   null,
   null,
+  null,
+  null,
   'div',
   0,
   null,
@@ -1709,6 +1762,10 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   false,
   'ltr',
   false,
+  null,
+  null,
+  null,
+  null,
   null,
 )
 

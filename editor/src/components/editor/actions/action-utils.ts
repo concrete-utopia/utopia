@@ -32,6 +32,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
     case 'TOGGLE_PANE':
     case 'COPY_SELECTION_TO_CLIPBOARD':
+    case 'COPY_PROPERTIES':
     case 'OPEN_TEXT_EDITOR':
     case 'CLOSE_TEXT_EDITOR':
     case 'SET_LEFT_MENU_TAB':
@@ -146,6 +147,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
     case 'PASTE_JSX_ELEMENTS':
+    case 'PASTE_PROPERTIES':
     case 'TOGGLE_PROPERTY':
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
@@ -188,6 +190,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RUN_ESCAPE_HATCH':
     case 'SET_IMAGE_DRAG_SESSION_STATE':
     case 'UPDATE_AGAINST_GITHUB':
+    case 'APPLY_COMMANDS':
+    case 'UPDATE_COLOR_SWATCHES':
       return false
     case 'SAVE_ASSET':
       return (

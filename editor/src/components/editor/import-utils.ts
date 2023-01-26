@@ -2,8 +2,11 @@ import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/packag
 import { foldEither } from '../../core/shared/either'
 import { emptyImports, mergeImports } from '../../core/workers/common/project-file-utils'
 import {
+  importedOrigin,
+  ImportInfo,
   isIntrinsicElement,
   isJSXElement,
+  sameFileOrigin,
   TopLevelElement,
   walkElement,
 } from '../../core/shared/element-template'
@@ -20,32 +23,6 @@ import { ProjectContentTreeRoot } from '../assets'
 import { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
-
-interface SameFileOrigin {
-  type: 'SAME_FILE_ORIGIN'
-  filePath: string
-}
-
-function sameFileOrigin(filePath: string): SameFileOrigin {
-  return {
-    type: 'SAME_FILE_ORIGIN',
-    filePath: filePath,
-  }
-}
-
-interface ImportedOrigin {
-  type: 'IMPORTED_ORIGIN'
-  filePath: string
-  exportedName: string | null
-}
-
-function importedOrigin(filePath: string, exportedName: string | null): ImportedOrigin {
-  return {
-    type: 'IMPORTED_ORIGIN',
-    filePath: filePath,
-    exportedName: exportedName,
-  }
-}
 
 export function getRequiredImportsForElement(
   target: ElementPath,
@@ -128,7 +105,7 @@ export function getRequiredImportsForElement(
   )
 }
 
-type ImportedFromWhereResult = SameFileOrigin | ImportedOrigin
+type ImportedFromWhereResult = ImportInfo
 
 export function importedFromWhere(
   originFilePath: string,
@@ -140,12 +117,12 @@ export function importedFromWhere(
     switch (topLevelElement.type) {
       case 'UTOPIA_JSX_COMPONENT':
         if (topLevelElement.name === variableName) {
-          return sameFileOrigin(originFilePath)
+          return sameFileOrigin(originFilePath, variableName)
         }
         break
       case 'ARBITRARY_JS_BLOCK':
         if (topLevelElement.definedWithin.includes(variableName)) {
-          return sameFileOrigin(originFilePath)
+          return sameFileOrigin(originFilePath, variableName)
         }
         break
       case 'UNPARSED_CODE':
@@ -160,14 +137,14 @@ export function importedFromWhere(
   for (const importSource of Object.keys(importsToSearch)) {
     const specificImport = importsToSearch[importSource]
     if (specificImport.importedAs === variableName) {
-      return importedOrigin(importSource, null)
+      return importedOrigin(importSource, variableName, null)
     }
     if (specificImport.importedWithName === variableName) {
-      return importedOrigin(importSource, null)
+      return importedOrigin(importSource, variableName, null)
     }
     for (const fromWithin of specificImport.importedFromWithin) {
       if (fromWithin.alias === variableName) {
-        return importedOrigin(importSource, fromWithin.name)
+        return importedOrigin(importSource, variableName, fromWithin.name)
       }
     }
   }

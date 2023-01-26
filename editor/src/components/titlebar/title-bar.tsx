@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
-import { secondaryErrorStyle } from 'src/third-party/react-error-overlay/styles'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
 import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
@@ -16,9 +15,20 @@ import {
 } from '../../uuiui'
 import { LoginState } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
-import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import {
+  openCodeEditorFile,
+  setLeftMenuTab,
+  setPanelVisibility,
+  togglePanel,
+} from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
+import {
+  EditorStorePatched,
+  EditorStoreShared,
+  githubRepoFullName,
+  LeftMenuTab,
+} from '../editor/store/editor-state'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 
@@ -40,51 +50,58 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 
 const TitleBar = React.memo(() => {
-  const { dispatch, loginState, projectName, upstreamChanges, currentBranch } = useEditorState(
+  const dispatch = useDispatch()
+  const { loginState } = useEditorState(
+    Substores.restOfStore,
     (store) => ({
-      dispatch: store.dispatch,
       loginState: store.userState.loginState,
-      projectName: store.editor.projectName,
-      upstreamChanges: store.editor.githubData.upstreamChanges,
-      currentBranch: store.editor.githubSettings.branchName,
     }),
-    'TitleBar',
+    'TitleBar loginState',
+  )
+  const projectName = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.projectName
+    },
+    'TitleBar projectName',
+  )
+
+  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
+    Substores.github,
+    (store) => {
+      return {
+        upstreamChanges: store.editor.githubData.upstreamChanges,
+        currentBranch: store.editor.githubSettings.branchName,
+        treeConflicts: store.editor.githubData.treeConflicts,
+        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
+      }
+    },
+    'TitleBar github',
   )
 
   const userPicture = useGetUserPicture()
-
-  const repoName = useEditorState(
-    (store) => githubRepoFullName(store.editor.githubSettings.targetRepository),
-    'RepositoryBlock repo',
-  )
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
     [upstreamChanges],
   )
-  const numberOfUpstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(upstreamChanges),
-    [upstreamChanges],
-  )
+
+  const hasMergeConflicts = React.useMemo(() => {
+    if (treeConflicts == null) {
+      return false
+    }
+    return Object.keys(treeConflicts).length > 0
+  }, [treeConflicts])
 
   const githubFileChanges = useGithubFileChanges()
   const hasDownstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(githubFileChanges) > 0,
     [githubFileChanges],
   )
-  const numberOfDownstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(githubFileChanges),
-    [githubFileChanges],
-  )
 
   const onClickLoginNewTab = useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
-
-  const isLeftMenuExpanded = useEditorState(
-    (store) => store.editor.leftMenu.expanded,
-    'LeftPanelRoot isLeftMenuExpanded',
-  )
 
   const toggleLeftPanel = useCallback(() => {
     let actions: Array<EditorAction> = []
@@ -97,6 +114,21 @@ const TitleBar = React.memo(() => {
   }, [dispatch])
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
+
+  const openFile = React.useCallback(
+    (filename: string) => {
+      dispatch([openCodeEditorFile(filename, true)], 'everyone')
+    },
+    [dispatch],
+  )
+  const showMergeConflict = React.useCallback(() => {
+    if (Object.keys(treeConflicts).length < 1) {
+      return
+    }
+    const firstConflictFilename = Object.keys(treeConflicts)[0]
+    openLeftPaneltoGithubTab()
+    openFile(firstConflictFilename)
+  }, [openLeftPaneltoGithubTab, openFile, treeConflicts])
 
   return (
     <SimpleFlexRow
@@ -145,6 +177,18 @@ const TitleBar = React.memo(() => {
               </RoundButton>,
             )}
             {when(
+              hasMergeConflicts,
+              <RoundButton color={colorTheme.errorBgSolid.value} onClick={showMergeConflict}>
+                {
+                  <Icons.WarningTriangle
+                    style={{ width: 19, height: 19 }}
+                    color={'on-light-main'}
+                  />
+                }
+                <>Merge Conflicts</>
+              </RoundButton>,
+            )}
+            {when(
               hasDownstreamChanges,
               <RoundButton
                 color={colorTheme.secondaryBlue.value}
@@ -180,11 +224,21 @@ const TitleBar = React.memo(() => {
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
         {unless(
           loggedIn,
-          <Button primary style={{ paddingLeft: 8, paddingRight: 8 }} onClick={onClickLoginNewTab}>
+          <Button
+            primary
+            highlight
+            style={{ paddingLeft: 8, paddingRight: 8 }}
+            onClick={onClickLoginNewTab}
+          >
             Sign In To Save
           </Button>,
         )}
-        {when(loggedIn, <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />)}
+        {when(
+          loggedIn,
+          <a href='/projects' target='_blank'>
+            <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
+          </a>,
+        )}
       </div>
     </SimpleFlexRow>
   )
@@ -193,9 +247,9 @@ const TitleBar = React.memo(() => {
 export default TitleBar
 
 const loginStateSelector = createSelector(
-  (store: EditorStorePatched) => store.userState.loginState,
+  (store: EditorStoreShared) => store.userState.loginState,
   (loginState: LoginState) => getUserPicture(loginState),
 )
 function useGetUserPicture(): string | null {
-  return useEditorState(loginStateSelector, 'useGetUserPicture')
+  return useEditorState(Substores.restOfStore, loginStateSelector, 'useGetUserPicture')
 }

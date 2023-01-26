@@ -1,11 +1,10 @@
-import * as ObjectPath from 'object-path'
 import React from 'react'
 import {
   findElementAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { forEachRight, isRight, right } from '../../core/shared/either'
+import { isRight, right } from '../../core/shared/either'
 import {
   isJSXElement,
   JSXAttribute,
@@ -28,7 +27,6 @@ import {
   alignSelectedViews,
   distributeSelectedViews,
   setAspectRatioLock,
-  setProperty,
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
@@ -41,7 +39,7 @@ import {
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -65,19 +63,11 @@ import {
   TargetSelectorSectionProps,
 } from './sections/target-selector-section'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
-import { arrayEquals } from '../../core/shared/utils'
 import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import {
-  Icn,
-  useColorTheme,
-  InspectorSectionHeader,
-  UtopiaTheme,
-  FlexRow,
-  Button,
-} from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
@@ -85,7 +75,11 @@ import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
-import { LowPriorityStoreProvider } from '../editor/store/low-priority-store'
+import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { FlexSection } from './flex-section'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { styleStringInArray } from '../../utils/common-constants'
 
 export interface ElementPathElement {
   name?: string
@@ -127,7 +121,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
 const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
-  const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
+  const dispatch = useDispatch()
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
       dispatch([alignSelectedViews(alignment)], 'everyone')
@@ -245,64 +239,70 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     setSelectedTarget(targets[0].path)
   }, [selectedViews, targets, setSelectedTarget])
 
+  const dispatch = useDispatch()
   const {
-    dispatch,
     focusedPanel,
     anyComponents,
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
-  } = useEditorState((store) => {
-    const rootMetadata = store.editor.jsxMetadata
-    let anyComponentsInner: boolean = false
-    let anyUnknownElementsInner: boolean = false
-    let hasNonDefaultPositionAttributesInner: boolean = false
-    let aspectRatioLockedInner: boolean = false
+  } = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      const rootMetadata = store.editor.jsxMetadata
+      let anyComponentsInner: boolean = false
+      let anyUnknownElementsInner: boolean = false
+      let hasNonDefaultPositionAttributesInner: boolean = false
+      let aspectRatioLockedInner: boolean = false
 
-    Utils.fastForEach(selectedViews, (view) => {
-      const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
-        view,
-        store.editor,
-        store.derived,
-      )
-      anyComponentsInner =
-        anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
-      const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
-      const elementProps = store.editor.allElementProps[EP.toString(view)]
-      if (possibleElement != null && elementProps != null) {
-        // Slightly coarse in definition, but element metadata is in a weird little world of
-        // its own compared to the props.
-        aspectRatioLockedInner =
-          aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement, elementProps)
+      Utils.fastForEach(selectedViews, (view) => {
+        const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
+          view,
+          store.editor,
+          store.derived,
+        )
+        anyComponentsInner =
+          anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
+        const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
+        const elementProps = store.editor.allElementProps[EP.toString(view)]
+        if (possibleElement != null && elementProps != null) {
+          // Slightly coarse in definition, but element metadata is in a weird little world of
+          // its own compared to the props.
+          aspectRatioLockedInner =
+            aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement, elementProps)
 
-        const elementOriginType = MetadataUtils.getElementOriginType(rootComponents, view)
-        if (elementOriginType === 'unknown-element') {
-          anyUnknownElementsInner = true
-        }
-        if (isRight(possibleElement.element)) {
-          const elem = possibleElement.element.value
-          if (isJSXElement(elem)) {
-            if (!hasNonDefaultPositionAttributesInner) {
-              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
-                const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
-                if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-                  hasNonDefaultPositionAttributesInner = true
+          const metadataNotFound =
+            MetadataUtils.findElementByElementPath(rootMetadata, view) == null
+          if (metadataNotFound) {
+            anyUnknownElementsInner = true
+          }
+          if (isRight(possibleElement.element)) {
+            const elem = possibleElement.element.value
+            if (isJSXElement(elem)) {
+              if (!hasNonDefaultPositionAttributesInner) {
+                for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
+                  styleStringInArray,
+                )) {
+                  const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
+                  if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
+                    hasNonDefaultPositionAttributesInner = true
+                  }
                 }
               }
             }
           }
         }
+      })
+      return {
+        focusedPanel: store.editor.focusedPanel,
+        anyComponents: anyComponentsInner,
+        anyUnknownElements: anyUnknownElementsInner,
+        hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
+        aspectRatioLocked: aspectRatioLockedInner,
       }
-    })
-    return {
-      dispatch: store.dispatch,
-      focusedPanel: store.editor.focusedPanel,
-      anyComponents: anyComponentsInner,
-      anyUnknownElements: anyUnknownElementsInner,
-      hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
-      aspectRatioLocked: aspectRatioLockedInner,
-    }
-  }, 'Inspector')
+    },
+    'Inspector',
+  )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -350,12 +350,27 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <StyleSection />
+          {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
+          {isFeatureEnabled('Nine block control') ? (
+            <>
+              <StyleSection />
+              <LayoutSection
+                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                aspectRatioLocked={aspectRatioLocked}
+                toggleAspectRatioLock={toggleAspectRatioLock}
+              />
+            </>
+          ) : (
+            <>
+              <LayoutSection
+                hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                aspectRatioLocked={aspectRatioLocked}
+                toggleAspectRatioLock={toggleAspectRatioLock}
+              />
+              <StyleSection />
+            </>
+          )}
+
           <WarningSubsection />
           <ImgSection />
           <EventHandlersSection />
@@ -380,7 +395,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 })
 Inspector.displayName = 'Inspector'
 
-const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
+const DefaultStyleTargets: Array<CSSTarget> = [
+  cssTarget(styleStringInArray, 0),
+  cssTarget(['css'], 0),
+]
 
 export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildren<unknown>> =
   React.memo(() => {
@@ -394,6 +412,7 @@ export const InspectorEntryPoint: React.FunctionComponent<React.PropsWithChildre
 const MultiselectInspector: React.FunctionComponent<React.PropsWithChildren<unknown>> = React.memo(
   () => {
     const selectedViews = useEditorState(
+      Substores.selectedViews,
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
@@ -427,7 +446,7 @@ function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   defaults.reverse().forEach((defaultTarget) => {
     const styleObject = getSimpleAttributeAtPath(
       right(localJSXElement.props),
-      PP.create(defaultTarget.path),
+      PP.createFromArray(defaultTarget.path),
     )
     if (isRight(styleObject) && styleObject.value instanceof Object) {
       recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
@@ -446,14 +465,18 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   }>
 > = React.memo((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, isUIJSFile, allElementProps } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadata: store.editor.jsxMetadata,
-      isUIJSFile: isOpenFileUiJs(store.editor),
-      allElementProps: store.editor.allElementProps,
-    }
-  }, 'SingleInspectorEntryPoint')
+  const dispatch = useDispatch()
+  const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return {
+        jsxMetadata: store.editor.jsxMetadata,
+        isUIJSFile: isOpenFileUiJs(store.editor),
+        allElementProps: store.editor.allElementProps,
+      }
+    },
+    'SingleInspectorEntryPoint',
+  )
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
@@ -525,7 +548,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 
   const onStyleSelectorDelete = React.useCallback(
     (deleteTarget: CSSTarget) => {
-      const path = PP.create(deleteTarget.path)
+      const path = PP.createFromArray(deleteTarget.path)
       const actions = Utils.flatMapArray(
         (elem) => [EditorActions.unsetProperty(elem, path)],
         refElementsToTargetForUpdates.current,
@@ -538,7 +561,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   const onStyleSelectorInsert = React.useCallback(
     (parent: CSSTarget | undefined, label: string) => {
       const newPath = [...(parent?.path ?? []), label]
-      const newPropertyPath = PP.create(newPath)
+      const newPropertyPath = PP.createFromArray(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
         EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
       )
@@ -583,16 +606,24 @@ export const InspectorContextProvider = React.memo<{
   children: React.ReactNode
 }>((props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, allElementProps } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadata: store.editor.jsxMetadata,
-      allElementProps: store.editor.allElementProps,
-    }
-  }, 'InspectorContextProvider')
+  const dispatch = useDispatch()
+  const { jsxMetadata, allElementProps } = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return {
+        jsxMetadata: store.editor.jsxMetadata,
+        allElementProps: store.editor.allElementProps,
+      }
+    },
+    'InspectorContextProvider',
+  )
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
-    useEditorState(rootComponentsSelector, 'InspectorContextProvider rootComponents'),
+    useEditorState(
+      Substores.fullStore,
+      rootComponentsSelector,
+      'InspectorContextProvider rootComponents',
+    ),
   )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []

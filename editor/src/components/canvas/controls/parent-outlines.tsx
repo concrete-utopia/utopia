@@ -4,9 +4,10 @@ import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { ColorTheme, useColorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
+import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isInsertMode } from '../../editor/editor-modes'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
@@ -18,30 +19,35 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
   ({ targets }: ImmediateParentOutlinesProps) => {
     const colorTheme = useColorTheme()
     const scale = useEditorState(
+      Substores.canvas,
       (store) => store.editor.canvas.scale,
       'ImmediateParentOutlines canvas scale',
     )
-    const parentFrame = useEditorState((store) => {
-      const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
-      if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
-        return MetadataUtils.getFrameInCanvasCoords(
-          parentHighlightPaths[0],
-          store.editor.jsxMetadata,
-        )
-      }
-
-      if (!isInsertMode(store.editor.mode)) {
-        const targetParents = uniqBy(
-          stripNulls(targets.map((view) => EP.parentPath(view))),
-          EP.pathsEqual,
-        )
-        if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
-          return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
-            ?.specialSizeMeasurements.immediateParentBounds
+    const parentFrame = useEditorState(
+      Substores.fullStore,
+      (store) => {
+        const parentHighlightPaths = store.editor.canvas.controls.parentHighlightPaths
+        if (parentHighlightPaths != null && parentHighlightPaths.length === 1) {
+          return MetadataUtils.getFrameInCanvasCoords(
+            parentHighlightPaths[0],
+            store.editor.jsxMetadata,
+          )
         }
-      }
-      return null
-    }, 'ImmediateParentOutlines frame')
+
+        if (!isInsertMode(store.editor.mode)) {
+          const targetParents = uniqBy(
+            stripNulls(targets.map((view) => EP.parentPath(view))),
+            EP.pathsEqual,
+          )
+          if (targetParents.length === 1 && !EP.isStoryboardPath(targetParents[0])) {
+            return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targets[0])
+              ?.specialSizeMeasurements.immediateParentBounds
+          }
+        }
+        return null
+      },
+      'ImmediateParentOutlines frame',
+    )
 
     return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
   },
@@ -54,23 +60,28 @@ export const ParentOutlines = controlForStrategyMemoized(
   ({ targetParent }: ParentOutlinesProps) => {
     const colorTheme = useColorTheme()
     const scale = useEditorState(
+      Substores.canvas,
       (store) => store.editor.canvas.scale,
       'ParentOutlines canvas scale',
     )
 
-    const parentFrame = useEditorState((store) => {
-      if (!EP.isStoryboardPath(targetParent)) {
-        return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
-      } else {
-        return null
-      }
-    }, 'ImmediateParentOutlines frame')
+    const parentFrame = useEditorState(
+      Substores.metadata,
+      (store) => {
+        if (!EP.isStoryboardPath(targetParent)) {
+          return MetadataUtils.getFrameInCanvasCoords(targetParent, store.editor.jsxMetadata)
+        } else {
+          return null
+        }
+      },
+      'ImmediateParentOutlines frame',
+    )
 
     return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
   },
 )
 
-function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ColorTheme) {
+function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ThemeObject) {
   return (
     <CanvasOffsetWrapper key={`parent-outlines`}>
       <div

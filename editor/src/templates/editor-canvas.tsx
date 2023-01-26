@@ -1,5 +1,6 @@
 import update from 'immutability-helper'
 import React from 'react'
+import { interactionInProgress } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
@@ -99,6 +100,8 @@ import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
+import { EditorCommon } from '../components/editor/editor-component-common'
+import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -146,6 +149,8 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
       return CSSCursor.Insert
     case 'live':
       return CSSCursor.BrowserAuto
+    case 'textEdit':
+      return CSSCursor.Select
     default:
       const _exhaustiveCheck: never = mode
       throw `Unable to get default cursor for unsupported mode ${(mode as any).type}`
@@ -198,10 +203,15 @@ function handleCanvasEvent(
       if (model.editorState.canvas.interactionSession == null) {
         optionalDragStateAction = [
           CanvasActions.createInteractionSession(
-            createInteractionViaMouse(event.canvasPositionRounded, event.modifiers, {
-              type: 'RESIZE_HANDLE',
-              edgePosition: { x: 1, y: 1 },
-            }),
+            createInteractionViaMouse(
+              event.canvasPositionRounded,
+              event.modifiers,
+              {
+                type: 'RESIZE_HANDLE',
+                edgePosition: { x: 1, y: 1 },
+              },
+              'zero-drag-not-permitted',
+            ),
           ),
         ]
       } else if (
@@ -476,12 +486,14 @@ export function runLocalCanvasAction(
       }
     case 'CLEAR_INTERACTION_SESSION':
       clearInterval(interactionSessionTimerHandle)
+      const interactionWasInProgress = interactionInProgress(model.canvas.interactionSession)
       return {
         ...model,
         canvas: {
           ...model.canvas,
           interactionSession: null, // TODO this should be only cleared in dispatch-strategies, and not here
-          domWalkerInvalidateCount: model.canvas.domWalkerInvalidateCount + 1,
+          domWalkerInvalidateCount:
+            model.canvas.domWalkerInvalidateCount + (interactionWasInProgress ? 1 : 0),
           controls: editorStateCanvasControls(
             [],
             [],
@@ -490,6 +502,7 @@ export function runLocalCanvasAction(
             null,
             [],
             emptyDragToMoveIndicatorFlags,
+            null,
           ),
         },
       }
@@ -746,6 +759,21 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     event.preventDefault()
   }
 
+  updateCanvasOffsetViaScroll = (event: React.UIEvent<HTMLElement, UIEvent>): void => {
+    if (this.canvasWrapperRef != null) {
+      const scrollDelta = {
+        x: this.canvasWrapperRef.scrollLeft / this.props.model.scale,
+        y: this.canvasWrapperRef.scrollTop / this.props.model.scale,
+      } as CanvasVector
+
+      // Reset wrapper scroll first
+      this.canvasWrapperRef.scrollTo({ left: 0, top: 0 })
+
+      // Update canvasOffset
+      this.props.dispatch([CanvasActions.scrollCanvas(scrollDelta)], 'canvas')
+    }
+  }
+
   componentDidMount() {
     if (this.canvasWrapperRef != null) {
       // Due to the introduction of this https://www.chromestatus.com/features/6662647093133312 combined with
@@ -781,7 +809,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     return this.getPositionFromCoordinates(event.clientX, event.clientY)
   }
 
-  handleEvent(event: CanvasMouseEvent): void {
+  handleEvent(event: CanvasMouseEvent): Array<EditorAction> {
     if (
       event.event === 'MOVE' &&
       !this.props.editor.canvas.selectionControlsVisible &&
@@ -797,7 +825,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           isTargetInPopup(event.nativeEvent.srcElement as any, this.props.editor.openPopupId))) ||
       this.props.editor.modal !== null
     ) {
-      return // This is a hack implementing a behavior when context menu blocks the UI
+      return [] // This is a hack implementing a behavior when context menu blocks the UI
     }
 
     let canvasBounds: WindowRectangle | null
@@ -827,13 +855,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const realActions = actions.filter((action) => action.action !== 'TRANSIENT_ACTIONS')
     const transientActions = actions.filter((action) => action.action === 'TRANSIENT_ACTIONS')
 
-    if (realActions.length > 0) {
-      this.props.dispatch(realActions, 'canvas')
-    }
-
-    if (transientActions.length > 0) {
-      this.props.dispatch(transientActions, 'canvas')
-    }
+    return [...realActions, ...transientActions]
   }
 
   getModeSpecificCursor(): CSSCursor | null {
@@ -909,6 +931,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               position.canvasPositionRounded,
               emptyModifiers,
               boundingArea(),
+              'zero-drag-not-permitted',
             ),
           )
 
@@ -1003,7 +1026,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             event,
             () => {
               this.handleMouseMove(event.nativeEvent)
-              this.handleMouseUp(event.nativeEvent)
+              this.props.dispatch(this.handleMouseUp(event.nativeEvent), 'everyone')
             },
             {
               saveAssets: saveAssets,
@@ -1045,20 +1068,33 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             unhandledWheelDeltaX = 0
             unhandledWheelDeltaY = 0
             event.stopPropagation()
-            this.handleEvent({
-              ...canvasPositions,
-              event: 'WHEEL',
-              modifiers: Modifier.modifiersForEvent(event),
-              delta: delta,
-              cursor: null,
-              nativeEvent: event as any,
-            })
+            this.props.dispatch(
+              this.handleEvent({
+                ...canvasPositions,
+                event: 'WHEEL',
+                modifiers: Modifier.modifiersForEvent(event),
+                delta: delta,
+                cursor: null,
+                nativeEvent: event as any,
+              }),
+              'canvas',
+            )
           }
+        },
+        onScroll: (event) => {
+          this.updateCanvasOffsetViaScroll(event)
         },
       },
       nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
+      React.createElement(CursorComponent, {}),
+      <EditorCommon
+        mouseDown={this.handleMouseDown}
+        mouseUp={this.handleMouseUp}
+        keyDown={this.handleKeyDown}
+        keyUp={this.handleKeyUp}
+      />,
     )
   }
 
@@ -1095,11 +1131,15 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     })
   }
 
-  applyDragStateKeyboardEvent(event: KeyboardEvent, key: KeyCharacter, pressed: boolean): void {
+  applyDragStateKeyboardEvent(
+    event: KeyboardEvent,
+    key: KeyCharacter,
+    pressed: boolean,
+  ): Array<EditorAction> {
     const dragState = this.props.editor.canvas.dragState
     const dispatch = this.props.dispatch
-    function fireDragStateUpdate(updateFn: DragState): void {
-      dispatch([CanvasActions.createDragState(updateFn)], 'canvas')
+    function getDragStateUpdate(updateFn: DragState): Array<EditorAction> {
+      return [CanvasActions.createDragState(updateFn)]
     }
     // TODO insert update functions for canvas interaction session
     if (dragState != null) {
@@ -1107,7 +1147,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         case 'MOVE_DRAG_STATE':
           switch (key) {
             case 'shift':
-              fireDragStateUpdate(
+              return getDragStateUpdate(
                 updateMoveDragState(
                   dragState,
                   undefined,
@@ -1120,9 +1160,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   undefined,
                 ),
               )
-              break
             case 'cmd':
-              fireDragStateUpdate(
+              return getDragStateUpdate(
                 updateMoveDragState(
                   dragState,
                   undefined,
@@ -1135,13 +1174,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   undefined,
                 ),
               )
-              break
             case 'alt':
               let duplicateNewUIDs: Array<DuplicateNewUID> | null = null
               if (pressed) {
                 duplicateNewUIDs = createDuplicationNewUIDsFromEditorState(this.props.editor)
               }
-              fireDragStateUpdate(
+              return getDragStateUpdate(
                 updateMoveDragState(
                   dragState,
                   undefined,
@@ -1154,7 +1192,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                   undefined,
                 ),
               )
-              break
             default:
               break
           }
@@ -1188,7 +1225,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               case 'shift':
               case 'alt':
               case 'cmd':
-                fireDragStateUpdate(
+                return getDragStateUpdate(
                   updateResizeDragState(
                     dragState,
                     dragStart,
@@ -1199,7 +1236,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                     keepAspectRatio,
                   ),
                 )
-                break
               default:
                 break
             }
@@ -1214,71 +1250,95 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           break
       }
     }
+    return []
   }
 
   handleKeyDown = (event: KeyboardEvent) => {
-    if (!event.repeat) {
-      this.applyDragStateKeyboardEvent(event, Keyboard.keyCharacterForCode(event.keyCode), true)
+    if (event.repeat) {
+      return []
+    } else {
+      return this.applyDragStateKeyboardEvent(
+        event,
+        Keyboard.keyCharacterForCode(event.keyCode),
+        true,
+      )
     }
   }
   handleKeyUp = (event: KeyboardEvent) => {
-    if (!event.repeat) {
-      this.applyDragStateKeyboardEvent(event, Keyboard.keyCharacterForCode(event.keyCode), false)
+    if (event.repeat) {
+      return []
+    } else {
+      return this.applyDragStateKeyboardEvent(
+        event,
+        Keyboard.keyCharacterForCode(event.keyCode),
+        false,
+      )
     }
   }
 
   handleMouseDown = (event: MouseEvent) => {
     // TODO RJB 2018 Create new events for right mouse button events
+    let actions: Array<EditorAction> = []
     if (this.canvasSelected() && this.isInsideCanvas(event)) {
       const canvasPositions = this.getPosition(event)
 
       if (this.props.model.focusedPanel !== 'canvas') {
-        this.props.dispatch([setFocus('canvas')], 'everyone')
+        actions.push(setFocus('canvas'))
       }
 
       if (event.button === 0) {
         if (!this.props.model.keysPressed['z'] && !this.props.model.keysPressed['space']) {
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOUSE_DOWN',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null,
-            nativeEvent: event,
-          })
+          actions.push(
+            ...this.handleEvent({
+              ...canvasPositions,
+              event: 'MOUSE_DOWN',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+            }),
+          )
         }
       }
     }
+    return actions
   }
 
   handleMouseUp = (event: MouseEvent) => {
+    let actions: Array<EditorAction> = []
     if (this.canvasSelected()) {
       if (document.pointerLockElement != null) {
         document.exitPointerLock()
       }
       const canvasPositions = this.getPosition(event)
       if (isDragging(this.props.editor)) {
-        this.handleEvent({
+        actions.push(
+          ...this.handleEvent({
+            ...canvasPositions,
+            event: 'DRAG_END',
+            modifiers: Modifier.modifiersForEvent(event),
+            dragState: this.props.model.dragState,
+            cursor: null,
+            nativeEvent: event,
+          }),
+        )
+      }
+
+      actions.push(
+        ...this.handleEvent({
           ...canvasPositions,
-          event: 'DRAG_END',
+          event: 'MOUSE_UP',
           modifiers: Modifier.modifiersForEvent(event),
           dragState: this.props.model.dragState,
           cursor: null,
           nativeEvent: event,
-        })
-      }
-
-      this.handleEvent({
-        ...canvasPositions,
-        event: 'MOUSE_UP',
-        modifiers: Modifier.modifiersForEvent(event),
-        dragState: this.props.model.dragState,
-        cursor: null,
-        nativeEvent: event,
-      })
+        }),
+      )
     }
+    return actions
   }
 
   handleMouseMove = (event: MouseEvent) => {
+    let actions: Array<EditorAction> = []
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
       if (
@@ -1288,14 +1348,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         ) ||
         event.buttons === 4
       ) {
-        this.handleEvent({
-          ...canvasPositions,
-          event: 'MOVE',
-          modifiers: Modifier.modifiersForEvent(event),
-          cursor: null,
-          nativeEvent: event,
-          interactionSession: null,
-        })
+        actions.push(
+          ...this.handleEvent({
+            ...canvasPositions,
+            event: 'MOVE',
+            modifiers: Modifier.modifiersForEvent(event),
+            cursor: null,
+            nativeEvent: event,
+            interactionSession: null,
+          }),
+        )
       } else {
         const dragState = this.props.model.dragState
         const resizeOptions = this.props.editor.canvas.resizeOptions
@@ -1310,22 +1372,23 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.props.editor.canvas.interactionSession != null &&
           this.props.editor.canvas.interactionSession.interactionData.type === 'HOVER'
         ) {
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOVE',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null,
-            nativeEvent: event,
-            interactionSession: updateInteractionViaMouse(
-              this.props.editor.canvas.interactionSession,
-              'HOVER',
-              canvasPositions.canvasPositionRounded,
-              Modifier.modifiersForEvent(event),
-              null,
-            ),
-          })
-        }
-        if (
+          actions.push(
+            ...this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: updateInteractionViaMouse(
+                this.props.editor.canvas.interactionSession,
+                'HOVER',
+                canvasPositions.canvasPositionRounded,
+                Modifier.modifiersForEvent(event),
+                null,
+              ),
+            }),
+          )
+        } else if (
           this.props.editor.canvas.interactionSession != null &&
           this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
         ) {
@@ -1336,44 +1399,50 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           )
 
           if (document.pointerLockElement != null) {
-            this.handleEvent({
-              ...canvasPositions,
-              event: 'MOVE',
-              modifiers: Modifier.modifiersForEvent(event),
-              cursor: null,
-              nativeEvent: event,
-              interactionSession: updateInteractionViaDragDelta(
-                this.props.editor.canvas.interactionSession,
-                Modifier.modifiersForEvent(event),
-                null,
-                canvasPoint({ x: event.movementX, y: event.movementY }),
-              ),
-            })
+            actions.push(
+              ...this.handleEvent({
+                ...canvasPositions,
+                event: 'MOVE',
+                modifiers: Modifier.modifiersForEvent(event),
+                cursor: null,
+                nativeEvent: event,
+                interactionSession: updateInteractionViaDragDelta(
+                  this.props.editor.canvas.interactionSession,
+                  Modifier.modifiersForEvent(event),
+                  null,
+                  canvasPoint({ x: event.movementX, y: event.movementY }),
+                ),
+              }),
+            )
           } else {
-            this.handleEvent({
-              ...canvasPositions,
-              event: 'MOVE',
-              modifiers: Modifier.modifiersForEvent(event),
-              cursor: null,
-              nativeEvent: event,
-              interactionSession: updateInteractionViaMouse(
-                this.props.editor.canvas.interactionSession,
-                'DRAG',
-                newDrag,
-                Modifier.modifiersForEvent(event),
-                null,
-              ),
-            })
+            actions.push(
+              ...this.handleEvent({
+                ...canvasPositions,
+                event: 'MOVE',
+                modifiers: Modifier.modifiersForEvent(event),
+                cursor: null,
+                nativeEvent: event,
+                interactionSession: updateInteractionViaMouse(
+                  this.props.editor.canvas.interactionSession,
+                  'DRAG',
+                  newDrag,
+                  Modifier.modifiersForEvent(event),
+                  null,
+                ),
+              }),
+            )
           }
         } else if (dragState == null || !dragStarted) {
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'MOVE',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null,
-            nativeEvent: event,
-            interactionSession: null,
-          })
+          actions.push(
+            ...this.handleEvent({
+              ...canvasPositions,
+              event: 'MOVE',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null,
+              nativeEvent: event,
+              interactionSession: null,
+            }),
+          )
         } else {
           const newDrag = roundPointForScale(
             Utils.offsetPoint(
@@ -1442,54 +1511,66 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               const _exhaustiveCheck: never = dragState
               break
           }
-          this.handleEvent({
-            ...canvasPositions,
-            event: 'DRAG',
-            modifiers: Modifier.modifiersForEvent(event),
-            cursor: null, // FIXME: newDragState.cursor,
-            dragState: newDragState,
-            nativeEvent: event,
-          })
+          actions.push(
+            ...this.handleEvent({
+              ...canvasPositions,
+              event: 'DRAG',
+              modifiers: Modifier.modifiersForEvent(event),
+              cursor: null, // FIXME: newDragState.cursor,
+              dragState: newDragState,
+              nativeEvent: event,
+            }),
+          )
         }
       }
     }
+    this.props.dispatch(actions, 'everyone')
   }
   handleMouseLeave = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      this.handleEvent({
-        ...canvasPositions,
-        event: 'MOUSE_LEFT_WINDOW',
-        modifiers: Modifier.modifiersForEvent(event),
-        cursor: null,
-        nativeEvent: event,
-      })
+      this.props.dispatch(
+        this.handleEvent({
+          ...canvasPositions,
+          event: 'MOUSE_LEFT_WINDOW',
+          modifiers: Modifier.modifiersForEvent(event),
+          cursor: null,
+          nativeEvent: event,
+        }),
+        'everyone',
+      )
     }
   }
   handleClick = (event: MouseEvent) => {
     if (event.button === 0 && this.canvasSelected() && this.isInsideCanvas(event)) {
       const canvasPositions = this.getPosition(event)
 
-      this.handleEvent({
-        ...canvasPositions,
-        event: 'CLICK',
-        modifiers: Modifier.modifiersForEvent(event),
-        cursor: null,
-        nativeEvent: event,
-      })
+      this.props.dispatch(
+        this.handleEvent({
+          ...canvasPositions,
+          event: 'CLICK',
+          modifiers: Modifier.modifiersForEvent(event),
+          cursor: null,
+          nativeEvent: event,
+        }),
+        'everyone',
+      )
     }
   }
   handleDoubleClick = (event: MouseEvent) => {
     if (event.button === 0 && this.canvasSelected() && this.isInsideCanvas(event)) {
       const canvasPositions = this.getPosition(event)
 
-      this.handleEvent({
-        ...canvasPositions,
-        event: 'DOUBLE_CLICK',
-        modifiers: Modifier.modifiersForEvent(event),
-        cursor: null,
-        nativeEvent: event,
-      })
+      this.props.dispatch(
+        this.handleEvent({
+          ...canvasPositions,
+          event: 'DOUBLE_CLICK',
+          modifiers: Modifier.modifiersForEvent(event),
+          cursor: null,
+          nativeEvent: event,
+        }),
+        'everyone',
+      )
     }
   }
   handlePaste = (event: ClipboardEvent) => {
@@ -1535,10 +1616,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   setupWindowListeners() {
-    window.addEventListener('keydown', this.handleKeyDown)
-    window.addEventListener('keyup', this.handleKeyUp)
-    window.addEventListener('mousedown', this.handleMouseDown)
-    window.addEventListener('mouseup', this.handleMouseUp)
     window.addEventListener('mousemove', this.handleMouseMove, { capture: true }) // we use this event in the capture phase because size-box.ts calls stopPropagation() on mouseMove
     window.addEventListener('mouseleave', this.handleMouseLeave)
     window.addEventListener('click', this.handleClick)
@@ -1547,10 +1624,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   removeEventListeners() {
-    window.removeEventListener('keydown', this.handleKeyDown)
-    window.removeEventListener('keyup', this.handleKeyUp)
-    window.removeEventListener('mousedown', this.handleMouseDown)
-    window.removeEventListener('mouseup', this.handleMouseUp)
     window.removeEventListener('mousemove', this.handleMouseMove, { capture: true })
     window.removeEventListener('mouseleave', this.handleMouseLeave)
     window.removeEventListener('click', this.handleClick)

@@ -54,11 +54,12 @@ import {
   ProjectGithubSettings,
   RightMenuTab,
   StoredEditorState,
-  Theme,
   GithubOperation,
   FileChecksums,
   GithubData,
   UserConfiguration,
+  ThemeSetting,
+  ColorSwatch,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -72,6 +73,7 @@ import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
+import { CanvasCommand } from '../canvas/commands/commands'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -179,6 +181,7 @@ export type UpdateEditorMode = {
 export type SwitchEditorMode = {
   action: 'SWITCH_EDITOR_MODE'
   mode: Mode
+  unlessMode?: 'select' | 'live' | 'insert' | 'textEdit'
 }
 
 export interface ToggleCanvasIsLive {
@@ -343,6 +346,14 @@ export interface PasteJSXElements {
 
 export interface CopySelectionToClipboard {
   action: 'COPY_SELECTION_TO_CLIPBOARD'
+}
+
+export interface CopyProperties {
+  action: 'COPY_PROPERTIES'
+}
+export interface PasteProperties {
+  action: 'PASTE_PROPERTIES'
+  type: 'style' | 'layout'
 }
 
 export interface SetProjectID {
@@ -658,9 +669,18 @@ export interface WorkerParsedUpdate {
   lastRevisedTime: number
 }
 
+export interface WorkerCodeAndParsedUpdate {
+  type: 'WORKER_CODE_AND_PARSED_UPDATE'
+  filePath: string
+  code: string
+  highlightBounds: HighlightBoundsForUids
+  parsed: ParsedTextFile
+  lastRevisedTime: number
+}
+
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
 export interface UpdateFromCodeEditor {
@@ -961,7 +981,7 @@ export interface SetFilebrowserDropTarget {
 
 export interface SetCurrentTheme {
   action: 'SET_CURRENT_THEME'
-  theme: Theme
+  theme: ThemeSetting
 }
 
 export interface FocusClassNameInput {
@@ -1069,6 +1089,16 @@ export interface SetImageDragSessionState {
   imageDragSessionState: ImageDragSessionState
 }
 
+export interface ApplyCommandsAction {
+  action: 'APPLY_COMMANDS'
+  commands: CanvasCommand[]
+}
+
+export interface UpdateColorSwatches {
+  action: 'UPDATE_COLOR_SWATCHES'
+  colorSwatches: Array<ColorSwatch>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1106,6 +1136,8 @@ export type EditorAction =
   | OpenPopup
   | PasteJSXElements
   | CopySelectionToClipboard
+  | CopyProperties
+  | PasteProperties
   | SetProjectID
   | SetForkedFromProjectID
   | OpenTextEditor
@@ -1242,6 +1274,8 @@ export type EditorAction =
   | UpdateBranchContents
   | SetRefreshingDependencies
   | SetAssetChecksum
+  | ApplyCommandsAction
+  | UpdateColorSwatches
 
 export type DispatchPriority =
   | 'everyone'

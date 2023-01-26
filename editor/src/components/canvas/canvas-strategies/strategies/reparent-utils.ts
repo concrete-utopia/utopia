@@ -28,8 +28,20 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { CSSCursor } from '../../canvas-types'
 import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-paths-command'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { getUtopiaID } from '../../../../core/model/element-template-utils'
+import {
+  generateUidWithExistingComponents,
+  getUtopiaID,
+} from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
+import {
+  CustomStrategyState,
+  InteractionCanvasState,
+  InteractionLifecycle,
+} from '../canvas-strategy-types'
+import { duplicateElement } from '../../commands/duplicate-element-command'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -161,4 +173,46 @@ export function cursorForMissingReparentedItems(
   }
 
   return null
+}
+
+export function placeholderCloneCommands(
+  canvasState: InteractionCanvasState,
+  customStrategyState: CustomStrategyState,
+  filteredSelectedElements: Array<ElementPath>,
+  newParent: ElementPath,
+): { commands: Array<CanvasCommand>; duplicatedElementNewUids: { [elementPath: string]: string } } {
+  let duplicatedElementNewUids: { [elementPath: string]: string } = {
+    ...customStrategyState.duplicatedElementNewUids,
+  }
+  const commands = filteredSelectedElements.flatMap((elementPath) => {
+    const element = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      elementPath,
+    )
+    // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
+    // change this if you don't need keep the starting layout
+    const hasCommonAncestor =
+      EP.getCommonParent([newParent, EP.parentPath(elementPath)]) != null &&
+      !MetadataUtils.isPositionAbsolute(element)
+    if (hasCommonAncestor) {
+      const selectedElementString = EP.toString(elementPath)
+      const newUid =
+        customStrategyState.duplicatedElementNewUids[selectedElementString] ??
+        generateUidWithExistingComponents(canvasState.projectContents)
+      duplicatedElementNewUids[selectedElementString] = newUid
+
+      const newPath = EP.appendToPath(EP.parentPath(elementPath), newUid)
+
+      return [
+        duplicateElement('mid-interaction', elementPath, newUid),
+        wildcardPatch('mid-interaction', {
+          hiddenInstances: { $push: [newPath] },
+        }),
+        hideInNavigatorCommand([newPath]),
+      ]
+    } else {
+      return []
+    }
+  })
+  return { commands: commands, duplicatedElementNewUids: duplicatedElementNewUids }
 }

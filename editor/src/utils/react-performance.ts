@@ -217,7 +217,7 @@ function keepDeepReferenceEqualityInner(
   possibleNewValue: any,
   stackSizeInner: number,
   valueStackSoFar: Set<any>,
-) {
+): any {
   if (oldValue === possibleNewValue) return oldValue
 
   if (stackSizeInner > 100) {

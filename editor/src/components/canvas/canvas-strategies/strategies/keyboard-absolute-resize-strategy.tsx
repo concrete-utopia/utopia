@@ -6,7 +6,7 @@ import {
   scaleVector,
   zeroRectangle,
 } from '../../../../core/shared/math-utils'
-import { KeyCharacter } from '../../../../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
@@ -75,7 +75,10 @@ function pressesToVectorAndEdges(
 
 function getFitness(interactionSession: InteractionSession | null): number {
   if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
-    const lastKeyState = getLastKeyPressState(interactionSession.interactionData.keyStates)
+    const lastKeyState = getLastKeyPressState(
+      interactionSession.interactionData.keyStates,
+      Keyboard.keyIsArrow,
+    )
     if (lastKeyState != null) {
       const cmdAndOptionallyShiftModifier =
         lastKeyState.modifiers.cmd && !lastKeyState.modifiers.alt && !lastKeyState.modifiers.ctrl
@@ -146,16 +149,16 @@ export function keyboardAbsoluteResizeStrategy(
                 null,
                 (_, e) => e,
               )
-              const elementParentBounds =
-                MetadataUtils.findElementByElementPath(
-                  canvasState.startingMetadata,
-                  selectedElement,
-                )?.specialSizeMeasurements.immediateParentBounds ?? null
 
-              const elementGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
-                selectedElement,
+              const elementMetadata = MetadataUtils.findElementByElementPath(
                 canvasState.startingMetadata,
+                selectedElement,
               )
+              const elementParentBounds =
+                elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
+              const elementParentFlexDirection =
+                elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
+              const elementGlobalFrame = elementMetadata?.globalFrame ?? null
 
               if (element != null) {
                 const elementResult = createResizeCommands(
@@ -165,6 +168,7 @@ export function keyboardAbsoluteResizeStrategy(
                   movementWithEdge.movement,
                   elementGlobalFrame,
                   elementParentBounds,
+                  elementParentFlexDirection,
                 )
                 commands.push(...elementResult.commands)
                 if (elementResult.intendedBounds != null) {

@@ -16,7 +16,7 @@ describe('updating style properties keeps the original order', () => {
       <div style={{ ...props.style, position: 'absolute' }} data-uid='aaa'>
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: 256,
             height: 202,
             paddingRight: 15,
@@ -32,7 +32,7 @@ describe('updating style properties keeps the original order', () => {
 
     const changePinProps = setProp_UNSAFE(
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      PP.create(['style', 'paddingRight']),
+      PP.create('style', 'paddingRight'),
       jsxAttributeValue(30, emptyComments),
     )
 
@@ -43,7 +43,7 @@ describe('updating style properties keeps the original order', () => {
         `<div style={{ ...props.style, position: 'absolute' }} data-uid='aaa'>
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               width: 256,
               height: 202,
               paddingRight: 30,

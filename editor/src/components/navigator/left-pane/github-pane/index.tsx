@@ -14,6 +14,7 @@ import {
   updateProjectWithBranchContent,
   useGithubFileChanges,
 } from '../../../../core/shared/github'
+import { User } from '../../../../uuiui-deps'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
 import {
@@ -27,6 +28,7 @@ import {
   SectionTitleRow,
   StringInput,
   Title,
+  UtopiaTheme,
 } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import {
@@ -37,7 +39,7 @@ import {
   isGithubLoadingBranch,
   isGithubUpdating,
 } from '../../../editor/store/editor-state'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { Block } from './block'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
@@ -46,6 +48,7 @@ import { cleanupBranchName } from './helpers'
 import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -55,11 +58,12 @@ type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
 const AccountBlock = () => {
   const authenticated = useEditorState(
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
-  const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const triggerAuthentication = React.useCallback(() => {
     void startGithubAuthentication(dispatch)
   }, [dispatch])
@@ -94,10 +98,12 @@ const AccountBlock = () => {
 
 const RepositoryBlock = () => {
   const repo = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.targetRepository,
     'RepositoryBlock repo',
   )
   const githubAuthenticated = useEditorState(
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'RepositoryBlock authenticated',
   )
@@ -145,11 +151,12 @@ const RepositoryBlock = () => {
 }
 
 const BranchBlock = () => {
-  const { currentBranch, dispatch, githubOperations, targetRepository, branchesForRepository } =
+  const dispatch = useDispatch()
+  const { currentBranch, githubOperations, targetRepository, branchesForRepository } =
     useEditorState(
+      Substores.github,
       (store) => ({
         currentBranch: store.editor.githubSettings.branchName,
-        dispatch: store.dispatch,
         githubOperations: store.editor.githubOperations,
         targetRepository: store.editor.githubSettings.targetRepository,
         branchesForRepository: store.editor.githubData.branches,
@@ -157,6 +164,7 @@ const BranchBlock = () => {
       'Github branch',
     )
   const repositoryData = useEditorState(
+    Substores.github,
     (store) =>
       store.editor.githubData.publicRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
@@ -387,6 +395,7 @@ const BranchBlock = () => {
   ])
 
   const githubAuthenticated = useEditorState(
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
@@ -415,6 +424,7 @@ const BranchBlock = () => {
 
 const RemoteChangesBlock = () => {
   const upstreamChanges = useEditorState(
+    Substores.github,
     (store) => store.editor.githubData.upstreamChanges,
     'Upstream changes',
   )
@@ -438,24 +448,33 @@ const RemoteChangesBlock = () => {
     [hasUpstreamChanges, bothModified],
   )
   const githubOperations = useEditorState(
+    Substores.github,
     (store) => store.editor.githubOperations,
     'Github operations',
   )
   const githubLastUpdatedAt = useEditorState(
+    Substores.github,
     (store) => store.editor.githubData.lastUpdatedAt,
     'Github last updated',
   )
   const repo = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
-  const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
-  const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
+  const dispatch = useDispatch()
+  const branch = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubSettings.branchName,
+    'Github branch',
+  )
   const branchLoaded = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.branchLoaded,
     'Github branchLoaded',
   )
   const commit = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.originCommit,
     'Github commit',
   )
@@ -465,6 +484,7 @@ const RemoteChangesBlock = () => {
     }
   }, [dispatch, repo, branch, commit])
   const githubAuthenticated = useEditorState(
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
@@ -533,16 +553,22 @@ const LocalChangesBlock = () => {
     [hasLocalChanges],
   )
   const githubOperations = useEditorState(
+    Substores.github,
     (store) => store.editor.githubOperations,
     'Github operations',
   )
-  const dispatch = useEditorState((store) => store.dispatch, 'dispatch')
+  const dispatch = useDispatch()
   const repo = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.targetRepository,
     'Github repo',
   )
 
-  const branch = useEditorState((store) => store.editor.githubSettings.branchName, 'Github branch')
+  const branch = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubSettings.branchName,
+    'Github branch',
+  )
 
   const [pushToNewBranch, setPushToNewBranch] = React.useState(false)
   React.useEffect(() => {
@@ -569,14 +595,20 @@ const LocalChangesBlock = () => {
     return cleanupBranchName(rawCommitBranchName)
   }, [rawCommitBranchName])
 
+  const originCommit = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubSettings.originCommit,
+    'Github origin commit',
+  )
   const [commitMessage, setCommitMessage] = React.useState<string | null>(null)
-  React.useEffect(() => {
-    setCommitMessage(null)
-  }, [branch])
   const updateCommitMessage = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => setCommitMessage(e.target.value),
     [],
   )
+
+  React.useEffect(() => {
+    setCommitMessage(null)
+  }, [branch, originCommit])
 
   const triggerSaveToGithub = React.useCallback(() => {
     if (repo != null && cleanedCommitBranchName != null && commitMessage != null) {
@@ -588,15 +620,18 @@ const LocalChangesBlock = () => {
   }, [dispatch, repo, commitMessage, cleanedCommitBranchName])
 
   const githubAuthenticated = useEditorState(
+    Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
   const pullRequests = useEditorState(
+    Substores.github,
     (store) => store.editor.githubData.currentBranchPullRequests,
     'Branch PRs',
   )
 
   const branchLoaded = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.branchLoaded,
     'Github branchLoaded',
   )
@@ -686,10 +721,12 @@ const LocalChangesBlock = () => {
 
 const PullRequestButton = () => {
   const branch = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.branchName,
     'PullRequestButton branch',
   )
   const repo = useEditorState(
+    Substores.github,
     (store) =>
       store.editor.githubData.publicRepositories.find(
         (r) => r.fullName === githubRepoFullName(store.editor.githubSettings.targetRepository),
@@ -711,6 +748,7 @@ const PullRequestButton = () => {
   }, [repo, branch])
 
   const branchLoaded = useEditorState(
+    Substores.github,
     (store) => store.editor.githubSettings.branchLoaded,
     'Github branch loaded',
   )
@@ -731,25 +769,30 @@ const PullRequestButton = () => {
 }
 
 const BranchNotLoadedBlock = () => {
-  const { branchName, branches, branchLoaded, dispatch, githubOperations, githubRepo } =
-    useEditorState(
-      (store) => ({
-        branchName: store.editor.githubSettings.branchName,
-        branchLoaded: store.editor.githubSettings.branchLoaded,
-        dispatch: store.dispatch,
-        branches: store.editor.githubData.branches,
-        githubOperations: store.editor.githubOperations,
-        githubRepo: store.editor.githubSettings.targetRepository,
-      }),
-      'BranchNotLoadedBlock data',
-    )
+  const dispatch = useDispatch()
+  const { branchName, branches, branchLoaded, githubOperations, githubRepo } = useEditorState(
+    Substores.github,
+    (store) => ({
+      branchName: store.editor.githubSettings.branchName,
+      branchLoaded: store.editor.githubSettings.branchLoaded,
+      branches: store.editor.githubData.branches,
+      githubOperations: store.editor.githubOperations,
+      githubRepo: store.editor.githubSettings.targetRepository,
+    }),
+    'BranchNotLoadedBlock data',
+  )
 
   const builtInDependencies = useEditorState(
+    Substores.restOfStore,
     (store) => store.builtInDependencies,
     'Built-in dependencies',
   )
 
-  const currentDependencies = useEditorState(projectDependenciesSelector, 'Project dependencies')
+  const currentDependencies = useEditorState(
+    Substores.fullStore,
+    projectDependenciesSelector,
+    'Project dependencies',
+  )
 
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null) {
@@ -924,6 +967,7 @@ const BranchNotLoadedBlock = () => {
 
 const PullRequestBlock = () => {
   const pullRequests = useEditorState(
+    Substores.github,
     (store) => store.editor.githubData.currentBranchPullRequests,
     'Branch PRs',
   )
@@ -945,9 +989,18 @@ const PullRequestBlock = () => {
 
 export const GithubPane = React.memo(() => {
   const githubUser = useEditorState(
+    Substores.github,
     (store) => store.editor.githubData.githubUserDetails,
-    'Github user details',
+    'GithubPane githubUser',
   )
+  const isLoggedIn = useEditorState(
+    Substores.restOfStore,
+    (store) => {
+      return User.isLoggedIn(store.userState.loginState)
+    },
+    'GithubPane isLoggedIn',
+  )
+
   const openGithubProfile = React.useCallback(() => {
     if (githubUser != null) {
       window.open(githubUser.htmlURL, '_blank')
@@ -976,17 +1029,31 @@ export const GithubPane = React.memo(() => {
             </Button>,
           )}
         </SectionTitleRow>
+        {unless(
+          isLoggedIn,
+          <FlexRow
+            style={{
+              paddingLeft: UtopiaTheme.layout.rowHorizontalPadding,
+              paddingRight: UtopiaTheme.layout.rowHorizontalPadding,
+            }}
+          >
+            <p>You need to be signed into Utopia to use the Github integration</p>
+          </FlexRow>,
+        )}
       </Section>
-      <Section style={{ padding: '10px' }}>
-        <AccountBlock />
-        <RepositoryBlock />
-        <BranchBlock />
-        <BranchNotLoadedBlock />
-        <RemoteChangesBlock />
-        <LocalChangesBlock />
-        <PullRequestBlock />
-        <PullRequestButton />
-      </Section>
+      {when(
+        isLoggedIn,
+        <Section style={{ padding: '10px' }}>
+          <AccountBlock />
+          <RepositoryBlock />
+          <BranchBlock />
+          <BranchNotLoadedBlock />
+          <RemoteChangesBlock />
+          <LocalChangesBlock />
+          <PullRequestBlock />
+          <PullRequestButton />
+        </Section>,
+      )}
     </>
   )
 })

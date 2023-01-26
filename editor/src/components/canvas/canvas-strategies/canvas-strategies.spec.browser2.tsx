@@ -139,7 +139,7 @@ describe('Strategy Fitness', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...(props.style || {}) }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
           data-uid='bbb'
         />
       </div>
@@ -187,7 +187,7 @@ describe('Strategy Fitness', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
           data-uid='bbb'
         />
       </div>
@@ -236,12 +236,12 @@ describe('Strategy Fitness', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 200 }}
+          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 200 }}
           data-uid='bbb'
           data-testid='bbb'
         />
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 50 }}
+          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 50 }}
           data-uid='ccc'
         />
       </div>
@@ -267,11 +267,11 @@ describe('Strategy Fitness', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 200 }}
+          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 200 }}
           data-uid='bbb'
         />
         <div
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 50, contain: 'layout' }}
+          style={{ backgroundColor: '#aaaaaa33', width: 100, height: 50, contain: 'layout' }}
           data-uid='ccc'
         />
       </div>
@@ -319,7 +319,7 @@ describe('Strategy Fitness', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 10, left: 10, width: 100, height: 120 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', top: 10, left: 10, width: 100, height: 120 }}
           data-uid='bbb'
         />
       </div>
@@ -367,7 +367,7 @@ describe('Strategy Fitness', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...(props.style || {}), display: 'flex' }} data-uid='aaa'>
         <div
-          style={{ backgroundColor: '#0091FFAA', position: 'absolute', top: 10, left: 10, width: 100, height: 120 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', top: 10, left: 10, width: 100, height: 120 }}
           data-uid='bbb'
         />
       </div>
@@ -729,7 +729,7 @@ export var storyboard = (
         </div>
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             height: 111,
             width: 140,
             position: 'absolute',

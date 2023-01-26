@@ -1,7 +1,7 @@
 import React from 'react'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
-import { useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { fastForEach } from '../../../../core/shared/utils'
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -9,6 +9,7 @@ import { SpecialSizeMeasurementsKeepDeepEquality } from '../../../editor/store/s
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { LayoutSubsection } from './self-layout-subsection/self-layout-subsection'
 import { setInspectorLayoutSectionHovered } from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 interface LayoutSectionProps {
   hasNonDefaultPositionAttributes: boolean
@@ -18,6 +19,7 @@ interface LayoutSectionProps {
 
 export const LayoutSection = React.memo((props: LayoutSectionProps) => {
   const specialSizeMeasurements = useEditorState(
+    Substores.metadata,
     (state) => {
       let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements
       fastForEach(state.editor.selectedViews, (path) => {
@@ -34,7 +36,7 @@ export const LayoutSection = React.memo((props: LayoutSectionProps) => {
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
 
-  const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
+  const dispatch = useDispatch()
 
   return (
     <div

@@ -4,11 +4,8 @@ import { MapLike } from 'typescript'
 import '../../bundled-dependencies/babelHelpers'
 import * as EP from '../../core/shared/element-path'
 import {
-  ArbitraryJSBlock,
-  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isUtopiaJSXComponent,
-  TopLevelElement,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
@@ -26,18 +23,14 @@ import {
   forEachRight,
   isRight,
   left,
-  mapEither,
   right,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
-import { CanvasVector } from '../../core/shared/math-utils'
 import {
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
-  UtopiaRequireFn,
 } from '../custom-code/code-file'
-import { importResultFromImports } from '../editor/npm-dependency/npm-dependency'
 import {
   DerivedState,
   EditorState,
@@ -53,40 +46,31 @@ import {
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
-import { isLiveMode } from '../editor/editor-modes'
+import { isLiveMode, isTextEditMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
-import {
-  ComponentRendererComponent,
-  createComponentRendererComponent,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import {
   MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
-  updateMutableUtopiaCtxRefWithNewProps,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
 import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
-import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
-import {
-  createLookupRender,
-  utopiaCanvasJSXLookup,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
-import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
+import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
+import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
-import { fastForEach, NO_OP } from '../../core/shared/utils'
+import { arrayEquals, fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
@@ -100,12 +84,9 @@ import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
-import { emptySet } from '../../core/shared/set-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 
 applyUIDMonkeyPatch()
-
-const emptyFileBlobs: UIFileBase64Blobs = {}
 
 // The reason this is not in a React Context, and in a crummy global instead is that sometimes the user code
 // will need to bridge across react roots that erase context
@@ -168,6 +149,7 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  editedText: ElementPath | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -219,6 +201,9 @@ export function pickUiJsxCanvasProps(
     if (editedTextElement != null) {
       hiddenInstances = [...hiddenInstances, editedTextElement]
     }
+
+    const editedText = isTextEditMode(editor.mode) ? editor.mode.editedText : null
+
     return {
       uiFilePath: uiFilePath,
       curriedRequireFn: editor.codeResultCache.curriedRequireFn,
@@ -241,6 +226,7 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
+      editedText: editedText,
     }
   }
 }
@@ -311,6 +297,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     shouldIncludeCanvasRootInTheSpy,
     propertyControlsInfo,
     dispatch,
+    editedText,
   } = props
 
   clearListOfEvaluatedFiles()
@@ -350,15 +337,34 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
   useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
-  // Handle the imports changing, this needs to run _before_ any require function
-  // calls as it's modifying the underlying DOM elements. This is somewhat working
-  // like useEffect, except that runs after everything has rendered.
-  const cssImports = useKeepReferenceEqualityIfPossible(
-    normalizedCssImportsFromImports(uiFilePath, imports),
-  )
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
+  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
+  const shouldRerenderRef = React.useRef(false)
+  shouldRerenderRef.current =
+    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
+    elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
+    !arrayEquals(ElementsToRerenderGLOBAL.current, elementsToRerenderRef.current, EP.pathsEqual) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
+  elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
+
+  const maybeOldProjectContents = React.useRef(projectContents)
+  if (shouldRerenderRef.current) {
+    maybeOldProjectContents.current = projectContents
   }
+
+  const maybeOldTransientFileState = React.useRef(transientFilesState)
+  if (shouldRerenderRef.current) {
+    maybeOldTransientFileState.current = transientFilesState
+  }
+
+  const projectContentsForRequireFn = maybeOldProjectContents.current
+  const requireFn = React.useMemo(
+    () => curriedRequireFn(projectContentsForRequireFn),
+    [curriedRequireFn, projectContentsForRequireFn],
+  )
+
+  const resolve = React.useMemo(
+    () => curriedResolveFn(projectContentsForRequireFn),
+    [curriedResolveFn, projectContentsForRequireFn],
+  )
 
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
@@ -366,17 +372,10 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     MapLike<MapLike<ComponentRendererComponent>>
   >({})
 
-  const resolve = React.useMemo(
-    () => curriedResolveFn(projectContents),
-    [curriedResolveFn, projectContents],
-  )
-
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
-  const requireFn = React.useMemo(
-    () => curriedRequireFn(projectContents),
-    [curriedRequireFn, projectContents],
-  )
+
+  const transientFilesStateForCustomRequire = maybeOldTransientFileState.current
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
@@ -394,12 +393,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
         resolvedFromThisOrigin,
         toImport,
-        projectContents,
+        projectContentsForRequireFn,
         customRequire,
         mutableContextRef,
         topLevelComponentRendererComponents,
         uiFilePath,
-        transientFilesState,
+        transientFilesStateForCustomRequire,
         base64FileBlobs,
         hiddenInstances,
         displayNoneInstances,
@@ -407,6 +406,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         updateInvalidatedPaths,
         shouldIncludeCanvasRootInTheSpy,
         filePathResolveResult,
+        editedText,
       )
       return foldEither(
         () => {
@@ -420,12 +420,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         resolvedParseSuccess,
       )
     },
-    // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
     [
       requireFn,
       resolve,
-      projectContents,
-      transientFilesState,
+      projectContentsForRequireFn,
+      transientFilesStateForCustomRequire,
       uiFilePath,
       base64FileBlobs,
       hiddenInstances,
@@ -433,30 +432,54 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       metadataContext,
       updateInvalidatedPaths,
       shouldIncludeCanvasRootInTheSpy,
+      editedText,
     ],
   )
 
-  const { scope, topLevelJsxComponents } = createExecutionScope(
-    uiFilePath,
-    customRequire,
-    mutableContextRef,
-    topLevelComponentRendererComponents,
-    props.projectContents,
-    uiFilePath, // this is the storyboard filepath
-    props.transientFilesState,
+  const { scope, topLevelJsxComponents } = React.useMemo(() => {
+    const executionScope = createExecutionScope(
+      uiFilePath,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      projectContentsForRequireFn,
+      uiFilePath, // this is the storyboard filepath
+      transientFilesStateForCustomRequire,
+      base64FileBlobs,
+      hiddenInstances,
+      displayNoneInstances,
+      metadataContext,
+      updateInvalidatedPaths,
+      props.shouldIncludeCanvasRootInTheSpy,
+      editedText,
+    )
+
+    // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
+    if (shouldRerenderRef.current) {
+      // since rerender-all-elements means we did a full rebuild of the canvas scope,
+      // any CSS file that was not resolved during this rerender can be unimported
+      unimportAllButTheseCSSFiles(resolvedFileNames.current)
+    }
+    return executionScope
+  }, [
     base64FileBlobs,
-    hiddenInstances,
+    customRequire,
     displayNoneInstances,
+    hiddenInstances,
     metadataContext,
-    updateInvalidatedPaths,
+    projectContentsForRequireFn,
     props.shouldIncludeCanvasRootInTheSpy,
-  )
+    editedText,
+    transientFilesStateForCustomRequire,
+    uiFilePath,
+    updateInvalidatedPaths,
+  ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
 
   const executionScope = scope
 
-  useTwind(projectContents, customRequire, '#canvas-container')
+  useTwind(projectContentsForRequireFn, customRequire, '#canvas-container')
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
@@ -470,7 +493,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     props.focusedElementPath,
     topLevelElementsMap,
     executionScope,
-    projectContents,
+    projectContentsForRequireFn,
     uiFilePath,
     transientFilesState,
     resolve,
@@ -487,6 +510,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     displayNoneInstances: displayNoneInstances,
     canvasIsLive: canvasIsLive,
     shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+    editedText: props.editedText,
   })
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({
@@ -551,6 +575,7 @@ function attemptToResolveParsedComponents(
   updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
+  editedText: ElementPath | null,
 ): Either<string, MapLike<any>> {
   return flatMapEither((resolvedFilePath) => {
     resolvedFromThisOrigin.push(toImport)
@@ -581,6 +606,7 @@ function attemptToResolveParsedComponents(
           metadataContext,
           updateInvalidatedPaths,
           shouldIncludeCanvasRootInTheSpy,
+          editedText,
         )
         let filteredScope: MapLike<any> = {
           ...scope.module.exports,

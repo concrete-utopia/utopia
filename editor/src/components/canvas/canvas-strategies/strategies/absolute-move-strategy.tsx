@@ -21,6 +21,7 @@ import { ZeroSizedElementControls } from '../../controls/zero-sized-element-cont
 import {
   DragOutlineControl,
   dragTargetsElementPaths,
+  dragTargetsElementPathsLive,
 } from '../../controls/select-mode/drag-outline-control'
 
 export function absoluteMoveStrategy(
@@ -69,7 +70,7 @@ export function absoluteMoveStrategy(
         }),
         {
           control: DragOutlineControl,
-          props: dragTargetsElementPaths(selectedElements),
+          props: dragTargetsElementPathsLive(selectedElements),
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         },

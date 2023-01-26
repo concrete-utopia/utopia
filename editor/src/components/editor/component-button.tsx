@@ -15,27 +15,40 @@ import {
   UtopiaTheme,
 } from '../../uuiui'
 import { RenderAsRow } from '../canvas/controls/render-as'
-import { useEditorState } from './store/store-hook'
+import { Substores, useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
 import { Interpolation } from '@emotion/serialize'
+import { useDispatch } from './store/dispatch-context'
 
 export const ComponentOrInstanceIndicator = React.memo(() => {
-  const { isComponent, focusedElementPath, selectedViews } = useEditorState((store) => {
-    const target = store.editor.selectedViews[0]
+  const focusedElementPath = useEditorState(
+    Substores.focusedElement,
+    (store) => store.editor.focusedElementPath,
+    'focusedElementPath',
+  )
 
-    const isFocusableComponent =
-      target == null ? false : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata)
+  const { isComponent, selectedViews } = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const target = store.editor.selectedViews[0]
 
-    return {
-      isComponent: isFocusableComponent,
-      focusedElementPath: store.editor.focusedElementPath,
-      selectedViews: store.editor.selectedViews,
-    }
-  }, 'Component-button')
+      const isFocusableComponent =
+        target == null
+          ? false
+          : MetadataUtils.isFocusableComponent(target, store.editor.jsxMetadata)
 
-  const dispatch = useEditorState((state) => state.dispatch, 'ComponentOrInstanceIndicator')
+      return {
+        isComponent: isFocusableComponent,
+
+        selectedViews: store.editor.selectedViews,
+      }
+    },
+    'Component-button',
+  )
+
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const popupEnabled = selectedViews.length > 0
 

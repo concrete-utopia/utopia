@@ -2,7 +2,7 @@ import { act, createEvent, fireEvent } from '@testing-library/react'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
-import { assertNever, NO_OP } from '../../core/shared/utils'
+import { NO_OP } from '../../core/shared/utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -541,6 +541,7 @@ export function pressKey(
   options: {
     modifiers?: Modifiers
     eventOptions?: KeyboardEventInit
+    targetElement?: HTMLElement
   } = {},
 ) {
   const modifiers = options.modifiers ?? emptyModifiers
@@ -553,9 +554,11 @@ export function pressKey(
     ...passedEventOptions,
   }
 
+  const target = options?.targetElement ?? document.body
+
   act(() => {
     fireEvent(
-      document.body,
+      target,
       new KeyboardEvent('keydown', {
         bubbles: true,
         cancelable: true,
@@ -566,7 +569,7 @@ export function pressKey(
     )
 
     fireEvent(
-      document.body,
+      target,
       new KeyboardEvent('keyup', {
         bubbles: true,
         cancelable: true,

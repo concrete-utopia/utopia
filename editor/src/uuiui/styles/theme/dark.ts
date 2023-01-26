@@ -80,10 +80,11 @@ const darkErrorStates = {
 const colorsWithOpacity = {
   bg0Opacity90: createUtopiColor('rgba(45,45,45,0.9)'),
   bg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
+  fg0Opacity10: createUtopiColor('hsla(0,100%,100%,0.1)'),
   fg6Opacity50: createUtopiColor('rgba(111, 119, 139, 0.5)'),
-  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
-  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
-  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
+  canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(255,255,255,0.20)'),
+  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(255,255,255,0.21)'),
+  canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(255,255,255,0.5)'),
   canvasLayoutStroke20: createUtopiColor('rgba(255, 0, 255, 0.2)'),
   brandNeonPink30: createUtopiColor('rgba(255, 0, 255, 0.3)'),
   neutralForeground40: createUtopiColor('rgba(217, 220, 227, 0.4)'),
@@ -171,6 +172,9 @@ export const dark: typeof light = {
   canvasComponentButtonFocused: createUtopiColor('rgba(255,239,230,1)'),
   inspectorControlledBackground: createUtopiColor('rgba(242,248,255,1)'),
 
+  textEditableFill: createUtopiColor('rgba(255,128,255,.07)'),
+  textEditableOutline: createUtopiColor('rgba(255,128,255,1)'),
+
   // interface elements: buttons, segment controls, checkboxes etc
 
   inlineButtonColor: darkBase.primary,
@@ -220,4 +224,7 @@ export const dark: typeof light = {
   codeEditorBreadcrumbs: darkBase.fg5,
   codeEditorTabRowFg: darkBase.fg5,
   codeEditorGrid: createUtopiColor('#6d705b'),
+
+  // Gap controls
+  gapControls: createUtopiColor('#FFA500'),
 }

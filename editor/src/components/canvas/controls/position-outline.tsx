@@ -1,4 +1,5 @@
 import React from 'react'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
@@ -10,12 +11,17 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPathKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { useColorTheme } from '../../../uuiui'
 import { CanvasRectangleKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const PinLines = React.memo(() => {
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'PinLines scale')
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'PinLines scale',
+  )
   const elementsAndFrames = useEditorState(
+    Substores.fullStore,
     (store) => {
       const selectedViewsNotHidden = store.editor.selectedViews.filter(
         (sv) => !store.editor.hiddenInstances.includes(sv),
@@ -90,26 +96,34 @@ export const PositionOutline = React.memo((props: PositionOutlineProps) => {
 })
 
 const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
-  return useEditorState((store) => {
-    const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      return right(element.element.value.props)
-    } else {
-      const elementProps = store.editor.allElementProps[EP.toString(path)]
-      return left(elementProps ?? {})
-    }
-  }, 'usePropsOrJSXAttributes')
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+      if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+        return right(element.element.value.props)
+      } else {
+        const elementProps = store.editor.allElementProps[EP.toString(path)]
+        return left(elementProps ?? {})
+      }
+    },
+    'usePropsOrJSXAttributes',
+  )
 }
 
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
-  return useEditorState((store) => {
-    const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-    if (metadata != null && !EP.isStoryboardChild(path)) {
-      return metadata?.specialSizeMeasurements.coordinateSystemBounds
-    } else {
-      return null
-    }
-  }, 'useContainingFrameForElement')
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+      if (metadata != null && !EP.isStoryboardChild(path)) {
+        return metadata?.specialSizeMeasurements.coordinateSystemBounds
+      } else {
+        return null
+      }
+    },
+    'useContainingFrameForElement',
+  )
 }
 
 const collectPinOutlines = (
@@ -118,10 +132,10 @@ const collectPinOutlines = (
   containingFrame: CanvasRectangle,
   scale: number,
 ): PinOutlineProps[] => {
-  const pinLeft = eitherToMaybe(getLayoutProperty('left', attributes, ['style']))
-  const pinTop = eitherToMaybe(getLayoutProperty('top', attributes, ['style']))
-  const pinRight = eitherToMaybe(getLayoutProperty('right', attributes, ['style']))
-  const pinBottom = eitherToMaybe(getLayoutProperty('bottom', attributes, ['style']))
+  const pinLeft = eitherToMaybe(getLayoutProperty('left', attributes, styleStringInArray))
+  const pinTop = eitherToMaybe(getLayoutProperty('top', attributes, styleStringInArray))
+  const pinRight = eitherToMaybe(getLayoutProperty('right', attributes, styleStringInArray))
+  const pinBottom = eitherToMaybe(getLayoutProperty('bottom', attributes, styleStringInArray))
   let pins: PinOutlineProps[] = []
   if (pinLeft != null) {
     pins.push({

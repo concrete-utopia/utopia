@@ -541,7 +541,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
@@ -626,17 +626,14 @@ describe('inspector tests with real metadata', () => {
     const leftControl = (await renderResult.renderedDOM.findByTestId(
       'position-left-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
-    )) as HTMLInputElement
-    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-R',
+    const paddingControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -669,15 +666,9 @@ describe('inspector tests with real metadata', () => {
       `"simple-unknown-css"`,
     )
 
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
-    matchInlineSnapshotBrowser(
-      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
@@ -1193,7 +1184,7 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"100"`)
@@ -1293,7 +1284,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const earlyOpacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
@@ -1351,7 +1342,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const laterOpacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
@@ -1436,17 +1427,14 @@ describe('inspector tests with real metadata', () => {
     const heightControl = (await renderResult.renderedDOM.findByTestId(
       'position-height-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
-    )) as HTMLInputElement
-    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-R',
+    const paddingControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
@@ -1461,15 +1449,9 @@ describe('inspector tests with real metadata', () => {
       `"simple-unknown-css"`,
     )
 
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
-    matchInlineSnapshotBrowser(
-      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
@@ -1552,14 +1534,14 @@ describe('inspector tests with real metadata', () => {
     const heightControl = (await renderResult.renderedDOM.findByTestId(
       'position-height-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
+    const paddingControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
@@ -1577,9 +1559,9 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"14"`)
+    matchInlineSnapshotBrowser(paddingControl.value, `"14"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected-fromcss"`,
     )
 
@@ -1661,7 +1643,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
-      await screen.findByTestId('padding-L')
+      await screen.findByTestId('padding-H')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -1672,14 +1654,14 @@ describe('inspector tests with real metadata', () => {
     const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-maxWidth-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
+    const paddingHorizontalControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
@@ -1697,9 +1679,9 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
@@ -1717,7 +1699,6 @@ describe('inspector tests with real metadata', () => {
       `"detected-fromcss"`,
     )
   })
-
   it('Empty style with lots of trivial defaults', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
@@ -1770,7 +1751,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
-      await screen.findByTestId('padding-L')
+      await screen.findByTestId('padding-H')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -1781,14 +1762,14 @@ describe('inspector tests with real metadata', () => {
     const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-maxHeight-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'padding-L',
+    const paddingHorizontalControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
@@ -1806,9 +1787,9 @@ describe('inspector tests with real metadata', () => {
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"trivial-default"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
@@ -2216,12 +2197,12 @@ describe('Undo behavior in inspector', () => {
     })
 
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-control',
+      'opacity-number-input',
     )) as HTMLInputElement
     matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
 
     // change the opacity of the selected element
-    await setControlValue('opacity-number-control', '0.6', renderResult.renderedDOM)
+    await setControlValue('opacity-number-input', '0.6', renderResult.renderedDOM)
 
     matchInlineSnapshotBrowser(opacityControl.value, `"0.6"`)
     matchInlineSnapshotBrowser(
@@ -2247,7 +2228,7 @@ describe('Undo behavior in inspector', () => {
 
     // the control's value should now be undone
     matchInlineSnapshotBrowser(
-      ((await renderResult.renderedDOM.findByTestId('opacity-number-control')) as HTMLInputElement)
+      ((await renderResult.renderedDOM.findByTestId('opacity-number-input')) as HTMLInputElement)
         .value,
       `"0.5"`,
     )

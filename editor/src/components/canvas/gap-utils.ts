@@ -9,8 +9,9 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
 import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import { Sides, sides } from 'utopia-api/core'
+import { styleStringInArray } from '../../utils/common-constants'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -36,10 +37,10 @@ export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
   switch (direction) {
     case 'column':
     case 'column-reverse':
-      return CSSCursor.RowResize
+      return CSSCursor.GapNS
     case 'row':
     case 'row-reverse':
-      return CSSCursor.ColResize
+      return CSSCursor.GapEW
     default:
       assertNever(direction)
   }
@@ -158,14 +159,13 @@ export function maybeFlexGapFromElement(
 
   const gapFromProps: CSSNumber | undefined = defaultEither(
     undefined,
-    getLayoutProperty('gap', right(element.element.value.props), ['style']),
+    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
   )
-
-  if (gapFromProps == null) {
-    return null
-  }
 
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
-  return { value: { renderedValuePx: flexGap, value: gapFromProps }, direction: flexDirection }
+  return {
+    value: { renderedValuePx: flexGap, value: gapFromProps ?? cssNumber(0) },
+    direction: flexDirection,
+  }
 }

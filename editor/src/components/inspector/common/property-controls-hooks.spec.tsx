@@ -1,6 +1,10 @@
 import React from 'react'
 import { renderHook } from '@testing-library/react'
-import { EditorStateContext } from '../../editor/store/store-hook'
+import {
+  createStoresAndState,
+  EditorStateContext,
+  OriginalMainEditorStateContext,
+} from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
 import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
@@ -10,6 +14,7 @@ import {
   editorModelFromPersistentModel,
   EditorState,
   EditorStorePatched,
+  StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
@@ -20,7 +25,9 @@ import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
+  ImportInfo,
   jsxElementWithoutUID,
+  sameFileOrigin,
 } from '../../../core/shared/element-template'
 import { PropertyControls } from 'utopia-api/core'
 
@@ -41,7 +48,10 @@ const propertyControlsForOtherComponent: PropertyControls = {
   },
 }
 
-function callPropertyControlsHook(selectedViews: ElementPath[]) {
+function callPropertyControlsHook(
+  selectedViews: ElementPath[],
+  importInfos: Array<ImportInfo | null> = [],
+) {
   const persistentModel = createTestProjectWithCode(`
   import * as React from 'react'
   import {
@@ -106,7 +116,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
       null,
-      null,
+      importInfos[0],
     ),
   }
   let allElementProps: AllElementProps = {
@@ -125,7 +135,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
       null,
-      null,
+      importInfos[1],
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -143,7 +153,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
       null,
       null,
-      null,
+      importInfos[2],
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }
@@ -190,18 +200,12 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     userState: null as any,
     workers: null as any,
     persistence: null as any,
-    dispatch: null as any,
     alreadySaved: null as any,
     builtInDependencies: [],
     storeName: 'editor-store',
   }
 
-  const storeHook = create<
-    EditorStorePatched,
-    SetState<EditorStorePatched>,
-    GetState<EditorStorePatched>,
-    Mutate<StoreApi<EditorStorePatched>, [['zustand/subscribeWithSelector', never]]>
-  >(subscribeWithSelector((set) => initialEditorStore))
+  const storeHook = createStoresAndState(initialEditorStore)
 
   const inspectorCallbackContext: InspectorCallbackContextData = {
     selectedViewsRef: { current: selectedViews },
@@ -212,11 +216,13 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
   }
 
   const contextProvider = ({ children }: any) => (
-    <EditorStateContext.Provider value={{ useStore: storeHook, api: storeHook }}>
-      <InspectorCallbackContext.Provider value={inspectorCallbackContext}>
-        {children}
-      </InspectorCallbackContext.Provider>
-    </EditorStateContext.Provider>
+    <OriginalMainEditorStateContext.Provider value={storeHook}>
+      <EditorStateContext.Provider value={storeHook}>
+        <InspectorCallbackContext.Provider value={inspectorCallbackContext}>
+          {children}
+        </InspectorCallbackContext.Provider>
+      </EditorStateContext.Provider>
+    </OriginalMainEditorStateContext.Provider>
   )
 
   const { result } = renderHook(() => useGetPropertyControlsForSelectedComponents(), {
@@ -228,7 +234,9 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
 describe('useGetPropertyControlsForSelectedComponents', () => {
   it('single select', () => {
     const selectedViews = [EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]])]
-    const { result } = callPropertyControlsHook(selectedViews)
+    const { result } = callPropertyControlsHook(selectedViews, [
+      sameFileOrigin(StoryboardFilePath, 'App'),
+    ])
 
     expect(result.length).toBe(1)
 
@@ -246,7 +254,9 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
     ]
-    const { result } = callPropertyControlsHook(selectedViews)
+    const { result } = callPropertyControlsHook(selectedViews, [
+      sameFileOrigin(StoryboardFilePath, 'App'),
+    ])
 
     expect(result.length).toBe(1)
 
@@ -265,7 +275,11 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestOtherComponentUID]]),
     ]
-    const { result } = callPropertyControlsHook(selectedViews)
+    const { result } = callPropertyControlsHook(selectedViews, [
+      sameFileOrigin(StoryboardFilePath, 'App'),
+      sameFileOrigin(StoryboardFilePath, 'App'),
+      sameFileOrigin(StoryboardFilePath, 'OtherComponent'),
+    ])
 
     expect(result.length).toBe(2)
 

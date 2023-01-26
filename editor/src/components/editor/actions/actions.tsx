@@ -22,7 +22,6 @@ import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
   assetFile,
-  canUpdateFile,
   directory,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
@@ -37,6 +36,7 @@ import {
   switchToFileType,
   uniqueProjectContentID,
   updateFileContents,
+  updateFileIfPossible,
   updateParsedTextFileHighlightBounds,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
@@ -49,6 +49,7 @@ import {
   isRight,
   left,
   mapEither,
+  right,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -59,6 +60,7 @@ import {
   emptyJsxMetadata,
   getJSXAttribute,
   isImportStatement,
+  isJSXAttributesEntry,
   isJSXAttributeValue,
   isJSXElement,
   isPartOfJSXAttributeValue,
@@ -81,6 +83,7 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
   unsetJSXValuesAtPaths,
+  valueAtPath,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -314,6 +317,10 @@ import {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  ApplyCommandsAction,
+  UpdateColorSwatches,
+  PasteProperties,
+  CopyProperties,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -382,6 +389,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   withUnderlyingTargetFromEditorState,
+  EditorStoreUnpatched,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -464,6 +472,11 @@ import {
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
 import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import { styleStringInArray } from '../../../utils/common-constants'
+import { collapseTextElements } from '../../../components/text-editor/text-handling'
+import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+
+export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -963,6 +976,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     topmenu: {
       formulaBarMode: poppedEditor.topmenu.formulaBarMode,
@@ -1004,6 +1018,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
     assetChecksums: currentEditor.assetChecksums,
+    colorSwatches: currentEditor.colorSwatches,
+    styleClipboard: currentEditor.styleClipboard,
   }
 }
 
@@ -1394,7 +1410,7 @@ function toastOnGeneratedElementsTargeted(
   actionOtherwise: (e: EditorState) => EditorState,
   dispatch: EditorDispatch,
 ): EditorState {
-  const generatedElementsTargeted = areGeneratedElementsTargeted(targets, editor)
+  const generatedElementsTargeted = areGeneratedElementsTargeted(targets)
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast(notice(message))
@@ -1416,12 +1432,7 @@ function toastOnUncopyableElementsSelected(
   dispatch: EditorDispatch,
 ): EditorState {
   const isReparentable = editor.selectedViews.every((target) => {
-    return isAllowedToReparent(
-      editor.projectContents,
-      editor.canvas.openFile?.filename,
-      editor.jsxMetadata,
-      target,
-    )
+    return isAllowedToReparent(editor.projectContents, editor.jsxMetadata, target)
   })
   let result: EditorState = editor
   if (!isReparentable) {
@@ -1799,7 +1810,7 @@ export const UPDATE_FNS = {
             editorForAction,
             derived,
           )
-          return MetadataUtils.isStaticElement(components, selectedView)
+          return !MetadataUtils.isElementGenerated(selectedView)
         })
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
@@ -1964,6 +1975,12 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
+    if (action.unlessMode === editor.mode.type) {
+      // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
+      // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
+      // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
+      return clearDragState(editor, derived, false)
+    }
     return clearDragState(setModeState(action.mode, editor), derived, false)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
@@ -2269,7 +2286,7 @@ export const UPDATE_FNS = {
               props: forceRight(
                 setJSXValueAtPath(
                   elementToWrapWith.props,
-                  PP.create(['style', 'position']), // todo make it optional
+                  PP.create('style', 'position'), // todo make it optional
                   jsxAttributeValue(position, emptyComments),
                 ),
               ),
@@ -2700,6 +2717,10 @@ export const UPDATE_FNS = {
           interfaceDesigner: {
             ...editor.interfaceDesigner,
             codePaneVisible: action.visible,
+            codePaneWidth:
+              action.visible && editor.interfaceDesigner.codePaneWidth < MIN_CODE_PANE_REOPEN_WIDTH
+                ? MIN_CODE_PANE_REOPEN_WIDTH
+                : editor.interfaceDesigner.codePaneWidth,
           },
         }
       case 'misccodeeditor':
@@ -2870,24 +2891,8 @@ export const UPDATE_FNS = {
     let insertionAllowed: boolean = true
     if (action.pasteInto != null) {
       const pasteInto = action.pasteInto
-      const parentOriginType = withUnderlyingTargetFromEditorState(
-        action.pasteInto,
-        editor,
-        'unknown-element',
-        (targetParentSuccess) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(targetParentSuccess),
-            pasteInto,
-          )
-        },
-      )
-      switch (parentOriginType) {
-        case 'unknown-element':
-          insertionAllowed = false
-          break
-        default:
-          insertionAllowed = true
-      }
+      const parentGenerated = MetadataUtils.isElementGenerated(pasteInto)
+      insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
       const existingIDs = getAllUniqueUids(editor.projectContents)
@@ -2952,6 +2957,36 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor, dispatch)
     }
   },
+  PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
+    if (editor.styleClipboard.length === 0) {
+      return editor
+    }
+    return editor.selectedViews.reduce((working, target) => {
+      return setPropertyOnTarget(working, target, (attributes) => {
+        const filterForNames = action.type === 'layout' ? LayoutPropsWithoutTLBR : StyleProperties
+        const originalPropsToUnset = filterForNames.map((propName) => PP.create('style', propName))
+        const withOriginalPropertiesCleared = unsetJSXValuesAtPaths(
+          attributes,
+          originalPropsToUnset,
+        )
+
+        const propsToSet = editor.styleClipboard.filter((styleClipboardData: ValueAtPath) => {
+          const propName = PP.lastPartToString(styleClipboardData.path)
+          return filterForNames.includes(propName) ? styleClipboardData : null
+        })
+
+        return foldEither(
+          () => {
+            return right(attributes)
+          },
+          (withPropertiesCleared) => {
+            return setJSXValuesAtPaths(withPropertiesCleared, propsToSet)
+          },
+          withOriginalPropertiesCleared,
+        )
+      })
+    }, editor)
+  },
   COPY_SELECTION_TO_CLIPBOARD: (
     action: CopySelectionToClipboard,
     editorForAction: EditorModel,
@@ -2968,10 +3003,26 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
+          styleClipboard: [],
         }
       },
       dispatch,
     )
+  },
+  COPY_PROPERTIES: (action: CopyProperties, editor: EditorModel): EditorModel => {
+    if (editor.selectedViews.length === 0) {
+      return editor
+    } else {
+      const target = editor.selectedViews[0]
+      const styleProps = editor._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
+      const styleClipboardData = Object.keys(styleProps).map((name) =>
+        valueAtPath(PP.create('style', name), jsxAttributeValue(styleProps[name], emptyComments)),
+      )
+      return {
+        ...editor,
+        styleClipboard: styleClipboardData,
+      }
+    }
   },
   OPEN_TEXT_EDITOR: (action: OpenTextEditor, editor: EditorModel): EditorModel => {
     return {
@@ -3169,7 +3220,7 @@ export const UPDATE_FNS = {
         const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
           element.props,
           newLayout,
-          ['style'],
+          styleStringInArray,
         )
 
         if (isLeft(updatedAttributes)) {
@@ -3302,7 +3353,7 @@ export const UPDATE_FNS = {
     if (action.imageDetails != null) {
       if (replaceImage) {
         const imageWithoutHashURL = imagePathURL(assetFilename)
-        const propertyPath = PP.create(['src'])
+        const propertyPath = PP.create('src')
         walkContentsTreeForParseSuccess(editor.projectContents, (filePath, success) => {
           walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
             if (isJSXElement(element)) {
@@ -3725,32 +3776,31 @@ export const UPDATE_FNS = {
 
     const { file } = action
 
-    if (isTextFile(file)) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
-      const canUpdate = canUpdateFile(file, existing)
-      if (!canUpdate) {
-        return editor
-      }
+    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const updatedFile = updateFileIfPossible(file, existing)
+
+    if (updatedFile === 'cant-update') {
+      return editor
     }
 
     const updatedProjectContents = addFileToProjectContents(
       editor.projectContents,
       action.filePath,
-      file,
+      updatedFile,
     )
 
     let updatedNodeModulesFiles = editor.nodeModules.files
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
-    if (action.filePath === '/package.json' && isTextFile(file)) {
+    if (action.filePath === '/package.json' && isTextFile(updatedFile)) {
       const packageJson = packageJsonFileFromProjectContents(editor.projectContents)
       const currentDeps = isTextFile(packageJson)
         ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
         : null
       void refreshDependencies(
         dispatch,
-        file.fileContents.code,
+        updatedFile.fileContents.code,
         currentDeps,
         builtInDependencies,
         editor.nodeModules.files,
@@ -3763,9 +3813,9 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount:
-          editor.canvas.canvasContentInvalidateCount + (isTextFile(file) ? 0 : 1),
+          editor.canvas.canvasContentInvalidateCount + (isTextFile(updatedFile) ? 0 : 1),
         domWalkerInvalidateCount:
-          editor.canvas.domWalkerInvalidateCount + (isTextFile(file) ? 0 : 1),
+          editor.canvas.domWalkerInvalidateCount + (isTextFile(updatedFile) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -3864,6 +3914,13 @@ export const UPDATE_FNS = {
             )
             break
           }
+          case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
+            code = fileUpdate.code
+            updatedContents = updateParsedTextFileHighlightBounds(
+              fileUpdate.parsed,
+              fileUpdate.highlightBounds,
+            )
+            break
           default:
             const _exhaustiveCheck: never = fileUpdate
             throw new Error(`Invalid file update: ${fileUpdate}`)
@@ -4076,7 +4133,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorBuildErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allBuildErrorsInState = getAllBuildErrors(editor)
+    const allBuildErrorsInState = getAllBuildErrors(editor.codeEditorErrors)
     const allBuildErrorsInAction = Utils.flatMapArray(
       (filename) => action.buildErrors[filename],
       Object.keys(action.buildErrors),
@@ -4106,7 +4163,7 @@ export const UPDATE_FNS = {
     action: SetCodeEditorLintErrors,
     editor: EditorModel,
   ): EditorModel => {
-    const allLintErrorsInState = getAllLintErrors(editor)
+    const allLintErrorsInState = getAllLintErrors(editor.codeEditorErrors)
     const allLintErrorsInAction = Utils.flatMapArray(
       (filename) => action.lintErrors[filename],
       Object.keys(action.lintErrors),
@@ -4169,7 +4226,7 @@ export const UPDATE_FNS = {
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
       return mapEither(
-        (attrs) => roundAttributeLayoutValues(['style'], attrs),
+        (attrs) => roundAttributeLayoutValues(styleStringInArray, attrs),
         setJSXValueAtPath(props, action.propertyPath, action.value),
       )
     })
@@ -4186,8 +4243,8 @@ export const UPDATE_FNS = {
   // If you want other types of JSXAttributes, that needs to be added
   RENAME_PROP_KEY: (action: RenameStyleSelector, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
-      const originalPropertyPath = PP.create(action.cssTargetPath.path)
-      const newPropertyPath = PP.create(action.value)
+      const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
+      const newPropertyPath = PP.createFromArray(action.value)
       const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (isJSXAttributeValue(originalValue) || isPartOfJSXAttributeValue(originalValue)) {
@@ -4263,7 +4320,7 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const path = PP.create([AspectRatioLockedProp])
+        const path = PP.create(AspectRatioLockedProp)
         const updatedProps = action.locked
           ? eitherToMaybe(
               setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
@@ -4483,8 +4540,11 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
-  UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxElementAtPath(
+  UPDATE_CHILD_TEXT: (
+    action: UpdateChildText,
+    editorStore: EditorStoreUnpatched,
+  ): EditorStoreUnpatched => {
+    const withUpdatedText = modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
         if (action.text.trim() === '') {
@@ -4499,8 +4559,23 @@ export const UPDATE_FNS = {
           }
         }
       },
-      editor,
+      editorStore.unpatchedEditor,
+      RevisionsState.ParsedAheadNeedsReparsing,
     )
+    const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
+
+    if (withUpdatedText === withCollapsedElements) {
+      return {
+        ...editorStore,
+        unpatchedEditor: withUpdatedText,
+      }
+    } else {
+      return {
+        ...editorStore,
+        unpatchedEditor: withCollapsedElements,
+        history: History.add(editorStore.history, withUpdatedText, editorStore.unpatchedDerived),
+      }
+    }
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {
@@ -4713,7 +4788,7 @@ export const UPDATE_FNS = {
     }
 
     // Side effect - update the setting in VS Code
-    void sendSetVSCodeTheme(action.theme)
+    void sendSetVSCodeTheme(getCurrentTheme(updatedUserConfiguration))
 
     // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
@@ -4765,7 +4840,7 @@ export const UPDATE_FNS = {
           const propsWithUid = forceRight(
             setJSXValueAtPath(
               action.toInsert.element.props,
-              PP.create([UTOPIA_UID_KEY]),
+              PP.create(UTOPIA_UID_KEY),
               jsxAttributeValue(newUID, emptyComments),
             ),
             `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
@@ -4774,9 +4849,9 @@ export const UPDATE_FNS = {
           let props = propsWithUid
           if (action.styleProps === 'add-size') {
             const sizesToSet: Array<ValueAtPath> = [
-              { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
+              { path: PP.create('style', 'width'), value: jsxAttributeValue(100, emptyComments) },
               {
-                path: PP.create(['style', 'height']),
+                path: PP.create('style', 'height'),
                 value: jsxAttributeValue(100, emptyComments),
               },
             ]
@@ -5160,6 +5235,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       imageDragSessionState: action.imageDragSessionState,
+    }
+  },
+  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, action.commands)
+  },
+  UPDATE_COLOR_SWATCHES: (action: UpdateColorSwatches, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      colorSwatches: action.colorSwatches,
     }
   },
 }

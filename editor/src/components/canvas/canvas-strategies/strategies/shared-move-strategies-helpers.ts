@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
@@ -56,6 +57,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { AbsolutePin } from './resize-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -204,6 +206,7 @@ export function getMoveCommandsForSelectedElement(
     localFrame,
     globalFrame,
     elementParentBounds,
+    elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
   )
 }
 
@@ -215,6 +218,7 @@ function createMoveCommandsForElement(
   localFrame: LocalRectangle | null,
   globalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
+  elementParentFlexDirection: FlexDirection | null,
 ): {
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -242,10 +246,11 @@ function createMoveCommandsForElement(
     return adjustCssLengthProperty(
       'always',
       selectedElement,
-      stylePropPathMappingFn(pin, ['style']),
+      stylePropPathMappingFn(pin, styleStringInArray),
       updatedPropValue,
       parentDimension,
-      true,
+      elementParentFlexDirection,
+      'create-if-not-existing',
     )
   }, extendedPins)
 
@@ -336,11 +341,11 @@ function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): {
   extendedPins: Array<AbsolutePin>
 } {
   const existingHorizontalPins = horizontalPins.filter((p) => {
-    const prop = getLayoutProperty(p, props, ['style'])
+    const prop = getLayoutProperty(p, props, styleStringInArray)
     return isRight(prop) && prop.value != null
   })
   const existingVerticalPins = verticalPins.filter((p) => {
-    const prop = getLayoutProperty(p, props, ['style'])
+    const prop = getLayoutProperty(p, props, styleStringInArray)
     return isRight(prop) && prop.value != null
   })
 

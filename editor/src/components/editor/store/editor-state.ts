@@ -13,6 +13,7 @@ import {
   emptyJsxMetadata,
   JSXAttribute,
   walkElements,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -55,6 +56,8 @@ import {
   PropertyPath,
   HighlightBoundsWithFileForUids,
   parseSuccess,
+  ParsedAheadRevisionsState,
+  RevisionsStateType,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
@@ -66,6 +69,7 @@ import {
   bimapEither,
   Either,
   foldEither,
+  forEachRight,
   isLeft,
   isRight,
   left,
@@ -143,7 +147,7 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { defaultConfig, UtopiaVSCodeConfig, ProjectIDPlaceholderPrefix } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
 import { MapLike } from 'typescript'
@@ -170,6 +174,9 @@ import {
   RepositoryEntry,
   TreeConflicts,
 } from '../../../core/shared/github'
+import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
+import type { ThemeSubstate } from './store-hook-substore-types'
+import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 
 const ObjectPathImmutable: any = OPI
 
@@ -236,7 +243,7 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
 
 export interface UserConfiguration {
   shortcutConfig: ShortcutConfiguration | null
-  themeConfig: Theme | null
+  themeConfig: ThemeSetting | null
 }
 
 export function emptyUserConfiguration(): UserConfiguration {
@@ -373,19 +380,18 @@ export function isGithubListingPullRequestsForBranch(
 export const defaultUserState: UserState = {
   loginState: loginNotYetKnown,
   shortcutConfig: {},
-  themeConfig: 'light',
+  themeConfig: 'system',
   githubState: {
     authenticated: false,
   },
 }
 
-type EditorStoreShared = {
+export type EditorStoreShared = {
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers
   persistence: PersistenceMachine
-  dispatch: EditorDispatch
   builtInDependencies: BuiltInDependencies
   alreadySaved: boolean
 }
@@ -570,8 +576,8 @@ export function designerFile(filename: string): DesignerFile {
   }
 }
 
-export type Theme = 'light' | 'dark'
-export const DefaultTheme: Theme = 'light'
+export type ThemeSetting = 'light' | 'dark' | 'system'
+export const DefaultTheme: ThemeSetting = 'system'
 
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
@@ -586,6 +592,7 @@ export interface NavigatorState {
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
   highlightedTargets: Array<ElementPath>
+  hiddenInNavigator: Array<ElementPath>
 }
 
 export interface FloatingInsertMenuStateClosed {
@@ -685,7 +692,7 @@ export type VSCodeBridgeId = VSCodeBridgeIdDefault | VSCodeBridgeIdProjectId
 export function getUnderlyingVSCodeBridgeID(bridgeId: VSCodeBridgeId): string {
   switch (bridgeId.type) {
     case 'VSCODE_BRIDGE_ID_DEFAULT':
-      return bridgeId.defaultID
+      return `${ProjectIDPlaceholderPrefix}_${bridgeId.defaultID}`
     case 'VSCODE_BRIDGE_ID_PROJECT_ID':
       return bridgeId.projectID
     default:
@@ -835,6 +842,7 @@ export interface EditorStateCanvasControls {
   parentHighlightPaths: Array<ElementPath> | null
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
+  parentOutlineHighlight: ElementPath | null
 }
 
 export function editorStateCanvasControls(
@@ -845,6 +853,7 @@ export function editorStateCanvasControls(
   parentHighlightPaths: Array<ElementPath> | null,
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
+  parentOutlineHighlight: ElementPath | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -854,6 +863,7 @@ export function editorStateCanvasControls(
     parentHighlightPaths: parentHighlightPaths,
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
+    parentOutlineHighlight: parentOutlineHighlight,
   }
 }
 
@@ -1219,6 +1229,18 @@ export function emptyGithubData(): GithubData {
   }
 }
 
+export type ColorSwatch = {
+  id: string
+  hex: string
+}
+
+export function newColorSwatch(id: string, hex: string): ColorSwatch {
+  return {
+    id: id,
+    hex: hex,
+  }
+}
+
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
 // FIXME We need to pull out ProjectState from here
@@ -1296,6 +1318,8 @@ export interface EditorState {
   githubData: GithubData
   refreshingDependencies: boolean
   assetChecksums: FileChecksums
+  colorSwatches: Array<ColorSwatch>
+  styleClipboard: Array<ValueAtPath>
 }
 
 export function editorState(
@@ -1372,6 +1396,8 @@ export function editorState(
   githubData: GithubData,
   refreshingDependencies: boolean,
   assetChecksums: FileChecksums,
+  colorSwatches: Array<ColorSwatch>,
+  styleClipboard: Array<ValueAtPath>,
 ): EditorState {
   return {
     id: id,
@@ -1447,6 +1473,8 @@ export function editorState(
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     assetChecksums: assetChecksums,
+    colorSwatches: colorSwatches,
+    styleClipboard: styleClipboard,
   }
 }
 
@@ -1704,12 +1732,15 @@ export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingTarget(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
     transform,
+    defaultModifyParseSuccess,
+    revisionsState,
   )
 }
 
@@ -1734,21 +1765,29 @@ function getImportedUtopiaJSXComponents(
 ): Array<UtopiaJSXComponent> {
   const file = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    const resolvedFilePaths = Object.keys(file.fileContents.parsed.imports)
-      .map((toImport) => resolve(filePath, toImport))
-      .filter(isRight)
-      .map((r) => r.value)
-      .filter((v) => !pathsToFilter.includes(v))
+    let resolvedFilePaths: Array<string> = []
+    for (const toImport of Object.keys(file.fileContents.parsed.imports)) {
+      const resolveResult = resolve(filePath, toImport)
+      forEachRight(resolveResult, (path) => {
+        if (!pathsToFilter.includes(path)) {
+          resolvedFilePaths.push(path)
+        }
+      })
+    }
 
-    return [
-      ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
-      ...resolvedFilePaths.flatMap((path) =>
-        getImportedUtopiaJSXComponents(path, projectContents, resolve, [
-          ...pathsToFilter,
-          ...resolvedFilePaths,
-        ]),
-      ),
-    ]
+    let result: Array<UtopiaJSXComponent> = []
+    result.push(...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed))
+    const newPathsToFilter = [...pathsToFilter, ...resolvedFilePaths]
+    for (const resolvedFilePath of resolvedFilePaths) {
+      const resolvedPathResult = getImportedUtopiaJSXComponents(
+        resolvedFilePath,
+        projectContents,
+        resolve,
+        newPathsToFilter,
+      )
+      result.push(...resolvedPathResult)
+    }
+    return result
   } else {
     return []
   }
@@ -1959,12 +1998,10 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (editor.canvas.dragState == null) {
-    return editor.jsxMetadata
-  } else {
-    return editor.canvas.dragState.metadata
-  }
+export function getMetadata(editor: {
+  jsxMetadata: ElementInstanceMetadataMap
+}): ElementInstanceMetadataMap {
+  return editor.jsxMetadata
 }
 
 export interface ElementWarnings {
@@ -2038,6 +2075,7 @@ export interface PersistentModel {
   githubChecksums: FileChecksums | null
   branchContents: ProjectContentTreeRoot | null
   assetChecksums: FileChecksums
+  colorSwatches: Array<ColorSwatch>
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -2081,6 +2119,7 @@ export function mergePersistentModel(
     githubChecksums: second.githubChecksums,
     branchContents: second.branchContents,
     assetChecksums: second.assetChecksums,
+    colorSwatches: second.colorSwatches,
   }
 }
 
@@ -2191,6 +2230,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         parentHighlightPaths: null,
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
+        parentOutlineHighlight: null,
       },
     },
     floatingInsertMenu: {
@@ -2227,6 +2267,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       collapsedViews: [],
       renamingTarget: null,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     topmenu: {
       formulaBarMode: 'content',
@@ -2271,6 +2312,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubData: emptyGithubData(),
     refreshingDependencies: false,
     assetChecksums: {},
+    colorSwatches: [],
+    styleClipboard: [],
   }
 }
 
@@ -2329,9 +2372,14 @@ type CacheableDerivedState = {
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
   collapsedViews: ElementPath[],
+  hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } =
-    MetadataUtils.createOrderedElementPathsFromElements(jsxMetadata, collapsedViews)
+    MetadataUtils.createOrderedElementPathsFromElements(
+      jsxMetadata,
+      collapsedViews,
+      hiddenInNavigator,
+    )
 
   const warnings = getElementWarnings(jsxMetadata)
 
@@ -2359,7 +2407,11 @@ export function deriveState(
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
-  } = deriveCacheableState(editor.jsxMetadata, editor.navigator.collapsedViews)
+  } = deriveCacheableState(
+    editor.jsxMetadata,
+    editor.navigator.collapsedViews,
+    editor.navigator.hiddenInNavigator,
+  )
 
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
@@ -2500,6 +2552,7 @@ export function editorModelFromPersistentModel(
         parentHighlightPaths: null,
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
+        parentOutlineHighlight: null,
       },
     },
     floatingInsertMenu: {
@@ -2549,6 +2602,7 @@ export function editorModelFromPersistentModel(
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
       highlightedTargets: [],
+      hiddenInNavigator: [],
     },
     fileBrowser: {
       renamingTarget: null,
@@ -2573,6 +2627,8 @@ export function editorModelFromPersistentModel(
     branchContents: persistentModel.branchContents,
     githubData: emptyGithubData(),
     assetChecksums: {},
+    colorSwatches: persistentModel.colorSwatches,
+    styleClipboard: [],
   }
   return editor
 }
@@ -2612,6 +2668,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     githubChecksums: editor.githubChecksums,
     branchContents: editor.branchContents,
     assetChecksums: editor.assetChecksums,
+    colorSwatches: editor.colorSwatches,
   }
 }
 
@@ -2647,6 +2704,7 @@ export function persistentModelForProjectContents(
     githubChecksums: null,
     branchContents: null,
     assetChecksums: {},
+    colorSwatches: [],
   }
 }
 
@@ -2780,37 +2838,22 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
 }
 
 export function areGeneratedElementsSelected(editor: EditorState): boolean {
-  return areGeneratedElementsTargeted(editor.selectedViews, editor)
+  return areGeneratedElementsTargeted(editor.selectedViews)
 }
 
-export function areGeneratedElementsTargeted(
-  targets: Array<ElementPath>,
-  editor: EditorState,
-): boolean {
+export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
   return targets.some((target) => {
-    return withUnderlyingTargetFromEditorState(target, editor, false, (success) => {
-      const originType = MetadataUtils.getElementOriginType(
-        getUtopiaJSXComponentsFromSuccess(success),
-        target,
-      )
-      switch (originType) {
-        case 'unknown-element':
-        case 'generated-static-definition-present':
-          return true
-        default:
-          return false
-      }
-    })
+    return MetadataUtils.isElementGenerated(target)
   })
 }
 
 export function getAllCodeEditorErrors(
-  editor: EditorState,
+  codeEditorErrors: EditorStateCodeEditorErrors,
   minimumSeverity: ErrorMessageSeverity,
   skipTsErrors: boolean,
 ): Array<ErrorMessage> {
-  const allLintErrors = getAllLintErrors(editor)
-  const allBuildErrors = getAllBuildErrors(editor)
+  const allLintErrors = getAllLintErrors(codeEditorErrors)
+  const allBuildErrors = getAllBuildErrors(codeEditorErrors)
   const errorsAndWarnings = skipTsErrors ? allLintErrors : [...allBuildErrors, ...allLintErrors]
   if (minimumSeverity === 'fatal') {
     return errorsAndWarnings.filter((error) => error.severity === 'fatal')
@@ -2823,12 +2866,16 @@ export function getAllCodeEditorErrors(
   }
 }
 
-export function getAllBuildErrors(editor: EditorState): Array<ErrorMessage> {
-  return getAllErrorsFromFiles(editor.codeEditorErrors.buildErrors)
+export function getAllBuildErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.buildErrors)
 }
 
-export function getAllLintErrors(editor: EditorState): Array<ErrorMessage> {
-  return getAllErrorsFromFiles(editor.codeEditorErrors.lintErrors)
+export function getAllLintErrors(
+  codeEditorErrors: EditorStateCodeEditorErrors,
+): Array<ErrorMessage> {
+  return getAllErrorsFromFiles(codeEditorErrors.lintErrors)
 }
 
 export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {
@@ -2986,6 +3033,7 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
   if (isTextFile(projectFile)) {
@@ -2996,12 +3044,16 @@ export function modifyParseSuccessAtPath(
       if (updatedParseSuccess === parsedFileContents) {
         return editor
       } else {
+        const updatedRevisionState = getNextRevisionsState(
+          projectFile.fileContents.revisionsState,
+          revisionsState,
+        )
         const updatedFile = saveTextFileContents(
           projectFile,
           textFileContents(
             projectFile.fileContents.code,
             updatedParseSuccess,
-            RevisionsState.ParsedAhead,
+            updatedRevisionState,
           ),
           false,
         )
@@ -3018,6 +3070,10 @@ export function modifyParseSuccessAtPath(
   }
 }
 
+export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
+  return success
+}
+
 export function modifyUnderlyingTarget(
   target: ElementPath | null,
   currentFilePath: string,
@@ -3031,7 +3087,8 @@ export function modifyUnderlyingTarget(
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
     underlyingFilePath: string,
-  ) => ParseSuccess = (success) => success,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
@@ -3084,7 +3141,25 @@ export function modifyUnderlyingTarget(
     }
   }
 
-  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+  return modifyParseSuccessAtPath(
+    targetSuccess.filePath,
+    editor,
+    innerModifyParseSuccess,
+    revisionsState,
+  )
+}
+
+function getNextRevisionsState(
+  prevRevisionState: RevisionsStateType,
+  nextRevisionState: ParsedAheadRevisionsState,
+): ParsedAheadRevisionsState {
+  if (
+    prevRevisionState === RevisionsState.ParsedAheadNeedsReparsing &&
+    nextRevisionState === RevisionsState.ParsedAhead
+  ) {
+    return RevisionsState.ParsedAheadNeedsReparsing
+  }
+  return nextRevisionState
 }
 
 export function modifyUnderlyingForOpenFile(
@@ -3214,8 +3289,13 @@ export function getElementFromProjectContents(
   return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
 }
 
-export function getCurrentTheme(userConfiguration: UserConfiguration): Theme {
-  return userConfiguration.themeConfig ?? DefaultTheme
+export function getCurrentTheme(userConfiguration: ThemeSubstate['userState']): Theme {
+  const currentTheme = userConfiguration.themeConfig ?? DefaultTheme
+  if (currentTheme === 'system') {
+    return getPreferredColorScheme()
+  } else {
+    return currentTheme
+  }
 }
 
 export function getNewSceneName(editor: EditorState): string {

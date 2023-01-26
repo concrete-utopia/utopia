@@ -9,11 +9,12 @@ import {
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { Imports, ElementPath } from '../../core/shared/project-file-types'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { AllElementProps } from '../editor/store/editor-state'
+import { isSpawnedActor } from 'xstate/lib/Actor'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -22,6 +23,7 @@ interface LayoutIconResult {
 
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
+    Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
       return createLayoutOrElementIconResult(path, metadata, store.editor.allElementProps)
@@ -37,10 +39,14 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
 }
 
 export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    return createComponentIconProps(path, metadata)
-  }, 'useComponentIcon') // TODO Memoize Icon Result
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      return createComponentIconProps(path, metadata)
+    },
+    'useComponentIcon',
+  ) // TODO Memoize Icon Result
 }
 
 export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {
@@ -134,7 +140,16 @@ export function createElementIconPropsFromMetadata(
   if (isButton) {
     return {
       category: 'element',
-      type: 'button',
+      type: 'clickable',
+      width: 18,
+      height: 18,
+    }
+  }
+  const isText = MetadataUtils.isTextFromMetadata(element)
+  if (isText) {
+    return {
+      category: 'element',
+      type: 'pure-text',
       width: 18,
       height: 18,
     }
@@ -162,13 +177,13 @@ export function createElementIconPropsFromMetadata(
     if (hasTextChild) {
       return {
         category: 'element',
-        type: 'text',
+        type: 'pure-text',
         width: 18,
+
         height: 18,
       }
     }
   }
-
   return {
     category: 'element',
     type: 'div',

@@ -60,6 +60,10 @@ export function oneLevelNestedEquals(objA: any, objB: any, debugMode: boolean = 
   return abstractEquals(objA, objB, debugMode, shallowEqual)
 }
 
+export function twoLevelNestedEquals(objA: any, objB: any, debugMode: boolean = false) {
+  return abstractEquals(objA, objB, debugMode, oneLevelNestedEquals)
+}
+
 export function keepReferenceIfShallowEqual<T>(original: T, maybeNew: T) {
   if (shallowEqual(original, maybeNew)) {
     return original

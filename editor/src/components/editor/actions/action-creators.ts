@@ -38,6 +38,7 @@ import type { CSSCursor } from '../../../uuiui-deps'
 import { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
+import { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
@@ -221,6 +222,11 @@ import type {
   SetHoveredView,
   ClearHoveredViews,
   SetAssetChecksum,
+  ApplyCommandsAction,
+  WorkerCodeAndParsedUpdate,
+  UpdateColorSwatches,
+  PasteProperties,
+  CopyProperties,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -235,11 +241,12 @@ import type {
   OriginalFrame,
   ProjectGithubSettings,
   RightMenuTab,
-  Theme,
   GithubOperation,
   FileChecksums,
   GithubData,
   UserConfiguration,
+  ThemeSetting,
+  ColorSwatch,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -338,10 +345,14 @@ export function updateEditorMode(mode: Mode): UpdateEditorMode {
   }
 }
 
-export function switchEditorMode(mode: Mode): SwitchEditorMode {
+export function switchEditorMode(
+  mode: Mode,
+  unlessMode?: 'select' | 'live' | 'insert' | 'textEdit',
+): SwitchEditorMode {
   return {
     action: 'SWITCH_EDITOR_MODE',
     mode: mode,
+    unlessMode: unlessMode,
   }
 }
 
@@ -448,6 +459,19 @@ export function copySelectionToClipboard(): CopySelectionToClipboard {
   }
 }
 
+export function copyProperties(): CopyProperties {
+  return {
+    action: 'COPY_PROPERTIES',
+  }
+}
+
+export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
+  return {
+    action: 'PASTE_PROPERTIES',
+    type: type,
+  }
+}
+
 export function openTextEditor(
   target: ElementPath,
   mousePosition: WindowPoint | null, // if mousePosition is zero, the whole text will be selected
@@ -477,9 +501,14 @@ export function enableInsertModeForJSXElement(
   uid: string,
   importsToAdd: Imports,
   size: Size | null,
+  options?: {
+    textEdit?: boolean
+  },
 ): SwitchEditorMode {
   return switchEditorMode(
-    EditorModes.insertMode([insertionSubject(uid, element, size, importsToAdd, null)]),
+    EditorModes.insertMode([
+      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+    ]),
   )
 }
 
@@ -1052,6 +1081,23 @@ export function workerCodeUpdate(
   }
 }
 
+export function workerCodeAndParsedUpdate(
+  filePath: string,
+  code: string,
+  highlightBounds: HighlightBoundsForUids,
+  parsed: ParsedTextFile,
+  lastRevisedTime: number,
+): WorkerCodeAndParsedUpdate {
+  return {
+    type: 'WORKER_CODE_AND_PARSED_UPDATE',
+    filePath: filePath,
+    code: code,
+    highlightBounds: highlightBounds,
+    parsed: parsed,
+    lastRevisedTime: lastRevisedTime,
+  }
+}
+
 export function workerParsedUpdate(
   filePath: string,
   parsed: ParsedTextFile,
@@ -1066,7 +1112,7 @@ export function workerParsedUpdate(
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>,
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',
@@ -1537,7 +1583,7 @@ export function setFilebrowserDropTarget(target: string | null): SetFilebrowserD
   }
 }
 
-export function setCurrentTheme(theme: Theme): SetCurrentTheme {
+export function setCurrentTheme(theme: ThemeSetting): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,
@@ -1687,5 +1733,19 @@ export function setImageDragSessionState(
   return {
     action: 'SET_IMAGE_DRAG_SESSION_STATE',
     imageDragSessionState: imageDragSessionState,
+  }
+}
+
+export function applyCommandsAction(commands: CanvasCommand[]): ApplyCommandsAction {
+  return {
+    action: 'APPLY_COMMANDS',
+    commands: commands,
+  }
+}
+
+export function updateColorSwatches(colorSwatches: Array<ColorSwatch>): UpdateColorSwatches {
+  return {
+    action: 'UPDATE_COLOR_SWATCHES',
+    colorSwatches: colorSwatches,
   }
 }

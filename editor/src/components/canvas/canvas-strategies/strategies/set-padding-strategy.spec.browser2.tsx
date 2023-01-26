@@ -45,7 +45,7 @@ describe('Padding resize strategy', () => {
             data-uid='mydiv'
             data-testid='mydiv'
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
               left: 28,
               top: 28,
@@ -84,7 +84,7 @@ describe('Padding resize strategy', () => {
           data-uid='mydiv'
           data-testid='mydiv'
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 28,
             top: 28,
@@ -94,7 +94,7 @@ describe('Padding resize strategy', () => {
         >
           <div
             style={{
-              backgroundColor: '#0091FFAA',
+              backgroundColor: '#aaaaaa33',
               width: 22,
               height: 22,
             }}
@@ -123,12 +123,52 @@ describe('Padding resize strategy', () => {
     })
   })
 
+  it('Padding resize handle is present for elements that are dimensioned and have only text children', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='root'>
+        <div
+          data-uid='mydiv'
+          data-testid='mydiv'
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 28,
+            top: 28,
+            width: 612,
+            height: 461,
+          }}
+        >
+          Hello <br /> there!
+        </div>
+      </div>`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId('mydiv')
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 25,
+      y: divBounds.y + 24,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+    EdgePieces.forEach((edge) => {
+      const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
+      expect(paddingControlOuter).toBeTruthy()
+      const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
+      expect(paddingControlHandle).toBeTruthy()
+    })
+  })
+
   it("padding controls don't show up for elements that are smaller than 40px", async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div
       data-testid='mydiv'
       style={{
-        backgroundColor: '#0091FFAA',
+        backgroundColor: '#aaaaaa33',
         position: 'absolute',
         left: 28,
         top: 28,
@@ -187,6 +227,12 @@ describe('Padding resize strategy', () => {
       y: paddingResizeControlContainerBounds.y + 4,
     }
 
+    EdgePieces.forEach((edge) => {
+      const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
+      expect(paddingControlHandle).toBeTruthy()
+      expect(paddingControlHandle.style.opacity).toEqual('0')
+    })
+
     mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
@@ -194,9 +240,10 @@ describe('Padding resize strategy', () => {
     EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
       expect(paddingControlOuter).toBeTruthy()
+
       const paddingControlHandle = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
       expect(paddingControlHandle).toBeTruthy()
-      expect(paddingControlHandle.style.visibility).toEqual('visible')
+      expect(paddingControlHandle.style.opacity).toEqual('1')
     })
   })
 
@@ -653,7 +700,7 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -664,7 +711,7 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
       >
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: '100%',
             height: '100%',
           }}
@@ -683,7 +730,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
-          backgroundColor: '#0091FFAA',
+          backgroundColor: '#aaaaaa33',
           position: 'absolute',
           left: 28,
           top: 28,
@@ -694,7 +741,7 @@ function makeTestProjectCodeWithLongHandPaddingValues(
       >
         <div
           style={{
-            backgroundColor: '#0091FFAA',
+            backgroundColor: '#aaaaaa33',
             width: '100%',
             height: '100%',
           }}

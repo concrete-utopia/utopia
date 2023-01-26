@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
@@ -23,6 +24,7 @@ import {
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { AbsolutePin, IsCenterBased, resizeBoundingBox } from './resize-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -31,6 +33,7 @@ export function createResizeCommands(
   drag: CanvasVector,
   elementGlobalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
+  elementParentFlexDirection: FlexDirection | null,
 ): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
   const pins = pinsForEdgePosition(edgePosition)
   const commands = mapDropNulls((pin) => {
@@ -43,16 +46,17 @@ export function createResizeCommands(
       pin === 'bottom' ||
       (pin === 'width' && edgePosition.x === 0) ||
       (pin === 'height' && edgePosition.y === 0)
-    const value = getLayoutProperty(pin, right(element.props), ['style'])
+    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
       return adjustCssLengthProperty(
         'always',
         selectedElement,
-        stylePropPathMappingFn(pin, ['style']),
+        stylePropPathMappingFn(pin, styleStringInArray),
         (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        true,
+        elementParentFlexDirection,
+        'create-if-not-existing',
       )
     } else {
       return null

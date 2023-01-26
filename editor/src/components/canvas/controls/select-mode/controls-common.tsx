@@ -6,6 +6,7 @@ import { Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
 import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+import { elementHasOnlyTextChildren } from '../../canvas-utils'
 
 export const Emdash: string = '\u2014'
 
@@ -175,9 +176,11 @@ export function cssNumberEqual(left: CSSNumber, right: CSSNumber): boolean {
 
 type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
 
+const CONTROL_CROWDING_UPPER_THRESHOLD = 80
+const CONTROL_CROWDING_LOWER_THRESHOLD = 40
+
 export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   element: ElementInstanceMetadata,
   scale: number,
 ): Set<CanvasPropControl> {
@@ -186,28 +189,29 @@ export function canShowCanvasPropControl(
     (element.globalFrame?.height ?? 0) * scale,
   )
 
-  if (width > 80 && height > 80) {
+  if (width > CONTROL_CROWDING_UPPER_THRESHOLD && height > CONTROL_CROWDING_UPPER_THRESHOLD) {
     return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
   }
 
-  if (Math.min(width, height) < 40) {
+  if (Math.min(width, height) < CONTROL_CROWDING_LOWER_THRESHOLD) {
     return new Set<CanvasPropControl>([])
   }
 
-  if (!MetadataUtils.targetElementSupportsChildren(projectContents, openFile, element)) {
+  if (elementHasOnlyTextChildren(element)) {
+    return new Set<CanvasPropControl>(['padding'])
+  }
+
+  if (!MetadataUtils.targetElementSupportsChildren(projectContents, element)) {
     return new Set<CanvasPropControl>(['borderRadius', 'gap'])
   }
 
   return new Set<CanvasPropControl>(['padding', 'gap'])
 }
 
-interface ShouldShowControlsParams {
-  propAvailableFromStyle: boolean
-  measurementsNonZero: boolean
-}
-
-export function shouldShowControls(params: ShouldShowControlsParams): boolean {
-  const { propAvailableFromStyle, measurementsNonZero } = params
+export function shouldShowControls(
+  propAvailableFromStyle: boolean,
+  measurementsNonZero: boolean,
+): boolean {
   if (propAvailableFromStyle) {
     return true
   }

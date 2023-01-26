@@ -3,6 +3,7 @@ import {
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXFragment,
+  isJSXTextBlock,
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
@@ -47,7 +48,7 @@ export function fixParseSuccessUIDs(
     }
   } = {}
 
-  zipTopLevelElements(
+  const numberOfElementsMatch = zipTopLevelElements(
     oldParsed.topLevelElements,
     newParsed.topLevelElements,
     (
@@ -70,9 +71,15 @@ export function fixParseSuccessUIDs(
 
   const newToOldUidMappingArray = Object.values(newToOldUidMapping)
 
-  if (newToOldUidMappingArray.length === 1) {
-    // we found a single UID mismatch, which means there's a very good chance that it was an update element, let's fix that up
+  if (newToOldUidMappingArray.length === 1 || numberOfElementsMatch) {
+    // we found a single UID mismatch, or the total number of elements has stayed the same,
+    // which means there's a very good chance that it was an update to existing elements,
+    // or a single new element was inserted
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
+
+    // We need to sort the array first, as the pathToModify will be based on the new UIDs up to the leaf,
+    // so we must update the deepest elements first
+    newToOldUidMappingArray.sort((l, r) => r.pathToModify.length - l.pathToModify.length)
 
     newToOldUidMappingArray.forEach((mapping) => {
       const oldPathAlreadyExistingElement = findJSXElementChildAtPath(
@@ -144,22 +151,28 @@ function zipTopLevelElements(
   firstTopLevelElements: Array<TopLevelElement>,
   secondTopLevelElements: Array<TopLevelElement>,
   onElement: OnElement,
-): void {
+): boolean {
   const firstComponents = getComponentsFromTopLevelElements(firstTopLevelElements)
   const secondComponents = getComponentsFromTopLevelElements(secondTopLevelElements)
+
+  const lengthsMatchAtThisLevel = firstComponents.length === secondComponents.length
+  let numberOfElementsMatch = lengthsMatchAtThisLevel
 
   firstComponents.forEach((firstComponent, index) => {
     if (secondComponents.length > index) {
       const secondComponent = secondComponents[index]
 
-      walkElementChildren(
+      const lengthsOfChildrenMatch = walkElementChildren(
         EP.emptyElementPathPart,
         [firstComponent.rootElement],
         [secondComponent.rootElement],
         onElement,
       )
+      numberOfElementsMatch = numberOfElementsMatch && lengthsOfChildrenMatch
     }
   })
+
+  return numberOfElementsMatch
 }
 
 function walkElementsWithin(
@@ -167,17 +180,29 @@ function walkElementsWithin(
   oldElements: ElementsWithin,
   newElements: ElementsWithin,
   onElement: OnElement,
-): void {
+): boolean {
   const oldElementKeys = Object.keys(oldElements)
   const newElementKeys = Object.keys(newElements)
+
+  const lengthsMatchAtThisLevel = newElementKeys.length === oldElementKeys.length
+  let numberOfElementsMatch = lengthsMatchAtThisLevel
+
   newElementKeys.forEach((elementKey, index) => {
     const newElement = newElements[elementKey]
     const oldElementKey: string | null = oldElementKeys[index] ?? null
     const oldElement: JSXElementChild | null =
       oldElementKey == null ? null : oldElements[oldElementKey] ?? null
 
-    compareAndWalkElements(oldElement, newElement, pathSoFar, onElement)
+    const lengthsOfChildrenMatch = compareAndWalkElements(
+      oldElement,
+      newElement,
+      pathSoFar,
+      onElement,
+    )
+    numberOfElementsMatch = numberOfElementsMatch && lengthsOfChildrenMatch
   })
+
+  return numberOfElementsMatch
 }
 
 function walkElementChildren(
@@ -185,12 +210,23 @@ function walkElementChildren(
   oldElements: Array<JSXElementChild>,
   newElements: Array<JSXElementChild>,
   onElement: OnElement,
-): void {
+): boolean {
+  const lengthsMatchAtThisLevel = newElements.length === oldElements.length
+  let numberOfElementsMatch = lengthsMatchAtThisLevel
+
   newElements.forEach((newElement, index) => {
     const oldElement: JSXElementChild | null = oldElements[index] ?? null
 
-    compareAndWalkElements(oldElement, newElement, pathSoFar, onElement)
+    const lengthsOfChildrenMatch = compareAndWalkElements(
+      oldElement,
+      newElement,
+      pathSoFar,
+      onElement,
+    )
+    numberOfElementsMatch = numberOfElementsMatch && lengthsOfChildrenMatch
   })
+
+  return numberOfElementsMatch
 }
 
 function compareAndWalkElements(
@@ -198,7 +234,7 @@ function compareAndWalkElements(
   newElement: JSXElementChild,
   pathSoFar: StaticElementPathPart,
   onElement: OnElement,
-) {
+): boolean {
   /**
    * this first version works by trying to match up indexes. this is really primitive.
    * here's some ideas how could we improve it
@@ -213,11 +249,20 @@ function compareAndWalkElements(
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
-      walkElementChildren(path, oldElement.children, newElement.children, onElement)
+      return walkElementChildren(path, oldElement.children, newElement.children, onElement)
     } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
-      walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
+      return walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
     } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
-      walkElementsWithin(pathSoFar, oldElement.elementsWithin, newElement.elementsWithin, onElement)
+      return walkElementsWithin(
+        pathSoFar,
+        oldElement.elementsWithin,
+        newElement.elementsWithin,
+        onElement,
+      )
+    } else if (isJSXTextBlock(oldElement) && isJSXTextBlock(newElement)) {
+      return true
     }
   }
+
+  return false
 }

@@ -642,6 +642,12 @@ export interface ValueAtPath {
   path: PropertyPath
   value: JSXAttribute
 }
+export function valueAtPath(path: PropertyPath, value: JSXAttribute): ValueAtPath {
+  return {
+    path,
+    value,
+  }
+}
 
 export function setJSXValuesAtPaths(
   attributes: JSXAttributes,
@@ -898,10 +904,10 @@ function walkAttributes(
   fastForEach(attributes, (attr) => {
     switch (attr.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        walkAttribute(attr.value, PP.create([attr.key]), walk)
+        walkAttribute(attr.value, PP.create(attr.key), walk)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        walkAttribute(attr.spreadValue, PP.create([]), walk)
+        walkAttribute(attr.spreadValue, PP.create(), walk)
         break
       default:
         const _exhaustiveCheck: never = attr
@@ -918,7 +924,7 @@ export function getAllPathsFromAttributes(attributes: JSXAttributes): Array<Prop
       if (isJSXAttributeValue(attribute) && typeof attribute.value === 'object') {
         paths.push(
           ...getAllObjectPaths(attribute.value).map((p) =>
-            PP.create([...path.propertyElements, ...p]),
+            PP.create(...path.propertyElements, ...p),
           ),
         )
       }

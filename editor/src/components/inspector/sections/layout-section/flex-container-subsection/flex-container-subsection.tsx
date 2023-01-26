@@ -1,10 +1,12 @@
 import React from 'react'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { useRefEditorState } from '../../../../editor/store/store-hook'
+import { FlexDirection } from '../../../common/css-utils'
+import { updateFlexDirectionStrategies } from '../../../inspector-strategies/inspector-strategies'
+import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
-import {
-  useInspectorLayoutInfo,
-  useMapInspectorInfoFromCSSNumberToNumber,
-} from '../../../common/property-path-hooks'
+import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   FlexAlignContentControl,
@@ -15,7 +17,6 @@ import {
   FlexDirectionControl,
   getDirectionAwareLabels,
 } from './flex-container-controls'
-import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
 export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {
   // Right now flex layout isn't supported on groups, so just don't show the controls if a group is selected
@@ -24,7 +25,6 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const gap = useMapInspectorInfoFromCSSNumberToNumber(useInspectorLayoutInfo('gap'))
 
   const {
     justifyFlexStart,
@@ -41,13 +41,23 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItemsControlStyles: ControlStyles =
     flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
 
-  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    gap.onSubmitValue,
-    gap.onUnsetValues,
-  )
-  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    gap.onSubmitValue,
-    gap.onUnsetValues,
+  const editorStateRef = useRefEditorState((store) => {
+    return {
+      metadata: store.editor.jsxMetadata,
+      selectedViews: store.editor.selectedViews,
+    }
+  })
+  const dispatch = useDispatch()
+  const updateFlexDirection = React.useCallback(
+    (newFlexDirection: FlexDirection) => {
+      executeFirstApplicableStrategy(
+        dispatch,
+        editorStateRef.current.metadata,
+        editorStateRef.current.selectedViews,
+        updateFlexDirectionStrategies(newFlexDirection),
+      )
+    },
+    [dispatch, editorStateRef],
   )
 
   return (
@@ -57,7 +67,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           value={flexDirection.value}
           controlStatus={flexDirection.controlStatus}
           controlStyles={flexDirection.controlStyles}
-          onSubmitValue={flexDirection.onSubmitValue}
+          onSubmitValue={updateFlexDirection}
           onUnset={flexDirection.onUnsetValues}
           flexWrap={flexWrap.value}
         />
@@ -72,14 +82,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           justifyFlexEnd={justifyFlexEnd}
         />
       </UIGridRow>
-      <FlexGapControl
-        value={gap.value}
-        onSubmitValue={wrappedOnSubmitValue}
-        onTransientSubmitValue={wrappedOnTransientSubmitValue}
-        onUnset={gap.onUnsetValues}
-        controlStatus={gap.controlStatus}
-        controlStyles={gap.controlStyles}
-      />
+      <FlexGapControl />
       <FlexAlignItemsControl
         value={alignItems.value}
         controlStatus={alignItems.controlStatus}

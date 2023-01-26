@@ -119,8 +119,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_JSX_ELEMENTS':
       return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
+    case 'PASTE_PROPERTIES':
+      return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
+    case 'COPY_PROPERTIES':
+      return UPDATE_FNS.COPY_PROPERTIES(action, state)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
     case 'CLOSE_TEXT_EDITOR':
@@ -304,8 +308,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
-    case 'UPDATE_CHILD_TEXT':
-      return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':
       return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':
@@ -372,6 +374,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_AGAINST_GITHUB(action, state)
     case 'SET_IMAGE_DRAG_SESSION_STATE':
       return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
+    case 'APPLY_COMMANDS':
+      return UPDATE_FNS.APPLY_COMMANDS(action, state)
+    case 'UPDATE_COLOR_SWATCHES':
+      return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     default:
       return state
   }

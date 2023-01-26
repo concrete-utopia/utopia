@@ -5,7 +5,7 @@ import {
   ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 import {
@@ -17,6 +17,7 @@ import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-s
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
+import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -26,12 +27,12 @@ export interface NameAndIconResult {
 }
 
 export function useMetadata(): ElementInstanceMetadataMap {
-  return useEditorState((store) => store.editor.jsxMetadata, 'useMetadata')
+  return useEditorState(Substores.metadata, (store) => store.editor.jsxMetadata, 'useMetadata')
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.jsxMetadata,
-  (store: EditorStorePatched) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate) => store.editor.allElementProps,
   (metadata, allElementProps) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
@@ -44,9 +45,14 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
-  return useEditorState(selector, 'useNamesAndIconsAllPaths', (oldResult, newResult) => {
-    return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
-  })
+  return useEditorState(
+    Substores.metadata,
+    selector,
+    'useNamesAndIconsAllPaths',
+    (oldResult, newResult) => {
+      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+    },
+  )
 }
 
 function getNameAndIconResult(

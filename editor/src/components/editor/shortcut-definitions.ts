@@ -66,12 +66,22 @@ export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
 export const MOVE_ELEMENT_TO_BACK_SHORTCUT = 'move-element-to-back'
 export const FOCUS_CLASS_NAME_INPUT = 'focus-inspector-class-name-input'
 export const TOGGLE_FOCUSED_OMNIBOX_TAB = 'toggle-focused-omnibox-tab'
-export const TOGGLE_LEFT_MENU_SHORTCUT = 'toggle-left-menu'
-export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
+export const TOGGLE_NAVIGATOR = 'toggle-navigator'
+export const TOGGLE_INSPECTOR = 'toggle-inspector'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
 export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
+export const TEXT_EDIT_MODE = 'text-edit-mode'
+export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
+export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
+export const TOGGLE_TEXT_UNDERLINE = 'toggle-text-underline'
+export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
+export const PASTE_STYLE_PROPERTIES = 'paste-style-properties'
+export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
+
+export const OPEN_EYEDROPPPER = 'open-eyedropper'
+export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -112,7 +122,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_BORDER_SHORTCUT]: shortcut(
     'Toggle the border of the currently selected text element.',
-    key('b', []),
+    key('forwardslash', ['shift']),
   ),
   [COPY_SELECTION_SHORTCUT]: shortcut(
     'Copy the current selection to the clipboard.',
@@ -124,7 +134,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_BACKGROUND_SHORTCUT]: shortcut(
     'Toggle the background layers of the currently selected element.',
-    key('f', []),
+    key('forwardslash', ['alt']),
   ),
   [UNWRAP_ELEMENT_SHORTCUT]: shortcut(
     'Unwrap children of an element into their grandparent element.',
@@ -156,7 +166,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('s', []),
   ),
   [INSERT_VIEW_SHORTCUT]: shortcut('Insert a view.', key('v', [])),
-  [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', key('d', [])),
+  [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', [key('d', []), key('f', [])]),
   [CUT_SELECTION_SHORTCUT]: shortcut(
     'Cut the current selection to the clipboard.',
     key('x', 'cmd'),
@@ -190,14 +200,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Focus the omnibox or toggle its current tab.',
     key('forwardslash', 'cmd'),
   ),
-  [TOGGLE_LEFT_MENU_SHORTCUT]: shortcut(
-    'Toggle the left hand menu panel.',
-    key('1', ['alt', 'cmd']),
-  ),
-  [TOGGLE_RIGHT_MENU_SHORTCUT]: shortcut(
-    'Toggle the right hand menu panel.',
-    key('2', ['alt', 'cmd']),
-  ),
+  [TOGGLE_NAVIGATOR]: shortcut('Toggle the navigator.', key('1', ['alt', 'cmd'])),
+  [TOGGLE_INSPECTOR]: shortcut('Toggle the inspector.', key('2', ['alt', 'cmd'])),
   [TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT]: shortcut(
     'Toggle additional controls in the designer.',
     key('y', 'cmd'),
@@ -210,6 +214,30 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('c', [])),
   [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
+  [OPEN_EYEDROPPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
+  [TEXT_EDIT_MODE]: shortcut('Activate text edit mode', key('t', [])),
+  [TOGGLE_TEXT_BOLD]: shortcut(
+    'Toggle font-weight to bold of the currently selected text element.',
+    key('b', ['cmd']),
+  ),
+  [TOGGLE_TEXT_ITALIC]: shortcut(
+    'Toggle font-style to italic of the currently selected text element.',
+    key('i', ['cmd']),
+  ),
+  [TOGGLE_TEXT_UNDERLINE]: shortcut(
+    'Toggle text-decoration to underline of the currently selected text element.',
+    key('u', ['cmd']),
+  ),
+  [TOGGLE_TEXT_STRIKE_THROUGH]: shortcut(
+    'Toggle text-decoration to line-through of the currently selected text element.',
+    key('x', ['cmd', 'shift']),
+  ),
+  [CONVERT_TO_FLEX_CONTAINER]: shortcut(
+    'Convert selected elements to flex containers',
+    key('a', ['shift']),
+  ),
+  [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
+  [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

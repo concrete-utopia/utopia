@@ -46,7 +46,7 @@ import {
   projectGithubSettings,
   PullRequest,
 } from '../../components/editor/store/editor-state'
-import { useEditorState } from '../../components/editor/store/store-hook'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from './dependencies'
 import { RequestedNpmDependency } from './npm-dependency-types'
@@ -211,10 +211,38 @@ export async function saveProjectToGithub(
   dispatch: EditorDispatch,
   options: SaveProjectToGithubOptions,
 ): Promise<void> {
-  const { branchName, commitMessage } = options
   const operation: GithubOperation = { name: 'commish' }
-
   dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+
+  const { branchName, commitMessage } = options
+  const { targetRepository } = persistentModel.githubSettings
+
+  // If this is a straight push, load the repo before saving
+  // in order to retrieve the head origin commit hash
+  // and avoid a fast forward error.
+  let originCommit = persistentModel.githubSettings.originCommit
+  if (originCommit == null && targetRepository != null && branchName != null) {
+    const getBranchResponse = await getBranchContentFromServer(
+      targetRepository,
+      branchName,
+      null,
+      null,
+    )
+    if (getBranchResponse.ok) {
+      const content: GetBranchContentResponse = await getBranchResponse.json()
+      if (content.type === 'SUCCESS' && content.branch != null) {
+        originCommit = content.branch.originCommit
+      }
+    }
+  }
+
+  const patchedModel: PersistentModel = {
+    ...persistentModel,
+    githubSettings: {
+      ...persistentModel.githubSettings,
+      originCommit: originCommit,
+    },
+  }
 
   const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
@@ -231,7 +259,7 @@ export async function saveProjectToGithub(
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
-  const postBody = JSON.stringify(persistentModel)
+  const postBody = JSON.stringify(patchedModel)
   const response = await fetch(urlToUse, {
     method: 'POST',
     credentials: 'include',
@@ -286,11 +314,15 @@ export async function saveProjectToGithub(
         break
       default:
         const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+        throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -339,7 +371,9 @@ export async function getBranchesForGithubRepository(
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -417,7 +451,9 @@ export async function updatePullRequestsForBranch(
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -475,7 +511,10 @@ export async function updateProjectAgainstGithub(
                 ),
                 updateGithubData({ upstreamChanges: null }),
                 showToast(
-                  notice(`Updated the project against the branch ${branchName}.`, 'SUCCESS'),
+                  notice(
+                    `Github: Updated the project against the branch ${branchName}.`,
+                    'SUCCESS',
+                  ),
                 ),
               ],
               'everyone',
@@ -493,7 +532,11 @@ export async function updateProjectAgainstGithub(
       ? specificCommitResponse.status
       : branchLatestResponse.status
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -546,17 +589,16 @@ export async function updateProjectWithBranchContent(
     switch (responseBody.type) {
       case 'FAILURE':
         dispatch(
-          [
-            showToast(
-              notice(`Error when saving to Github: ${responseBody.failureReason}`, 'ERROR'),
-            ),
-          ],
+          [showToast(notice(`Error saving to Github: ${responseBody.failureReason}`, 'ERROR'))],
           'everyone',
         )
         break
       case 'SUCCESS':
         if (responseBody.branch == null) {
-          dispatch([showToast(notice(`Could not find branch ${branchName}.`, 'ERROR'))], 'everyone')
+          dispatch(
+            [showToast(notice(`Github: Could not find branch ${branchName}.`, 'ERROR'))],
+            'everyone',
+          )
         } else {
           const newGithubData: Partial<GithubData> = {
             upstreamChanges: null,
@@ -589,7 +631,10 @@ export async function updateProjectWithBranchContent(
               updateProjectContents(responseBody.branch.content),
               updateBranchContents(responseBody.branch.content),
               showToast(
-                notice(`Updated the project with the content from ${branchName}`, 'SUCCESS'),
+                notice(
+                  `Github: Updated the project with the content from ${branchName}`,
+                  'SUCCESS',
+                ),
               ),
             ],
             'everyone',
@@ -598,11 +643,15 @@ export async function updateProjectWithBranchContent(
         break
       default:
         const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+        throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
     dispatch(
-      [showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR'))],
+      [
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
+      ],
       'everyone',
     )
   }
@@ -670,7 +719,9 @@ export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
         throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
     }
   } else {
-    throw new Error(`Unexpected status returned from user details endpoint: ${response.status}`)
+    throw new Error(
+      `Github: Unexpected status returned from user details endpoint: ${response.status}`,
+    )
   }
 }
 
@@ -711,7 +762,7 @@ export async function getUsersPublicGithubRepositories(
           const actions: EditorAction[] = [
             showToast(
               notice(
-                `Error when getting a user's repositories: ${responseBody.failureReason}`,
+                `Github: Error getting a user's repositories: ${responseBody.failureReason}`,
                 'ERROR',
               ),
             ),
@@ -731,11 +782,13 @@ export async function getUsersPublicGithubRepositories(
           ]
         default:
           const _exhaustiveCheck: never = responseBody
-          throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
+          throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
       }
     } else {
       return [
-        showToast(notice(`Unexpected status returned from endpoint: ${response.status}`, 'ERROR')),
+        showToast(
+          notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
+        ),
       ]
     }
   } finally {
@@ -745,10 +798,10 @@ export async function getUsersPublicGithubRepositories(
 
 const githubFileChangesSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
-  (store) => store.userState.githubState.authenticated,
-  (store) => store.editor.githubChecksums,
-  (store) => store.editor.githubData.treeConflicts,
-  (store) => store.editor.assetChecksums,
+  (store: EditorStorePatched) => store.userState.githubState.authenticated,
+  (store: EditorStorePatched) => store.editor.githubChecksums,
+  (store: EditorStorePatched) => store.editor.githubData.treeConflicts,
+  (store: EditorStorePatched) => store.editor.assetChecksums,
   (
     projectContents,
     githubAuthenticated,
@@ -765,11 +818,15 @@ const githubFileChangesSelector = createSelector(
 )
 
 export function useGithubFileChanges(): GithubFileChanges | null {
-  const storeType = useEditorState((store) => store.storeName, 'useGithubFileChanges storeName')
+  const storeType = useEditorState(
+    Substores.restOfStore,
+    (store) => store.storeName,
+    'useGithubFileChanges storeName',
+  )
   if (storeType !== 'low-priority-store') {
     throw new Error('useGithubFileChanges hook must only be used inside the low-priority-store!')
   }
-  return useEditorState(githubFileChangesSelector, 'useGithubFileChanges')
+  return useEditorState(Substores.fullStore, githubFileChangesSelector, 'useGithubFileChanges')
 }
 
 export type GithubFileStatus = 'modified' | 'deleted' | 'untracked' | 'conflicted'

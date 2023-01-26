@@ -43,7 +43,8 @@ import {
   REDO_CHANGES_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 
@@ -176,10 +177,11 @@ const ClassNameControl = React.memo(() => {
   const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState(
+    Substores.selectedViews,
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
   )
-  const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSubsection dispatch')
+  const dispatch = useDispatch()
 
   const [filter, setFilter] = React.useState('')
   const isFocusedRef = React.useRef(false)
@@ -188,6 +190,7 @@ const ClassNameControl = React.memo(() => {
   const focusedValueRef = React.useRef<string | null>(null)
 
   const focusTriggerCount = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.inspector.classnameFocusCounter,
     'ClassNameSubsection classnameFocusCounter',
   )
@@ -274,7 +277,7 @@ const ClassNameControl = React.memo(() => {
           [
             EditorActions.setProp_UNSAFE(
               elementPath,
-              PP.create(['className']),
+              PP.create('className'),
               jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
             ),
             EditorActions.clearTransientProps(),
@@ -362,13 +365,9 @@ const ClassNameControl = React.memo(() => {
 
   const multiValueLabel: styleFn = React.useCallback(
     (base, { isFocused }) => {
-      const enabledColor = (isFocused as boolean)
-        ? theme.inverted.textColor.value
-        : theme.inverted.primary.value
+      const enabledColor = (isFocused as boolean) ? theme.bg0.value : theme.primary.value
       const color = isMenuEnabled ? enabledColor : theme.fg8.value
-      const backgroundColor = (isFocused as boolean)
-        ? theme.inverted.primary.value
-        : theme.bg1.value
+      const backgroundColor = (isFocused as boolean) ? theme.primary.value : theme.bg1.value
       return {
         ...base,
         label: 'multiValueLabel',
@@ -413,9 +412,7 @@ const ClassNameControl = React.memo(() => {
 
   const multiValue: styleFn = React.useCallback(
     (base, { isFocused, data }) => {
-      const backgroundColor = (isFocused as boolean)
-        ? theme.inverted.primary.value
-        : theme.bg1.value
+      const backgroundColor = (isFocused as boolean) ? theme.primary.value : theme.bg1.value
       if (isFocused as boolean) {
         focusedValueRef.current = data.label
       }
@@ -460,7 +457,7 @@ const ClassNameControl = React.memo(() => {
             [
               EditorActions.setPropTransient(
                 targets[0],
-                PP.create(['className']),
+                PP.create('className'),
                 jsxAttributeValue(newClassNameString, emptyComments),
               ),
             ],
@@ -471,10 +468,8 @@ const ClassNameControl = React.memo(() => {
         updateFocusedOption(value)
       }
 
-      const color = (isFocused as boolean) ? theme.inverted.textColor.value : theme.textColor.value
-      const backgroundColor = (isFocused as boolean)
-        ? theme.inverted.primary.value
-        : theme.bg1.value
+      const color = (isFocused as boolean) ? theme.bg0.value : theme.textColor.value
+      const backgroundColor = (isFocused as boolean) ? theme.primary.value : theme.bg1.value
       const borderRadius = (isFocused as boolean) ? 3 : 0
 
       return {

@@ -1,3 +1,4 @@
+import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
@@ -43,6 +44,7 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -66,6 +68,7 @@ export function flexResizeBasicStrategy(
   )
   const elementDimensions = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+  const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
   const hasDimensions =
     elementDimensions != null &&
@@ -158,6 +161,7 @@ export function flexResizeBasicStrategy(
             original: number,
             resized: number,
             parent: number | undefined,
+            parentFlexDirection: FlexDirection | null,
           ): AdjustCssLengthProperty[] => {
             if (elementDimension == null && (original === resized || hasSizedParent)) {
               return []
@@ -166,10 +170,11 @@ export function flexResizeBasicStrategy(
               adjustCssLengthProperty(
                 'always',
                 selectedElement,
-                stylePropPathMappingFn(name, ['style']),
+                stylePropPathMappingFn(name, styleStringInArray),
                 elementDimension != null ? resized - original : resized,
                 parent,
-                true,
+                parentFlexDirection,
+                'create-if-not-existing',
               ),
             ]
           }
@@ -181,6 +186,7 @@ export function flexResizeBasicStrategy(
               originalBounds.width,
               resizedBounds.width,
               elementParentBounds?.width,
+              elementParentFlexDirection,
             ),
             ...makeResizeCommand(
               'height',
@@ -188,6 +194,7 @@ export function flexResizeBasicStrategy(
               originalBounds.height,
               resizedBounds.height,
               elementParentBounds?.height,
+              elementParentFlexDirection,
             ),
           ]
 
@@ -275,7 +282,7 @@ const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensi
     return foldEither(
       (_) => null,
       (v) => v?.value ?? null,
-      getLayoutProperty(name, attrs, ['style']),
+      getLayoutProperty(name, attrs, styleStringInArray),
     )
   }
 

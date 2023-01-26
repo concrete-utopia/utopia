@@ -6,7 +6,7 @@ import { GithubFileStatus, revertGithubFile } from '../../core/shared/github'
 import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 interface ConfirmRevertDialogProps {
   dispatch: EditorDispatch
@@ -46,10 +46,15 @@ const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRever
   props,
 ) => {
   const projectContents = useEditorState(
+    Substores.projectContents,
     (store) => store.editor.projectContents,
     'project contents',
   )
-  const branchContents = useEditorState((store) => store.editor.branchContents, 'branch contents')
+  const branchContents = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.branchContents,
+    'branch contents',
+  )
   const clickButton = React.useCallback(() => {
     if (props.status == null) {
       return

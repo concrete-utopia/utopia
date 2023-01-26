@@ -4,7 +4,7 @@ import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/arr
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
 import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
-import { useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import {
   CanvasStrategy,
   CanvasStrategyId,
@@ -47,6 +47,10 @@ import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
 import { getDragTargets } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
+import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
+import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
+import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
+import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -127,6 +131,17 @@ const AncestorCompatibleStrategies: Array<MetaCanvasStrategy> = preventAllOnRoot
   dragToMoveMetaStrategy,
 ])
 
+const keyboardShortcutStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls(
+    (factory) => factory(canvasState, interactionSession),
+    [keyboardSetFontSizeStrategy, keyboardSetFontWeightStrategy, keyboardSetOpacityStrategy],
+  )
+}
+
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
@@ -134,6 +149,8 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
+  keyboardShortcutStrategies,
+  drawToInsertTextStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -177,6 +194,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
       return insertionSubjects(editor.mode.subjects)
     case 'live':
     case 'select':
+    case 'textEdit':
       return targetPaths(editor.selectedViews)
     default:
       assertNever(editor.mode)
@@ -235,7 +253,12 @@ const getApplicableStrategiesSelector = createSelector(
 )
 
 function useGetApplicableStrategies(): Array<CanvasStrategy> {
-  return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
+  return useEditorState(
+    Substores.fullStore,
+    getApplicableStrategiesSelector,
+    'useGetApplicableStrategies',
+    arrayEquals,
+  )
 }
 
 export interface StrategyWithFitness {
@@ -353,6 +376,7 @@ export function applyCanvasStrategy(
 
 export function useDelayedEditorState<T>(
   selector: StateSelector<EditorStorePatched, T | null>,
+  selectorName: string,
 ): T | null {
   /**
    * onMouseDown selection shows canvas controls that are active when a strategy runs with a delay (double click selection in hierarchy)
@@ -391,24 +415,29 @@ export function useDelayedEditorState<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback(selector, maybeDelayedCallback)
-  useSelectorWithCallback((store) => {
-    if (
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
-    ) {
-      return selector(store)
-    } else {
-      return null
-    }
-  }, immediateCallback)
+  useSelectorWithCallback(Substores.fullStore, selector, maybeDelayedCallback, selectorName)
+  useSelectorWithCallback(
+    Substores.fullStore,
+    (store) => {
+      if (
+        store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+        store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
+      ) {
+        return selector(store)
+      } else {
+        return null
+      }
+    },
+    immediateCallback,
+    selectorName,
+  )
 
   return delayedValue
 }
 
 export const useDelayedCurrentStrategy = () => {
   const selector = (store: EditorStorePatched) => store.strategyState.currentStrategy
-  return useDelayedEditorState<CanvasStrategyId | null>(selector)
+  return useDelayedEditorState<CanvasStrategyId | null>(selector, 'useDelayedCurrentStrategy')
 }
 
 const notResizableControls = controlWithProps({
@@ -449,7 +478,10 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   } else {
     switch (interactionSession.interactionData.type) {
       case 'DRAG':
-        return !isNotYetStartedDragInteraction(interactionSession.interactionData)
+        return (
+          !isNotYetStartedDragInteraction(interactionSession.interactionData) ||
+          interactionSession.interactionData.zeroDragPermitted === 'zero-drag-permitted'
+        )
       case 'KEYBOARD':
       case 'HOVER':
         return true
@@ -463,9 +495,13 @@ export function interactionInProgress(interactionSession: InteractionSession | n
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
-  const currentlyInProgress = useEditorState((store) => {
-    return interactionInProgress(store.editor.canvas.interactionSession)
-  }, 'useGetApplicableStrategyControls currentlyInProgress')
+  const currentlyInProgress = useEditorState(
+    Substores.canvas,
+    (store) => {
+      return interactionInProgress(store.editor.canvas.interactionSession)
+    },
+    'useGetApplicableStrategyControls currentlyInProgress',
+  )
   return React.useMemo(() => {
     let applicableControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false

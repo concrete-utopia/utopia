@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag */
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import {
   FeatureName,
   toggleFeatureEnabled,
@@ -19,15 +20,13 @@ import {
   CheckboxInput,
   FlexColumn,
   useColorTheme,
-  Button,
-  StringInput,
   HeadlessStringInput,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
 import json5 from 'json5'
-import { NO_OP } from '../../../../core/shared/utils'
 import { InspectorInputEmotionStyle } from '../../../../uuiui/inputs/base-input'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -76,21 +75,14 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
 
 export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
-  const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
+  const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
+    Substores.restOfEditor,
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',
   )
 
   const entireStateRef = useRefEditorState((store) => store)
-
-  const openUiJsFile = useRefEditorState((store) => {
-    return getOpenUIJSFile(store.editor)
-  })
-
-  const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadata
-  })
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
@@ -99,18 +91,6 @@ export const SettingsPanel = React.memo(() => {
   const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
-
-  const printEditorState = React.useCallback(() => {
-    console.info('Current Editor State:', entireStateRef.current)
-  }, [entireStateRef])
-
-  const printOpenUiJsFileModel = React.useCallback(() => {
-    console.info('Open UIJSFile:', openUiJsFile.current)
-  }, [openUiJsFile])
-
-  const printCanvasMetadata = React.useCallback(() => {
-    console.info('Latest metadata:', jsxMetadata.current)
-  }, [jsxMetadata])
 
   const loadProjectContentJson = React.useCallback(
     (value: string) => {
