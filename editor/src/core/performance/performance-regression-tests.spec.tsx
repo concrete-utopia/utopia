@@ -64,7 +64,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`404`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`402`)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
