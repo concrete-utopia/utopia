@@ -46,7 +46,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, () => rightClickOn(editor, 'column'))
 
     expect(div.style.flexDirection).toEqual('')
   })
