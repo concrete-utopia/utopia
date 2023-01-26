@@ -14,6 +14,10 @@ import {
   Axis,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 
 export const fillContainerStrategyBasic = (
   axis: Axis,
@@ -29,8 +33,9 @@ export const fillContainerStrategyBasic = (
     }
 
     return elements.flatMap((path) => {
-      const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
-      if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
+      const instance = MetadataUtils.findElementByElementPath(metadata, path)
+      // TODO BEFORE MERGE!! this is an unrelated change I just fixed it
+      if (!MetadataUtils.isParentFlexLayoutedContainerForElement(instance)) {
         const checkedValue =
           value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
         const nukePositioningCommands = otherAxisSetToFill
@@ -38,12 +43,12 @@ export const fillContainerStrategyBasic = (
           : [nukePositioningPropsForAxisCommand(axis, path)]
         return [
           ...nukePositioningCommands,
-          nukeSizingPropsForAxisCommand(axis, path),
-          setProperty(
+          setCssLengthProperty(
             'always',
             path,
             PP.create('style', widthHeightFromAxis(axis)),
-            printCSSNumber(checkedValue, null),
+            setExplicitCssValue(checkedValue),
+            instance?.specialSizeMeasurements.parentFlexDirection ?? null,
           ),
         ]
       }
@@ -57,12 +62,12 @@ export const fillContainerStrategyBasic = (
         const checkedValue =
           value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
         return [
-          nukeSizingPropsForAxisCommand(axis, path),
-          setProperty(
+          setCssLengthProperty(
             'always',
             path,
             PP.create('style', widthHeightFromAxis(axis)),
-            printCSSNumber(checkedValue, null),
+            setExplicitCssValue(checkedValue),
+            flexDirection,
           ),
         ]
       }

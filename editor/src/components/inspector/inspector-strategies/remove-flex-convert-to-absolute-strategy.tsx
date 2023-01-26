@@ -2,7 +2,12 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
+import { cssPixelLength } from '../common/css-utils'
 import {
   filterKeepFlexContainers,
   flexChildProps,
@@ -26,9 +31,23 @@ function positionAbsoluteRelativeToParentCommands(
   const left = element.specialSizeMeasurements.offset.x
   const top = element.specialSizeMeasurements.offset.y
 
+  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
   return [
-    setProperty('always', elementPath, styleP('left'), left),
-    setProperty('always', elementPath, styleP('top'), top),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('left'),
+      setExplicitCssValue(cssPixelLength(left)),
+      parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('top'),
+      setExplicitCssValue(cssPixelLength(top)),
+      parentFlexDirection,
+    ),
     setProperty('always', elementPath, styleP('position'), 'absolute'),
   ]
 }

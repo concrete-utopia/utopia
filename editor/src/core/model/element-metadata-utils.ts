@@ -228,8 +228,8 @@ export const MetadataUtils = {
       !MetadataUtils.isPositionAbsolute(element)
     )
   },
-  isParentFlexLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
-    return element.specialSizeMeasurements.parentLayoutSystem === 'flex'
+  isParentFlexLayoutedContainerForElement(element: ElementInstanceMetadata | null): boolean {
+    return element?.specialSizeMeasurements.parentLayoutSystem === 'flex'
   },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex'

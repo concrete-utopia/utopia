@@ -7,6 +7,7 @@ import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import {
   CSSNumber,
   cssNumber,
+  cssPixelLength,
   FlexDirection,
   parseCSSLengthPercent,
   parseCSSNumber,
@@ -20,6 +21,10 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../canvas/commands/set-css-length-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -304,7 +309,8 @@ export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
 }
 
-export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create('style', prop)
+export const styleP = <K extends keyof CSSProperties>(prop: K): PropertyPath<['style', K]> =>
+  PP.create('style', prop)
 
 export const flexContainerProps = [
   styleP('flexDirection'),
@@ -337,8 +343,20 @@ export function sizeToVisualDimensions(
   const height = element.specialSizeMeasurements.clientHeight
 
   return [
-    setProperty('always', elementPath, styleP('width'), width),
-    setProperty('always', elementPath, styleP('height'), height),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(width)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(height)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
   ]
 }
 

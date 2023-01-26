@@ -3,15 +3,19 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
+import { cssKeyword, cssUnitlessLength } from '../common/css-utils'
 import {
   Axis,
   detectFillHugFixedState,
   hugContentsApplicableForContainer,
   hugContentsApplicableForText,
   MaxContent,
-  nukeSizingPropsForAxisCommand,
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
@@ -24,9 +28,16 @@ function hugContentsSingleElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+
   const basicCommands = [
-    nukeSizingPropsForAxisCommand(axis, elementPath),
-    setProperty('always', elementPath, PP.create('style', widthHeightFromAxis(axis)), MaxContent),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', widthHeightFromAxis(axis)),
+      setExplicitCssValue(cssKeyword(MaxContent)),
+      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
   ]
 
   const chilren = MetadataUtils.getChildrenPaths(metadata, elementPath)
