@@ -19,7 +19,7 @@ import { ElementPath, PropertyPath } from '../../../../../core/shared/project-fi
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
 import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
-import { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
+import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
   AdjustCssLengthProperty,
@@ -92,6 +92,7 @@ export function getAbsoluteReparentPropertyChanges(
     pin: LayoutPinnedProp,
     newValue: number,
     parentDimension: number | undefined,
+    elementParentFlexDirection: FlexDirection | null,
   ): AdjustCssLengthProperty | null => {
     const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null) {
@@ -102,7 +103,8 @@ export function getAbsoluteReparentPropertyChanges(
         stylePropPathMappingFn(pin, styleStringInArray),
         newValue,
         parentDimension,
-        true,
+        elementParentFlexDirection,
+        'create-if-not-existing',
       )
     } else {
       return null
@@ -126,6 +128,9 @@ export function getAbsoluteReparentPropertyChanges(
   }
 
   const newParentFrame = MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata)
+  const newParentFlexDirection =
+    MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
+      ?.specialSizeMeasurements.flexDirection ?? null
 
   return [
     ...mapDropNulls(
@@ -135,6 +140,7 @@ export function getAbsoluteReparentPropertyChanges(
           pin,
           horizontal ? offsetTL.x : offsetTL.y,
           horizontal ? newParentFrame?.width : newParentFrame?.height,
+          newParentFlexDirection,
         )
       },
       ['top', 'left'] as const,
@@ -146,6 +152,7 @@ export function getAbsoluteReparentPropertyChanges(
           pin,
           horizontal ? offsetBR.x : offsetBR.y,
           horizontal ? newParentFrame?.width : newParentFrame?.height,
+          newParentFlexDirection,
         )
       },
       ['bottom', 'right'] as const,

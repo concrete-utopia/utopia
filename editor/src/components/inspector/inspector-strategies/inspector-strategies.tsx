@@ -186,14 +186,19 @@ export const setPropFixedStrategies = (
         return null
       }
 
-      return elementPaths.map((path) =>
-        setCssLengthProperty(
+      return elementPaths.map((path) => {
+        const parentFlexDirection =
+          MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
+            .parentFlexDirection ?? null
+
+        return setCssLengthProperty(
           whenToRun,
           path,
           PP.create(['style', widthHeightFromAxis(axis)]),
           setExplicitCssValue(value),
-        ),
-      )
+          parentFlexDirection,
+        )
+      })
     },
   },
 ]
