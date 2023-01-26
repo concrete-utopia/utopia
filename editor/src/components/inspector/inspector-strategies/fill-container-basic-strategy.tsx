@@ -42,7 +42,7 @@ export const fillContainerStrategyBasic = (
           setProperty(
             'always',
             path,
-            PP.create(['style', widthHeightFromAxis(axis)]),
+            PP.create('style', widthHeightFromAxis(axis)),
             printCSSNumber(checkedValue, null),
           ),
         ]
@@ -61,7 +61,7 @@ export const fillContainerStrategyBasic = (
           setProperty(
             'always',
             path,
-            PP.create(['style', widthHeightFromAxis(axis)]),
+            PP.create('style', widthHeightFromAxis(axis)),
             printCSSNumber(checkedValue, null),
           ),
         ]
@@ -76,7 +76,7 @@ export const fillContainerStrategyBasic = (
         setProperty(
           'always',
           path,
-          PP.create(['style', 'flexGrow']),
+          PP.create('style', 'flexGrow'),
           printCSSNumber(checkedValue, null),
         ),
       ]
