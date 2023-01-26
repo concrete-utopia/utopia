@@ -1,46 +1,38 @@
 import React from 'react'
 
-import * as PP from '../../../../../core/shared/property-path'
-import { OptionChainControl } from '../../../controls/option-chain-control'
-import {
-  useInspectorLayoutInfo,
-  InspectorCallbackContext,
-  useInspectorInfo,
-  useInspectorStyleInfo,
-  InspectorInfo,
-  stylePropPathMappingFn,
-  InspectorPropsContext,
-  useInspectorInfoSimpleUntyped,
-} from '../../../common/property-path-hooks'
-import { useEditorState } from '../../../../editor/store/store-hook'
-import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
-import {
-  getControlStatusFromPropertyStatus,
-  getControlStyles,
-  ControlStatus,
-  ControlStyles,
-} from '../../../common/control-status'
+import { useContextSelector } from 'use-context-selector'
 import { LayoutSystem } from 'utopia-api/core'
-import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
-  SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
-import {
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  ChainedNumberInput,
-  SquareButton,
-  FunctionIcons,
-} from '../../../../../uuiui'
-import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
-import { useContextSelector } from 'use-context-selector'
-import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { PropertyLabel } from '../../../widgets/property-label'
+import { FunctionIcons, SquareButton } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
+import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
+import {
+  ControlStatus,
+  ControlStyles,
+  getControlStatusFromPropertyStatus,
+  getControlStyles,
+} from '../../../common/control-status'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
+import {
+  InspectorCallbackContext,
+  InspectorInfo,
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+  useInspectorContext,
+  useInspectorInfoSimpleUntyped,
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+} from '../../../common/property-path-hooks'
+import { OptionChainControl } from '../../../controls/option-chain-control'
+import { PropertyLabel } from '../../../widgets/property-label'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { Sides, SplitChainedNumberInput } from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -188,11 +180,13 @@ export const PaddingRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow tall padded={true} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel
           target={paddingPropsToUnset}
           propNamesToUnset={contextMenuLabel}
-          style={{ paddingBottom: 12 }}
+          style={{
+            paddingBottom: 20,
+          }}
         >
           Padding
         </PropertyLabel>
@@ -210,88 +204,37 @@ export const PaddingControl = React.memo(() => {
       stylePropPathMappingFn,
     )
 
-  const paddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingTop.onSubmitValue,
-    paddingTop.onUnsetValues,
-  )
-  const paddingTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingTop.onTransientSubmitValue,
-    paddingTop.onUnsetValues,
-  )
-  const paddingRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingRight.onSubmitValue,
-    paddingRight.onUnsetValues,
-  )
-  const paddingRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingRight.onTransientSubmitValue,
-    paddingRight.onUnsetValues,
-  )
-  const paddingBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingBottom.onSubmitValue,
-    paddingBottom.onUnsetValues,
-  )
-  const paddingBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingBottom.onTransientSubmitValue,
-    paddingBottom.onUnsetValues,
-  )
-  const paddingLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingLeft.onSubmitValue,
-    paddingLeft.onUnsetValues,
-  )
-  const paddingLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    paddingLeft.onTransientSubmitValue,
-    paddingLeft.onUnsetValues,
+  const shorthand = useInspectorLayoutInfo('padding')
+
+  const updateShorthand = React.useCallback(
+    (sides: Sides, transient?: boolean) => {
+      const { top, bottom, left, right } = sides
+      shorthand.onSubmitValue(
+        {
+          paddingTop: top,
+          paddingBottom: bottom,
+          paddingLeft: left,
+          paddingRight: right,
+        },
+        transient,
+      )
+    },
+    [shorthand],
   )
 
+  const { selectedViewsRef } = useInspectorContext()
+
   return (
-    <ChainedNumberInput
-      idPrefix='padding'
-      propsArray={[
-        {
-          value: paddingTop.value,
-          DEPRECATED_labelBelow: 'T',
-          minimum: 0,
-          onSubmitValue: paddingTopOnSubmitValue,
-          onTransientSubmitValue: paddingTopOnTransientSubmitValue,
-          controlStatus: paddingTop.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: 'padding-T',
-        },
-        {
-          value: paddingRight.value,
-          DEPRECATED_labelBelow: 'R',
-          minimum: 0,
-          onSubmitValue: paddingRightOnSubmitValue,
-          onTransientSubmitValue: paddingRightOnTransientSubmitValue,
-          controlStatus: paddingRight.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: 'padding-R',
-        },
-        {
-          value: paddingBottom.value,
-          DEPRECATED_labelBelow: 'B',
-          minimum: 0,
-          onSubmitValue: paddingBottomOnSubmitValue,
-          onTransientSubmitValue: paddingBottomOnTransientSubmitValue,
-          controlStatus: paddingBottom.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: 'padding-B',
-        },
-        {
-          value: paddingLeft.value,
-          DEPRECATED_labelBelow: 'L',
-          minimum: 0,
-          onSubmitValue: paddingLeftOnSubmitValue,
-          onTransientSubmitValue: paddingLeftOnTransientSubmitValue,
-          controlStatus: paddingLeft.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: 'padding-L',
-        },
-      ]}
+    <SplitChainedNumberInput
+      selectedViews={selectedViewsRef.current}
+      name='padding'
+      defaultMode='per-direction'
+      top={paddingTop}
+      left={paddingLeft}
+      bottom={paddingBottom}
+      right={paddingRight}
+      shorthand={shorthand}
+      updateShorthand={updateShorthand}
     />
   )
 })
