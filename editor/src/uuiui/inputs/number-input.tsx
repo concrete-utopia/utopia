@@ -856,7 +856,7 @@ export const SimpleCSSNumberInput = React.memo(
   }: SimpleCSSNumberInputProps) => {
     const wrappedProps: NumberInputProps = {
       ...sharedProps,
-      value: value == null ? null : value,
+      value: value,
       onSubmitValue: wrappedSimpleOnSubmitValue(onSubmitValue),
       onTransientSubmitValue: wrappedSimpleOnSubmitValue(onTransientSubmitValue),
       onForcedSubmitValue: wrappedSimpleOnSubmitValue(onForcedSubmitValue),
