@@ -32,7 +32,11 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { CanvasFrameAndTarget } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
-import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
@@ -414,6 +418,7 @@ function createUpdatePinsCommands(
     path,
   )?.specialSizeMeasurements
   const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
+  const parentFlexDirection = specialSizeMeasurements?.parentFlexDirection ?? null
   const frameWithoutMargin = getFrameWithoutMargin(frame, specialSizeMeasurements)
   const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
   const fullFrame = getFullFrame(updatedFrame)
@@ -427,10 +432,13 @@ function createUpdatePinsCommands(
         'always',
         path,
         stylePropPathMappingFn(framePin, styleStringInArray),
-        pinValue,
-        isHorizontalPoint(framePointForPinnedProp(framePin))
-          ? parentFrame?.width
-          : parentFrame?.height,
+        setValueKeepingOriginalUnit(
+          pinValue,
+          isHorizontalPoint(framePointForPinnedProp(framePin))
+            ? parentFrame?.width
+            : parentFrame?.height,
+        ),
+        parentFlexDirection,
       ),
     )
   })

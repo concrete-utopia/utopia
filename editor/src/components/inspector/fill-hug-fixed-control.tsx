@@ -1,32 +1,23 @@
 import React from 'react'
-import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
-import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
-import { parentPath } from '../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
-import * as PP from '../../core/shared/property-path'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import {
-  CSSNumber,
-  cssNumber,
-  EmptyInputValue,
-  parseCSSLengthPercent,
-  parseCSSNumber,
-} from './common/css-utils'
+import { cssNumber, CSSNumber, EmptyInputValue } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   Axis,
-  detectFlexDirectionOne,
+  detectFillHugFixedState,
   fillContainerApplicable,
+  FixedHugFill,
   hugContentsApplicableForContainer,
   hugContentsApplicableForText,
-  widthHeightFromAxis,
 } from './inspector-common'
 import {
   setPropFillStrategies,
@@ -40,10 +31,6 @@ import {
 
 export const controlId = (segment: 'width' | 'height'): string => `hug-fixed-fill-${segment}`
 
-type FixedHugFill =
-  | { type: 'fixed'; amount: CSSNumber }
-  | { type: 'hug' }
-  | { type: 'fill'; value: CSSNumber }
 type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
@@ -101,62 +88,6 @@ const FillHugFixedControlOptions = ({
     fillAvailable ? selectOption('fill') : null,
   ])
 
-function detectFillHugFixedState(
-  axis: Axis,
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath | null,
-): FixedHugFill | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-    return null
-  }
-
-  const flexGrow = foldEither(
-    () => null,
-    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'flexGrow'])),
-  )
-
-  if (flexGrow != null) {
-    const flexDirection = optionalMap(
-      (e) => detectFlexDirectionOne(metadata, parentPath(e)),
-      elementPath,
-    )
-
-    const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
-    if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      return { type: 'fill', value: flexGrow }
-    }
-
-    const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
-    if (axis === 'vertical' && isFlexDirectionVertical) {
-      return { type: 'fill', value: flexGrow }
-    }
-  }
-
-  const property = widthHeightFromAxis(axis)
-
-  const prop = defaultEither(
-    null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
-  )
-
-  if (prop === 'min-content') {
-    return { type: 'hug' }
-  }
-
-  if (prop === '100%') {
-    return { type: 'fill', value: cssNumber(100, '%') }
-  }
-
-  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
-  if (parsed != null) {
-    return { type: 'fixed', amount: parsed }
-  }
-
-  return null
-}
-
 function elementComputedDimension(
   prop: 'width' | 'height',
   metadata: ElementInstanceMetadataMap,
@@ -203,6 +134,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
+  const fillsContainerHorizontallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedState(
+        'horizontal',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      )?.type === 'fill',
+  )
+
   const widthComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
@@ -224,6 +164,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
+  const fillsContainerVerticallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedState(
+        'vertical',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      )?.type === 'fill',
+  )
+
   const heightComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
@@ -236,7 +185,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(heightComputedValueRef.current, 'vertical', value)
+      const strategy = strategyForMode(
+        heightComputedValueRef.current,
+        'vertical',
+        value,
+        fillsContainerHorizontallyRef.current,
+      )
       executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
@@ -244,7 +198,13 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
+    [
+      dispatch,
+      fillsContainerHorizontallyRef,
+      heightComputedValueRef,
+      metadataRef,
+      selectedViewsRef,
+    ],
   )
 
   const onAdjustHeight = React.useCallback(
@@ -254,7 +214,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('vertical', value),
+          setPropFixedStrategies('always', 'vertical', cssNumber(value, null)),
         )
       }
     },
@@ -268,7 +228,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('horizontal', value),
+          setPropFixedStrategies('always', 'horizontal', cssNumber(value, null)),
         )
       }
     },
@@ -278,7 +238,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(widthComputedValueRef.current, 'horizontal', value)
+      const strategy = strategyForMode(
+        widthComputedValueRef.current,
+        'horizontal',
+        value,
+        fillsContainerVerticallyRef.current,
+      )
       executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
@@ -286,7 +251,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
+    [dispatch, fillsContainerVerticallyRef, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
@@ -362,14 +327,15 @@ function strategyForMode(
   fixedValue: number,
   axis: Axis,
   mode: FixedHugFillMode,
+  otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(axis)
+      return setPropFillStrategies(axis, otherAxisSetToFill)
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
-      return setPropFixedStrategies(axis, fixedValue)
+      return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
   }

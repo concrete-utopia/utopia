@@ -9,7 +9,8 @@ import {
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
-  hugContentsApplicableForContainer,
+  nukeAllAbsolutePositioningPropsCommands,
+  nukePositioningPropsForAxisCommand,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -18,10 +19,15 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import { hugContentsTextStrategy } from './hug-contents-text'
 import { InspectorStrategy } from './inspector-strategy'
+import { WhenToRun } from '../../../components/canvas/commands/commands'
+import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -90,9 +96,11 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
     strategy: (metadata, elementPaths) => {
       return elementPaths.flatMap((path) => [
         setProperty('always', path, PP.create(['style', 'display']), 'flex'),
-        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) =>
-          convertWidthToFlexGrow(metadata, child),
-        ),
+        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
+          ...nukeAllAbsolutePositioningPropsCommands(child),
+          ...sizeToVisualDimensions(metadata, child),
+          ...convertWidthToFlexGrow(metadata, child),
+        ]),
       ])
     },
   },
@@ -116,7 +124,10 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
   },
 ]
 
-export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
+export const setPropFillStrategies = (
+  axis: Axis,
+  otherAxisSetToFill: boolean,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fill Container',
     strategy: (metadata, elementPaths) => {
@@ -129,8 +140,13 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       return elements.flatMap((path) => {
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
+          const nukePositioningCommands = otherAxisSetToFill
+            ? nukeAllAbsolutePositioningPropsCommands(path)
+            : [nukePositioningPropsForAxisCommand(axis, path)]
+
           return [
             nukeSizingPropsForAxisCommand(axis, path),
+            ...nukePositioningCommands,
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
@@ -143,12 +159,14 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
         ) {
           return [
             nukeSizingPropsForAxisCommand(axis, path),
+            ...nukeAllAbsolutePositioningPropsCommands(path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
         return [
           nukeSizingPropsForAxisCommand(axis, path),
+          ...nukeAllAbsolutePositioningPropsCommands(path),
           setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         ]
       })
@@ -156,7 +174,11 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
   },
 ]
 
-export const setPropFixedStrategies = (axis: Axis, value: number): Array<InspectorStrategy> => [
+export const setPropFixedStrategies = (
+  whenToRun: WhenToRun,
+  axis: Axis,
+  value: CSSNumber,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fixed',
     strategy: (metadata, elementPaths) => {
@@ -164,30 +186,23 @@ export const setPropFixedStrategies = (axis: Axis, value: number): Array<Inspect
         return null
       }
 
-      return elementPaths.map((path) =>
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), value),
-      )
+      return elementPaths.map((path) => {
+        const parentFlexDirection =
+          MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
+            .parentFlexDirection ?? null
+
+        return setCssLengthProperty(
+          whenToRun,
+          path,
+          PP.create(['style', widthHeightFromAxis(axis)]),
+          setExplicitCssValue(value),
+          parentFlexDirection,
+        )
+      })
     },
   },
 ]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
-  hugContentsTextStrategy(axis),
-  {
-    name: 'Set to Hug',
-    strategy: (metadata, elementPaths) => {
-      const elements = elementPaths.filter((path) =>
-        hugContentsApplicableForContainer(metadata, path),
-      )
-
-      if (elements.length === 0) {
-        return null
-      }
-
-      return elements.flatMap((path) => [
-        nukeSizingPropsForAxisCommand(axis, path),
-        setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), 'min-content'),
-      ])
-    },
-  },
+  hugContentsBasicStrategy(axis),
 ]

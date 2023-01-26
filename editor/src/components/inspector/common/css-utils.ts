@@ -487,7 +487,12 @@ export type CSSNumberType =
 export type FontRelativeLengthUnit = 'cap' | 'ch' | 'em' | 'ex' | 'ic' | 'lh' | 'rem' | 'rlh'
 export type ViewportPercentageLengthUnit = 'vh' | 'vw' | 'vi' | 'vb' | 'vmin' | 'vmax'
 export type AbsoluteLengthUnit = 'px' | 'cm' | 'mm' | 'Q' | 'in' | 'pc' | 'pt'
-export type LengthUnit = FontRelativeLengthUnit | ViewportPercentageLengthUnit | AbsoluteLengthUnit
+export type FlexibleLengthUnit = 'fr' // https://www.w3.org/TR/css3-grid-layout/#fr-unit
+export type LengthUnit =
+  | FontRelativeLengthUnit
+  | ViewportPercentageLengthUnit
+  | AbsoluteLengthUnit
+  | FlexibleLengthUnit
 
 const FontRelativeLengthUnits: Array<FontRelativeLengthUnit> = [
   'cap',
@@ -507,16 +512,26 @@ const ViewportPercentageLengthUnits: Array<ViewportPercentageLengthUnit> = [
   'vmin',
   'vmax',
 ]
-const AbsoluteLengthUnits: Array<AbsoluteLengthUnit> = ['px', 'cm', 'mm', 'Q', 'in', 'pc', 'pt']
+export const AbsoluteLengthUnits: Array<AbsoluteLengthUnit> = [
+  'px',
+  'cm',
+  'mm',
+  'Q',
+  'in',
+  'pc',
+  'pt',
+]
+export const FlexibleLengthUnits: Array<FlexibleLengthUnit> = ['fr']
 export const LengthUnits: Array<LengthUnit> = [
   ...FontRelativeLengthUnits,
   ...ViewportPercentageLengthUnits,
   ...AbsoluteLengthUnits,
+  ...FlexibleLengthUnits,
 ]
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/length-percentage
 export type LengthPercentUnit = LengthUnit | PercentUnit
-const LengthPercentUnits: Array<LengthPercentUnit> = [...LengthUnits, '%']
+export const LengthPercentUnits: Array<LengthPercentUnit> = [...LengthUnits, '%']
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/angle
 export type AngleUnit = 'deg' | 'grad' | 'rad' | 'turn'
@@ -571,6 +586,25 @@ export function setCSSNumberValue(current: CSSNumber | null, newValue: number): 
 
 export function getCSSNumberUnit(current: CSSNumber | null): CSSNumberUnit | null {
   return current == null ? null : current.unit
+}
+
+export function isFixedSize(value: CSSNumber): boolean {
+  if (value.unit == null) {
+    return true
+  } else {
+    switch (value.unit) {
+      case 'px':
+      case 'cm':
+      case 'mm':
+      case 'Q':
+      case 'in':
+      case 'pc':
+      case 'pt':
+        return true
+      default:
+        return false
+    }
+  }
 }
 
 function parseCSSNumberUnit(
@@ -3976,13 +4010,14 @@ export type Direction = 'horizontal' | 'vertical'
 export type ForwardOrReverse = 'forward' | 'reverse'
 
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
-
-export const parseFlexDirection: Parser<FlexDirection> = isOneOfTheseParser([
+export const AllFlexDirections: Array<FlexDirection> = [
   'row',
   'row-reverse',
   'column',
   'column-reverse',
-])
+]
+
+export const parseFlexDirection: Parser<FlexDirection> = isOneOfTheseParser(AllFlexDirections)
 
 const flexAlignmentsParser: Parser<FlexAlignment> = isOneOfTheseParser([
   FlexAlignment.Auto,
@@ -4922,11 +4957,26 @@ export function maybePrintCSSValue(prop: string, value: unknown): PrintedValue |
   }
 }
 
-const LayoutPropertyList = [
-  'left',
-  'right',
-  'top',
-  'bottom',
+export const StyleProperties = [
+  'backgroundColor',
+  'backgroundImage',
+  'backgroundSize',
+  'border',
+  'borderRadius',
+  'boxShadow',
+  'color',
+  'opacity',
+  'fontFamily',
+  'fontSize',
+  'fontStyle',
+  'fontWeight',
+  'lineHeight',
+  'textDecoration',
+  'textAlign',
+  'textShadow',
+]
+
+export const LayoutPropsWithoutTLBR = [
   'width',
   'height',
   'float',
@@ -4993,6 +5043,8 @@ const LayoutPropertyList = [
   'grid-template-columns',
   'grid-template-rows',
 ]
+
+const LayoutPropertyList = ['left', 'right', 'top', 'bottom', ...LayoutPropsWithoutTLBR]
 
 export function isLayoutPropDetectedInCSS(cssProps: { [key: string]: any }): boolean {
   return LayoutPropertyList.findIndex((prop: string) => cssProps[prop] != null) > -1

@@ -101,6 +101,33 @@ export const pasteElements: ContextMenuItem<CanvasData> = {
   },
 }
 
+export const copyPropertiesMenuItem: ContextMenuItem<CanvasData> = {
+  name: 'Copy Properties',
+  enabled: true,
+  shortcut: '⌥⌘C',
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([EditorActions.copyProperties()], 'noone')
+  },
+}
+
+export const pasteStyle: ContextMenuItem<CanvasData> = {
+  name: 'Paste Style',
+  enabled: true,
+  shortcut: '⌥⌘V',
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([EditorActions.pasteProperties('style')], 'noone')
+  },
+}
+
+export const pasteLayout: ContextMenuItem<CanvasData> = {
+  name: 'Paste Layout',
+  enabled: true,
+  shortcut: '',
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([EditorActions.pasteProperties('layout')], 'noone')
+  },
+}
+
 export const toggleBackgroundLayersItem: ContextMenuItem<CanvasData> = {
   name: 'Toggle Fill',
   enabled: true,

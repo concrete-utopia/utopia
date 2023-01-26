@@ -70,7 +70,7 @@ export function escapeHTML(s: string): string {
 
 // editor → canvas
 export function unescapeHTML(s: string): string {
-  const unescaped = unescape(s).replace(/ +$/, '') // prettier fix
+  const unescaped = unescape(s)
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
   // if the string _ends_ with a newline.
@@ -232,10 +232,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          dispatch([deleteView(elementPath)])
+          setTimeout(() => dispatch([deleteView(elementPath)]))
         } else {
           if (elementState != null) {
-            dispatch([updateChildText(elementPath, escapeHTML(content))])
+            setTimeout(() => dispatch([updateChildText(elementPath, escapeHTML(content))]))
           }
         }
       }

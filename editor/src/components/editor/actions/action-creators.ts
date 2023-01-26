@@ -225,6 +225,8 @@ import type {
   ApplyCommandsAction,
   WorkerCodeAndParsedUpdate,
   UpdateColorSwatches,
+  PasteProperties,
+  CopyProperties,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -454,6 +456,19 @@ export function pasteJSXElements(
 export function copySelectionToClipboard(): CopySelectionToClipboard {
   return {
     action: 'COPY_SELECTION_TO_CLIPBOARD',
+  }
+}
+
+export function copyProperties(): CopyProperties {
+  return {
+    action: 'COPY_PROPERTIES',
+  }
+}
+
+export function pasteProperties(type: 'style' | 'layout'): PasteProperties {
+  return {
+    action: 'PASTE_PROPERTIES',
+    type: type,
   }
 }
 

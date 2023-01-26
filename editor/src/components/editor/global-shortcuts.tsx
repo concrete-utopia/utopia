@@ -93,6 +93,8 @@ import {
   TOGGLE_TEXT_ITALIC,
   TOGGLE_TEXT_UNDERLINE,
   TOGGLE_TEXT_STRIKE_THROUGH,
+  PASTE_STYLE_PROPERTIES,
+  COPY_STYLE_PROPERTIES,
   CONVERT_TO_FLEX_CONTAINER,
   REMOVE_ABSOLUTE_POSITIONING,
   absolutePositioningProps,
@@ -765,6 +767,20 @@ export function handleKeyDown(
                 target,
                 element?.specialSizeMeasurements.textDecorationLine ?? null,
               )
+            })
+          : []
+      },
+      [PASTE_STYLE_PROPERTIES]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              return EditorActions.pasteProperties('style')
+            })
+          : []
+      },
+      [COPY_STYLE_PROPERTIES]: () => {
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => {
+              return EditorActions.copyProperties()
             })
           : []
       },

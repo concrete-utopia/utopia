@@ -8,8 +8,10 @@ import { isRight, right } from '../../../../core/shared/either'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
 import {
   CanvasRectangle,
+  canvasRectangleToLocalRectangle,
   rectangleDifference,
   roundTo,
+  SimpleRectangle,
   transformFrameUsingBoundingBox,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -21,7 +23,11 @@ import {
   adjustCssLengthProperty,
 } from '../../commands/adjust-css-length-command'
 import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
-import { SetCssLengthProperty, setCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -51,6 +57,7 @@ import {
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -163,11 +170,15 @@ export function absoluteResizeBoundingBoxStrategy(
                   originalBoundingBox,
                   originalFrame,
                 )
+                const metadata = MetadataUtils.findElementByElementPath(
+                  canvasState.startingMetadata,
+                  selectedElement,
+                )
                 const elementParentBounds =
-                  MetadataUtils.findElementByElementPath(
-                    canvasState.startingMetadata,
-                    selectedElement,
-                  )?.specialSizeMeasurements.immediateParentBounds ?? null
+                  metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+
+                const elementParentFlexDirection =
+                  metadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
                 return [
                   ...createResizeCommandsFromFrame(
@@ -176,6 +187,7 @@ export function absoluteResizeBoundingBoxStrategy(
                     newFrame,
                     originalFrame,
                     elementParentBounds,
+                    elementParentFlexDirection,
                     edgePosition,
                   ),
                   setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
@@ -209,6 +221,7 @@ function createResizeCommandsFromFrame(
   newFrame: CanvasRectangle,
   originalFrame: CanvasRectangle,
   elementParentBounds: CanvasRectangle | null,
+  elementParentFlexDirection: FlexDirection | null,
   edgePosition: EdgePosition,
 ): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
   const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsForEdgePosition(
@@ -233,16 +246,25 @@ function createResizeCommandsFromFrame(
           stylePropPathMappingFn(pin, styleStringInArray),
           roundedDelta * pinDirection,
           horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          true,
+          elementParentFlexDirection,
+          'create-if-not-existing',
         )
       } else {
-        const valueToSet = allPinsFromFrame(newFrame)[pin]
+        // If this element has a parent, we need to take that parent's bounds into account
+        const frameToUse =
+          elementParentBounds == null
+            ? newFrame
+            : canvasRectangleToLocalRectangle(newFrame, elementParentBounds)
+        const valueToSet = allPinsFromFrame(frameToUse)[pin]
         return setCssLengthProperty(
           'always',
           selectedElement,
           stylePropPathMappingFn(pin, styleStringInArray),
-          roundTo(valueToSet, 0),
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          setValueKeepingOriginalUnit(
+            roundTo(valueToSet, 0),
+            horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+          ),
+          elementParentFlexDirection,
         )
       }
     } else {
@@ -251,7 +273,7 @@ function createResizeCommandsFromFrame(
   }, pins)
 }
 
-function allPinsFromFrame(frame: CanvasRectangle): { [key: string]: number } {
+function allPinsFromFrame(frame: SimpleRectangle): { [key: string]: number } {
   return {
     left: frame.x,
     top: frame.y,

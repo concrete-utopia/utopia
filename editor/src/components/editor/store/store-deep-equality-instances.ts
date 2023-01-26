@@ -223,6 +223,7 @@ import {
   StaticElementPathKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
   ElementsToRerenderKeepDeepEquality,
+  PropertyPathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {
@@ -469,6 +470,7 @@ import {
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
 } from '../../../core/shared/github'
+import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -3421,6 +3423,14 @@ export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combin
   newColorSwatch,
 )
 
+export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combine2EqualityCalls(
+  (c) => c.path,
+  PropertyPathKeepDeepEquality(),
+  (c) => c.value,
+  JSXAttributeKeepDeepEqualityCall,
+  valueAtPath,
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -3687,6 +3697,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.colorSwatches,
     newValue.colorSwatches,
   )
+  const styleClipboardResults = arrayDeepEquality(ValueAtPathDeepEquality)(
+    oldValue.styleClipboard,
+    newValue.styleClipboard,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3762,7 +3776,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     assetChecksumsResults.areEqual &&
-    colorSwatchesResults.areEqual
+    colorSwatchesResults.areEqual &&
+    styleClipboardResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3842,6 +3857,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       assetChecksumsResults.value,
       colorSwatchesResults.value,
+      styleClipboardResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

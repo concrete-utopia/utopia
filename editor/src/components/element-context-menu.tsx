@@ -26,6 +26,9 @@ import {
   convert,
   removeAsFocusedElement,
   escapeHatch,
+  pasteStyle,
+  pasteLayout,
+  copyPropertiesMenuItem,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
@@ -54,10 +57,13 @@ interface ElementContextMenuProps {
 const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   setAsFocusedElement,
   removeAsFocusedElement,
-  lineSeparator,
   scrollToElement,
+  lineSeparator,
   cutElements,
   copyElements,
+  copyPropertiesMenuItem,
+  pasteStyle,
+  pasteLayout,
   duplicateElement,
   lineSeparator,
   insert,

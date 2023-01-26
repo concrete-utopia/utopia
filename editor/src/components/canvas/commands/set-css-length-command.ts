@@ -12,35 +12,52 @@ import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
   CSSNumber,
+  cssPixelLength,
+  FlexDirection,
   parseCSSPercent,
-  parseCSSPx,
   printCSSNumber,
 } from '../../inspector/common/css-utils'
+import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+
+type CssNumberOrKeepOriginalUnit =
+  | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
+  | { type: 'KEEP_ORIGINAL_UNIT'; valuePx: number; parentDimensionPx: number | undefined }
+
+export function setExplicitCssValue(value: CSSNumber): CssNumberOrKeepOriginalUnit {
+  return { type: 'EXPLICIT_CSS_NUMBER', value: value }
+}
+
+export function setValueKeepingOriginalUnit(
+  valuePx: number,
+  parentDimensionPx: number | undefined,
+): CssNumberOrKeepOriginalUnit {
+  return { type: 'KEEP_ORIGINAL_UNIT', valuePx: valuePx, parentDimensionPx: parentDimensionPx }
+}
 
 export interface SetCssLengthProperty extends BaseCommand {
   type: 'SET_CSS_LENGTH_PROPERTY'
   target: ElementPath
   property: PropertyPath
-  valuePx: number
-  parentDimensionPx: number | undefined
+  value: CssNumberOrKeepOriginalUnit
+  parentFlexDirection: FlexDirection | null
 }
 
 export function setCssLengthProperty(
   whenToRun: WhenToRun,
   target: ElementPath,
   property: PropertyPath,
-  valuePx: number,
-  parentDimensionPx: number | undefined,
+  value: CssNumberOrKeepOriginalUnit,
+  parentFlexDirection: FlexDirection | null,
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
     whenToRun: whenToRun,
     target: target,
     property: property,
-    valuePx: valuePx,
-    parentDimensionPx: parentDimensionPx,
+    value: value,
+    parentFlexDirection: parentFlexDirection,
   }
 }
 
@@ -48,6 +65,14 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   editorState: EditorState,
   command: SetCssLengthProperty,
 ) => {
+  // in case of width or height change, delete min, max and flex props
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    command.target,
+    command.property,
+    command.parentFlexDirection,
+  )
+
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
@@ -81,9 +106,13 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   let propsToUpdate: Array<ValueAtPath> = []
 
   const parsePercentResult = parseCSSPercent(simpleValueResult.value)
-  if (isRight(parsePercentResult) && command.parentDimensionPx != null) {
+  if (
+    isRight(parsePercentResult) &&
+    command.value.type === 'KEEP_ORIGINAL_UNIT' &&
+    command.value.parentDimensionPx != null
+  ) {
     const currentValuePercent = parsePercentResult.value
-    const valueInPercent = (command.valuePx / command.parentDimensionPx) * 100
+    const valueInPercent = (command.value.valuePx / command.value.parentDimensionPx) * 100
     const newValueCssNumber: CSSNumber = {
       value: valueInPercent,
       unit: currentValuePercent.unit,
@@ -95,15 +124,22 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
       value: jsxAttributeValue(newValue, emptyComments),
     })
   } else {
+    const newCssValue =
+      command.value.type === 'EXPLICIT_CSS_NUMBER'
+        ? command.value.value
+        : cssPixelLength(command.value.valuePx)
+
+    const printedValue = printCSSNumber(newCssValue, 'px')
+
     propsToUpdate.push({
       path: command.property,
-      value: jsxAttributeValue(command.valuePx, emptyComments),
+      value: jsxAttributeValue(printedValue, emptyComments),
     })
   }
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
+    editorStateWithPropsDeleted,
     command.target,
     propsToUpdate,
   )
@@ -112,6 +148,10 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     editorStatePatches: [propertyUpdatePatch],
     commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
-    )} by ${command.valuePx}`,
+    )} by ${
+      command.value.type === 'EXPLICIT_CSS_NUMBER'
+        ? command.value.value.value
+        : command.value.valuePx
+    }`,
   }
 }

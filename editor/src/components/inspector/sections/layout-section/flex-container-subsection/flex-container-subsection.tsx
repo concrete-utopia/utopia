@@ -1,4 +1,9 @@
 import React from 'react'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { useRefEditorState } from '../../../../editor/store/store-hook'
+import { FlexDirection } from '../../../common/css-utils'
+import { updateFlexDirectionStrategies } from '../../../inspector-strategies/inspector-strategies'
+import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { FlexWrap } from 'utopia-api/core'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
@@ -36,6 +41,25 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItemsControlStyles: ControlStyles =
     flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
 
+  const editorStateRef = useRefEditorState((store) => {
+    return {
+      metadata: store.editor.jsxMetadata,
+      selectedViews: store.editor.selectedViews,
+    }
+  })
+  const dispatch = useDispatch()
+  const updateFlexDirection = React.useCallback(
+    (newFlexDirection: FlexDirection) => {
+      executeFirstApplicableStrategy(
+        dispatch,
+        editorStateRef.current.metadata,
+        editorStateRef.current.selectedViews,
+        updateFlexDirectionStrategies(newFlexDirection),
+      )
+    },
+    [dispatch, editorStateRef],
+  )
+
   return (
     <>
       <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
@@ -43,7 +67,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           value={flexDirection.value}
           controlStatus={flexDirection.controlStatus}
           controlStyles={flexDirection.controlStyles}
-          onSubmitValue={flexDirection.onSubmitValue}
+          onSubmitValue={updateFlexDirection}
           onUnset={flexDirection.onUnsetValues}
           flexWrap={flexWrap.value}
         />
