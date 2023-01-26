@@ -41,7 +41,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
   } else {
     // Apply the update to the properties.
     const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
-      { path: PP.create(['style', 'contain']), value: jsxAttributeValue('layout', emptyComments) },
+      { path: PP.create('style', 'contain'), value: jsxAttributeValue('layout', emptyComments) },
     ])
 
     return {

@@ -475,7 +475,7 @@ export function handleKeyDown(
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(
                 target,
-                toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+                toggleStylePropPath(PP.create('style', 'border'), toggleBorder),
               ),
             )
           : []
@@ -590,7 +590,7 @@ export function handleKeyDown(
         return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(
             target,
-            toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+            toggleStylePropPath(PP.create('style', 'boxShadow'), toggleShadow),
           ),
         )
       },
@@ -696,7 +696,7 @@ export function handleKeyDown(
               selectedViews.map((view) =>
                 EditorActions.setProperty(
                   view,
-                  PP.create(['style', 'backgroundColor']),
+                  PP.create('style', 'backgroundColor'),
                   jsxAttributeValue(sRGBHex, emptyComments),
                 ),
               ),

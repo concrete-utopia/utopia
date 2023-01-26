@@ -27,8 +27,8 @@ export interface ElementPath {
 
 export type PropertyPathPart = string | number
 
-export type PropertyPath = {
-  propertyElements: Array<PropertyPathPart>
+export type PropertyPath<T extends Array<PropertyPathPart> = Array<PropertyPathPart>> = {
+  propertyElements: T
 }
 
 export type PackageType = 'base' | 'svg' | 'app'

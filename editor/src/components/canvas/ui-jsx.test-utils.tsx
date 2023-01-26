@@ -116,6 +116,7 @@ import {
   RegisteredCanvasStrategies,
 } from './canvas-strategies/canvas-strategies'
 import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
+import { isTransientAction } from '../editor/actions/action-utils'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&

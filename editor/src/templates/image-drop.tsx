@@ -321,7 +321,7 @@ function updateImageSrcsActions(
       ? null
       : EditorActions.setProperty(
           fromString(path),
-          PP.create(['src']),
+          PP.create('src'),
           jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
         )
   }, Object.entries(allElementProps))

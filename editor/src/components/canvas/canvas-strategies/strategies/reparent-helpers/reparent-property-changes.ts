@@ -39,10 +39,10 @@ import {
 import { ReparentStrategy } from './reparent-strategy-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
-  PP.create(['style', 'left']),
-  PP.create(['style', 'top']),
-  PP.create(['style', 'right']),
-  PP.create(['style', 'bottom']),
+  PP.create('style', 'left'),
+  PP.create('style', 'top'),
+  PP.create('style', 'right'),
+  PP.create('style', 'bottom'),
 ]
 
 export function getAbsoluteReparentPropertyChanges(
@@ -182,8 +182,8 @@ export function getStaticReparentPropertyChanges(
 
   return [
     ...optionalInlineConversionCommand,
-    deleteProperties('always', newPath, [...propertiesToRemove, PP.create(['style', 'position'])]),
-    setProperty('always', newPath, PP.create(['style', 'contain']), 'layout'),
+    deleteProperties('always', newPath, [...propertiesToRemove, PP.create('style', 'position')]),
+    setProperty('always', newPath, PP.create('style', 'contain'), 'layout'),
   ]
 }
 

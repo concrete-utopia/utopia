@@ -150,6 +150,27 @@ export const InspectorSectionIcons = {
     width: 16,
     height: 16,
   }),
+  SplitFull: makeIcon({
+    category: 'inspector',
+    type: 'split-full',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
+  SplitHalf: makeIcon({
+    category: 'inspector',
+    type: 'split-half',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
+  SplitQuarter: makeIcon({
+    category: 'inspector',
+    type: 'split-quarter',
+    color: 'main',
+    width: 13,
+    height: 13,
+  }),
 }
 
 export const SmallerIcons = {

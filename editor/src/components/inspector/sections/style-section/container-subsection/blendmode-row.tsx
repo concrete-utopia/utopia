@@ -17,7 +17,7 @@ const blendModeOptions = [
   { value: 'darken', label: 'Darken' },
 ]
 
-const blendModeProp = [PP.create(['style', 'mixBlendMode'])]
+const blendModeProp = [PP.create('style', 'mixBlendMode')]
 
 export const BlendModeRow = React.memo(() => {
   const blendModeMetadata = useInspectorStyleInfo('mixBlendMode')

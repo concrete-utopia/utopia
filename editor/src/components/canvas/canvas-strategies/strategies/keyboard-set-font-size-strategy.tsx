@@ -72,7 +72,7 @@ export function keyboardSetFontSizeStrategy(
         setProperty(
           'always',
           path,
-          PP.create(['style', 'fontSize']),
+          PP.create('style', 'fontSize'),
           printCSSNumber(adjustFontSize(fontSize, fontSizeDelta), null),
         ),
       )
@@ -131,10 +131,7 @@ function getFontSizeFromProp(
 
   const attribute: string | null = defaultEither(
     null,
-    getSimpleAttributeAtPath(
-      right(element.element.value.props),
-      PP.create(['style', FontSizeProp]),
-    ),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', FontSizeProp)),
   )
 
   return parseMaybeFontSize(attribute)

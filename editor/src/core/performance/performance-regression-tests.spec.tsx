@@ -44,7 +44,7 @@ describe('React Render Count Tests -', () => {
       [
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          PP.create(['style', 'opacity']),
+          PP.create('style', 'opacity'),
           jsxAttributeValue(0.3, emptyComments),
         ),
       ],
@@ -100,7 +100,7 @@ describe('React Render Count Tests -', () => {
       [
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          PP.create(['style', 'opacity']),
+          PP.create('style', 'opacity'),
           jsxAttributeValue(0.3, emptyComments),
         ),
       ],
