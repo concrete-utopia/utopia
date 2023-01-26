@@ -277,7 +277,7 @@ const ClassNameControl = React.memo(() => {
           [
             EditorActions.setProp_UNSAFE(
               elementPath,
-              PP.create(['className']),
+              PP.create('className'),
               jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
             ),
             EditorActions.clearTransientProps(),
@@ -457,7 +457,7 @@ const ClassNameControl = React.memo(() => {
             [
               EditorActions.setPropTransient(
                 targets[0],
-                PP.create(['className']),
+                PP.create('className'),
                 jsxAttributeValue(newClassNameString, emptyComments),
               ),
             ],

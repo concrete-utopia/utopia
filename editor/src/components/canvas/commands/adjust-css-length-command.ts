@@ -286,10 +286,10 @@ function updatePercentageValueByPixel(
 }
 
 const FlexSizeProperties: Array<PropertyPath> = [
-  PP.create(['style', 'flex']),
-  PP.create(['style', 'flexGrow']),
-  PP.create(['style', 'flexShrink']),
-  PP.create(['style', 'flexBasis']),
+  PP.create('style', 'flex'),
+  PP.create('style', 'flexGrow'),
+  PP.create('style', 'flexShrink'),
+  PP.create('style', 'flexBasis'),
 ]
 
 export function deleteConflictingPropsForWidthHeight(
@@ -307,13 +307,13 @@ export function deleteConflictingPropsForWidthHeight(
 
   switch (PP.lastPart(propertyPath)) {
     case 'width':
-      propertiesToDelete = [PP.create(['style', 'minWidth']), PP.create(['style', 'maxWidth'])]
+      propertiesToDelete = [PP.create('style', 'minWidth'), PP.create('style', 'maxWidth')]
       if (parentFlexDimension === 'horizontal') {
         propertiesToDelete.push(...FlexSizeProperties)
       }
       break
     case 'height':
-      propertiesToDelete = [PP.create(['style', 'minHeight']), PP.create(['style', 'maxHeight'])]
+      propertiesToDelete = [PP.create('style', 'minHeight'), PP.create('style', 'maxHeight')]
       if (parentFlexDimension === 'vertical') {
         propertiesToDelete.push(...FlexSizeProperties)
       }

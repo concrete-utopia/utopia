@@ -22,7 +22,7 @@ const sliderControlOptions = {
 }
 
 // TODO: path should match target
-const opacityProp = [PP.create(['style', 'opacity'])]
+const opacityProp = [PP.create('style', 'opacity')]
 
 export const OpacityRow = React.memo(() => {
   const opacityMetadata = useInspectorStyleInfo('opacity')

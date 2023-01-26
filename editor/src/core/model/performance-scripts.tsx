@@ -56,7 +56,6 @@ import { VSCodeLoadingScreenID } from '../../components/code-editor/vscode-edito
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
-import { styleStringInArray } from '../../utils/common-constants'
 
 let NumberOfIterations = 5
 if (window != null) {
@@ -605,7 +604,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
           selectComponents([childTargetPath!], false),
           setProp_UNSAFE(
             childTargetPath!,
-            PP.create(styleStringInArray),
+            PP.create('style'),
             jsxAttributeValue(childStyleValue, emptyComments),
           ),
         ],
@@ -791,7 +790,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
           selectComponents([childTargetPath!], false),
           setProp_UNSAFE(
             childTargetPath!,
-            PP.create(styleStringInArray),
+            PP.create('style'),
             jsxAttributeValue(childStyleValue, emptyComments),
           ),
         ],

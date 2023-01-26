@@ -26,7 +26,7 @@ function hugContentsSingleElement(
 ): Array<CanvasCommand> {
   const basicCommands = [
     nukeSizingPropsForAxisCommand(axis, elementPath),
-    setProperty('always', elementPath, PP.create(['style', widthHeightFromAxis(axis)]), MaxContent),
+    setProperty('always', elementPath, PP.create('style', widthHeightFromAxis(axis)), MaxContent),
   ]
 
   const chilren = MetadataUtils.getChildrenPaths(metadata, elementPath)

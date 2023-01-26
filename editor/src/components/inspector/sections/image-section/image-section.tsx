@@ -19,8 +19,8 @@ import { useColorTheme, InspectorSectionHeader, InspectorSectionIcons } from '..
 import { ImageSourceControl } from './image-source-control'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 
-const imgSrcProp = [PP.create(['src'])]
-const imgAltProp = [PP.create(['alt'])]
+const imgSrcProp = [PP.create('src')]
+const imgAltProp = [PP.create('alt')]
 
 export const ImgSection = React.memo(() => {
   const colorTheme = useColorTheme()

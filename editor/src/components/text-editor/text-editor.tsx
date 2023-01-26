@@ -132,7 +132,7 @@ const handleSetFontSizeShortcut = (
       setProperty(
         'always',
         elementPath,
-        PP.create(['style', 'fontSize']),
+        PP.create('style', 'fontSize'),
         printCSSNumber(adjustFontSize(fontSize[0], delta), null),
       ),
     ]),
@@ -164,7 +164,7 @@ const handleSetFontWeightShortcut = (
       setProperty(
         'always',
         elementPath,
-        PP.create(['style', 'fontWeight']),
+        PP.create('style', 'fontWeight'),
         adjustFontWeight(fontWeight, delta),
       ),
     ]),

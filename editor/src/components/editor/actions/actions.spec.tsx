@@ -256,7 +256,7 @@ describe('SET_PROP', () => {
   it('updates a simple value property', () => {
     const action = setProp_UNSAFE(
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
-      PP.create(['test', 'prop']),
+      PP.create('test', 'prop'),
       jsxAttributeValue(100, emptyComments),
     )
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
@@ -277,7 +277,7 @@ describe('SET_PROP', () => {
     )
     const updatedTestProp = getModifiableJSXAttributeAtPath(
       updatedViewProps,
-      PP.create(['test', 'prop']),
+      PP.create('test', 'prop'),
     )
     chaiExpect(updatedTestProp).to.deep.equal(right(partOfJsxAttributeValue(100)))
   })

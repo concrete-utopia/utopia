@@ -170,7 +170,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['top']),
+        PP.create('top'),
         jsxAttributeValue(55, emptyComments),
       ),
     )
@@ -187,7 +187,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['otherJs']),
+        PP.create('otherJs'),
         jsxAttributeValue('shadowy', emptyComments),
       ),
     )
@@ -198,7 +198,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['my', 'property', 'path']),
+        PP.create('my', 'property', 'path'),
         jsxAttributeValue('hello', emptyComments),
       ),
     )
@@ -215,7 +215,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['layout', 'left']),
+        PP.create('layout', 'left'),
         jsxAttributeValue(2000, emptyComments),
       ),
     )
@@ -232,7 +232,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['layout', 'deep', 'path']),
+        PP.create('layout', 'deep', 'path'),
         jsxAttributeValue('easy!', emptyComments),
       ),
     )
@@ -249,7 +249,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['objectWithArray', 'array', 2]),
+        PP.create('objectWithArray', 'array', 2),
         jsxAttributeValue('wee', emptyComments),
       ),
     )
@@ -266,7 +266,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['objectWithNestedArray', 'array', 2]),
+        PP.create('objectWithNestedArray', 'array', 2),
         jsxAttributeValue('wee', emptyComments),
       ),
     )
@@ -283,7 +283,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['objectWithNestedArray', 'array', '2']),
+        PP.create('objectWithNestedArray', 'array', '2'),
         jsxAttributeValue('wee', emptyComments),
       ),
     )
@@ -300,7 +300,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['objectWithNestedArray', 'array', 'wee']),
+        PP.create('objectWithNestedArray', 'array', 'wee'),
         jsxAttributeValue('wee', emptyComments),
       ),
     )
@@ -318,7 +318,7 @@ describe('setJSXValueAtPath', () => {
       const updatedAttributes = forceRight(
         setJSXValueAtPath(
           sampleJsxAttributes(),
-          PP.create(['style', 'backgroundColor', 'red']),
+          PP.create('style', 'backgroundColor', 'red'),
           jsxAttributeValue('wee', emptyComments),
         ),
       )
@@ -335,7 +335,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['style', 'backgroundColor']),
+        PP.create('style', 'backgroundColor'),
         jsxAttributeValue('wee', emptyComments),
       ),
     )
@@ -352,14 +352,14 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['my', 'property', 'path']),
+        PP.create('my', 'property', 'path'),
         jsxAttributeValue('hello', emptyComments),
       ),
     )
     const updatedAttributes2 = forceRight(
       setJSXValueAtPath(
         updatedAttributes,
-        PP.create(['my', 'property', 'other', 'path']),
+        PP.create('my', 'property', 'other', 'path'),
         jsxAttributeValue('hola', emptyComments),
       ),
     )
@@ -377,7 +377,7 @@ describe('setJSXValueAtPath', () => {
     const updatedAttributes = forceRight(
       setJSXValueAtPath(
         sampleJsxAttributes(),
-        PP.create(['style', 'backgroundColor']),
+        PP.create('style', 'backgroundColor'),
         jsxAttributeValue('blue', emptyComments),
       ),
     )
@@ -393,19 +393,19 @@ describe('setJSXValueAtPath', () => {
   it('should prevent setting a value inside a special prop', () => {
     const result1 = setJSXValueAtPath(
       sampleJsxAttributes(),
-      PP.create(['style', 'shadow', 'left']),
+      PP.create('style', 'shadow', 'left'),
       jsxAttributeValue('shadowy', emptyComments),
     )
 
     const result2 = setJSXValueAtPath(
       sampleJsxAttributes(),
-      PP.create(['style', 'boxShadow', '0']),
+      PP.create('style', 'boxShadow', '0'),
       jsxAttributeValue('shadowy', emptyComments),
     )
 
     const result3 = setJSXValueAtPath(
       sampleJsxAttributes(),
-      PP.create(['otherJs', 'wrongProp']),
+      PP.create('otherJs', 'wrongProp'),
       jsxAttributeValue('shadowy', emptyComments),
     )
 
@@ -433,7 +433,7 @@ describe('setJSXValueAtPath', () => {
 
     const result = setJSXValueAtPath(
       attributes,
-      PP.create(['style', 'paddingLeft']),
+      PP.create('style', 'paddingLeft'),
       jsxAttributeValue(100, emptyComments),
     )
     if (isLeft(result)) {
@@ -488,7 +488,7 @@ describe('setJSXValueAtPath', () => {
 
     const result = setJSXValueAtPath(
       attributes,
-      PP.create(['style', 'paddingLeft']),
+      PP.create('style', 'paddingLeft'),
       jsxAttributeValue(100, emptyComments),
     )
     if (isLeft(result)) {
@@ -510,7 +510,7 @@ describe('setJSXValueAtPath', () => {
 
   it('creates an array if the property path part is a number', () => {
     const updatedAttributes = forceRight(
-      setJSXValueAtPath([], PP.create(['top', 0]), jsxAttributeValue(55, emptyComments)),
+      setJSXValueAtPath([], PP.create('top', 0), jsxAttributeValue(55, emptyComments)),
     )
     const compiledProps = jsxAttributesToProps(
       'test.js',
@@ -605,7 +605,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
   it('gets a simple value', () => {
     const backgroundColor = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
-      PP.create(['style', 'backgroundColor']),
+      PP.create('style', 'backgroundColor'),
     )
     expect(isRight(backgroundColor)).toBeTruthy()
     if (isRight(backgroundColor)) {
@@ -622,7 +622,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
   it('drills correctly into a simple value containing an object', () => {
     const foundAttribute = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
-      PP.create(['objectValue', 'deep', 'object', 'path']),
+      PP.create('objectValue', 'deep', 'object', 'path'),
     )
     expect(isRight(foundAttribute)).toBeTruthy()
     if (isRight(foundAttribute)) {
@@ -632,7 +632,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
 
     const missingAttribute = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
-      PP.create(['objectValue', 'deep', 'object', 'missing', 'path']),
+      PP.create('objectValue', 'deep', 'object', 'missing', 'path'),
     )
     expect(isRight(missingAttribute)).toBeTruthy()
     if (isRight(missingAttribute)) {
@@ -641,7 +641,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
 
     const completelyMissingAttribute = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
-      PP.create(['cats', 'dogs', 'missing', 'path']),
+      PP.create('cats', 'dogs', 'missing', 'path'),
     )
     expect(completelyMissingAttribute).toEqual(right(jsxAttributeNotFound()))
   })
@@ -649,7 +649,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
   it('returns Right on a path that CAN be updated by an action', () => {
     const impossibleAttribute = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
-      PP.create(['bad', 'path']),
+      PP.create('bad', 'path'),
     )
     expect(isRight(impossibleAttribute)).toBeTruthy()
     expect(impossibleAttribute.value as any).toEqual(jsxAttributeNotFound())
@@ -660,7 +660,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
     // does not contain any real value
     const impossibleAttributeInsideAValue = getModifiableJSXAttributeAtPath(
       sampleJsxAttributes(),
-      PP.create(['top', 'what']),
+      PP.create('top', 'what'),
     )
     expect(isRight(impossibleAttributeInsideAValue)).toBeTruthy()
     expect(impossibleAttributeInsideAValue.value).toEqual(jsxAttributeNotFound())
@@ -693,7 +693,7 @@ describe('unsetJSXValueAtPath', () => {
       top: jsxAttributeValue(0, emptyComments),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['left']))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('left'))
     const expectedValue = right(
       jsxAttributesFromMap({
         top: jsxAttributeValue(0, emptyComments),
@@ -707,7 +707,7 @@ describe('unsetJSXValueAtPath', () => {
       top: jsxAttributeValue(0, emptyComments),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['left']))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('left'))
     const expectedValue = right(
       jsxAttributesFromMap({
         top: jsxAttributeValue(0, emptyComments),
@@ -721,7 +721,7 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeValue({ left: 0, top: 0 }, emptyComments),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left'))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue({ top: 0 }, emptyComments),
@@ -735,7 +735,7 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeValue({ top: 0 }, emptyComments),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left'))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue({ top: 0 }, emptyComments),
@@ -749,7 +749,7 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeValue([0, 1], emptyComments),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue([0], emptyComments),
@@ -763,7 +763,7 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeValue([0], emptyComments),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue([0], emptyComments),
@@ -777,7 +777,7 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeOtherJavaScript('undefined', 'undefined', [], null, {}),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
     expect(isLeft(actualValue)).toBe(true)
   })
 
@@ -792,7 +792,7 @@ describe('unsetJSXValueAtPath', () => {
       ),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left'))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue({ top: { x: 1, y: 1 } }, emptyComments),
@@ -809,7 +809,7 @@ describe('unsetJSXValueAtPath', () => {
       ),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left', 'x']))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left', 'x'))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue({ top: { x: 1, y: 1 } }, emptyComments),
@@ -826,7 +826,7 @@ describe('unsetJSXValueAtPath', () => {
       ]),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue([0], emptyComments),
@@ -840,7 +840,7 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeNestedArraySimple([jsxAttributeValue(0, emptyComments)]),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
+    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
     const expectedValue = right(
       jsxAttributesFromMap({
         style: jsxAttributeValue([0], emptyComments),
@@ -885,7 +885,7 @@ describe('unsetJSXValueAtPath', () => {
     })
     const actualValue = unsetJSXValueAtPath(
       startingValue,
-      PP.create(['style', 'left', 1, 'stateEnabled', 0, 'lightSide', 'eleven']),
+      PP.create('style', 'left', 1, 'stateEnabled', 0, 'lightSide', 'eleven'),
     )
     const expectedValue = right(
       jsxAttributesFromMap({
@@ -981,7 +981,7 @@ describe('getAllPathsFromAttributes', () => {
     const result = getAllPathsFromAttributes(
       jsxAttributesFromMap({ cica: jsxAttributeValue('hello!', emptyComments) }),
     )
-    expect(result).toEqual([PP.create(['cica'])])
+    expect(result).toEqual([PP.create('cica')])
   })
 
   it('works for a nested object', () => {
@@ -999,9 +999,9 @@ describe('getAllPathsFromAttributes', () => {
       }),
     )
     expect(result).toEqual([
-      PP.create(['cica']),
-      PP.create(['cica', 'deep']),
-      PP.create(['cica', 'deep', 'path']),
+      PP.create('cica'),
+      PP.create('cica', 'deep'),
+      PP.create('cica', 'deep', 'path'),
     ])
   })
 
@@ -1037,9 +1037,9 @@ describe('getAllPathsFromAttributes', () => {
       }),
     )
     expect(result).toEqual([
-      PP.create(['cica']),
-      PP.create(['cica', 'deep']),
-      PP.create(['cica', 'deep', 0]),
+      PP.create('cica'),
+      PP.create('cica', 'deep'),
+      PP.create('cica', 'deep', 0),
     ])
   })
 
@@ -1057,7 +1057,7 @@ describe('getAllPathsFromAttributes', () => {
         ),
       }),
     )
-    expect(result).toEqual([PP.create(['cica']), PP.create(['cica', 'deep'])])
+    expect(result).toEqual([PP.create('cica'), PP.create('cica', 'deep')])
   })
 
   it('drills into paths of object values too', () => {
@@ -1065,9 +1065,9 @@ describe('getAllPathsFromAttributes', () => {
       jsxAttributesFromMap({ cica: jsxAttributeValue({ deep: { path: 5 } }, emptyComments) }),
     )
     expect(result).toEqual([
-      PP.create(['cica']),
-      PP.create(['cica', 'deep']),
-      PP.create(['cica', 'deep', 'path']),
+      PP.create('cica'),
+      PP.create('cica', 'deep'),
+      PP.create('cica', 'deep', 'path'),
     ])
   })
 })
