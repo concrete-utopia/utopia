@@ -19,6 +19,7 @@ import { CSSProperties } from 'react'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
+import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -358,6 +359,41 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
     default:
       assertNever(axis)
   }
+}
+
+export const nukePositioningPropsForAxisCommand = (
+  axis: Axis,
+  path: ElementPath,
+): CanvasCommand => {
+  switch (axis) {
+    case 'horizontal':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'left']),
+        PP.create(['style', 'right']),
+      ])
+    case 'vertical':
+      return deleteProperties('always', path, [
+        PP.create(['style', 'top']),
+        PP.create(['style', 'bottom']),
+      ])
+    default:
+      assertNever(axis)
+  }
+}
+
+export const nukeAllAbsolutePositioningPropsCommands = (
+  path: ElementPath,
+): Array<CanvasCommand> => {
+  return [
+    addContainLayoutIfNeeded('always', path),
+    deleteProperties('always', path, [
+      PP.create(['style', 'position']),
+      PP.create(['style', 'left']),
+      PP.create(['style', 'right']),
+      PP.create(['style', 'top']),
+      PP.create(['style', 'bottom']),
+    ]),
+  ]
 }
 
 export type FixedHugFill =

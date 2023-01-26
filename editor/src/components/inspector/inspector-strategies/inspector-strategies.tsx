@@ -9,6 +9,8 @@ import {
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
+  nukeAllAbsolutePositioningPropsCommands,
+  nukePositioningPropsForAxisCommand,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -94,9 +96,11 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
     strategy: (metadata, elementPaths) => {
       return elementPaths.flatMap((path) => [
         setProperty('always', path, PP.create(['style', 'display']), 'flex'),
-        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) =>
-          convertWidthToFlexGrow(metadata, child),
-        ),
+        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
+          ...nukeAllAbsolutePositioningPropsCommands(child),
+          ...sizeToVisualDimensions(metadata, child),
+          ...convertWidthToFlexGrow(metadata, child),
+        ]),
       ])
     },
   },
@@ -120,7 +124,10 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
   },
 ]
 
-export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
+export const setPropFillStrategies = (
+  axis: Axis,
+  otherAxisSetToFill: boolean,
+): Array<InspectorStrategy> => [
   {
     name: 'Set to Fill Container',
     strategy: (metadata, elementPaths) => {
@@ -133,8 +140,13 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
       return elements.flatMap((path) => {
         const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
+          const nukePositioningCommands = otherAxisSetToFill
+            ? nukeAllAbsolutePositioningPropsCommands(path)
+            : [nukePositioningPropsForAxisCommand(axis, path)]
+
           return [
             nukeSizingPropsForAxisCommand(axis, path),
+            ...nukePositioningCommands,
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
@@ -147,12 +159,14 @@ export const setPropFillStrategies = (axis: Axis): Array<InspectorStrategy> => [
         ) {
           return [
             nukeSizingPropsForAxisCommand(axis, path),
+            ...nukeAllAbsolutePositioningPropsCommands(path),
             setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
           ]
         }
 
         return [
           nukeSizingPropsForAxisCommand(axis, path),
+          ...nukeAllAbsolutePositioningPropsCommands(path),
           setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
         ]
       })
