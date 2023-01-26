@@ -161,7 +161,6 @@ export interface EditorRenderResult {
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
-  getUndoCount: () => number
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
 }
@@ -230,8 +229,6 @@ export async function renderTestEditorWithModel(
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
-    const allTransientActions = actions.every((a) => isTransientAction(a))
-    undoCount += allTransientActions ? 0 : 1
     const result = editorDispatch(
       asyncTestDispatch,
       actions,
@@ -421,7 +418,6 @@ export async function renderTestEditorWithModel(
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
-    getUndoCount: () => undoCount,
     clearRecordedActions: () => {
       recordedActions = []
     },

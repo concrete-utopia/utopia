@@ -695,13 +695,3 @@ export function switchDragAndDropElementTargets(
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
   })
 }
-
-export async function expectSingleUndoStep<T>(
-  editor: EditorRenderResult,
-  action: () => Promise<T>,
-): Promise<T> {
-  const undoCount = editor.getUndoCount()
-  const result = await action()
-  expect(editor.getUndoCount()).toEqual(undoCount + 1)
-  return result
-}
