@@ -9,6 +9,7 @@ import {
   Icn,
   CheckboxInput,
   InspectorSectionIcons,
+  Icons,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
@@ -177,16 +178,21 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
             <span>Border</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
-              <Icn
-                style={{ paddingTop: 1 }}
-                category='semantic'
-                type='plus'
-                color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                width={16}
-                height={16}
-              />
-            </SquareButton>
+            <>
+              <SquareButton highlight onMouseDown={onUnsetValues}>
+                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+              </SquareButton>
+              <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
+                <Icn
+                  style={{ paddingTop: 1 }}
+                  category='semantic'
+                  type='plus'
+                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                  width={16}
+                  height={16}
+                />
+              </SquareButton>
+            </>
           ) : null}
         </InspectorSubsectionHeader>
 

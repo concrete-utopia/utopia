@@ -43,6 +43,7 @@ import {
   SquareButton,
   Icn,
   InspectorSectionIcons,
+  Icons,
 } from '../../../../../uuiui'
 
 function insertBackgroundLayer(
@@ -348,16 +349,21 @@ export const BackgroundSubsection = React.memo(() => {
           <span>Background</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
-            <Icn
-              style={{ paddingTop: 1 }}
-              category='semantic'
-              type='plus'
-              color={propertyStatus.controlled ? 'primary' : 'secondary'}
-              width={16}
-              height={16}
-            />
-          </SquareButton>
+          <>
+            <SquareButton highlight onMouseDown={onUnsetValues}>
+              <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+            </SquareButton>
+            <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
+              <Icn
+                style={{ paddingTop: 1 }}
+                category='semantic'
+                type='plus'
+                color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                width={16}
+                height={16}
+              />
+            </SquareButton>
+          </>
         ) : null}
       </InspectorSubsectionHeader>
       {controlStyles.unknown ? (

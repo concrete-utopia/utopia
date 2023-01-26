@@ -17,6 +17,7 @@ import {
   Icons,
   NumberInput,
   InspectorSectionIcons,
+  SquareButton,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -91,7 +92,7 @@ export const TextSubsection = React.memo(() => {
     letterSpacingMetadata.controlStyles.unsettable ||
     lineHeightMetadata.controlStyles.unsettable
 
-  const onUnsetSubsectionValues = () => {
+  const onUnsetSubsectionValues = React.useCallback(() => {
     colorMetadata.onUnsetValues()
     fontFamilyMetadata.onUnsetValues()
     fontStyleMetadata.onUnsetValues()
@@ -100,7 +101,16 @@ export const TextSubsection = React.memo(() => {
     textDecorationLineMetadata.onUnsetValues()
     letterSpacingMetadata.onUnsetValues()
     lineHeightMetadata.onUnsetValues()
-  }
+  }, [
+    colorMetadata,
+    fontFamilyMetadata,
+    fontStyleMetadata,
+    fontSizeMetadata,
+    textAlignMetadata,
+    textDecorationLineMetadata,
+    letterSpacingMetadata,
+    lineHeightMetadata,
+  ])
 
   const subsectionContextMenuItems = utils.stripNulls([
     showSubsectionUnsetContextMenuItem
@@ -203,6 +213,9 @@ export const TextSubsection = React.memo(() => {
             <InspectorSectionIcons.Typography />
             <span>Type</span>
           </FlexRow>
+          <SquareButton highlight onMouseDown={onUnsetSubsectionValues}>
+            <Icons.Cross color={'secondary'} />
+          </SquareButton>
           <Icons.Gear color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>

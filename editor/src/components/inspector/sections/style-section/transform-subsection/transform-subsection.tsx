@@ -9,6 +9,7 @@ import {
   UtopiaTheme,
   InspectorSubsectionHeader,
   InspectorSectionIcons,
+  Icons,
 } from '../../../../../uuiui'
 import {
   NumberInput,
@@ -547,7 +548,7 @@ export const TransformSubsection = React.memo(() => {
     insertCSSTransform(value, onSubmitValue)
   }, [onSubmitValue, value])
 
-  const unsetCSSTransforms = React.useCallback(() => {
+  const removeAllTransformProperties = React.useCallback(() => {
     onUnsetValues()
   }, [onUnsetValues])
 
@@ -569,16 +570,21 @@ export const TransformSubsection = React.memo(() => {
             <span>Transforms</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>
-              <Icn
-                style={{ paddingTop: 1 }}
-                category='semantic'
-                type='plus'
-                color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                width={16}
-                height={16}
-              />
-            </SquareButton>
+            <>
+              <SquareButton highlight onMouseDown={removeAllTransformProperties}>
+                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+              </SquareButton>
+              <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>
+                <Icn
+                  style={{ paddingTop: 1 }}
+                  category='semantic'
+                  type='plus'
+                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                  width={16}
+                  height={16}
+                />
+              </SquareButton>
+            </>
           ) : null}
         </InspectorSubsectionHeader>
         {controlStyles.unknown ? (

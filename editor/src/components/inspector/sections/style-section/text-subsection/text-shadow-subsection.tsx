@@ -248,6 +248,7 @@ export const TextShadowSubsection = React.memo(() => {
     onUnsetValues,
     onSubmitValue,
     useSubmitValueFactory,
+    propertyStatus,
   } = useInspectorStyleInfo('textShadow', undefined, (transformedType: CSSTextShadows) => {
     if (Array.isArray(transformedType) && transformedType.length === 0) {
       return {}
@@ -267,10 +268,6 @@ export const TextShadowSubsection = React.memo(() => {
     onSubmitValue,
     PropertyRowHeightWithLabel,
   )
-
-  const unsetTextShadows = React.useCallback(() => {
-    onUnsetValues()
-  }, [onUnsetValues])
 
   const contextMenuItems = utils.stripNulls([
     textShadowsValue.length > 0 ? addOnUnsetValues(['textShadow'], onUnsetValues) : null,
@@ -299,9 +296,19 @@ export const TextShadowSubsection = React.memo(() => {
             <InspectorSectionIcons.TextShadow />
             <span>Text Shadow</span>
           </FlexRow>
-          <SquareButton highlight onMouseDown={insertShadow}>
-            <Icons.Plus style={{ paddingTop: 1 }} />
-          </SquareButton>
+          {propertyStatus.overwritable ? (
+            <>
+              <SquareButton highlight onMouseDown={onUnsetValues}>
+                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+              </SquareButton>
+              <SquareButton highlight onMouseDown={insertShadow}>
+                <Icons.Plus
+                  style={{ paddingTop: 1 }}
+                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                />
+              </SquareButton>
+            </>
+          ) : null}
         </InspectorSubsectionHeader>
         <div
           style={{
