@@ -1,3 +1,4 @@
+import { act, fireEvent } from '@testing-library/react'
 import { assertNever } from '../../../core/shared/utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
 import { wait } from '../../../utils/utils.test-utils'
@@ -113,19 +114,16 @@ describe('Fixed / Fill / Hug control', () => {
         'await-first-dom-report',
       )
       const child = await select(editor, 'child')
+      await editor.getDispatchFollowUpActionsFinished()
 
       expect(child.style.flexGrow).toEqual('1')
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       mouseClickAtPoint(control, { x: 5, y: 5 })
 
-      // await wait(5000)
-
-      pressKey('3', { targetElement: control })
-
-      // await wait(5000)
-      pressKey('Enter', { targetElement: control })
-
-      // await wait(5000)
+      act(() => {
+        fireEvent.change(control, { target: { value: '3' } })
+        fireEvent.blur(control)
+      })
 
       expect(child.style.flexGrow).toEqual('3')
     })
@@ -141,15 +139,10 @@ describe('Fixed / Fill / Hug control', () => {
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       mouseClickAtPoint(control, { x: 5, y: 5 })
 
-      // await wait(5000)
-
-      pressKey('5', { targetElement: control })
-      pressKey('0', { targetElement: control })
-
-      // await wait(5000)
-      pressKey('Enter', { targetElement: control })
-
-      // await wait(5000)
+      act(() => {
+        fireEvent.change(control, { target: { value: '50%' } })
+        fireEvent.blur(control)
+      })
 
       expect(child.style.width).toEqual('50%')
     })
@@ -789,8 +782,6 @@ export var storyboard = (
 
 const projectWithChildInFlowLayout = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
-import { App } from '/src/app.js'
-import { Playground } from '/src/playground.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
@@ -807,7 +798,7 @@ export var storyboard = (
       data-uid='6b7'
     >
       <div
-        data-testid='div'
+        data-testid='child'
         style={{
           backgroundColor: '#aaaaaa33',
           height: 61,
