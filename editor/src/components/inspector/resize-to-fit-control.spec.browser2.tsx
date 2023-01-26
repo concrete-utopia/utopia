@@ -1,7 +1,11 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../canvas/event-helpers.test-utils'
+import {
+  expectSingleUndoStep,
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+} from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
@@ -13,7 +17,7 @@ describe('Resize to fit control', () => {
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
-    await clickResizeToFit(editor)
+    await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')

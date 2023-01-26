@@ -1,6 +1,6 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import { expectSingleUndoStep, mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { StartCenterEnd } from './inspector-common'
 import { NineBlockSectors, NineBlockTestId } from './nine-block-controls'
@@ -56,7 +56,9 @@ async function doTest(
     NineBlockTestId(justifyContent, alignItems),
   )
 
-  mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 })
+  await expectSingleUndoStep(editor, async () =>
+    mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 }),
+  )
 
   return div
 }
