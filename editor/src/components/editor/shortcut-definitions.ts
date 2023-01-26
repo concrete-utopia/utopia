@@ -244,10 +244,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Convert selected elements to flex containers',
     key('a', ['shift']),
   ),
-  [REMOVE_ABSOLUTE_POSITIONING]: shortcut(
-    `strips ${absolutePositioningProps.join(', ')} props`,
-    key('x', []),
-  ),
+  [REMOVE_ABSOLUTE_POSITIONING]: shortcut(`Strip absolute sizing props props`, key('x', [])),
   [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
   [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
 }

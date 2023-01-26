@@ -1,8 +1,7 @@
-import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import * as EP from '../../core/shared/element-path'
 import Keyboard, {
   KeyCharacter,
   KeysPressed,
@@ -10,11 +9,10 @@ import Keyboard, {
   StoredKeyCharacters,
   strictCheckModifiers,
 } from '../../utils/keyboard'
-import { emptyModifiers, Modifier, Modifiers } from '../../utils/modifiers'
+import { Modifier, Modifiers } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
-import Canvas, { TargetSearchType } from '../canvas/canvas'
+import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
-import { adjustAllSelectedFrames } from '../canvas/controls/select-mode/move-utils'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
 import {
   toggleBackgroundLayers,
@@ -97,7 +95,6 @@ import {
   COPY_STYLE_PROPERTIES,
   CONVERT_TO_FLEX_CONTAINER,
   REMOVE_ABSOLUTE_POSITIONING,
-  absolutePositioningProps,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -113,16 +110,15 @@ import {
   toggleTextStrikeThrough,
   toggleTextUnderline,
 } from '../text-editor/text-editor-shortcut-helpers'
-import {
-  commandsForFirstApplicableStrategy,
-  executeFirstApplicableStrategy,
-} from '../inspector/inspector-strategies/inspector-strategy'
+import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 import {
   addFlexLayoutStrategies,
   removeFlexLayoutStrategies,
 } from '../inspector/inspector-strategies/inspector-strategies'
-import { detectAreElementsFlexContainers } from '../inspector/inspector-common'
-import { deleteProperties } from '../canvas/commands/delete-properties-command'
+import {
+  detectAreElementsFlexContainers,
+  nukeAllAbsolutePositioningPropsCommands,
+} from '../inspector/inspector-common'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -808,13 +804,7 @@ export function handleKeyDown(
         }
         return [
           EditorActions.applyCommandsAction(
-            editor.selectedViews.map((view) =>
-              deleteProperties(
-                'always',
-                view,
-                absolutePositioningProps.map((prop) => PP.create(['style', prop])),
-              ),
-            ),
+            editor.selectedViews.flatMap((view) => nukeAllAbsolutePositioningPropsCommands(view)),
           ),
         ]
       },
