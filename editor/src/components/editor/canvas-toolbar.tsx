@@ -164,7 +164,6 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
-        {/* TODO is there a component for this subheading? */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Select' placement='bottom'>
