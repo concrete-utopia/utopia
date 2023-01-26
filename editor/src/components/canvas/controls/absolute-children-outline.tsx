@@ -5,26 +5,29 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { OutlineControl } from './select-mode/simple-outline-control'
 
 export const AbsoluteChildrenOutline = React.memo(() => {
-  const absoluteChildren = useEditorState(
+  const elementWithAbsoluteChildren = useEditorState(
     Substores.metadata,
     (store) => {
       return store.editor.selectedViews.flatMap((view) => {
-        return MetadataUtils.getChildrenPaths(store.editor.jsxMetadata, view).filter((child) => {
-          const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, child)
-          return MetadataUtils.isPositionAbsolute(metadata)
-        })
+        const children = MetadataUtils.getChildrenPaths(store.editor.jsxMetadata, view).filter(
+          (child) => {
+            const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, child)
+            return MetadataUtils.isPositionAbsolute(metadata)
+          },
+        )
+        return [...children, view]
       })
     },
-    'AbsoluteChildrenOutline absoluteChildrenBoundingBox',
+    'AbsoluteChildrenOutline elementWithAbsoluteChildren',
   )
 
-  if (absoluteChildren.length === 0) {
+  if (elementWithAbsoluteChildren.length === 0) {
     return null
   }
   return (
     <CanvasOffsetWrapper>
       <OutlineControl
-        targets={absoluteChildren}
+        targets={elementWithAbsoluteChildren}
         outlineStyle={'dotted'}
         color='multiselect-bounds'
       />
