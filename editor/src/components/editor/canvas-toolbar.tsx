@@ -36,6 +36,7 @@ import {
 import { useDispatch } from './store/dispatch-context'
 import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import { togglePanel } from './actions/action-creators'
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -137,15 +138,14 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([resetCanvas()])
   }, [dispatch])
 
-  const isCodeEditorVisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.interfaceDesigner.codePaneVisible,
-    'CanvasToolbar isCodeEditorVisible',
-  )
   const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
-    [dispatch, isCodeEditorVisible],
+    () => dispatch([togglePanel('codeEditor')]),
+    [dispatch],
   )
+
+  const toggleInspectorVisible = React.useCallback(() => {
+    dispatch([togglePanel('rightmenu')])
+  }, [dispatch])
 
   return (
     <FlexColumn
@@ -269,7 +269,7 @@ export const CanvasToolbar = React.memo(() => {
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Editor</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Toggle between live and edit mode' placement='bottom'>
+          <Tooltip title='Toggle Live Mode' placement='bottom'>
             <InsertModeButton
               iconType='playbutton'
               iconCategory='semantic'
@@ -285,11 +285,18 @@ export const CanvasToolbar = React.memo(() => {
               onClick={resetCanvasCallback}
             />
           </Tooltip>
-          <Tooltip title='Show/hide code editor' placement='bottom'>
+          <Tooltip title='Toggle Code Editor (⌘⌥1)' placement='bottom'>
             <InsertModeButton
               iconType='codymccodeface-larger'
               iconCategory='semantic'
               onClick={toggleCodeEditorVisible}
+            />
+          </Tooltip>
+          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
+            <InsertModeButton
+              iconType='inspector-larger'
+              iconCategory='semantic'
+              onClick={toggleInspectorVisible}
             />
           </Tooltip>
         </FlexRow>
