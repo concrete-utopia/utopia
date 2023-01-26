@@ -446,7 +446,7 @@ function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
   defaults.reverse().forEach((defaultTarget) => {
     const styleObject = getSimpleAttributeAtPath(
       right(localJSXElement.props),
-      PP.create(...defaultTarget.path),
+      PP.createFromArray(defaultTarget.path),
     )
     if (isRight(styleObject) && styleObject.value instanceof Object) {
       recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
@@ -548,7 +548,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 
   const onStyleSelectorDelete = React.useCallback(
     (deleteTarget: CSSTarget) => {
-      const path = PP.create(...deleteTarget.path)
+      const path = PP.createFromArray(deleteTarget.path)
       const actions = Utils.flatMapArray(
         (elem) => [EditorActions.unsetProperty(elem, path)],
         refElementsToTargetForUpdates.current,
@@ -561,7 +561,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   const onStyleSelectorInsert = React.useCallback(
     (parent: CSSTarget | undefined, label: string) => {
       const newPath = [...(parent?.path ?? []), label]
-      const newPropertyPath = PP.create(...newPath)
+      const newPropertyPath = PP.createFromArray(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
         EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
       )

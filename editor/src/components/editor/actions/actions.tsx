@@ -4243,8 +4243,8 @@ export const UPDATE_FNS = {
   // If you want other types of JSXAttributes, that needs to be added
   RENAME_PROP_KEY: (action: RenameStyleSelector, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
-      const originalPropertyPath = PP.create(...action.cssTargetPath.path)
-      const newPropertyPath = PP.create(...action.value)
+      const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
+      const newPropertyPath = PP.createFromArray(action.value)
       const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (isJSXAttributeValue(originalValue) || isPartOfJSXAttributeValue(originalValue)) {

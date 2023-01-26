@@ -5,7 +5,7 @@ import { arrayEquals, fastForEach, longestCommonArray } from './utils'
 export function fromString(value: string): PropertyPath {
   let fromPathStringCache: PropertyPath | null = globalPathStringToPathCache[value]
   if (fromPathStringCache == null) {
-    const result = create(...value.split('.'))
+    const result = createFromArray(value.split('.'))
     globalPathStringToPathCache[value] = result
     return result
   } else {
@@ -76,21 +76,16 @@ export function create(
   }
 }
 
-// export function create<T extends string | number>(elements: [T]): PropertyPath<[T]>
-// export function create<T1 extends PropertyPathPart, T2 extends PropertyPathPart>(
-//   elements: readonly [T1, T2],
-// ): PropertyPath<[T1, T2]>
-// export function create<T extends Array<PropertyPathPart>>(elements: T): PropertyPath<T>
-// export function create<T extends Array<PropertyPathPart>>(elements: T): PropertyPath<T> {
-//   const pathCache = getPathCache(elements)
-//   if (pathCache.cached == null) {
-//     const newPath = { propertyElements: elements }
-//     pathCache.cached = newPath
-//     return newPath
-//   } else {
-//     return pathCache.cached as PropertyPath<T>
-//   }
-// }
+export function createFromArray<T extends Array<PropertyPathPart>>(elements: T): PropertyPath<T> {
+  const pathCache = getPathCache(elements)
+  if (pathCache.cached == null) {
+    const newPath = { propertyElements: elements }
+    pathCache.cached = newPath
+    return newPath
+  } else {
+    return pathCache.cached as PropertyPath<T>
+  }
+}
 
 export function toString(propertyPath: PropertyPath): string {
   const joinWith = '.'
@@ -126,7 +121,7 @@ export function firstPart(propertyPath: PropertyPath): PropertyPathPart {
 export function tail(propertyPath: PropertyPath): PropertyPath {
   const newElements =
     propertyPath.propertyElements.length > 0 ? propertyPath.propertyElements.slice(1) : []
-  return create(...newElements)
+  return createFromArray(newElements)
 }
 
 export function getElements(propertyPath: PropertyPath): Array<PropertyPathPart> {
@@ -137,14 +132,14 @@ export function appendPropertyPathElems(
   path: PropertyPath,
   elems: Array<PropertyPathPart>,
 ): PropertyPath {
-  return create(...path.propertyElements.concat(elems))
+  return createFromArray(path.propertyElements.concat(elems))
 }
 
 export function prependPropertyPathElems(
   elems: Array<PropertyPathPart>,
   path: PropertyPath,
 ): PropertyPath {
-  return create(...elems.concat(path.propertyElements))
+  return createFromArray(elems.concat(path.propertyElements))
 }
 
 export function append(first: PropertyPath, second: PropertyPath): PropertyPath {
@@ -214,7 +209,9 @@ export function stepDownPath(
   if (pathToStep == null) {
     return rootPath(pathToFollow)
   } else {
-    return create(...pathToFollow.propertyElements.slice(0, pathToStep.propertyElements.length + 1))
+    return createFromArray(
+      pathToFollow.propertyElements.slice(0, pathToStep.propertyElements.length + 1),
+    )
   }
 }
 
@@ -237,5 +234,5 @@ export function findLongestMatchingPropertyPath(
   path: PropertyPath,
   from: Array<PropertyPathPart>,
 ): PropertyPath {
-  return create(...findLongestMatchingSubPath(path.propertyElements, from))
+  return createFromArray(findLongestMatchingSubPath(path.propertyElements, from))
 }
