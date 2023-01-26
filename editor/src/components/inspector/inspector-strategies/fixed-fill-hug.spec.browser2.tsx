@@ -1,11 +1,8 @@
 import { assertNever } from '../../../core/shared/utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
+import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
-import {
-  expectSingleUndoStep,
-  mouseClickAtPoint,
-  mouseDoubleClickAtPoint,
-} from '../../canvas/event-helpers.test-utils'
+import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,

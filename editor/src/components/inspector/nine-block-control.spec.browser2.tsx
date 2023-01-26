@@ -1,6 +1,7 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
+import { expectSingleUndoStep } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { expectSingleUndoStep, mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { StartCenterEnd } from './inspector-common'
 import { NineBlockSectors, NineBlockTestId } from './nine-block-controls'

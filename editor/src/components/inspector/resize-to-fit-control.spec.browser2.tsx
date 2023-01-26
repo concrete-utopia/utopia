@@ -1,11 +1,7 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
-import { wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import {
-  expectSingleUndoStep,
-  mouseClickAtPoint,
-  mouseDoubleClickAtPoint,
-} from '../canvas/event-helpers.test-utils'
+import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
