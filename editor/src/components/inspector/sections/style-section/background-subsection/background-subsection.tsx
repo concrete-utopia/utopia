@@ -192,7 +192,7 @@ export const BackgroundSubsection = React.memo(() => {
   const onUnsetSubsectionValues = React.useCallback(() => {
     onContextUnsetValue(
       BackgroundPrefixedProperties.map((prop) => {
-        return PP.create([...targetPath, prop])
+        return PP.createFromArray([...targetPath, prop])
       }),
       false,
     )

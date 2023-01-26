@@ -109,7 +109,7 @@ export const TextSubsection = React.memo(() => {
   const onUnsetSubsectionValues = React.useCallback(() => {
     onContextUnsetValue(
       TextRelatedProperties.map((prop) => {
-        return PP.create([...targetPath, prop])
+        return PP.createFromArray([...targetPath, prop])
       }),
       false,
     )
