@@ -88,7 +88,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
     return (
       <RowOrFolderWrapper
         key={`section-row-${propName}`}
-        propPath={PP.create([propName])}
+        propPath={PP.create(propName)}
         controlDescription={controlDescription}
         isScene={false}
         setGlobalCursor={props.setGlobalCursor}
@@ -131,7 +131,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
             return (
               <RowForControl
                 key={propName}
-                propPath={PP.create([propName])}
+                propPath={PP.create(propName)}
                 controlDescription={controlDescription}
                 isScene={false}
                 setGlobalCursor={props.setGlobalCursor}

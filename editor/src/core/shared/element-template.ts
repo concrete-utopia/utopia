@@ -912,7 +912,7 @@ export function jsxElementName(
 ): JSXElementName {
   return {
     baseVariable: baseVariable,
-    propertyPath: PP.create(propertyPathParts),
+    propertyPath: PP.createFromArray(propertyPathParts),
   }
 }
 

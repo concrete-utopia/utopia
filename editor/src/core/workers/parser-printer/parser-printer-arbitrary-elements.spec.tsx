@@ -181,7 +181,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const elementWithin = firstChild.elementsWithin['bbb']
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
-              PP.create(styleStringInArray),
+              PP.create('style'),
               jsxAttributeValue({ left: 20, top: 300 }, emptyComments),
             )
             forEachRight(newAttributes, (updated) => {

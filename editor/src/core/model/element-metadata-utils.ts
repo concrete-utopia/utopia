@@ -300,7 +300,7 @@ export const MetadataUtils = {
     if (element != null) {
       forEachRight(element.element, (elem) => {
         if (isJSXElement(elem)) {
-          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
+          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create('role'))
           forEachRight(attrResult, (value) => {
             if (value === 'button') {
               buttonRoleFound = true

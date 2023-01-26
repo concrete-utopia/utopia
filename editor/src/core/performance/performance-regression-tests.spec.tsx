@@ -44,7 +44,7 @@ describe('React Render Count Tests -', () => {
       [
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          PP.create(['style', 'opacity']),
+          PP.create('style', 'opacity'),
           jsxAttributeValue(0.3, emptyComments),
         ),
       ],
@@ -64,7 +64,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`406`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`404`)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -100,7 +100,7 @@ describe('React Render Count Tests -', () => {
       [
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          PP.create(['style', 'opacity']),
+          PP.create('style', 'opacity'),
           jsxAttributeValue(0.3, emptyComments),
         ),
       ],
@@ -124,7 +124,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`395`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`393`)
   })
 
   it('Changing the selected view with a simple project', async () => {
@@ -178,7 +178,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`665`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`651`)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -242,6 +242,6 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`737`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`723`)
   })
 })

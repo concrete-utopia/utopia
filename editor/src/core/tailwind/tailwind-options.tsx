@@ -256,7 +256,7 @@ function getClassNameAttribute(element: JSXElementChild | null): {
 } {
   if (element != null && isJSXElement(element)) {
     const jsxAttributes = element.props
-    const foundAttribute = getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className']))
+    const foundAttribute = getModifiableJSXAttributeAtPath(jsxAttributes, PP.create('className'))
     const foundAttributeValue = flatMapEither(jsxSimpleAttributeToValue, foundAttribute)
     const isSettable = foldEither(
       () => false,

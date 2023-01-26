@@ -148,7 +148,7 @@ export const toggleBorderItem: ContextMenuItem<CanvasData> = {
     const actions = data.selectedViews.map((target) =>
       EditorActions.toggleProperty(
         target,
-        toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+        toggleStylePropPath(PP.create('style', 'border'), toggleBorder),
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')
@@ -163,7 +163,7 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
     const actions = data.selectedViews.map((target) =>
       EditorActions.toggleProperty(
         target,
-        toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+        toggleStylePropPath(PP.create('style', 'boxShadow'), toggleShadow),
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')

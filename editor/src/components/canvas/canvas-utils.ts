@@ -2359,7 +2359,7 @@ function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPa
         (underlyingElement) => {
           const styleUpdated = setJSXValuesAtPaths(underlyingElement.props, [
             {
-              path: PP.create(['style', 'transition']),
+              path: PP.create('style', 'transition'),
               value: jsxAttributeValue('none', emptyComments),
             },
           ])

@@ -41,7 +41,7 @@ export function keyboardSetOpacityStrategy(
       }
 
       const commands = selectedElements.map((path) =>
-        setProperty('always', path, PP.create(['style', 'opacity']), inputValue),
+        setProperty('always', path, PP.create('style', 'opacity'), inputValue),
       )
 
       return strategyApplicationResult(commands)
