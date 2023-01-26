@@ -24,10 +24,18 @@ import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import { CSSFontStyle, cssNumber, CSSTextDecorationLine } from '../../../common/css-utils'
+import {
+  CSSFontStyle,
+  cssNumber,
+  CSSTextDecorationLine,
+  ParsedCSSPropertiesKeys,
+} from '../../../common/css-utils'
 import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
 import {
   InspectorCallbackContext,
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+  useInspectorContext,
   useInspectorElementInfo,
   useInspectorStyleInfo,
   useIsSubSectionVisible,
@@ -42,6 +50,8 @@ import { FontVariantSelect } from './font-variant-select'
 import { FlexRow } from 'utopia-api'
 import { getControlStyles } from '../../../common/control-status'
 import { Utils } from '../../../../../uuiui-deps'
+import { TextRelatedProperties } from '../../../../../core/properties/css-properties'
+import { useContextSelector } from 'use-context-selector'
 
 const ObjectPathImmutable: any = OPI
 
@@ -92,25 +102,18 @@ export const TextSubsection = React.memo(() => {
     letterSpacingMetadata.controlStyles.unsettable ||
     lineHeightMetadata.controlStyles.unsettable
 
+  const { onContextUnsetValue } = useInspectorContext()
+
+  const targetPath = useContextSelector(InspectorPropsContext, (context) => context.targetPath)
+
   const onUnsetSubsectionValues = React.useCallback(() => {
-    colorMetadata.onUnsetValues()
-    fontFamilyMetadata.onUnsetValues()
-    fontStyleMetadata.onUnsetValues()
-    fontSizeMetadata.onUnsetValues()
-    textAlignMetadata.onUnsetValues()
-    textDecorationLineMetadata.onUnsetValues()
-    letterSpacingMetadata.onUnsetValues()
-    lineHeightMetadata.onUnsetValues()
-  }, [
-    colorMetadata,
-    fontFamilyMetadata,
-    fontStyleMetadata,
-    fontSizeMetadata,
-    textAlignMetadata,
-    textDecorationLineMetadata,
-    letterSpacingMetadata,
-    lineHeightMetadata,
-  ])
+    onContextUnsetValue(
+      TextRelatedProperties.map((prop) => {
+        return PP.create([...targetPath, prop])
+      }),
+      false,
+    )
+  }, [onContextUnsetValue, targetPath])
 
   const subsectionContextMenuItems = utils.stripNulls([
     showSubsectionUnsetContextMenuItem
@@ -213,7 +216,11 @@ export const TextSubsection = React.memo(() => {
             <InspectorSectionIcons.Typography />
             <span>Type</span>
           </FlexRow>
-          <SquareButton highlight onMouseDown={onUnsetSubsectionValues}>
+          <SquareButton
+            highlight
+            onMouseDown={onUnsetSubsectionValues}
+            data-testid={'inspector-text-remove-all'}
+          >
             <Icons.Cross color={'secondary'} />
           </SquareButton>
           <Icons.Gear color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />

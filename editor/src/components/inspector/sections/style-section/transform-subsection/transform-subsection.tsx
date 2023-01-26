@@ -571,7 +571,11 @@ export const TransformSubsection = React.memo(() => {
           </FlexRow>
           {propertyStatus.overwritable ? (
             <>
-              <SquareButton highlight onMouseDown={removeAllTransformProperties}>
+              <SquareButton
+                highlight
+                onMouseDown={removeAllTransformProperties}
+                data-testid={'inspector-transform-remove-all'}
+              >
                 <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
               </SquareButton>
               <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>

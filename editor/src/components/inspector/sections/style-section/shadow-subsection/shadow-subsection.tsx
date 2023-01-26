@@ -310,7 +310,11 @@ export const ShadowSubsection = React.memo(() => {
         </FlexRow>
         {propertyStatus.overwritable ? (
           <>
-            <SquareButton highlight onMouseDown={onUnsetValues}>
+            <SquareButton
+              highlight
+              onMouseDown={onUnsetValues}
+              data-testid={'inspector-shadow-remove-all'}
+            >
               <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
             </SquareButton>
             <SquareButton highlight onMouseDown={insertShadowValue}>
