@@ -3,32 +3,27 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
   convertWidthToFlexGrow,
-  detectParentFlexDirection,
-  fillContainerApplicable,
   filterKeepFlexContainers,
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
   nukeAllAbsolutePositioningPropsCommands,
-  nukePositioningPropsForAxisCommand,
-  nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
-import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { cssNumber, CSSNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
-import { clamp } from '../../../core/shared/math-utils'
 import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
+import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -129,70 +124,7 @@ export const setPropFillStrategies = (
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
-): Array<InspectorStrategy> => [
-  {
-    name: 'Set to Fill Container',
-    strategy: (metadata, elementPaths) => {
-      const elements = elementPaths.filter(fillContainerApplicable)
-
-      if (elements.length === 0) {
-        return null
-      }
-
-      return elements.flatMap((path) => {
-        const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
-        if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
-          const checkedValue =
-            value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
-          const nukePositioningCommands = otherAxisSetToFill
-            ? nukeAllAbsolutePositioningPropsCommands(path)
-            : [nukePositioningPropsForAxisCommand(axis, path)]
-          return [
-            ...nukePositioningCommands,
-            setProperty(
-              'always',
-              path,
-              PP.create(['style', widthHeightFromAxis(axis)]),
-              printCSSNumber(checkedValue, null),
-            ),
-          ]
-        }
-
-        const flexDirection = detectParentFlexDirection(metadata, path) ?? 'row'
-
-        if (
-          (flexDirection.startsWith('row') && axis === 'vertical') ||
-          (flexDirection.startsWith('column') && axis === 'horizontal')
-        ) {
-          const checkedValue =
-            value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
-          return [
-            nukeSizingPropsForAxisCommand(axis, path),
-            setProperty(
-              'always',
-              path,
-              PP.create(['style', widthHeightFromAxis(axis)]),
-              printCSSNumber(checkedValue, null),
-            ),
-          ]
-        }
-
-        const checkedValue =
-          value === 'default' ? cssNumber(1, null) : cssNumber(clamp(0, Infinity, value), null)
-
-        return [
-          ...nukeAllAbsolutePositioningPropsCommands(path),
-          setProperty(
-            'always',
-            path,
-            PP.create(['style', 'flexGrow']),
-            printCSSNumber(checkedValue, null),
-          ),
-        ]
-      })
-    },
-  },
-]
+): Array<InspectorStrategy> => [fillContainerStrategyBasic(axis, value, otherAxisSetToFill)]
 
 export const setPropFixedStrategies = (
   whenToRun: WhenToRun,
