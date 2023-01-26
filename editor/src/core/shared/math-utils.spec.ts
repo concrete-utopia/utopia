@@ -18,7 +18,7 @@ describe('math utils', () => {
       expect(wrapValue(7, 10, 15)).toEqual(13)
       expect(wrapValue(-4, -7, -3)).toEqual(-4)
       expect(wrapValue(-11, -7, -3)).toEqual(-6)
-      expect(wrapValue(-2, -7, -3)).toEqual(-4)
+      expect(wrapValue(-2, -7, -3)).toEqual(-7)
     })
   })
 })
