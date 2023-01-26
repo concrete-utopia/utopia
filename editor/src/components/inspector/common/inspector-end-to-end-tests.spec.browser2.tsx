@@ -39,7 +39,6 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { wait } from '../../../utils/utils.test-utils'
 
 async function getControl(
   controlTestId: string,
