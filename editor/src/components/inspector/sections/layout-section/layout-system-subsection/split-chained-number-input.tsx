@@ -2,7 +2,6 @@ import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../../core/shared/utils'
-import { when } from '../../../../../utils/react-conditionals'
 import {
   ChainedNumberInput,
   InspectorSectionIcons,
@@ -253,145 +252,183 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return props.shorthand.controlStatus === 'simple' ? props.updateShorthand : null
   }, [props.shorthand, props.updateShorthand])
 
-  const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> = []
-  switch (mode) {
-    case 'one-value':
-      chainedPropsToRender.push({
-        style: { width: '100%' },
-        value: cssValueOrNull(oneValue),
-        DEPRECATED_labelBelow: '↔',
-        minimum: 0,
-        onSubmitValue: onSubmitValueShorthand(setOneValue, updateShorthandIfUsed, allSides, {}),
-        onTransientSubmitValue: onTransientSubmitValueShorthand(
-          setOneValue,
-          updateShorthandIfUsed,
-          allSides,
-          {},
-        ),
-        numberType: 'Px',
-        defaultUnitToHide: 'px',
-        controlStatus: allSides[0].controlStatus,
-        testId: `${name}-one`,
-      })
-      break
-    case 'per-direction':
-      chainedPropsToRender.push(
-        {
-          value: cssValueOrNull(horizontal),
-          DEPRECATED_labelBelow: 'H',
-          minimum: 0,
-          onSubmitValue: onSubmitValueShorthand(
-            setHorizontal,
-            updateShorthandIfUsed,
-            sidesHorizontal,
-            excludeHorizontal,
-          ),
-          onTransientSubmitValue: onTransientSubmitValueShorthand(
-            setHorizontal,
-            updateShorthandIfUsed,
-            sidesHorizontal,
-            excludeHorizontal,
-          ),
-          numberType: 'Px',
-          controlStatus: sidesHorizontal[0].controlStatus,
-          defaultUnitToHide: 'px',
-          testId: `${name}-H`,
-        },
-        {
-          value: cssValueOrNull(vertical),
-          DEPRECATED_labelBelow: 'V',
-          minimum: 0,
-          onSubmitValue: onSubmitValueShorthand(
-            setVertical,
-            updateShorthandIfUsed,
-            sidesVertical,
-            excludeVertical,
-          ),
-          onTransientSubmitValue: onTransientSubmitValueShorthand(
-            setVertical,
-            updateShorthandIfUsed,
-            sidesVertical,
-            excludeVertical,
-          ),
-          numberType: 'Px',
-          controlStatus: sidesVertical[0].controlStatus,
-          defaultUnitToHide: 'px',
-          testId: `${name}-V`,
-        },
-      )
-      break
-    case 'per-side':
-      chainedPropsToRender.push(
-        {
-          value: top.value,
-          DEPRECATED_labelBelow: 'T',
-          minimum: 0,
-          onSubmitValue: onSubmitValue(top),
-          onTransientSubmitValue: onTransientSubmitValue(top),
-          controlStatus: top.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: `${name}-T`,
-        },
-        {
-          value: right.value,
-          DEPRECATED_labelBelow: 'R',
-          minimum: 0,
-          onSubmitValue: onSubmitValue(right),
-          onTransientSubmitValue: onTransientSubmitValue(right),
-          controlStatus: right.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: `${name}-R`,
-        },
-        {
-          value: bottom.value,
-          DEPRECATED_labelBelow: 'B',
-          minimum: 0,
-          onSubmitValue: onSubmitValue(bottom),
-          onTransientSubmitValue: onTransientSubmitValue(bottom),
-          controlStatus: bottom.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: `${name}-B`,
-        },
-        {
-          value: left.value,
-          DEPRECATED_labelBelow: 'L',
-          minimum: 0,
-          onSubmitValue: onSubmitValue(left),
-          onTransientSubmitValue: onTransientSubmitValue(left),
-          controlStatus: left.controlStatus,
-          numberType: 'LengthPercent',
-          defaultUnitToHide: 'px',
-          testId: `${name}-L`,
-        },
-      )
-      break
-    case null:
-      break
-    default:
-      assertNever(mode)
-  }
+  const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
+    React.useMemo(() => {
+      switch (mode) {
+        case 'one-value':
+          return [
+            {
+              style: { width: '100%' },
+              value: cssValueOrNull(oneValue),
+              DEPRECATED_labelBelow: '↔',
+              minimum: 0,
+              onSubmitValue: onSubmitValueShorthand(
+                setOneValue,
+                updateShorthandIfUsed,
+                allSides,
+                {},
+              ),
+              onTransientSubmitValue: onTransientSubmitValueShorthand(
+                setOneValue,
+                updateShorthandIfUsed,
+                allSides,
+                {},
+              ),
+              numberType: 'Px',
+              defaultUnitToHide: 'px',
+              controlStatus: allSides[0].controlStatus,
+              testId: `${name}-one`,
+            },
+          ]
+        case 'per-direction':
+          return [
+            {
+              value: cssValueOrNull(horizontal),
+              DEPRECATED_labelBelow: 'H',
+              minimum: 0,
+              onSubmitValue: onSubmitValueShorthand(
+                setHorizontal,
+                updateShorthandIfUsed,
+                sidesHorizontal,
+                excludeHorizontal,
+              ),
+              onTransientSubmitValue: onTransientSubmitValueShorthand(
+                setHorizontal,
+                updateShorthandIfUsed,
+                sidesHorizontal,
+                excludeHorizontal,
+              ),
+              numberType: 'Px',
+              controlStatus: sidesHorizontal[0].controlStatus,
+              defaultUnitToHide: 'px',
+              testId: `${name}-H`,
+            },
+            {
+              value: cssValueOrNull(vertical),
+              DEPRECATED_labelBelow: 'V',
+              minimum: 0,
+              onSubmitValue: onSubmitValueShorthand(
+                setVertical,
+                updateShorthandIfUsed,
+                sidesVertical,
+                excludeVertical,
+              ),
+              onTransientSubmitValue: onTransientSubmitValueShorthand(
+                setVertical,
+                updateShorthandIfUsed,
+                sidesVertical,
+                excludeVertical,
+              ),
+              numberType: 'Px',
+              controlStatus: sidesVertical[0].controlStatus,
+              defaultUnitToHide: 'px',
+              testId: `${name}-V`,
+            },
+          ]
+        case 'per-side':
+          return [
+            {
+              value: top.value,
+              DEPRECATED_labelBelow: 'T',
+              minimum: 0,
+              onSubmitValue: onSubmitValue(top),
+              onTransientSubmitValue: onTransientSubmitValue(top),
+              controlStatus: top.controlStatus,
+              numberType: 'LengthPercent',
+              defaultUnitToHide: 'px',
+              testId: `${name}-T`,
+            },
+            {
+              value: right.value,
+              DEPRECATED_labelBelow: 'R',
+              minimum: 0,
+              onSubmitValue: onSubmitValue(right),
+              onTransientSubmitValue: onTransientSubmitValue(right),
+              controlStatus: right.controlStatus,
+              numberType: 'LengthPercent',
+              defaultUnitToHide: 'px',
+              testId: `${name}-R`,
+            },
+            {
+              value: bottom.value,
+              DEPRECATED_labelBelow: 'B',
+              minimum: 0,
+              onSubmitValue: onSubmitValue(bottom),
+              onTransientSubmitValue: onTransientSubmitValue(bottom),
+              controlStatus: bottom.controlStatus,
+              numberType: 'LengthPercent',
+              defaultUnitToHide: 'px',
+              testId: `${name}-B`,
+            },
+            {
+              value: left.value,
+              DEPRECATED_labelBelow: 'L',
+              minimum: 0,
+              onSubmitValue: onSubmitValue(left),
+              onTransientSubmitValue: onTransientSubmitValue(left),
+              controlStatus: left.controlStatus,
+              numberType: 'LengthPercent',
+              defaultUnitToHide: 'px',
+              testId: `${name}-L`,
+            },
+          ]
+        case null:
+          return []
+        default:
+          assertNever(mode)
+      }
+    }, [
+      mode,
+      allSides,
+      excludeHorizontal,
+      excludeVertical,
+      oneValue,
+      horizontal,
+      vertical,
+      top,
+      bottom,
+      left,
+      right,
+      name,
+      sidesHorizontal,
+      sidesVertical,
+      updateShorthandIfUsed,
+    ])
+
+  const tooltipTitle = React.useMemo(() => {
+    switch (mode) {
+      case 'one-value':
+        return 'Padding'
+      case 'per-direction':
+        return 'Padding per direction'
+      case 'per-side':
+        return 'Padding per side'
+      case null:
+        return ''
+      default:
+        assertNever(mode)
+    }
+  }, [mode])
+
+  const modeIcon = React.useMemo(() => {
+    switch (mode) {
+      case 'one-value':
+        return <InspectorSectionIcons.SplitFull />
+      case 'per-direction':
+        return <InspectorSectionIcons.SplitHalf />
+      case 'per-side':
+        return <InspectorSectionIcons.SplitQuarter />
+      case null:
+        return null
+      default:
+        assertNever(mode)
+    }
+  }, [mode])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
-      <Tooltip
-        title={
-          mode === 'one-value'
-            ? 'Padding'
-            : mode === 'per-direction'
-            ? 'Padding per direction'
-            : 'Padding per side'
-        }
-      >
-        <SquareButton onClick={cycleToNextMode}>
-          <>
-            {when(mode === 'one-value', <InspectorSectionIcons.SplitFull />)}
-            {when(mode === 'per-direction', <InspectorSectionIcons.SplitHalf />)}
-            {when(mode === 'per-side', <InspectorSectionIcons.SplitQuarter />)}
-          </>
-        </SquareButton>
+      <Tooltip title={tooltipTitle}>
+        <SquareButton onClick={cycleToNextMode}>{modeIcon}</SquareButton>
       </Tooltip>
       <ChainedNumberInput
         idPrefix={name}
