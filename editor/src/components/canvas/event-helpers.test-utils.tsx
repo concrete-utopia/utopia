@@ -2,8 +2,7 @@ import { act, createEvent, fireEvent } from '@testing-library/react'
 import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
-import { assertNever, NO_OP } from '../../core/shared/utils'
-import { EditorRenderResult } from './ui-jsx.test-utils'
+import { NO_OP } from '../../core/shared/utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?

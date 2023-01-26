@@ -200,7 +200,6 @@ export async function renderTestEditorWithModel(
   loginState: LoginState = notLoggedIn,
 ): Promise<EditorRenderResult> {
   const renderCountBaseline = renderCount
-  let undoCount = 0
   let recordedActions: Array<EditorAction> = []
 
   let emptyEditorState = createEditorState(NO_OP)
