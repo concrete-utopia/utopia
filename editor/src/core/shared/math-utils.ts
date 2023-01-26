@@ -926,13 +926,8 @@ export function clampValue(value: number, minimum: number, maximum: number): num
 }
 
 export function wrapValue(value: number, minimum: number, maximum: number): number {
-  if (value > maximum) {
-    return minimum
-  }
-  if (value < minimum) {
-    return maximum
-  }
-  return value
+  const range = maximum - minimum + 1 // (+ 1) to include boundaries
+  return ((value % range) + range) % range
 }
 
 export function parseNumber(value: string): Either<string, number> {
