@@ -173,6 +173,7 @@ import {
 import {
   CanvasRectangle,
   CoordinateMarker,
+  isInfinityRectangle,
   LocalPoint,
   LocalRectangle,
   Rectangle,
@@ -1116,7 +1117,9 @@ function RectangleKeepDeepEquality<C extends CoordinateMarker>(
   oldValue: Rectangle<C>,
   newValue: Rectangle<C>,
 ): KeepDeepEqualityResult<Rectangle<C>> {
-  if (
+  if (isInfinityRectangle(oldValue) || isInfinityRectangle(newValue)) {
+    return keepDeepEqualityResult(newValue, oldValue === newValue)
+  } else if (
     oldValue.x === newValue.x &&
     oldValue.y === newValue.y &&
     oldValue.width === newValue.width &&

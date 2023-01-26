@@ -12,6 +12,7 @@ import {
 import {
   CanvasPoint,
   CanvasRectangle,
+  isInfinityRectangle,
   rectContainsPoint,
   rectContainsPointInclusive,
   Size,
@@ -143,12 +144,17 @@ function findValidTargetsUnderPoint(
       return false
     }
 
+    const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, metadata)
+    const targetFrameSize =
+      targetFrame == null
+        ? size(0, 0)
+        : isInfinityRectangle(targetFrame)
+        ? size(Infinity, Infinity)
+        : targetFrame
+
     const sizeFitsTarget =
       allowSmallerParent === 'allow-smaller-parent' ||
-      sizeFitsInTarget(
-        multiselectBounds,
-        MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? size(0, 0),
-      )
+      sizeFitsInTarget(multiselectBounds, targetFrameSize)
 
     if (!sizeFitsTarget) {
       // skip elements that are smaller than the dragged elements, unless 'allow-smaller-parent'

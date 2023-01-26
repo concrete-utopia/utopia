@@ -9,6 +9,7 @@ import {
   LocalRectangle,
   CanvasRectangle,
   canvasPoint,
+  isInfinityRectangle,
 } from '../../core/shared/math-utils'
 
 export interface XAxisGuideline {
@@ -331,6 +332,20 @@ export const Guidelines = {
     guideline: Guideline,
     includeCentre: boolean,
   ): { distance: number; from: Point<C>; to: Point<C> } {
+    if (isInfinityRectangle(frame)) {
+      return {
+        distance: Infinity,
+        from: {
+          x: -Infinity,
+          y: -Infinity,
+        } as Point<C>,
+        to: {
+          x: Infinity,
+          y: Infinity,
+        } as Point<C>,
+      }
+    }
+
     const midX = frame.x + frame.width / 2
     const midY = frame.y + frame.height / 2
     switch (guideline.type) {

@@ -39,6 +39,7 @@ import {
   zeroCanvasRect,
   zeroLocalRect,
   canvasRectangle,
+  infinityRectangle,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -1059,8 +1060,8 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as CanvasRectangle,
-      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as LocalRectangle,
+      infinityRectangle as any as CanvasRectangle,
+      infinityRectangle as any as LocalRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,

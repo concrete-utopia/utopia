@@ -28,8 +28,6 @@ import {
   zeroRectangleAtPoint,
   shiftToOrigin,
   rectOrigin,
-  rectSize,
-  setRectSize,
   rectContainsPoint,
   circleContainsPoint,
   ellipseContainsPoint,
@@ -714,6 +712,13 @@ const createSimpleClock = function (): Clock {
 function getRectPointsAlongAxes<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
 ): { horizontalPoints: Array<number>; verticalPoints: Array<number> } {
+  if (rectangle === 'INFINITY_RECTANGLE') {
+    return {
+      horizontalPoints: [],
+      verticalPoints: [],
+    }
+  }
+
   return {
     horizontalPoints: [
       rectangle.x,
@@ -954,8 +959,6 @@ export default {
   zeroRectangleAtPoint: zeroRectangleAtPoint,
   shiftToOrigin: shiftToOrigin,
   rectOrigin: rectOrigin,
-  rectSize: rectSize,
-  setRectSize: setRectSize,
   rectContainsPoint: rectContainsPoint,
   circleContainsPoint: circleContainsPoint,
   ellipseContainsPoint: ellipseContainsPoint,

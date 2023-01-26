@@ -57,6 +57,7 @@ import {
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
   getLocalRectangleInNewParentContext,
+  isInfinityRectangle,
   localRectangle,
   LocalRectangle,
   roundPointToNearestHalf,
@@ -1112,6 +1113,10 @@ export const MetadataUtils = {
         paths.map((path) => this.getFrame(path, metadata)),
       )
       return parentFrames.reduce((working, next) => {
+        if (isInfinityRectangle(next)) {
+          return working
+        }
+
         return Utils.offsetRect(working, {
           x: -next.x,
           y: -next.y,
