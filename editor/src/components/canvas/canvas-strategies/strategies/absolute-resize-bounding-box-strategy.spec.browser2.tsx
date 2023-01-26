@@ -35,7 +35,11 @@ import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  expectSingleUndoStep,
+  mouseClickAtPoint,
+  mouseDragFromPointWithDelta,
+} from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
@@ -288,7 +292,9 @@ async function doDblClickTest(editor: EditorRenderResult, testId: string): Promi
 
   const nineBlockControlSegment = editor.renderedDOM.getByTestId(testId)
 
-  mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 30 }, { eventOptions: { detail: 2 } })
+  await expectSingleUndoStep(editor, async () =>
+    mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 30 }, { eventOptions: { detail: 2 } }),
+  )
 
   return div
 }
