@@ -60,6 +60,10 @@ import {
 } from './convert-css-percent-to-px-command'
 import { HideInNavigatorCommand, runHideInNavigatorCommand } from './hide-in-navigator-command'
 import { runShowToastCommand, ShowToastCommand } from './show-toast-command'
+import {
+  AddContainLayoutIfNeeded,
+  runAddContainLayoutIfNeeded,
+} from './add-contain-layout-if-needed-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -105,6 +109,7 @@ export type CanvasCommand =
   | ConvertCssPercentToPx
   | HideInNavigatorCommand
   | ShowToastCommand
+  | AddContainLayoutIfNeeded
 
 export const runCanvasCommand = (
   editorState: EditorState,
@@ -172,6 +177,8 @@ export const runCanvasCommand = (
       return runHideInNavigatorCommand(editorState, command)
     case 'SHOW_TOAST_COMMAND':
       return runShowToastCommand(editorState, command, commandLifecycle)
+    case 'ADD_CONTAIN_LAYOUT_IF_NEEDED':
+      return runAddContainLayoutIfNeeded(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

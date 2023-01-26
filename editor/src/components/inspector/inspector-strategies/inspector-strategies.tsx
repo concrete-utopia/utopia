@@ -9,6 +9,8 @@ import {
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
+  nukeAllAbsolutePositioningPropsCommands,
+  nukePositioningPropsForAxisCommand,
   nukeSizingPropsForAxisCommand,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
@@ -95,9 +97,11 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
     strategy: (metadata, elementPaths) => {
       return elementPaths.flatMap((path) => [
         setProperty('always', path, PP.create(['style', 'display']), 'flex'),
-        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) =>
-          convertWidthToFlexGrow(metadata, child),
-        ),
+        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
+          ...nukeAllAbsolutePositioningPropsCommands(child),
+          ...sizeToVisualDimensions(metadata, child),
+          ...convertWidthToFlexGrow(metadata, child),
+        ]),
       ])
     },
   },
@@ -124,6 +128,7 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
 export const setPropFillStrategies = (
   axis: Axis,
   value: 'default' | number,
+  otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> => [
   {
     name: 'Set to Fill Container',
@@ -139,8 +144,11 @@ export const setPropFillStrategies = (
         if (!MetadataUtils.isFlexLayoutedContainer(parentInstance)) {
           const checkedValue =
             value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
+          const nukePositioningCommands = otherAxisSetToFill
+            ? nukeAllAbsolutePositioningPropsCommands(path)
+            : [nukePositioningPropsForAxisCommand(axis, path)]
           return [
-            nukeSizingPropsForAxisCommand(axis, path),
+            ...nukePositioningCommands,
             setProperty(
               'always',
               path,
@@ -173,7 +181,7 @@ export const setPropFillStrategies = (
           value === 'default' ? cssNumber(1, null) : cssNumber(clamp(0, Infinity, value), null)
 
         return [
-          nukeSizingPropsForAxisCommand(axis, path),
+          ...nukeAllAbsolutePositioningPropsCommands(path),
           setProperty(
             'always',
             path,
@@ -198,14 +206,19 @@ export const setPropFixedStrategies = (
         return null
       }
 
-      return elementPaths.map((path) =>
-        setCssLengthProperty(
+      return elementPaths.map((path) => {
+        const parentFlexDirection =
+          MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
+            .parentFlexDirection ?? null
+
+        return setCssLengthProperty(
           whenToRun,
           path,
           PP.create(['style', widthHeightFromAxis(axis)]),
           setExplicitCssValue(value),
-        ),
-      )
+          parentFlexDirection,
+        )
+      })
     },
   },
 ]

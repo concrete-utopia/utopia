@@ -135,6 +135,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
+  const fillsContainerHorizontallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedState(
+        'horizontal',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      )?.type === 'fill',
+  )
+
   const widthComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
@@ -156,6 +165,15 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
+  const fillsContainerVerticallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedState(
+        'vertical',
+        metadataSelector(store),
+        selectedViewsSelector(store).at(0) ?? null,
+      )?.type === 'fill',
+  )
+
   const heightComputedValueRef = useRefEditorState(
     (store) =>
       elementComputedDimension(
@@ -168,7 +186,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(heightComputedValueRef.current, 'vertical', value)
+      const strategy = strategyForMode(
+        heightComputedValueRef.current,
+        'vertical',
+        value,
+        fillsContainerHorizontallyRef.current,
+      )
       executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
@@ -176,7 +199,13 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, heightComputedValueRef, metadataRef, selectedViewsRef],
+    [
+      dispatch,
+      fillsContainerHorizontallyRef,
+      heightComputedValueRef,
+      metadataRef,
+      selectedViewsRef,
+    ],
   )
 
   const onAdjustHeight = React.useCallback(
@@ -189,7 +218,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFillStrategies('vertical', value),
+          setPropFillStrategies('vertical', value, false),
         )
       }
       if (heightCurrentValue?.type === 'fixed') {
@@ -214,7 +243,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFillStrategies('horizontal', value),
+          setPropFillStrategies('horizontal', value, false),
         )
       }
       if (widthCurrentValue?.type === 'fixed') {
@@ -232,7 +261,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
-      const strategy = strategyForMode(widthComputedValueRef.current, 'horizontal', value)
+      const strategy = strategyForMode(
+        widthComputedValueRef.current,
+        'horizontal',
+        value,
+        fillsContainerVerticallyRef.current,
+      )
       executeFirstApplicableStrategy(
         dispatch,
         metadataRef.current,
@@ -240,7 +274,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         strategy,
       )
     },
-    [dispatch, metadataRef, selectedViewsRef, widthComputedValueRef],
+    [dispatch, fillsContainerVerticallyRef, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
@@ -318,10 +352,11 @@ function strategyForMode(
   fixedValue: number,
   axis: Axis,
   mode: FixedHugFillMode,
+  otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(axis, 'default')
+      return setPropFillStrategies(axis, 'default', otherAxisSetToFill)
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':

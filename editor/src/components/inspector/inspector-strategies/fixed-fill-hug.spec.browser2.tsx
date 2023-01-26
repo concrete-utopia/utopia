@@ -7,7 +7,12 @@ import {
   mouseDoubleClickAtPoint,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
+import {
+  EditorRenderResult,
+  formatTestProjectCode,
+  getPrintedUiJsCodeWithoutUIDs,
+  renderTestEditorWithCode,
+} from '../../canvas/ui-jsx.test-utils'
 import { FlexDirection } from '../common/css-utils'
 import {
   FillContainerLabel,
@@ -147,6 +152,146 @@ describe('Fixed / Fill / Hug control', () => {
       // await wait(5000)
 
       expect(child.style.width).toEqual('50%')
+    })
+
+    it('set width to fill container on absolute positioned element', async () => {
+      const editor = await renderTestEditorWithCode(
+        absoluteProjectWithInjectedStyle(`
+          position: 'absolute',
+          left: 10,
+          top: 10,
+          width: 100,
+          height: 100,
+        `),
+        'await-first-dom-report',
+      )
+      await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        absoluteProjectWithInjectedStyle(`
+          position: 'absolute',
+          top: 10,
+          height: 100,
+          width: '100%',
+        `),
+      )
+    })
+
+    it('set width to fill container on absolute positioned element with height already set to fill', async () => {
+      const editor = await renderTestEditorWithCode(
+        absoluteProjectWithInjectedStyle(`
+          position: 'absolute',
+          left: 10,
+          width: 100,
+          height: '100%',
+        `),
+        'await-first-dom-report',
+      )
+      await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        absoluteProjectWithInjectedStyle(`
+        height: '100%',
+        contain: 'layout',
+        width: '100%',
+        `),
+      )
+    })
+
+    it('set height to fill container on absolute positioned element', async () => {
+      const editor = await renderTestEditorWithCode(
+        absoluteProjectWithInjectedStyle(`
+          position: 'absolute',
+          left: 10,
+          top: 10,
+          width: 100,
+          height: 100,
+        `),
+        'await-first-dom-report',
+      )
+      await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[1]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        absoluteProjectWithInjectedStyle(`
+          position: 'absolute',
+          left: 10,
+          width: 100,
+          height: '100%',
+        `),
+      )
+    })
+
+    it('set height to fill container on absolute positioned element with width already set to fill', async () => {
+      const editor = await renderTestEditorWithCode(
+        absoluteProjectWithInjectedStyle(`
+          position: 'absolute',
+          top: 10,
+          width: '100%',
+          height: 100,
+        `),
+        'await-first-dom-report',
+      )
+      await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        absoluteProjectWithInjectedStyle(`
+          width: '100%',
+          contain: 'layout',
+          height: '100%',
+        `),
+      )
+    })
+
+    it('set height to fill container on static positioned element with width already set to fill', async () => {
+      const editor = await renderTestEditorWithCode(
+        absoluteProjectWithInjectedStyle(`
+          top: 10,
+          width: '100%',
+          height: 100,
+        `),
+        'await-first-dom-report',
+      )
+      await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+
+      mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
+      mouseClickAtPoint(button, { x: 5, y: 5 })
+
+      // Should not add contain: layout
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        absoluteProjectWithInjectedStyle(`width: '100%', height: '100%'`),
+      )
     })
   })
 
@@ -693,3 +838,28 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+const absoluteProjectWithInjectedStyle = (stylePropsAsString: string) =>
+  formatTestProjectCode(`
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      data-testid='parent'
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 500,
+        height: 500,
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{${stylePropsAsString}}}
+      />
+    </Scene>
+  </Storyboard>
+)`)
