@@ -161,7 +161,7 @@ export const InspectorInput = React.memo(
         {...props}
         ref={ref}
         data-inspector-input={true}
-        // data-testid={props.testId}
+        data-testid={props.testId}
         data-controlstatus={props.controlStatus}
       />
     )
