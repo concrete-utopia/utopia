@@ -32,7 +32,7 @@ interface URLBackgroundLayerMetadataControlsProps extends BackgroundLayerControl
   value: CSSURLFunctionBackgroundLayer
 }
 
-const backgroundImagePropertyPath = [PP.create(['style', 'backgroundImage'])]
+const backgroundImagePropertyPath = [PP.create('style', 'backgroundImage')]
 
 export const URLBackgroundLayerMetadataControls: React.FunctionComponent<
   React.PropsWithChildren<URLBackgroundLayerMetadataControlsProps>

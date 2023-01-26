@@ -68,10 +68,7 @@ import {
 } from './css-utils'
 
 describe('toggleStyleProp', () => {
-  const simpleToggleProp = toggleStylePropPath(
-    PP.create(['style', 'backgroundColor']),
-    toggleSimple,
-  )
+  const simpleToggleProp = toggleStylePropPath(PP.create('style', 'backgroundColor'), toggleSimple)
 
   it('disables simple value', () => {
     const element = jsxTestElement(

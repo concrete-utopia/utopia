@@ -491,7 +491,7 @@ export const BackgroundPicker: React.FunctionComponent<
           selectedViews.map((view) =>
             setProperty(
               view,
-              create(['style', 'backgroundColor']),
+              create('style', 'backgroundColor'),
               jsxAttributeValue(sRGBHex, emptyComments),
             ),
           ),

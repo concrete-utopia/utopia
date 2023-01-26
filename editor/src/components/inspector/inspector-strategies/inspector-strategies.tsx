@@ -43,8 +43,8 @@ export const setFlexAlignJustifyContentStrategies = (
       }
 
       return elements.flatMap((path) => [
-        setProperty('always', path, PP.create(['style', 'alignItems']), flexAlignment),
-        setProperty('always', path, PP.create(['style', 'justifyContent']), justifyContent),
+        setProperty('always', path, PP.create('style', 'alignItems'), flexAlignment),
+        setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
       ])
     },
   },
@@ -61,7 +61,7 @@ export const removeFlexDirectionStrategies = (): Array<InspectorStrategy> => [
       }
 
       return elements.map((path) =>
-        deleteProperties('always', path, [PP.create(['style', 'flexDirection'])]),
+        deleteProperties('always', path, [PP.create('style', 'flexDirection')]),
       )
     },
   },
@@ -80,7 +80,7 @@ export const updateFlexDirectionStrategies = (
       }
 
       return elements.flatMap((path) => [
-        setProperty('always', path, PP.create(['style', 'flexDirection']), flexDirection),
+        setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
         ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
           ...pruneFlexPropsCommands(flexChildProps, child),
           ...sizeToVisualDimensions(metadata, child),
@@ -95,7 +95,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
     name: 'Add flex layout',
     strategy: (metadata, elementPaths) => {
       return elementPaths.flatMap((path) => [
-        setProperty('always', path, PP.create(['style', 'display']), 'flex'),
+        setProperty('always', path, PP.create('style', 'display'), 'flex'),
         ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
           ...nukeAllAbsolutePositioningPropsCommands(child),
           ...sizeToVisualDimensions(metadata, child),
@@ -118,7 +118,7 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
       }
 
       return elements.map((path) =>
-        deleteProperties('always', path, [PP.create(['style', 'display'])]),
+        deleteProperties('always', path, [PP.create('style', 'display')]),
       )
     },
   },
@@ -147,7 +147,7 @@ export const setPropFillStrategies = (
           return [
             nukeSizingPropsForAxisCommand(axis, path),
             ...nukePositioningCommands,
-            setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+            setProperty('always', path, PP.create('style', widthHeightFromAxis(axis)), '100%'),
           ]
         }
 
@@ -160,14 +160,14 @@ export const setPropFillStrategies = (
           return [
             nukeSizingPropsForAxisCommand(axis, path),
             ...nukeAllAbsolutePositioningPropsCommands(path),
-            setProperty('always', path, PP.create(['style', widthHeightFromAxis(axis)]), '100%'),
+            setProperty('always', path, PP.create('style', widthHeightFromAxis(axis)), '100%'),
           ]
         }
 
         return [
           nukeSizingPropsForAxisCommand(axis, path),
           ...nukeAllAbsolutePositioningPropsCommands(path),
-          setProperty('always', path, PP.create(['style', 'flexGrow']), '1'),
+          setProperty('always', path, PP.create('style', 'flexGrow'), '1'),
         ]
       })
     },
@@ -194,7 +194,7 @@ export const setPropFixedStrategies = (
         return setCssLengthProperty(
           whenToRun,
           path,
-          PP.create(['style', widthHeightFromAxis(axis)]),
+          PP.create('style', widthHeightFromAxis(axis)),
           setExplicitCssValue(value),
           parentFlexDirection,
         )

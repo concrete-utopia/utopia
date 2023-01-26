@@ -32,7 +32,7 @@ describe('updating style properties keeps the original order', () => {
 
     const changePinProps = setProp_UNSAFE(
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      PP.create(['style', 'paddingRight']),
+      PP.create('style', 'paddingRight'),
       jsxAttributeValue(30, emptyComments),
     )
 

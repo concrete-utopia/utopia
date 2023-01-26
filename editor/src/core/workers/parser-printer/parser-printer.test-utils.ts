@@ -398,7 +398,7 @@ export function propertyPathPartsArbitrary(): Arbitrary<Array<string | number>> 
 
 export function propertyPathArbitrary(): Arbitrary<PropertyPath> {
   return propertyPathPartsArbitrary().map((pathParts) => {
-    return PP.create(pathParts)
+    return PP.create(...pathParts)
   })
 }
 

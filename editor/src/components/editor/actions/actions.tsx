@@ -2286,7 +2286,7 @@ export const UPDATE_FNS = {
               props: forceRight(
                 setJSXValueAtPath(
                   elementToWrapWith.props,
-                  PP.create(['style', 'position']), // todo make it optional
+                  PP.create('style', 'position'), // todo make it optional
                   jsxAttributeValue(position, emptyComments),
                 ),
               ),
@@ -2964,9 +2964,7 @@ export const UPDATE_FNS = {
     return editor.selectedViews.reduce((working, target) => {
       return setPropertyOnTarget(working, target, (attributes) => {
         const filterForNames = action.type === 'layout' ? LayoutPropsWithoutTLBR : StyleProperties
-        const originalPropsToUnset = filterForNames.map((propName) =>
-          PP.create(['style', propName]),
-        )
+        const originalPropsToUnset = filterForNames.map((propName) => PP.create('style', propName))
         const withOriginalPropertiesCleared = unsetJSXValuesAtPaths(
           attributes,
           originalPropsToUnset,
@@ -3018,7 +3016,7 @@ export const UPDATE_FNS = {
       const target = editor.selectedViews[0]
       const styleProps = editor._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
       const styleClipboardData = Object.keys(styleProps).map((name) =>
-        valueAtPath(PP.create(['style', name]), jsxAttributeValue(styleProps[name], emptyComments)),
+        valueAtPath(PP.create('style', name), jsxAttributeValue(styleProps[name], emptyComments)),
       )
       return {
         ...editor,
@@ -3355,7 +3353,7 @@ export const UPDATE_FNS = {
     if (action.imageDetails != null) {
       if (replaceImage) {
         const imageWithoutHashURL = imagePathURL(assetFilename)
-        const propertyPath = PP.create(['src'])
+        const propertyPath = PP.create('src')
         walkContentsTreeForParseSuccess(editor.projectContents, (filePath, success) => {
           walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
             if (isJSXElement(element)) {
@@ -4245,8 +4243,8 @@ export const UPDATE_FNS = {
   // If you want other types of JSXAttributes, that needs to be added
   RENAME_PROP_KEY: (action: RenameStyleSelector, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
-      const originalPropertyPath = PP.create(action.cssTargetPath.path)
-      const newPropertyPath = PP.create(action.value)
+      const originalPropertyPath = PP.create(...action.cssTargetPath.path)
+      const newPropertyPath = PP.create(...action.value)
       const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
       if (isJSXAttributeValue(originalValue) || isPartOfJSXAttributeValue(originalValue)) {
@@ -4322,7 +4320,7 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const path = PP.create([AspectRatioLockedProp])
+        const path = PP.create(AspectRatioLockedProp)
         const updatedProps = action.locked
           ? eitherToMaybe(
               setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
@@ -4842,7 +4840,7 @@ export const UPDATE_FNS = {
           const propsWithUid = forceRight(
             setJSXValueAtPath(
               action.toInsert.element.props,
-              PP.create([UTOPIA_UID_KEY]),
+              PP.create(UTOPIA_UID_KEY),
               jsxAttributeValue(newUID, emptyComments),
             ),
             `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
@@ -4851,9 +4849,9 @@ export const UPDATE_FNS = {
           let props = propsWithUid
           if (action.styleProps === 'add-size') {
             const sizesToSet: Array<ValueAtPath> = [
-              { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
+              { path: PP.create('style', 'width'), value: jsxAttributeValue(100, emptyComments) },
               {
-                path: PP.create(['style', 'height']),
+                path: PP.create('style', 'height'),
                 value: jsxAttributeValue(100, emptyComments),
               },
             ]

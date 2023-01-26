@@ -288,15 +288,15 @@ export function convertWidthToFlexGrow(
   const matches =
     defaultEither(
       null,
-      getSimpleAttributeAtPath(right(element.props), PP.create(['style', prop])),
+      getSimpleAttributeAtPath(right(element.props), PP.create('style', prop)),
     ) === '100%'
 
   if (!matches) {
     return []
   }
   return [
-    deleteProperties('always', elementPath, [PP.create(['style', prop])]),
-    setProperty('always', elementPath, PP.create(['style', 'flexGrow']), 1),
+    deleteProperties('always', elementPath, [PP.create('style', prop)]),
+    setProperty('always', elementPath, PP.create('style', 'flexGrow'), 1),
   ]
 }
 
@@ -304,7 +304,7 @@ export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
 }
 
-export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create(['style', prop])
+export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create('style', prop)
 
 export const flexContainerProps = [
   styleP('flexDirection'),
@@ -346,15 +346,15 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
   switch (axis) {
     case 'horizontal':
       return deleteProperties('always', path, [
-        PP.create(['style', 'width']),
-        PP.create(['style', 'minWidth']),
-        PP.create(['style', 'maxWidth']),
+        PP.create('style', 'width'),
+        PP.create('style', 'minWidth'),
+        PP.create('style', 'maxWidth'),
       ])
     case 'vertical':
       return deleteProperties('always', path, [
-        PP.create(['style', 'height']),
-        PP.create(['style', 'minHeight']),
-        PP.create(['style', 'maxHeight']),
+        PP.create('style', 'height'),
+        PP.create('style', 'minHeight'),
+        PP.create('style', 'maxHeight'),
       ])
     default:
       assertNever(axis)
@@ -368,13 +368,13 @@ export const nukePositioningPropsForAxisCommand = (
   switch (axis) {
     case 'horizontal':
       return deleteProperties('always', path, [
-        PP.create(['style', 'left']),
-        PP.create(['style', 'right']),
+        PP.create('style', 'left'),
+        PP.create('style', 'right'),
       ])
     case 'vertical':
       return deleteProperties('always', path, [
-        PP.create(['style', 'top']),
-        PP.create(['style', 'bottom']),
+        PP.create('style', 'top'),
+        PP.create('style', 'bottom'),
       ])
     default:
       assertNever(axis)
@@ -387,11 +387,11 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   return [
     addContainLayoutIfNeeded('always', path),
     deleteProperties('always', path, [
-      PP.create(['style', 'position']),
-      PP.create(['style', 'left']),
-      PP.create(['style', 'right']),
-      PP.create(['style', 'top']),
-      PP.create(['style', 'bottom']),
+      PP.create('style', 'position'),
+      PP.create('style', 'left'),
+      PP.create('style', 'right'),
+      PP.create('style', 'top'),
+      PP.create('style', 'bottom'),
     ]),
   ]
 }
@@ -414,7 +414,7 @@ export function detectFillHugFixedState(
   const flexGrow = foldEither(
     () => null,
     (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', 'flexGrow'])),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flexGrow')),
   )
 
   if (flexGrow != null) {
@@ -438,7 +438,7 @@ export function detectFillHugFixedState(
 
   const prop = defaultEither(
     null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create(['style', property])),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
   if (prop === MaxContent) {

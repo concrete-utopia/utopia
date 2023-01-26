@@ -27,7 +27,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+          toggleStylePropPath(PP.create('style', 'border'), toggleBorder),
         ),
       ],
       true,
@@ -62,7 +62,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+          toggleStylePropPath(PP.create('style', 'border'), toggleBorder),
         ),
       ],
       true,
@@ -96,7 +96,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+          toggleStylePropPath(PP.create('style', 'border'), toggleBorder),
         ),
       ],
       true,
@@ -138,7 +138,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+          toggleStylePropPath(PP.create('style', 'boxShadow'), toggleShadow),
         ),
       ],
       true,
@@ -172,7 +172,7 @@ describe('toggle style prop', () => {
       [
         toggleProperty(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-          toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
+          toggleStylePropPath(PP.create('style', 'boxShadow'), toggleShadow),
         ),
       ],
       true,
