@@ -83,13 +83,6 @@ export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
-export const absolutePositioningProps: Array<keyof CSSProperties> = [
-  'position',
-  'top',
-  'left',
-  'bottom',
-  'right',
-]
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
