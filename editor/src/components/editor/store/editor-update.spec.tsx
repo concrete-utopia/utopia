@@ -497,7 +497,7 @@ describe('action DELETE_SELECTED', () => {
   it('deletes all selected elements', () => {
     const firstTargetElementPath = EP.appendNewElementPath(
       ScenePathForTestUiJsFile,
-      EP.staticElementPath(['aaa', 'bbb']),
+      EP.staticElementPath(['aaa', 'kkk', 'bbb']),
     )
     const secondTargetElementPath = EP.appendNewElementPath(
       ScenePathForTestUiJsFile,
@@ -564,6 +564,7 @@ describe('action DELETE_SELECTED', () => {
         ),
       ).toBeNull()
       expect(updatedEditor.selectedViews).toEqual([
+        EP.appendNewElementPath(ScenePathForTestUiJsFile, EP.staticElementPath(['aaa', 'kkk'])),
         EP.appendNewElementPath(ScenePathForTestUiJsFile, EP.staticElementPath(['aaa'])),
         testStaticElementPath([[BakedInStoryboardUID, Scene1UID]]),
       ])
@@ -703,7 +704,10 @@ describe('INSERT_JSX_ELEMENT', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, EP.staticElementPath(['aaa'])),
     )
     testInsertionToParent(
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, EP.staticElementPath(['aaa', 'bbb'])),
+      EP.appendNewElementPath(
+        ScenePathForTestUiJsFile,
+        EP.staticElementPath(['aaa', 'kkk', 'bbb']),
+      ),
     )
     testInsertionToParent(
       EP.appendNewElementPath(

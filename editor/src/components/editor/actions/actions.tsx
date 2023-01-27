@@ -71,6 +71,7 @@ import {
   JSXAttributeValue,
   JSXElement,
   jsxElement,
+  JSXElementChild,
   JSXElementChildren,
   jsxElementName,
   jsxTextBlock,
@@ -567,9 +568,13 @@ function setPropertyOnTargetAtElementPath(
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElement) =>
-      applyUpdateToJSXElement(e, updateFn),
-    )
+    return transformJSXComponentAtElementPath(components, target, (e: JSXElementChild) => {
+      if (isJSXElement(e)) {
+        return applyUpdateToJSXElement(e, updateFn)
+      } else {
+        return e
+      }
+    })
   }, editor)
 }
 
@@ -4875,8 +4880,12 @@ export const UPDATE_FNS = {
               utopiaComponents,
               action.targetParent,
               (parentElement) => {
-                insertedElementChildren.push(...parentElement.children)
-                return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
+                if (isJSXElement(parentElement)) {
+                  insertedElementChildren.push(...parentElement.children)
+                  return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
+                } else {
+                  throw new Error(`Not handled yet.`)
+                }
               },
             )
           }

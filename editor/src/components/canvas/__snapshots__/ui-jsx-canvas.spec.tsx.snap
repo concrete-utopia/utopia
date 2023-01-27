@@ -33753,7 +33753,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:fff utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -33783,13 +33783,13 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     >
       <div
         data-uid=\\"aaa\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa\\"
       >
         hello
       </div>
       <div
         data-uid=\\"bbb\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb\\"
       >
         bello
       </div>
@@ -34085,7 +34085,192 @@ Object {
       "usesParentBounds": false,
     },
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:fff": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "text": "hello",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "aaa",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "aaa",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "text": "bello",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "bbb",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "bbb",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "React",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "Fragment",
+            ],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "fff",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "fff",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "fff",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": null,
+      "filePath": "react",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "React",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -34135,6 +34320,7 @@ Object {
           "app-entity",
         ],
         Array [
+          "fff",
           "aaa",
         ],
       ],
@@ -34202,7 +34388,7 @@ Object {
       "usesParentBounds": false,
     },
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:bbb": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -34252,6 +34438,7 @@ Object {
           "app-entity",
         ],
         Array [
+          "fff",
           "bbb",
         ],
       ],
@@ -37920,7 +38107,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/bbb eee/fff/app:aaa/bbb/ccc eee/fff/app:aaa/ddd\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/ggg eee/fff/app:aaa/ggg/bbb eee/fff/app:aaa/ggg/bbb/33e eee/fff/app:aaa/ggg/bbb/33e/ccc eee/fff/app:aaa/ddd\\"
     data-utopia-root-element-path=\\"eee\\"
   >
     <div
@@ -37963,17 +38150,16 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
           data-label=\\"random-div\\"
           style=\\"width: 100px; height: 100px\\"
           data-uid=\\"bbb\\"
-          data-path=\\"eee/fff/app:aaa/bbb\\"
+          data-path=\\"eee/fff/app:aaa/ggg/bbb\\"
         >
           Hello
           <div
             data-label=\\"some-other-div\\"
             style=\\"width: 100px; height: 100px\\"
             data-uid=\\"ccc\\"
-            data-path=\\"eee/fff/app:aaa/bbb/ccc\\"
+            data-path=\\"eee/fff/app:aaa/ggg/bbb/33e/ccc\\"
           ></div>
         </div>
-
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
       </div>
     </div>
@@ -38305,12 +38491,6 @@ Object {
       "value": Object {
         "children": Array [
           Object {
-            "text": "
-      ",
-            "type": "JSX_TEXT_BLOCK",
-            "uniqueID": "",
-          },
-          Object {
             "children": Array [
               Object {
                 "children": Array [
@@ -38387,6 +38567,7 @@ Object {
                       },
                     ],
                     "type": "JSX_FRAGMENT",
+                    "uid": "33e",
                     "uniqueID": "",
                   },
                 ],
@@ -38453,14 +38634,34 @@ Object {
                 "uid": "bbb",
               },
             ],
-            "type": "JSX_FRAGMENT",
-            "uniqueID": "",
-          },
-          Object {
-            "text": "
-      ",
-            "type": "JSX_TEXT_BLOCK",
-            "uniqueID": "",
+            "name": Object {
+              "baseVariable": "React",
+              "propertyPath": Object {
+                "propertyElements": Array [
+                  "Fragment",
+                ],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "ggg",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "ggg",
           },
           Object {
             "children": Array [
@@ -38550,7 +38751,7 @@ export var App = (props) => {
       style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
       data-uid={'aaa'}
     >
-      <React.Fragment>
+      <React.Fragment data-uid={'ggg'}>
         <div data-label=\\"random-div\\" style={{ width: 100, height: 100 }} data-uid={'bbb'}>Hello<>
           <div data-label=\\"some-other-div\\" style={{ width: 100, height: 100 }} data-uid={'ccc'} />
         </></div>
@@ -38719,7 +38920,382 @@ export var storyboard = (
       "usesParentBounds": false,
     },
   },
-  "eee/fff/app:aaa/bbb": Object {
+  "eee/fff/app:aaa/ddd": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "World",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "ddd",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "ddd",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+          "app",
+        ],
+        Array [
+          "aaa",
+          "ddd",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "filePath": "test.js",
+      "type": "SAME_FILE_ORIGIN",
+      "variableName": "div",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+  },
+  "eee/fff/app:aaa/ggg": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "text": "Hello",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [],
+                    "name": Object {
+                      "baseVariable": "div",
+                      "propertyPath": Object {
+                        "propertyElements": Array [],
+                      },
+                    },
+                    "props": Array [
+                      Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
+                        "key": "data-label",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
+                        "value": Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "type": "ATTRIBUTE_VALUE",
+                          "value": "some-other-div",
+                        },
+                      },
+                      Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
+                        "key": "style",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
+                        "value": Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "type": "ATTRIBUTE_VALUE",
+                          "value": Object {
+                            "height": 100,
+                            "width": 100,
+                          },
+                        },
+                      },
+                      Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
+                        "key": "data-uid",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
+                        "value": Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "type": "ATTRIBUTE_VALUE",
+                          "value": "ccc",
+                        },
+                      },
+                    ],
+                    "type": "JSX_ELEMENT",
+                    "uid": "ccc",
+                  },
+                ],
+                "type": "JSX_FRAGMENT",
+                "uid": "33e",
+                "uniqueID": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-label",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "random-div",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {
+                    "height": 100,
+                    "width": 100,
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "bbb",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "bbb",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "React",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "Fragment",
+            ],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "ggg",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "ggg",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+          "app",
+        ],
+        Array [
+          "aaa",
+          "ggg",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "exportedName": null,
+      "filePath": "react",
+      "type": "IMPORTED_ORIGIN",
+      "variableName": "React",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+  },
+  "eee/fff/app:aaa/ggg/bbb": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -38800,6 +39376,7 @@ export var storyboard = (
               },
             ],
             "type": "JSX_FRAGMENT",
+            "uid": "33e",
             "uniqueID": "",
           },
         ],
@@ -38875,6 +39452,7 @@ export var storyboard = (
         ],
         Array [
           "aaa",
+          "ggg",
           "bbb",
         ],
       ],
@@ -38942,7 +39520,159 @@ export var storyboard = (
       "usesParentBounds": false,
     },
   },
-  "eee/fff/app:aaa/bbb/ccc": Object {
+  "eee/fff/app:aaa/ggg/bbb/33e": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-label",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "some-other-div",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {
+                    "height": 100,
+                    "width": 100,
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "ccc",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "ccc",
+          },
+        ],
+        "type": "JSX_FRAGMENT",
+        "uid": "33e",
+        "uniqueID": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "eee",
+          "fff",
+          "app",
+        ],
+        Array [
+          "aaa",
+          "ggg",
+          "bbb",
+          "33e",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": null,
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "globalContentBox": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentLayoutSystem": "flow",
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+  },
+  "eee/fff/app:aaa/ggg/bbb/33e/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39022,126 +39752,10 @@ export var storyboard = (
         ],
         Array [
           "aaa",
+          "ggg",
           "bbb",
+          "33e",
           "ccc",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": Object {
-      "filePath": "test.js",
-      "type": "SAME_FILE_ORIGIN",
-      "variableName": "div",
-    },
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "globalContentBox": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentLayoutSystem": "flow",
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-  },
-  "eee/fff/app:aaa/ddd": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [
-          Object {
-            "text": "World",
-            "type": "JSX_TEXT_BLOCK",
-            "uniqueID": "",
-          },
-        ],
-        "name": Object {
-          "baseVariable": "div",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "ddd",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-        "uid": "ddd",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "eee",
-          "fff",
-          "app",
-        ],
-        Array [
-          "aaa",
-          "ddd",
         ],
       ],
       "type": "elementpath",

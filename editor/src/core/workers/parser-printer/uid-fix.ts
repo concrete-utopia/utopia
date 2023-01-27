@@ -2,6 +2,7 @@ import {
   ElementsWithin,
   isJSXArbitraryBlock,
   isJSXElement,
+  isJSXElementLikeWithChildren,
   isJSXFragment,
   isJSXTextBlock,
   isUtopiaJSXComponent,
@@ -243,15 +244,13 @@ function compareAndWalkElements(
    */
 
   if (oldElement != null) {
-    if (isJSXElement(oldElement) && isJSXElement(newElement)) {
+    if (isJSXElementLikeWithChildren(oldElement) && isJSXElementLikeWithChildren(newElement)) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
       return walkElementChildren(path, oldElement.children, newElement.children, onElement)
-    } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
-      return walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
     } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
       return walkElementsWithin(
         pathSoFar,

@@ -217,7 +217,7 @@ export function elementSupportsChildren(imports: Imports, element: JSXElementChi
 export function transformJSXComponentAtPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPath,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
   const lastElementPathPart = EP.lastElementPathForPath(path)
   return lastElementPathPart == null
@@ -228,7 +228,7 @@ export function transformJSXComponentAtPath(
 export function transformJSXComponentAtElementPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
   const transformResult = transformAtPathOptionally(components, path, transform)
 
@@ -242,7 +242,7 @@ export function transformJSXComponentAtElementPath(
 function transformAtPathOptionally(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: JSXElementChild) => JSXElementChild,
 ): EP.ElementsTransformResult<UtopiaJSXComponent> {
   function findAndTransformAtPathInner(
     element: JSXElementChild,
@@ -253,7 +253,7 @@ function transformAtPathOptionally(
       if (getUtopiaID(element) === firstUIDOrIndex) {
         // transform
         if (tailPath.length === 0) {
-          return isJSXElement(element) ? transform(element) : element
+          return transform(element)
         } else {
           // we will want to transform one of our children
           let childrenUpdated: boolean = false
@@ -417,9 +417,13 @@ export function removeJSXElementChild(
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
   return lastElementPathPart == null
     ? rootElements
-    : transformAtPathOptionally(rootElements, lastElementPathPart, (parentElement: JSXElement) => {
-        return removeRelevantChild(parentElement, true)
-      }).elements
+    : transformAtPathOptionally(
+        rootElements,
+        lastElementPathPart,
+        (parentElement: JSXElementChild) => {
+          return removeRelevantChild(parentElement, true)
+        },
+      ).elements
 }
 
 export function insertJSXElementChild(

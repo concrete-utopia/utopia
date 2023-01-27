@@ -125,13 +125,18 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   }
 }
 
-export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {
-  return jsxElement(
-    element.name,
-    uid,
-    setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
-    element.children,
-  )
+export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): JSXElementChild {
+  if (isJSXElement(element)) {
+    return jsxElement(
+      element.name,
+      uid,
+      setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+      element.children,
+    )
+  } else {
+    // TODO: Do other cases need this?
+    return element
+  }
 }
 
 export function parseUID(attributes: JSXAttributes): Either<string, string> {

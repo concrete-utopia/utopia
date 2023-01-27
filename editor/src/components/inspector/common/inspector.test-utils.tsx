@@ -48,7 +48,7 @@ type UpdateFunctionHelpers = {
 
 export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
   const editor = createEditorStates([
-    EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+    EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'kkk', 'bbb']),
   ])
   const defaultState: EditorStorePatched = {
     storeName: 'editor-store',

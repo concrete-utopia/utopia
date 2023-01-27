@@ -1,5 +1,9 @@
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api/core'
-import { AllElementProps, transformElementAtPath } from '../../components/editor/store/editor-state'
+import {
+  AllElementProps,
+  transformElementAtPath,
+  transformJSXElementAtPath,
+} from '../../components/editor/store/editor-state'
 import * as EP from '../shared/element-path'
 import {
   flatMapEither,
@@ -398,7 +402,7 @@ export function switchPinnedChildToFlex(
     })
   }
 
-  const updatedComponents = transformElementAtPath(components, target, (e: JSXElement) => {
+  const updatedComponents = transformJSXElementAtPath(components, target, (e: JSXElement) => {
     // Remove the pinning props first...
     const pinnedPropsRemoved = unsetJSXValuesAtPaths(e.props, [
       stylePropPathMappingFn('left', propertyTarget),
@@ -801,7 +805,7 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
 
   const propsToRemove: Array<StyleLayoutProp> = ['bottom', 'right', 'flexBasis']
 
-  return transformElementAtPath(components, target, (e: JSXElement) => {
+  return transformJSXElementAtPath(components, target, (e: JSXElement) => {
     const flexPropsRemoved = unsetJSXValuesAtPaths(
       e.props,
       propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
@@ -854,7 +858,7 @@ function removeFlexAndAddPinnedPropsToComponent(
   ]
   const propsToRemove: Array<StyleLayoutProp> = ['flexBasis']
 
-  return transformElementAtPath(components, target, (e: JSXElement) => {
+  return transformJSXElementAtPath(components, target, (e: JSXElement) => {
     const flexPropsRemoved = unsetJSXValuesAtPaths(
       e.props,
       propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
@@ -902,7 +906,7 @@ function changePinsToDefaultOnComponent(
     },
   ]
   const propsToRemove: Array<StyleLayoutProp> = ['bottom', 'right']
-  return transformElementAtPath(components, target, (e: JSXElement) => {
+  return transformJSXElementAtPath(components, target, (e: JSXElement) => {
     const pinPropsRemoved = unsetJSXValuesAtPaths(
       e.props,
       propsToRemove.map((p) => stylePropPathMappingFn(p, propertyTarget)),
