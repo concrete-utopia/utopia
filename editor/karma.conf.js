@@ -1,5 +1,8 @@
 process.env.CHROME_BIN = require('puppeteer').executablePath() // Puppeteer v19.6.0 uses Chromium 110.0.5479.0
 
+const os = require('os')
+const cpuCores = os.cpus().length
+
 const webpack = require('webpack')
 var webpackConfig = require('./webpack.config')
 delete webpackConfig['entry']
@@ -16,6 +19,7 @@ webpackConfig['plugins'].push(
 module.exports = function (config) {
   config.set({
     plugins: [
+      require('karma-parallel'),
       'karma-webpack',
       'karma-mocha',
       'karma-chrome-launcher',
@@ -31,7 +35,8 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'viewport'],
+    // NOTE: 'parallel' must be the first framework in the list
+    frameworks: ['parallel', 'mocha', 'viewport'],
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser
@@ -69,6 +74,22 @@ module.exports = function (config) {
       mocha: {
         timeout: config.debug ? 1000000 : 10000,
       },
+    },
+    parallelOptions: {
+      executors: cpuCores, // TODO make it different on CI and locally
+      shardStrategy: 'round-robin',
+      // shardStrategy: 'description-length'
+      // shardStrategy: 'custom'
+      // customShardStrategy: function(config) {
+      //   config.executors // number, the executors set above
+      //   config.shardIndex // number, the specific index for the shard currently running
+      //   config.description // string, the name of the top-level describe string. Useful for determining how to shard the current specs
+      //
+      //   // Re-implement a round-robin strategy
+      //   window.parallelDescribeCount = window.parallelDescribeCount || 0;
+      //   window.parallelDescribeCount++;
+      //   return window.parallelDescribeCount % config.executors === config.shardIndex
+      // }
     },
   })
 }
