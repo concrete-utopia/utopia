@@ -7,6 +7,8 @@ import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
 import { detectAreElementsFlexContainers } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
+import { UIGridRow } from './widgets/ui-grid-row'
+import { PaddingRow } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 
 const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
@@ -27,8 +29,13 @@ export const FlexSection = React.memo(() => {
       {when(
         allElementsInFlexLayout,
         <>
-          <FlexDirectionToggle />
-          <NineBlockControl />
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <FlexDirectionToggle />
+          </UIGridRow>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <NineBlockControl />
+          </UIGridRow>
+          <PaddingRow />
         </>,
       )}
     </div>
