@@ -82,16 +82,16 @@ export type SimpleRectangle = {
   height: number
 }
 
-export type InfinityRectangle = 'INFINITY_RECTANGLE'
-export const infinityRectangle: InfinityRectangle = 'INFINITY_RECTANGLE'
+export type InfinityRectangle = { type: 'INFINITY_RECTANGLE' }
+export const infinityRectangle: InfinityRectangle = { type: 'INFINITY_RECTANGLE' }
 export function isInfinityRectangle(value: unknown): value is InfinityRectangle {
-  return value === infinityRectangle
+  return (value as any)?.type === infinityRectangle
 }
 
 export type RectangleInner = SimpleRectangle | InfinityRectangle
 
 export type Rectangle<C extends CoordinateMarker> = RectangleInner & C
-export type WindowRectangle = WindowModifier & RectangleInner
+export type WindowRectangle = WindowModifier & SimpleRectangle
 export type CanvasRectangle = CanvasModifier & RectangleInner
 export type LocalRectangle = LocalModifier & RectangleInner
 export type NodeGraphRectangle = NodeGraphModifier & RectangleInner
@@ -917,7 +917,7 @@ export function numberToPercent(value: number): string {
 export function rectangleToPoints<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
 ): Array<Point<C>> {
-  if (rectangle === 'INFINITY_RECTANGLE') {
+  if (isInfinityRectangle(rectangle)) {
     return []
   }
 
@@ -965,7 +965,7 @@ export function sizesEqual(first: Size | null, second: Size | null): boolean {
 }
 
 export function rectanglesEqual(first: RectangleInner, second: RectangleInner): boolean {
-  if (first === 'INFINITY_RECTANGLE' || second === 'INFINITY_RECTANGLE') {
+  if (isInfinityRectangle(first) || isInfinityRectangle(second)) {
     return first === second
   } else {
     return (
@@ -1097,6 +1097,13 @@ export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
   parentRect: CanvasRectangle,
 ): LocalRectangle {
+  if (isInfinityRectangle(canvasRect)) {
+    return infinityRectangle as LocalRectangle
+  }
+  if (isInfinityRectangle(parentRect)) {
+    return canvasRect as any as LocalRectangle
+  }
+
   const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
@@ -1161,6 +1168,10 @@ export function resizeCanvasRectangle(
   rectangle: CanvasRectangle,
   options: ResizeOptions,
 ): CanvasRectangle {
+  if (isInfinityRectangle(rectangle)) {
+    return rectangle
+  }
+
   const resizeI = (dimensions: { width: number; height: number }): CanvasRectangle => {
     const { width, height } = dimensions
     return canvasRectangle({
