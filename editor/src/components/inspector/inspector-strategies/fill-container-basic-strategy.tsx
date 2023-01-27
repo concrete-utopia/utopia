@@ -34,7 +34,6 @@ export const fillContainerStrategyBasic = (
 
     return elements.flatMap((path) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, path)
-      // TODO BEFORE MERGE!! this is an unrelated change I just fixed it
       if (!MetadataUtils.isParentFlexLayoutedContainerForElement(instance)) {
         const checkedValue =
           value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
