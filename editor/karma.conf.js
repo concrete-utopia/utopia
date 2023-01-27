@@ -1,5 +1,7 @@
 process.env.CHROME_BIN = require('puppeteer').executablePath() // Puppeteer v19.6.0 uses Chromium 110.0.5479.0
 
+const isGithubActionsEnvironment = process.env.CI === 'true'
+
 const os = require('os')
 const cpuCores = os.cpus().length
 
@@ -76,7 +78,7 @@ module.exports = function (config) {
       },
     },
     parallelOptions: {
-      executors: cpuCores, // TODO make it different on CI and locally
+      executors: isGithubActionsEnvironment ? cpuCores : cpuCores / 2,
       shardStrategy: 'round-robin',
       // shardStrategy: 'description-length'
       // shardStrategy: 'custom'
