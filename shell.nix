@@ -109,7 +109,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm} run check-ci
     '')
-    (pkgs.writeScriptBin "check-editor-check-editor-ci-code" ''
+    (pkgs.writeScriptBin "check-editor-ci-code" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
