@@ -227,6 +227,11 @@ export const PaddingControl = React.memo(() => {
   return (
     <SplitChainedNumberInput
       controlModeOrder={['one-value', 'per-direction', 'per-side']}
+      tooltips={{
+        oneValue: 'Padding',
+        perDirection: 'Padding per direction',
+        perSide: 'Padding per side',
+      }}
       selectedViews={selectedViewsRef.current}
       name='padding'
       defaultMode='per-direction'

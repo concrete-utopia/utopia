@@ -1,7 +1,6 @@
 import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
-import { capitalize } from '../../../../../core/shared/string-utils'
 import { assertNever } from '../../../../../core/shared/utils'
 import {
   ChainedNumberInput,
@@ -101,6 +100,11 @@ export interface SplitChainedNumberInputProps<T> {
     horizontal?: string
     vertical?: string
     oneValue?: string
+  }
+  tooltips?: {
+    oneValue?: string
+    perDirection?: string
+    perSide?: string
   }
 }
 
@@ -408,17 +412,17 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const tooltipTitle = React.useMemo(() => {
     switch (mode) {
       case 'one-value':
-        return capitalize(props.name)
+        return props.tooltips?.oneValue ?? mode
       case 'per-direction':
-        return `${capitalize(props.name)} per direction`
+        return props.tooltips?.perDirection ?? mode
       case 'per-side':
-        return `${capitalize(props.name)} per side`
+        return props.tooltips?.perSide ?? mode
       case null:
         return ''
       default:
         assertNever(mode)
     }
-  }, [mode, props.name])
+  }, [mode, props.tooltips])
 
   const modeIcon = React.useMemo(() => {
     switch (mode) {

@@ -255,6 +255,10 @@ export const BorderRadiusControl = React.memo(() => {
         left: 'BL',
         right: 'TR',
       }}
+      tooltips={{
+        oneValue: 'Radius',
+        perSide: 'Radius per corner',
+      }}
       controlModeOrder={['one-value', 'per-side']}
       selectedViews={selectedViewsRef.current}
       name='radius'
