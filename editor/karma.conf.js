@@ -78,7 +78,7 @@ module.exports = function (config) {
       },
     },
     parallelOptions: {
-      executors: cpuCores / 2,
+      executors: isGithubActionsEnvironment ? cpuCores : cpuCores / 2,
       shardStrategy: 'round-robin',
       // shardStrategy: 'description-length'
       // shardStrategy: 'custom'
