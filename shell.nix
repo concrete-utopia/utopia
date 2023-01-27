@@ -109,7 +109,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm} run check-ci
     '')
-    (pkgs.writeScriptBin "check-editor-ci-code" ''
+    (pkgs.writeScriptBin "check-editor-code" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
@@ -152,7 +152,7 @@ let
       set -e
       install-editor-ci
       install-website
-      check-editor-ci-code
+      check-editor-code
       test-website
     '')
     (pkgs.writeScriptBin "check-editor-jest-ci" ''
@@ -160,14 +160,14 @@ let
       set -e
       install-editor-ci
       install-website
-      check-editor-ci-jest
+      check-editor-jest
     '')
     (pkgs.writeScriptBin "check-editor-karma-ci" ''
       #!/usr/bin/env bash
       set -e
       install-editor-ci
       install-website
-      check-editor-ci-karma
+      check-editor-karma
     '')
     (pkgs.writeScriptBin "build-editor-staging-ci" ''
       #!/usr/bin/env bash
