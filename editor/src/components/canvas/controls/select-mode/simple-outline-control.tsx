@@ -30,9 +30,15 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
           key='multiselect-outline'
           targets={localSelectedElements}
           color='multiselect-bounds'
+          outlineStyle='solid'
         />,
         ...localSelectedElements.map((path) => (
-          <OutlineControl key={EP.toString(path)} targets={[path]} color='primary' />
+          <OutlineControl
+            key={EP.toString(path)}
+            targets={[path]}
+            color='primary'
+            outlineStyle='solid'
+          />
         )),
       ]}
     </CanvasOffsetWrapper>
@@ -42,9 +48,10 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
 interface OutlineControlProps {
   targets: Array<ElementPath>
   color: 'primary' | 'multiselect-bounds'
+  outlineStyle: 'solid' | 'dotted'
 }
 
-const OutlineControl = React.memo<OutlineControlProps>((props) => {
+export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const targets = props.targets
   const scale = useEditorState(
@@ -92,7 +99,7 @@ const OutlineControl = React.memo<OutlineControlProps>((props) => {
           position: 'absolute',
           borderColor: color,
           borderWidth: `${1 / scale}px`,
-          borderStyle: 'solid',
+          borderStyle: props.outlineStyle,
           pointerEvents: 'none',
         }}
       />
