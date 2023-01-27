@@ -72,7 +72,6 @@ import {
   printMarginAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
-import { styleStringInArray } from '../../../utils/common-constants'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -3747,8 +3746,8 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   }
 }
 
-const backgroundColorPathWithoutStyle = PP.create(['backgroundColor'])
-const backgroundImagePathWithoutStyle = PP.create(['backgroundImage'])
+const backgroundColorPathWithoutStyle = PP.create('backgroundColor')
+const backgroundImagePathWithoutStyle = PP.create('backgroundImage')
 
 const updateBackgroundImageLayersWithNewValues = (
   backgroundImageAttribute: ModifiableAttribute,
@@ -3906,14 +3905,10 @@ export function toggleStylePropPaths(
   toggleFn: (attribute: JSXAttribute) => JSXAttribute,
 ): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
-    const styleProp = getJSXAttributeAtPath(element.props, PP.create(styleStringInArray))
+    const styleProp = getJSXAttributeAtPath(element.props, PP.create('style'))
     const attribute = styleProp.attribute
     if (styleProp.remainingPath == null && isRegularJSXAttribute(attribute)) {
-      const newProps = setJSXValueAtPath(
-        element.props,
-        PP.create(styleStringInArray),
-        toggleFn(attribute),
-      )
+      const newProps = setJSXValueAtPath(element.props, PP.create('style'), toggleFn(attribute))
       if (isRight(newProps)) {
         return { ...element, props: newProps.value }
       }

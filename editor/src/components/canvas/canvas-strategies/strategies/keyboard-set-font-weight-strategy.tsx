@@ -71,7 +71,7 @@ export function keyboardSetFontWeightStrategy(
         setProperty(
           'always',
           path,
-          PP.create(['style', FontWeightProp]),
+          PP.create('style', FontWeightProp),
           adjustFontWeight(fontWeight, fontSizeDelta),
         ),
       )

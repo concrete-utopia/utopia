@@ -323,6 +323,13 @@ Behind the scenes, Karma runs a webpack dev server in watch mode, which means if
 
 (I recommend opening DevTools before navigating to `/debug.html` to make sure you don't miss `debugger;` statements and see the console output even if a test hangs the browser or enters an infinite loop.)
 
+### Browser tests failing to run with `Error: spawn Unknown system error -86`
+
+This is most likely because the browser tests are trying to run a headless version of Chrome built for Intel chips on an Mac with an ARM chip. If that's the case, [Rosetta 2](https://support.apple.com/en-gb/HT211861) should solve your problem: 
+```
+softwareupdate --install-rosetta
+```
+
 ## VSCode linting, formatting with prettier etc
 
 To enable format-on-save, you should install the VSCode plugin `esbenp.prettier-vscode`, and `dbaeumer.vscode-eslint` and then in your workspace settings, enable format on save, and tell prettier to use the eslint integration mode:

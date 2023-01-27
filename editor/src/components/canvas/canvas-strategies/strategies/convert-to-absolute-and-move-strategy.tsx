@@ -418,6 +418,7 @@ function createUpdatePinsCommands(
     path,
   )?.specialSizeMeasurements
   const parentFrame = specialSizeMeasurements?.immediateParentBounds ?? null
+  const parentFlexDirection = specialSizeMeasurements?.parentFlexDirection ?? null
   const frameWithoutMargin = getFrameWithoutMargin(frame, specialSizeMeasurements)
   const updatedFrame = offsetRect(frameWithoutMargin, asLocal(dragDelta ?? zeroCanvasRect))
   const fullFrame = getFullFrame(updatedFrame)
@@ -437,6 +438,7 @@ function createUpdatePinsCommands(
             ? parentFrame?.width
             : parentFrame?.height,
         ),
+        parentFlexDirection,
       ),
     )
   })

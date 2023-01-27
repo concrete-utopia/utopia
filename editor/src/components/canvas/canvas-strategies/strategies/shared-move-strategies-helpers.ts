@@ -57,6 +57,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { AbsolutePin } from './resize-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -205,6 +206,7 @@ export function getMoveCommandsForSelectedElement(
     localFrame,
     globalFrame,
     elementParentBounds,
+    elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
   )
 }
 
@@ -216,6 +218,7 @@ function createMoveCommandsForElement(
   localFrame: LocalRectangle | null,
   globalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
+  elementParentFlexDirection: FlexDirection | null,
 ): {
   commands: Array<AdjustCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -246,7 +249,8 @@ function createMoveCommandsForElement(
       stylePropPathMappingFn(pin, styleStringInArray),
       updatedPropValue,
       parentDimension,
-      true,
+      elementParentFlexDirection,
+      'create-if-not-existing',
     )
   }, extendedPins)
 

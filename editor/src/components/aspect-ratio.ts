@@ -24,10 +24,7 @@ export function isAspectRatioLockedNew(
   const element = component.element
   if (isRight(element) && isJSXElement(element.value)) {
     const props = element.value.props
-    const aspectRatioProp = getModifiableJSXAttributeAtPath(
-      props,
-      PP.create([AspectRatioLockedProp]),
-    )
+    const aspectRatioProp = getModifiableJSXAttributeAtPath(props, PP.create(AspectRatioLockedProp))
     if (isLeft(aspectRatioProp)) {
       return false
     } else {

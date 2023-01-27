@@ -96,7 +96,7 @@ function rawAndRealValueAtIndex(
   index: number,
 ): { rawValue: Either<string, ModifiableAttribute>; realValue: unknown } {
   const rawValueAtIndex = flatMapEither(
-    (v) => getModifiableJSXAttributeAtPathFromAttribute(v, PP.create([index])),
+    (v) => getModifiableJSXAttributeAtPathFromAttribute(v, PP.create(index)),
     rawValue,
   )
   const realValueAtIndex = Array.isArray(realValue) ? realValue[index] : undefined
@@ -176,7 +176,7 @@ function rawAndRealValueAtKey(
   key: PropertyPathPart,
 ): { rawValue: Either<string, ModifiableAttribute>; realValue: unknown } {
   const rawValueAtPath = flatMapEither(
-    (v) => getModifiableJSXAttributeAtPathFromAttribute(v, PP.create([key])),
+    (v) => getModifiableJSXAttributeAtPathFromAttribute(v, PP.create(key)),
     rawValue,
   )
   const realValueAtPath =

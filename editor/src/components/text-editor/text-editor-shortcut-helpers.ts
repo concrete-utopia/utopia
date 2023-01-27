@@ -64,7 +64,7 @@ const toggleStyleProp = (
   const newValue = currentValue === toggledValue ? defaultValue : toggledValue
   return EditorActions.setProperty(
     elementPath,
-    PP.create(['style', prop]),
+    PP.create('style', prop),
     jsxAttributeValue(newValue, emptyComments),
   )
 }
