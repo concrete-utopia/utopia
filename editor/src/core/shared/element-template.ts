@@ -1027,11 +1027,7 @@ export interface JSXFragment {
   children: JSXElementChildren
 }
 
-export function jsxFragment(
-  uid: string,
-  children: JSXElementChildren,
-  longForm: boolean,
-): JSXFragment {
+export function jsxFragment(uid: string, children: JSXElementChildren): JSXFragment {
   return {
     type: 'JSX_FRAGMENT',
     uid: uid,

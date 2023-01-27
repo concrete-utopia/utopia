@@ -437,7 +437,7 @@ describe('targetElementSupportsChildren', () => {
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
-      [jsxFragment('fff', [], false)],
+      [jsxFragment('fff', [])],
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
@@ -449,7 +449,7 @@ describe('targetElementSupportsChildren', () => {
         [BakedInStoryboardUID, TestScenePath],
         ['Dummy', 'Element'],
       ]),
-      [jsxFragment('fff', [jsxTestElement('div', [], [])], false)],
+      [jsxFragment('fff', [jsxTestElement('div', [], [])])],
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)
     expect(actualResult).toEqual(true)
@@ -462,19 +462,15 @@ describe('targetElementSupportsChildren', () => {
         ['Dummy', 'Element'],
       ]),
       [
-        jsxFragment(
-          'fff',
-          [
-            jsxTestElement(
-              'div',
-              [],
-              [
-                jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
-              ],
-            ),
-          ],
-          false,
-        ),
+        jsxFragment('fff', [
+          jsxTestElement(
+            'div',
+            [],
+            [
+              jsxArbitraryBlock('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+            ],
+          ),
+        ]),
       ],
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren({}, element)

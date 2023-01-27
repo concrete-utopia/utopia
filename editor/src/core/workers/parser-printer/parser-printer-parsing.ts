@@ -1698,7 +1698,7 @@ function createJSXElementOrFragmentAllocatingUID(
     {
       value:
         name == null
-          ? jsxFragment(newUID, children, true)
+          ? jsxFragment(newUID, children)
           : jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
