@@ -1,6 +1,7 @@
 import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { capitalize } from '../../../../../core/shared/string-utils'
 import { assertNever } from '../../../../../core/shared/utils'
 import {
   ChainedNumberInput,
@@ -18,8 +19,6 @@ export type ControlMode =
   | 'one-value' // a single value that applies to all sides
   | 'per-direction' // two values that group per direction (vertical / horizontal)
   | 'per-side' // one distinct value per side (TLBR)
-
-const controlModeOrder: ControlMode[] = ['one-value', 'per-direction', 'per-side']
 
 interface ControlCSSNumber {
   controlStatus: ControlStatus
@@ -93,6 +92,16 @@ export interface SplitChainedNumberInputProps<T> {
   shorthand: InspectorInfo<T>
   updateShorthand: UpdateShorthand
   selectedViews: ElementPath[]
+  controlModeOrder: ControlMode[]
+  labels?: {
+    top?: string
+    bottom?: string
+    left?: string
+    right?: string
+    horizontal?: string
+    vertical?: string
+    oneValue?: string
+  }
 }
 
 function getInitialMode(
@@ -165,7 +174,7 @@ function cssValueOrNull(v: number | null): CSSNumber | null {
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, top, left, bottom, right } = props
+  const { name, top, left, bottom, right, controlModeOrder } = props
 
   const [oneValue, setOneValue] = React.useState<number | null>(null)
   const [horizontal, setHorizontal] = React.useState<number | null>(null)
@@ -246,7 +255,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     }
     const index = controlModeOrder.indexOf(mode) + 1
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
-  }, [mode])
+  }, [mode, controlModeOrder])
 
   const updateShorthandIfUsed = React.useMemo(() => {
     return props.shorthand.controlStatus === 'simple' ? props.updateShorthand : null
@@ -260,7 +269,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             {
               style: { width: '100%' },
               value: cssValueOrNull(oneValue),
-              DEPRECATED_labelBelow: '↔',
+              DEPRECATED_labelBelow: props.labels?.oneValue ?? '↔',
               minimum: 0,
               onSubmitValue: onSubmitValueShorthand(
                 setOneValue,
@@ -284,7 +293,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               value: cssValueOrNull(horizontal),
-              DEPRECATED_labelBelow: 'H',
+              DEPRECATED_labelBelow: props.labels?.horizontal ?? 'H',
               minimum: 0,
               onSubmitValue: onSubmitValueShorthand(
                 setHorizontal,
@@ -305,7 +314,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: cssValueOrNull(vertical),
-              DEPRECATED_labelBelow: 'V',
+              DEPRECATED_labelBelow: props.labels?.vertical ?? 'V',
               minimum: 0,
               onSubmitValue: onSubmitValueShorthand(
                 setVertical,
@@ -329,7 +338,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               value: top.value,
-              DEPRECATED_labelBelow: 'T',
+              DEPRECATED_labelBelow: props.labels?.top ?? 'T',
               minimum: 0,
               onSubmitValue: onSubmitValue(top),
               onTransientSubmitValue: onTransientSubmitValue(top),
@@ -340,7 +349,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: right.value,
-              DEPRECATED_labelBelow: 'R',
+              DEPRECATED_labelBelow: props.labels?.right ?? 'R',
               minimum: 0,
               onSubmitValue: onSubmitValue(right),
               onTransientSubmitValue: onTransientSubmitValue(right),
@@ -351,7 +360,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: bottom.value,
-              DEPRECATED_labelBelow: 'B',
+              DEPRECATED_labelBelow: props.labels?.bottom ?? 'B',
               minimum: 0,
               onSubmitValue: onSubmitValue(bottom),
               onTransientSubmitValue: onTransientSubmitValue(bottom),
@@ -362,7 +371,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: left.value,
-              DEPRECATED_labelBelow: 'L',
+              DEPRECATED_labelBelow: props.labels?.left ?? 'L',
               minimum: 0,
               onSubmitValue: onSubmitValue(left),
               onTransientSubmitValue: onTransientSubmitValue(left),
@@ -393,22 +402,23 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       sidesHorizontal,
       sidesVertical,
       updateShorthandIfUsed,
+      props.labels,
     ])
 
   const tooltipTitle = React.useMemo(() => {
     switch (mode) {
       case 'one-value':
-        return 'Padding'
+        return capitalize(props.name)
       case 'per-direction':
-        return 'Padding per direction'
+        return `${capitalize(props.name)} per direction`
       case 'per-side':
-        return 'Padding per side'
+        return `${capitalize(props.name)} per side`
       case null:
         return ''
       default:
         assertNever(mode)
     }
-  }, [mode])
+  }, [mode, props.name])
 
   const modeIcon = React.useMemo(() => {
     switch (mode) {

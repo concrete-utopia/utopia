@@ -180,7 +180,7 @@ export const PaddingRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<-auto-><----------1fr--------->'>
+      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
         <PropertyLabel
           target={paddingPropsToUnset}
           propNamesToUnset={contextMenuLabel}
@@ -226,6 +226,7 @@ export const PaddingControl = React.memo(() => {
 
   return (
     <SplitChainedNumberInput
+      controlModeOrder={['one-value', 'per-direction', 'per-side']}
       selectedViews={selectedViewsRef.current}
       name='padding'
       defaultMode='per-direction'
