@@ -34,7 +34,6 @@ import { when } from '../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
-import { TopMenu } from '../editor/top-menu'
 import { useDispatch } from '../editor/store/dispatch-context'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
@@ -140,7 +139,6 @@ export const CanvasWrapperComponent = React.memo(() => {
             justifyContent: 'flex-start',
           }}
         >
-          <TopMenu />
           <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
