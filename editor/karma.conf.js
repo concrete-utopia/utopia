@@ -79,19 +79,7 @@ module.exports = function (config) {
     },
     parallelOptions: {
       executors: isGithubActionsEnvironment ? cpuCores : cpuCores / 2,
-      shardStrategy: 'round-robin',
-      // shardStrategy: 'description-length'
-      // shardStrategy: 'custom'
-      // customShardStrategy: function(config) {
-      //   config.executors // number, the executors set above
-      //   config.shardIndex // number, the specific index for the shard currently running
-      //   config.description // string, the name of the top-level describe string. Useful for determining how to shard the current specs
-      //
-      //   // Re-implement a round-robin strategy
-      //   window.parallelDescribeCount = window.parallelDescribeCount || 0;
-      //   window.parallelDescribeCount++;
-      //   return window.parallelDescribeCount % config.executors === config.shardIndex
-      // }
+      shardStrategy: 'round-robin', // if we need a customShardStrategy, see https://github.com/joeljeske/karma-parallel
     },
   })
 }
