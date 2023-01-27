@@ -56,6 +56,7 @@ import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies
 import { TextEditableControl } from './text-editable-control'
 import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { AbsoluteChildrenOutline } from './absolute-children-outline'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -405,6 +406,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {renderHighlightControls()}
           {renderTextEditableControls()}
           {unless(dragging, <LayoutParentControl />)}
+          {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
           <GuidelineControls />
           <ZeroSizedElementControls.control showAllPossibleElements={false} />

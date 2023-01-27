@@ -70,6 +70,7 @@ import {
   createEmptyStrategyState,
   StrategyState,
 } from '../components/canvas/canvas-strategies/interaction-state'
+import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -417,4 +418,14 @@ export function slightlyOffsetPointBecauseVeryWeirdIssue(point: { x: number; y: 
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
   // offset for some unknown reason, meaning the inserted element will be 1 pixel of in each dimension
   return { x: point.x - 0.001, y: point.y - 0.001 }
+}
+
+export async function expectSingleUndoStep(
+  editor: EditorRenderResult,
+  action: () => Promise<void>,
+): Promise<void> {
+  const historySizeBefore = editor.getEditorState().history.previous.length
+  await action()
+  const historySizeAfter = editor.getEditorState().history.previous.length
+  expect(historySizeAfter - historySizeBefore).toEqual(1)
 }

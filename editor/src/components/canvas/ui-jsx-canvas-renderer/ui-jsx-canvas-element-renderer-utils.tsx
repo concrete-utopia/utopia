@@ -82,7 +82,7 @@ export function createLookupRender(
     const generatedUID = createIndexedUid(innerUID, index)
     const withGeneratedUID = setJSXValueAtPath(
       element.props,
-      PP.create(['data-uid']),
+      PP.create('data-uid'),
       jsxAttributeValue(generatedUID, emptyComments),
     )
 

@@ -13,7 +13,7 @@ import { useGetMultiselectedProps, useInspectorContext } from '../../common/prop
 import { PropertyLabel } from '../../widgets/property-label'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
-const ppCreate = (p: string) => PP.create([p])
+const ppCreate = (p: string) => PP.create(p)
 
 const regularArrayDOMEventHandlerNames = [...DOMEventHandlerNames]
 
@@ -24,7 +24,7 @@ interface EventHandlerControlProps {
 
 export const EventHandlerControl = React.memo((props: EventHandlerControlProps) => {
   const { handlerName, value } = props
-  const target = useKeepReferenceEqualityIfPossible([PP.create([handlerName])])
+  const target = useKeepReferenceEqualityIfPossible([PP.create(handlerName)])
   return (
     <>
       <PropertyLabel target={target}>{handlerName}</PropertyLabel>

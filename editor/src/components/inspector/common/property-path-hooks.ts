@@ -337,7 +337,7 @@ export function useCallbackFactory<T>(
 /* eslint-enable react-hooks/rules-of-hooks, react-hooks/exhaustive-deps */
 
 function elementPathMappingFn<P extends ParsedElementPropertiesKeys>(p: P) {
-  return PP.create([p])
+  return PP.create(p)
 }
 
 export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(prop: P) {
@@ -356,7 +356,7 @@ export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
   p: P,
   target: readonly string[],
 ): PropertyPath {
-  return PP.create([...target, p])
+  return PP.create(...target, p)
 }
 
 export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(

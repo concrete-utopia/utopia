@@ -380,7 +380,7 @@ export function parsePropertyPathLikeExpression(
     } else if (TS.isIdentifier(inner)) {
       return right({
         identifier: inner.getText(sourceFile),
-        property: PP.create(pathSoFar),
+        property: PP.createFromArray(pathSoFar),
       })
     } else {
       return left(`Unhandled expression type.`)

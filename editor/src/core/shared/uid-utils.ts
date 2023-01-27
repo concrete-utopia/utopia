@@ -29,7 +29,7 @@ import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
 
-export const UtopiaIDPropertyPath = PP.create(['data-uid'])
+export const UtopiaIDPropertyPath = PP.create('data-uid')
 
 const atoz = [
   'a',

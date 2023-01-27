@@ -24,6 +24,7 @@ import {
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { AbsolutePin, IsCenterBased, resizeBoundingBox } from './resize-helpers'
+import { FlexDirection } from '../../../inspector/common/css-utils'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -32,6 +33,7 @@ export function createResizeCommands(
   drag: CanvasVector,
   elementGlobalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
+  elementParentFlexDirection: FlexDirection | null,
 ): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
   const pins = pinsForEdgePosition(edgePosition)
   const commands = mapDropNulls((pin) => {
@@ -53,7 +55,8 @@ export function createResizeCommands(
         stylePropPathMappingFn(pin, styleStringInArray),
         (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        true,
+        elementParentFlexDirection,
+        'create-if-not-existing',
       )
     } else {
       return null

@@ -572,13 +572,10 @@ export function componentHonoursPropsPosition(component: UtopiaJSXComponent): bo
   } else {
     const rootElement = component.rootElement
     if (isJSXElement(rootElement)) {
-      const leftStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'left']))
-      const topStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'top']))
-      const rightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'right']))
-      const bottomStyleAttr = getJSXAttributeAtPath(
-        rootElement.props,
-        PP.create(['style', 'bottom']),
-      )
+      const leftStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'left'))
+      const topStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'top'))
+      const rightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'right'))
+      const bottomStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'bottom'))
       return (
         ((propertyComesFromPropsStyle(component.param, leftStyleAttr, 'left') ||
           propertyComesFromPropsStyle(component.param, rightStyleAttr, 'right')) &&
@@ -598,11 +595,8 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   } else {
     const rootElement = component.rootElement
     if (isJSXElement(rootElement)) {
-      const widthStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create(['style', 'width']))
-      const heightStyleAttr = getJSXAttributeAtPath(
-        rootElement.props,
-        PP.create(['style', 'height']),
-      )
+      const widthStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'width'))
+      const heightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'height'))
       return (
         (propertyComesFromPropsStyle(component.param, widthStyleAttr, 'width') &&
           propertyComesFromPropsStyle(component.param, heightStyleAttr, 'height')) ||
@@ -618,7 +612,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
   const boundParam = propsParam.boundParam
   switch (boundParam.type) {
     case 'REGULAR_PARAM': {
-      const styleProp = getJSXAttributeAtPath(attributes, PP.create(styleStringInArray))
+      const styleProp = getJSXAttributeAtPath(attributes, PP.create('style'))
       const styleAttribute = styleProp.attribute
       switch (styleAttribute.type) {
         case 'ATTRIBUTE_NOT_FOUND':
@@ -661,7 +655,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
             // This is the aliased name or if there's no alias the field name.
             const propertyToLookFor = partBoundParam.paramName
 
-            const styleProp = getJSXAttributeAtPath(attributes, PP.create(styleStringInArray))
+            const styleProp = getJSXAttributeAtPath(attributes, PP.create('style'))
             const styleAttribute = styleProp.attribute
             switch (styleAttribute.type) {
               case 'ATTRIBUTE_NOT_FOUND':

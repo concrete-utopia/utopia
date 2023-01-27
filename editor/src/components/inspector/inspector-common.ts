@@ -1,18 +1,25 @@
 import * as PP from '../../core/shared/property-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isStoryboardChild } from '../../core/shared/element-path'
+import { isStoryboardChild, parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
-import { FlexDirection } from './common/css-utils'
+import {
+  CSSNumber,
+  cssNumber,
+  FlexDirection,
+  parseCSSLengthPercent,
+  parseCSSNumber,
+} from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
-import { defaultEither, right } from '../../core/shared/either'
+import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { CSSProperties } from 'react'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
+import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -281,15 +288,15 @@ export function convertWidthToFlexGrow(
   const matches =
     defaultEither(
       null,
-      getSimpleAttributeAtPath(right(element.props), PP.create(['style', prop])),
+      getSimpleAttributeAtPath(right(element.props), PP.create('style', prop)),
     ) === '100%'
 
   if (!matches) {
     return []
   }
   return [
-    deleteProperties('always', elementPath, [PP.create(['style', prop])]),
-    setProperty('always', elementPath, PP.create(['style', 'flexGrow']), 1),
+    deleteProperties('always', elementPath, [PP.create('style', prop)]),
+    setProperty('always', elementPath, PP.create('style', 'flexGrow'), 1),
   ]
 }
 
@@ -297,7 +304,7 @@ export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
 }
 
-export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create(['style', prop])
+export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create('style', prop)
 
 export const flexContainerProps = [
   styleP('flexDirection'),
@@ -339,19 +346,116 @@ export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): Ca
   switch (axis) {
     case 'horizontal':
       return deleteProperties('always', path, [
-        PP.create(['style', 'width']),
-        PP.create(['style', 'minWidth']),
-        PP.create(['style', 'maxWidth']),
+        PP.create('style', 'width'),
+        PP.create('style', 'minWidth'),
+        PP.create('style', 'maxWidth'),
       ])
     case 'vertical':
       return deleteProperties('always', path, [
-        PP.create(['style', 'height']),
-        PP.create(['style', 'minHeight']),
-        PP.create(['style', 'maxHeight']),
+        PP.create('style', 'height'),
+        PP.create('style', 'minHeight'),
+        PP.create('style', 'maxHeight'),
       ])
     default:
       assertNever(axis)
   }
+}
+
+export const nukePositioningPropsForAxisCommand = (
+  axis: Axis,
+  path: ElementPath,
+): CanvasCommand => {
+  switch (axis) {
+    case 'horizontal':
+      return deleteProperties('always', path, [
+        PP.create('style', 'left'),
+        PP.create('style', 'right'),
+      ])
+    case 'vertical':
+      return deleteProperties('always', path, [
+        PP.create('style', 'top'),
+        PP.create('style', 'bottom'),
+      ])
+    default:
+      assertNever(axis)
+  }
+}
+
+export const nukeAllAbsolutePositioningPropsCommands = (
+  path: ElementPath,
+): Array<CanvasCommand> => {
+  return [
+    addContainLayoutIfNeeded('always', path),
+    deleteProperties('always', path, [
+      PP.create('style', 'position'),
+      PP.create('style', 'left'),
+      PP.create('style', 'right'),
+      PP.create('style', 'top'),
+      PP.create('style', 'bottom'),
+    ]),
+  ]
+}
+
+export type FixedHugFill =
+  | { type: 'fixed'; value: CSSNumber }
+  | { type: 'fill'; value: CSSNumber }
+  | { type: 'hug' }
+
+export function detectFillHugFixedState(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath | null,
+): FixedHugFill | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+    return null
+  }
+
+  const flexGrow = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flexGrow')),
+  )
+
+  if (flexGrow != null) {
+    const flexDirection = optionalMap(
+      (e) => detectFlexDirectionOne(metadata, parentPath(e)),
+      elementPath,
+    )
+
+    const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
+    if (axis === 'horizontal' && isFlexDirectionHorizontal) {
+      return { type: 'fill', value: flexGrow }
+    }
+
+    const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
+    if (axis === 'vertical' && isFlexDirectionVertical) {
+      return { type: 'fill', value: flexGrow }
+    }
+  }
+
+  const property = widthHeightFromAxis(axis)
+
+  const prop = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
+  )
+
+  if (prop === MaxContent) {
+    return { type: 'hug' }
+  }
+
+  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
+
+  if (parsed != null && parsed.unit === '%') {
+    return { type: 'fill', value: parsed }
+  }
+
+  if (parsed != null) {
+    return { type: 'fixed', value: parsed }
+  }
+
+  return null
 }
 
 export const MaxContent = 'max-content' as const
