@@ -1,7 +1,11 @@
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { expectSingleUndoStep } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
@@ -14,6 +18,21 @@ describe('Resize to fit control', () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
     await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
+
+    expect(view.style.width).toEqual(MaxContent)
+    expect(view.style.minWidth).toEqual('')
+    expect(view.style.maxWidth).toEqual('')
+    expect(view.style.height).toEqual(MaxContent)
+    expect(view.style.minHeight).toEqual('')
+    expect(view.style.maxHeight).toEqual('')
+  })
+
+  it('resizes to fit, with shortcut', async () => {
+    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+    const view = await selectView(editor)
+    await expectSingleUndoStep(editor, async () =>
+      pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } }),
+    )
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')
