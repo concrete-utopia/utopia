@@ -95,6 +95,7 @@ import {
   COPY_STYLE_PROPERTIES,
   CONVERT_TO_FLEX_CONTAINER,
   REMOVE_ABSOLUTE_POSITIONING,
+  RESIZE_TO_FIT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -118,6 +119,7 @@ import {
 import {
   detectAreElementsFlexContainers,
   nukeAllAbsolutePositioningPropsCommands,
+  resizeToFitCommands,
 } from '../inspector/inspector-common'
 
 function updateKeysPressed(
@@ -805,6 +807,16 @@ export function handleKeyDown(
         return [
           EditorActions.applyCommandsAction(
             editor.selectedViews.flatMap((view) => nukeAllAbsolutePositioningPropsCommands(view)),
+          ),
+        ]
+      },
+      [RESIZE_TO_FIT]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        return [
+          EditorActions.applyCommandsAction(
+            resizeToFitCommands(editor.jsxMetadata, editor.selectedViews),
           ),
         ]
       },

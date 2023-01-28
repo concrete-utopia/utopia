@@ -20,6 +20,8 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
+import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
+import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -459,3 +461,22 @@ export function detectFillHugFixedState(
 }
 
 export const MaxContent = 'max-content' as const
+
+export function resizeToFitCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = [
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('horizontal'),
+    ) ?? []),
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('vertical'),
+    ) ?? []),
+  ]
+  return commands
+}
