@@ -36,6 +36,8 @@ import {
   toggleTextUnderline,
 } from './text-editor-shortcut-helpers'
 import { useColorTheme } from '../../uuiui'
+import { arrayToObject } from '../../core/shared/array-utils'
+import { TextRelatedProperties } from '../../core/properties/css-properties'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -316,50 +318,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
       // Ensure that font and text settings are inherited from
       // the containing element:
-      font: 'inherit',
-      fontFamily: 'inherit',
-      fontFeatureSettings: 'inherit',
-      fontKerning: 'inherit',
-      fontLanguageOverride: 'inherit',
-      fontOpticalSizing: 'inherit',
-      fontSize: 'inherit',
-      fontSizeAdjust: 'inherit',
-      fontStretch: 'inherit',
-      fontStyle: 'inherit',
-      fontSynthesis: 'inherit',
-      fontVariant: 'inherit',
-      fontVariantCaps: 'inherit',
-      fontVariantEastAsian: 'inherit',
-      fontVariantLigatures: 'inherit',
-      fontVariantNumeric: 'inherit',
-      fontVariantPosition: 'inherit',
-      fontVariationSettings: 'inherit',
-      fontWeight: 'inherit',
-      textAlign: 'inherit',
-      textAlignLast: 'inherit',
-      textCombineUpright: 'inherit',
-      textDecorationColor: 'inherit',
-      textDecorationLine: 'inherit',
-      textDecorationSkip: 'inherit',
-      textDecorationSkipInk: 'inherit',
-      textDecorationStyle: 'inherit',
-      textDecorationThickness: 'inherit',
-      textDecorationWidth: 'inherit',
-      textEmphasisColor: 'inherit',
-      textEmphasisPosition: 'inherit',
-      textEmphasisStyle: 'inherit',
-      textIndent: 'inherit',
-      textJustify: 'inherit',
-      textOrientation: 'inherit',
-      textOverflow: 'inherit',
-      textRendering: 'inherit',
-      textShadow: 'inherit',
-      textSizeAdjust: 'inherit',
-      textTransform: 'inherit',
-      textUnderlineOffset: 'inherit',
-      textUnderlinePosition: 'inherit',
-      letterSpacing: 'inherit',
-      lineHeight: 'inherit',
+      ...arrayToObject(TextRelatedProperties, () => 'inherit'),
       // Prevent double applying these properties:
       opacity: 1,
     },
