@@ -88,8 +88,11 @@ import {
   CanvasRectangle,
   canvasRectangle,
   CanvasVector,
+  isInfinityRectangle,
+  isNonInfinityRectangle,
   localRectangle,
   LocalRectangle,
+  nullIfInfinity,
   Size,
 } from '../../core/shared/math-utils'
 import {
@@ -195,7 +198,12 @@ export function getOriginalFrames(
           // TODO Scene Implementation - this should only be one call
           const localFrame = MetadataUtils.getFrame(path, componentMetadata)
           const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-          if (localFrame != null && globalFrame != null) {
+          if (
+            localFrame != null &&
+            globalFrame != null &&
+            isNonInfinityRectangle(localFrame) &&
+            isNonInfinityRectangle(globalFrame)
+          ) {
             // Remove the ancestor frames if the immediate ones are groups.
             let workingFrame: CanvasRectangle | null = canvasRectangle(localFrame)
 
@@ -240,7 +248,7 @@ export function getOriginalCanvasFrames(
       })
       if (!alreadyAdded) {
         const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-        if (frame != null) {
+        if (frame != null && isNonInfinityRectangle(frame)) {
           originalFrames.push({
             target: path,
             frame: frame,
@@ -561,7 +569,12 @@ export function updateFramesOfScenesAndComponents(
         parentFrame =
           nonGroupParent == null
             ? null
-            : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, workingEditorState.jsxMetadata)
+            : nullIfInfinity(
+                MetadataUtils.getFrameInCanvasCoords(
+                  nonGroupParent,
+                  workingEditorState.jsxMetadata,
+                ),
+              )
       } else {
         parentFrame = optionalParentFrame
       }
@@ -578,7 +591,9 @@ export function updateFramesOfScenesAndComponents(
               parentOffset,
               frameAndTarget.frame,
             )
-            const currentLocalFrame = MetadataUtils.getFrame(target, workingEditorState.jsxMetadata)
+            const currentLocalFrame = nullIfInfinity(
+              MetadataUtils.getFrame(target, workingEditorState.jsxMetadata),
+            )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
             const elementAttributes = element.props
@@ -1080,7 +1095,12 @@ export function collectGuidelines(
       }
 
       const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
-      if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
+      if (
+        instance != null &&
+        MetadataUtils.isImg(instance) &&
+        instance.localFrame != null &&
+        isNonInfinityRectangle(instance.localFrame)
+      ) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(allElementProps, instance)
         Utils.fastForEach(MultipliersForImages, (multiplier) => {
@@ -2567,7 +2587,7 @@ export function getCanvasOffset(
       } else {
         const frame = MetadataUtils.getFrameInCanvasCoords(selectedView, componentMetadata)
 
-        if (frame == null) {
+        if (frame == null || isInfinityRectangle(frame)) {
           return defaultOffset as CanvasPoint
         } else {
           return {
@@ -2594,7 +2614,7 @@ export function focusPointForZoom(
     const accumulatedPoint = selectedViews.reduce((working, selectedView) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(selectedView, componentMetadata)
 
-      if (frame == null) {
+      if (frame == null || isInfinityRectangle(frame)) {
         return working
       } else {
         return {
@@ -3257,15 +3277,17 @@ export function getObservableValueForLayoutProp(
   if (elementMetadata == null) {
     return null
   } else {
+    const localFrame = nullIfInfinity(elementMetadata.localFrame)
+
     switch (layoutProp) {
       case 'width':
       case 'minWidth':
       case 'maxWidth':
-        return elementMetadata.localFrame?.width
+        return localFrame?.width
       case 'height':
       case 'minHeight':
       case 'maxHeight':
-        return elementMetadata.localFrame?.height
+        return localFrame?.height
       case 'flexBasis':
       case 'flexGrow':
       case 'flexShrink':
@@ -3280,21 +3302,21 @@ export function getObservableValueForLayoutProp(
       case 'marginRight':
         return elementMetadata.specialSizeMeasurements.margin.right
       case 'left':
-        return elementMetadata.localFrame?.x
+        return localFrame?.x
       case 'top':
-        return elementMetadata.localFrame?.y
+        return localFrame?.y
       case 'right':
-        return elementMetadata.localFrame == null ||
+        return localFrame == null ||
           elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
           ? null
           : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.width -
-              (elementMetadata.localFrame.width + elementMetadata.localFrame.x)
+              (localFrame.width + localFrame.x)
       case 'bottom':
-        return elementMetadata.localFrame == null ||
+        return localFrame == null ||
           elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
           ? null
           : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.height -
-              (elementMetadata.localFrame.height + elementMetadata.localFrame.y)
+              (localFrame.height + localFrame.y)
       default:
         const _exhaustiveCheck: never = layoutProp
         throw new Error(`Unhandled prop ${JSON.stringify(layoutProp)}`)

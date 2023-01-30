@@ -18,6 +18,7 @@ import {
   Size,
   size,
   sizeFitsInTarget,
+  zeroRectIfNullOrInfinity,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../../editor/store/editor-state'
@@ -110,9 +111,11 @@ function findValidTargetsUnderPoint(
   }
 
   const multiselectBounds: Size =
-    (reparentSubjects.type === 'EXISTING_ELEMENTS'
-      ? MetadataUtils.getBoundingRectangleInCanvasCoords(reparentSubjects.elements, metadata)
-      : reparentSubjects.defaultSize) ?? size(0, 0)
+    reparentSubjects.type === 'EXISTING_ELEMENTS'
+      ? zeroRectIfNullOrInfinity(
+          MetadataUtils.getBoundingRectangleInCanvasCoords(reparentSubjects.elements, metadata),
+        )
+      : reparentSubjects.defaultSize
 
   const allElementsUnderPoint = [
     ...getAllTargetsAtPointAABB(
@@ -480,10 +483,14 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
+  const parentFrame = parentMetadata.globalFrame
+  const parentWidth =
+    parentFrame == null ? 0 : isInfinityRectangle(parentFrame) ? Infinity : parentFrame.width
+  const parentHeight =
+    parentFrame == null ? 0 : isInfinityRectangle(parentFrame) ? Infinity : parentFrame.height
+
   const emptyParentWithDimensionsGreaterThanZero =
-    children.length === 0 &&
-    (parentMetadata.globalFrame?.width ?? 0) > 0 &&
-    (parentMetadata.globalFrame?.height ?? 0) > 0
+    children.length === 0 && parentWidth > 0 && parentHeight > 0
   if (emptyParentWithDimensionsGreaterThanZero) {
     return 'REPARENT_AS_ABSOLUTE'
   }
@@ -492,9 +499,7 @@ export function flowParentAbsoluteOrStatic(
 
   // TODO is this needed?
   const emptyParentWithAnyDimensionZero =
-    children.length === 0 &&
-    ((parentMetadata.globalFrame?.width ?? 0) === 0 ||
-      (parentMetadata.globalFrame?.height ?? 0) === 0)
+    children.length === 0 && (parentWidth === 0 || parentHeight === 0)
   if (emptyParentWithAnyDimensionZero) {
     return 'REPARENT_AS_STATIC'
   }

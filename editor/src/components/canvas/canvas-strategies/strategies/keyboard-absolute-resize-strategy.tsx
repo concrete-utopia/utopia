@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   canvasRectangle,
   CanvasVector,
+  nullIfInfinity,
   offsetPoint,
   scaleVector,
   zeroRectangle,
@@ -158,7 +159,7 @@ export function keyboardAbsoluteResizeStrategy(
                 elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
               const elementParentFlexDirection =
                 elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
-              const elementGlobalFrame = elementMetadata?.globalFrame ?? null
+              const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
 
               if (element != null) {
                 const elementResult = createResizeCommands(

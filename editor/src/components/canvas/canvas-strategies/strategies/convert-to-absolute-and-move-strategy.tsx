@@ -18,6 +18,7 @@ import {
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
   CanvasVector,
+  isNonInfinityRectangle,
   LocalPoint,
   LocalRectangle,
   offsetRect,
@@ -218,7 +219,7 @@ function collectSetLayoutPropCommands(
   const currentParentPath = EP.parentPath(path)
   const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-  if (globalFrame != null) {
+  if (globalFrame != null && isNonInfinityRectangle(globalFrame)) {
     const newLocalFrame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
       shouldReparent ? targetParent : currentParentPath,
       metadata,
@@ -379,7 +380,12 @@ function moveDescendantsToNewContainingBlock(
         nearestSelectedAncestor,
         metadata,
       )
-      if (canvasFrame != null && nearestSelectedAncestorFrame != null) {
+      if (
+        canvasFrame != null &&
+        nearestSelectedAncestorFrame != null &&
+        isNonInfinityRectangle(canvasFrame) &&
+        isNonInfinityRectangle(nearestSelectedAncestorFrame)
+      ) {
         /**
          * after conversion selected elements define the containing block,
          * descendants are offset to the new layout ancestor

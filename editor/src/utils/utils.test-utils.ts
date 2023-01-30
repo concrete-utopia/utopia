@@ -53,7 +53,7 @@ import {
 } from '../core/shared/project-file-types'
 import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
-import { canvasRectangle, localRectangle, RectangleInner } from '../core/shared/math-utils'
+import { canvasRectangle, localRectangle, SimpleRectangle } from '../core/shared/math-utils'
 import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
@@ -271,7 +271,7 @@ function createFakeMetadataForJSXElement(
   topLevelElements: Array<TopLevelElement>,
   focused: boolean,
   rootOfInstance: boolean,
-  frame: RectangleInner = Utils.zeroRectangle,
+  frame: SimpleRectangle = Utils.zeroRectangle,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {

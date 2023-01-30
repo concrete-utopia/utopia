@@ -16,7 +16,12 @@ import {
   setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  isInfinityRectangle,
+  isNonInfinityRectangle,
+} from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
@@ -73,6 +78,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
           return Object.values(store.editor.jsxMetadata).filter((element) => {
             return (
               element.globalFrame != null &&
+              isNonInfinityRectangle(element.globalFrame) &&
               isZeroSizedElement(element.globalFrame) &&
               MetadataUtils.targetElementSupportsChildren(projectContents, element)
             )
@@ -85,6 +91,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
                 return false
               } else {
                 return (
+                  isNonInfinityRectangle(child.globalFrame) &&
                   isZeroSizedElement(child.globalFrame) &&
                   MetadataUtils.targetElementSupportsChildren(projectContents, child)
                 )
@@ -155,7 +162,7 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
     [dispatch, props.isHighlighted],
   )
 
-  if (element.globalFrame == null) {
+  if (element.globalFrame == null || isInfinityRectangle(element.globalFrame)) {
     return null
   } else {
     const frame = element.globalFrame
@@ -245,7 +252,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
         return mapDropNulls((path) => {
           const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
           const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
-          if (frame != null && isZeroSizedElement(frame)) {
+          if (frame != null && isNonInfinityRectangle(frame) && isZeroSizedElement(frame)) {
             return element
           } else {
             return null
@@ -265,7 +272,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
     return (
       <React.Fragment>
         {zeroSizeElements.map((element) => {
-          if (element.globalFrame != null) {
+          if (element.globalFrame != null && isNonInfinityRectangle(element.globalFrame)) {
             return (
               <React.Fragment>
                 <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />

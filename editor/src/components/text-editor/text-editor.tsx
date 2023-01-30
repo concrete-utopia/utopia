@@ -223,8 +223,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
 
-    const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
-    if (element?.globalFrame?.width === 0) {
+    const elementCanvasFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+      elementPath,
+      metadataRef.current,
+    )
+    if (elementCanvasFrame.width === 0) {
       currentElement.style.minWidth = '0.5px'
     }
 

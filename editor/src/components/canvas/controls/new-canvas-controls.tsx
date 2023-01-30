@@ -5,7 +5,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   EditorState,
@@ -316,7 +316,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     return selectionEnabled
       ? localHighlightedViews.map((path) => {
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-          if (frame == null) {
+          if (frame == null || isInfinityRectangle(frame)) {
             return null
           }
           const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
@@ -358,7 +358,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       .map((p) => {
         const elementPath = EP.fromString(p)
         const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, componentMetadata)
-        if (frame == null) {
+        if (frame == null || isInfinityRectangle(frame)) {
           return null
         }
         return (

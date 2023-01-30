@@ -83,6 +83,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
+  isNonInfinityRectangle,
   LocalRectangle,
   WindowPoint,
 } from '../../../core/shared/math-utils'
@@ -2333,7 +2334,9 @@ function getElementWarningsInner(
     // Check to see if this element is collapsed in one dimension.
     const globalFrame = elementMetadata.globalFrame
     const widthOrHeightZero =
-      globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
+      globalFrame != null &&
+      isNonInfinityRectangle(globalFrame) &&
+      (globalFrame.width === 0 || globalFrame.height === 0)
 
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.

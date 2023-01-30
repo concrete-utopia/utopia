@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { windowPoint } from '../../../../core/shared/math-utils'
+import { isNonInfinityRectangle, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -171,7 +171,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const boxShadowWidth = 1.5 / scale
   const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${backgroundColor}`
 
-  if (frame != null) {
+  if (frame != null && isNonInfinityRectangle(frame)) {
     return (
       <CanvasOffsetWrapper>
         <div

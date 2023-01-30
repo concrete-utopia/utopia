@@ -6,7 +6,11 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { eitherToMaybe, isRight, left, right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { isJSXElement } from '../../../core/shared/element-template'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  isNonInfinityRectangle,
+} from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPathKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { useColorTheme } from '../../../uuiui'
@@ -30,7 +34,7 @@ export const PinLines = React.memo(() => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const isAbsolute = MetadataUtils.isPositionAbsolute(element)
         const frame = element?.globalFrame
-        if (isAbsolute && frame != null) {
+        if (isAbsolute && frame != null && isNonInfinityRectangle(frame)) {
           return {
             path: path,
             frame: frame,

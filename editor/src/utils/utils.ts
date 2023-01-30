@@ -8,7 +8,7 @@ import { NormalisedFrame } from 'utopia-api/core'
 import { fastForEach, NO_OP } from '../core/shared/utils'
 import {
   CanvasRectangle,
-  RectangleInner,
+  SimpleRectangle,
   CoordinateMarker,
   Rectangle,
   LocalRectangle,
@@ -258,12 +258,12 @@ export function normalisedFrameToCanvasFrame(frame: NormalisedFrame): CanvasRect
 
 export type ObtainChildren<T> = (elem: T, parents: Array<T>) => Array<T>
 
-export type GetFrame<T> = (elem: T, parents: Array<T>) => RectangleInner
+export type GetFrame<T> = (elem: T, parents: Array<T>) => SimpleRectangle
 
 export type HitTester<T> = {
   elem: T
   parents: Array<T>
-  frame: RectangleInner
+  frame: SimpleRectangle
 }
 
 export type Clock = {
@@ -712,13 +712,6 @@ const createSimpleClock = function (): Clock {
 function getRectPointsAlongAxes<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
 ): { horizontalPoints: Array<number>; verticalPoints: Array<number> } {
-  if (rectangle === 'INFINITY_RECTANGLE') {
-    return {
-      horizontalPoints: [],
-      verticalPoints: [],
-    }
-  }
-
   return {
     horizontalPoints: [
       rectangle.x,

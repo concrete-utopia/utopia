@@ -2,6 +2,7 @@ import Utils from '../../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
+  isNonInfinityRectangle,
   offsetPoint,
   offsetRect,
   zeroRectangle,
@@ -44,7 +45,7 @@ export function collectParentAndSiblingGuidelines(
         )
         if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
-          if (frame != null) {
+          if (frame != null && isNonInfinityRectangle(frame)) {
             result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
           }
         }
@@ -69,7 +70,7 @@ export function collectSelfAndChildrenGuidelines(
     if (!pinnedAndNotAbsolutePositioned) {
       if (EP.toUid(target) !== insertingElementId) {
         const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
-        if (frame != null) {
+        if (frame != null && isNonInfinityRectangle(frame)) {
           result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
         }
       }
@@ -77,7 +78,7 @@ export function collectSelfAndChildrenGuidelines(
       Utils.fastForEach(allPaths, (maybeTarget) => {
         if (EP.isChildOf(maybeTarget, target) && EP.toUid(maybeTarget) !== insertingElementId) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
-          if (frame != null) {
+          if (frame != null && isNonInfinityRectangle(frame)) {
             result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
           }
         }

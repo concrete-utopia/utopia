@@ -82,27 +82,41 @@ export type SimpleRectangle = {
   height: number
 }
 
-export type InfinityRectangle = { type: 'INFINITY_RECTANGLE' }
-export const infinityRectangle: InfinityRectangle = { type: 'INFINITY_RECTANGLE' }
-export function isInfinityRectangle(value: unknown): value is InfinityRectangle {
-  return (value as any)?.type === infinityRectangle
+export type Rectangle<C extends CoordinateMarker> = SimpleRectangle & C
+export type WindowRectangle = WindowModifier & SimpleRectangle
+export type CanvasRectangle = CanvasModifier & SimpleRectangle
+export type LocalRectangle = LocalModifier & SimpleRectangle
+export type NodeGraphRectangle = NodeGraphModifier & SimpleRectangle
+
+export type InfinityRectangle<C extends CoordinateMarker> = { type: 'INFINITY_RECTANGLE' } & C
+
+const infinityRectangle = { type: 'INFINITY_RECTANGLE' }
+export const infinityCanvasRectangle = infinityRectangle as InfinityRectangle<CanvasModifier>
+export const infinityLocalRectangle = infinityRectangle as InfinityRectangle<LocalModifier>
+
+export type MaybeInfinityRectangle<C extends CoordinateMarker> = Rectangle<C> | InfinityRectangle<C>
+export type MaybeInfinityCanvasRectangle = MaybeInfinityRectangle<CanvasModifier>
+export type MaybeInfinityLocalRectangle = MaybeInfinityRectangle<LocalModifier>
+
+export function isInfinityRectangle<C extends CoordinateMarker>(
+  value: MaybeInfinityRectangle<C>,
+): value is InfinityRectangle<C> {
+  return (value as any)?.type === 'INFINITY_RECTANGLE'
 }
 
-export type RectangleInner = SimpleRectangle | InfinityRectangle
-
-export type Rectangle<C extends CoordinateMarker> = RectangleInner & C
-export type WindowRectangle = WindowModifier & SimpleRectangle
-export type CanvasRectangle = CanvasModifier & RectangleInner
-export type LocalRectangle = LocalModifier & RectangleInner
-export type NodeGraphRectangle = NodeGraphModifier & RectangleInner
+export function isNonInfinityRectangle<C extends CoordinateMarker>(
+  r: MaybeInfinityRectangle<C>,
+): r is Rectangle<C> {
+  return !isInfinityRectangle(r)
+}
 
 export function canvasRectangle(rectangle: null | undefined): null
-export function canvasRectangle(rectangle: RectangleInner): CanvasRectangle
+export function canvasRectangle(rectangle: SimpleRectangle): CanvasRectangle
 export function canvasRectangle(
-  rectangle: RectangleInner | null | undefined,
+  rectangle: SimpleRectangle | null | undefined,
 ): CanvasRectangle | null
 export function canvasRectangle(
-  rectangle: RectangleInner | null | undefined,
+  rectangle: SimpleRectangle | null | undefined,
 ): CanvasRectangle | null {
   if (rectangle == null) {
     return null
@@ -111,15 +125,27 @@ export function canvasRectangle(
 }
 
 export function localRectangle(rectangle: null | undefined): null
-export function localRectangle(rectangle: RectangleInner): LocalRectangle
-export function localRectangle(rectangle: RectangleInner | null | undefined): LocalRectangle | null
+export function localRectangle(rectangle: SimpleRectangle): LocalRectangle
+export function localRectangle(rectangle: SimpleRectangle | null | undefined): LocalRectangle | null
 export function localRectangle(
-  rectangle: RectangleInner | null | undefined,
+  rectangle: SimpleRectangle | null | undefined,
 ): LocalRectangle | null {
   if (rectangle == null) {
     return null
   }
   return rectangle as LocalRectangle
+}
+
+export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
+  r: MaybeInfinityRectangle<C> | null,
+): Rectangle<C> {
+  return r == null || isInfinityRectangle(r) ? (zeroRectangle as Rectangle<C>) : r
+}
+
+export function nullIfInfinity<C extends CoordinateMarker>(
+  r: MaybeInfinityRectangle<C> | null,
+): Rectangle<C> | null {
+  return r == null || isInfinityRectangle(r) ? null : r
 }
 
 export function numbersEqual(l: number, r: number): boolean {
@@ -218,10 +244,6 @@ export function point<C extends CoordinateMarker>(x: number, y: number): Point<C
 }
 
 export function shiftToOrigin<C extends CoordinateMarker>(rectangle: Rectangle<C>): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: 0,
     y: 0,
@@ -231,13 +253,6 @@ export function shiftToOrigin<C extends CoordinateMarker>(rectangle: Rectangle<C
 }
 
 export function rectOrigin<C extends CoordinateMarker>(rectangle: Rectangle<C>): Point<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return {
-      x: 0,
-      y: 0,
-    } as Point<C>
-  }
-
   return {
     x: rectangle.x,
     y: rectangle.y,
@@ -252,10 +267,6 @@ export function rectContainsPoint<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,
 ): boolean {
-  if (isInfinityRectangle(rectangle)) {
-    return true
-  }
-
   return (
     rectangle.x < p.x &&
     rectangle.y < p.y &&
@@ -268,10 +279,6 @@ export function rectContainsPointInclusive<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   p: Point<C>,
 ): boolean {
-  if (isInfinityRectangle(rectangle)) {
-    return true
-  }
-
   return (
     rectangle.x <= p.x &&
     rectangle.y <= p.y &&
@@ -363,10 +370,6 @@ export function interpolateAt<C extends CoordinateMarker>(
 }
 
 export function normalizeRect<C extends CoordinateMarker>(rectangle: Rectangle<C>): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   const x = rectangle.width < 0 ? rectangle.x + rectangle.width : rectangle.x
   const y = rectangle.height < 0 ? rectangle.y + rectangle.height : rectangle.y
   return {
@@ -430,10 +433,6 @@ export function rectangleDifference<C extends CoordinateMarker>(
   from: Rectangle<C>,
   to: Rectangle<C>,
 ): Rectangle<C> {
-  if (isInfinityRectangle(from) || isInfinityRectangle(to)) {
-    return infinityRectangle as Rectangle<C>
-  }
-
   return {
     x: to.x - from.x,
     y: to.y - from.y,
@@ -446,14 +445,6 @@ export function rectangleIntersection<C extends CoordinateMarker>(
   rect1: Rectangle<C>,
   rect2: Rectangle<C>,
 ): Rectangle<C> | null {
-  if (isInfinityRectangle(rect1)) {
-    return rect2
-  }
-
-  if (isInfinityRectangle(rect2)) {
-    return rect1
-  }
-
   const maxLeft = Math.max(rect1.x, rect2.x)
   const minRight = Math.min(rect1.x + rect1.width, rect2.x + rect2.width)
   const top = Math.max(rect1.y, rect2.y)
@@ -500,10 +491,6 @@ export function offsetRect<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   by: Point<C>,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: rectangle.x + by.x,
     y: rectangle.y + by.y,
@@ -516,14 +503,6 @@ export function combineRectangles<C extends CoordinateMarker>(
   first: Rectangle<C>,
   second: Rectangle<C>,
 ): Rectangle<C> {
-  if (isInfinityRectangle(first)) {
-    return second
-  }
-
-  if (isInfinityRectangle(second)) {
-    return first
-  }
-
   return {
     x: first.x + second.x,
     y: first.y + second.y,
@@ -551,10 +530,6 @@ export function boundingRectangle<C extends CoordinateMarker>(
   first: Rectangle<C>,
   second: Rectangle<C>,
 ): Rectangle<C> {
-  if (isInfinityRectangle(first) || isInfinityRectangle(second)) {
-    return infinityRectangle as Rectangle<C>
-  }
-
   const firstTL: Point<C> = first
   const firstBR = {
     x: first.x + first.width,
@@ -588,10 +563,6 @@ export function stretchRect<C extends CoordinateMarker>(
     h: number
   },
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   const width = rectangle.width + by.w
   const height = rectangle.height + by.h
   return normalizeRect({
@@ -614,10 +585,6 @@ export function scaleRect<Rect extends Rectangle<C>, C extends CoordinateMarker>
   by: number,
   fromCenter: boolean = false,
 ): Rect {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   const width = rectangle.width * by
   const height = rectangle.height * by
   const xOffset = (width - rectangle.width) / 2
@@ -631,14 +598,6 @@ export function scaleRect<Rect extends Rectangle<C>, C extends CoordinateMarker>
 }
 
 export function getRectCenter<C extends CoordinateMarker>(rectangle: Rectangle<C>): Point<C> {
-  if (isInfinityRectangle(rectangle)) {
-    // TODO Is this good enough? Am I good enough? Is anything good enough?
-    return {
-      x: 0,
-      y: 0,
-    } as Point<C>
-  }
-
   return {
     x: rectangle.x + rectangle.width / 2,
     y: rectangle.y + rectangle.height / 2,
@@ -649,10 +608,6 @@ export function setRectLeftX<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   x: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: x,
     y: rectangle.y,
@@ -665,10 +620,6 @@ export function setRectCenterX<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   x: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: x - rectangle.width / 2,
     y: rectangle.y,
@@ -681,10 +632,6 @@ export function setRectRightX<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   x: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: x - rectangle.width,
     y: rectangle.y,
@@ -697,10 +644,6 @@ export function setRectTopY<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   y: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: rectangle.x,
     y: y,
@@ -713,10 +656,6 @@ export function setRectCenterY<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   y: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: rectangle.x,
     y: y - rectangle.height / 2,
@@ -729,10 +668,6 @@ export function setRectBottomY<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   y: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: rectangle.x,
     y: y - rectangle.height,
@@ -745,10 +680,6 @@ export function setRectWidth<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   width: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: rectangle.x,
     y: rectangle.y,
@@ -761,10 +692,6 @@ export function setRectHeight<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
   height: number,
 ): Rectangle<C> {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   return {
     x: rectangle.x,
     y: rectangle.y,
@@ -810,16 +737,6 @@ export function transformFrameUsingBoundingBox<C extends CoordinateMarker>(
 ): Rectangle<C> {
   const frame = offsetRect(currentFrame, negate(currentBoundingBox as Point<C>))
   // group and multiselect resize
-
-  if (
-    isInfinityRectangle(frame) ||
-    isInfinityRectangle(newBoundingBox) ||
-    isInfinityRectangle(currentBoundingBox) ||
-    isInfinityRectangle(currentFrame)
-  ) {
-    return infinityRectangle as Rectangle<C>
-  }
-
   const scaleWidth =
     currentBoundingBox.width === 0 ? 1 : newBoundingBox.width / currentBoundingBox.width
   const scaleHeight =
@@ -917,10 +834,6 @@ export function numberToPercent(value: number): string {
 export function rectangleToPoints<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
 ): Array<Point<C>> {
-  if (isInfinityRectangle(rectangle)) {
-    return []
-  }
-
   return [
     {
       x: rectangle.x,
@@ -964,9 +877,12 @@ export function sizesEqual(first: Size | null, second: Size | null): boolean {
   }
 }
 
-export function rectanglesEqual(first: RectangleInner, second: RectangleInner): boolean {
+export function rectanglesEqual<C extends CoordinateMarker>(
+  first: MaybeInfinityRectangle<C>,
+  second: MaybeInfinityRectangle<C>,
+): boolean {
   if (isInfinityRectangle(first) || isInfinityRectangle(second)) {
-    return first === second
+    return isInfinityRectangle(first) && isInfinityRectangle(second)
   } else {
     return (
       first.x === second.x &&
@@ -1097,13 +1013,6 @@ export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
   parentRect: CanvasRectangle,
 ): LocalRectangle {
-  if (isInfinityRectangle(canvasRect)) {
-    return infinityRectangle as LocalRectangle
-  }
-  if (isInfinityRectangle(parentRect)) {
-    return canvasRect as any as LocalRectangle
-  }
-
   const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
@@ -1168,10 +1077,6 @@ export function resizeCanvasRectangle(
   rectangle: CanvasRectangle,
   options: ResizeOptions,
 ): CanvasRectangle {
-  if (isInfinityRectangle(rectangle)) {
-    return rectangle
-  }
-
   const resizeI = (dimensions: { width: number; height: number }): CanvasRectangle => {
     const { width, height } = dimensions
     return canvasRectangle({
