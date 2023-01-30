@@ -3,6 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import { nullOrNonEmpty } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
@@ -49,7 +50,10 @@ function setSpacingModeSpaceBetweenSingleElement(
     return []
   }
 
-  return [setProperty('always', elementPath, PP.create('style', 'justifyContent'), 'space-between')]
+  return [
+    deleteProperties('always', elementPath, [PP.create('style', 'gap')]),
+    setProperty('always', elementPath, PP.create('style', 'justifyContent'), 'space-between'),
+  ]
 }
 
 export const setSpacingModeSpaceBetween: InspectorStrategy = {
