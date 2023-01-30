@@ -24,6 +24,7 @@ import {
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
+import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -158,3 +159,9 @@ export const setPropFixedStrategies = (
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   hugContentsBasicStrategy(axis),
 ]
+
+export const setSpacingModeSpaceBetweenStrategies: Array<InspectorStrategy> = [
+  setSpacingModeSpaceBetween,
+]
+
+export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpacingModePacked]
