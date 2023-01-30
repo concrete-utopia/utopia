@@ -815,11 +815,12 @@ export function handleKeyDown(
                 )
               ) {
                 return nukeAllAbsolutePositioningPropsCommands(elementPath)
+              } else {
+                return [
+                  ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                  ...positionAbsoluteRelativeToParentCommands(editor.jsxMetadata, elementPath),
+                ]
               }
-              return [
-                ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
-                ...positionAbsoluteRelativeToParentCommands(editor.jsxMetadata, elementPath),
-              ]
             }),
           ),
         ]
