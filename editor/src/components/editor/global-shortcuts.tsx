@@ -21,7 +21,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode, WrapInView } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -104,7 +104,13 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
+  jsxElement,
+} from '../../core/shared/element-template'
 import {
   toggleTextBold,
   toggleTextItalic,
@@ -500,8 +506,15 @@ export function handleKeyDown(
           : []
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+        return isSelectMode(editor.mode) && editor.selectedViews.length > 0
+          ? [
+              EditorActions.wrapInView(
+                editor.selectedViews,
+                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
+                  generateUidWithExistingComponents(editor.projectContents),
+                ),
+              ),
+            ]
           : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
@@ -511,8 +524,15 @@ export function handleKeyDown(
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+        return isSelectMode(editor.mode) && editor.selectedViews.length > 0
+          ? [
+              EditorActions.wrapInView(
+                editor.selectedViews,
+                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
+                  generateUidWithExistingComponents(editor.projectContents),
+                ),
+              ),
+            ]
           : []
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
@@ -938,4 +958,59 @@ function addCreateHoverInteractionActionToSwitchModeAction(
         ),
       ]
     : [switchModeAction]
+}
+
+function detectBestWrapperElement(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  makeUid: () => string,
+): WrapInView['whatToWrapWith'] {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.parentFlexDirection == null ||
+    element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
+  ) {
+    return 'default-empty-div'
+  }
+
+  const uid = makeUid()
+
+  const style =
+    element.specialSizeMeasurements.parentFlexGap != null
+      ? { gap: element.specialSizeMeasurements.parentFlexGap }
+      : undefined
+
+  const props = jsxAttributesFromMap({
+    'data-uid': jsxAttributeValue(uid, emptyComments),
+    style: jsxAttributeValue(style, emptyComments),
+  })
+
+  if (element.specialSizeMeasurements.parentFlexDirection.startsWith('row')) {
+    return {
+      element: jsxElement('FlexRow', uid, props, []),
+      importsToAdd: {
+        'utopia-api': {
+          importedAs: null,
+          importedWithName: null,
+          importedFromWithin: [{ name: 'FlexRow', alias: 'FlexRow' }],
+        },
+      },
+    }
+  }
+
+  if (element.specialSizeMeasurements.parentFlexDirection.startsWith('col')) {
+    return {
+      element: jsxElement('FlexCol', uid, props, []),
+      importsToAdd: {
+        'utopia-api': {
+          importedAs: null,
+          importedWithName: null,
+          importedFromWithin: [{ name: 'FlexCol', alias: 'FlexCol' }],
+        },
+      },
+    }
+  }
+
+  return 'default-empty-div'
 }
