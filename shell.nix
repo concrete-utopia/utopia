@@ -109,6 +109,24 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm} run check-ci
     '')
+    (pkgs.writeScriptBin "check-editor-code" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} run check-code
+    '')
+    (pkgs.writeScriptBin "check-editor-jest" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} run test-ci
+    '')
+    (pkgs.writeScriptBin "check-editor-karma" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm} run test-browser
+    '')
     (pkgs.writeScriptBin "test-editor-browser" ''
       #!/usr/bin/env bash
       set -e
@@ -128,6 +146,28 @@ let
       install-website
       check-editor-ci
       test-website
+    '')
+    (pkgs.writeScriptBin "check-editor-code-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+      check-editor-code
+      test-website
+    '')
+    (pkgs.writeScriptBin "check-editor-jest-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+      check-editor-jest
+    '')
+    (pkgs.writeScriptBin "check-editor-karma-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+      check-editor-karma
     '')
     (pkgs.writeScriptBin "build-editor-staging-ci" ''
       #!/usr/bin/env bash

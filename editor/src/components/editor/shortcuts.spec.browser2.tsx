@@ -19,8 +19,8 @@ const backgroundColor = '#384C5CAB'
 
 // for some reason, ctrl + c does not trigger the eyedropper in tests
 // maybe for security since the event is programmatically triggered?
-xdescribe('shortcuts', () => {
-  describe('eyedropper', () => {
+describe('shortcuts', () => {
+  xdescribe('eyedropper', () => {
     it('use eyedropper to set background color', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
@@ -58,6 +58,28 @@ xdescribe('shortcuts', () => {
       //   expect(div.style.backgroundColor).toEqual(backgroundColor)
       expect(div2.style.backgroundColor).toEqual(backgroundColor)
     })
+  })
+
+  it('x to remove positioning props from the selected element', async () => {
+    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const div = editor.renderedDOM.getByTestId(TestIdOne)
+    const divBounds = div.getBoundingClientRect()
+    const divCorner = {
+      x: divBounds.x + 50,
+      y: divBounds.y + 40,
+    }
+
+    mouseClickAtPoint(canvasControlsLayer, divCorner)
+
+    pressKey('x')
+
+    expect(div.style.position).toEqual('')
+    expect(div.style.top).toEqual('')
+    expect(div.style.bottom).toEqual('')
+    expect(div.style.left).toEqual('')
+    expect(div.style.right).toEqual('')
   })
 })
 
