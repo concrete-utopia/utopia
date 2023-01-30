@@ -412,13 +412,6 @@ export const setAbsolutePositioningPropsCommands = (path: ElementPath): Array<Ca
     setProperty('always', path, PP.create('style', 'right'), 'absolute'),
     setProperty('always', path, PP.create('style', 'top'), 'absolute'),
     setProperty('always', path, PP.create('style', 'position'), 'absolute'),
-    deleteProperties('always', path, [
-      PP.create('style', 'position'),
-      PP.create('style', 'left'),
-      PP.create('style', 'right'),
-      PP.create('style', 'top'),
-      PP.create('style', 'bottom'),
-    ]),
   ]
 }
 export type FixedHugFill =
@@ -504,7 +497,7 @@ export function resizeToFitCommands(
   return commands
 }
 
-export function positionAbsoluteRelativeToParentCommands(
+export function addPositionAbsoluteTopLeft(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {

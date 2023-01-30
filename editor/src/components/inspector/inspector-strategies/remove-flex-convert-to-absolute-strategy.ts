@@ -7,7 +7,7 @@ import {
   flexChildProps,
   flexContainerProps,
   nullOrNonEmpty,
-  positionAbsoluteRelativeToParentCommands,
+  addPositionAbsoluteTopLeft,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
@@ -20,7 +20,7 @@ function removeFlexConvertToAbsoluteOne(
   const children = MetadataUtils.getChildrenPaths(metadata, elementPath)
   return [
     ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
-    ...children.flatMap((c) => positionAbsoluteRelativeToParentCommands(metadata, c)), // all children are converted to absolute,
+    ...children.flatMap((c) => addPositionAbsoluteTopLeft(metadata, c)), // all children are converted to absolute,
     ...children.flatMap((c) => sizeToVisualDimensions(metadata, c)), // with width/height based on measured dimensions
     ...children.flatMap((c) => pruneFlexPropsCommands(flexChildProps, c)),
     ...sizeToVisualDimensions(metadata, elementPath), // container is sized to keep its visual dimensions

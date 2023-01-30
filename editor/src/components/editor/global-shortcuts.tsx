@@ -119,7 +119,7 @@ import {
 import {
   detectAreElementsFlexContainers,
   nukeAllAbsolutePositioningPropsCommands,
-  positionAbsoluteRelativeToParentCommands,
+  addPositionAbsoluteTopLeft,
   resizeToFitCommands,
   sizeToVisualDimensions,
 } from '../inspector/inspector-common'
@@ -818,7 +818,7 @@ export function handleKeyDown(
               } else {
                 return [
                   ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
-                  ...positionAbsoluteRelativeToParentCommands(editor.jsxMetadata, elementPath),
+                  ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
                 ]
               }
             }),
