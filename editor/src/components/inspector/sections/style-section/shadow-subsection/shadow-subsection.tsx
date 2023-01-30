@@ -11,6 +11,7 @@ import {
   SquareButton,
   Icn,
   InspectorSectionIcons,
+  Icons,
 } from '../../../../../uuiui'
 import { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -308,17 +309,26 @@ export const ShadowSubsection = React.memo(() => {
           <span>Shadow</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <SquareButton highlight onMouseDown={insertShadowValue}>
-            <Icn
-              onMouseDown={insertShadowValue}
-              style={{ paddingTop: 1 }}
-              category='semantic'
-              type='plus'
-              color={propertyStatus.controlled ? 'primary' : 'secondary'}
-              width={16}
-              height={16}
-            />
-          </SquareButton>
+          <>
+            <SquareButton
+              highlight
+              onMouseDown={onUnsetValues}
+              data-testid={'inspector-shadow-remove-all'}
+            >
+              <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+            </SquareButton>
+            <SquareButton highlight onMouseDown={insertShadowValue}>
+              <Icn
+                onMouseDown={insertShadowValue}
+                style={{ paddingTop: 1 }}
+                category='semantic'
+                type='plus'
+                color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                width={16}
+                height={16}
+              />
+            </SquareButton>
+          </>
         ) : null}
       </InspectorSubsectionHeader>
       <div
