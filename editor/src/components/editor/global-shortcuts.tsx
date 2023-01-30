@@ -63,7 +63,7 @@ import {
   TOGGLE_CODE_EDITOR_SHORTCUT,
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
   TOGGLE_HIDDEN_SHORTCUT,
-  TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
+  TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT,
   TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
   TOGGLE_PREVIEW_SHORTCUT,
@@ -663,8 +663,8 @@ export function handleKeyDown(
       [TOGGLE_CODE_EDITOR_SHORTCUT]: () => {
         return [EditorActions.toggleInterfaceDesignerCodeEditor()]
       },
-      [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('navigator')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
