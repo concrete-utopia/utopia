@@ -16,13 +16,13 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
           }}
         >
           <InspectorSectionIcons.Layer />
-          <span>Size</span>
+          <span style={{ flexGrow: 1 }}>Size</span>
+          <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
       <FlexRow style={{ padding: 4, justifyContent: 'flex-end' }}>
-        <ResizeToFitControl />
+        <FillHugFixedControl />
       </FlexRow>
-      <FillHugFixedControl />
     </>
   )
 })

@@ -627,6 +627,7 @@ function useSelectOrLiveModeSelectAndHover(
   )
   const mouseHandler = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      const isLeftClick = event.button === 0
       const isDragIntention =
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
@@ -658,7 +659,7 @@ function useSelectOrLiveModeSelectAndHover(
         }
       }
 
-      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active) {
+      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active || !isLeftClick) {
         // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }
