@@ -6,7 +6,11 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { cssPixelLength, ParsedCSSProperties } from '../../inspector/common/css-utils'
+import {
+  cssPixelLength,
+  cssUnitlessLength,
+  ParsedCSSProperties,
+} from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { renderTestEditorWithCode, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
@@ -43,6 +47,7 @@ describe('setCssLengthProperty', () => {
     const result = runSetCssLengthProperty(
       renderResult.getEditorState().editor,
       setCSSPropertyCommand,
+      'end-interaction',
     )
 
     const patchedEditor = updateEditorStateWithPatches(
@@ -76,7 +81,7 @@ describe('setCssLengthProperty', () => {
       'always',
       targetPath,
       stylePropPathMappingFn('width', styleStringInArray),
-      setExplicitCssValue(cssPixelLength(25)),
+      setExplicitCssValue(cssUnitlessLength(25)),
       'row',
     )
 
@@ -98,7 +103,7 @@ describe('setCssLengthProperty', () => {
       'always',
       targetPath,
       stylePropPathMappingFn('width', styleStringInArray),
-      setExplicitCssValue(cssPixelLength(400)),
+      setExplicitCssValue(cssUnitlessLength(400)),
       'row',
     )
 
@@ -256,7 +261,7 @@ function projectWithChildStyle(
 }
 
 function runCommandUpdateEditor(editor: EditorState, command: SetCssLengthProperty): EditorState {
-  const result = runSetCssLengthProperty(editor, command)
+  const result = runSetCssLengthProperty(editor, command, 'end-interaction')
 
   return updateEditorStateWithPatches(editor, result.editorStatePatches)
 }

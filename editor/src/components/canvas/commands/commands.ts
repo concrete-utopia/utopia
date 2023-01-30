@@ -126,7 +126,7 @@ export const runCanvasCommand = (
     case 'ADJUST_NUMBER_PROPERTY':
       return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperty(editorState, command)
+      return runAdjustCssLengthProperty(editorState, command, commandLifecycle)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':
@@ -140,7 +140,7 @@ export const runCanvasCommand = (
     case 'CONVERT_TO_ABSOLUTE':
       return runConvertToAbsolute(editorState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
-      return runSetCssLengthProperty(editorState, command)
+      return runSetCssLengthProperty(editorState, command, commandLifecycle)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':

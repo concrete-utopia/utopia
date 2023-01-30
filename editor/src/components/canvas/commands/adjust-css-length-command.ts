@@ -1,5 +1,6 @@
 import { getLayoutProperty, getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { last } from '../../../core/shared/array-utils'
 import {
   Either,
   eitherToMaybe,
@@ -25,7 +26,12 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { styleStringInArray } from '../../../utils/common-constants'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import { generateUUID } from '../../../utils/utils'
+import {
+  EditorState,
+  EditorStatePatch,
+  withUnderlyingTargetFromEditorState,
+} from '../../editor/store/editor-state'
 import {
   CSSNumber,
   FlexDirection,
@@ -34,9 +40,11 @@ import {
   parseCSSPx,
   printCSSNumber,
 } from '../../inspector/common/css-utils'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
+import { runShowToastCommand, showToastCommand } from './show-toast-command'
 
 type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
@@ -71,10 +79,11 @@ export function adjustCssLengthProperty(
   }
 }
 
-export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty> = (
+export const runAdjustCssLengthProperty = (
   editorState: EditorState,
   command: AdjustCssLengthProperty,
-) => {
+  commandLifecycle: InteractionLifecycle,
+): CommandFunctionResult => {
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
@@ -123,6 +132,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
   if (isRight(parsePxResult)) {
     return updatePixelValueByPixel(
+      commandLifecycle,
       editorState,
       command.target,
       command.property,
@@ -135,6 +145,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
   if (isRight(parsePercentResult)) {
     return updatePercentageValueByPixel(
+      commandLifecycle,
       editorState,
       command.target,
       command.property,
@@ -147,6 +158,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
   if (command.createIfNonExistant === 'create-if-not-existing') {
     return setPixelValue(
+      commandLifecycle,
       editorState,
       command.target,
       command.property,
@@ -167,6 +179,7 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 }
 
 function setPixelValue(
+  commandLifecycle: InteractionLifecycle,
   editorState: EditorState,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
@@ -178,7 +191,8 @@ function setPixelValue(
     unit: 'px',
   }
 
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+  const [editorStateWithPropsDeleted, toastPatch] = deleteConflictingPropsForWidthHeight(
+    commandLifecycle,
     editorState,
     targetElement,
     newValueCssNumber,
@@ -203,7 +217,7 @@ function setPixelValue(
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: [propertyUpdatePatch, ...toastPatch],
     commandDescription: `Set css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
       targetProperty,
     )} by ${value}`,
@@ -211,6 +225,7 @@ function setPixelValue(
 }
 
 function updatePixelValueByPixel(
+  commandLifecycle: InteractionLifecycle,
   editorState: EditorState,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
@@ -227,7 +242,8 @@ function updatePixelValueByPixel(
     unit: currentValue.unit,
   }
 
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+  const [editorStateWithPropsDeleted, toastPatch] = deleteConflictingPropsForWidthHeight(
+    commandLifecycle,
     editorState,
     targetElement,
     newValueCssNumber,
@@ -252,7 +268,7 @@ function updatePixelValueByPixel(
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: [propertyUpdatePatch, ...toastPatch],
     commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
       targetProperty,
     )} by ${byValue}`,
@@ -260,6 +276,7 @@ function updatePixelValueByPixel(
 }
 
 function updatePercentageValueByPixel(
+  commandLifecycle: InteractionLifecycle,
   editorState: EditorState,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
@@ -294,7 +311,8 @@ function updatePercentageValueByPixel(
     unit: currentValue.unit,
   }
 
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+  const [editorStateWithPropsDeleted, toastPatch] = deleteConflictingPropsForWidthHeight(
+    commandLifecycle,
     editorState,
     targetElement,
     newValueCssNumber,
@@ -319,7 +337,7 @@ function updatePercentageValueByPixel(
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: [propertyUpdatePatch, ...toastPatch],
     commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
       targetProperty,
     )} by ${byValue}`,
@@ -334,12 +352,13 @@ const FlexSizeProperties: Array<PropertyPath> = [
 ]
 
 export function deleteConflictingPropsForWidthHeight(
+  commandLifecycle: InteractionLifecycle,
   editorState: EditorState,
   target: ElementPath,
   newValue: CSSNumber,
   propertyPath: PropertyPath,
   parentFlexDirection: FlexDirection | null,
-): EditorState {
+): [editorState: EditorState, toastPatch: Array<EditorStatePatch>] {
   let propertiesToDelete: Array<PropertyPath> = []
 
   const currentProps: Either<any, JSXAttributes> = withUnderlyingTargetFromEditorState(
@@ -359,38 +378,72 @@ export function deleteConflictingPropsForWidthHeight(
       const minWidth = eitherToMaybe(
         getLayoutProperty('minWidth', currentProps, styleStringInArray),
       )
-      if (minWidth?.unit === newValue.unit && minWidth.value > newValue.value) {
-        propertiesToDelete.push(PP.create('style', 'minWidth'), PP.create('style', 'maxWidth'))
-      }
 
       const maxWidth = eitherToMaybe(
         getLayoutProperty('maxWidth', currentProps, styleStringInArray),
       )
-      if (maxWidth?.unit === newValue.unit && maxWidth.value < newValue.value) {
-        propertiesToDelete.push(PP.create('style', 'minWidth'), PP.create('style', 'maxWidth'))
+      if (
+        (minWidth?.unit === newValue.unit && minWidth.value > newValue.value) ||
+        (maxWidth?.unit === newValue.unit && maxWidth.value < newValue.value)
+      ) {
+        if (minWidth != null) {
+          propertiesToDelete.push(PP.create('style', 'minWidth'))
+        }
+        if (maxWidth != null) {
+          propertiesToDelete.push(PP.create('style', 'maxWidth'))
+        }
       }
 
       if (parentFlexDimension === 'horizontal') {
-        propertiesToDelete.push(...FlexSizeProperties)
+        FlexSizeProperties.forEach((prop) => {
+          const propExists =
+            eitherToMaybe(
+              getLayoutProperty(
+                last(prop.propertyElements) as any,
+                currentProps,
+                styleStringInArray,
+              ),
+            ) != null
+          if (propExists) {
+            propertiesToDelete.push(prop)
+          }
+        })
       }
       break
     case 'height':
       const minHeight = eitherToMaybe(
         getLayoutProperty('minHeight', currentProps, styleStringInArray),
       )
-      if (minHeight?.unit === newValue.unit && minHeight.value > newValue.value) {
-        propertiesToDelete.push(PP.create('style', 'minHeight'), PP.create('style', 'maxHeight'))
-      }
-
       const maxHeight = eitherToMaybe(
         getLayoutProperty('maxHeight', currentProps, styleStringInArray),
       )
-      if (maxHeight?.unit === newValue.unit && maxHeight.value < newValue.value) {
-        propertiesToDelete.push(PP.create('style', 'minHeight'), PP.create('style', 'maxHeight'))
+
+      if (
+        (minHeight?.unit === newValue.unit && minHeight.value > newValue.value) ||
+        (maxHeight?.unit === newValue.unit && maxHeight.value < newValue.value)
+      ) {
+        if (minHeight != null) {
+          propertiesToDelete.push(PP.create('style', 'minHeight'))
+        }
+        if (maxHeight != null) {
+          propertiesToDelete.push(PP.create('style', 'maxHeight'))
+        }
       }
 
       if (parentFlexDimension === 'vertical') {
-        propertiesToDelete.push(...FlexSizeProperties)
+        FlexSizeProperties.forEach((prop) => {
+          const propExists =
+            eitherToMaybe(
+              getLayoutProperty(
+                last(prop.propertyElements) as any,
+                currentProps,
+                styleStringInArray,
+              ),
+            ) != null
+          if (propExists) {
+            propertiesToDelete.push(prop)
+          }
+        })
       }
       break
   }
@@ -401,5 +454,20 @@ export function deleteConflictingPropsForWidthHeight(
     propertiesToDelete,
   )
 
-  return editorStateWithPropsDeleted
+  const toastPatch =
+    propertiesToDelete.length === 0
+      ? []
+      : runShowToastCommand(
+          editorStateWithPropsDeleted,
+          showToastCommand(
+            `Deleted properties: ${propertiesToDelete
+              .map((p) => last(p.propertyElements))
+              .join(', ')}`,
+            'WARNING',
+            generateUUID(),
+          ),
+          commandLifecycle,
+        ).editorStatePatches
+
+  return [editorStateWithPropsDeleted, toastPatch]
 }

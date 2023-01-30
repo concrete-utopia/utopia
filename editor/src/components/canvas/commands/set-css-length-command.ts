@@ -9,6 +9,7 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { generateUUID } from '../../../utils/utils'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
   CSSNumber,
@@ -17,9 +18,11 @@ import {
   parseCSSPercent,
   printCSSNumber,
 } from '../../inspector/common/css-utils'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
+import { runShowToastCommand, showToastCommand } from './show-toast-command'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
@@ -61,10 +64,11 @@ export function setCssLengthProperty(
   }
 }
 
-export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
+export const runSetCssLengthProperty = (
   editorState: EditorState,
   command: SetCssLengthProperty,
-) => {
+  commandLifecycle: InteractionLifecycle,
+): CommandFunctionResult => {
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
@@ -122,7 +126,8 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   }
 
   // in case of width or height change, delete min, max and flex props
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+  const [editorStateWithPropsDeleted, toastPatch] = deleteConflictingPropsForWidthHeight(
+    commandLifecycle,
     editorState,
     command.target,
     newValue,
@@ -138,7 +143,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: [propertyUpdatePatch, ...toastPatch],
     commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
     )} by ${
