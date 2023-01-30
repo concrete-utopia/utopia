@@ -25,6 +25,10 @@ describe('Resize to fit control', () => {
     expect(view.style.height).toEqual(MaxContent)
     expect(view.style.minHeight).toEqual('')
     expect(view.style.maxHeight).toEqual('')
+    expect(view.style.flex).toEqual('')
+    expect(view.style.flexShrink).toEqual('')
+    expect(view.style.flexGrow).toEqual('')
+    expect(view.style.flexBasis).toEqual('')
   })
 
   it('resizes to fit, with shortcut', async () => {
@@ -40,6 +44,10 @@ describe('Resize to fit control', () => {
     expect(view.style.height).toEqual(MaxContent)
     expect(view.style.minHeight).toEqual('')
     expect(view.style.maxHeight).toEqual('')
+    expect(view.style.flex).toEqual('')
+    expect(view.style.flexShrink).toEqual('')
+    expect(view.style.flexGrow).toEqual('')
+    expect(view.style.flexBasis).toEqual('')
   })
 })
 
