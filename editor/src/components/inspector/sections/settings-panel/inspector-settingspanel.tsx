@@ -21,6 +21,7 @@ import {
   FlexColumn,
   useColorTheme,
   HeadlessStringInput,
+  Subdued,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
@@ -81,11 +82,30 @@ export const SettingsPanel = React.memo(() => {
     (store) => store.editor.interfaceDesigner,
     'SettingsPanel interfaceDesigner',
   )
+  const navigatorMinimised = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.navigator.minimised,
+    'SettingsPanel navigator.minimised',
+  )
+
+  const inspectorVisible = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.inspector.visible,
+    'SettingsPanel inspector.visible',
+  )
 
   const entireStateRef = useRefEditorState((store) => store)
 
   const toggleCodeEditorVisible = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
+  }, [dispatch])
+
+  const toggleNavigatorVisible = React.useCallback(() => {
+    dispatch([EditorActions.togglePanel('navigator')])
+  }, [dispatch])
+
+  const toggleInspectorVisible = React.useCallback(() => {
+    dispatch([EditorActions.togglePanel('rightmenu')])
   }, [dispatch])
 
   const toggleAdditionalControls = React.useCallback(() => {
@@ -131,6 +151,28 @@ export const SettingsPanel = React.memo(() => {
         />
         <label htmlFor='showCodeEditorLabel'>Show Code Editor</label>
       </StyledFlexRow>
+      <StyledFlexRow>
+        <CheckboxInput
+          style={{ marginRight: 8 }}
+          id='showNavigatorLabel'
+          checked={!navigatorMinimised}
+          onChange={toggleNavigatorVisible}
+        />
+        <label htmlFor='showNavigatorLabel'>Show Navigator</label>
+      </StyledFlexRow>
+      <StyledFlexRow>
+        <CheckboxInput
+          style={{ marginRight: 8 }}
+          id='showInspectorLabel'
+          checked={inspectorVisible}
+          onChange={toggleInspectorVisible}
+        />
+        <label htmlFor='showInspectorLabel'>Show Inspector</label>
+      </StyledFlexRow>
+      <div style={{ padding: '0px 34px', wordWrap: 'normal', whiteSpace: 'normal' }}>
+        <Subdued>That's this panel! Get it back from the toolbar.</Subdued>
+      </div>
+
       <StyledFlexRow>
         <CheckboxInput
           style={{ marginRight: 8 }}
