@@ -66,7 +66,7 @@ describe('shortcuts', () => {
   })
 
   describe('x', () => {
-    it('remove positioning props from the selected element participates in the layout', async () => {
+    it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -89,7 +89,7 @@ describe('shortcuts', () => {
       expect(div.style.right).toEqual('')
     })
 
-    it('add positioning props from the selected element participates in the layout', async () => {
+    it('when the selected element participates in the layout, absolute positioning props are added to the selected element', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithChildInFlexLayout,
         'await-first-dom-report',
