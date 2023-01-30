@@ -17,7 +17,7 @@ import {
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { ApplyCommandsAction, EditorAction } from '../editor/action-types'
+import { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
@@ -32,6 +32,7 @@ import { printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
   toggleTextItalic,
+  toggleTextItalicWithUnset,
   toggleTextStrikeThrough,
   toggleTextUnderline,
 } from './text-editor-shortcut-helpers'
@@ -81,13 +82,16 @@ export function unescapeHTML(s: string): string {
 
 const handleToggleShortcuts = (
   event: React.KeyboardEvent<Element>,
-  metadata: ElementInstanceMetadataMap,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
   target: ElementPath,
+  dispatch: EditorDispatch,
 ): Array<EditorAction> => {
   const modifiers = Modifier.modifiersForEvent(event)
   const meta = modifiers.cmd || modifiers.ctrl
   const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
-    metadata,
+    metadataRef.current,
     target,
   )?.specialSizeMeasurements
 
@@ -97,7 +101,13 @@ const handleToggleShortcuts = (
   }
   // Meta+i = italic
   if (meta && event.key === 'i') {
-    return [toggleTextItalic(target, specialSizeMeasurements?.fontStyle ?? null)]
+    toggleTextItalicWithUnset(
+      target,
+      specialSizeMeasurements?.fontStyle ?? null,
+      dispatch,
+      metadataRef,
+    )
+    return []
   }
   // Meta+u = underline
   if (meta && event.key === 'u') {
@@ -275,7 +285,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
       const shortcuts = [
-        ...handleToggleShortcuts(event, metadataRef.current, elementPath),
+        ...handleToggleShortcuts(event, metadataRef, elementPath, dispatch),
         ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
         ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]

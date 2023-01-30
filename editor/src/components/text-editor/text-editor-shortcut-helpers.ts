@@ -1,8 +1,14 @@
 import * as EditorActions from '../editor/actions/action-creators'
-import { ComputedStyle, emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  ComputedStyle,
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributeValue,
+} from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import { EditorAction } from '../editor/action-types'
+import { EditorAction, EditorDispatch } from '../editor/action-types'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export function toggleTextBold(target: ElementPath, fontWeight: string | null): EditorAction {
   const toggledFontWeight = 'bold'
@@ -20,6 +26,46 @@ export function toggleTextItalic(
   const defaultFontStyle = 'normal'
 
   return toggleStyleProp(target, 'fontStyle', currentFontStyle, toggledFontStyle, defaultFontStyle)
+}
+
+export function toggleTextItalicWithUnset(
+  target: ElementPath,
+  currentFontStyle: string | null,
+  dispatch: EditorDispatch,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
+): void {
+  const toggledFontStyle = 'italic'
+  const defaultFontStyle = 'normal'
+
+  const newValue = currentFontStyle === toggledFontStyle ? defaultFontStyle : toggledFontStyle
+
+  if (newValue === defaultFontStyle) {
+    dispatch([EditorActions.unsetProperty(target, PP.create('style', 'fontStyle'))])
+    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+      metadataRef.current,
+      target,
+    )?.specialSizeMeasurements
+    const newFontStyle = specialSizeMeasurements?.fontStyle
+    if (newFontStyle !== newValue) {
+      dispatch([
+        EditorActions.setProperty(
+          target,
+          PP.create('style', 'fontStyle'),
+          jsxAttributeValue(newValue, emptyComments),
+        ),
+      ])
+    }
+  } else {
+    dispatch([
+      EditorActions.setProperty(
+        target,
+        PP.create('style', 'fontStyle'),
+        jsxAttributeValue(newValue, emptyComments),
+      ),
+    ])
+  }
 }
 
 export function toggleTextUnderline(
