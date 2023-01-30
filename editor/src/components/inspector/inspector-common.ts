@@ -20,6 +20,8 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
+import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
+import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -315,7 +317,12 @@ export const flexContainerProps = [
   styleP('justifyContent'),
 ]
 
-export const flexChildProps = [styleP('flex'), styleP('flexGrow'), styleP('flexShrink')]
+export const flexChildProps = [
+  styleP('flex'),
+  styleP('flexGrow'),
+  styleP('flexShrink'),
+  styleP('flexBasis'),
+]
 
 export function pruneFlexPropsCommands(
   props: PropertyPath[],
@@ -337,6 +344,7 @@ export function sizeToVisualDimensions(
   const height = element.specialSizeMeasurements.clientHeight
 
   return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
     setProperty('always', elementPath, styleP('width'), width),
     setProperty('always', elementPath, styleP('height'), height),
   ]
@@ -459,3 +467,22 @@ export function detectFillHugFixedState(
 }
 
 export const MaxContent = 'max-content' as const
+
+export function resizeToFitCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = [
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('horizontal'),
+    ) ?? []),
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('vertical'),
+    ) ?? []),
+  ]
+  return commands
+}
