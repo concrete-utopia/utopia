@@ -1,14 +1,9 @@
 import React from 'react'
 import { FlexRow, Icn, Tooltip } from '../../uuiui'
-import { EditorAction, EditorDispatch } from '../editor/action-types'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
-import {
-  commandsForFirstApplicableStrategy,
-  executeFirstApplicableStrategy,
-} from './inspector-strategies/inspector-strategy'
+import { useRefEditorState } from '../editor/store/store-hook'
+import { resizeToFitCommands } from './inspector-common'
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 
@@ -21,18 +16,7 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const onMouseDown = React.useCallback(() => {
-    const commands = [
-      ...(commandsForFirstApplicableStrategy(
-        metadataRef.current,
-        selectedViewsRef.current,
-        setPropHugStrategies('horizontal'),
-      ) ?? []),
-      ...(commandsForFirstApplicableStrategy(
-        metadataRef.current,
-        selectedViewsRef.current,
-        setPropHugStrategies('vertical'),
-      ) ?? []),
-    ]
+    const commands = resizeToFitCommands(metadataRef.current, selectedViewsRef.current)
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }

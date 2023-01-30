@@ -79,6 +79,34 @@ export var storyboard = (
 `
 }
 
+function exampleProjectForSectionRemoval(): string {
+  return `import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        fontWeight: 500,
+        fontStyle: 'normal',
+        fontSize: '19px',
+        transform: 'rotate(0deg)',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#d3d3d3',
+        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',
+        textShadow: '0px 0px 0px #d3d3d3',
+        border: '0px solid rgb(0, 0, 0, 1)',
+      }}
+    />
+  </Storyboard>
+);
+`
+}
+
 describe('inspector', () => {
   it('toggle aspect ratio lock off', async () => {
     const codeAfterToggle = await runToggleAspectRatioLockTest('locked')
@@ -166,7 +194,186 @@ export var storyboard = (
     // Click on the blue div.
     await clickOnElementCheckTop('div-blue', '270')
   })
+  it('removes the transform property when clicking the cross on that section', async () => {
+    const resultCode = await setupRemovalTest('inspector-transform-remove-all')
+    expect(resultCode).toEqual(`import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        fontWeight: 500,
+        fontStyle: 'normal',
+        fontSize: '19px',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#d3d3d3',
+        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',
+        textShadow: '0px 0px 0px #d3d3d3',
+        border: '0px solid rgb(0, 0, 0, 1)',
+      }}
+    />
+  </Storyboard>
+)
+`)
+  })
+  it('removes the background* properties when clicking the cross on that section', async () => {
+    const resultCode = await setupRemovalTest('inspector-background-remove-all')
+    expect(resultCode).toEqual(`import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        fontWeight: 500,
+        fontStyle: 'normal',
+        fontSize: '19px',
+        transform: 'rotate(0deg)',
+        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',
+        textShadow: '0px 0px 0px #d3d3d3',
+        border: '0px solid rgb(0, 0, 0, 1)',
+      }}
+    />
+  </Storyboard>
+)
+`)
+  })
+  it('removes the border* properties when clicking the cross on that section', async () => {
+    const resultCode = await setupRemovalTest('inspector-border-remove-all')
+    expect(resultCode).toEqual(`import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        fontWeight: 500,
+        fontStyle: 'normal',
+        fontSize: '19px',
+        transform: 'rotate(0deg)',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#d3d3d3',
+        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',
+        textShadow: '0px 0px 0px #d3d3d3',
+      }}
+    />
+  </Storyboard>
+)
+`)
+  })
+  it('removes the boxShadow property when clicking the cross on that section', async () => {
+    const resultCode = await setupRemovalTest('inspector-shadow-remove-all')
+    expect(resultCode).toEqual(`import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        fontWeight: 500,
+        fontStyle: 'normal',
+        fontSize: '19px',
+        transform: 'rotate(0deg)',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#d3d3d3',
+        textShadow: '0px 0px 0px #d3d3d3',
+        border: '0px solid rgb(0, 0, 0, 1)',
+      }}
+    />
+  </Storyboard>
+)
+`)
+  })
+  it('removes the textShadow property when clicking the cross on that section', async () => {
+    const resultCode = await setupRemovalTest('inspector-text-shadow-remove-all')
+    expect(resultCode).toEqual(`import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        fontWeight: 500,
+        fontStyle: 'normal',
+        fontSize: '19px',
+        transform: 'rotate(0deg)',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#d3d3d3',
+        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',
+        border: '0px solid rgb(0, 0, 0, 1)',
+      }}
+    />
+  </Storyboard>
+)
+`)
+  })
+  it('removes the text related properties when clicking the cross on that section', async () => {
+    const resultCode = await setupRemovalTest('inspector-text-remove-all')
+    expect(resultCode).toEqual(`import * as React from 'react'
+import { Storyboard, jsx } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='target'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        transform: 'rotate(0deg)',
+        backgroundAttachment: 'fixed',
+        backgroundColor: '#d3d3d3',
+        boxShadow: '0px 2px 4px rgb(0, 0, 0, 0.12)',
+        border: '0px solid rgb(0, 0, 0, 1)',
+      }}
+    />
+  </Storyboard>
+)
+`)
+  })
 })
+
+async function setupRemovalTest(buttonToPress: string): Promise<string> {
+  const editor = await renderTestEditorWithCode(
+    exampleProjectForSectionRemoval(),
+    'await-first-dom-report',
+  )
+  const target = elementPath([['storyboard', 'target']])
+
+  await editor.dispatch([selectComponents([target], false)], true)
+  await editor.getDispatchFollowUpActionsFinished()
+
+  const inspectorButton = editor.renderedDOM.getByTestId(buttonToPress)
+  const inspectorButtonBounds = inspectorButton.getBoundingClientRect()
+  mouseClickAtPoint(inspectorButton, {
+    x: inspectorButtonBounds.x + 1,
+    y: inspectorButtonBounds.y + 1,
+  })
+
+  await editor.getDispatchFollowUpActionsFinished()
+  return getPrintedUiJsCode(editor.getEditorState())
+}
 
 async function runToggleAspectRatioLockTest(
   aspectRatioLocked: AspectRatioLockedState,
