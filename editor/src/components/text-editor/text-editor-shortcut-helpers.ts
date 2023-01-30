@@ -18,6 +18,38 @@ export function toggleTextBold(target: ElementPath, fontWeight: string | null): 
   return toggleStyleProp(target, 'fontWeight', currentValue, toggledFontWeight, defaultFontWeight)
 }
 
+export function toggleTextBoldWithUnset(
+  target: ElementPath,
+  fontWeight: string | null,
+  dispatch: EditorDispatch,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
+): void {
+  const toggledFontWeight = 'bold'
+  const defaultFontWeight = 'normal'
+  const currentValue = fontWeight === '400' ? defaultFontWeight : toggledFontWeight
+
+  toggleStylePropWithUnset(
+    target,
+    'fontWeight',
+    currentValue,
+    toggledFontWeight,
+    defaultFontWeight,
+    dispatch,
+    () => {
+      const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+        metadataRef.current,
+        target,
+      )?.specialSizeMeasurements
+      if (specialSizeMeasurements?.fontWeight === '400') {
+        return 'normal'
+      }
+      return specialSizeMeasurements?.fontWeight ?? null
+    },
+  )
+}
+
 export function toggleTextItalic(
   target: ElementPath,
   currentFontStyle: string | null,
@@ -39,33 +71,21 @@ export function toggleTextItalicWithUnset(
   const toggledFontStyle = 'italic'
   const defaultFontStyle = 'normal'
 
-  const newValue = currentFontStyle === toggledFontStyle ? defaultFontStyle : toggledFontStyle
-
-  if (newValue === defaultFontStyle) {
-    dispatch([EditorActions.unsetProperty(target, PP.create('style', 'fontStyle'))])
-    const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
-      metadataRef.current,
-      target,
-    )?.specialSizeMeasurements
-    const newFontStyle = specialSizeMeasurements?.fontStyle
-    if (newFontStyle !== newValue) {
-      dispatch([
-        EditorActions.setProperty(
-          target,
-          PP.create('style', 'fontStyle'),
-          jsxAttributeValue(newValue, emptyComments),
-        ),
-      ])
-    }
-  } else {
-    dispatch([
-      EditorActions.setProperty(
+  toggleStylePropWithUnset(
+    target,
+    'fontStyle',
+    currentFontStyle,
+    toggledFontStyle,
+    defaultFontStyle,
+    dispatch,
+    () => {
+      const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+        metadataRef.current,
         target,
-        PP.create('style', 'fontStyle'),
-        jsxAttributeValue(newValue, emptyComments),
-      ),
-    ])
-  }
+      )?.specialSizeMeasurements
+      return specialSizeMeasurements?.fontStyle ?? null
+    },
+  )
 }
 
 export function toggleTextUnderline(
@@ -81,6 +101,34 @@ export function toggleTextUnderline(
     currentTextDecorationLine,
     toggledDecoration,
     defaultDecoration,
+  )
+}
+
+export function toggleTextUnderlineWithUnset(
+  target: ElementPath,
+  currentTextDecorationLine: string | null,
+  dispatch: EditorDispatch,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
+): void {
+  const toggledDecoration = 'underline'
+  const defaultDecoration = 'none'
+
+  toggleStylePropWithUnset(
+    target,
+    'textDecoration',
+    currentTextDecorationLine,
+    toggledDecoration,
+    defaultDecoration,
+    dispatch,
+    () => {
+      const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+        metadataRef.current,
+        target,
+      )?.specialSizeMeasurements
+      return specialSizeMeasurements?.textDecorationLine ?? null
+    },
   )
 }
 
@@ -100,6 +148,34 @@ export function toggleTextStrikeThrough(
   )
 }
 
+export function toggleTextStrikeThroughWithUnset(
+  target: ElementPath,
+  currentTextDecorationLine: string | null,
+  dispatch: EditorDispatch,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
+): void {
+  const toggledDecoration = 'line-through'
+  const defaultDecoration = 'none'
+
+  toggleStylePropWithUnset(
+    target,
+    'textDecoration',
+    currentTextDecorationLine,
+    toggledDecoration,
+    defaultDecoration,
+    dispatch,
+    () => {
+      const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
+        metadataRef.current,
+        target,
+      )?.specialSizeMeasurements
+      return specialSizeMeasurements?.textDecorationLine ?? null
+    },
+  )
+}
+
 const toggleStyleProp = (
   elementPath: ElementPath,
   prop: string,
@@ -113,4 +189,37 @@ const toggleStyleProp = (
     PP.create('style', prop),
     jsxAttributeValue(newValue, emptyComments),
   )
+}
+
+const toggleStylePropWithUnset = (
+  elementPath: ElementPath,
+  prop: string,
+  currentValue: string | null,
+  toggledValue: string,
+  defaultValue: string,
+  dispatch: EditorDispatch,
+  getComputedValue: () => string | null,
+): void => {
+  const newValue = currentValue === toggledValue ? defaultValue : toggledValue
+  if (newValue === defaultValue) {
+    dispatch([EditorActions.unsetProperty(elementPath, PP.create('style', prop))])
+    const computedValue = getComputedValue()
+    if (computedValue !== newValue) {
+      dispatch([
+        EditorActions.setProperty(
+          elementPath,
+          PP.create('style', prop),
+          jsxAttributeValue(newValue, emptyComments),
+        ),
+      ])
+    }
+  } else {
+    dispatch([
+      EditorActions.setProperty(
+        elementPath,
+        PP.create('style', prop),
+        jsxAttributeValue(newValue, emptyComments),
+      ),
+    ])
+  }
 }
