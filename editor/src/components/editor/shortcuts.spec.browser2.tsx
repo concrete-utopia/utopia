@@ -1,14 +1,9 @@
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep, wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import {
-  keyDown,
-  mouseClickAtPoint,
-  mouseDoubleClickAtPoint,
-  pressKey,
-} from '../canvas/event-helpers.test-utils'
+import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -20,6 +15,8 @@ import { selectComponents } from './actions/meta-actions'
 
 const TestIdOne = 'one'
 const TestIdTwo = 'two'
+const StoryBoardId = 'StoryBoardId'
+const ParentId = 'ParentId'
 const backgroundColor = '#384C5CAB'
 
 // for some reason, ctrl + c does not trigger the eyedropper in tests
@@ -69,15 +66,9 @@ describe('shortcuts', () => {
     it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
       const div = editor.renderedDOM.getByTestId(TestIdOne)
-      const divBounds = div.getBoundingClientRect()
-      const divCorner = {
-        x: divBounds.x + 50,
-        y: divBounds.y + 40,
-      }
 
-      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+      await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/${TestIdOne}`)])
 
       await expectSingleUndoStep(editor, async () => pressKey('x'))
       await editor.getDispatchFollowUpActionsFinished()
@@ -95,15 +86,11 @@ describe('shortcuts', () => {
         'await-first-dom-report',
       )
 
-      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
       const div = editor.renderedDOM.getByTestId(TestIdOne)
-      const divBounds = div.getBoundingClientRect()
-      const divCorner = {
-        x: divBounds.x + 60,
-        y: divBounds.y + 60,
-      }
 
-      mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
+      ])
 
       await expectSingleUndoStep(editor, async () => pressKey('x'))
       await editor.getDispatchFollowUpActionsFinished()
@@ -122,7 +109,7 @@ const project = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
     export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='${StoryBoardId}'>
     <div
       data-testid='${TestIdOne}'
       style={{
@@ -133,7 +120,7 @@ import { Scene, Storyboard } from 'utopia-api'
         width: 161,
         height: 171,
       }}
-      data-uid='e6b'
+      data-uid='${TestIdOne}'
     />
     <div
       data-testid='${TestIdTwo}'
@@ -145,7 +132,7 @@ import { Scene, Storyboard } from 'utopia-api'
         width: 173,
         height: 222,
       }}
-      data-uid='ecf'
+      data-uid='${TestIdTwo}'
     />
   </Storyboard>
 )
@@ -155,8 +142,7 @@ const projectWithChildInFlexLayout = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='0cd'>
-   
+  <Storyboard data-uid='${StoryBoardId}'>
     <div
       style={{
         backgroundColor: '#aaaaaa33',
@@ -168,7 +154,7 @@ export var storyboard = (
         display: 'flex',
         padding: '47px 20px 20px 50px',
       }}
-      data-uid='c36'
+      data-uid='${ParentId}'
     >
       <div
         data-testid='${TestIdOne}'
@@ -178,7 +164,7 @@ export var storyboard = (
           height: '100%',
           flexGrow: 1
         }}
-        data-uid='330'
+        data-uid='${TestIdOne}'
       />
     </div>
   </Storyboard>
