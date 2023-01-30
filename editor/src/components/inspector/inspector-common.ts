@@ -317,7 +317,12 @@ export const flexContainerProps = [
   styleP('justifyContent'),
 ]
 
-export const flexChildProps = [styleP('flex'), styleP('flexGrow'), styleP('flexShrink')]
+export const flexChildProps = [
+  styleP('flex'),
+  styleP('flexGrow'),
+  styleP('flexShrink'),
+  styleP('flexBasis'),
+]
 
 export function pruneFlexPropsCommands(
   props: PropertyPath[],
@@ -339,6 +344,7 @@ export function sizeToVisualDimensions(
   const height = element.specialSizeMeasurements.clientHeight
 
   return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
     setProperty('always', elementPath, styleP('width'), width),
     setProperty('always', elementPath, styleP('height'), height),
   ]
