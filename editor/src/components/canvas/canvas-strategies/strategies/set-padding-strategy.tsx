@@ -24,9 +24,12 @@ import {
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   CSSPaddingKey,
+  CSSPaddingMappedValues,
   deltaFromEdge,
   maybeFullPadding,
   offsetPaddingByEdge,
+  paddingAdjustMode,
+  PaddingAdjustMode,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
@@ -44,7 +47,9 @@ import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
+  AdjustPrecision,
   canShowCanvasPropControl,
+  CSSNumberWithRenderedValue,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -173,7 +178,8 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const delta = newPaddingEdge.renderedValuePx < PaddingTearThreshold ? rawDelta : maxedDelta
 
-      const newPaddingMaxed = offsetPaddingByEdge(
+      const newPaddingMaxed = adjustPaddings(
+        paddingAdjustMode(interactionSession.interactionData.modifiers),
         paddingPropInteractedWith,
         delta,
         padding,
@@ -196,6 +202,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         },
       )
 
+      // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
         return strategyApplicationResult([
           ...basicCommands,
@@ -216,6 +223,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
 
+      // all 4 sides present - can be represented via the padding shorthand property
       if (allPaddingPropsDefined != null) {
         const paddingString = paddingToPaddingString(allPaddingPropsDefined)
         return strategyApplicationResult([
@@ -229,6 +237,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ])
       }
 
+      // only some sides are present - longhand properties have to be used
       return strategyApplicationResult([
         ...basicCommands,
         deleteProperties('always', selectedElement, [
@@ -388,4 +397,49 @@ function indicatorPosition(
     default:
       assertNever(edge)
   }
+}
+
+function opposite(padding: CSSPaddingKey): CSSPaddingKey {
+  switch (padding) {
+    case 'paddingBottom':
+      return 'paddingTop'
+    case 'paddingTop':
+      return 'paddingBottom'
+    case 'paddingLeft':
+      return 'paddingRight'
+    case 'paddingRight':
+      return 'paddingLeft'
+    default:
+      assertNever(padding)
+  }
+}
+
+function adjustPaddings(
+  adjustMode: PaddingAdjustMode,
+  paddingPropInteractedWith: CSSPaddingKey,
+  delta: number,
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+  precision: AdjustPrecision,
+) {
+  if (adjustMode === 'individual') {
+    return offsetPaddingByEdge(paddingPropInteractedWith, delta, padding, precision)
+  }
+
+  if (adjustMode === 'all') {
+    const top = offsetPaddingByEdge('paddingTop', delta, padding, precision)
+    const bottom = offsetPaddingByEdge('paddingBottom', delta, top, precision)
+    const left = offsetPaddingByEdge('paddingLeft', delta, bottom, precision)
+    return offsetPaddingByEdge('paddingRight', delta, left, precision)
+  }
+
+  if (adjustMode === 'cross-axis') {
+    return offsetPaddingByEdge(
+      paddingPropInteractedWith,
+      delta,
+      offsetPaddingByEdge(opposite(paddingPropInteractedWith), delta, padding, precision),
+      precision,
+    )
+  }
+
+  assertNever(adjustMode)
 }

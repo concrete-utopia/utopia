@@ -16,6 +16,7 @@ import {
   offsetMeasurementByDelta,
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
+import { Modifiers } from '../../utils/modifiers'
 
 export type CSSPaddingKey = keyof CSSPadding
 export type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
@@ -207,4 +208,15 @@ export function printCssNumberWithDefaultUnit(
     return printCSSNumber({ value: value.value, unit: defaultUnit }, null)
   }
   return printCSSNumber(value, null)
+}
+
+export type PaddingAdjustMode = 'individual' | 'cross-axis' | 'all'
+export function paddingAdjustMode(modifiers: Modifiers): PaddingAdjustMode {
+  if (modifiers.alt === true) {
+    return 'all'
+  }
+  if (modifiers.cmd === true) {
+    return 'individual'
+  }
+  return 'cross-axis'
 }
