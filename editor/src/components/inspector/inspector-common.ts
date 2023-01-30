@@ -404,16 +404,6 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   ]
 }
 
-export const setAbsolutePositioningPropsCommands = (path: ElementPath): Array<CanvasCommand> => {
-  return [
-    addContainLayoutIfNeeded('always', path),
-    setProperty('always', path, PP.create('style', 'position'), 'absolute'),
-    setProperty('always', path, PP.create('style', 'left'), 'absolute'),
-    setProperty('always', path, PP.create('style', 'right'), 'absolute'),
-    setProperty('always', path, PP.create('style', 'top'), 'absolute'),
-    setProperty('always', path, PP.create('style', 'position'), 'absolute'),
-  ]
-}
 export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
