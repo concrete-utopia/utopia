@@ -404,6 +404,23 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   ]
 }
 
+export const setAbsolutePositioningPropsCommands = (path: ElementPath): Array<CanvasCommand> => {
+  return [
+    addContainLayoutIfNeeded('always', path),
+    setProperty('always', path, PP.create('style', 'position'), 'absolute'),
+    setProperty('always', path, PP.create('style', 'left'), 'absolute'),
+    setProperty('always', path, PP.create('style', 'right'), 'absolute'),
+    setProperty('always', path, PP.create('style', 'top'), 'absolute'),
+    setProperty('always', path, PP.create('style', 'position'), 'absolute'),
+    deleteProperties('always', path, [
+      PP.create('style', 'position'),
+      PP.create('style', 'left'),
+      PP.create('style', 'right'),
+      PP.create('style', 'top'),
+      PP.create('style', 'bottom'),
+    ]),
+  ]
+}
 export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
@@ -485,4 +502,23 @@ export function resizeToFitCommands(
     ) ?? []),
   ]
   return commands
+}
+
+export function positionAbsoluteRelativeToParentCommands(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const left = element.specialSizeMeasurements.offset.x
+  const top = element.specialSizeMeasurements.offset.y
+
+  return [
+    setProperty('always', elementPath, styleP('left'), left),
+    setProperty('always', elementPath, styleP('top'), top),
+    setProperty('always', elementPath, styleP('position'), 'absolute'),
+  ]
 }
