@@ -1,9 +1,14 @@
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
-import { wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import {
+  keyDown,
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -60,26 +65,56 @@ describe('shortcuts', () => {
     })
   })
 
-  it('x to remove positioning props from the selected element', async () => {
-    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+  describe('x', () => {
+    it('remove positioning props from the selected element participates in the layout', async () => {
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId(TestIdOne)
-    const divBounds = div.getBoundingClientRect()
-    const divCorner = {
-      x: divBounds.x + 50,
-      y: divBounds.y + 40,
-    }
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const divBounds = div.getBoundingClientRect()
+      const divCorner = {
+        x: divBounds.x + 50,
+        y: divBounds.y + 40,
+      }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner)
+      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
 
-    pressKey('x')
+      await expectSingleUndoStep(editor, async () => pressKey('x'))
+      await editor.getDispatchFollowUpActionsFinished()
 
-    expect(div.style.position).toEqual('')
-    expect(div.style.top).toEqual('')
-    expect(div.style.bottom).toEqual('')
-    expect(div.style.left).toEqual('')
-    expect(div.style.right).toEqual('')
+      expect(div.style.position).toEqual('')
+      expect(div.style.top).toEqual('')
+      expect(div.style.bottom).toEqual('')
+      expect(div.style.left).toEqual('')
+      expect(div.style.right).toEqual('')
+    })
+
+    it('add positioning props from the selected element participates in the layout', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlexLayout,
+        'await-first-dom-report',
+      )
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const divBounds = div.getBoundingClientRect()
+      const divCorner = {
+        x: divBounds.x + 60,
+        y: divBounds.y + 60,
+      }
+
+      mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+
+      await expectSingleUndoStep(editor, async () => pressKey('x'))
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.position).toEqual('absolute')
+      expect(div.style.top).toEqual('47px')
+      expect(div.style.left).toEqual('50px')
+      expect(div.style.width).toEqual('340px')
+      expect(div.style.height).toEqual('363px')
+      expect(div.style.contain).toEqual('layout')
+    })
   })
 })
 
@@ -112,6 +147,40 @@ import { Scene, Storyboard } from 'utopia-api'
       }}
       data-uid='ecf'
     />
+  </Storyboard>
+)
+`
+
+const projectWithChildInFlexLayout = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+   
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 67,
+        top: 128,
+        width: 340,
+        height: 363,
+        display: 'flex',
+        padding: '47px 20px 20px 50px',
+      }}
+      data-uid='c36'
+    >
+      <div
+        data-testid='${TestIdOne}'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          contain: 'layout',
+          height: '100%',
+          flexGrow: 1
+        }}
+        data-uid='330'
+      />
+    </div>
   </Storyboard>
 )
 `
