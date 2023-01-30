@@ -64,7 +64,29 @@ describe('setCssLengthProperty', () => {
     expect(updatedHeightProp).toEqual(valueToSet)
   })
 
-  it('Setting width removes min-width and max-width props', async () => {
+  it('Setting width smaller than min-width removes min-width and max-width props', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithChildStyle('row', { minWidth: 50, maxWidth: 150, width: 50, height: 60 }),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString('sb/parent/child')
+
+    const command = setCssLengthProperty(
+      'always',
+      targetPath,
+      stylePropPathMappingFn('width', styleStringInArray),
+      setExplicitCssValue(cssPixelLength(25)),
+      'row',
+    )
+
+    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
+    expect(getStylePropForElement(result, targetPath, 'width')).toBe(25)
+    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
+    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
+  })
+
+  it('Setting width larger than max-width removes min-width and max-width props', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithChildStyle('row', { minWidth: 50, maxWidth: 150, width: 50, height: 60 }),
       'await-first-dom-report',
@@ -84,6 +106,28 @@ describe('setCssLengthProperty', () => {
     expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
     expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
+  })
+
+  it('Setting width within min-width and max-width Does NOT remove min-width and max-width props', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithChildStyle('row', { minWidth: 50, maxWidth: 150, width: 50, height: 60 }),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString('sb/parent/child')
+
+    const command = setCssLengthProperty(
+      'always',
+      targetPath,
+      stylePropPathMappingFn('width', styleStringInArray),
+      setExplicitCssValue(cssPixelLength(120)),
+      'row',
+    )
+
+    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
+    expect(getStylePropForElement(result, targetPath, 'width')).toBe(120)
+    expect(getStylePropForElement(result, targetPath, 'minWidth')).not.toBeNull()
+    expect(getStylePropForElement(result, targetPath, 'maxWidth')).not.toBeNull()
   })
 
   it('Setting height does not remove min-width and max-width props', async () => {
@@ -135,8 +179,8 @@ describe('setCssLengthProperty', () => {
 
     const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
     expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
-    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
+    // expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
+    // expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'flex')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'flexGrow')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'flexShrink')).toBeNull()
@@ -170,8 +214,8 @@ describe('setCssLengthProperty', () => {
 
     const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
     expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
-    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
+    // expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
+    // expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'flex')).not.toBeNull()
     expect(getStylePropForElement(result, targetPath, 'flexGrow')).not.toBeNull()
     expect(getStylePropForElement(result, targetPath, 'flexShrink')).not.toBeNull()

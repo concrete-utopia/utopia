@@ -1,19 +1,35 @@
+import { getLayoutProperty, getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft, isRight, left } from '../../../core/shared/either'
+import {
+  Either,
+  eitherToMaybe,
+  flatMapEither,
+  isLeft,
+  isRight,
+  left,
+  right,
+} from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  JSXAttributes,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
+import { objectMap } from '../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
   CSSNumber,
   FlexDirection,
+  parseCSSLengthPercent,
   parseCSSPercent,
   parseCSSPx,
   printCSSNumber,
@@ -59,18 +75,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   editorState: EditorState,
   command: AdjustCssLengthProperty,
 ) => {
-  // in case of width or height change, delete min, max and flex props
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
-    editorState,
-    command.target,
-    command.property,
-    command.parentFlexDirection,
-  )
-
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
-    editorStateWithPropsDeleted,
+    editorState,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       return getModifiableJSXAttributeAtPath(element.props, command.property)
@@ -115,9 +123,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
   if (isRight(parsePxResult)) {
     return updatePixelValueByPixel(
-      editorStateWithPropsDeleted,
+      editorState,
       command.target,
       command.property,
+      command.parentFlexDirection,
       parsePxResult.value,
       command.valuePx,
     )
@@ -126,10 +135,11 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
   const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
   if (isRight(parsePercentResult)) {
     return updatePercentageValueByPixel(
-      editorStateWithPropsDeleted,
+      editorState,
       command.target,
       command.property,
       command.parentDimensionPx,
+      command.parentFlexDirection,
       parsePercentResult.value,
       command.valuePx,
     )
@@ -137,9 +147,10 @@ export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty
 
   if (command.createIfNonExistant === 'create-if-not-existing') {
     return setPixelValue(
-      editorStateWithPropsDeleted,
+      editorState,
       command.target,
       command.property,
+      command.parentFlexDirection,
       command.valuePx,
     )
   }
@@ -159,13 +170,23 @@ function setPixelValue(
   editorState: EditorState,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
+  parentFlexDirection: FlexDirection | null,
   value: number,
 ) {
   const newValueCssNumber: CSSNumber = {
     value: value,
-    unit: null,
+    unit: 'px',
   }
-  const newValue = printCSSNumber(newValueCssNumber, null)
+
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    targetElement,
+    newValueCssNumber,
+    targetProperty,
+    parentFlexDirection,
+  )
+
+  const newValue = printCSSNumber(newValueCssNumber, 'px')
 
   const propsToUpdate: Array<ValueAtPath> = [
     {
@@ -176,7 +197,7 @@ function setPixelValue(
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
+    editorStateWithPropsDeleted,
     targetElement,
     propsToUpdate,
   )
@@ -193,6 +214,7 @@ function updatePixelValueByPixel(
   editorState: EditorState,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
+  parentFlexDirection: FlexDirection | null,
   currentValue: CSSNumber,
   byValue: number,
 ): CommandFunctionResult {
@@ -204,6 +226,15 @@ function updatePixelValueByPixel(
     value: currentValuePx + byValue,
     unit: currentValue.unit,
   }
+
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    targetElement,
+    newValueCssNumber,
+    targetProperty,
+    parentFlexDirection,
+  )
+
   const newValue = printCSSNumber(newValueCssNumber, null)
 
   const propsToUpdate: Array<ValueAtPath> = [
@@ -215,7 +246,7 @@ function updatePixelValueByPixel(
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
+    editorStateWithPropsDeleted,
     targetElement,
     propsToUpdate,
   )
@@ -233,6 +264,7 @@ function updatePercentageValueByPixel(
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   parentDimensionPx: number | undefined,
+  parentFlexDirection: FlexDirection | null,
   currentValue: CSSNumber, // TODO restrict to percentage numbers
   byValue: number,
 ): CommandFunctionResult {
@@ -261,6 +293,15 @@ function updatePercentageValueByPixel(
     value: currentValuePercent + offsetInPercent,
     unit: currentValue.unit,
   }
+
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    targetElement,
+    newValueCssNumber,
+    targetProperty,
+    parentFlexDirection,
+  )
+
   const newValue = printCSSNumber(newValueCssNumber, null)
 
   const propsToUpdate: Array<ValueAtPath> = [
@@ -272,7 +313,7 @@ function updatePercentageValueByPixel(
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
+    editorStateWithPropsDeleted,
     targetElement,
     propsToUpdate,
   )
@@ -295,10 +336,18 @@ const FlexSizeProperties: Array<PropertyPath> = [
 export function deleteConflictingPropsForWidthHeight(
   editorState: EditorState,
   target: ElementPath,
+  newValue: CSSNumber,
   propertyPath: PropertyPath,
   parentFlexDirection: FlexDirection | null,
 ): EditorState {
   let propertiesToDelete: Array<PropertyPath> = []
+
+  const currentProps: Either<any, JSXAttributes> = withUnderlyingTargetFromEditorState(
+    target,
+    editorState,
+    left({}),
+    (_, element) => right(element.props),
+  )
 
   const parentFlexDimension =
     parentFlexDirection == null
@@ -307,13 +356,39 @@ export function deleteConflictingPropsForWidthHeight(
 
   switch (PP.lastPart(propertyPath)) {
     case 'width':
-      propertiesToDelete = [PP.create('style', 'minWidth'), PP.create('style', 'maxWidth')]
+      const minWidth = eitherToMaybe(
+        getLayoutProperty('minWidth', currentProps, styleStringInArray),
+      )
+      if (minWidth?.unit === newValue.unit && minWidth.value > newValue.value) {
+        propertiesToDelete.push(PP.create('style', 'minWidth'), PP.create('style', 'maxWidth'))
+      }
+
+      const maxWidth = eitherToMaybe(
+        getLayoutProperty('maxWidth', currentProps, styleStringInArray),
+      )
+      if (maxWidth?.unit === newValue.unit && maxWidth.value < newValue.value) {
+        propertiesToDelete.push(PP.create('style', 'minWidth'), PP.create('style', 'maxWidth'))
+      }
+
       if (parentFlexDimension === 'horizontal') {
         propertiesToDelete.push(...FlexSizeProperties)
       }
       break
     case 'height':
-      propertiesToDelete = [PP.create('style', 'minHeight'), PP.create('style', 'maxHeight')]
+      const minHeight = eitherToMaybe(
+        getLayoutProperty('minHeight', currentProps, styleStringInArray),
+      )
+      if (minHeight?.unit === newValue.unit && minHeight.value > newValue.value) {
+        propertiesToDelete.push(PP.create('style', 'minHeight'), PP.create('style', 'maxHeight'))
+      }
+
+      const maxHeight = eitherToMaybe(
+        getLayoutProperty('maxHeight', currentProps, styleStringInArray),
+      )
+      if (maxHeight?.unit === newValue.unit && maxHeight.value < newValue.value) {
+        propertiesToDelete.push(PP.create('style', 'minHeight'), PP.create('style', 'maxHeight'))
+      }
+
       if (parentFlexDimension === 'vertical') {
         propertiesToDelete.push(...FlexSizeProperties)
       }

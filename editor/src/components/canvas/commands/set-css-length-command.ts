@@ -65,14 +65,6 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   editorState: EditorState,
   command: SetCssLengthProperty,
 ) => {
-  // in case of width or height change, delete min, max and flex props
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
-    editorState,
-    command.target,
-    command.property,
-    command.parentFlexDirection,
-  )
-
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
@@ -103,7 +95,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     }
   }
 
-  let propsToUpdate: Array<ValueAtPath> = []
+  let newValue: CSSNumber
 
   const parsePercentResult = parseCSSPercent(simpleValueResult.value)
   if (
@@ -113,35 +105,36 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   ) {
     const currentValuePercent = parsePercentResult.value
     const valueInPercent = (command.value.valuePx / command.value.parentDimensionPx) * 100
-    const newValueCssNumber: CSSNumber = {
+    newValue = {
       value: valueInPercent,
       unit: currentValuePercent.unit,
     }
-    const newValue = printCSSNumber(newValueCssNumber, null)
-
-    propsToUpdate.push({
-      path: command.property,
-      value: jsxAttributeValue(newValue, emptyComments),
-    })
   } else {
-    const newCssValue =
+    newValue =
       command.value.type === 'EXPLICIT_CSS_NUMBER'
         ? command.value.value
         : cssPixelLength(command.value.valuePx)
-
-    const printedValue = printCSSNumber(newCssValue, 'px')
-
-    propsToUpdate.push({
-      path: command.property,
-      value: jsxAttributeValue(printedValue, emptyComments),
-    })
   }
+
+  const propToUpdate: ValueAtPath = {
+    path: command.property,
+    value: jsxAttributeValue(printCSSNumber(newValue, 'px'), emptyComments),
+  }
+
+  // in case of width or height change, delete min, max and flex props
+  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    editorState,
+    command.target,
+    newValue,
+    command.property,
+    command.parentFlexDirection,
+  )
 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorStateWithPropsDeleted,
     command.target,
-    propsToUpdate,
+    [propToUpdate],
   )
 
   return {
