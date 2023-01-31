@@ -9,6 +9,7 @@ import {
   nukeAllAbsolutePositioningPropsCommands,
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
+import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
@@ -16,6 +17,9 @@ export function convertLayoutToFlexCommands(
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => [
     setProperty('always', path, PP.create('style', 'display'), 'flex'),
+    setProperty('always', path, PP.create('style', 'gap'), 15),
+    setHugContentForAxis('horizontal', path),
+    setHugContentForAxis('vertical', path),
     ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
       ...nukeAllAbsolutePositioningPropsCommands(child),
       ...sizeToVisualDimensions(metadata, child),

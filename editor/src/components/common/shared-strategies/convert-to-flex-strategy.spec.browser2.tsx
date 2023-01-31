@@ -18,10 +18,13 @@ type Size = [width: number, height: number]
 type FlexProps = {
   left: number
   top: number
-  padding: number
+  padding?: number
   gap: number
-  alignItems: FlexAlignment
-  justifyContent: FlexJustifyContent
+  alignItems?: FlexAlignment
+  justifyContent?: FlexJustifyContent
+  display: 'flex'
+  width: string
+  height: string
 }
 
 describe('Smart Convert To Flex', () => {
@@ -55,10 +58,10 @@ describe('Smart Convert To Flex', () => {
         parent: {
           left: 50,
           top: 50,
-          padding: 0,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
           gap: 15,
-          alignItems: 'flex-start',
-          justifyContent: 'center',
         },
         children: [
           [50, 50],
@@ -101,9 +104,6 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
           ...input.parent,
-          width: MaxContent,
-          height: MaxContent,
-          display: 'flex',
         })}
       }
       data-uid='parent'

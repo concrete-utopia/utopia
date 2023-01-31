@@ -3,7 +3,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
-import { setProperty } from '../../canvas/commands/set-property-command'
+import { SetProperty, setProperty } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import {
   Axis,
@@ -19,6 +19,10 @@ import { InspectorStrategy } from './inspector-strategy'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
+export function setHugContentForAxis(axis: Axis, target: ElementPath): SetProperty {
+  return setProperty('always', target, PP.create('style', widthHeightFromAxis(axis)), MaxContent)
+}
+
 function hugContentsSingleElement(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
@@ -26,7 +30,7 @@ function hugContentsSingleElement(
 ): Array<CanvasCommand> {
   const basicCommands = [
     nukeSizingPropsForAxisCommand(axis, elementPath),
-    setProperty('always', elementPath, PP.create('style', widthHeightFromAxis(axis)), MaxContent),
+    setHugContentForAxis(axis, elementPath),
   ]
 
   const chilren = MetadataUtils.getChildrenPaths(metadata, elementPath)
