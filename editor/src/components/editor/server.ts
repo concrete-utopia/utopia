@@ -27,7 +27,7 @@ import {
 } from './actions/action-creators'
 import { getFileExtension } from '../../core/shared/file-utils'
 import { isAuthenticatedWithGithub } from '../../utils/github-auth'
-import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github'
+import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 

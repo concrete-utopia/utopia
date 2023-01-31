@@ -469,7 +469,7 @@ import {
   RepositoryEntry,
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
-} from '../../../core/shared/github'
+} from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
