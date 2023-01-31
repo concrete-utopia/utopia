@@ -5,12 +5,14 @@ import { createSelector } from 'reselect'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { detectFlexAlignJustifyContent } from './inspector-common'
 import { Substores, useEditorState } from '../editor/store/store-hook'
+import { useColorTheme } from '../../uuiui'
 
 const ThreeBarContainer = styled('div', {
   display: 'flex',
   aspectRatio: '1',
   width: 100,
   border: '1px solid black',
+  padding: 2,
 })
 
 const DotContainer = styled('div', {
@@ -27,12 +29,17 @@ const Slab = styled('div', {
   borderRadius: 2,
 })
 
-const Layer = styled('div', {
+const DotLayer = styled('div', {
   position: 'absolute',
   height: '100%',
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
+  opacity: 1,
+  backgroundColor: 'white',
+  '&:hover': {
+    opacity: 0,
+  },
 })
 
 const SlabLayer = styled('div', {
@@ -41,10 +48,6 @@ const SlabLayer = styled('div', {
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
-  opacity: 0,
-  '&:hover': {
-    opacity: 0.5,
-  },
 })
 
 const DotSize = 4
@@ -62,6 +65,11 @@ export const ThreeBarControl = React.memo(() => {
     'ThreeBarControl justifyContentAlignItems',
   )
 
+  const colorTheme = useColorTheme()
+
+  const dotColor = colorTheme.fg0.value
+  const slabColor = colorTheme.fg0.value
+
   return (
     <ThreeBarContainer>
       <div
@@ -73,29 +81,34 @@ export const ThreeBarControl = React.memo(() => {
           display: 'flex',
         }}
       >
-        <Layer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-        </Layer>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
             alignItems: 'flex-start',
-            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 1 : undefined,
+            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 1 : 0.5,
           }}
         >
-          <Slab style={{ width: 20 }} />
-          <Slab style={{ width: 30 }} />
-          <Slab style={{ width: 20 }} />
+          <Slab style={{ width: 20, backgroundColor: slabColor }} />
+          <Slab style={{ width: 30, backgroundColor: slabColor }} />
+          <Slab style={{ width: 20, backgroundColor: slabColor }} />
         </SlabLayer>
+        <DotLayer
+          style={{
+            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 0 : undefined,
+          }}
+        >
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+        </DotLayer>
       </div>
+      {/* ----------------------------------------- */}
       <div
         style={{
           flexGrow: 1,
@@ -104,29 +117,34 @@ export const ThreeBarControl = React.memo(() => {
           cursor: 'pointer',
         }}
       >
-        <Layer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-        </Layer>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
             alignItems: 'center',
-            opacity: justifyContentAlignItems?.alignItems === 'center' ? 1 : undefined,
+            opacity: justifyContentAlignItems?.alignItems === 'center' ? 1 : 0.5,
           }}
         >
-          <Slab style={{ width: 20 }} />
-          <Slab style={{ width: 30 }} />
-          <Slab style={{ width: 20 }} />
+          <Slab style={{ width: 20, backgroundColor: slabColor }} />
+          <Slab style={{ width: 30, backgroundColor: slabColor }} />
+          <Slab style={{ width: 20, backgroundColor: slabColor }} />
         </SlabLayer>
+        <DotLayer
+          style={{
+            opacity: justifyContentAlignItems?.alignItems === 'center' ? 0 : undefined,
+          }}
+        >
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+        </DotLayer>
       </div>
+      {/* ----------------------------------------- */}
       <div
         style={{
           flexGrow: 1,
@@ -135,28 +153,32 @@ export const ThreeBarControl = React.memo(() => {
           cursor: 'pointer',
         }}
       >
-        <Layer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor='black' />
-          </DotContainer>
-        </Layer>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
             alignItems: 'flex-end',
-            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 1 : undefined,
+            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 1 : 0.5,
           }}
         >
-          <Slab style={{ width: 20 }} />
-          <Slab style={{ width: 30 }} />
-          <Slab style={{ width: 20 }} />
+          <Slab style={{ width: 20, backgroundColor: slabColor }} />
+          <Slab style={{ width: 30, backgroundColor: slabColor }} />
+          <Slab style={{ width: 20, backgroundColor: slabColor }} />
         </SlabLayer>
+        <DotLayer
+          style={{
+            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 0 : undefined,
+          }}
+        >
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+          <DotContainer>
+            <Dot size={DotSize} bgColor={dotColor} />
+          </DotContainer>
+        </DotLayer>
       </div>
     </ThreeBarContainer>
   )
