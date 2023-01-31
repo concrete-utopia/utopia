@@ -689,6 +689,65 @@ describe('Use the text editor', () => {
         )`),
       )
     })
+    it('doesnt trim whitespace around code', async () => {
+      const editor = await renderTestEditorWithCode(
+        formatTestProjectCode(`import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      const ipsum = 'ipsum in a variable'
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            data-testid='div'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 288,
+              height: 362,
+            }}
+            data-uid='39e'
+          >
+            Lorem {ipsum} dolor   sit   amet
+          </div>
+        </Storyboard>
+      )
+      `),
+        'await-first-dom-report',
+      )
+
+      await enterTextEditMode(editor)
+      await closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+        const ipsum = 'ipsum in a variable'
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+              Lorem {ipsum} dolor sit amet
+            </div>
+          </Storyboard>
+        )`),
+      )
+    })
   })
   describe('inline expressions', () => {
     it('handles expressions', async () => {
