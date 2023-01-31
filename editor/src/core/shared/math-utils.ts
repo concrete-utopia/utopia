@@ -101,7 +101,7 @@ export type MaybeInfinityLocalRectangle = MaybeInfinityRectangle<LocalModifier>
 export function isInfinityRectangle<C extends CoordinateMarker>(
   value: MaybeInfinityRectangle<C>,
 ): value is InfinityRectangle<C> {
-  return (value as any)?.type === 'INFINITY_RECTANGLE'
+  return 'type' in value && value.type === 'INFINITY_RECTANGLE'
 }
 
 export function isNonInfinityRectangle<C extends CoordinateMarker>(
