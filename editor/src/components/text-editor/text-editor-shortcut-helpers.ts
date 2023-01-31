@@ -206,11 +206,13 @@ const toggleStylePropWithUnset = (
     const computedValue = getComputedValue()
     if (computedValue !== newValue) {
       dispatch([
-        EditorActions.setProperty(
-          elementPath,
-          PP.create('style', prop),
-          jsxAttributeValue(newValue, emptyComments),
-        ),
+        EditorActions.transientActions([
+          EditorActions.setProperty(
+            elementPath,
+            PP.create('style', prop),
+            jsxAttributeValue(newValue, emptyComments),
+          ),
+        ]),
       ])
     }
   } else {
