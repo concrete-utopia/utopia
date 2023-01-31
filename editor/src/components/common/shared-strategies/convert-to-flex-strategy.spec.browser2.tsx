@@ -50,10 +50,7 @@ describe('Smart Convert To Flex', () => {
       ],
     })
 
-    const targetPath = appendNewElementPath(TestScenePath, ['a', 'parent'])
-    await editor.dispatch([selectComponents([targetPath], false)], true)
-
-    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+    await convertParentToFlex(editor)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeReferenceProjectWith({
@@ -65,6 +62,70 @@ describe('Smart Convert To Flex', () => {
           display: 'flex',
           flexDirection: 'row',
           gap: 15,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts a horizontal parent but with clearly vertical children as a vertical layout', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 50],
+        [0, 60, 50, 50],
+        [0, 120, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts a vertical parent with ambiguous children as a vertical layout', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 200, 300],
+      children: [
+        [0, 0, 50, 50],
+        [60, 60, 50, 50],
+        [120, 120, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
         },
         children: [
           [50, 50],
@@ -120,6 +181,13 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
     </div>
   </div>
   `)
+}
+
+async function convertParentToFlex(editor: EditorRenderResult) {
+  const targetPath = appendNewElementPath(TestScenePath, ['a', 'parent'])
+  await editor.dispatch([selectComponents([targetPath], false)], true)
+
+  await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
 }
 
 async function clickOnPlusButton(editor: EditorRenderResult) {
