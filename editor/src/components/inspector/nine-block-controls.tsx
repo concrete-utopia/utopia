@@ -1,5 +1,4 @@
 import React from 'react'
-import { styled } from '@stitches/react'
 import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
@@ -23,6 +22,8 @@ import {
 import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import { Dot } from './inspector-common-components'
+import { styled } from '@stitches/react'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,
@@ -233,14 +234,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           opacity: isSelected ? 0 : undefined,
         }}
       >
-        <div
-          style={{
-            backgroundColor: fgColor,
-            width: DotSize,
-            height: DotSize,
-            borderRadius: DotSize / 2,
-          }}
-        />
+        <Dot bgColor={fgColor} size={DotSize} />
       </DotContainer>
     </div>
   )

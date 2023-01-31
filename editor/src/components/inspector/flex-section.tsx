@@ -14,7 +14,7 @@ import { NineBlockControl } from './nine-block-controls'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { PaddingRow } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
-import { ThreeBarControl } from './sections/three-bar-control'
+import { ThreeBarControl } from './three-bar-control'
 import { assertNever } from '../../core/shared/utils'
 
 const areElementsFlexContainersSelector = createSelector(
