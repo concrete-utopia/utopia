@@ -119,7 +119,9 @@ import {
 import {
   detectAreElementsFlexContainers,
   nukeAllAbsolutePositioningPropsCommands,
+  addPositionAbsoluteTopLeft,
   resizeToFitCommands,
+  sizeToVisualDimensions,
 } from '../inspector/inspector-common'
 
 function updateKeysPressed(
@@ -806,7 +808,20 @@ export function handleKeyDown(
         }
         return [
           EditorActions.applyCommandsAction(
-            editor.selectedViews.flatMap((view) => nukeAllAbsolutePositioningPropsCommands(view)),
+            editor.selectedViews.flatMap((elementPath) => {
+              if (
+                MetadataUtils.isPositionAbsolute(
+                  MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath),
+                )
+              ) {
+                return nukeAllAbsolutePositioningPropsCommands(elementPath)
+              } else {
+                return [
+                  ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                  ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
+                ]
+              }
+            }),
           ),
         ]
       },
