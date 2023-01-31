@@ -1,18 +1,55 @@
 import React from 'react'
 import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
-import { justifyAlignSelector, metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import {
+  flexDirectionSelector,
+  justifyAlignSelector,
+  metadataSelector,
+  selectedViewsSelector,
+} from './inpector-selectors'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
+import { FlexDirection } from './common/css-utils'
 
-const ThreeBarContainerWidth = 70
-const SlabHeight = 7
-const LongSlabWidth = 20
-const ShortSlabWidth = 12
+const ThreeBarContainerWidth = 100
 const SlabHoverOpacity = 0.3
+
+function SlabSide(side: 'width' | 'height', variety: 'short' | 'long') {
+  const SlabHeightN = 10
+  const LongSlabWidthN = 30
+  const ShortSlabWidthN = LongSlabWidthN / 1.618
+  switch (side) {
+    case 'width':
+      return variety === 'long' ? LongSlabWidthN : ShortSlabWidthN
+    case 'height':
+      return SlabHeightN
+  }
+}
+
+function SlabWidth(flexDirection: FlexDirection, variety: 'short' | 'long'): number {
+  return SlabSide(flexDirection.startsWith('col') ? 'width' : 'height', variety)
+}
+
+function SlabHeight(flexDirection: FlexDirection, variety: 'short' | 'long'): number {
+  return SlabSide(flexDirection.startsWith('row') ? 'width' : 'height', variety)
+}
+
+const ContainerFlexDirection = (flexDirection: FlexDirection): FlexDirection => {
+  if (flexDirection.startsWith('row')) {
+    return 'column'
+  }
+  return 'row'
+}
+
+const LayerFlexDirection = (flexDirection: FlexDirection): FlexDirection => {
+  if (flexDirection.startsWith('row')) {
+    return 'row'
+  }
+  return 'column'
+}
 
 const ThreeBarContainer = styled('div', {
   display: 'flex',
@@ -26,12 +63,11 @@ const DotContainer = styled('div', {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: '100%',
+  height: '100%',
   flexGrow: 1,
 })
 
 const Slab = styled('div', {
-  height: SlabHeight,
   backgroundColor: 'black',
   borderRadius: 2,
 })
@@ -57,6 +93,12 @@ const SlabLayer = styled('div', {
   flexDirection: 'column',
 })
 
+const Section = styled('div', {
+  flexGrow: 1,
+  contain: 'layout',
+  cursor: 'pointer',
+})
+
 const DotSize = 2
 
 export const ThreeBarControl = React.memo(() => {
@@ -64,6 +106,12 @@ export const ThreeBarControl = React.memo(() => {
     Substores.metadata,
     justifyAlignSelector,
     'ThreeBarControl justifyContentAlignItems',
+  )
+
+  const flexDirection = useEditorState(
+    Substores.metadata,
+    flexDirectionSelector,
+    'ThreeBarControl flexDirection',
   )
 
   const metadataRef = useRefEditorState(metadataSelector)
@@ -107,34 +155,37 @@ export const ThreeBarControl = React.memo(() => {
       ),
     [dispatch, metadataRef, selectedViewsRef],
   )
+
+  const shortSlabHeight = SlabHeight(flexDirection, 'short')
+  const shortSlabWidth = SlabWidth(flexDirection, 'short')
+  const longSlabHeight = SlabHeight(flexDirection, 'long')
+  const longSlabWidth = SlabWidth(flexDirection, 'long')
+
   return (
-    <ThreeBarContainer style={{ flexDirection: 'column' }}>
-      <div
-        onClick={setAlignItemsStart}
-        style={{
-          flexGrow: 1,
-          height: '100%',
-          contain: 'layout',
-          cursor: 'pointer',
-          display: 'flex',
-        }}
-      >
+    <ThreeBarContainer style={{ flexDirection: ContainerFlexDirection(flexDirection) }}>
+      <Section onClick={setAlignItemsStart}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
             alignItems: 'flex-start',
             opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 1 : SlabHoverOpacity,
-            flexDirection: 'row',
+            flexDirection: LayerFlexDirection(flexDirection),
           }}
         >
-          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
-          <Slab style={{ width: LongSlabWidth, backgroundColor: slabColor }} />
-          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
+          <Slab
+            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+          />
+          <Slab
+            style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
+          />
+          <Slab
+            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+          />
         </SlabLayer>
         <DotLayer
           style={{
             opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 0 : undefined,
-            flexDirection: 'row',
+            flexDirection: LayerFlexDirection(flexDirection),
           }}
         >
           <DotContainer>
@@ -147,33 +198,31 @@ export const ThreeBarControl = React.memo(() => {
             <Dot size={DotSize} bgColor={dotColor} />
           </DotContainer>
         </DotLayer>
-      </div>
+      </Section>
       {/* ----------------------------------------- */}
-      <div
-        onClick={setAlignItemsCenter}
-        style={{
-          flexGrow: 1,
-          height: '100%',
-          contain: 'layout',
-          cursor: 'pointer',
-        }}
-      >
+      <Section onClick={setAlignItemsCenter}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
             alignItems: 'center',
             opacity: justifyContentAlignItems?.alignItems === 'center' ? 1 : SlabHoverOpacity,
-            flexDirection: 'row',
+            flexDirection: LayerFlexDirection(flexDirection),
           }}
         >
-          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
-          <Slab style={{ width: LongSlabWidth, backgroundColor: slabColor }} />
-          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
+          <Slab
+            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+          />
+          <Slab
+            style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
+          />
+          <Slab
+            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+          />
         </SlabLayer>
         <DotLayer
           style={{
             opacity: justifyContentAlignItems?.alignItems === 'center' ? 0 : undefined,
-            flexDirection: 'row',
+            flexDirection: LayerFlexDirection(flexDirection),
           }}
         >
           <DotContainer>
@@ -186,33 +235,31 @@ export const ThreeBarControl = React.memo(() => {
             <Dot size={DotSize} bgColor={dotColor} />
           </DotContainer>
         </DotLayer>
-      </div>
+      </Section>
       {/* ----------------------------------------- */}
-      <div
-        onClick={setAlignItemsEnd}
-        style={{
-          flexGrow: 1,
-          height: '100%',
-          contain: 'layout',
-          cursor: 'pointer',
-        }}
-      >
+      <Section onClick={setAlignItemsEnd}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
             alignItems: 'flex-end',
             opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 1 : SlabHoverOpacity,
-            flexDirection: 'row',
+            flexDirection: LayerFlexDirection(flexDirection),
           }}
         >
-          <Slab style={{ width: 8, height: ShortSlabWidth, backgroundColor: slabColor }} />
-          <Slab style={{ width: 8, height: LongSlabWidth, backgroundColor: slabColor }} />
-          <Slab style={{ width: 8, height: ShortSlabWidth, backgroundColor: slabColor }} />
+          <Slab
+            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+          />
+          <Slab
+            style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
+          />
+          <Slab
+            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+          />
         </SlabLayer>
         <DotLayer
           style={{
             opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 0 : undefined,
-            flexDirection: 'row',
+            flexDirection: LayerFlexDirection(flexDirection),
           }}
         >
           <DotContainer>
@@ -225,7 +272,7 @@ export const ThreeBarControl = React.memo(() => {
             <Dot size={DotSize} bgColor={dotColor} />
           </DotContainer>
         </DotLayer>
-      </div>
+      </Section>
     </ThreeBarContainer>
   )
 })
