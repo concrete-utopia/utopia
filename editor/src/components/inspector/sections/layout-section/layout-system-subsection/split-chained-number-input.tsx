@@ -10,6 +10,7 @@ import {
   Tooltip,
   wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
+import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import { CSSNumber, isCSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
 import { InspectorInfo } from '../../../common/property-path-hooks'
@@ -18,8 +19,6 @@ export type ControlMode =
   | 'one-value' // a single value that applies to all sides
   | 'per-direction' // two values that group per direction (vertical / horizontal)
   | 'per-side' // one distinct value per side (TLBR)
-
-const controlModeOrder: ControlMode[] = ['one-value', 'per-direction', 'per-side']
 
 interface ControlCSSNumber {
   controlStatus: ControlStatus
@@ -66,14 +65,6 @@ function areAllSidesSet(values: ControlCSSNumber[]): boolean {
   return values.every((v) => isControlStatusActive(v.controlStatus))
 }
 
-function cssNumberValueOrNull(values: ControlCSSNumber[]): number | null {
-  const result = getSharedValueIfEqualSides(values)
-  if (result == null) {
-    return null
-  }
-  return result.value
-}
-
 export interface Sides {
   top: CSSNumber
   bottom: CSSNumber
@@ -93,12 +84,27 @@ export interface SplitChainedNumberInputProps<T> {
   shorthand: InspectorInfo<T>
   updateShorthand: UpdateShorthand
   selectedViews: ElementPath[]
+  controlModeOrder: ControlMode[]
+  labels?: {
+    top?: string
+    bottom?: string
+    left?: string
+    right?: string
+    horizontal?: string
+    vertical?: string
+    oneValue?: string
+  }
+  tooltips?: {
+    oneValue?: string
+    perDirection?: string
+    perSide?: string
+  }
 }
 
 function getInitialMode(
-  aggOne: number | null,
-  aggHorizontal: number | null,
-  aggVertical: number | null,
+  aggOne: CSSNumber | null,
+  aggHorizontal: CSSNumber | null,
+  aggVertical: CSSNumber | null,
   allSidesSet: boolean,
   defaultMode: ControlMode,
 ): ControlMode {
@@ -127,7 +133,7 @@ function onTransientSubmitValue(old: ControlCSSNumber) {
 
 const onSubmitValueShorthand =
   (
-    update: (v: number) => void,
+    update: (v: CSSNumber) => void,
     updateShorthand: UpdateShorthand | null,
     sides: Array<ControlCSSNumber>,
     keepSides: Partial<Sides>,
@@ -137,7 +143,7 @@ const onSubmitValueShorthand =
     if (!isCSSNumber(input)) {
       return
     }
-    update(input.value)
+    update(input)
     if (updateShorthand != null) {
       updateShorthand(
         {
@@ -153,23 +159,12 @@ const onSubmitValueShorthand =
     }
   }
 
-const onTransientSubmitValueShorthand = (
-  update: (v: number) => void,
-  updateShorthand: UpdateShorthand | null,
-  sides: Array<ControlCSSNumber>,
-  keepSides: Partial<Sides>,
-) => onSubmitValueShorthand(update, updateShorthand, sides, keepSides, true)
-
-function cssValueOrNull(v: number | null): CSSNumber | null {
-  return v != null ? { value: v, unit: 'px' } : null
-}
-
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, top, left, bottom, right } = props
+  const { name, top, left, bottom, right, controlModeOrder } = props
 
-  const [oneValue, setOneValue] = React.useState<number | null>(null)
-  const [horizontal, setHorizontal] = React.useState<number | null>(null)
-  const [vertical, setVertical] = React.useState<number | null>(null)
+  const [oneValue, setOneValue] = React.useState<CSSNumber | null>(null)
+  const [horizontal, setHorizontal] = React.useState<CSSNumber | null>(null)
+  const [vertical, setVertical] = React.useState<CSSNumber | null>(null)
   const [mode, setMode] = React.useState<ControlMode | null>(null)
 
   const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
@@ -184,6 +179,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     [left, right],
   )
 
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
   const isCurrentModeApplicable = React.useCallback(() => {
     if (mode === 'one-value' && oneValue == null) {
       return false
@@ -195,11 +192,11 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   }, [mode, oneValue, horizontal, vertical])
 
   const updateAggregates = React.useCallback(() => {
-    const newOneValue = cssNumberValueOrNull(allSides)
+    const newOneValue = getSharedValueIfEqualSides(allSides)
     setOneValue(newOneValue)
-    const newHorizontal = cssNumberValueOrNull(sidesHorizontal)
+    const newHorizontal = getSharedValueIfEqualSides(sidesHorizontal)
     setHorizontal(newHorizontal)
-    const newVertical = cssNumberValueOrNull(sidesVertical)
+    const newVertical = getSharedValueIfEqualSides(sidesVertical)
     setVertical(newVertical)
     return { oneValue: newOneValue, horizontal: newHorizontal, vertical: newVertical }
   }, [allSides, sidesHorizontal, sidesVertical])
@@ -244,13 +241,47 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     if (mode == null) {
       return
     }
-    const index = controlModeOrder.indexOf(mode) + 1
+    const delta = isCmdPressedRef.current ? -1 : 1
+    const index = controlModeOrder.indexOf(mode) + delta
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
-  }, [mode])
+  }, [isCmdPressedRef, mode, controlModeOrder])
 
   const updateShorthandIfUsed = React.useMemo(() => {
     return props.shorthand.controlStatus === 'simple' ? props.updateShorthand : null
   }, [props.shorthand, props.updateShorthand])
+
+  const onSubmitValueOne = React.useCallback(
+    (transient: boolean) => () => {
+      return onSubmitValueShorthand(setOneValue, updateShorthandIfUsed, allSides, {}, transient)
+    },
+    [updateShorthandIfUsed, allSides],
+  )
+
+  const onSubmitValueHorizontal = React.useCallback(
+    (transient: boolean) => () => {
+      return onSubmitValueShorthand(
+        setHorizontal,
+        updateShorthandIfUsed,
+        sidesHorizontal,
+        excludeHorizontal,
+        transient,
+      )
+    },
+    [updateShorthandIfUsed, sidesHorizontal, excludeHorizontal],
+  )
+
+  const onSubmitValueVertical = React.useCallback(
+    (transient: boolean) => () => {
+      return onSubmitValueShorthand(
+        setVertical,
+        updateShorthandIfUsed,
+        sidesVertical,
+        excludeVertical,
+        transient,
+      )
+    },
+    [updateShorthandIfUsed, sidesVertical, excludeVertical],
+  )
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
@@ -259,22 +290,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               style: { width: '100%' },
-              value: cssValueOrNull(oneValue),
-              DEPRECATED_labelBelow: '↔',
+              value: oneValue,
+              DEPRECATED_labelBelow: props.labels?.oneValue ?? '↔',
               minimum: 0,
-              onSubmitValue: onSubmitValueShorthand(
-                setOneValue,
-                updateShorthandIfUsed,
-                allSides,
-                {},
-              ),
-              onTransientSubmitValue: onTransientSubmitValueShorthand(
-                setOneValue,
-                updateShorthandIfUsed,
-                allSides,
-                {},
-              ),
-              numberType: 'Px',
+              onSubmitValue: onSubmitValueOne(false)(),
+              onTransientSubmitValue: onSubmitValueOne(true)(),
+              numberType: 'LengthPercent',
               defaultUnitToHide: 'px',
               controlStatus: allSides[0].controlStatus,
               testId: `${name}-one`,
@@ -283,43 +304,23 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-direction':
           return [
             {
-              value: cssValueOrNull(horizontal),
-              DEPRECATED_labelBelow: 'H',
+              value: horizontal,
+              DEPRECATED_labelBelow: props.labels?.horizontal ?? 'H',
               minimum: 0,
-              onSubmitValue: onSubmitValueShorthand(
-                setHorizontal,
-                updateShorthandIfUsed,
-                sidesHorizontal,
-                excludeHorizontal,
-              ),
-              onTransientSubmitValue: onTransientSubmitValueShorthand(
-                setHorizontal,
-                updateShorthandIfUsed,
-                sidesHorizontal,
-                excludeHorizontal,
-              ),
-              numberType: 'Px',
+              onSubmitValue: onSubmitValueHorizontal(false)(),
+              onTransientSubmitValue: onSubmitValueHorizontal(true)(),
+              numberType: 'LengthPercent',
               controlStatus: sidesHorizontal[0].controlStatus,
               defaultUnitToHide: 'px',
               testId: `${name}-H`,
             },
             {
-              value: cssValueOrNull(vertical),
-              DEPRECATED_labelBelow: 'V',
+              value: vertical,
+              DEPRECATED_labelBelow: props.labels?.vertical ?? 'V',
               minimum: 0,
-              onSubmitValue: onSubmitValueShorthand(
-                setVertical,
-                updateShorthandIfUsed,
-                sidesVertical,
-                excludeVertical,
-              ),
-              onTransientSubmitValue: onTransientSubmitValueShorthand(
-                setVertical,
-                updateShorthandIfUsed,
-                sidesVertical,
-                excludeVertical,
-              ),
-              numberType: 'Px',
+              onSubmitValue: onSubmitValueVertical(false)(),
+              onTransientSubmitValue: onSubmitValueVertical(true)(),
+              numberType: 'LengthPercent',
               controlStatus: sidesVertical[0].controlStatus,
               defaultUnitToHide: 'px',
               testId: `${name}-V`,
@@ -329,7 +330,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               value: top.value,
-              DEPRECATED_labelBelow: 'T',
+              DEPRECATED_labelBelow: props.labels?.top ?? 'T',
               minimum: 0,
               onSubmitValue: onSubmitValue(top),
               onTransientSubmitValue: onTransientSubmitValue(top),
@@ -340,7 +341,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: right.value,
-              DEPRECATED_labelBelow: 'R',
+              DEPRECATED_labelBelow: props.labels?.right ?? 'R',
               minimum: 0,
               onSubmitValue: onSubmitValue(right),
               onTransientSubmitValue: onTransientSubmitValue(right),
@@ -351,7 +352,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: bottom.value,
-              DEPRECATED_labelBelow: 'B',
+              DEPRECATED_labelBelow: props.labels?.bottom ?? 'B',
               minimum: 0,
               onSubmitValue: onSubmitValue(bottom),
               onTransientSubmitValue: onTransientSubmitValue(bottom),
@@ -362,7 +363,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: left.value,
-              DEPRECATED_labelBelow: 'L',
+              DEPRECATED_labelBelow: props.labels?.left ?? 'L',
               minimum: 0,
               onSubmitValue: onSubmitValue(left),
               onTransientSubmitValue: onTransientSubmitValue(left),
@@ -380,8 +381,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     }, [
       mode,
       allSides,
-      excludeHorizontal,
-      excludeVertical,
       oneValue,
       horizontal,
       vertical,
@@ -392,23 +391,26 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       name,
       sidesHorizontal,
       sidesVertical,
-      updateShorthandIfUsed,
+      props.labels,
+      onSubmitValueOne,
+      onSubmitValueHorizontal,
+      onSubmitValueVertical,
     ])
 
   const tooltipTitle = React.useMemo(() => {
     switch (mode) {
       case 'one-value':
-        return 'Padding'
+        return props.tooltips?.oneValue ?? mode
       case 'per-direction':
-        return 'Padding per direction'
+        return props.tooltips?.perDirection ?? mode
       case 'per-side':
-        return 'Padding per side'
+        return props.tooltips?.perSide ?? mode
       case null:
         return ''
       default:
         assertNever(mode)
     }
-  }, [mode])
+  }, [mode, props.tooltips])
 
   const modeIcon = React.useMemo(() => {
     switch (mode) {
