@@ -424,25 +424,26 @@ function adjustPaddings(
   delta: number,
   padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
   precision: AdjustPrecision,
-) {
+): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> {
+  const newPadding = offsetPaddingByEdge(paddingPropInteractedWith, delta, padding, precision)
   if (adjustMode === 'individual') {
-    return offsetPaddingByEdge(paddingPropInteractedWith, delta, padding, precision)
+    return newPadding
   }
 
+  const newPaddingValue = newPadding[paddingPropInteractedWith]
+
   if (adjustMode === 'all') {
-    const top = offsetPaddingByEdge('paddingTop', delta, padding, precision)
-    const bottom = offsetPaddingByEdge('paddingBottom', delta, top, precision)
-    const left = offsetPaddingByEdge('paddingLeft', delta, bottom, precision)
-    return offsetPaddingByEdge('paddingRight', delta, left, precision)
+    return {
+      paddingTop: newPaddingValue,
+      paddingBottom: newPaddingValue,
+      paddingLeft: newPaddingValue,
+      paddingRight: newPaddingValue,
+    }
   }
 
   if (adjustMode === 'cross-axis') {
-    return offsetPaddingByEdge(
-      paddingPropInteractedWith,
-      delta,
-      offsetPaddingByEdge(opposite(paddingPropInteractedWith), delta, padding, precision),
-      precision,
-    )
+    newPadding[opposite(paddingPropInteractedWith)] = newPaddingValue
+    return newPadding
   }
 
   assertNever(adjustMode)
