@@ -6,7 +6,7 @@ import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { justifyAlignSelector, metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   DefaultFlexDirection,
   detectFlexAlignJustifyContent,
@@ -96,12 +96,6 @@ const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyConten
 })
 
 const DotSize = 2
-
-const justifyAlignSelector = createSelector(
-  metadataSelector,
-  selectedViewsSelector,
-  detectFlexAlignJustifyContent,
-)
 
 const flexDirectionSelector = createSelector(
   metadataSelector,

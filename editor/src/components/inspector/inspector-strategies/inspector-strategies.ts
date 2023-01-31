@@ -16,7 +16,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import { InspectorStrategy } from './inspector-strategy'
+import { executeFirstApplicableStrategy, InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
 import {
@@ -25,6 +25,42 @@ import {
 } from '../../canvas/commands/set-css-length-command'
 import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
+
+export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
+  {
+    name: 'Set flex-align',
+    strategy: (metadata, elementPaths) => {
+      const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+      if (elements.length === 0) {
+        return null
+      }
+
+      return elements.flatMap((path) => [
+        setProperty('always', path, PP.create('style', 'alignItems'), flexAlignment),
+      ])
+    },
+  },
+]
+
+export const setJustifyContentStrategies = (
+  justifyContent: FlexJustifyContent,
+): Array<InspectorStrategy> => [
+  {
+    name: 'Set justify-content',
+    strategy: (metadata, elementPaths) => {
+      const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+      if (elements.length === 0) {
+        return null
+      }
+
+      return elements.flatMap((path) => [
+        setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
+      ])
+    },
+  },
+]
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,

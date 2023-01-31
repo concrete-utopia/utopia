@@ -1,16 +1,23 @@
 import React from 'react'
 import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
-import { createSelector } from 'reselect'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
-import { detectFlexAlignJustifyContent } from './inspector-common'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { justifyAlignSelector, metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { useColorTheme } from '../../uuiui'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
+
+const ThreeBarContainerWidth = 70
+const SlabHeight = 7
+const LongSlabWidth = 20
+const ShortSlabWidth = 12
+const SlabHoverOpacity = 0.3
 
 const ThreeBarContainer = styled('div', {
   display: 'flex',
   aspectRatio: '1',
-  width: 100,
+  width: ThreeBarContainerWidth,
   border: '1px solid black',
   padding: 2,
 })
@@ -24,7 +31,7 @@ const DotContainer = styled('div', {
 })
 
 const Slab = styled('div', {
-  height: 8,
+  height: SlabHeight,
   backgroundColor: 'black',
   borderRadius: 2,
 })
@@ -50,13 +57,7 @@ const SlabLayer = styled('div', {
   flexDirection: 'column',
 })
 
-const DotSize = 4
-
-const justifyAlignSelector = createSelector(
-  metadataSelector,
-  selectedViewsSelector,
-  detectFlexAlignJustifyContent,
-)
+const DotSize = 2
 
 export const ThreeBarControl = React.memo(() => {
   const justifyContentAlignItems = useEditorState(
@@ -65,14 +66,51 @@ export const ThreeBarControl = React.memo(() => {
     'ThreeBarControl justifyContentAlignItems',
   )
 
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+
   const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
 
   const dotColor = colorTheme.fg0.value
   const slabColor = colorTheme.fg0.value
 
+  const setAlignItemsStart = React.useCallback(
+    () =>
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        setFlexAlignStrategies('flex-start'),
+      ),
+    [dispatch, metadataRef, selectedViewsRef],
+  )
+
+  const setAlignItemsCenter = React.useCallback(
+    () =>
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        setFlexAlignStrategies('center'),
+      ),
+    [dispatch, metadataRef, selectedViewsRef],
+  )
+
+  const setAlignItemsEnd = React.useCallback(
+    () =>
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        setFlexAlignStrategies('flex-end'),
+      ),
+    [dispatch, metadataRef, selectedViewsRef],
+  )
   return (
     <ThreeBarContainer>
       <div
+        onClick={setAlignItemsStart}
         style={{
           flexGrow: 1,
           height: '100%',
@@ -85,12 +123,12 @@ export const ThreeBarControl = React.memo(() => {
           style={{
             justifyContent: 'space-around',
             alignItems: 'flex-start',
-            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 1 : 0.5,
+            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 1 : SlabHoverOpacity,
           }}
         >
-          <Slab style={{ width: 20, backgroundColor: slabColor }} />
-          <Slab style={{ width: 30, backgroundColor: slabColor }} />
-          <Slab style={{ width: 20, backgroundColor: slabColor }} />
+          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
+          <Slab style={{ width: LongSlabWidth, backgroundColor: slabColor }} />
+          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
         </SlabLayer>
         <DotLayer
           style={{
@@ -110,6 +148,7 @@ export const ThreeBarControl = React.memo(() => {
       </div>
       {/* ----------------------------------------- */}
       <div
+        onClick={setAlignItemsCenter}
         style={{
           flexGrow: 1,
           height: '100%',
@@ -121,12 +160,12 @@ export const ThreeBarControl = React.memo(() => {
           style={{
             justifyContent: 'space-around',
             alignItems: 'center',
-            opacity: justifyContentAlignItems?.alignItems === 'center' ? 1 : 0.5,
+            opacity: justifyContentAlignItems?.alignItems === 'center' ? 1 : SlabHoverOpacity,
           }}
         >
-          <Slab style={{ width: 20, backgroundColor: slabColor }} />
-          <Slab style={{ width: 30, backgroundColor: slabColor }} />
-          <Slab style={{ width: 20, backgroundColor: slabColor }} />
+          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
+          <Slab style={{ width: LongSlabWidth, backgroundColor: slabColor }} />
+          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
         </SlabLayer>
         <DotLayer
           style={{
@@ -146,6 +185,7 @@ export const ThreeBarControl = React.memo(() => {
       </div>
       {/* ----------------------------------------- */}
       <div
+        onClick={setAlignItemsEnd}
         style={{
           flexGrow: 1,
           height: '100%',
@@ -157,12 +197,12 @@ export const ThreeBarControl = React.memo(() => {
           style={{
             justifyContent: 'space-around',
             alignItems: 'flex-end',
-            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 1 : 0.5,
+            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 1 : SlabHoverOpacity,
           }}
         >
-          <Slab style={{ width: 20, backgroundColor: slabColor }} />
-          <Slab style={{ width: 30, backgroundColor: slabColor }} />
-          <Slab style={{ width: 20, backgroundColor: slabColor }} />
+          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
+          <Slab style={{ width: LongSlabWidth, backgroundColor: slabColor }} />
+          <Slab style={{ width: ShortSlabWidth, backgroundColor: slabColor }} />
         </SlabLayer>
         <DotLayer
           style={{
