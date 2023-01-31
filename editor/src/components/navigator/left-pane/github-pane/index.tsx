@@ -7,14 +7,14 @@ import TimeAgo from 'react-timeago'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
   dispatchPromiseActions,
-  getBranchesForGithubRepository,
   getGithubFileChangesCount,
   githubFileChangesToList,
-  updateProjectAgainstGithub,
-  updateProjectWithBranchContent,
   useGithubFileChanges,
-} from '../../../../core/shared/github'
-import { User } from '../../../../uuiui-deps'
+} from '../../../../core/shared/github/helpers'
+import { saveProjectToGithub } from '../../../../core/shared/github/operations/commit-and-push'
+import { getBranchesForGithubRepository } from '../../../../core/shared/github/operations/list-branches'
+import { updateProjectWithBranchContent } from '../../../../core/shared/github/operations/load-branch'
+import { updateProjectAgainstGithub } from '../../../../core/shared/github/operations/update-against-branch'
 import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
 import {
@@ -30,14 +30,17 @@ import {
   Title,
   UtopiaTheme,
 } from '../../../../uuiui'
+import { User } from '../../../../uuiui-deps'
 import * as EditorActions from '../../../editor/actions/action-creators'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
   githubRepoFullName,
-  isGithubCommishing,
+  isGithubCommitting,
   isGithubListingBranches,
   isGithubLoadingAnyBranch,
   isGithubLoadingBranch,
   isGithubUpdating,
+  persistentModelForProjectContents,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
@@ -48,7 +51,6 @@ import { cleanupBranchName } from './helpers'
 import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
-import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -610,14 +612,48 @@ const LocalChangesBlock = () => {
     setCommitMessage(null)
   }, [branch, originCommit])
 
+  const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
+
+  const assetChecksums = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubChecksums,
+    'Github checksums',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'project contents',
+  )
+
   const triggerSaveToGithub = React.useCallback(() => {
-    if (repo != null && cleanedCommitBranchName != null && commitMessage != null) {
-      dispatch(
-        [EditorActions.saveToGithub(repo, cleanedCommitBranchName, commitMessage)],
-        'everyone',
+    if (
+      repo != null &&
+      cleanedCommitBranchName != null &&
+      commitMessage != null &&
+      projectId != null
+    ) {
+      void saveProjectToGithub(
+        projectId,
+        repo,
+        persistentModelForProjectContents(projectContents),
+        dispatch,
+        {
+          branchName: cleanedCommitBranchName,
+          commitMessage: commitMessage,
+          assetChecksums: assetChecksums ?? {},
+        },
       )
     }
-  }, [dispatch, repo, commitMessage, cleanedCommitBranchName])
+  }, [
+    dispatch,
+    repo,
+    commitMessage,
+    cleanedCommitBranchName,
+    assetChecksums,
+    projectContents,
+    projectId,
+  ])
 
   const githubAuthenticated = useEditorState(
     Substores.restOfStore,
@@ -688,7 +724,7 @@ const LocalChangesBlock = () => {
             </div>,
           )}
           <Button
-            disabled={isGithubCommishing(githubOperations)}
+            disabled={isGithubCommitting(githubOperations)}
             spotlight
             highlight
             style={{
@@ -699,7 +735,7 @@ const LocalChangesBlock = () => {
             }}
             onMouseUp={triggerSaveToGithub}
           >
-            {isGithubCommishing(githubOperations) ? (
+            {isGithubCommitting(githubOperations) ? (
               <GithubSpinner />
             ) : (
               <>
@@ -823,21 +859,36 @@ const BranchNotLoadedBlock = () => {
     [],
   )
 
+  const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
+
+  const assetChecksums = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubChecksums,
+    'Github checksums',
+  )
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'project contents',
+  )
+
   const pushToBranch = React.useCallback(() => {
-    if (githubRepo == null || branchName == null) {
+    if (githubRepo == null || branchName == null || projectId == null) {
       return
     }
-    dispatch(
-      [
-        EditorActions.saveToGithub(
-          githubRepo,
-          branchName,
-          commitMessage ?? 'Committed automatically',
-        ),
-      ],
-      'everyone',
+    void saveProjectToGithub(
+      projectId,
+      githubRepo,
+      persistentModelForProjectContents(projectContents),
+      dispatch,
+      {
+        assetChecksums: assetChecksums ?? {},
+        branchName: branchName,
+        commitMessage: commitMessage ?? 'Committed automatically',
+      },
     )
-  }, [dispatch, githubRepo, branchName, commitMessage])
+  }, [dispatch, githubRepo, branchName, commitMessage, projectId, projectContents, assetChecksums])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
 
@@ -920,7 +971,7 @@ const BranchNotLoadedBlock = () => {
                   onChange={updateCommitMessage}
                 />
                 <Button
-                  disabled={isGithubCommishing(githubOperations)}
+                  disabled={isGithubCommitting(githubOperations)}
                   spotlight
                   highlight
                   style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
@@ -941,7 +992,7 @@ const BranchNotLoadedBlock = () => {
                   onChange={updateCommitMessage}
                 />
                 <Button
-                  disabled={isGithubCommishing(githubOperations)}
+                  disabled={isGithubCommitting(githubOperations)}
                   spotlight
                   highlight
                   style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
