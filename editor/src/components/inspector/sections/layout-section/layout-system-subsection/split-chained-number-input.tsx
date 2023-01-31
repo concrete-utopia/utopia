@@ -10,7 +10,7 @@ import {
   Tooltip,
   wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
-import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import { CSSNumber, isCSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
 import { InspectorInfo } from '../../../common/property-path-hooks'
@@ -185,11 +185,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     [left, right],
   )
 
-  const isCmdPressed = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.keysPressed.cmd === true,
-    'SplitChainedNumberInput isCmdPressed',
-  )
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
   const isCurrentModeApplicable = React.useCallback(() => {
     if (mode === 'one-value' && oneValue == null) {
@@ -251,10 +247,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     if (mode == null) {
       return
     }
-    const delta = isCmdPressed ? -1 : 1
+    const delta = isCmdPressedRef.current ? -1 : 1
     const index = controlModeOrder.indexOf(mode) + delta
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
-  }, [isCmdPressed, mode])
+  }, [isCmdPressedRef, mode])
 
   const updateShorthandIfUsed = React.useMemo(() => {
     return props.shorthand.controlStatus === 'simple' ? props.updateShorthand : null
