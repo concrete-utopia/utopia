@@ -396,14 +396,14 @@ function trimWhitespaces(
     text[text.length - 1] === ' ' && elementAfter?.type === 'JSX_ARBITRARY_BLOCK'
 
   if (keepSpaceBefore && keepSpaceAfter) {
-    return text[0] + trimmedText + text[text.length - 1]
+    return ' ' + trimmedText + ' '
   }
 
   if (keepSpaceAfter) {
-    return trimmedText + text[text.length - 1]
+    return trimmedText + ' '
   }
   if (keepSpaceBefore) {
-    return text[0] + trimmedText
+    return ' ' + trimmedText
   }
 
   return trimmedText
