@@ -5,17 +5,18 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { fastForEach } from '../../../core/shared/utils'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { FlexDirection } from '../../inspector/common/css-utils'
 import {
-  Axis,
   convertWidthToFlexGrowOptionally,
   nukeAllAbsolutePositioningPropsCommands,
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
+
+type FlexDirection = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
@@ -23,12 +24,16 @@ export function convertLayoutToFlexCommands(
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
     const childrenPaths = MetadataUtils.getChildrenPaths(metadata, path)
-    const { direction, sortedChildren } = guessLayoutDirection(metadata, path, childrenPaths)
+    const { direction, sortedChildren, averageGap } = guessLayoutDirection(
+      metadata,
+      path,
+      childrenPaths,
+    )
 
     return [
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
-      setProperty('always', path, PP.create('style', 'gap'), 15),
+      setProperty('always', path, PP.create('style', 'gap'), averageGap),
       setHugContentForAxis('horizontal', path),
       setHugContentForAxis('vertical', path),
       ...childrenPaths.flatMap((child) => [
@@ -44,70 +49,66 @@ function guessLayoutDirection(
   metadata: ElementInstanceMetadataMap,
   target: ElementPath,
   children: Array<ElementPath>,
-): { direction: FlexDirection; sortedChildren: Array<CanvasFrameAndTarget> } {
+): { direction: FlexDirection; sortedChildren: Array<CanvasFrameAndTarget>; averageGap: number } {
   const parentSize = MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? {
     width: 0,
     height: 0,
   }
-  const firstGuess = parentSize.width > parentSize.height ? 'horizontal' : 'vertical'
+  const firstGuess: FlexDirection = parentSize.width > parentSize.height ? 'row' : 'column'
   const firstGuessResult = isThereOverlapInDirection(metadata, children, firstGuess)
   if (firstGuessResult.childrenDontOverlap) {
-    return {
-      direction: firstGuessResult.direction,
-      sortedChildren: firstGuessResult.sortedChildren,
-    }
+    return firstGuessResult
   }
-  const secondGuess = firstGuess === 'horizontal' ? 'vertical' : 'horizontal'
+  const secondGuess = firstGuess === 'row' ? 'column' : 'row'
   const secondGuessResult = isThereOverlapInDirection(metadata, children, secondGuess)
   if (secondGuessResult.childrenDontOverlap) {
-    return {
-      direction: secondGuessResult.direction,
-      sortedChildren: secondGuessResult.sortedChildren,
-    }
+    return secondGuessResult
   }
 
   // since none of the directions are great, let's fall back to our first guess
-  return {
-    direction: firstGuessResult.direction,
-    sortedChildren: secondGuessResult.sortedChildren,
-  }
+  return firstGuessResult
 }
 
 function isThereOverlapInDirection(
   metadata: ElementInstanceMetadataMap,
   children: Array<ElementPath>,
-  direction: Axis,
+  direction: FlexDirection,
 ): {
   childrenDontOverlap: boolean
   direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
+  averageGap: number
 } {
   const childFrames: Array<CanvasFrameAndTarget> = children.map((child) => ({
     target: child,
     frame: MetadataUtils.getFrameInCanvasCoords(child, metadata)!,
   }))
   const sortedChildren = sortBy(childFrames, (l, r) =>
-    direction === 'horizontal' ? l.frame.x - r.frame.x : l.frame.y - r.frame.y,
+    direction === 'row' ? l.frame.x - r.frame.x : l.frame.y - r.frame.y,
   )
 
-  const childrenDontOverlap = sortedChildren.every((child, i) => {
+  let childrenDontOverlap: boolean = true
+  let gapSum = 0
+
+  fastForEach(sortedChildren, (child, i) => {
     if (i === 0) {
-      return true
+      return
     } else {
       const prevFrame: CanvasRectangle = sortedChildren[i - 1].frame
-      if (direction === 'horizontal') {
-        // all elements are on the right side of the previous sibling's right edge
-        return child.frame.x > prevFrame.x + prevFrame.width
-      } else {
-        // all elements are below the previous sibling's bottom edge
-        return child.frame.y > prevFrame.y + prevFrame.height
-      }
+      const gap =
+        direction === 'row'
+          ? child.frame.x - (prevFrame.x + prevFrame.width)
+          : child.frame.y - (prevFrame.y + prevFrame.height)
+
+      gapSum += gap
+      childrenDontOverlap = childrenDontOverlap && gap > -1
     }
   })
 
   return {
     childrenDontOverlap,
     sortedChildren,
-    direction: direction === 'horizontal' ? 'row' : 'column',
+    direction: direction,
+    averageGap: gapSum / (sortedChildren.length - 1),
   }
 }
