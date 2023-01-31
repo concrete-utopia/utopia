@@ -2,7 +2,7 @@ import * as PP from '../../../core/shared/property-path'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
-  convertWidthToFlexGrow,
+  convertWidthToFlexGrowOptionally,
   filterKeepFlexContainers,
   FlexAlignment,
   flexChildProps,

@@ -5,7 +5,7 @@ import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import {
-  convertWidthToFlexGrow,
+  convertWidthToFlexGrowOptionally,
   nukeAllAbsolutePositioningPropsCommands,
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
@@ -19,7 +19,7 @@ export function convertLayoutToFlexCommands(
     ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
       ...nukeAllAbsolutePositioningPropsCommands(child),
       ...sizeToVisualDimensions(metadata, child),
-      ...convertWidthToFlexGrow(metadata, child),
+      ...convertWidthToFlexGrowOptionally(metadata, child),
     ]),
   ])
 }

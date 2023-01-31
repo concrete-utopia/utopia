@@ -274,7 +274,7 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
   }
 }
 
-export function convertWidthToFlexGrow(
+export function convertWidthToFlexGrowOptionally(
   metadataMap: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
