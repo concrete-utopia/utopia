@@ -212,11 +212,11 @@ export function printCssNumberWithDefaultUnit(
 
 export type PaddingAdjustMode = 'individual' | 'cross-axis' | 'all'
 export function paddingAdjustMode(modifiers: Modifiers): PaddingAdjustMode {
-  if (modifiers.alt === true) {
+  if (modifiers.shift === true && modifiers.alt === true) {
     return 'all'
   }
-  if (modifiers.cmd === true) {
-    return 'individual'
+  if (modifiers.alt === true) {
+    return 'cross-axis'
   }
-  return 'cross-axis'
+  return 'individual'
 }

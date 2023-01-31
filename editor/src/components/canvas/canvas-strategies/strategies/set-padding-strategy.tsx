@@ -52,7 +52,6 @@ import {
   CSSNumberWithRenderedValue,
   indicatorMessage,
   offsetMeasurementByDelta,
-  precisionFromModifiers,
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
@@ -60,6 +59,7 @@ import { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
+import { Modifiers } from '../../../../utils/modifiers'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -72,6 +72,10 @@ const IndividualPaddingProps: Array<CSSPaddingKey> = [
 export const PaddingTearThreshold: number = -25
 
 export const SetPaddingStrategyName = 'Set Padding'
+
+function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {
+  return modifiers.cmd ? 'coarse' : 'precise'
+}
 
 export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interactionSession) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
