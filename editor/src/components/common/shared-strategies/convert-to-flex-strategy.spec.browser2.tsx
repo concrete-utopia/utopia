@@ -48,7 +48,7 @@ describe('Smart Convert To Flex', () => {
     const targetPath = appendNewElementPath(TestScenePath, ['a', 'parent'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeReferenceProjectWith({
@@ -119,7 +119,7 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
   `)
 }
 
-async function clickOn(editor: EditorRenderResult) {
+async function clickOnPlusButton(editor: EditorRenderResult) {
   const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
 
   mouseClickAtPoint(plusButton, { x: 2, y: 2 })
