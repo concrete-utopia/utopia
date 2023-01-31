@@ -129,6 +129,7 @@ import {
   resizeToFitCommands,
   sizeToVisualDimensions,
 } from '../inspector/inspector-common'
+import { CSSProperties } from 'twind'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -991,10 +992,19 @@ function detectBestWrapperElement(
 
   const uid = makeUid()
 
-  const style =
-    element.specialSizeMeasurements.parentFlexGap != null
-      ? { gap: element.specialSizeMeasurements.parentFlexGap }
-      : undefined
+  // pragmatismus maximus, REVIEW: is there a better way to do this?
+  const style: Record<string, any> = {
+    display: 'flex',
+    flexDirection: element.specialSizeMeasurements.parentFlexDirection,
+    contain: 'layout',
+  }
+
+  if (
+    element.specialSizeMeasurements.parentFlexGap != null &&
+    element.specialSizeMeasurements.parentFlexGap !== 0
+  ) {
+    style.gap = element.specialSizeMeasurements.parentFlexGap
+  }
 
   const props = jsxAttributesFromMap({
     'data-uid': jsxAttributeValue(uid, emptyComments),
@@ -1003,27 +1013,15 @@ function detectBestWrapperElement(
 
   if (element.specialSizeMeasurements.parentFlexDirection.startsWith('row')) {
     return {
-      element: jsxElement('FlexRow', uid, props, []),
-      importsToAdd: {
-        'utopia-api': {
-          importedAs: null,
-          importedWithName: null,
-          importedFromWithin: [{ name: 'FlexRow', alias: 'FlexRow' }],
-        },
-      },
+      element: jsxElement('div', uid, props, []),
+      importsToAdd: {},
     }
   }
 
   if (element.specialSizeMeasurements.parentFlexDirection.startsWith('col')) {
     return {
-      element: jsxElement('FlexCol', uid, props, []),
-      importsToAdd: {
-        'utopia-api': {
-          importedAs: null,
-          importedWithName: null,
-          importedFromWithin: [{ name: 'FlexCol', alias: 'FlexCol' }],
-        },
-      },
+      element: jsxElement('div', uid, props, []),
+      importsToAdd: {},
     }
   }
 
