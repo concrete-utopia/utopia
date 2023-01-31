@@ -11,6 +11,7 @@ import {
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
+import { FlexDirection } from '../../inspector/common/css-utils'
 import { FlexAlignment, FlexJustifyContent, MaxContent } from '../../inspector/inspector-common'
 
 type LTWH = [left: number, top: number, width: number, height: number]
@@ -23,6 +24,7 @@ type FlexProps = {
   alignItems?: FlexAlignment
   justifyContent?: FlexJustifyContent
   display: 'flex'
+  flexDirection: FlexDirection
   width: string
   height: string
 }
@@ -61,6 +63,7 @@ describe('Smart Convert To Flex', () => {
           width: MaxContent,
           height: MaxContent,
           display: 'flex',
+          flexDirection: 'row',
           gap: 15,
         },
         children: [
