@@ -43,6 +43,7 @@ export const FlexSection = React.memo(() => {
       'FlexSection packedFlexSetting',
     ) ?? 'packed'
 
+  // TODO: turn this into a display none inside the controls to avoid re-rendering
   function BarControl(setting: PackedSpaced) {
     switch (setting) {
       case 'packed':
