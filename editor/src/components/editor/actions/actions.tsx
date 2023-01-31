@@ -466,7 +466,6 @@ import {
   updateThumbnailGenerated,
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
-import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
   refreshDependencies,
   removeModulesFromNodeModules,
@@ -475,6 +474,7 @@ import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strat
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+import { AspectRatioProp } from '../../aspect-ratio'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3446,9 +3446,11 @@ export const UPDATE_FNS = {
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({ width: width, height: height }, emptyComments),
+              style: jsxAttributeValue(
+                { width: width, height: height, [AspectRatioProp]: 'auto' },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3489,11 +3491,11 @@ export const UPDATE_FNS = {
                   top: relativeFrame.y,
                   width: relativeFrame.width,
                   height: relativeFrame.height,
+                  [AspectRatioProp]: 'auto',
                 },
                 emptyComments,
               ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
-              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
             [],
           )
@@ -3542,12 +3544,12 @@ export const UPDATE_FNS = {
             {
               width: width,
               height: height,
+              [AspectRatioProp]: 'auto',
             },
             emptyComments,
           ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-label': jsxAttributeValue('Image', emptyComments),
-          [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
         }),
         [],
       )
@@ -4309,15 +4311,17 @@ export const UPDATE_FNS = {
     )
   },
   SET_ASPECT_RATIO_LOCK: (action: SetAspectRatioLock, editor: EditorModel): EditorModel => {
+    // TODO befor merge check if OK
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const path = PP.create(AspectRatioLockedProp)
+        const path = PP.create('style', AspectRatioProp)
         const updatedProps = action.locked
           ? eitherToMaybe(
               setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
             )
-          : deleteJSXAttribute(element.props, AspectRatioLockedProp)
+          : deleteJSXAttribute(element.props, AspectRatioProp)
+
         return {
           ...element,
           props: updatedProps ?? element.props,
@@ -4370,11 +4374,11 @@ export const UPDATE_FNS = {
             top: parentShiftY + frame.y,
             width: frame.width,
             height: frame.height,
+            aspectRatio: 'auto',
           },
           emptyComments,
         ),
         'data-uid': jsxAttributeValue(newUID, emptyComments),
-        [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
       }),
       [],
     )

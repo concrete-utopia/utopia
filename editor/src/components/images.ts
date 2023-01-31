@@ -265,7 +265,6 @@ export interface JSXImageOptions {
 
 export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): JSXElement {
   const propsForElement = jsxAttributesFromMap({
-    'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
     src: jsxAttributeValue(options.src, emptyComments),
     style: jsxAttributeValue(
       {
@@ -274,6 +273,7 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
         height: options.height,
         top: options.top,
         left: options.left,
+        aspectRatio: 'auto',
       },
       emptyComments,
     ),

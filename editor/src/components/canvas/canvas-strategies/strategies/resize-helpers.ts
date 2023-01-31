@@ -1,14 +1,12 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
 import { defaultEither, isRight, mapEither } from '../../../../core/shared/either'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   getJSXAttribute,
-  jsxElementName,
-  jsxElementNameEquals,
+  JSXAttributes,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -23,7 +21,6 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { Modifiers } from '../../../../utils/modifiers'
-import { AspectRatioLockedProp } from '../../../aspect-ratio'
 import { CSSCursor, EdgePosition } from '../../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
@@ -34,6 +31,10 @@ import {
 import { InteractionCanvasState } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
+import { getJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
+import { create } from '../../../../core/shared/property-path'
+import { AspectRatioLockedProp, AspectRatioProp } from '../../../aspect-ratio'
+import { JsxAttributes } from 'typescript'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -132,11 +133,22 @@ function isElementImage(instance: ElementInstanceMetadata) {
   )
 }
 
-function isElementAspectRatioLocked(instance: ElementInstanceMetadata) {
+function getJsxValueBoolean(props: JSXAttributes, key: string): boolean {
+  const value = getJSXAttribute(props, AspectRatioLockedProp)
+  if (value?.type === 'ATTRIBUTE_VALUE') {
+    return value.value === true
+  }
+  return false
+}
+
+function isElementAspectRatioLocked(instance: ElementInstanceMetadata): boolean {
   return defaultEither(
     false,
     mapEither(
-      (e) => e.type === 'JSX_ELEMENT' && getJSXAttribute(e.props, AspectRatioLockedProp),
+      (e) =>
+        e.type === 'JSX_ELEMENT' &&
+        (getJSXAttributeAtPath(e.props, create('style', AspectRatioProp)) != null ||
+          getJsxValueBoolean(e.props, AspectRatioLockedProp) === true),
       instance.element,
     ),
   )
