@@ -486,3 +486,22 @@ export function resizeToFitCommands(
   ]
   return commands
 }
+
+export function addPositionAbsoluteTopLeft(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const left = element.specialSizeMeasurements.offset.x
+  const top = element.specialSizeMeasurements.offset.y
+
+  return [
+    setProperty('always', elementPath, styleP('left'), left),
+    setProperty('always', elementPath, styleP('top'), top),
+    setProperty('always', elementPath, styleP('position'), 'absolute'),
+  ]
+}
