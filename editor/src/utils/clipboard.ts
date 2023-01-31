@@ -38,8 +38,13 @@ type JSXElementsJson = string
 
 export type CopyData = JSXElementCopyData
 
-export function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
+function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
   return parsePasteEvent(clipboardData)
+}
+
+// This is required so we can mock the function in a test. Don't hate me, I already hate myself
+export const Clipboard = {
+  parseClipboardData,
 }
 
 export function setClipboardData(

@@ -8,8 +8,30 @@ import {
 import { BakedInStoryboardVariableName } from '../core/model/scene-utils'
 import { imgBase641x1, makeImageFile } from '../components/canvas/image-insert.test-utils'
 import { wait } from './utils.test-utils'
+import { defer } from './utils'
+import Sinon from 'sinon'
+import { Clipboard } from './clipboard'
 
 describe('Pasting an image onto the canvas', () => {
+  var pasteDone: ReturnType<typeof defer> = defer()
+  var sandbox = Sinon.createSandbox()
+  const originalParseClipboardData = Clipboard.parseClipboardData
+
+  beforeEach(() => {
+    pasteDone = defer()
+
+    const parseClipboardDataStub = sandbox.stub(Clipboard, 'parseClipboardData')
+    parseClipboardDataStub.callsFake(async (c) => {
+      const result = await originalParseClipboardData(c)
+      pasteDone.resolve()
+      return result
+    })
+  })
+
+  afterEach(() => {
+    sandbox.restore()
+  })
+
   it('Pastes successfully onto the storyboard', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithStoryboardChildren(``),
@@ -23,7 +45,7 @@ describe('Pasting an image onto the canvas', () => {
     firePasteImageEvent(canvasControlsLayer, imagesToPaste)
 
     // Wait for the next frame
-    await wait(1)
+    await pasteDone
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
