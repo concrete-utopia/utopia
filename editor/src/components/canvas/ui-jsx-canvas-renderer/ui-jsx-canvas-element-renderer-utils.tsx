@@ -522,7 +522,6 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      // const text = mapDropNulls(trimmedTextOrNullFromJSXElement, childrenWithNewTextBlock).join('')
       const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
       const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
