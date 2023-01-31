@@ -144,7 +144,7 @@ export const dark: typeof light = {
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
   canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
-  canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
+  canvasSelectionSecondaryOutline: createUtopiColor('rgba(217, 220, 227, 0.5)'), // fg1
   canvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
   canvasDragOutlineBlock: darkBase.primary,

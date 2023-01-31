@@ -1,5 +1,4 @@
 import { Key, Keyboard } from '../../utils/keyboard'
-import { objectMap } from '../../core/shared/object-utils'
 import {
   ComplexMap,
   emptyComplexMap,
@@ -7,6 +6,7 @@ import {
   getKeysFromComplexMap,
   getValueFromComplexMap,
 } from '../../utils/map'
+import { CSSProperties } from 'twind'
 
 const key = Keyboard.key
 
@@ -82,6 +82,8 @@ export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
+export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
+export const RESIZE_TO_FIT = 'resize-to-fit'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -236,8 +238,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Convert selected elements to flex containers',
     key('a', ['shift']),
   ),
+  [REMOVE_ABSOLUTE_POSITIONING]: shortcut(`Strip absolute sizing props props`, key('x', [])),
   [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
   [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
+  [RESIZE_TO_FIT]: shortcut('Resize selected elements to fit', key('r', ['alt', 'cmd', 'shift'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

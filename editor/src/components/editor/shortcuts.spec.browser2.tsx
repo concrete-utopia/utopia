@@ -1,7 +1,7 @@
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
-import { wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
@@ -15,12 +15,14 @@ import { selectComponents } from './actions/meta-actions'
 
 const TestIdOne = 'one'
 const TestIdTwo = 'two'
+const StoryBoardId = 'StoryBoardId'
+const ParentId = 'ParentId'
 const backgroundColor = '#384C5CAB'
 
 // for some reason, ctrl + c does not trigger the eyedropper in tests
 // maybe for security since the event is programmatically triggered?
-xdescribe('shortcuts', () => {
-  describe('eyedropper', () => {
+describe('shortcuts', () => {
+  xdescribe('eyedropper', () => {
     it('use eyedropper to set background color', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
@@ -59,13 +61,55 @@ xdescribe('shortcuts', () => {
       expect(div2.style.backgroundColor).toEqual(backgroundColor)
     })
   })
+
+  describe('x', () => {
+    it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+
+      await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/${TestIdOne}`)])
+
+      await expectSingleUndoStep(editor, async () => pressKey('x'))
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.position).toEqual('')
+      expect(div.style.top).toEqual('')
+      expect(div.style.bottom).toEqual('')
+      expect(div.style.left).toEqual('')
+      expect(div.style.right).toEqual('')
+    })
+
+    it('when the selected element participates in the layout, absolute positioning props are added to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlexLayout,
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
+      ])
+
+      await expectSingleUndoStep(editor, async () => pressKey('x'))
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.position).toEqual('absolute')
+      expect(div.style.top).toEqual('47px')
+      expect(div.style.left).toEqual('50px')
+      expect(div.style.width).toEqual('340px')
+      expect(div.style.height).toEqual('363px')
+      expect(div.style.contain).toEqual('layout')
+    })
+  })
 })
 
 const project = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
     export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='${StoryBoardId}'>
     <div
       data-testid='${TestIdOne}'
       style={{
@@ -76,7 +120,7 @@ import { Scene, Storyboard } from 'utopia-api'
         width: 161,
         height: 171,
       }}
-      data-uid='e6b'
+      data-uid='${TestIdOne}'
     />
     <div
       data-testid='${TestIdTwo}'
@@ -88,8 +132,41 @@ import { Scene, Storyboard } from 'utopia-api'
         width: 173,
         height: 222,
       }}
-      data-uid='ecf'
+      data-uid='${TestIdTwo}'
     />
+  </Storyboard>
+)
+`
+
+const projectWithChildInFlexLayout = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='${StoryBoardId}'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 67,
+        top: 128,
+        width: 340,
+        height: 363,
+        display: 'flex',
+        padding: '47px 20px 20px 50px',
+      }}
+      data-uid='${ParentId}'
+    >
+      <div
+        data-testid='${TestIdOne}'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          contain: 'layout',
+          height: '100%',
+          flexGrow: 1
+        }}
+        data-uid='${TestIdOne}'
+      />
+    </div>
   </Storyboard>
 )
 `

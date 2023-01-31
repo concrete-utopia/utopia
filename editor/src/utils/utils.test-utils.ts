@@ -61,7 +61,7 @@ import {
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
-import { mapArrayToDictionary, mapDropNulls } from '../core/shared/array-utils'
+import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
@@ -71,6 +71,7 @@ import {
   StrategyState,
 } from '../components/canvas/canvas-strategies/interaction-state'
 import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
+import { selectComponents } from '../components/editor/actions/action-creators'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -428,4 +429,12 @@ export async function expectSingleUndoStep(
   await action()
   const historySizeAfter = editor.getEditorState().history.previous.length
   expect(historySizeAfter - historySizeBefore).toEqual(1)
+}
+
+export async function selectComponentsForTest(
+  editor: EditorRenderResult,
+  paths: Array<ElementPath>,
+): Promise<void> {
+  await editor.dispatch([selectComponents(paths, false)], true)
+  await editor.getDispatchFollowUpActionsFinished()
 }

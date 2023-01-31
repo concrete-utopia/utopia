@@ -1,6 +1,5 @@
 import React from 'react'
 import { animated } from 'react-spring'
-import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { FakeUnknownArrayItem, UnknownArrayItem } from '../../../controls/unknown-array-item'
@@ -26,7 +25,9 @@ import {
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
+  InspectorPropsContext,
   stylePropPathMappingFn,
+  useInspectorContext,
   useInspectorInfo,
   useIsSubSectionVisible,
 } from '../../../common/property-path-hooks'
@@ -35,7 +36,6 @@ import { LinearGradientBackgroundLayer } from './linear-gradient-layer'
 import { RadialGradientBackgroundLayer } from './radial-gradient-layer'
 import { SolidBackgroundLayer } from './solid-background-layer'
 import { URLBackgroundLayer } from './url-background-layer'
-import { useKeepReferenceEqualityIfPossible } from '../../../../../utils/react-performance'
 import {
   UtopiaTheme,
   InspectorSubsectionHeader,
@@ -43,7 +43,11 @@ import {
   SquareButton,
   Icn,
   InspectorSectionIcons,
+  Icons,
 } from '../../../../../uuiui'
+import { useContextSelector } from 'use-context-selector'
+import { BackgroundPrefixedProperties } from '../../../../../core/properties/css-properties'
+import * as PP from '../../../../../core/shared/property-path'
 
 function insertBackgroundLayer(
   cssBackgroundLayers: CSSBackgroundLayers,
@@ -166,7 +170,6 @@ export const BackgroundSubsection = React.memo(() => {
     controlStyles,
     propertyStatus,
     value,
-    onUnsetValues,
     onSubmitValue,
     useSubmitValueFactory,
   } = useInspectorInfo(
@@ -182,30 +185,22 @@ export const BackgroundSubsection = React.memo(() => {
 
   const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, true)
 
-  let unsetPropertyValues: Array<string> = []
-  const zerothValue = value[0]
-  if (zerothValue != null) {
-    if (isCSSSolidBackgroundLayer(zerothValue)) {
-      unsetPropertyValues.push('backgroundColor')
-      if (value.length > 1) {
-        unsetPropertyValues.push('backgroundImage')
-      }
-    } else {
-      unsetPropertyValues.push('backgroundImage')
-    }
-  }
+  const { onContextUnsetValue } = useInspectorContext()
 
-  const memoizedUnsetPropertyValues = useKeepReferenceEqualityIfPossible(unsetPropertyValues)
+  const targetPath = useContextSelector(InspectorPropsContext, (context) => context.targetPath)
 
-  const valueLength = value.length
+  const onUnsetSubsectionValues = React.useCallback(() => {
+    onContextUnsetValue(
+      BackgroundPrefixedProperties.map((prop) => {
+        return PP.createFromArray([...targetPath, prop])
+      }),
+      false,
+    )
+  }, [onContextUnsetValue, targetPath])
 
-  const unsetContextMenuItem = React.useMemo(
-    () =>
-      utils.stripNulls([
-        valueLength > 0 ? addOnUnsetValues(memoizedUnsetPropertyValues, onUnsetValues) : null,
-      ]),
-    [memoizedUnsetPropertyValues, onUnsetValues, valueLength],
-  )
+  const unsetContextMenuItem = React.useMemo(() => {
+    return [addOnUnsetValues(['all background properties'], onUnsetSubsectionValues)]
+  }, [onUnsetSubsectionValues])
 
   const backgroundLayerArrayForDisplay = value.map((backgroundLayer, index) => {
     switch (backgroundLayer.type) {
@@ -219,7 +214,7 @@ export const BackgroundSubsection = React.memo(() => {
             useSubmitTransformedValuesFactory={useSubmitValueFactory}
             popupOpen={openPopup === index}
             setOpenPopup={setOpenPopup}
-            unsetContextMenuItem={unsetContextMenuItem}
+            unsetContextMenuItem={[]}
           />
         )
       }
@@ -234,7 +229,7 @@ export const BackgroundSubsection = React.memo(() => {
             useSubmitTransformedValuesFactory={useSubmitValueFactory}
             popupOpen={openPopup === index}
             setOpenPopup={setOpenPopup}
-            unsetContextMenuItem={unsetContextMenuItem}
+            unsetContextMenuItem={[]}
           />
         )
       }
@@ -249,7 +244,7 @@ export const BackgroundSubsection = React.memo(() => {
             useSubmitTransformedValuesFactory={useSubmitValueFactory}
             popupOpen={openPopup === index}
             setOpenPopup={setOpenPopup}
-            unsetContextMenuItem={unsetContextMenuItem}
+            unsetContextMenuItem={[]}
           />
         )
       }
@@ -264,7 +259,7 @@ export const BackgroundSubsection = React.memo(() => {
             controlStyles={controlStyles}
             popupOpen={openPopup === index}
             setOpenPopup={setOpenPopup}
-            unsetContextMenuItem={unsetContextMenuItem}
+            unsetContextMenuItem={[]}
           />
         )
       }
@@ -279,7 +274,7 @@ export const BackgroundSubsection = React.memo(() => {
             controlStyles={controlStyles}
             popupOpen={openPopup === index}
             setOpenPopup={setOpenPopup}
-            unsetContextMenuItem={unsetContextMenuItem}
+            unsetContextMenuItem={[]}
           />
         )
       }
@@ -348,16 +343,25 @@ export const BackgroundSubsection = React.memo(() => {
           <span>Background</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
-            <Icn
-              style={{ paddingTop: 1 }}
-              category='semantic'
-              type='plus'
-              color={propertyStatus.controlled ? 'primary' : 'secondary'}
-              width={16}
-              height={16}
-            />
-          </SquareButton>
+          <>
+            <SquareButton
+              highlight
+              onMouseDown={onUnsetSubsectionValues}
+              data-testid={'inspector-background-remove-all'}
+            >
+              <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+            </SquareButton>
+            <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
+              <Icn
+                style={{ paddingTop: 1 }}
+                category='semantic'
+                type='plus'
+                color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                width={16}
+                height={16}
+              />
+            </SquareButton>
+          </>
         ) : null}
       </InspectorSubsectionHeader>
       {controlStyles.unknown ? (
