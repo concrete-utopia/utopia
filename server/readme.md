@@ -52,11 +52,21 @@ First of all, you will need to create an OAuth app in Github by going to ["Setti
 Then hit the "Register application" button to complete the setup. In the page that follows there will be a "Client ID" value and when you press the "Generate a new client secret" button also a client secret value,
 make a note of these.
 
-In your `.envrc` file if locally developing or wherever environment variables are set when deploying, set the following variables:
+In your `.envrc` file if locally developing or wherever environment variables are set when deploying, set and export the following variables:
 
 - `GITHUB_OAUTH_CLIENT_ID` - Set this to the client ID from the OAuth app just created.
 - `GITHUB_OAUTH_CLIENT_SECRET` - Set this to match the client secret just generated.
 - `GITHUB_OAUTH_REDIRECT_URL` - Set this to `http://localhost:8000/v1/github/authentication/finish` for local development or whatever appropriate URL for deployment.
+
+E.g.:
+
+```plain
+use nix
+
+export GITHUB_OAUTH_CLIENT_ID=
+export GITHUB_OAUTH_CLIENT_SECRET
+export GITHUB_OATH_REDIRECT_URL=http://localhost:8000/v1/github/authentication/finish
+```
 
 Finally restart your environment, which if running locally might mean running something like `direnv allow` to permit the new settings to apply before rerunning `start-minimal` for instance to start your local environment.
 
