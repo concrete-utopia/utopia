@@ -64,7 +64,7 @@ E.g.:
 use nix
 
 export GITHUB_OAUTH_CLIENT_ID=
-export GITHUB_OAUTH_CLIENT_SECRET
+export GITHUB_OAUTH_CLIENT_SECRET=
 export GITHUB_OATH_REDIRECT_URL=http://localhost:8000/v1/github/authentication/finish
 ```
 
