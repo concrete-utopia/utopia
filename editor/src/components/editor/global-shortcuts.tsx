@@ -63,7 +63,7 @@ import {
   TOGGLE_CODE_EDITOR_SHORTCUT,
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
   TOGGLE_HIDDEN_SHORTCUT,
-  TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
+  TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT,
   TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
   TOGGLE_PREVIEW_SHORTCUT,
@@ -119,7 +119,9 @@ import {
 import {
   detectAreElementsFlexContainers,
   nukeAllAbsolutePositioningPropsCommands,
+  addPositionAbsoluteTopLeft,
   resizeToFitCommands,
+  sizeToVisualDimensions,
 } from '../inspector/inspector-common'
 
 function updateKeysPressed(
@@ -663,8 +665,8 @@ export function handleKeyDown(
       [TOGGLE_CODE_EDITOR_SHORTCUT]: () => {
         return [EditorActions.toggleInterfaceDesignerCodeEditor()]
       },
-      [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('navigator')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
@@ -806,7 +808,20 @@ export function handleKeyDown(
         }
         return [
           EditorActions.applyCommandsAction(
-            editor.selectedViews.flatMap((view) => nukeAllAbsolutePositioningPropsCommands(view)),
+            editor.selectedViews.flatMap((elementPath) => {
+              if (
+                MetadataUtils.isPositionAbsolute(
+                  MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath),
+                )
+              ) {
+                return nukeAllAbsolutePositioningPropsCommands(elementPath)
+              } else {
+                return [
+                  ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                  ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
+                ]
+              }
+            }),
           ),
         ]
       },

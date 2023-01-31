@@ -155,19 +155,14 @@ export function maybeFlexGapFromElement(
     return null
   }
 
-  const children = MetadataUtils.getChildren(metadata, elementPath)
-  if (children.length < 2) {
-    return null
-  }
-
-  const flexGap = children[0].specialSizeMeasurements.parentFlexGap
+  const flexGap = element.specialSizeMeasurements.flexGap ?? 0
 
   const gapFromProps: CSSNumber | undefined = defaultEither(
     undefined,
     getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
   )
 
-  const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
+  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
     value: { renderedValuePx: flexGap, value: gapFromProps ?? cssNumber(0) },

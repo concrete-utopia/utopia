@@ -84,8 +84,10 @@ export function measurementBasedOnOtherMeasurement(
   }
 }
 
-const FontSize = 12
-const Padding = 4
+const FontSize = 11
+const PaddingV = 0
+const PaddingH = 2
+
 const BorderRadius = 2
 
 interface CanvasLabelProps {
@@ -98,13 +100,17 @@ interface CanvasLabelProps {
 export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
   const { scale, color, value, textColor } = props
   const fontSize = FontSize / scale
-  const padding = Padding / scale
+  const paddingV = PaddingV / scale
+  const paddingH = PaddingH / scale
   const borderRadius = BorderRadius / scale
   return (
     <div
       style={{
         fontSize: fontSize,
-        padding: padding,
+        paddingLeft: paddingH,
+        paddingRight: paddingH,
+        paddingTop: paddingV,
+        paddingBottom: paddingV,
         backgroundColor: color,
         color: textColor,
         borderRadius: borderRadius,
@@ -130,6 +136,7 @@ export const PillHandle = React.memo((props: PillHandleProps): JSX.Element => {
         width: width,
         height: height,
         backgroundColor: pillColor,
+        borderRadius: 1,
         border: `${borderWidth}px solid ${colorTheme.white.value}`,
       }}
     />

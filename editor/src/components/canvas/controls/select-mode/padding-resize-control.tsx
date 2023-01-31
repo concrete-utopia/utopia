@@ -65,7 +65,7 @@ function sizeFromOrientation(orientation: Orientation, desiredSize: Size): Size 
 
 export const PaddingResizeControlHoverTimeout: number = 0
 
-const PaddingResizeControlWidth = 4
+const PaddingResizeControlWidth = 3
 const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
@@ -226,7 +226,7 @@ const PaddingResizeControlI = React.memo(
               }}
             >
               <CanvasLabel
-                value={printCSSNumber(props.paddingValue.value, null)}
+                value={printCSSNumber(props.paddingValue.value, 'px')}
                 scale={scale}
                 color={color}
                 textColor={colorTheme.white.value}

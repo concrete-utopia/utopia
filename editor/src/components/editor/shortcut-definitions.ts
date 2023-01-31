@@ -70,7 +70,7 @@ export const TOGGLE_NAVIGATOR = 'toggle-navigator'
 export const TOGGLE_INSPECTOR = 'toggle-inspector'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
-export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
+export const TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT = 'toggle-inspector-and-navigator'
 export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 export const TEXT_EDIT_MODE = 'text-edit-mode'
 export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
@@ -210,8 +210,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_CODE_EDITOR_SHORTCUT]: shortcut('Toggle the code editor.', key('period', 'cmd')),
   // FIXME: Is this needed as well as TOGGLE_LEFT_MENU_SHORTCUT and TOGGLE_RIGHT_MENU_SHORTCUT?
-  [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: shortcut(
-    'Toggle the inspector and the left menu.',
+  [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: shortcut(
+    'Toggle the inspector and the navigator.',
     key('backslash', 'cmd'),
   ),
   [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('c', [])),

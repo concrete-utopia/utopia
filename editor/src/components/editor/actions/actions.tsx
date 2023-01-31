@@ -3139,11 +3139,7 @@ export const UPDATE_FNS = {
 
     const shouldShowToast = targetWidth < hideWidth && priorWidth > minWidth
     const updatedEditor = shouldShowToast
-      ? UPDATE_FNS.ADD_TOAST(
-          showToast(notice('Code editor hidden. Use the menu or resize to get it back.')),
-          editor,
-          dispatch,
-        )
+      ? UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor, dispatch)
       : editor
 
     return {
@@ -3177,11 +3173,7 @@ export const UPDATE_FNS = {
 
     const updatedEditor = codeEditorVisibleAfter
       ? editor
-      : UPDATE_FNS.ADD_TOAST(
-          showToast(notice('Code editor hidden. Use the menu or resize to get it back.')),
-          editor,
-          dispatch,
-        )
+      : UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor, dispatch)
 
     return {
       ...updatedEditor,
