@@ -14,7 +14,7 @@ import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-la
 import { FlexDirection } from '../../inspector/common/css-utils'
 import { FlexAlignment, FlexJustifyContent, MaxContent } from '../../inspector/inspector-common'
 
-type LTWH = [left: number, top: number, width: number, height: number]
+type LTWH = [left: number, top: number, width: number | string, height: number | string]
 type Size = [width: number, height: number]
 type FlexProps = {
   left: number
@@ -228,6 +228,44 @@ describe('Smart Convert To Flex', () => {
       }),
     )
   })
+
+  it('converts horizontal layout with single child 100% wide', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 230, 150],
+      children: [[0, 0, '100%', 50]],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 230,
+          height: 'max-content',
+          display: 'flex',
+        }}
+        data-uid='parent'
+      >
+        <div 
+          data-uid='child-0'
+          style={{
+            backgroundColor: '#aaaaaa33', 
+            height: 50, 
+            contain: 'layout',
+            flexGrow: 1 
+          }} 
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
 })
 
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
@@ -242,7 +280,16 @@ function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
         ${input.children
           .map((child, i) => {
             const [childL, childT, childW, childH] = child
-            return `<div data-uid='child-${i}' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${childL}, top: ${childT}, width: ${childW}, height: ${childH} }} />`
+            return `<div 
+                data-uid='child-${i}' 
+                style={{ 
+                  backgroundColor: '#aaaaaa33', 
+                  position: 'absolute', 
+                  left: ${JSON.stringify(childL)}, 
+                  top: ${JSON.stringify(childT)},
+                  width: ${JSON.stringify(childW)},
+                  height: ${JSON.stringify(childH)} }}
+              />`
           })
           .join('\n')}
       </div>
@@ -268,7 +315,15 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
       ${input.children
         .map((child, i) => {
           const [childW, childH] = child
-          return `<div data-uid='child-${i}' style={{ backgroundColor: '#aaaaaa33', width: ${childW}, height: ${childH}, contain: 'layout' }} />`
+          return `<div 
+                  data-uid='child-${i}'
+                  style={{ 
+                    backgroundColor: '#aaaaaa33',
+                    width: ${JSON.stringify(childW)}, 
+                    height: ${JSON.stringify(childH)}, 
+                    contain: 'layout' 
+                  }}
+                />`
         })
         .join('\n')}
     </div>

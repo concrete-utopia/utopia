@@ -274,17 +274,26 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
   }
 }
 
-export function convertWidthToFlexGrowOptionally(
+export function childIs100PercentSizedInEitherDirection(
   metadataMap: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): Array<CanvasCommand> {
+): [childHorizontal100: boolean, childVertical100: boolean] {
+  return [
+    childIs100PercentSizedInDirection(metadataMap, elementPath, 'row'),
+    childIs100PercentSizedInDirection(metadataMap, elementPath, 'column'),
+  ]
+}
+
+function childIs100PercentSizedInDirection(
+  metadataMap: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection,
+): boolean {
   const element = MetadataUtils.getJSXElementFromMetadata(metadataMap, elementPath)
   const metadata = MetadataUtils.findElementByElementPath(metadataMap, elementPath)
   if (element == null || metadata == null) {
-    return []
+    return false
   }
-
-  const parentFlexDirection = metadata.specialSizeMeasurements.parentFlexDirection ?? 'row'
   const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
 
   const matches =
@@ -293,9 +302,20 @@ export function convertWidthToFlexGrowOptionally(
       getSimpleAttributeAtPath(right(element.props), PP.create('style', prop)),
     ) === '100%'
 
-  if (!matches) {
+  return matches
+}
+
+export function convertWidthToFlexGrowOptionally(
+  metadataMap: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection,
+): Array<CanvasCommand> {
+  if (!childIs100PercentSizedInDirection(metadataMap, elementPath, parentFlexDirection)) {
     return []
   }
+
+  const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
+
   return [
     deleteProperties('always', elementPath, [PP.create('style', prop)]),
     setProperty('always', elementPath, PP.create('style', 'flexGrow'), 1),

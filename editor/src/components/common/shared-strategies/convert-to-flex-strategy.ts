@@ -10,6 +10,7 @@ import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import {
+  childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
   nukeAllAbsolutePositioningPropsCommands,
   sizeToVisualDimensions,
@@ -36,6 +37,24 @@ export function convertLayoutToFlexCommands(
       childrenPaths,
     )
 
+    const [childWidth100Percent, childHeight100Percent] = childIs100PercentSizedInEitherDirection(
+      metadata,
+      childrenPaths[0],
+    )
+
+    if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
+      // special case: we only have a single child which has a size of 100%.
+      return [
+        setProperty('always', path, PP.create('style', 'display'), 'flex'),
+        ...(childWidth100Percent ? [] : [setHugContentForAxis('horizontal', path)]),
+        ...(childHeight100Percent ? [] : [setHugContentForAxis('vertical', path)]),
+        ...childrenPaths.flatMap((child) => [
+          ...nukeAllAbsolutePositioningPropsCommands(child),
+          ...convertWidthToFlexGrowOptionally(metadata, child, direction),
+        ]),
+      ]
+    }
+
     return [
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
@@ -46,7 +65,6 @@ export function convertLayoutToFlexCommands(
       ...childrenPaths.flatMap((child) => [
         ...nukeAllAbsolutePositioningPropsCommands(child),
         ...sizeToVisualDimensions(metadata, child),
-        ...convertWidthToFlexGrowOptionally(metadata, child),
       ]),
     ]
   })
