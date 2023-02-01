@@ -627,24 +627,33 @@ const LocalChangesBlock = () => {
   )
 
   const triggerSaveToGithub = React.useCallback(() => {
-    if (
-      repo != null &&
-      cleanedCommitBranchName != null &&
-      commitMessage != null &&
-      projectId != null
-    ) {
-      void saveProjectToGithub(
-        projectId,
-        repo,
-        persistentModelForProjectContents(projectContents),
-        dispatch,
-        {
-          branchName: cleanedCommitBranchName,
-          commitMessage: commitMessage,
-          assetChecksums: assetChecksums ?? {},
-        },
-      )
+    if (repo == null) {
+      console.warn('missing repo')
+      return
     }
+    if (cleanedCommitBranchName == null) {
+      console.warn('missing branch name')
+      return
+    }
+    if (commitMessage == null) {
+      console.warn('missing commit message')
+      return
+    }
+    if (projectId == null) {
+      console.warn('project id is not set')
+      return
+    }
+    void saveProjectToGithub(
+      projectId,
+      repo,
+      persistentModelForProjectContents(projectContents),
+      dispatch,
+      {
+        branchName: cleanedCommitBranchName,
+        commitMessage: commitMessage,
+        assetChecksums: assetChecksums ?? {},
+      },
+    )
   }, [
     dispatch,
     repo,
