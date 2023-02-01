@@ -89,7 +89,7 @@ import {
   canvasRectangle,
   CanvasVector,
   isInfinityRectangle,
-  isNonInfinityRectangle,
+  isFiniteRectangle,
   localRectangle,
   LocalRectangle,
   nullIfInfinity,
@@ -201,8 +201,8 @@ export function getOriginalFrames(
           if (
             localFrame != null &&
             globalFrame != null &&
-            isNonInfinityRectangle(localFrame) &&
-            isNonInfinityRectangle(globalFrame)
+            isFiniteRectangle(localFrame) &&
+            isFiniteRectangle(globalFrame)
           ) {
             // Remove the ancestor frames if the immediate ones are groups.
             let workingFrame: CanvasRectangle | null = canvasRectangle(localFrame)
@@ -248,7 +248,7 @@ export function getOriginalCanvasFrames(
       })
       if (!alreadyAdded) {
         const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-        if (frame != null && isNonInfinityRectangle(frame)) {
+        if (frame != null && isFiniteRectangle(frame)) {
           originalFrames.push({
             target: path,
             frame: frame,
@@ -1099,7 +1099,7 @@ export function collectGuidelines(
         instance != null &&
         MetadataUtils.isImg(instance) &&
         instance.localFrame != null &&
-        isNonInfinityRectangle(instance.localFrame)
+        isFiniteRectangle(instance.localFrame)
       ) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(allElementProps, instance)

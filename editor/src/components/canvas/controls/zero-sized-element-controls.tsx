@@ -20,7 +20,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   isInfinityRectangle,
-  isNonInfinityRectangle,
+  isFiniteRectangle,
 } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
@@ -78,7 +78,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
           return Object.values(store.editor.jsxMetadata).filter((element) => {
             return (
               element.globalFrame != null &&
-              isNonInfinityRectangle(element.globalFrame) &&
+              isFiniteRectangle(element.globalFrame) &&
               isZeroSizedElement(element.globalFrame) &&
               MetadataUtils.targetElementSupportsChildren(projectContents, element)
             )
@@ -91,7 +91,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
                 return false
               } else {
                 return (
-                  isNonInfinityRectangle(child.globalFrame) &&
+                  isFiniteRectangle(child.globalFrame) &&
                   isZeroSizedElement(child.globalFrame) &&
                   MetadataUtils.targetElementSupportsChildren(projectContents, child)
                 )
@@ -252,7 +252,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
         return mapDropNulls((path) => {
           const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
           const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
-          if (frame != null && isNonInfinityRectangle(frame) && isZeroSizedElement(frame)) {
+          if (frame != null && isFiniteRectangle(frame) && isZeroSizedElement(frame)) {
             return element
           } else {
             return null
@@ -272,7 +272,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
     return (
       <React.Fragment>
         {zeroSizeElements.map((element) => {
-          if (element.globalFrame != null && isNonInfinityRectangle(element.globalFrame)) {
+          if (element.globalFrame != null && isFiniteRectangle(element.globalFrame)) {
             return (
               <React.Fragment>
                 <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />

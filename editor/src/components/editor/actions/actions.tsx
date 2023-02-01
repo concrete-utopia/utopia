@@ -91,7 +91,7 @@ import {
   CanvasRectangle,
   canvasRectangle,
   isInfinityRectangle,
-  isNonInfinityRectangle,
+  isFiniteRectangle,
   LocalRectangle,
   rectangleIntersection,
   Size,
@@ -770,7 +770,7 @@ function switchAndUpdateFrames(
   const children = MetadataUtils.getChildrenPaths(editor.jsxMetadata, target)
   Utils.fastForEach(children, (childPath) => {
     const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
-    if (child?.globalFrame != null && isNonInfinityRectangle(child.globalFrame)) {
+    if (child?.globalFrame != null && isFiniteRectangle(child.globalFrame)) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -3272,7 +3272,7 @@ export const UPDATE_FNS = {
     let offset = { x: 0, y: 0 } as CanvasPoint
     if (parentPath != null) {
       const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
-      if (parentFrame != null && isNonInfinityRectangle(parentFrame)) {
+      if (parentFrame != null && isFiniteRectangle(parentFrame)) {
         offset = { x: parentFrame.x, y: parentFrame.y } as CanvasPoint
       }
     }
@@ -4349,7 +4349,7 @@ export const UPDATE_FNS = {
     let parentShiftY: number = 0
     if (parent != null) {
       const frameOfParent = MetadataUtils.getFrameInCanvasCoords(parent, editor.jsxMetadata)
-      if (frameOfParent != null && isNonInfinityRectangle(frameOfParent)) {
+      if (frameOfParent != null && isFiniteRectangle(frameOfParent)) {
         parentShiftX = -frameOfParent.x
         parentShiftY = -frameOfParent.y
       }
@@ -4633,7 +4633,7 @@ export const UPDATE_FNS = {
       action.target,
       editor.jsxMetadata,
     )
-    if (targetElementCoords != null && isNonInfinityRectangle(targetElementCoords)) {
+    if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
       if (action.keepScrollPositionIfVisible && containerRootDiv != null) {

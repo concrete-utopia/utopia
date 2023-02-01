@@ -4,7 +4,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import {
   boundingRectangleArray,
   CanvasRectangle,
-  isNonInfinityRectangle,
+  isFiniteRectangle,
 } from '../../../core/shared/math-utils'
 import {
   Substores,
@@ -50,7 +50,7 @@ function useBoundingBoxFromMetadataRef(
     let frames: Array<CanvasRectangle> = []
     fastForEach(selectedElements, (view) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, metadataRef.current)
-      if (frame != null && isNonInfinityRectangle(frame)) {
+      if (frame != null && isFiniteRectangle(frame)) {
         frames.push(frame)
       }
     })

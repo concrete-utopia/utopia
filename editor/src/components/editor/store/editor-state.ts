@@ -83,7 +83,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
-  isNonInfinityRectangle,
+  isFiniteRectangle,
   LocalRectangle,
   WindowPoint,
 } from '../../../core/shared/math-utils'
@@ -2335,7 +2335,7 @@ function getElementWarningsInner(
     const globalFrame = elementMetadata.globalFrame
     const widthOrHeightZero =
       globalFrame != null &&
-      isNonInfinityRectangle(globalFrame) &&
+      isFiniteRectangle(globalFrame) &&
       (globalFrame.width === 0 || globalFrame.height === 0)
 
     // Identify if this element looks to be trying to position itself with "pins", but

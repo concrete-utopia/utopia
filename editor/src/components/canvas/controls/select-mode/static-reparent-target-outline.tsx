@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { isNonInfinityRectangle } from '../../../../core/shared/math-utils'
+import { isFiniteRectangle } from '../../../../core/shared/math-utils'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
@@ -31,7 +31,7 @@ export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized((
     'StaticReparentTargetOutlineIndicator',
   )
 
-  if (parentFrame != null && isNonInfinityRectangle(parentFrame)) {
+  if (parentFrame != null && isFiniteRectangle(parentFrame)) {
     return (
       <HighlightControl
         canvasOffset={canvasOffset}

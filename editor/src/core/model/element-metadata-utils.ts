@@ -60,7 +60,7 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   isInfinityRectangle,
-  isNonInfinityRectangle,
+  isFiniteRectangle,
   localRectangle,
   LocalRectangle,
   MaybeInfinityCanvasRectangle,
@@ -942,7 +942,7 @@ export const MetadataUtils = {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       if (instance != null && this.isImg(instance)) {
         const componentFrame = instance.localFrame
-        if (componentFrame != null && isNonInfinityRectangle(componentFrame)) {
+        if (componentFrame != null && isFiniteRectangle(componentFrame)) {
           const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
           const roundedMultiplier = Utils.roundTo(widthMultiplier, 0)
@@ -1111,7 +1111,7 @@ export const MetadataUtils = {
       (path) => MetadataUtils.getFrameInCanvasCoords(path, metadata),
       paths,
     )
-    const nonInfinityFrames = frames.filter(isNonInfinityRectangle)
+    const nonInfinityFrames = frames.filter(isFiniteRectangle)
     if (frames.length > nonInfinityFrames.length) {
       return infinityCanvasRectangle
     } else {
@@ -1646,7 +1646,7 @@ export const MetadataUtils = {
     const globalFrame = element?.globalFrame ?? null
     const elementContainerBounds = element?.specialSizeMeasurements.coordinateSystemBounds ?? null
     const localFrame =
-      globalFrame != null && isNonInfinityRectangle(globalFrame) && elementContainerBounds != null
+      globalFrame != null && isFiniteRectangle(globalFrame) && elementContainerBounds != null
         ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
@@ -1723,14 +1723,14 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     }
 
     const childrenGlobalFrames = mapDropNulls((c) => c.globalFrame, children)
-    const childrenNonInfinityGlobalFrames = childrenGlobalFrames.filter(isNonInfinityRectangle)
+    const childrenNonInfinityGlobalFrames = childrenGlobalFrames.filter(isFiniteRectangle)
     const childrenBoundingGlobalFrame =
       childrenNonInfinityGlobalFrames.length === childrenGlobalFrames.length
         ? boundingRectangleArray(childrenNonInfinityGlobalFrames)
         : infinityCanvasRectangle
 
     const childrenLocalFrames = mapDropNulls((c) => c.localFrame, children)
-    const childrenNonInfinityLocalFrames = childrenLocalFrames.filter(isNonInfinityRectangle)
+    const childrenNonInfinityLocalFrames = childrenLocalFrames.filter(isFiniteRectangle)
     const childrenBoundingLocalFrame =
       childrenNonInfinityLocalFrames.length === childrenLocalFrames.length
         ? boundingRectangleArray(childrenNonInfinityLocalFrames)

@@ -104,7 +104,7 @@ export function isInfinityRectangle<C extends CoordinateMarker>(
   return 'type' in value && value.type === 'INFINITY_RECTANGLE'
 }
 
-export function isNonInfinityRectangle<C extends CoordinateMarker>(
+export function isFiniteRectangle<C extends CoordinateMarker>(
   r: MaybeInfinityRectangle<C>,
 ): r is Rectangle<C> {
   return !isInfinityRectangle(r)
