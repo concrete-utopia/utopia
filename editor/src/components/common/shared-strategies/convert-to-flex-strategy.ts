@@ -1,8 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasRectangle, zeroCanvasRect } from '../../../core/shared/math-utils'
-import { maybeToArray } from '../../../core/shared/optional-utils'
+import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
@@ -106,7 +105,7 @@ function guessLayoutDirection(
   parentRect: CanvasRectangle
   averageGap: number | null
 } {
-  const parentRect = MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? zeroCanvasRect
+  const parentRect = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, metadata)
   const firstGuess: FlexDirection = parentRect.width > parentRect.height ? 'row' : 'column'
   const firstGuessResult = detectConfigurationInDirection(
     metadata,
@@ -174,7 +173,7 @@ function detectConfigurationInDirection(
 } {
   const childFrames: Array<CanvasFrameAndTarget> = children.map((child) => ({
     target: child,
-    frame: MetadataUtils.getFrameInCanvasCoords(child, metadata)!,
+    frame: MetadataUtils.getFrameOrZeroRectInCanvasCoords(child, metadata),
   }))
   const sortedChildren = sortBy(childFrames, (l, r) =>
     direction === 'row' ? l.frame.x - r.frame.x : l.frame.y - r.frame.y,
