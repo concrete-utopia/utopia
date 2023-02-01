@@ -19,7 +19,7 @@ type Size = [width: number, height: number]
 type FlexProps = {
   left: number
   top: number
-  padding?: number
+  padding?: string
   gap: number
   alignItems?: FlexAlignment
   justifyContent?: FlexJustifyContent
@@ -40,7 +40,7 @@ describe('Smart Convert To Flex', () => {
     setFeatureEnabled('Nine block control', originalFSValue)
   })
 
-  it('converts an align-start layout with zero padding and a gap of 15', async () => {
+  it('converts a horizontal layout with zero padding and a gap of 15', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
       children: [
@@ -126,6 +126,39 @@ describe('Smart Convert To Flex', () => {
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts horizontal layout with symmetric 25px padding and a gap of 15', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 230, 150],
+      children: [
+        [25, 0, 50, 50],
+        [90, 0, 50, 50],
+        [155, 0, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+          padding: '0 25px',
         },
         children: [
           [50, 50],

@@ -1,8 +1,8 @@
-import { LayoutDimension } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { pluck, sortBy } from '../../../core/shared/array-utils'
+import { last, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasRectangle, zeroCanvasRect } from '../../../core/shared/math-utils'
+import { maybeToArray } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
@@ -24,7 +24,7 @@ export function convertLayoutToFlexCommands(
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
     const childrenPaths = MetadataUtils.getChildrenPaths(metadata, path)
-    const { direction, sortedChildren, averageGap } = guessLayoutDirection(
+    const { direction, sortedChildren, averageGap, padding } = guessMatchingFlexSetup(
       metadata,
       path,
       childrenPaths,
@@ -36,6 +36,9 @@ export function convertLayoutToFlexCommands(
       setProperty('always', path, PP.create('style', 'gap'), averageGap),
       setHugContentForAxis('horizontal', path),
       setHugContentForAxis('vertical', path),
+      ...maybeToArray(padding).map((p) =>
+        setProperty('always', path, PP.create('style', 'padding'), p),
+      ),
       ...childrenPaths.flatMap((child) => [
         ...nukeAllAbsolutePositioningPropsCommands(child),
         ...sizeToVisualDimensions(metadata, child),
@@ -45,22 +48,49 @@ export function convertLayoutToFlexCommands(
   })
 }
 
+function guessMatchingFlexSetup(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+  children: Array<ElementPath>,
+): {
+  direction: FlexDirection
+  sortedChildren: Array<CanvasFrameAndTarget>
+  averageGap: number
+  padding: string | null
+} {
+  const result = guessLayoutDirection(metadata, target, children)
+
+  if (result.sortedChildren.length === 0) {
+    return { ...result, padding: null }
+  }
+
+  const padding: string | null = guessPadding(
+    result.direction,
+    result.parentRect,
+    result.sortedChildren,
+  )
+
+  return { ...result, padding: padding }
+}
+
 function guessLayoutDirection(
   metadata: ElementInstanceMetadataMap,
   target: ElementPath,
   children: Array<ElementPath>,
-): { direction: FlexDirection; sortedChildren: Array<CanvasFrameAndTarget>; averageGap: number } {
-  const parentSize = MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? {
-    width: 0,
-    height: 0,
-  }
-  const firstGuess: FlexDirection = parentSize.width > parentSize.height ? 'row' : 'column'
-  const firstGuessResult = isThereOverlapInDirection(metadata, children, firstGuess)
+): {
+  direction: FlexDirection
+  sortedChildren: Array<CanvasFrameAndTarget>
+  parentRect: CanvasRectangle
+  averageGap: number
+} {
+  const parentRect = MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? zeroCanvasRect
+  const firstGuess: FlexDirection = parentRect.width > parentRect.height ? 'row' : 'column'
+  const firstGuessResult = isThereOverlapInDirection(metadata, children, firstGuess, parentRect)
   if (firstGuessResult.childrenDontOverlap) {
     return firstGuessResult
   }
   const secondGuess = firstGuess === 'row' ? 'column' : 'row'
-  const secondGuessResult = isThereOverlapInDirection(metadata, children, secondGuess)
+  const secondGuessResult = isThereOverlapInDirection(metadata, children, secondGuess, parentRect)
   if (secondGuessResult.childrenDontOverlap) {
     return secondGuessResult
   }
@@ -69,15 +99,46 @@ function guessLayoutDirection(
   return firstGuessResult
 }
 
+function guessPadding(
+  direction: FlexDirection,
+  parentRect: CanvasRectangle,
+  sortedChildren: Array<CanvasFrameAndTarget>,
+): string | null {
+  const firstChild = sortedChildren[0]
+  const lastChild = last(sortedChildren)!
+
+  if (direction === 'row') {
+    const paddingLeft = firstChild.frame.x - parentRect.x
+    const paddingRight =
+      parentRect.x + parentRect.width - (lastChild?.frame.x + lastChild?.frame.width)
+    const horizontalPadding = Math.min(paddingLeft, paddingRight)
+    if (horizontalPadding === 0) {
+      return null
+    }
+    return `0 ${horizontalPadding}px`
+  } else {
+    const paddingTop = firstChild.frame.y - parentRect.y
+    const paddingBottom =
+      parentRect.y + parentRect.height - (lastChild?.frame.y + lastChild?.frame.height)
+    const verticalPadding = Math.max(0, Math.min(paddingTop, paddingBottom))
+    if (verticalPadding === 0) {
+      return null
+    }
+    return `${verticalPadding}px 0`
+  }
+}
+
 function isThereOverlapInDirection(
   metadata: ElementInstanceMetadataMap,
   children: Array<ElementPath>,
   direction: FlexDirection,
+  parentRect: CanvasRectangle,
 ): {
   childrenDontOverlap: boolean
   direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
   averageGap: number
+  parentRect: CanvasRectangle
 } {
   const childFrames: Array<CanvasFrameAndTarget> = children.map((child) => ({
     target: child,
@@ -106,9 +167,10 @@ function isThereOverlapInDirection(
   })
 
   return {
-    childrenDontOverlap,
-    sortedChildren,
+    childrenDontOverlap: childrenDontOverlap,
+    sortedChildren: sortedChildren,
     direction: direction,
     averageGap: gapSum / (sortedChildren.length - 1),
+    parentRect: parentRect,
   }
 }
