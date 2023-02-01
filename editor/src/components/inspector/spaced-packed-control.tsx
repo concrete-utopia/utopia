@@ -42,23 +42,24 @@ export const SpacedPackedControl = React.memo(() => {
 
   const onUpdate = React.useCallback(
     (value: PackedSpaced) => {
-      if (value === 'packed') {
-        return executeFirstApplicableStrategy(
-          dispatch,
-          metadata,
-          selectedViews,
-          setSpacingModePackedStrategies,
-        )
-      } else if (value === 'spaced') {
-        return executeFirstApplicableStrategy(
-          dispatch,
-          metadata,
-          selectedViews,
-          setSpacingModeSpaceBetweenStrategies,
-        )
+      switch (value) {
+        case 'packed':
+          return executeFirstApplicableStrategy(
+            dispatch,
+            metadata,
+            selectedViews,
+            setSpacingModePackedStrategies,
+          )
+        case 'spaced':
+          return executeFirstApplicableStrategy(
+            dispatch,
+            metadata,
+            selectedViews,
+            setSpacingModeSpaceBetweenStrategies,
+          )
+        default:
+          assertNever(value)
       }
-
-      assertNever(value)
     },
     [dispatch, metadata, selectedViews],
   )

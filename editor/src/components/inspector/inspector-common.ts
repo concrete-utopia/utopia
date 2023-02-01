@@ -465,7 +465,7 @@ export const MaxContent = 'max-content' as const
 
 export type PackedSpaced = 'packed' | 'spaced'
 
-function detectPackedSpacedSettingI(
+function detectPackedSpacedSettingInner(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): PackedSpaced {
@@ -481,7 +481,7 @@ export function detectPackedSpacedSetting(
     return null
   }
   const detectedPackedSpacedSettings = elementPaths.map((path) =>
-    detectPackedSpacedSettingI(metadata, path),
+    detectPackedSpacedSettingInner(metadata, path),
   )
   return allElemsEqual(detectedPackedSpacedSettings)
     ? detectedPackedSpacedSettings.at(0) ?? null
