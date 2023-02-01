@@ -21,6 +21,7 @@ import {
   roundTo,
   printNumberOrPercent,
   numberOrPercent,
+  isInfinityRectangle,
 } from '../shared/math-utils'
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
@@ -363,7 +364,12 @@ export function switchPinnedChildToFlex(
     },
   ]
 
-  if (currentFrame != null && newParent != null && element != null) {
+  if (
+    currentFrame != null &&
+    !isInfinityRectangle(currentFrame) &&
+    newParent != null &&
+    element != null
+  ) {
     // When moving pinned to flex, use width and height to set basis values
     const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
       currentFrame.width,
@@ -492,10 +498,8 @@ export function switchFlexChildToPinned(
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
-  const currentFrame = Utils.defaultIfNull(
-    zeroLocalRect,
-    MetadataUtils.getFrame(target, targetOriginalContextMetadata),
-  ) // TODO How should this behave if there is no rendered frame?
+  // TODO How should this behave if there is no rendered frame?
+  const currentFrame = MetadataUtils.getFrameOrZeroRect(target, targetOriginalContextMetadata)
   const elementProps = allElementProps[EP.toString(target)]
   const newParentProps = allElementProps[EP.toString(newParentPath)]
 
@@ -507,11 +511,16 @@ export function switchFlexChildToPinned(
   )
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
-  const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), targetOriginalContextMetadata) ??
-    zeroCanvasRect
-  const newParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(newParentPath, currentContextMetadata) ?? zeroCanvasRect
+  const oldParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    EP.parentPath(target),
+    targetOriginalContextMetadata,
+  )
+
+  const newParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    newParentPath,
+    currentContextMetadata,
+  )
+
   const newOffset = Utils.pointDifference(newParentFrame, oldParentFrame)
 
   const updatedComponents = removeFlexAndAddPinnedPropsToComponent(
@@ -548,10 +557,8 @@ export function switchFlexChildToGroup(
   propertyTarget: Array<string>,
   allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
-  const currentFrame = Utils.defaultIfNull(
-    zeroLocalRect,
-    MetadataUtils.getFrame(target, targetOriginalContextMetadata),
-  ) // TODO How should this behave if there is no rendered frame?
+  const currentFrame = MetadataUtils.getFrameOrZeroRect(target, targetOriginalContextMetadata)
+  // TODO How should this behave if there is no rendered frame?
   const elementProps = allElementProps[EP.toString(target)]
   const newParentProps = allElementProps[EP.toString(newParentPath)]
 
@@ -562,11 +569,14 @@ export function switchFlexChildToGroup(
   )
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
-  const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), targetOriginalContextMetadata) ??
-    zeroCanvasRect
-  const newParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(newParentPath, currentContextMetadata) ?? zeroCanvasRect
+  const oldParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    EP.parentPath(target),
+    targetOriginalContextMetadata,
+  )
+  const newParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    newParentPath,
+    currentContextMetadata,
+  )
   const newOffset = Utils.pointDifference(newParentFrame, oldParentFrame)
 
   const updatedComponents = removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
@@ -607,14 +617,12 @@ export function switchChildToGroupWithParentFrame(
       target,
       componentMetadata,
     )
-  const currentFrame = Utils.defaultIfNull(
-    zeroLocalRect,
-    MetadataUtils.getFrame(originalPath, componentMetadata),
-  ) // TODO How should this behave if there is no rendered frame?
+  const currentFrame = MetadataUtils.getFrameOrZeroRect(originalPath, componentMetadata)
+  // TODO How should this behave if there is no rendered frame?
   const elementProps = allElementProps[EP.toString(target)]
-  const oldParentFrame = Utils.defaultIfNull(
-    zeroCanvasRect,
-    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(originalPath), componentMetadata),
+  const oldParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    EP.parentPath(originalPath),
+    componentMetadata,
   )
   const newOffset = Utils.pointDifference(parentFrame, oldParentFrame)
 
@@ -685,15 +693,16 @@ export function switchPinnedChildToGroup(
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: Array<string>,
 ): SwitchLayoutTypeResult {
-  const currentFrame = Utils.defaultIfNull(
-    zeroLocalRect,
-    MetadataUtils.getFrame(target, targetOriginalContextMetadata),
-  ) // TODO How should this behave if there is no rendered frame?
-  const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), currentContextMetadata) ??
-    zeroCanvasRect
-  const newParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(newParentPath, currentContextMetadata) ?? zeroCanvasRect
+  const currentFrame = MetadataUtils.getFrameOrZeroRect(target, targetOriginalContextMetadata)
+  // TODO How should this behave if there is no rendered frame?
+  const oldParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    EP.parentPath(target),
+    currentContextMetadata,
+  )
+  const newParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    newParentPath,
+    currentContextMetadata,
+  )
   const newOffset = Utils.pointDifference(newParentFrame, oldParentFrame)
   const width = currentFrame.width
   const height = currentFrame.height
@@ -731,14 +740,13 @@ export function switchChildToPinnedWithParentFrame(
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
 ): SwitchLayoutTypeResult {
-  const currentFrame = Utils.defaultIfNull(
-    zeroLocalRect,
-    MetadataUtils.getFrame(originalPath, componentMetadata),
-  ) // TODO How should this behave if there is no rendered frame?
+  const currentFrame = MetadataUtils.getFrameOrZeroRect(originalPath, componentMetadata)
+  // TODO How should this behave if there is no rendered frame?
   const elementProps = allElementProps[EP.toString(originalPath)]
-  const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(originalPath), componentMetadata) ??
-    zeroCanvasRect
+  const oldParentFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+    EP.parentPath(originalPath),
+    componentMetadata,
+  )
   const newOffset = Utils.pointDifference(parentFrame, oldParentFrame)
 
   // When moving flex to pinned, use fixed values or basis values to set width and height

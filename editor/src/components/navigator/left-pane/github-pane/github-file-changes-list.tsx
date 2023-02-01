@@ -10,7 +10,7 @@ import {
   GithubFileChanges,
   GithubFileChangesListItem,
   githubFileChangesToList,
-} from '../../../../core/shared/github'
+} from '../../../../core/shared/github/helpers'
 import { Button, colorTheme, FlexColumn, FlexRow } from '../../../../uuiui'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -22,7 +22,7 @@ import { useContextMenu } from 'react-contexify'
 import { getConflictMenuItems } from '../../../../core/shared/github-ui'
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import {
-  isGithubCommishing,
+  isGithubCommitting,
   isGithubLoadingAnyBranch,
 } from '../../../../components/editor/store/editor-state'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -206,7 +206,7 @@ export const GithubFileChangesList: React.FC<{
   )
 
   const disableButtons = React.useMemo(() => {
-    return isGithubLoadingAnyBranch(githubOperations) || isGithubCommishing(githubOperations)
+    return isGithubLoadingAnyBranch(githubOperations) || isGithubCommitting(githubOperations)
   }, [githubOperations])
 
   if (count === 0) {

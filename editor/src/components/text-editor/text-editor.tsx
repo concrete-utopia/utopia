@@ -17,7 +17,7 @@ import {
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { ApplyCommandsAction, EditorAction } from '../editor/action-types'
+import { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
@@ -31,9 +31,13 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
+  toggleTextBoldWithUnset,
   toggleTextItalic,
+  toggleTextItalicWithUnset,
   toggleTextStrikeThrough,
+  toggleTextStrikeThroughWithUnset,
   toggleTextUnderline,
+  toggleTextUnderlineWithUnset,
 } from './text-editor-shortcut-helpers'
 import { useColorTheme } from '../../uuiui'
 import { arrayToObject } from '../../core/shared/array-utils'
@@ -72,6 +76,10 @@ export function escapeHTML(s: string): string {
 
 // editor → canvas
 export function unescapeHTML(s: string): string {
+  if (s.length === 0) {
+    return ''
+  }
+
   const unescaped = unescape(s)
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
@@ -81,31 +89,58 @@ export function unescapeHTML(s: string): string {
 
 const handleToggleShortcuts = (
   event: React.KeyboardEvent<Element>,
-  metadata: ElementInstanceMetadataMap,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
   target: ElementPath,
+  dispatch: EditorDispatch,
 ): Array<EditorAction> => {
   const modifiers = Modifier.modifiersForEvent(event)
   const meta = modifiers.cmd || modifiers.ctrl
   const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
-    metadata,
+    metadataRef.current,
     target,
   )?.specialSizeMeasurements
 
   // Meta+b = bold
   if (meta && event.key === 'b') {
-    return [toggleTextBold(target, specialSizeMeasurements?.fontWeight ?? null)]
+    toggleTextBoldWithUnset(
+      target,
+      specialSizeMeasurements?.fontWeight ?? null,
+      dispatch,
+      metadataRef,
+    )
+    return []
   }
   // Meta+i = italic
   if (meta && event.key === 'i') {
-    return [toggleTextItalic(target, specialSizeMeasurements?.fontStyle ?? null)]
+    toggleTextItalicWithUnset(
+      target,
+      specialSizeMeasurements?.fontStyle ?? null,
+      dispatch,
+      metadataRef,
+    )
+    return []
   }
   // Meta+u = underline
   if (meta && event.key === 'u') {
-    return [toggleTextUnderline(target, specialSizeMeasurements?.textDecorationLine ?? null)]
+    toggleTextUnderlineWithUnset(
+      target,
+      specialSizeMeasurements?.textDecorationLine ?? null,
+      dispatch,
+      metadataRef,
+    )
+    return []
   }
   // Meta+shift+x = strikethrough
   if (meta && modifiers.shift && event.key === 'x') {
-    return [toggleTextStrikeThrough(target, specialSizeMeasurements?.textDecorationLine ?? null)]
+    toggleTextStrikeThroughWithUnset(
+      target,
+      specialSizeMeasurements?.textDecorationLine ?? null,
+      dispatch,
+      metadataRef,
+    )
+    return []
   }
   return []
 }
@@ -225,8 +260,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
 
-    const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
-    if (element?.globalFrame?.width === 0) {
+    const elementCanvasFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+      elementPath,
+      metadataRef.current,
+    )
+    if (elementCanvasFrame.width === 0) {
       currentElement.style.minWidth = '0.5px'
     }
 
@@ -275,7 +313,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
       const shortcuts = [
-        ...handleToggleShortcuts(event, metadataRef.current, elementPath),
+        ...handleToggleShortcuts(event, metadataRef, elementPath, dispatch),
         ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
         ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]

@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
-import { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { CanvasRectangle, isFiniteRectangle } from '../../../../core/shared/math-utils'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,
@@ -82,7 +82,7 @@ export function getNewIndex(
   let resultIndexes: Array<number> = []
   Utils.fastForEach(siblingTPs, (sibling, index) => {
     const siblingFrame = MetadataUtils.getFrameInCanvasCoords(sibling, componentMetadata)
-    if (siblingFrame != null) {
+    if (siblingFrame != null && isFiniteRectangle(siblingFrame)) {
       // this sibling is non-layoutable, so it doesn't participate in the yoga layout
       // I hope it won't screw the logic up
       const targetBegin = yogaDirection === 'horizontal' ? draggedFrame.x : draggedFrame.y

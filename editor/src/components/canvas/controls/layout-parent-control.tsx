@@ -17,6 +17,7 @@ import {
   flexDirectionOptions,
   getDirectionAwareLabels,
 } from '../../inspector/sections/layout-section/flex-container-subsection/flex-container-controls'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
 
 const getFlexDirectionIcon = (
   flexWrap: FlexWrap | null,
@@ -143,7 +144,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
     event.stopPropagation()
   }, [])
 
-  if (parentFrame == null) {
+  if (parentFrame == null || isInfinityRectangle(parentFrame)) {
     return null
   }
 

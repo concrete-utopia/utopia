@@ -147,6 +147,10 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([togglePanel('rightmenu')])
   }, [dispatch])
 
+  const toggleNavigatorVisible = React.useCallback(() => {
+    dispatch([togglePanel('navigator')])
+  }, [dispatch])
+
   return (
     <FlexColumn
       style={{
@@ -156,7 +160,7 @@ export const CanvasToolbar = React.memo(() => {
         alignItems: 'stretch',
         width: 64,
         borderRadius: 4,
-        backgroundColor: theme.bg0.value,
+        backgroundColor: theme.inspectorBackground.value,
         boxShadow: UtopiaStyles.popup.boxShadow,
         pointerEvents: 'initial',
       }}
@@ -285,11 +289,12 @@ export const CanvasToolbar = React.memo(() => {
               onClick={resetCanvasCallback}
             />
           </Tooltip>
-          <Tooltip title='Toggle Code Editor (⌘⌥1)' placement='bottom'>
+
+          <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
             <InsertModeButton
-              iconType='codymccodeface-larger'
+              iconType='navigator-larger'
               iconCategory='semantic'
-              onClick={toggleCodeEditorVisible}
+              onClick={toggleNavigatorVisible}
             />
           </Tooltip>
           <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
@@ -297,6 +302,13 @@ export const CanvasToolbar = React.memo(() => {
               iconType='inspector-larger'
               iconCategory='semantic'
               onClick={toggleInspectorVisible}
+            />
+          </Tooltip>
+          <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
+            <InsertModeButton
+              iconType='codymccodeface-larger'
+              iconCategory='semantic'
+              onClick={toggleCodeEditorVisible}
             />
           </Tooltip>
         </FlexRow>
@@ -310,6 +322,7 @@ interface InsertModeButtonProps {
   iconCategory?: string
   primary?: boolean
   keepActiveInLiveMode?: boolean
+  style?: React.CSSProperties
   onClick: (event: React.MouseEvent<Element>) => void
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
@@ -324,7 +337,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
 
   return (
     <SquareButton
-      style={{ borderRadius: 4 }}
+      style={{ ...props.style, borderRadius: 4 }}
       primary={primary}
       highlight
       onClick={props.onClick}
