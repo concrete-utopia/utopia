@@ -12,15 +12,18 @@ import {
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { UIGridRow } from './widgets/ui-grid-row'
 
+export const PackedLabelCopy = 'Packed' as const
+export const SpacedLabelCopy = 'Spaced' as const
+
 const OverflowControlOptions: Array<OptionChainOption<PackedSpaced>> = [
   {
-    tooltip: 'Packed',
-    label: 'Packed',
+    tooltip: PackedLabelCopy,
+    label: PackedLabelCopy,
     value: 'packed',
   },
   {
-    tooltip: 'Spaced',
-    label: 'Spaced',
+    tooltip: SpacedLabelCopy,
+    label: SpacedLabelCopy,
     value: 'spaced',
   },
 ]
