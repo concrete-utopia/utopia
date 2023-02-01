@@ -13,10 +13,10 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
 import { FlexDirection } from './common/css-utils'
+import { FlexAlignment } from './inspector-common'
 
-export const ThreeBarControlStartTestId = 'ThreeBarControlStartTestId'
-export const ThreeBarControlCenterTestId = 'ThreeBarControlCenterTestId'
-export const ThreeBarControlEndTestId = 'ThreeBarControlEndTestId'
+export const ThreeBarControlTestId = (alignItems: FlexAlignment): string =>
+  `ThreeBarControlStartTestId-${alignItems}`
 
 const ThreeBarContainerWidth = 100
 const SlabHoverOpacity = 0.3
@@ -167,7 +167,7 @@ export const ThreeBarControl = React.memo(() => {
 
   return (
     <ThreeBarContainer style={{ flexDirection: ContainerFlexDirection(flexDirection) }}>
-      <Section data-testid={ThreeBarControlStartTestId} onClick={setAlignItemsStart}>
+      <Section data-testid={ThreeBarControlTestId('flex-start')} onClick={setAlignItemsStart}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
@@ -204,7 +204,7 @@ export const ThreeBarControl = React.memo(() => {
         </DotLayer>
       </Section>
       {/* ----------------------------------------- */}
-      <Section data-testid={ThreeBarControlCenterTestId} onClick={setAlignItemsCenter}>
+      <Section data-testid={ThreeBarControlTestId('center')} onClick={setAlignItemsCenter}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
@@ -241,7 +241,7 @@ export const ThreeBarControl = React.memo(() => {
         </DotLayer>
       </Section>
       {/* ----------------------------------------- */}
-      <Section data-testid={ThreeBarControlEndTestId} onClick={setAlignItemsEnd}>
+      <Section data-testid={ThreeBarControlTestId('flex-end')} onClick={setAlignItemsEnd}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
