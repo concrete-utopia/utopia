@@ -1,4 +1,4 @@
-import { getProjectContentsChecksums } from '../../../../components/assets'
+import { getProjectContentsChecksums, walkContentsTreeAsync } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
 import { EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -15,16 +15,49 @@ import {
 import { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
 import { RequestedNpmDependency } from '../../npm-dependency-types'
+import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
 import {
+  BranchContent,
   connectRepo,
   getBranchContentFromServer,
   GetBranchContentResponse,
   runGithubOperation,
+  saveGithubAsset,
 } from '../helpers'
+
+async function saveAssetsToProject(
+  githubRepo: GithubRepo,
+  projectID: string,
+  branchContent: BranchContent,
+): Promise<void> {
+  await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
+    switch (projectFile.type) {
+      case 'IMAGE_FILE':
+        await saveGithubAsset(
+          githubRepo,
+          forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+          projectID,
+          fullPath,
+        )
+        break
+      case 'ASSET_FILE':
+        await saveGithubAsset(
+          githubRepo,
+          forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+          projectID,
+          fullPath,
+        )
+        break
+      default:
+      // Do nothing.
+    }
+  })
+}
 
 export async function updateProjectWithBranchContent(
   dispatch: EditorDispatch,
+  projectID: string,
   githubRepo: GithubRepo,
   branchName: string,
   resetBranches: boolean,
@@ -62,6 +95,9 @@ export async function updateProjectWithBranchContent(
               if (resetBranches) {
                 newGithubData.branches = null
               }
+
+              // Save assets to the server from Github.
+              await saveAssetsToProject(githubRepo, projectID, responseBody.branch)
 
               const packageJson = packageJsonFileFromProjectContents(responseBody.branch.content)
               if (packageJson != null && isTextFile(packageJson)) {
