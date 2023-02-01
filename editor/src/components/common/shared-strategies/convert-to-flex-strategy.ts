@@ -33,7 +33,9 @@ export function convertLayoutToFlexCommands(
     return [
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
-      setProperty('always', path, PP.create('style', 'gap'), averageGap),
+      ...maybeToArray(averageGap).map((g) =>
+        setProperty('always', path, PP.create('style', 'gap'), g),
+      ),
       setHugContentForAxis('horizontal', path),
       setHugContentForAxis('vertical', path),
       ...maybeToArray(padding).map((p) =>
@@ -55,7 +57,7 @@ function guessMatchingFlexSetup(
 ): {
   direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
-  averageGap: number
+  averageGap: number | null
   padding: string | null
 } {
   const result = guessLayoutDirection(metadata, target, children)
@@ -81,7 +83,7 @@ function guessLayoutDirection(
   direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
   parentRect: CanvasRectangle
-  averageGap: number
+  averageGap: number | null
 } {
   const parentRect = MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? zeroCanvasRect
   const firstGuess: FlexDirection = parentRect.width > parentRect.height ? 'row' : 'column'
@@ -137,7 +139,7 @@ function isThereOverlapInDirection(
   childrenDontOverlap: boolean
   direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
-  averageGap: number
+  averageGap: number | null
   parentRect: CanvasRectangle
 } {
   const childFrames: Array<CanvasFrameAndTarget> = children.map((child) => ({
@@ -166,11 +168,13 @@ function isThereOverlapInDirection(
     }
   })
 
+  const averageGap = Math.max(0, gapSum / (sortedChildren.length - 1))
+
   return {
     childrenDontOverlap: childrenDontOverlap,
     sortedChildren: sortedChildren,
     direction: direction,
-    averageGap: gapSum / (sortedChildren.length - 1),
+    averageGap: averageGap === 0 ? null : averageGap,
     parentRect: parentRect,
   }
 }
