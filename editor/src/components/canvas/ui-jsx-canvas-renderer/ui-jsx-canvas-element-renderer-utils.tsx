@@ -53,7 +53,6 @@ import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
-import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -346,37 +345,68 @@ export function renderCoreElement(
   }
 }
 
-function trimmedTextOrNullFromJSXElement(c: JSXElementChild): string | null {
-  switch (c.type) {
-    case 'JSX_TEXT_BLOCK':
-      if (c.text.trim().length === 0) {
-        return c.text
-      }
-      return trimWhitespaces(c.text)
-    case 'JSX_ELEMENT':
-      return c.name.baseVariable === 'br' ? '\n' : null
-    case 'JSX_ARBITRARY_BLOCK':
-      if (c.transpiledJavascript === `return ${c.javascript}`) {
-        return `{${c.originalJavascript}}`
-      }
-      return null
-    case 'JSX_FRAGMENT':
-      return null
-    default:
-      assertNever(c)
+function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): string | null {
+  let combinedText = ''
+  for (let i = 0; i < elements.length; i++) {
+    const c = elements[i]
+    switch (c.type) {
+      case 'JSX_TEXT_BLOCK':
+        combinedText += trimWhitespaces(c.text, elements[i - 1] ?? null, elements[i + 1] ?? null)
+        break
+      case 'JSX_ELEMENT':
+        if (c.name.baseVariable === 'br') {
+          combinedText += '\n'
+        }
+        break
+      case 'JSX_ARBITRARY_BLOCK':
+        if (c.transpiledJavascript === `return ${c.javascript}`) {
+          combinedText += `{${c.originalJavascript}}`
+        }
+        break
+      case 'JSX_FRAGMENT':
+        break
+      default:
+        assertNever(c)
+    }
   }
+  return combinedText
 }
 
-function trimWhitespaces(text: string): string {
-  return (
-    text
-      // split around all whitespaces, we don't want to keep newlines or repeated spaces
-      .split(/\s/)
-      // empty strings will appear between repeated whitespaces, we can ignore them
-      .filter((s) => s.length > 0)
-      // join back everything with a single space
-      .join(' ')
-  )
+function trimWhitespaces(
+  text: string,
+  elementBefore: JSXElementChild | null,
+  elementAfter: JSXElementChild | null,
+): string {
+  if (text.length === 0) {
+    return ''
+  }
+
+  const trimmedText = text
+    // split around all whitespaces, we don't want to keep newlines or repeated spaces
+    .split(/\s/)
+    // empty strings will appear between repeated whitespaces, we can ignore them
+    .filter((s) => s.length > 0)
+    // join back everything with a single space
+    .join(' ')
+
+  // when the text has a leading whitespace and there is an arbitrary block before that, we need to keep the whitespace
+  const keepSpaceBefore = text[0] === ' ' && elementBefore?.type === 'JSX_ARBITRARY_BLOCK'
+  // when the text has an trailing whitespace and there is an arbitrary block after that, we need to keep the whitespace
+  const keepSpaceAfter =
+    text[text.length - 1] === ' ' && elementAfter?.type === 'JSX_ARBITRARY_BLOCK'
+
+  if (keepSpaceBefore && keepSpaceAfter) {
+    return ' ' + trimmedText + ' '
+  }
+
+  if (keepSpaceAfter) {
+    return trimmedText + ' '
+  }
+  if (keepSpaceBefore) {
+    return ' ' + trimmedText
+  }
+
+  return trimmedText
 }
 
 function renderJSXElement(
@@ -492,7 +522,7 @@ function renderJSXElement(
 
   if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
     if (elementIsTextEdited) {
-      const text = mapDropNulls(trimmedTextOrNullFromJSXElement, childrenWithNewTextBlock).join('')
+      const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
       const textContent = unescapeHTML(text ?? '')
       const textEditorProps = {
         elementPath: elementPath,
