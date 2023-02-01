@@ -46,6 +46,7 @@ export function convertLayoutToFlexCommands(
       // special case: we only have a single child which has a size of 100%.
       return [
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
+        setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent ? [] : [setHugContentForAxis('horizontal', path)]),
         ...(childHeight100Percent ? [] : [setHugContentForAxis('vertical', path)]),
         ...childrenPaths.flatMap((child) => [
