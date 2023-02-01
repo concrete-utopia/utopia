@@ -173,8 +173,12 @@ import {
 import {
   CanvasRectangle,
   CoordinateMarker,
+  isInfinityRectangle,
   LocalPoint,
   LocalRectangle,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
+  MaybeInfinityRectangle,
   Rectangle,
   size,
   Size,
@@ -469,7 +473,7 @@ import {
   RepositoryEntry,
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
-} from '../../../core/shared/github'
+} from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -1128,8 +1132,22 @@ function RectangleKeepDeepEquality<C extends CoordinateMarker>(
   }
 }
 
+function MaybeInfinityRectangleKeepDeepEquality<C extends CoordinateMarker>(
+  oldValue: MaybeInfinityRectangle<C>,
+  newValue: MaybeInfinityRectangle<C>,
+): KeepDeepEqualityResult<MaybeInfinityRectangle<C>> {
+  if (isInfinityRectangle(oldValue) || isInfinityRectangle(newValue)) {
+    return keepDeepEqualityResult(newValue, oldValue === newValue)
+  } else {
+    return RectangleKeepDeepEquality(oldValue, newValue)
+  }
+}
+
 export const CanvasRectangleKeepDeepEquality: KeepDeepEqualityCall<CanvasRectangle> =
   RectangleKeepDeepEquality
+
+export const MaybeInfinityCanvasRectangleKeepDeepEquality: KeepDeepEqualityCall<MaybeInfinityCanvasRectangle> =
+  MaybeInfinityRectangleKeepDeepEquality
 
 export function FrameAndTargetKeepDeepEqualityCall<
   C extends CoordinateMarker,
@@ -1151,21 +1169,11 @@ export function FrameAndTargetKeepDeepEqualityCall<
 export const CanvasFrameAndTargetKeepDeepEquality: KeepDeepEqualityCall<CanvasFrameAndTarget> =
   FrameAndTargetKeepDeepEqualityCall<CanvasRectangle>()
 
-export function LocalRectangleKeepDeepEquality(
-  oldRect: LocalRectangle,
-  newRect: LocalRectangle,
-): KeepDeepEqualityResult<LocalRectangle> {
-  if (
-    oldRect.x === newRect.x &&
-    oldRect.y === newRect.y &&
-    oldRect.width === newRect.width &&
-    oldRect.height === newRect.height
-  ) {
-    return keepDeepEqualityResult(oldRect, true)
-  } else {
-    return keepDeepEqualityResult(newRect, false)
-  }
-}
+export const LocalRectangleKeepDeepEquality: KeepDeepEqualityCall<LocalRectangle> =
+  RectangleKeepDeepEquality
+
+export const MaybeInfinityLocalRectangleKeepDeepEquality: KeepDeepEqualityCall<MaybeInfinityLocalRectangle> =
+  MaybeInfinityRectangleKeepDeepEquality
 
 export function LocalPointKeepDeepEquality(
   oldPoint: LocalPoint,
@@ -1266,7 +1274,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
     const parentFlexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
-    const flexGapEquals = NullableNumberKeepDeepEquality(oldSize.flexGap, newSize.flexGap).areEqual
+    const gapEquals = NullableNumberKeepDeepEquality(oldSize.gap, newSize.gap).areEqual
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
 
     const justifyContentEquals = oldSize.justifyContent === newSize.justifyContent
@@ -1312,7 +1320,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientHeightResult &&
       parentFlexDirectionResult &&
       parentFlexGapEquals &&
-      flexGapEquals &&
+      gapEquals &&
       flexDirectionResult &&
       justifyContentEquals &&
       alignItemsEquals &&
@@ -1352,7 +1360,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientHeight,
         newSize.parentFlexDirection,
         newSize.parentFlexGap,
-        newSize.flexGap,
+        newSize.gap,
         newSize.flexDirection,
         newSize.justifyContent,
         newSize.alignItems,
@@ -1397,9 +1405,9 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.globalFrame,
-    nullableDeepEquality(CanvasRectangleKeepDeepEquality),
+    nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
-    nullableDeepEquality(LocalRectangleKeepDeepEquality),
+    nullableDeepEquality(MaybeInfinityLocalRectangleKeepDeepEquality),
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,

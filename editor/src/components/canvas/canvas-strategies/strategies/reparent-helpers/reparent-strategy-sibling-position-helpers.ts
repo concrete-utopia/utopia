@@ -5,6 +5,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
+  isInfinityRectangle,
   rectFromTwoPoints,
   zeroCanvasRect,
 } from '../../../../../core/shared/math-utils'
@@ -21,10 +22,15 @@ export function drawTargetRectanglesForChildrenOfElement(
   forwardsOrBackwards: ForwardOrReverse | null,
 ): Array<{ rect: CanvasRectangle; insertionIndex: number }> {
   const extraPadding = ExtraPadding(canvasScale)
-  const parentBounds = MetadataUtils.getFrameInCanvasCoords(
+  const parentBoundsOrInfinity = MetadataUtils.getFrameInCanvasCoords(
     singleAxisAutolayoutContainerPath,
     metadata,
   )
+
+  const parentBounds =
+    parentBoundsOrInfinity != null && isInfinityRectangle(parentBoundsOrInfinity)
+      ? zeroCanvasRect
+      : parentBoundsOrInfinity
 
   if (parentBounds == null || simpleFlexDirection == null || forwardsOrBackwards == null) {
     // TODO should we throw an error?
@@ -64,7 +70,7 @@ export function drawTargetRectanglesForChildrenOfElement(
     }
 
     const bounds = MetadataUtils.getFrameInCanvasCoords(childPath, metadata)
-    if (bounds == null) {
+    if (bounds == null || isInfinityRectangle(bounds)) {
       return null
     }
     return {
@@ -223,7 +229,7 @@ export function siblingAndPseudoPositions(
   const siblingFramesAndIndexInAutoLayout = mapDropNulls((sibling, index) => {
     if (MetadataUtils.targetParticipatesInAutoLayout(metadata, sibling)) {
       return {
-        frame: MetadataUtils.getFrameInCanvasCoords(sibling, metadata) ?? zeroCanvasRect,
+        frame: MetadataUtils.getFrameOrZeroRectInCanvasCoords(sibling, metadata) ?? zeroCanvasRect,
         index: index + 1,
       }
     } else {
@@ -270,11 +276,11 @@ function createPseudoElements(
   const flexGap = MetadataUtils.getParentFlexGap(firstElementPath, metadata)
 
   const firstElementFrame =
-    MetadataUtils.getFrameInCanvasCoords(firstElementPath, metadata) ?? zeroCanvasRect
+    MetadataUtils.getFrameOrZeroRectInCanvasCoords(firstElementPath, metadata) ?? zeroCanvasRect
   const firstElementMargin = MetadataUtils.getElementMargin(firstElementPath, metadata)
 
   const lastElementFrame =
-    MetadataUtils.getFrameInCanvasCoords(lastElementPath, metadata) ?? zeroCanvasRect
+    MetadataUtils.getFrameOrZeroRectInCanvasCoords(lastElementPath, metadata) ?? zeroCanvasRect
   const lastElementMargin = MetadataUtils.getElementMargin(lastElementPath, metadata)
 
   if (parentFlexDirection === 'horizontal') {

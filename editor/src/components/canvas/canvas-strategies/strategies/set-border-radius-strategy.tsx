@@ -20,6 +20,7 @@ import {
   roundTo,
   Size,
   size,
+  zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -332,7 +333,8 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {
-  return size(element.globalFrame?.width ?? 0, element.globalFrame?.height ?? 0)
+  const globalFrame = zeroRectIfNullOrInfinity(element.globalFrame)
+  return size(globalFrame.width, globalFrame.height)
 }
 
 function measurementFromBorderRadius(

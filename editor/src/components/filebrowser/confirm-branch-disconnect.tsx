@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { disconnectGithubProjectActions } from '../../core/shared/github'
+import { disconnectGithubProjectActions } from '../../core/shared/github/helpers'
 import { Dialog, FormButton } from '../../uuiui'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'

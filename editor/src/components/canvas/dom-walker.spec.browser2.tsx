@@ -7,9 +7,11 @@ import * as EP from '../../core/shared/element-path'
 import { selectComponents } from '../editor/actions/meta-actions'
 import {
   canvasRectangle,
-  CanvasRectangle,
-  LocalRectangle,
+  infinityCanvasRectangle,
+  infinityLocalRectangle,
   localRectangle,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
 } from '../../core/shared/math-utils'
 import { MapLike } from 'typescript'
 
@@ -37,13 +39,8 @@ describe('DOM Walker tests', () => {
     const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
     const metadata = renderResult.getEditorState().editor.jsxMetadata
 
-    const expectedGlobalFrames: MapLike<CanvasRectangle> = {
-      [BakedInStoryboardUID]: canvasRectangle({
-        x: -Infinity,
-        y: -Infinity,
-        width: Infinity,
-        height: Infinity,
-      }),
+    const expectedGlobalFrames: MapLike<MaybeInfinityCanvasRectangle> = {
+      [BakedInStoryboardUID]: infinityCanvasRectangle,
       [`${BakedInStoryboardUID}/${TestSceneUID}`]: canvasRectangle({
         x: 0,
         y: 0,
@@ -96,13 +93,8 @@ describe('DOM Walker tests', () => {
     const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
     const metadata = renderResult.getEditorState().editor.jsxMetadata
 
-    const expectedLocalFrames: MapLike<LocalRectangle> = {
-      [BakedInStoryboardUID]: localRectangle({
-        x: -Infinity,
-        y: -Infinity,
-        width: Infinity,
-        height: Infinity,
-      }),
+    const expectedLocalFrames: MapLike<MaybeInfinityLocalRectangle> = {
+      [BakedInStoryboardUID]: infinityLocalRectangle,
       [`${BakedInStoryboardUID}/${TestSceneUID}`]: localRectangle({
         x: 0,
         y: 0,
