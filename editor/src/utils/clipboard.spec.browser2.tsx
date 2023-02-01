@@ -1,5 +1,8 @@
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
-import { firePasteImageEvent } from '../components/canvas/event-helpers.test-utils'
+import {
+  firePasteImageEvent,
+  mouseClickAtPoint,
+} from '../components/canvas/event-helpers.test-utils'
 import {
   getPrintedUiJsCodeWithoutUIDs,
   renderTestEditorWithCode,
@@ -7,7 +10,6 @@ import {
 } from '../components/canvas/ui-jsx.test-utils'
 import { BakedInStoryboardVariableName } from '../core/model/scene-utils'
 import { imgBase641x1, makeImageFile } from '../components/canvas/image-insert.test-utils'
-import { wait } from './utils.test-utils'
 import { defer } from './utils'
 import Sinon from 'sinon'
 import { Clipboard } from './clipboard'
@@ -62,6 +64,65 @@ describe('Pasting an image onto the canvas', () => {
           }}
           data-aspect-ratio-locked
         />
+      `),
+    )
+  })
+
+  it('pastes image into flex container as flex child', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboardChildren(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 335,
+      top: 147,
+      width: 513,
+      height: 364,
+      display: 'flex',
+    }}
+    data-testid='container'
+  />`),
+      'await-first-dom-report',
+    )
+
+    const imagesToPaste = [await makeImageFile(imgBase641x1, 'chucknorris.png')]
+
+    const container = editor.renderedDOM.getByTestId('container')
+    const containerBounds = container.getBoundingClientRect()
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    mouseClickAtPoint(canvasControlsLayer, {
+      x: containerBounds.left + 1,
+      y: containerBounds.top + 1,
+    })
+
+    firePasteImageEvent(canvasControlsLayer, imagesToPaste)
+
+    // Wait for the next frame
+    await pasteDone
+    await editor.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStoryboardChildren(`
+      <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 335,
+        top: 147,
+        width: 513,
+        height: 364,
+        display: 'flex',
+      }}
+      data-testid='container'
+    >
+    <img
+    alt=''
+    src='./assets/clipboard/chucknorris.png'
+    style={{ width: 1, height: 1 }}
+    data-aspect-ratio-locked
+  />
+    </div>
       `),
     )
   })
