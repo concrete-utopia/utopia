@@ -24,6 +24,12 @@ export function convertLayoutToFlexCommands(
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
     const childrenPaths = MetadataUtils.getChildrenPaths(metadata, path)
+
+    if (childrenPaths.length === 0) {
+      // fall back to a simple prop-setting without any kind of guessing
+      return [setProperty('always', path, PP.create('style', 'display'), 'flex')]
+    }
+
     const { direction, sortedChildren, averageGap, padding } = guessMatchingFlexSetup(
       metadata,
       path,
@@ -145,6 +151,16 @@ function isThereOverlapInDirection(
   const sortedChildren = sortBy(childFrames, (l, r) =>
     direction === 'row' ? l.frame.x - r.frame.x : l.frame.y - r.frame.y,
   )
+
+  if (children.length < 2) {
+    return {
+      childrenDontOverlap: true,
+      direction: direction,
+      parentRect: parentRect,
+      sortedChildren: sortedChildren,
+      averageGap: null,
+    }
+  }
 
   let childrenDontOverlap: boolean = true
   let gapSum = 0

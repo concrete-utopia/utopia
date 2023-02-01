@@ -24,9 +24,9 @@ type FlexProps = {
   alignItems?: FlexAlignment
   justifyContent?: FlexJustifyContent
   display: 'flex'
-  flexDirection: FlexDirection
-  width: string
-  height: string
+  flexDirection?: FlexDirection
+  width: string | number
+  height: string | number
 }
 
 describe('Smart Convert To Flex', () => {
@@ -38,6 +38,34 @@ describe('Smart Convert To Flex', () => {
 
   after(() => {
     setFeatureEnabled('Nine block control', originalFSValue)
+  })
+
+  it('handles zero children well', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 500,
+          height: 150,
+          display: 'flex',
+        }}
+        data-uid='parent'
+      />
+    </div>
+  `),
+    )
   })
 
   it('converts a horizontal layout with zero padding and a gap of 15', async () => {
