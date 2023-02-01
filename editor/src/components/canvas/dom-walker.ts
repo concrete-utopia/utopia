@@ -931,7 +931,7 @@ function getSpecialMeasurements(
     !positionValueIsDefault(elementStyle.left)
   const hasTransform = elementStyle.transform !== 'none'
 
-  const flexGap = defaultEither(
+  const gap = defaultEither(
     null,
     mapEither((n) => n.value, parseCSSLength(elementStyle.gap)),
   )
@@ -975,7 +975,7 @@ function getSpecialMeasurements(
     clientHeight,
     parentFlexDirection,
     parsedFlexGapValue,
-    flexGap,
+    gap,
     flexDirection,
     justifyContent,
     alignItems,

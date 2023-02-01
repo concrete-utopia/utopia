@@ -155,7 +155,7 @@ export function maybeFlexGapFromElement(
     return null
   }
 
-  const flexGap = element.specialSizeMeasurements.flexGap ?? 0
+  const gap = element.specialSizeMeasurements.gap ?? 0
 
   const gapFromProps: CSSNumber | undefined = defaultEither(
     undefined,
@@ -165,7 +165,7 @@ export function maybeFlexGapFromElement(
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: { renderedValuePx: flexGap, value: gapFromProps ?? cssNumber(0) },
+    value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
     direction: flexDirection,
   }
 }
