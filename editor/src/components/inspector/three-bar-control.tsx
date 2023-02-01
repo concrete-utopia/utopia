@@ -14,6 +14,10 @@ import { executeFirstApplicableStrategy } from './inspector-strategies/inspector
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
 import { FlexDirection } from './common/css-utils'
 
+export const ThreeBarControlStartTestId = 'ThreeBarControlStartTestId'
+export const ThreeBarControlCenterTestId = 'ThreeBarControlCenterTestId'
+export const ThreeBarControlEndTestId = 'ThreeBarControlEndTestId'
+
 const ThreeBarContainerWidth = 100
 const SlabHoverOpacity = 0.3
 
@@ -163,7 +167,7 @@ export const ThreeBarControl = React.memo(() => {
 
   return (
     <ThreeBarContainer style={{ flexDirection: ContainerFlexDirection(flexDirection) }}>
-      <Section onClick={setAlignItemsStart}>
+      <Section data-testid={ThreeBarControlStartTestId} onClick={setAlignItemsStart}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
@@ -200,7 +204,7 @@ export const ThreeBarControl = React.memo(() => {
         </DotLayer>
       </Section>
       {/* ----------------------------------------- */}
-      <Section onClick={setAlignItemsCenter}>
+      <Section data-testid={ThreeBarControlCenterTestId} onClick={setAlignItemsCenter}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
@@ -237,7 +241,7 @@ export const ThreeBarControl = React.memo(() => {
         </DotLayer>
       </Section>
       {/* ----------------------------------------- */}
-      <Section onClick={setAlignItemsEnd}>
+      <Section data-testid={ThreeBarControlEndTestId} onClick={setAlignItemsEnd}>
         <SlabLayer
           style={{
             justifyContent: 'space-around',
