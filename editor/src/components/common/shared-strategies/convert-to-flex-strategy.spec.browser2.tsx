@@ -282,6 +282,7 @@ describe('Smart Convert To Flex', () => {
           width: 230,
           height: 'max-content',
           display: 'flex',
+          flexDirection: 'row',
         }}
         data-uid='parent'
       >
@@ -320,6 +321,7 @@ describe('Smart Convert To Flex', () => {
           width: 'max-content',
           height: 150,
           display: 'flex',
+          flexDirection: 'row',
         }}
         data-uid='parent'
       >
@@ -358,6 +360,7 @@ describe('Smart Convert To Flex', () => {
           width: 100,
           height: 'max-content',
           display: 'flex',
+          flexDirection: 'column',
         }}
         data-uid='parent'
       >
