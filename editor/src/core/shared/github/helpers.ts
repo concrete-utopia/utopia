@@ -172,7 +172,6 @@ export async function runGithubOperation(
   let result: Array<EditorAction> = []
   try {
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
-    await new Promise((res) => setTimeout(res, 1000))
     result = await logic()
   } finally {
     dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
