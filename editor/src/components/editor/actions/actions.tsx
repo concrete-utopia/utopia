@@ -60,7 +60,6 @@ import {
   emptyJsxMetadata,
   getJSXAttribute,
   isImportStatement,
-  isJSXAttributesEntry,
   isJSXAttributeValue,
   isJSXElement,
   isPartOfJSXAttributeValue,
@@ -90,6 +89,8 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
+  isInfinityRectangle,
+  isFiniteRectangle,
   LocalRectangle,
   rectangleIntersection,
   Size,
@@ -221,7 +222,6 @@ import {
   SaveAsset,
   SaveCurrentFile,
   SaveDOMReport,
-  SaveToGithub,
   ScrollToElement,
   SelectAllSiblings,
   SelectComponents,
@@ -388,7 +388,6 @@ import {
   UserState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
   EditorStoreUnpatched,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -402,12 +401,7 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import {
-  mergeProjectContents,
-  saveProjectToGithub,
-  TreeConflicts,
-} from '../../../core/shared/github'
-import { objectFilter } from '../../../core/shared/object-utils'
+import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
 import {
@@ -593,7 +587,7 @@ function switchAndUpdateFrames(
     `Could not find metadata for ${JSON.stringify(target)}`,
     MetadataUtils.findElementByElementPath(editor.jsxMetadata, target),
   )
-  if (targetMetadata.globalFrame == null) {
+  if (targetMetadata.globalFrame == null || isInfinityRectangle(targetMetadata.globalFrame)) {
     // The target is a non-layoutable
     return editor
   }
@@ -768,7 +762,7 @@ function switchAndUpdateFrames(
   const children = MetadataUtils.getChildrenPaths(editor.jsxMetadata, target)
   Utils.fastForEach(children, (childPath) => {
     const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
-    if (child?.globalFrame != null) {
+    if (child?.globalFrame != null && isFiniteRectangle(child.globalFrame)) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -788,7 +782,6 @@ export function editorMoveMultiSelectedTemplates(
   targets: ElementPath[],
   indexPosition: IndexPosition,
   newParentPath: ElementPath | null,
-  parentFrame: CanvasRectangle | null,
   editor: EditorModel,
 ): {
   editor: EditorModel
@@ -1757,16 +1750,11 @@ export const UPDATE_FNS = {
         throw new Error('Something went really wrong.')
     }
 
-    const newParentSize =
-      newParentPath == null
-        ? null
-        : MetadataUtils.getFrameInCanvasCoords(newParentPath, editor.jsxMetadata)
     const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
       builtInDependencies,
       reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
       indexPosition,
       newParentPath,
-      newParentSize,
       editor,
     )
 
@@ -2253,7 +2241,7 @@ export const UPDATE_FNS = {
           }
 
           const canvasFrames = action.targets.map((target) => {
-            return MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
+            return MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
           })
 
           const boundingBox = Utils.boundingRectangleArray(canvasFrames)
@@ -2371,12 +2359,6 @@ export const UPDATE_FNS = {
             ...setCanvasFramesInnerNew(withWrapperViewAddedNoFrame, frameChanges, null),
           }
 
-          // If this is a group parent, realign to the origin
-          // to prevent shifting the child frames back towards the origin.
-          const parentBounds =
-            action.layoutSystem === LayoutSystem.Group && boundingBox != null
-              ? Utils.shiftToOrigin(boundingBox)
-              : boundingBox
           // reparent targets to the view
           const indexPosition: IndexPosition = {
             type: 'back',
@@ -2387,7 +2369,6 @@ export const UPDATE_FNS = {
             orderedActionTargets,
             indexPosition,
             viewPath,
-            parentBounds,
             withWrapperViewAdded,
           ).editor
 
@@ -2587,7 +2568,7 @@ export const UPDATE_FNS = {
         const parentFrame =
           parentPath == null
             ? (Utils.zeroRectangle as CanvasRectangle)
-            : MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
+            : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
         const indexPosition: IndexPosition = indexPositionForAdjustment(
           action.target,
           editor,
@@ -2595,7 +2576,7 @@ export const UPDATE_FNS = {
         )
         let newSelection: ElementPath[] = []
         const withChildrenMoved = children.reduce((working, child) => {
-          const childFrame = MetadataUtils.getFrameInCanvasCoords(
+          const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
             child.elementPath,
             editor.jsxMetadata,
           )
@@ -3193,7 +3174,7 @@ export const UPDATE_FNS = {
     const target = action.target
     const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
 
-    if (frame == null) {
+    if (frame == null || isInfinityRectangle(frame)) {
       return editor
     }
 
@@ -3260,7 +3241,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadata)
 
-    if (initialFrame == null) {
+    if (initialFrame == null || isInfinityRectangle(initialFrame)) {
       return editor
     }
 
@@ -3275,7 +3256,7 @@ export const UPDATE_FNS = {
     let offset = { x: 0, y: 0 } as CanvasPoint
     if (parentPath != null) {
       const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
-      if (parentFrame != null) {
+      if (parentFrame != null && isFiniteRectangle(parentFrame)) {
         offset = { x: parentFrame.x, y: parentFrame.y } as CanvasPoint
       }
     }
@@ -4352,7 +4333,7 @@ export const UPDATE_FNS = {
     let parentShiftY: number = 0
     if (parent != null) {
       const frameOfParent = MetadataUtils.getFrameInCanvasCoords(parent, editor.jsxMetadata)
-      if (frameOfParent != null) {
+      if (frameOfParent != null && isFiniteRectangle(frameOfParent)) {
         parentShiftX = -frameOfParent.x
         parentShiftY = -frameOfParent.y
       }
@@ -4636,7 +4617,7 @@ export const UPDATE_FNS = {
       action.target,
       editor.jsxMetadata,
     )
-    if (targetElementCoords != null) {
+    if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
       if (action.keepScrollPositionIfVisible && containerRootDiv != null) {
@@ -5157,33 +5138,6 @@ export const UPDATE_FNS = {
       }
     }, editor)
   },
-  SAVE_TO_GITHUB: (
-    action: SaveToGithub,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    const updatedEditor = {
-      ...editor,
-      githubSettings: {
-        ...editor.githubSettings,
-        targetRepository: action.targetRepository,
-      },
-    }
-    // Side effect - Pushing this to the server to get that to save to Github.
-    const persistentModel = persistentModelFromEditorModel(updatedEditor)
-    void saveProjectToGithub(
-      forceNotNull('Should have a project ID at this point.', editor.id),
-      persistentModel,
-      dispatch,
-      {
-        branchName: action.branchName,
-        commitMessage: action.commitMessage,
-        assetChecksums: editor.assetChecksums,
-      },
-    )
-
-    return editor
-  },
   UPDATE_AGAINST_GITHUB: (action: UpdateAgainstGithub, editor: EditorModel): EditorModel => {
     const githubSettings = editor.githubSettings
     if (
@@ -5256,7 +5210,7 @@ export function alignOrDistributeSelectedViews(
     }> = Utils.stripNulls(
       selectedViews.map((target) => {
         const instanceGlobalFrame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
-        if (instanceGlobalFrame == null) {
+        if (instanceGlobalFrame == null || isInfinityRectangle(instanceGlobalFrame)) {
           return null
         } else {
           return {
@@ -5273,12 +5227,16 @@ export function alignOrDistributeSelectedViews(
       let source: CanvasRectangle
       if (sourceIsParent) {
         const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
+
         // if the parent frame is null, that means we probably ran into some error state,
         // as it means the child's globalFrame should also be null, so we shouldn't be in this branch
-        source = Utils.forceNotNull(
+        const maybeSource = Utils.forceNotNull(
           `found no parent global frame for ${EP.toComponentId(parentPath!)}`,
           parentFrame,
         )
+
+        // If the parent frame is infinite, fall back to using the selected element's frame
+        source = isInfinityRectangle(maybeSource) ? canvasFrames[0].frame : maybeSource
       } else {
         source = Utils.boundingRectangleArray(Utils.pluck(canvasFrames, 'frame'))! // I know this can't be null because we checked the canvasFrames array is non-empty
       }

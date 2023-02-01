@@ -119,7 +119,10 @@ import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
-import { refreshGithubData, updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import {
+  refreshGithubData,
+  updateUserDetailsWhenAuthenticated,
+} from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
   logSelectorTimings,

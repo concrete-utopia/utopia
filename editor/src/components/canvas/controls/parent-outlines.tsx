@@ -2,7 +2,7 @@ import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
@@ -49,7 +49,9 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
       'ImmediateParentOutlines frame',
     )
 
-    return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
+    return parentFrame == null || isInfinityRectangle(parentFrame)
+      ? null
+      : drawOutlines(parentFrame, scale, colorTheme)
   },
 )
 
@@ -77,7 +79,9 @@ export const ParentOutlines = controlForStrategyMemoized(
       'ImmediateParentOutlines frame',
     )
 
-    return parentFrame == null ? null : drawOutlines(parentFrame, scale, colorTheme)
+    return parentFrame == null || isInfinityRectangle(parentFrame)
+      ? null
+      : drawOutlines(parentFrame, scale, colorTheme)
   },
 )
 

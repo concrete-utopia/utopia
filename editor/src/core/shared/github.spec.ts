@@ -4,7 +4,7 @@ import {
   currentDeletedBranchChanged,
   differingTypesConflict,
   mergeProjectContentsTree,
-} from './github'
+} from './github/helpers'
 
 import * as FastCheck from 'fast-check'
 import { projectContentFile, ProjectContentsTree } from '../../components/assets'

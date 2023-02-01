@@ -9,6 +9,7 @@ import {
   LocalRectangle,
   CanvasRectangle,
   canvasPoint,
+  isInfinityRectangle,
 } from '../../core/shared/math-utils'
 
 export interface XAxisGuideline {

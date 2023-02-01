@@ -26,7 +26,7 @@ import {
   isJSXElement,
   jsxAttributeValue,
 } from '../../../core/shared/element-template'
-import { LocalRectangle } from '../../../core/shared/math-utils'
+import { isInfinityRectangle, LocalRectangle, zeroLocalRect } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
@@ -335,11 +335,15 @@ export function usePinToggling(): UsePinTogglingResult {
       const frameInfo: ReadonlyArray<ElementFrameInfo> = elementFrames.map((frame, index) => {
         const path = selectedViewsRef.current[index]
         const parentPath = EP.parentPath(path)
-        const parentFrame = MetadataUtils.getFrame(parentPath, jsxMetadataRef.current)
+        const localFrame = elementsRef.current[index]?.localFrame
+        const parentFrame = MetadataUtils.getFrameOrZeroRect(parentPath, jsxMetadataRef.current)
         return {
           path: path,
           frame: frame,
-          localFrame: elementsRef.current[index]?.localFrame ?? null,
+          localFrame:
+            localFrame != null && isInfinityRectangle(localFrame)
+              ? zeroLocalRect
+              : localFrame ?? null,
           parentFrame: parentFrame,
         }
       })

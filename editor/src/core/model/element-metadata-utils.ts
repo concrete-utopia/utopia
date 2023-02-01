@@ -57,11 +57,19 @@ import {
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
   getLocalRectangleInNewParentContext,
+  infinityCanvasRectangle,
+  infinityLocalRectangle,
+  isInfinityRectangle,
+  isFiniteRectangle,
   localRectangle,
   LocalRectangle,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
   roundPointToNearestHalf,
   Size,
   zeroCanvasRect,
+  zeroLocalRect,
+  zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
@@ -934,7 +942,7 @@ export const MetadataUtils = {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       if (instance != null && this.isImg(instance)) {
         const componentFrame = instance.localFrame
-        if (componentFrame != null) {
+        if (componentFrame != null && isFiniteRectangle(componentFrame)) {
           const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
           const roundedMultiplier = Utils.roundTo(widthMultiplier, 0)
@@ -1083,21 +1091,44 @@ export const MetadataUtils = {
   getFrameInCanvasCoords(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
-  ): CanvasRectangle | null {
+  ): MaybeInfinityCanvasRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
+  },
+  getFrameOrZeroRectInCanvasCoords(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const frame = Utils.optionalMap((e) => e.globalFrame, element)
+    return zeroRectIfNullOrInfinity(frame)
   },
   getBoundingRectangleInCanvasCoords(
     paths: Array<ElementPath>,
     metadata: ElementInstanceMetadataMap,
-  ): CanvasRectangle | null {
-    return boundingRectangleArray(
-      paths.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
+  ): MaybeInfinityCanvasRectangle | null {
+    const frames = mapDropNulls(
+      (path) => MetadataUtils.getFrameInCanvasCoords(path, metadata),
+      paths,
     )
+    const nonInfinityFrames = frames.filter(isFiniteRectangle)
+    if (frames.length > nonInfinityFrames.length) {
+      return infinityCanvasRectangle
+    } else {
+      return boundingRectangleArray(nonInfinityFrames)
+    }
   },
-  getFrame(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle | null {
+  getFrame(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): MaybeInfinityLocalRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.localFrame, element)
+  },
+  getFrameOrZeroRect(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const frame = Utils.optionalMap((e) => e.localFrame, element)
+    return zeroRectIfNullOrInfinity(frame)
   },
   getFrameRelativeTo: function (
     parent: ElementPath | null,
@@ -1108,10 +1139,14 @@ export const MetadataUtils = {
       return Utils.asLocal(frame)
     } else {
       const paths = EP.allPathsForLastPart(parent)
-      const parentFrames: Array<LocalRectangle> = Utils.stripNulls(
+      const parentFrames: Array<MaybeInfinityLocalRectangle> = Utils.stripNulls(
         paths.map((path) => this.getFrame(path, metadata)),
       )
-      return parentFrames.reduce((working, next) => {
+      return parentFrames.reduce<LocalRectangle>((working, next) => {
+        if (isInfinityRectangle(next)) {
+          return working
+        }
+
         return Utils.offsetRect(working, {
           x: -next.x,
           y: -next.y,
@@ -1611,7 +1646,7 @@ export const MetadataUtils = {
     const globalFrame = element?.globalFrame ?? null
     const elementContainerBounds = element?.specialSizeMeasurements.coordinateSystemBounds ?? null
     const localFrame =
-      globalFrame != null && elementContainerBounds != null
+      globalFrame != null && isFiniteRectangle(globalFrame) && elementContainerBounds != null
         ? canvasRectangleToLocalRectangle(globalFrame, elementContainerBounds)
         : null
     return localFrame
@@ -1687,10 +1722,24 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
       return
     }
 
+    const childrenGlobalFrames = mapDropNulls((c) => c.globalFrame, children)
+    const childrenNonInfinityGlobalFrames = childrenGlobalFrames.filter(isFiniteRectangle)
+    const childrenBoundingGlobalFrame =
+      childrenNonInfinityGlobalFrames.length === childrenGlobalFrames.length
+        ? boundingRectangleArray(childrenNonInfinityGlobalFrames)
+        : infinityCanvasRectangle
+
+    const childrenLocalFrames = mapDropNulls((c) => c.localFrame, children)
+    const childrenNonInfinityLocalFrames = childrenLocalFrames.filter(isFiniteRectangle)
+    const childrenBoundingLocalFrame =
+      childrenNonInfinityLocalFrames.length === childrenLocalFrames.length
+        ? boundingRectangleArray(childrenNonInfinityLocalFrames)
+        : infinityLocalRectangle
+
     workingElements[pathStr] = {
       ...spyElem,
-      globalFrame: boundingRectangleArray(pluck(children, 'globalFrame')),
-      localFrame: boundingRectangleArray(pluck(children, 'localFrame')),
+      globalFrame: childrenBoundingGlobalFrame,
+      localFrame: childrenBoundingLocalFrame,
     }
   })
 
@@ -1784,9 +1833,9 @@ export function createFakeMetadataForElement(
   const parentBounds = parentElement != null ? parentElement.globalFrame : null
 
   const localFrame =
-    parentBounds != null
-      ? getLocalRectangleInNewParentContext(parentBounds, frame)
-      : localRectangle(frame)
+    parentBounds == null || isInfinityRectangle(parentBounds)
+      ? localRectangle(frame)
+      : getLocalRectangleInNewParentContext(parentBounds, frame)
 
   const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
   specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'

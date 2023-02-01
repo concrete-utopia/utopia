@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
@@ -62,6 +62,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
     if (
       parentPath == null ||
       parentFrame == null ||
+      isInfinityRectangle(parentFrame) ||
       parentElement == null ||
       parentElement.specialSizeMeasurements.flexDirection == null
     ) {
