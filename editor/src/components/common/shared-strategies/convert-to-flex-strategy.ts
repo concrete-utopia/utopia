@@ -8,7 +8,7 @@ import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
-import { setProperty } from '../../canvas/commands/set-property-command'
+import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import {
   convertWidthToFlexGrowOptionally,
   nukeAllAbsolutePositioningPropsCommands,
@@ -33,14 +33,10 @@ export function convertLayoutToFlexCommands(
     return [
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
-      ...maybeToArray(averageGap).map((g) =>
-        setProperty('always', path, PP.create('style', 'gap'), g),
-      ),
+      ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
       setHugContentForAxis('horizontal', path),
       setHugContentForAxis('vertical', path),
-      ...maybeToArray(padding).map((p) =>
-        setProperty('always', path, PP.create('style', 'padding'), p),
-      ),
+      ...setPropertyOmitNullProp('always', path, PP.create('style', 'padding'), padding),
       ...childrenPaths.flatMap((child) => [
         ...nukeAllAbsolutePositioningPropsCommands(child),
         ...sizeToVisualDimensions(metadata, child),
