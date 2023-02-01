@@ -21,6 +21,7 @@ import {
   canvasPoint,
   CanvasRectangle,
   CanvasVector,
+  isInfinityRectangle,
   windowPoint,
   zeroPoint,
   zeroRectangle,
@@ -254,12 +255,13 @@ export function useTriggerResizePerformanceTest(): () => void {
       target,
     )?.globalFrame
     const targetStartPoint =
-      targetFrame != null
-        ? ({
+      targetFrame == null || isInfinityRectangle(targetFrame)
+        ? (zeroPoint as CanvasVector)
+        : ({
             x: targetFrame.x + targetFrame.width,
             y: targetFrame.y + targetFrame.height,
           } as CanvasVector)
-        : (zeroPoint as CanvasVector)
+
     const originalFrames = getOriginalFrames(selectedViews.current, metadata.current)
 
     let framesPassed = 0
@@ -267,7 +269,9 @@ export function useTriggerResizePerformanceTest(): () => void {
       markStart('resize', framesPassed)
       const dragState = updateResizeDragState(
         resizeDragState(
-          targetFrame ?? (zeroRectangle as CanvasRectangle),
+          targetFrame == null || isInfinityRectangle(targetFrame)
+            ? (zeroRectangle as CanvasRectangle)
+            : targetFrame,
           originalFrames,
           { x: 1, y: 1 },
           { x: 1, y: 1 },
@@ -546,6 +550,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
     if (
       childMetadata == null ||
       childMetadata.globalFrame == null ||
+      isInfinityRectangle(childMetadata.globalFrame) ||
       childMetadata.specialSizeMeasurements.coordinateSystemBounds == null
     ) {
       console.info('ABSOLUTE_MOVE_TEST_ERROR')
@@ -732,6 +737,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
     if (
       childMetadata == null ||
       childMetadata.globalFrame == null ||
+      isInfinityRectangle(childMetadata.globalFrame) ||
       childMetadata.specialSizeMeasurements.coordinateSystemBounds == null
     ) {
       console.info('SELECTION_CHANGE_TEST_ERROR')

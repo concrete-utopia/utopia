@@ -40,6 +40,9 @@ import {
   zeroCanvasRect,
   zeroLocalRect,
   canvasRectangle,
+  infinityCanvasRectangle,
+  infinityLocalRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -263,12 +266,12 @@ function addElementMetadataToMapWithFragments_MUTATE(
       elementMetadata.elementPath,
       left('fragment'),
       boundingRectangle(
-        existingMetadata.globalFrame ?? zeroCanvasRect,
-        elementMetadata.globalFrame ?? zeroCanvasRect,
+        zeroRectIfNullOrInfinity(existingMetadata.globalFrame),
+        zeroRectIfNullOrInfinity(elementMetadata.globalFrame),
       ),
       boundingRectangle(
-        existingMetadata.localFrame ?? zeroLocalRect,
-        elementMetadata.localFrame ?? zeroLocalRect,
+        zeroRectIfNullOrInfinity(existingMetadata.localFrame),
+        zeroRectIfNullOrInfinity(elementMetadata.localFrame),
       ),
       false,
       false,
@@ -1066,8 +1069,8 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as CanvasRectangle,
-      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as LocalRectangle,
+      infinityCanvasRectangle,
+      infinityLocalRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,

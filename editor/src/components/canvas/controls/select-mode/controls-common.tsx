@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import { roundTo, size } from '../../../../core/shared/math-utils'
+import { roundTo, size, zeroRectIfNullOrInfinity } from '../../../../core/shared/math-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
@@ -191,10 +191,9 @@ export function canShowCanvasPropControl(
   element: ElementInstanceMetadata,
   scale: number,
 ): Set<CanvasPropControl> {
-  const { width, height } = size(
-    (element.globalFrame?.width ?? 0) * scale,
-    (element.globalFrame?.height ?? 0) * scale,
-  )
+  const frame = zeroRectIfNullOrInfinity(element.globalFrame)
+
+  const { width, height } = size((frame.width ?? 0) * scale, (frame.height ?? 0) * scale)
 
   if (width > CONTROL_CROWDING_UPPER_THRESHOLD && height > CONTROL_CROWDING_UPPER_THRESHOLD) {
     return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])

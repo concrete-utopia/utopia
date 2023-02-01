@@ -12,6 +12,7 @@ import * as EP from '../../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
 import {
   canvasPoint,
+  nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
 } from '../../../../../core/shared/math-utils'
@@ -127,7 +128,9 @@ export function getAbsoluteReparentPropertyChanges(
     }
   }
 
-  const newParentFrame = MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata)
+  const newParentFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata),
+  )
   const newParentFlexDirection =
     MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
       ?.specialSizeMeasurements.flexDirection ?? null

@@ -7,7 +7,7 @@ import pathParse from 'path-parse'
 import React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
 import { ImageFile, ProjectFileType } from '../../core/shared/project-file-types'
-import { parseClipboardData } from '../../utils/clipboard'
+import { Clipboard } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
 import { ContextMenuWrapper } from '../context-menu-wrapper'
@@ -528,7 +528,7 @@ class FileBrowserItemInner extends React.PureComponent<
       EditorActions.setFilebrowserDropTarget(null),
     ])
 
-    void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
+    void Clipboard.parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
       let overwriteFiles: Array<FileUploadInfo> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {

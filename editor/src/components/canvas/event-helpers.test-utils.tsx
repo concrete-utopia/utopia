@@ -694,3 +694,24 @@ export function switchDragAndDropElementTargets(
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
   })
 }
+
+// https://github.com/testing-library/react-testing-library/issues/339 as above makeDragEvent,
+// though it uses a different property name the issue is still the same
+export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Array<File>) {
+  const pasteEvent = createEvent.paste(eventSourceElement)
+  Object.defineProperty(pasteEvent, 'clipboardData', {
+    value: {
+      getData: () => '',
+      items: images.map((f) => ({ kind: 'file', getAsFile: () => f })),
+      files: {
+        item: (itemIndex: number) => images[itemIndex],
+        length: images.length,
+      },
+      types: ['Files'],
+    },
+  })
+
+  act(() => {
+    fireEvent(eventSourceElement, pasteEvent)
+  })
+}
