@@ -667,7 +667,7 @@ async function testPaddingResizeForEdge(
   }
   const endPoint = offsetPointByEdge(edge, delta, paddingControlCenter)
 
-  const modifiers = precision === 'coarse' ? shiftModifier : undefined
+  const modifiers = precision === 'coarse' ? cmdModifier : undefined
   mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
   await editor.getDispatchFollowUpActionsFinished()
 }
