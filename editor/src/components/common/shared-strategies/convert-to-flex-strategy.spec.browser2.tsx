@@ -266,6 +266,82 @@ describe('Smart Convert To Flex', () => {
   `),
     )
   })
+
+  it('converts horizontal layout with single child 100% height', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 230, 150],
+      children: [[0, 0, 50, '100%']],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 'max-content',
+          height: 150,
+          display: 'flex',
+        }}
+        data-uid='parent'
+      >
+        <div 
+          data-uid='child-0'
+          style={{
+            backgroundColor: '#aaaaaa33', 
+            width: 50,
+            height: '100%', 
+            contain: 'layout',
+          }} 
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
+
+  it('converts vertical layout with single child 100% wide', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 100, 300],
+      children: [[0, 0, '100%', 50]],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 100,
+          height: 'max-content',
+          display: 'flex',
+        }}
+        data-uid='parent'
+      >
+        <div 
+          data-uid='child-0'
+          style={{
+            backgroundColor: '#aaaaaa33', 
+            width: '100%',
+            height: 50, 
+            contain: 'layout',
+          }} 
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
 })
 
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
