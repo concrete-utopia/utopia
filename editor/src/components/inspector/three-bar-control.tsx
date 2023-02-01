@@ -3,7 +3,6 @@ import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
 import {
   flexDirectionSelector,
-  justifyAlignSelector,
   metadataSelector,
   selectedViewsSelector,
 } from './inpector-selectors'
@@ -13,7 +12,15 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
 import { FlexDirection } from './common/css-utils'
-import { FlexAlignment } from './inspector-common'
+import {
+  detectFlexAlignJustifyContent,
+  detectFlexDirection,
+  FlexAlignment,
+} from './inspector-common'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { ElementPath } from '../../core/shared/project-file-types'
+import { createSelector } from 'reselect'
+import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 
 export const ThreeBarControlTestId = (alignItems: FlexAlignment): string =>
   `ThreeBarControlStartTestId-${alignItems}`
@@ -105,13 +112,128 @@ const Section = styled('div', {
 
 const DotSize = 2
 
-export const ThreeBarControl = React.memo(() => {
-  const justifyContentAlignItems = useEditorState(
+function slabOpacity(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  alignItems: FlexAlignment,
+): number {
+  return detectFlexAlignJustifyContent(metadata, selectedViews)?.alignItems === alignItems
+    ? 1
+    : SlabHoverOpacity
+}
+
+function dotOpacity(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  alignItems: FlexAlignment,
+): number | undefined {
+  return detectFlexAlignJustifyContent(metadata, selectedViews)?.alignItems === alignItems
+    ? 0
+    : undefined
+}
+
+function layerFlexDirection(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): FlexDirection {
+  return LayerFlexDirection(detectFlexDirection(metadata, selectedViews))
+}
+
+const slabOpacitySelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (_: MetadataSubstate, x: FlexAlignment) => x,
+  slabOpacity,
+)
+
+const dotOpacitySelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (_: MetadataSubstate, x: FlexAlignment) => x,
+  dotOpacity,
+)
+
+const layerFlexDirectionSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  layerFlexDirection,
+)
+
+interface ThreeBarSectionProps {
+  alignItems: FlexAlignment
+  onClick: () => void
+}
+
+const ThreeBarSection = React.memo<ThreeBarSectionProps>(({ alignItems, onClick }) => {
+  const slabo = useEditorState(
     Substores.metadata,
-    justifyAlignSelector,
+    (store) => slabOpacitySelector(store, alignItems),
     'ThreeBarControl justifyContentAlignItems',
   )
 
+  const doto = useEditorState(
+    Substores.metadata,
+    (store) => dotOpacitySelector(store, alignItems),
+    '',
+  )
+
+  const layerFlexDirectionValue = useEditorState(
+    Substores.metadata,
+    layerFlexDirectionSelector,
+    'ThreeBarControl flexDirection',
+  )
+
+  const colorTheme = useColorTheme()
+
+  const dotColor = colorTheme.fg0.value
+  const slabColor = colorTheme.fg0.value
+
+  const shortSlabHeight = SlabHeight(layerFlexDirectionValue, 'short')
+  const shortSlabWidth = SlabWidth(layerFlexDirectionValue, 'short')
+  const longSlabHeight = SlabHeight(layerFlexDirectionValue, 'long')
+  const longSlabWidth = SlabWidth(layerFlexDirectionValue, 'long')
+
+  return (
+    <Section data-testid={ThreeBarControlTestId(alignItems)} onClick={onClick}>
+      <SlabLayer
+        style={{
+          justifyContent: 'space-around',
+          alignItems: alignItems,
+          opacity: slabo,
+          flexDirection: layerFlexDirectionValue,
+        }}
+      >
+        <Slab
+          style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+        />
+        <Slab
+          style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
+        />
+        <Slab
+          style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
+        />
+      </SlabLayer>
+      <DotLayer
+        style={{
+          opacity: doto,
+          flexDirection: layerFlexDirectionValue,
+        }}
+      >
+        <DotContainer>
+          <Dot size={DotSize} bgColor={dotColor} />
+        </DotContainer>
+        <DotContainer>
+          <Dot size={DotSize} bgColor={dotColor} />
+        </DotContainer>
+        <DotContainer>
+          <Dot size={DotSize} bgColor={dotColor} />
+        </DotContainer>
+      </DotLayer>
+    </Section>
+  )
+})
+
+export const ThreeBarControl = React.memo(() => {
   const flexDirection = useEditorState(
     Substores.metadata,
     flexDirectionSelector,
@@ -121,11 +243,7 @@ export const ThreeBarControl = React.memo(() => {
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
-
-  const dotColor = colorTheme.fg0.value
-  const slabColor = colorTheme.fg0.value
 
   const setAlignItemsStart = React.useCallback(
     () =>
@@ -160,123 +278,11 @@ export const ThreeBarControl = React.memo(() => {
     [dispatch, metadataRef, selectedViewsRef],
   )
 
-  const shortSlabHeight = SlabHeight(flexDirection, 'short')
-  const shortSlabWidth = SlabWidth(flexDirection, 'short')
-  const longSlabHeight = SlabHeight(flexDirection, 'long')
-  const longSlabWidth = SlabWidth(flexDirection, 'long')
-
   return (
     <ThreeBarContainer style={{ flexDirection: ContainerFlexDirection(flexDirection) }}>
-      <Section data-testid={ThreeBarControlTestId('flex-start')} onClick={setAlignItemsStart}>
-        <SlabLayer
-          style={{
-            justifyContent: 'space-around',
-            alignItems: 'flex-start',
-            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 1 : SlabHoverOpacity,
-            flexDirection: LayerFlexDirection(flexDirection),
-          }}
-        >
-          <Slab
-            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
-          />
-          <Slab
-            style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
-          />
-          <Slab
-            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
-          />
-        </SlabLayer>
-        <DotLayer
-          style={{
-            opacity: justifyContentAlignItems?.alignItems === 'flex-start' ? 0 : undefined,
-            flexDirection: LayerFlexDirection(flexDirection),
-          }}
-        >
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-        </DotLayer>
-      </Section>
-      {/* ----------------------------------------- */}
-      <Section data-testid={ThreeBarControlTestId('center')} onClick={setAlignItemsCenter}>
-        <SlabLayer
-          style={{
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            opacity: justifyContentAlignItems?.alignItems === 'center' ? 1 : SlabHoverOpacity,
-            flexDirection: LayerFlexDirection(flexDirection),
-          }}
-        >
-          <Slab
-            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
-          />
-          <Slab
-            style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
-          />
-          <Slab
-            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
-          />
-        </SlabLayer>
-        <DotLayer
-          style={{
-            opacity: justifyContentAlignItems?.alignItems === 'center' ? 0 : undefined,
-            flexDirection: LayerFlexDirection(flexDirection),
-          }}
-        >
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-        </DotLayer>
-      </Section>
-      {/* ----------------------------------------- */}
-      <Section data-testid={ThreeBarControlTestId('flex-end')} onClick={setAlignItemsEnd}>
-        <SlabLayer
-          style={{
-            justifyContent: 'space-around',
-            alignItems: 'flex-end',
-            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 1 : SlabHoverOpacity,
-            flexDirection: LayerFlexDirection(flexDirection),
-          }}
-        >
-          <Slab
-            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
-          />
-          <Slab
-            style={{ width: longSlabWidth, height: longSlabHeight, backgroundColor: slabColor }}
-          />
-          <Slab
-            style={{ width: shortSlabWidth, height: shortSlabHeight, backgroundColor: slabColor }}
-          />
-        </SlabLayer>
-        <DotLayer
-          style={{
-            opacity: justifyContentAlignItems?.alignItems === 'flex-end' ? 0 : undefined,
-            flexDirection: LayerFlexDirection(flexDirection),
-          }}
-        >
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-          <DotContainer>
-            <Dot size={DotSize} bgColor={dotColor} />
-          </DotContainer>
-        </DotLayer>
-      </Section>
+      <ThreeBarSection alignItems={'flex-start'} onClick={setAlignItemsStart} />
+      <ThreeBarSection alignItems={'center'} onClick={setAlignItemsCenter} />
+      <ThreeBarSection alignItems={'flex-end'} onClick={setAlignItemsEnd} />
     </ThreeBarContainer>
   )
 })
