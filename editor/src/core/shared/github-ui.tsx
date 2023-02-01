@@ -1,7 +1,7 @@
 import { ContextMenuItem } from '../../components/context-menu-items'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { GithubRepo } from '../../components/editor/store/editor-state'
-import { Conflict, resolveConflict } from './github'
+import { Conflict, resolveConflict } from './github/helpers'
 
 export function getConflictMenuItems(
   githubRepo: GithubRepo,

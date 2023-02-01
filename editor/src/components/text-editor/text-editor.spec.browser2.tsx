@@ -150,32 +150,56 @@ describe('Use the text editor', () => {
   describe('formatting shortcuts', () => {
     it('supports bold', async () => {
       const { before, after } = await testModifier(cmdModifier, 'b')
-      expect(before).toEqual(projectWithStyle('fontWeight', 'bold'))
-      expect(after).toEqual(projectWithStyle('fontWeight', 'normal'))
+      expect(before).toEqual(projectWithStyle({ fontWeight: 'bold' }))
+      expect(after).toEqual(projectWithStyle({}))
     })
-
+    it('doesnt unset bold when regular is not default', async () => {
+      const { before, after } = await testModifier(
+        cmdModifier,
+        'b',
+        projectWithoutTextWithStyleProp('font', 'bold 1.2em "Fira Sans"'),
+      )
+      expect(before).toEqual(
+        projectWithStyle({ font: 'bold 1.2em "Fira Sans"', fontWeight: 'normal' }),
+      )
+      expect(after).toEqual(
+        projectWithStyle({ font: 'bold 1.2em "Fira Sans"', fontWeight: 'bold' }),
+      )
+    })
     it('supports italic', async () => {
       const { before, after } = await testModifier(cmdModifier, 'i')
-      expect(before).toEqual(projectWithStyle('fontStyle', 'italic'))
-      expect(after).toEqual(projectWithStyle('fontStyle', 'normal'))
+      expect(before).toEqual(projectWithStyle({ fontStyle: 'italic' }))
+      expect(after).toEqual(projectWithStyle({}))
     })
-
+    it('doesnt unset italic when normal is not default', async () => {
+      const { before, after } = await testModifier(
+        cmdModifier,
+        'i',
+        projectWithoutTextWithStyleProp('font', 'italic 1.2em "Fira Sans"'),
+      )
+      expect(before).toEqual(
+        projectWithStyle({ font: 'italic 1.2em "Fira Sans"', fontStyle: 'normal' }),
+      )
+      expect(after).toEqual(
+        projectWithStyle({ font: 'italic 1.2em "Fira Sans"', fontStyle: 'italic' }),
+      )
+    })
     it('supports underline', async () => {
       const { before, after } = await testModifier(cmdModifier, 'u')
-      expect(before).toEqual(projectWithStyle('textDecoration', 'underline'))
-      expect(after).toEqual(projectWithStyle('textDecoration', 'none'))
+      expect(before).toEqual(projectWithStyle({ textDecoration: 'underline' }))
+      expect(after).toEqual(projectWithStyle({}))
     })
 
     it('supports strikethrough', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, 'x')
-      expect(before).toEqual(projectWithStyle('textDecoration', 'line-through'))
-      expect(after).toEqual(projectWithStyle('textDecoration', 'none'))
+      expect(before).toEqual(projectWithStyle({ textDecoration: 'line-through' }))
+      expect(after).toEqual(projectWithStyle({}))
     })
 
     xit('supports increasing font size', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, '.')
-      expect(before).toEqual(projectWithStyle('fontSize', '17px'))
-      expect(after).toEqual(projectWithStyle('fontSize', '18px'))
+      expect(before).toEqual(projectWithStyle({ fontSize: '17px' }))
+      expect(after).toEqual(projectWithStyle({ fontSize: '18px' }))
     })
 
     xit('supports increasing font weight', async () => {
@@ -185,8 +209,8 @@ describe('Use the text editor', () => {
     })
     xit('supports decreasing font size', async () => {
       const { before, after } = await testModifier(shiftCmdModifier, ',')
-      expect(before).toEqual(projectWithStyle('fontSize', '15px'))
-      expect(after).toEqual(projectWithStyle('fontSize', '14px'))
+      expect(before).toEqual(projectWithStyle({ fontSize: '15px' }))
+      expect(after).toEqual(projectWithStyle({ fontSize: '14px' }))
     })
 
     xit('supports decreasing font weight', async () => {
@@ -221,7 +245,7 @@ describe('Use the text editor', () => {
       await pressShortcut(editor, cmdModifier, 'b')
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        projectWithStyle('fontWeight', 'bold'),
+        projectWithStyle({ fontWeight: 'bold' }),
       )
     })
   })
@@ -665,6 +689,65 @@ describe('Use the text editor', () => {
         )`),
       )
     })
+    it('doesnt trim whitespace around code', async () => {
+      const editor = await renderTestEditorWithCode(
+        formatTestProjectCode(`import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      const ipsum = 'ipsum in a variable'
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            data-testid='div'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 288,
+              height: 362,
+            }}
+            data-uid='39e'
+          >
+            Lorem {ipsum} dolor   sit   amet
+          </div>
+        </Storyboard>
+      )
+      `),
+        'await-first-dom-report',
+      )
+
+      await enterTextEditMode(editor)
+      await closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+        const ipsum = 'ipsum in a variable'
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+              }}
+              data-uid='39e'
+            >
+              Lorem {ipsum} dolor sit amet
+            </div>
+          </Storyboard>
+        )`),
+      )
+    })
   })
   describe('inline expressions', () => {
     it('handles expressions', async () => {
@@ -706,7 +789,16 @@ describe('Use the text editor', () => {
   })
 })
 
-function projectWithStyle(prop: string, value: string) {
+function projectWithStyle(props: { [prop: string]: string }) {
+  const styleProps = {
+    backgroundColor: '#0091FFAA',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 288,
+    height: 362,
+    ...props,
+  }
   return formatTestProjectCode(`
         import * as React from 'react'
         import { Storyboard } from 'utopia-api'
@@ -716,15 +808,7 @@ function projectWithStyle(prop: string, value: string) {
           <Storyboard data-uid='sb'>
             <div
               data-testid='div'
-              style={{
-                backgroundColor: '#0091FFAA',
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: 288,
-                height: 362,
-                ${prop}: '${value}'
-              }}
+              style={${JSON.stringify(styleProps)}}
               data-uid='39e'
             >Hello Utopia</div>
           </Storyboard>
@@ -781,8 +865,12 @@ async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: st
   await editor.getDispatchFollowUpActionsFinished()
 }
 
-async function testModifier(mod: Modifiers, key: string) {
-  const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+async function testModifier(
+  mod: Modifiers,
+  key: string,
+  startingProject: string = projectWithoutText,
+) {
+  const editor = await renderTestEditorWithCode(startingProject, 'await-first-dom-report')
 
   await prepareTestModifierEditor(editor)
   await pressShortcut(editor, mod, key)
@@ -864,6 +952,31 @@ export var storyboard = (
   </Storyboard>
 )
 `)
+
+function projectWithoutTextWithStyleProp(prop: string, value: string) {
+  return formatTestProjectCode(`import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div
+          data-testid='div'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 288,
+            height: 362,
+            ${prop}: '${value}'
+          }}
+          data-uid='39e'
+        />
+      </Storyboard>
+    )
+  `)
+}
 
 const emptyProject = formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'

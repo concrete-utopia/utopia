@@ -12,7 +12,7 @@ import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboar
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint } from '../core/shared/math-utils'
+import { CanvasPoint, isInfinityRectangle } from '../core/shared/math-utils'
 import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
@@ -38,8 +38,13 @@ type JSXElementsJson = string
 
 export type CopyData = JSXElementCopyData
 
-export function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
+function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
   return parsePasteEvent(clipboardData)
+}
+
+// This is required so we can mock the function in a test. Don't hate me, I already hate myself
+export const Clipboard = {
+  parseClipboardData,
 }
 
 export function setClipboardData(
@@ -97,9 +102,9 @@ export function getActionsForClipboardItems(
       const parentFrame =
         target != null ? MetadataUtils.getFrameInCanvasCoords(target, componentMetadata) : null
       const parentCenter =
-        parentFrame != null
-          ? Utils.getRectCenter(parentFrame)
-          : (Utils.point(100, 100) as CanvasPoint)
+        parentFrame == null || isInfinityRectangle(parentFrame)
+          ? (Utils.point(100, 100) as CanvasPoint) // We should instead paste the top left at 0,0
+          : Utils.getRectCenter(parentFrame)
       let pastedImages: Array<ImageResult> = []
       fastForEach(pastedFiles, (pastedFile) => {
         if (pastedFile.type === 'IMAGE_RESULT') {

@@ -12,7 +12,7 @@ import { ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint, Size } from '../core/shared/math-utils'
 import { ElementPath } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
-import { createDirectInsertImageActions, parseClipboardData } from '../utils/clipboard'
+import { createDirectInsertImageActions, Clipboard } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
 import { ProjectContentTreeRoot } from '../components/assets'
 import { createJsxImage, getFrameAndMultiplier } from '../components/images'
@@ -29,7 +29,7 @@ import { emptyComments, jsxAttributeValue } from '../core/shared/element-templat
 import { fromString } from '../core/shared/element-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
-  const result = await parseClipboardData(dataTransfer)
+  const result = await Clipboard.parseClipboardData(dataTransfer)
   // Snip out the images only from the result.
   let pastedImages: Array<ImageResult> = []
   fastForEach(result.files, (pastedFile) => {

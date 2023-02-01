@@ -3,6 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   boundingRectangleArray,
   CanvasVector,
+  nullIfInfinity,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -308,7 +309,7 @@ const SizeLabel = React.memo(
       'ResizeLabel metadata',
     )
     const boundingBox = boundingRectangleArray(
-      targets.map((t) => MetadataUtils.getFrameInCanvasCoords(t, metadata)),
+      targets.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
     )
     return (
       <div
