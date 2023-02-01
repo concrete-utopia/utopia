@@ -1,6 +1,6 @@
 import * as EP from '../../core/shared/element-path'
 import { setFeatureEnabled } from '../../utils/feature-switches'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { FlexDirection } from './common/css-utils'
@@ -66,7 +66,9 @@ async function doTest(editor: EditorRenderResult, controlId: string): Promise<HT
   const div = editor.renderedDOM.getByTestId(ParentId)
   const control = editor.renderedDOM.getByTestId(controlId)
   const controlBounds = control.getBoundingClientRect()
-  mouseClickAtPoint(control, { x: controlBounds.top + 10, y: controlBounds.left + 10 })
+  await expectSingleUndoStep(editor, async () => {
+    mouseClickAtPoint(control, { x: controlBounds.top + 10, y: controlBounds.left + 10 })
+  })
   return div
 }
 
