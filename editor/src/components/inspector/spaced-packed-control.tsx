@@ -1,9 +1,11 @@
 import React from 'react'
+import { createSelector } from 'reselect'
 import { assertNever } from '../../core/shared/utils'
 import { ControlStatus, getControlStyles } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { OptionChainControl, OptionChainOption } from './controls/option-chain-control'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { detectPackedSpacedSetting, PackedSpaced } from './inspector-common'
 import {
   setSpacingModePackedStrategies,
@@ -28,20 +30,18 @@ const OverflowControlOptions: Array<OptionChainOption<PackedSpaced>> = [
   },
 ]
 
+const packedSpacedSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  detectPackedSpacedSetting,
+)
+
 export const SpacedPackedControl = React.memo(() => {
-  const metadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'SpacedPackedControl metadata',
-  )
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'SpacedPackedControl selectedViews',
-  )
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const dispatch = useDispatch()
 
-  const setting = detectPackedSpacedSetting(metadata, selectedViews)
+  const spacedPackedSetting = useEditorState(Substores.metadata, packedSpacedSelector, '')
 
   const onUpdate = React.useCallback(
     (value: PackedSpaced) => {
@@ -49,22 +49,22 @@ export const SpacedPackedControl = React.memo(() => {
         case 'packed':
           return executeFirstApplicableStrategy(
             dispatch,
-            metadata,
-            selectedViews,
+            metadataRef.current,
+            selectedViewsRef.current,
             setSpacingModePackedStrategies,
           )
         case 'spaced':
           return executeFirstApplicableStrategy(
             dispatch,
-            metadata,
-            selectedViews,
+            metadataRef.current,
+            selectedViewsRef.current,
             setSpacingModeSpaceBetweenStrategies,
           )
         default:
           assertNever(value)
       }
     },
-    [dispatch, metadata, selectedViews],
+    [dispatch, metadataRef, selectedViewsRef],
   )
 
   const controlStatus: ControlStatus = 'simple'
@@ -76,7 +76,7 @@ export const SpacedPackedControl = React.memo(() => {
         key={'spaced-packed-control'}
         testId={'spaced-packed-control'}
         onSubmitValue={onUpdate}
-        value={setting}
+        value={spacedPackedSetting}
         options={OverflowControlOptions}
         controlStatus={controlStatus}
         controlStyles={getControlStyles(controlStatus)}
