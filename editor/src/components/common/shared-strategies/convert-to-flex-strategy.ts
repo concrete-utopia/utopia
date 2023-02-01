@@ -129,25 +129,24 @@ function guessPadding(
   const firstChild = sortedChildren[0]
   const lastChild = last(sortedChildren)!
 
-  if (direction === 'row') {
-    const paddingLeft = firstChild.frame.x - parentRect.x
-    const paddingRight =
-      parentRect.x + parentRect.width - (lastChild?.frame.x + lastChild?.frame.width)
-    const horizontalPadding = Math.min(paddingLeft, paddingRight)
-    if (horizontalPadding === 0) {
-      return null
-    }
-    return `0 ${horizontalPadding}px`
-  } else {
-    const paddingTop = firstChild.frame.y - parentRect.y
-    const paddingBottom =
-      parentRect.y + parentRect.height - (lastChild?.frame.y + lastChild?.frame.height)
-    const verticalPadding = Math.max(0, Math.min(paddingTop, paddingBottom))
-    if (verticalPadding === 0) {
-      return null
-    }
-    return `${verticalPadding}px 0`
+  const paddingLeft = firstChild.frame.x - parentRect.x
+  const paddingRight =
+    parentRect.x + parentRect.width - (lastChild?.frame.x + lastChild?.frame.width)
+  const horizontalPadding = Math.min(paddingLeft, paddingRight)
+  const paddingTop = firstChild.frame.y - parentRect.y
+  const paddingBottom =
+    parentRect.y + parentRect.height - (lastChild?.frame.y + lastChild?.frame.height)
+  const verticalPadding = Math.max(0, Math.min(paddingTop, paddingBottom))
+
+  if (horizontalPadding === 0 && verticalPadding === 0) {
+    return null
   }
+
+  return `${appendPx(verticalPadding)} ${appendPx(horizontalPadding)}`
+}
+
+function appendPx(value: number): string {
+  return value === 0 ? '0' : `${value}px`
 }
 
 function isThereOverlapInDirection(

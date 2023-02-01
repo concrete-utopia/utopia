@@ -197,6 +197,39 @@ describe('Smart Convert To Flex', () => {
     )
   })
 
+  it('converts horizontal layout with horizontal 25px padding, and vertical 20px', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 230, 150],
+      children: [
+        [25, 20, 50, 50],
+        [90, 20, 50, 50],
+        [155, 20, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+          padding: '20px 25px',
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
   it('converts horizontal layout with symmetric 25px padding and no gap', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 230, 150],
