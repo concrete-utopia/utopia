@@ -108,12 +108,22 @@ function guessLayoutDirection(
 } {
   const parentRect = MetadataUtils.getFrameInCanvasCoords(target, metadata) ?? zeroCanvasRect
   const firstGuess: FlexDirection = parentRect.width > parentRect.height ? 'row' : 'column'
-  const firstGuessResult = isThereOverlapInDirection(metadata, children, firstGuess, parentRect)
+  const firstGuessResult = detectConfigurationInDirection(
+    metadata,
+    children,
+    firstGuess,
+    parentRect,
+  )
   if (firstGuessResult.childrenDontOverlap) {
     return firstGuessResult
   }
   const secondGuess = firstGuess === 'row' ? 'column' : 'row'
-  const secondGuessResult = isThereOverlapInDirection(metadata, children, secondGuess, parentRect)
+  const secondGuessResult = detectConfigurationInDirection(
+    metadata,
+    children,
+    secondGuess,
+    parentRect,
+  )
   if (secondGuessResult.childrenDontOverlap) {
     return secondGuessResult
   }
@@ -150,7 +160,7 @@ function appendPx(value: number): string {
   return value === 0 ? '0' : `${value}px`
 }
 
-function isThereOverlapInDirection(
+function detectConfigurationInDirection(
   metadata: ElementInstanceMetadataMap,
   children: Array<ElementPath>,
   direction: FlexDirection,
