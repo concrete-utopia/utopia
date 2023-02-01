@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
-import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github'
+import { getGithubFileChangesCount, useGithubFileChanges } from '../../core/shared/github/helpers'
 import { unless, when } from '../../utils/react-conditionals'
 import {
   Avatar,

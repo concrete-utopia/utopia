@@ -60,7 +60,6 @@ import {
   emptyJsxMetadata,
   getJSXAttribute,
   isImportStatement,
-  isJSXAttributesEntry,
   isJSXAttributeValue,
   isJSXElement,
   isPartOfJSXAttributeValue,
@@ -221,7 +220,6 @@ import {
   SaveAsset,
   SaveCurrentFile,
   SaveDOMReport,
-  SaveToGithub,
   ScrollToElement,
   SelectAllSiblings,
   SelectComponents,
@@ -388,7 +386,6 @@ import {
   UserState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
   EditorStoreUnpatched,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -402,12 +399,7 @@ import { resolveModule } from '../../../core/es-modules/package-manager/module-r
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
-import {
-  mergeProjectContents,
-  saveProjectToGithub,
-  TreeConflicts,
-} from '../../../core/shared/github'
-import { objectFilter } from '../../../core/shared/object-utils'
+import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
 import {
@@ -5156,33 +5148,6 @@ export const UPDATE_FNS = {
           })
       }
     }, editor)
-  },
-  SAVE_TO_GITHUB: (
-    action: SaveToGithub,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    const updatedEditor = {
-      ...editor,
-      githubSettings: {
-        ...editor.githubSettings,
-        targetRepository: action.targetRepository,
-      },
-    }
-    // Side effect - Pushing this to the server to get that to save to Github.
-    const persistentModel = persistentModelFromEditorModel(updatedEditor)
-    void saveProjectToGithub(
-      forceNotNull('Should have a project ID at this point.', editor.id),
-      persistentModel,
-      dispatch,
-      {
-        branchName: action.branchName,
-        commitMessage: action.commitMessage,
-        assetChecksums: editor.assetChecksums,
-      },
-    )
-
-    return editor
   },
   UPDATE_AGAINST_GITHUB: (action: UpdateAgainstGithub, editor: EditorModel): EditorModel => {
     const githubSettings = editor.githubSettings

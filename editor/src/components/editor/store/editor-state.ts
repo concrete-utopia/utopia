@@ -173,7 +173,7 @@ import {
   GithubFileStatus,
   RepositoryEntry,
   TreeConflicts,
-} from '../../../core/shared/github'
+} from '../../../core/shared/github/helpers'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
@@ -262,8 +262,8 @@ export interface UserState extends UserConfiguration {
   githubState: GithubState
 }
 
-export interface GithubCommish {
-  name: 'commish'
+export interface GithubCommitAndPush {
+  name: 'commit-and-push'
 }
 
 export interface GithubListBranches {
@@ -291,7 +291,7 @@ export interface GithubListPullRequestsForBranch {
 }
 
 export type GithubOperation =
-  | GithubCommish
+  | GithubCommitAndPush
   | GithubListBranches
   | GithubLoadBranch
   | GithubLoadRepositories
@@ -300,7 +300,7 @@ export type GithubOperation =
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
-    case 'commish':
+    case 'commit-and-push':
       return 'Saving'
     case 'listBranches':
       return 'Listing branches'
@@ -343,8 +343,8 @@ export function isGithubLoadingBranch(
   )
 }
 
-export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
-  return operations.some((o) => o.name === 'commish')
+export function isGithubCommitting(operations: Array<GithubOperation>): boolean {
+  return operations.some((o) => o.name === 'commit-and-push')
 }
 
 export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {

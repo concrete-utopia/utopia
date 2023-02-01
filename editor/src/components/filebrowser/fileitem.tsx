@@ -47,7 +47,7 @@ import {
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { GithubFileStatus } from '../../core/shared/github'
+import { GithubFileStatus } from '../../core/shared/github/helpers'
 import { getFilenameParts } from '../images'
 import { getConflictMenuItems } from '../../core/shared/github-ui'
 import { useDispatch } from '../editor/store/dispatch-context'
