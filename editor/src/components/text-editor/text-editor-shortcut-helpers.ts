@@ -206,7 +206,7 @@ const toggleStylePropWithUnset = (
     const computedValue = getComputedValue()
     if (computedValue !== newValue) {
       dispatch([
-        EditorActions.transientActions([
+        EditorActions.mergeWithPrevUndo([
           EditorActions.setProperty(
             elementPath,
             PP.create('style', prop),

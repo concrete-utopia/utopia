@@ -226,6 +226,7 @@ import type {
   UpdateColorSwatches,
   PasteProperties,
   CopyProperties,
+  MergeWithPrevUndo,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -323,6 +324,13 @@ export function transientActions(
     action: 'TRANSIENT_ACTIONS',
     transientActions: actions,
     elementsToRerender: elementsToRerender,
+  }
+}
+
+export function mergeWithPrevUndo(actions: Array<EditorAction>): MergeWithPrevUndo {
+  return {
+    action: 'MERGE_WITH_PREV_UNDO',
+    actions: actions,
   }
 }
 
