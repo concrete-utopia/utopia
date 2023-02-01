@@ -20,7 +20,7 @@ type FlexProps = {
   left: number
   top: number
   padding?: string
-  gap: number
+  gap?: number
   alignItems?: FlexAlignment
   justifyContent?: FlexJustifyContent
   display: 'flex'
