@@ -45,7 +45,12 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
-import { canvasPoint, CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  CanvasPoint,
+  CanvasVector,
+  isInfinityRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   AdjustPrecision,
   canShowCanvasPropControl,
@@ -280,7 +285,11 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  if (element.globalFrame == null || isZeroSizedElement(element.globalFrame)) {
+  if (
+    element.globalFrame == null ||
+    isInfinityRectangle(element.globalFrame) ||
+    isZeroSizedElement(element.globalFrame)
+  ) {
     return false
   }
 

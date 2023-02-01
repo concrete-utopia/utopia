@@ -6,6 +6,7 @@ import {
   boundingRectangleArray,
   CanvasPoint,
   CanvasVector,
+  nullIfInfinity,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -192,7 +193,9 @@ function startResizeInteraction(
     const isMultiSelect = selectedViews.length > 1
 
     const originalSize = boundingRectangleArray(
-      selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
+      selectedViews.map((path) =>
+        nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(path, metadata)),
+      ),
     )
     const flexDirection = MetadataUtils.getFlexDirection(
       MetadataUtils.getParent(metadata, selectedViews[0]),

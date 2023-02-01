@@ -207,7 +207,6 @@ import type {
   ElementPaste,
   SetGithubState,
   SetProperty,
-  SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
@@ -1698,19 +1697,6 @@ export function toggleSelectionLock(
     action: 'TOGGLE_SELECTION_LOCK',
     targets: targets,
     newValue: newValue,
-  }
-}
-
-export function saveToGithub(
-  targetRepository: GithubRepo,
-  branchName: string,
-  commitMessage: string,
-): SaveToGithub {
-  return {
-    action: 'SAVE_TO_GITHUB',
-    targetRepository: targetRepository,
-    branchName: branchName,
-    commitMessage: commitMessage,
   }
 }
 
