@@ -1070,13 +1070,6 @@ export type ToggleSelectionLock = {
   newValue: SelectionLocked
 }
 
-export interface SaveToGithub {
-  action: 'SAVE_TO_GITHUB'
-  targetRepository: GithubRepo
-  commitMessage: string
-  branchName: string
-}
-
 export interface UpdateAgainstGithub {
   action: 'UPDATE_AGAINST_GITHUB'
   branchLatestContent: ProjectContentTreeRoot
@@ -1266,7 +1259,6 @@ export type EditorAction =
   | RunEscapeHatch
   | SetElementsToRerender
   | ToggleSelectionLock
-  | SaveToGithub
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations

@@ -473,7 +473,7 @@ import {
   RepositoryEntry,
   repositoryEntryPermissions,
   RepositoryEntryPermissions,
-} from '../../../core/shared/github'
+} from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -1273,7 +1273,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientWidthResult = oldSize.clientWidth === newSize.clientWidth
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
-    const flexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
+    const parentFlexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
+    const gapEquals = NullableNumberKeepDeepEquality(oldSize.gap, newSize.gap).areEqual
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
 
     const justifyContentEquals = oldSize.justifyContent === newSize.justifyContent
@@ -1318,7 +1319,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientWidthResult &&
       clientHeightResult &&
       parentFlexDirectionResult &&
-      flexGapEquals &&
+      parentFlexGapEquals &&
+      gapEquals &&
       flexDirectionResult &&
       justifyContentEquals &&
       alignItemsEquals &&
@@ -1358,6 +1360,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientHeight,
         newSize.parentFlexDirection,
         newSize.parentFlexGap,
+        newSize.gap,
         newSize.flexDirection,
         newSize.justifyContent,
         newSize.alignItems,

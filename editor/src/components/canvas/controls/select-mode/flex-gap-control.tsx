@@ -21,7 +21,11 @@ import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { cursorFromFlexDirection, gapControlBoundsFromMetadata } from '../../gap-utils'
+import {
+  cursorFromFlexDirection,
+  gapControlBoundsFromMetadata,
+  maybeFlexGapFromElement,
+} from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import {
   CanvasLabel,
@@ -32,15 +36,14 @@ import {
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
-  flexDirection: FlexDirection
-  updatedGapValue: CSSNumberWithRenderedValue
+  updatedGapValue: CSSNumberWithRenderedValue | null
 }
 
 export const FlexGapControlTestId = 'FlexGapControlTestId'
 export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
-  const { selectedElement, flexDirection, updatedGapValue } = props
+  const { selectedElement, updatedGapValue } = props
   const colorTheme = useColorTheme()
   const indicatorColor = colorTheme.gapControls.value
 
@@ -70,30 +73,43 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   }, [hoveredViews, selectedElement])
 
   const dispatch = useDispatch()
-  const { scale, metadata, isDragging } = useEditorState(
-    Substores.canvasAndMetadata,
-    (store) => ({
-      scale: store.editor.canvas.scale,
-      metadata: store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
-      isDragging: store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
-    }),
-    'FlexGapControl dispatch scale',
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'FlexGapControl scale',
+  )
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'FlexGapControl metadata',
+  )
+  const isDragging = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.interactionSession?.activeControl.type === 'FLEX_GAP_HANDLE',
+    'FlexGapControl isDragging',
   )
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-
-  const controlBounds = gapControlBoundsFromMetadata(
-    metadata,
-    selectedElement,
-    updatedGapValue.renderedValuePx,
-    flexDirection,
-  )
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       startInteraction(e, dispatch, canvasOffset.current, scale)
     },
     [canvasOffset, dispatch, scale],
+  )
+
+  const flexGap = maybeFlexGapFromElement(metadata, selectedElement)
+  if (flexGap == null) {
+    return null
+  }
+
+  const flexGapValue = updatedGapValue ?? flexGap.value
+
+  const controlBounds = gapControlBoundsFromMetadata(
+    metadata,
+    selectedElement,
+    flexGapValue.renderedValuePx,
+    flexGap.direction,
   )
 
   return (
@@ -110,12 +126,12 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               elementHovered={elementHovered}
               path={path}
               bounds={bounds}
-              flexDirection={flexDirection}
+              flexDirection={flexGap.direction}
               indicatorColor={indicatorColor}
               scale={scale}
               backgroundShown={backgroundShown}
               isDragging={isDragging}
-              gapValue={updatedGapValue.value}
+              gapValue={flexGapValue.value}
             />
           )
         })}
@@ -264,7 +280,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
 function handleDimensions(flexDirection: FlexDirection, scale: number): Size {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
-    return size(4 / scale, 12 / scale)
+    return size(3 / scale, 12 / scale)
   }
   if (flexDirection === 'column' || flexDirection === 'column-reverse') {
     return size(12 / scale, 4 / scale)
