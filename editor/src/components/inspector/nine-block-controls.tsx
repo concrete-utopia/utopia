@@ -1,5 +1,4 @@
 import React from 'react'
-import { styled } from '@stitches/react'
 import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import { size, Size } from '../../core/shared/math-utils'
@@ -7,22 +6,28 @@ import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import {
+  justifyAlignSelector,
+  metadataSelector,
+  numberOfFlexContainersSelector,
+  packedFlexSettingSelector,
+  selectedViewsSelector,
+} from './inpector-selectors'
 import {
   DefaultFlexDirection,
-  detectFlexAlignJustifyContent,
   detectFlexDirection,
   FlexAlignment,
   FlexJustifyContent,
   isFlexColumn,
   justifyContentAlignItemsEquals,
   JustifyContentFlexAlignemt,
-  numberOfFlexContainers,
   StartCenterEnd,
 } from './inspector-common'
 import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import { Dot } from './inspector-common-components'
+import { styled } from '@stitches/react'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,
@@ -95,12 +100,6 @@ const Slabs = React.memo<SlabsProps>(({ flexDirection, alignItems, justifyConten
 })
 
 const DotSize = 2
-
-const justifyAlignSelector = createSelector(
-  metadataSelector,
-  selectedViewsSelector,
-  detectFlexAlignJustifyContent,
-)
 
 const flexDirectionSelector = createSelector(
   metadataSelector,
@@ -233,24 +232,11 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           opacity: isSelected ? 0 : undefined,
         }}
       >
-        <div
-          style={{
-            backgroundColor: fgColor,
-            width: DotSize,
-            height: DotSize,
-            borderRadius: DotSize / 2,
-          }}
-        />
+        <Dot bgColor={fgColor} size={DotSize} />
       </DotContainer>
     </div>
   )
 })
-
-const numberOfFlexContainersSelector = createSelector(
-  metadataSelector,
-  selectedViewsSelector,
-  numberOfFlexContainers,
-)
 
 export const NineBlockControl = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -262,6 +248,13 @@ export const NineBlockControl = React.memo(() => {
     numberOfFlexContainersSelector,
     'FlexDirectionToggle, nFlexContainers',
   )
+
+  const packedSpacedSetting =
+    useEditorState(
+      Substores.metadata,
+      packedFlexSettingSelector,
+      'FlexSection packedFlexSetting',
+    ) ?? 'packed'
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
@@ -299,16 +292,14 @@ export const NineBlockControl = React.memo(() => {
     [setAlignItemsJustifyContent],
   )
 
-  if (nFlexContainers === 0) {
-    return null
-  }
+  const shouldShow = nFlexContainers > 0 && packedSpacedSetting === 'packed'
 
   return (
     <div
       style={{
         margin: 2,
         height: 100,
-        display: 'grid',
+        display: shouldShow ? 'grid' : 'none',
         aspectRatio: '1',
         boxSizing: 'border-box',
         gridTemplateRows: '1fr 1fr 1fr',

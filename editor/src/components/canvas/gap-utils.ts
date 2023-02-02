@@ -161,6 +161,15 @@ export function maybeFlexGapFromElement(
     return null
   }
 
+  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
+    return null
+  }
+
+  const children = MetadataUtils.getChildren(metadata, elementPath)
+  if (children.length < 2) {
+    return null
+  }
+
   const gap = element.specialSizeMeasurements.gap ?? 0
 
   const gapFromProps: CSSNumber | undefined = defaultEither(

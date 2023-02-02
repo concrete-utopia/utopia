@@ -6,7 +6,6 @@ import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/elem
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import {
   CSSNumber,
-  cssNumber,
   cssPixelLength,
   FlexDirection,
   parseCSSLengthPercent,
@@ -21,6 +20,7 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
+import { shallowEqual } from '../../core/shared/equality-utils'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -247,7 +247,7 @@ export function justifyContentAlignItemsEquals(
     : alignItems === other.alignItems && justifyContent === other.justifyContent
 }
 
-function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {
+function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean = shallowEqual): boolean {
   if (objects.length === 0) {
     return false
   }
@@ -506,6 +506,30 @@ export function detectFillHugFixedState(
 
 export const MaxContent = 'max-content' as const
 
+export type PackedSpaced = 'packed' | 'spaced'
+
+function detectPackedSpacedSettingInner(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): PackedSpaced {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  return element?.specialSizeMeasurements.justifyContent === 'space-between' ? 'spaced' : 'packed'
+}
+
+export function detectPackedSpacedSetting(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): PackedSpaced | null {
+  if (elementPaths.length === 0) {
+    return null
+  }
+  const detectedPackedSpacedSettings = elementPaths.map((path) =>
+    detectPackedSpacedSettingInner(metadata, path),
+  )
+  return allElemsEqual(detectedPackedSpacedSettings)
+    ? detectedPackedSpacedSettings.at(0) ?? null
+    : null
+}
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,

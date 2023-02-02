@@ -9,6 +9,8 @@ import { detectAreElementsFlexContainers } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { PaddingRow } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
+import { SpacedPackedControl } from './spaced-packed-control'
+import { ThreeBarControl } from './three-bar-control'
 
 const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
@@ -31,9 +33,11 @@ export const FlexSection = React.memo(() => {
         <>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <FlexDirectionToggle />
+            <SpacedPackedControl />
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <NineBlockControl />
+            <ThreeBarControl />
           </UIGridRow>
           <PaddingRow />
         </>,
