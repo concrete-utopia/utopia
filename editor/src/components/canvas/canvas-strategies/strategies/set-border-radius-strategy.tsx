@@ -430,10 +430,7 @@ function borderRadiusFromData(
   }
 }
 
-function longhandFromEdgePosition(
-  mode: BorderRadiusAdjustMode,
-  corner: BorderRadiusCorner,
-): keyof ParsedCSSProperties {
+function longhandFromEdgePosition(mode: BorderRadiusAdjustMode, corner: BorderRadiusCorner) {
   if (mode === 'individual') {
     switch (corner) {
       case 'tl':
@@ -534,6 +531,14 @@ const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
   stylePropPathMappingFn(p, styleStringInArray)
 
 const setStylePropertyCommand =
-  <P extends ParsedCSSPropertiesKeys>(prop: P, value: string | number) =>
+  (
+    prop:
+      | 'borderRadius'
+      | 'borderTopLeftRadius'
+      | 'borderTopRightRadius'
+      | 'borderBottomLeftRadius'
+      | 'borderBottomRightRadius',
+    value: string | number,
+  ) =>
   (target: ElementPath): CanvasCommand =>
     setProperty('always', target, StylePaddingProp(prop), value)

@@ -1,1 +1,1 @@
-export const styleStringInArray = ['style']
+export const styleStringInArray = ['style'] as ['style']

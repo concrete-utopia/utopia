@@ -4,6 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useEffect } from 'react'
 import TimeAgo from 'react-timeago'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { projectDependenciesSelector } from '../../../../core/shared/dependencies'
 import {
   dispatchPromiseActions,
@@ -833,6 +834,8 @@ const BranchNotLoadedBlock = () => {
     'Built-in dependencies',
   )
 
+  const projectID = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'Project ID')
+
   const currentDependencies = useEditorState(
     Substores.fullStore,
     projectDependenciesSelector,
@@ -843,6 +846,7 @@ const BranchNotLoadedBlock = () => {
     if (githubRepo != null && branchName != null) {
       void updateProjectWithBranchContent(
         dispatch,
+        forceNotNull('Should have a project ID by now.', projectID),
         githubRepo,
         branchName,
         false,
@@ -850,7 +854,7 @@ const BranchNotLoadedBlock = () => {
         builtInDependencies,
       )
     }
-  }, [dispatch, githubRepo, branchName, currentDependencies, builtInDependencies])
+  }, [dispatch, githubRepo, branchName, currentDependencies, builtInDependencies, projectID])
 
   const isANewBranch = React.useMemo(() => {
     if (branches == null) {

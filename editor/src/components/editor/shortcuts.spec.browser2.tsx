@@ -191,7 +191,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('b', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => pressKey('b', { modifiers: cmdModifier }))
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -204,7 +204,7 @@ describe('global shortcuts to set properties', () => {
       ),
     )
   })
-  it('cmd + b toggles text to normal if it was bold', async () => {
+  it('cmd + b unsets font weight if it was bold', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
@@ -220,14 +220,12 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('b', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => pressKey('b', { modifiers: cmdModifier }))
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
-          <div
-            style={{ fontWeight: 'normal' }}
-            data-uid='bbb'
+          <div style={{}} data-uid='bbb'
           >hello text</div>
         </div>`,
       ),
@@ -249,7 +247,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('i', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => pressKey('i', { modifiers: cmdModifier }))
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -262,7 +260,7 @@ describe('global shortcuts to set properties', () => {
       ),
     )
   })
-  it('cmd + i toggles text to normal if it was italic', async () => {
+  it('cmd + i unsets font style if it was italic', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
@@ -278,13 +276,13 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('i', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => pressKey('i', { modifiers: cmdModifier }))
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{ fontStyle: 'normal' }}
+            style={{}}
             data-uid='bbb'
           >hello text</div>
         </div>`,
@@ -307,7 +305,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('u', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => pressKey('u', { modifiers: cmdModifier }))
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -320,7 +318,7 @@ describe('global shortcuts to set properties', () => {
       ),
     )
   })
-  it('cmd + u toggles text to none if it was underlined', async () => {
+  it('cmd + u unsets text decoration if it was underlined', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
@@ -336,13 +334,13 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('u', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => pressKey('u', { modifiers: cmdModifier }))
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{ textDecoration: 'none' }}
+            style={{}}
             data-uid='bbb'
           >hello text</div>
         </div>`,

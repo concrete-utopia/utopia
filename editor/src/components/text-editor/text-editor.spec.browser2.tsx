@@ -1,4 +1,4 @@
-import { wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, wait } from '../../utils/utils.test-utils'
 import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
@@ -857,10 +857,12 @@ async function prepareTestModifierEditor(editor: EditorRenderResult) {
 }
 
 async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: string) {
-  pressKey(key, {
-    modifiers: mod,
-    targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
-  })
+  await expectSingleUndoStep(editor, async () =>
+    pressKey(key, {
+      modifiers: mod,
+      targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
+    }),
+  )
   await closeTextEditor()
   await editor.getDispatchFollowUpActionsFinished()
 }
