@@ -129,6 +129,7 @@ import {
   resizeToFitCommands,
   sizeToVisualDimensions,
 } from '../inspector/inspector-common'
+import { CSSProperties } from 'react'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -1013,8 +1014,7 @@ function detectBestWrapperElement(
 
   const uid = makeUid()
 
-  // pragmatismus maximus, REVIEW: is there a better way to do this?
-  const style: Record<string, any> = {
+  const style: CSSProperties = {
     display: 'flex',
     flexDirection: element.specialSizeMeasurements.parentFlexDirection,
     contain: 'layout',
