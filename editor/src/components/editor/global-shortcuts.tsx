@@ -738,68 +738,60 @@ export function handleKeyDown(
       },
       [TOGGLE_TEXT_BOLD]: () => {
         if (isSelectMode(editor.mode)) {
-          let first = true
-          editor.selectedViews.forEach((target) => {
+          editor.selectedViews.forEach((target, i) => {
             const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
             toggleTextBold(
               target,
               element?.specialSizeMeasurements.fontWeight ?? null,
               dispatch,
               metadataRef,
-              first ? 'separate-undo-step' : 'merge-with-previous',
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
             )
-            first = false
           })
         }
         return []
       },
       [TOGGLE_TEXT_ITALIC]: () => {
         if (isSelectMode(editor.mode)) {
-          let first = true
-          editor.selectedViews.forEach((target) => {
+          editor.selectedViews.forEach((target, i) => {
             const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
             toggleTextItalic(
               target,
               element?.specialSizeMeasurements.fontStyle ?? null,
               dispatch,
               metadataRef,
-              first ? 'separate-undo-step' : 'merge-with-previous',
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
             )
-            first = false
           })
         }
         return []
       },
       [TOGGLE_TEXT_UNDERLINE]: () => {
         if (isSelectMode(editor.mode)) {
-          let first = true
-          editor.selectedViews.forEach((target) => {
+          editor.selectedViews.forEach((target, i) => {
             const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
             toggleTextUnderline(
               target,
               element?.specialSizeMeasurements.textDecorationLine ?? null,
               dispatch,
               metadataRef,
-              first ? 'separate-undo-step' : 'merge-with-previous',
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
             )
-            first = false
           })
         }
         return []
       },
       [TOGGLE_TEXT_STRIKE_THROUGH]: () => {
         if (isSelectMode(editor.mode)) {
-          let first = true
-          editor.selectedViews.forEach((target) => {
+          editor.selectedViews.forEach((target, i) => {
             const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
             toggleTextStrikeThrough(
               target,
               element?.specialSizeMeasurements.textDecorationLine ?? null,
               dispatch,
               metadataRef,
-              first ? 'separate-undo-step' : 'merge-with-previous',
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
             )
-            first = false
           })
         }
         return []
