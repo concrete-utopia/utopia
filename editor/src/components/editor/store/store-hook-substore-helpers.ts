@@ -89,10 +89,10 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       strategyIntendedBounds: [],
       flexReparentTargetLines: [],
       parentHighlightPaths: null,
-      reparentedToPaths: [],
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
     },
+    reparentedToPaths: [],
   },
   floatingInsertMenu: {
     insertMenuMode: 'closed',

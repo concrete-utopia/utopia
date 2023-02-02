@@ -500,10 +500,10 @@ export function runLocalCanvasAction(
             [],
             [],
             null,
-            [],
             emptyDragToMoveIndicatorFlags,
             null,
           ),
+          reparentedToPaths: [],
         },
       }
     case 'UPDATE_INTERACTION_SESSION':

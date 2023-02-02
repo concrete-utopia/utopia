@@ -1672,7 +1672,7 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine8EqualityCalls(
+  combine7EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -1683,8 +1683,6 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     arrayDeepEquality(CanvasRectangleKeepDeepEquality),
     (controls) => controls.parentHighlightPaths,
     nullableDeepEquality(arrayDeepEquality(ElementPathKeepDeepEquality)),
-    (controls) => controls.reparentedToPaths,
-    ElementPathArrayKeepDeepEquality,
     (controls) => controls.dragToMoveIndicatorFlags,
     DragToMoveIndicatorFlagsKeepDeepEquality,
     (controls) => controls.parentOutlineHighlight,
@@ -2081,6 +2079,10 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     oldValue.controls,
     newValue.controls,
   )
+  const reparentedPathsResult = ElementPathArrayKeepDeepEquality(
+    oldValue.reparentedToPaths,
+    newValue.reparentedToPaths,
+  )
 
   const areEqual =
     elementsToRerenderResult.areEqual &&
@@ -2104,7 +2106,8 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     transientPropertiesResult.areEqual &&
     resizeOptionsResult.areEqual &&
     domWalkerAdditionalElementsToUpdateResult.areEqual &&
-    controlsResult.areEqual
+    controlsResult.areEqual &&
+    reparentedPathsResult.areEqual
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
   } else {
@@ -2131,6 +2134,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
       resizeOptionsResult.value,
       domWalkerAdditionalElementsToUpdateResult.value,
       controlsResult.value,
+      reparentedPathsResult.value,
     )
     return keepDeepEqualityResult(newDeepValue, false)
   }

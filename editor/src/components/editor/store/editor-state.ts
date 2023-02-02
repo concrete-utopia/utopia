@@ -841,7 +841,6 @@ export interface EditorStateCanvasControls {
   strategyIntendedBounds: Array<CanvasFrameAndTarget>
   flexReparentTargetLines: Array<CanvasRectangle>
   parentHighlightPaths: Array<ElementPath> | null
-  reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
 }
@@ -852,7 +851,6 @@ export function editorStateCanvasControls(
   strategyIntendedBounds: Array<CanvasFrameAndTarget>,
   flexReparentTargetLines: Array<CanvasRectangle>,
   parentHighlightPaths: Array<ElementPath> | null,
-  reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
 ): EditorStateCanvasControls {
@@ -862,7 +860,6 @@ export function editorStateCanvasControls(
     strategyIntendedBounds: strategyIntendedBounds,
     flexReparentTargetLines: flexReparentTargetLines,
     parentHighlightPaths: parentHighlightPaths,
-    reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
     parentOutlineHighlight: parentOutlineHighlight,
   }
@@ -893,6 +890,7 @@ export interface EditorStateCanvas {
   resizeOptions: ResizeOptions
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   controls: EditorStateCanvasControls
+  reparentedToPaths: Array<ElementPath>
 }
 
 export function editorStateCanvas(
@@ -918,6 +916,7 @@ export function editorStateCanvas(
   resizeOpts: ResizeOptions,
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>,
   controls: EditorStateCanvasControls,
+  reparentedToPaths: Array<ElementPath>,
 ): EditorStateCanvas {
   return {
     elementsToRerender: elementsToRerender,
@@ -942,6 +941,7 @@ export function editorStateCanvas(
     resizeOptions: resizeOpts,
     domWalkerAdditionalElementsToUpdate: domWalkerAdditionalElementsToUpdate,
     controls: controls,
+    reparentedToPaths: reparentedToPaths,
   }
 }
 
@@ -2229,10 +2229,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         strategyIntendedBounds: [],
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
-        reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
+      reparentedToPaths: [],
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -2553,10 +2553,10 @@ export function editorModelFromPersistentModel(
         strategyIntendedBounds: [],
         flexReparentTargetLines: [],
         parentHighlightPaths: null,
-        reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
       },
+      reparentedToPaths: [],
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

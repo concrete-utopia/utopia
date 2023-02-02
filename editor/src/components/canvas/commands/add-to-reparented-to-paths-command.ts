@@ -25,10 +25,8 @@ export const runAddToReparentedToPaths: CommandFunction<AddToReparentedToPaths> 
 ): CommandFunctionResult => {
   const editorStatePatch: Spec<EditorState> = {
     canvas: {
-      controls: {
-        reparentedToPaths: {
-          $push: command.reparentedToPaths,
-        },
+      reparentedToPaths: {
+        $push: command.reparentedToPaths,
       },
     },
   }
