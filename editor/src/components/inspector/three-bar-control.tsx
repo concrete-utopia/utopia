@@ -4,6 +4,8 @@ import { styled } from '@stitches/react'
 import {
   flexDirectionSelector,
   metadataSelector,
+  numberOfFlexContainersSelector,
+  packedFlexSettingSelector,
   selectedViewsSelector,
 } from './inpector-selectors'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -112,22 +114,26 @@ const Section = styled('div', {
 
 const DotSize = 2
 
-function slabOpacity(
+const DefaultFlexAlignment: FlexAlignment = 'flex-start'
+
+function SlabOpacity(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   alignItems: FlexAlignment,
 ): number {
-  return detectFlexAlignJustifyContent(metadata, selectedViews)?.alignItems === alignItems
+  return (detectFlexAlignJustifyContent(metadata, selectedViews)?.alignItems ??
+    DefaultFlexAlignment) === alignItems
     ? 1
     : SlabHoverOpacity
 }
 
-function dotOpacity(
+function DotOpacity(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   alignItems: FlexAlignment,
 ): number | undefined {
-  return detectFlexAlignJustifyContent(metadata, selectedViews)?.alignItems === alignItems
+  return (detectFlexAlignJustifyContent(metadata, selectedViews)?.alignItems ??
+    DefaultFlexAlignment) === alignItems
     ? 0
     : undefined
 }
@@ -143,14 +149,14 @@ const slabOpacitySelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (_: MetadataSubstate, x: FlexAlignment) => x,
-  slabOpacity,
+  SlabOpacity,
 )
 
 const dotOpacitySelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (_: MetadataSubstate, x: FlexAlignment) => x,
-  dotOpacity,
+  DotOpacity,
 )
 
 const layerFlexDirectionSelector = createSelector(
@@ -165,13 +171,13 @@ interface ThreeBarSectionProps {
 }
 
 const ThreeBarSection = React.memo<ThreeBarSectionProps>(({ alignItems, onClick }) => {
-  const slabo = useEditorState(
+  const slabOpacity = useEditorState(
     Substores.metadata,
     (store) => slabOpacitySelector(store, alignItems),
     'ThreeBarControl justifyContentAlignItems',
   )
 
-  const doto = useEditorState(
+  const dotOpacity = useEditorState(
     Substores.metadata,
     (store) => dotOpacitySelector(store, alignItems),
     '',
@@ -199,7 +205,7 @@ const ThreeBarSection = React.memo<ThreeBarSectionProps>(({ alignItems, onClick 
         style={{
           justifyContent: 'space-around',
           alignItems: alignItems,
-          opacity: slabo,
+          opacity: slabOpacity,
           flexDirection: layerFlexDirectionValue,
         }}
       >
@@ -215,7 +221,7 @@ const ThreeBarSection = React.memo<ThreeBarSectionProps>(({ alignItems, onClick 
       </SlabLayer>
       <DotLayer
         style={{
-          opacity: doto,
+          opacity: dotOpacity,
           flexDirection: layerFlexDirectionValue,
         }}
       >
@@ -244,6 +250,19 @@ export const ThreeBarControl = React.memo(() => {
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const dispatch = useDispatch()
+
+  const nFlexContainers = useEditorState(
+    Substores.metadata,
+    numberOfFlexContainersSelector,
+    'FlexDirectionToggle, nFlexContainers',
+  )
+
+  const packedSpacedSetting =
+    useEditorState(
+      Substores.metadata,
+      packedFlexSettingSelector,
+      'FlexSection packedFlexSetting',
+    ) ?? 'packed'
 
   const setAlignItemsStart = React.useCallback(
     () =>
@@ -278,8 +297,15 @@ export const ThreeBarControl = React.memo(() => {
     [dispatch, metadataRef, selectedViewsRef],
   )
 
+  const shouldShow = nFlexContainers > 0 && packedSpacedSetting === 'spaced'
+
   return (
-    <ThreeBarContainer style={{ flexDirection: ContainerFlexDirection(flexDirection) }}>
+    <ThreeBarContainer
+      style={{
+        display: shouldShow ? 'flex' : 'none',
+        flexDirection: ContainerFlexDirection(flexDirection),
+      }}
+    >
       <ThreeBarSection alignItems={'flex-start'} onClick={setAlignItemsStart} />
       <ThreeBarSection alignItems={'center'} onClick={setAlignItemsCenter} />
       <ThreeBarSection alignItems={'flex-end'} onClick={setAlignItemsEnd} />

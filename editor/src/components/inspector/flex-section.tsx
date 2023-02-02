@@ -5,28 +5,17 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
-import {
-  detectAreElementsFlexContainers,
-  detectPackedSpacedSetting,
-  PackedSpaced,
-} from './inspector-common'
+import { detectAreElementsFlexContainers } from './inspector-common'
 import { NineBlockControl } from './nine-block-controls'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { PaddingRow } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
 import { ThreeBarControl } from './three-bar-control'
-import { assertNever } from '../../core/shared/utils'
 
 const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   detectAreElementsFlexContainers,
-)
-
-const packedFlexSettingSelector = createSelector(
-  metadataSelector,
-  selectedViewsSelector,
-  detectPackedSpacedSetting,
 )
 
 export const FlexSection = React.memo(() => {
@@ -35,25 +24,6 @@ export const FlexSection = React.memo(() => {
     areElementsFlexContainersSelector,
     'FlexSection areAllElementsInFlexLayout',
   )
-
-  const packedSpacedSetting =
-    useEditorState(
-      Substores.metadata,
-      packedFlexSettingSelector,
-      'FlexSection packedFlexSetting',
-    ) ?? 'packed'
-
-  // TODO: turn this into a display none inside the controls to avoid re-rendering
-  function BarControl(setting: PackedSpaced) {
-    switch (setting) {
-      case 'packed':
-        return <NineBlockControl />
-      case 'spaced':
-        return <ThreeBarControl />
-      default:
-        assertNever(setting)
-    }
-  }
 
   return (
     <div>
@@ -66,7 +36,8 @@ export const FlexSection = React.memo(() => {
             <SpacedPackedControl />
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
-            {BarControl(packedSpacedSetting)}
+            <NineBlockControl />
+            <ThreeBarControl />
           </UIGridRow>
           <PaddingRow />
         </>,

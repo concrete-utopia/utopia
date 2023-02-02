@@ -1,12 +1,13 @@
 import { createSelector } from 'reselect'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
-import { EditorStorePatched } from '../editor/store/editor-state'
 import { MetadataSubstate, SelectedViewsSubstate } from '../editor/store/store-hook-substore-types'
 import {
   DefaultFlexDirection,
   detectFlexAlignJustifyContent,
   detectFlexDirection,
+  detectPackedSpacedSetting,
+  numberOfFlexContainers,
 } from './inspector-common'
 
 export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
@@ -28,4 +29,16 @@ export const justifyAlignSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   detectFlexAlignJustifyContent,
+)
+
+export const packedFlexSettingSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  detectPackedSpacedSetting,
+)
+
+export const numberOfFlexContainersSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  numberOfFlexContainers,
 )
