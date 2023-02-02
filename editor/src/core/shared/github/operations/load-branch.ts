@@ -1,4 +1,4 @@
-import { getProjectContentsChecksums } from '../../../../components/assets'
+import { getProjectContentsChecksums, walkContentsTreeAsync } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
 import { EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -16,18 +16,54 @@ import {
 import { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
 import { RequestedNpmDependency } from '../../npm-dependency-types'
+import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
 import {
+  BranchContent,
   connectRepo,
   getBranchContentFromServer,
   GetBranchContentResponse,
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,
+  saveGithubAsset,
 } from '../helpers'
+
+async function saveAssetsToProject(
+  githubRepo: GithubRepo,
+  projectID: string,
+  branchContent: BranchContent,
+  dispatch: EditorDispatch,
+): Promise<void> {
+  await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
+    switch (projectFile.type) {
+      case 'IMAGE_FILE':
+        await saveGithubAsset(
+          githubRepo,
+          forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+          projectID,
+          fullPath,
+          dispatch,
+        )
+        break
+      case 'ASSET_FILE':
+        await saveGithubAsset(
+          githubRepo,
+          forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+          projectID,
+          fullPath,
+          dispatch,
+        )
+        break
+      default:
+      // Do nothing.
+    }
+  })
+}
 
 export async function updateProjectWithBranchContent(
   dispatch: EditorDispatch,
+  projectID: string,
   githubRepo: GithubRepo,
   branchName: string,
   resetBranches: boolean,
@@ -44,7 +80,7 @@ export async function updateProjectWithBranchContent(
     async (operation: GithubOperation) => {
       const response = await getBranchContentFromServer(githubRepo, branchName, null, null)
       if (!response.ok) {
-        throw await githubAPIErrorFromResponse(operation, response)
+        throw githubAPIErrorFromResponse(operation, response)
       }
 
       const responseBody: GetBranchContentResponse = await response.json()
@@ -61,6 +97,9 @@ export async function updateProjectWithBranchContent(
           if (resetBranches) {
             newGithubData.branches = null
           }
+
+          // Save assets to the server from Github.
+          await saveAssetsToProject(githubRepo, projectID, responseBody.branch, dispatch)
 
           const packageJson = packageJsonFileFromProjectContents(responseBody.branch.content)
           if (packageJson != null && isTextFile(packageJson)) {
@@ -97,10 +136,7 @@ export async function updateProjectWithBranchContent(
           break
         default:
           const _exhaustiveCheck: never = responseBody
-          throw githubAPIError(
-            operation,
-            `Github: Unhandled response body ${JSON.stringify(responseBody)}`,
-          )
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
       }
       return []
     },
