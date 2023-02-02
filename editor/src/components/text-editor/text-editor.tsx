@@ -5,7 +5,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { keyCharacterFromCode } from '../../utils/keyboard'
-import { Modifier } from '../../utils/modifiers'
+import { emptyModifiers, Modifier } from '../../utils/modifiers'
 import {
   adjustFontSize,
   getFontSize,
@@ -21,6 +21,7 @@ import { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/act
 import {
   applyCommandsAction,
   deleteView,
+  enableInsertModeForJSXElement,
   updateChildText,
   updateEditorMode,
 } from '../editor/actions/action-creators'
@@ -38,6 +39,14 @@ import {
 import { useColorTheme } from '../../uuiui'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { defaultSpanElement } from '../editor/defaults'
+import CanvasActions from '../canvas/canvas-actions'
+import {
+  boundingArea,
+  createHoverInteractionViaMouse,
+} from '../canvas/canvas-strategies/interaction-state'
+import { CanvasMousePositionRaw } from '../../utils/global-positions'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -236,6 +245,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     'TextEditor shouldSelectOnFocus',
   )
 
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'TextEditor projectContents',
+  )
+
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const scale = useEditorState(
@@ -329,6 +344,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       if (event.key === 'Escape') {
         // eslint-disable-next-line no-unused-expressions
         myElement.current?.blur()
+        dispatch([updateEditorMode(EditorModes.selectMode())])
       }
 
       event.stopPropagation()
@@ -337,8 +353,22 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const onBlur = React.useCallback(() => {
-    dispatch([updateEditorMode(EditorModes.selectMode())])
-  }, [dispatch])
+    const newUID = generateUidWithExistingComponents(projectContents)
+
+    dispatch([
+      enableInsertModeForJSXElement(defaultSpanElement(newUID), newUID, {}, null, {
+        textEdit: true,
+      }),
+      CanvasActions.createInteractionSession(
+        createHoverInteractionViaMouse(
+          CanvasMousePositionRaw!,
+          emptyModifiers,
+          boundingArea(),
+          'zero-drag-permitted',
+        ),
+      ),
+    ])
+  }, [dispatch, projectContents])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
