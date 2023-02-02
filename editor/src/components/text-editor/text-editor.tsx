@@ -1,5 +1,5 @@
 import { unescape } from 'he'
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -31,16 +31,12 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
-  toggleTextBoldWithUnset,
   toggleTextItalic,
-  toggleTextItalicWithUnset,
   toggleTextStrikeThrough,
-  toggleTextStrikeThroughWithUnset,
   toggleTextUnderline,
-  toggleTextUnderlineWithUnset,
 } from './text-editor-shortcut-helpers'
 import { useColorTheme } from '../../uuiui'
-import { arrayToObject } from '../../core/shared/array-utils'
+import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
 
 export const TextEditorSpanId = 'text-editor'
@@ -104,41 +100,45 @@ const handleToggleShortcuts = (
 
   // Meta+b = bold
   if (meta && event.key === 'b') {
-    toggleTextBoldWithUnset(
+    toggleTextBold(
       target,
       specialSizeMeasurements?.fontWeight ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
   // Meta+i = italic
   if (meta && event.key === 'i') {
-    toggleTextItalicWithUnset(
+    toggleTextItalic(
       target,
       specialSizeMeasurements?.fontStyle ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
   // Meta+u = underline
   if (meta && event.key === 'u') {
-    toggleTextUnderlineWithUnset(
+    toggleTextUnderline(
       target,
       specialSizeMeasurements?.textDecorationLine ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
   // Meta+shift+x = strikethrough
   if (meta && modifiers.shift && event.key === 'x') {
-    toggleTextStrikeThroughWithUnset(
+    toggleTextStrikeThrough(
       target,
       specialSizeMeasurements?.textDecorationLine ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
@@ -347,6 +347,13 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     ref: myElement,
     id: TextEditorSpanId,
     style: {
+      // Ensure that font and text settings are inherited from
+      // the containing element:
+      ...mapArrayToDictionary<keyof CSSProperties, 'inherit', keyof CSSProperties>(
+        TextRelatedProperties,
+        (key) => key,
+        () => 'inherit',
+      ),
       // These properties need to be set to get the positioning that
       // is required of the text editor element itself:
       display: 'inline-block',
@@ -354,9 +361,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       height: '100%',
       // text editor outline
       boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
-      // Ensure that font and text settings are inherited from
-      // the containing element:
-      ...arrayToObject(TextRelatedProperties, () => 'inherit'),
       // Prevent double applying these properties:
       opacity: 1,
     },

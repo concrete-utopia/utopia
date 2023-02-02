@@ -261,6 +261,15 @@ export type TransientActions = {
   elementsToRerender: Array<ElementPath> | null
 }
 
+// This is a wrapper action which changes the undo behavior for the included actions.
+// When you wrap actions in this, dispatching them will not create a new undo step.
+// Instead of that the effects of the actions will be merged into the previous undo step.
+// (Practically the previous undo snapshot will be replaced with the result of these actions.)
+export type MergeWithPrevUndo = {
+  action: 'MERGE_WITH_PREV_UNDO'
+  actions: Array<EditorAction>
+}
+
 export type Atomic = {
   action: 'ATOMIC'
   actions: Array<EditorAction>
@@ -1111,6 +1120,7 @@ export type EditorAction =
   | MoveSelectedForward
   | SetZIndex
   | TransientActions
+  | MergeWithPrevUndo
   | Atomic
   | NewProject
   | Load

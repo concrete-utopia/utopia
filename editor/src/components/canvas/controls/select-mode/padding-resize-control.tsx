@@ -4,7 +4,7 @@ import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/m
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import { Modifier } from '../../../../utils/modifiers'
+import { emptyModifiers, Modifier, Modifiers } from '../../../../utils/modifiers'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -15,12 +15,14 @@ import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import {
   createInteractionViaMouse,
+  InteractionSession,
   paddingResizeHandle,
 } from '../../canvas-strategies/interaction-state'
 import { CSSCursor, EdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   combinePaddings,
+  paddingAdjustMode,
   paddingFromSpecialSizeMeasurements,
   PaddingIndictorOffset,
   simplePaddingFromMetadata,
@@ -72,16 +74,55 @@ const PaddingResizeControlHitAreaWidth = 3
 type StoreSelector<T> = (s: CanvasSubstate) => T
 
 const scaleSelector: StoreSelector<number> = (store) => store.editor.canvas.scale
-const isDraggingSelector = (store: CanvasSubstate, edge: EdgePiece): boolean =>
+
+function opposite(padding: EdgePiece): EdgePiece {
+  switch (padding) {
+    case 'top':
+      return 'bottom'
+    case 'bottom':
+      return 'top'
+    case 'left':
+      return 'right'
+    case 'right':
+      return 'left'
+    default:
+      assertNever(padding)
+  }
+}
+
+function draggedEdges(modifiers: Modifiers, edge: EdgePiece): Array<EdgePiece> {
+  const mode = paddingAdjustMode(modifiers)
+  switch (mode) {
+    case 'all':
+      return ['bottom', 'top', 'left', 'right']
+    case 'cross-axis':
+      return [edge, opposite(edge)]
+    case 'individual':
+      return [edge]
+    default:
+      assertNever(mode)
+  }
+}
+
+function modifiersFrom(interactionSession: InteractionSession) {
+  return interactionSession.interactionData.type === 'DRAG'
+    ? interactionSession.interactionData.modifiers
+    : emptyModifiers
+}
+
+const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean =>
   store.editor.canvas.interactionSession?.activeControl.type === 'PADDING_RESIZE_HANDLE' &&
-  store.editor.canvas.interactionSession?.activeControl.edgePiece === edge
+  draggedEdges(
+    modifiersFrom(store.editor.canvas.interactionSession),
+    store.editor.canvas.interactionSession.activeControl.edgePiece,
+  ).includes(edge)
 
 const PaddingResizeControlI = React.memo(
   React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
     const { setShownByParent } = props
     const dispatch = useDispatch()
     const { scale, isDragging } = useEditorState(
-      Substores.canvas,
+      Substores.fullStore,
       (store) => ({
         scale: scaleSelector(store),
         isDragging: isDraggingSelector(store, props.edge),

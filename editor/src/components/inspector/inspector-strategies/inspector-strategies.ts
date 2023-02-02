@@ -2,12 +2,10 @@ import * as PP from '../../../core/shared/property-path'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
-  convertWidthToFlexGrow,
   filterKeepFlexContainers,
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
-  nukeAllAbsolutePositioningPropsCommands,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
   widthHeightFromAxis,
@@ -16,7 +14,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
-import { executeFirstApplicableStrategy, InspectorStrategy } from './inspector-strategy'
+import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
 import {
@@ -25,6 +23,7 @@ import {
 } from '../../canvas/commands/set-css-length-command'
 import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
+import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {
@@ -127,14 +126,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
   {
     name: 'Add flex layout',
     strategy: (metadata, elementPaths) => {
-      return elementPaths.flatMap((path) => [
-        setProperty('always', path, PP.create('style', 'display'), 'flex'),
-        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
-          ...nukeAllAbsolutePositioningPropsCommands(child),
-          ...sizeToVisualDimensions(metadata, child),
-          ...convertWidthToFlexGrow(metadata, child),
-        ]),
-      ])
+      return convertLayoutToFlexCommands(metadata, elementPaths)
     },
   },
 ]

@@ -4,7 +4,13 @@ import { isStoryboardChild, parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
-import { CSSNumber, FlexDirection, parseCSSLengthPercent, parseCSSNumber } from './common/css-utils'
+import {
+  CSSNumber,
+  cssPixelLength,
+  FlexDirection,
+  parseCSSLengthPercent,
+  parseCSSNumber,
+} from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
@@ -15,6 +21,10 @@ import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 import { shallowEqual } from '../../core/shared/equality-utils'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../canvas/commands/set-css-length-command'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
@@ -269,17 +279,26 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
   }
 }
 
-export function convertWidthToFlexGrow(
+export function childIs100PercentSizedInEitherDirection(
   metadataMap: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): Array<CanvasCommand> {
+): [childHorizontal100: boolean, childVertical100: boolean] {
+  return [
+    childIs100PercentSizedInDirection(metadataMap, elementPath, 'row'),
+    childIs100PercentSizedInDirection(metadataMap, elementPath, 'column'),
+  ]
+}
+
+function childIs100PercentSizedInDirection(
+  metadataMap: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection,
+): boolean {
   const element = MetadataUtils.getJSXElementFromMetadata(metadataMap, elementPath)
   const metadata = MetadataUtils.findElementByElementPath(metadataMap, elementPath)
   if (element == null || metadata == null) {
-    return []
+    return false
   }
-
-  const parentFlexDirection = metadata.specialSizeMeasurements.parentFlexDirection ?? 'row'
   const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
 
   const matches =
@@ -288,9 +307,20 @@ export function convertWidthToFlexGrow(
       getSimpleAttributeAtPath(right(element.props), PP.create('style', prop)),
     ) === '100%'
 
-  if (!matches) {
+  return matches
+}
+
+export function convertWidthToFlexGrowOptionally(
+  metadataMap: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection,
+): Array<CanvasCommand> {
+  if (!childIs100PercentSizedInDirection(metadataMap, elementPath, parentFlexDirection)) {
     return []
   }
+
+  const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
+
   return [
     deleteProperties('always', elementPath, [PP.create('style', prop)]),
     setProperty('always', elementPath, PP.create('style', 'flexGrow'), 1),
@@ -301,7 +331,8 @@ export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
 }
 
-export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create('style', prop)
+export const styleP = <K extends keyof CSSProperties>(prop: K): PropertyPath<['style', K]> =>
+  PP.create('style', prop)
 
 export const flexContainerProps = [
   styleP('flexDirection'),
@@ -340,8 +371,20 @@ export function sizeToVisualDimensions(
 
   return [
     ...pruneFlexPropsCommands(flexChildProps, elementPath),
-    setProperty('always', elementPath, styleP('width'), width),
-    setProperty('always', elementPath, styleP('height'), height),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(width)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(height)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
   ]
 }
 
@@ -518,9 +561,23 @@ export function addPositionAbsoluteTopLeft(
   const left = element.specialSizeMeasurements.offset.x
   const top = element.specialSizeMeasurements.offset.y
 
+  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
   return [
-    setProperty('always', elementPath, styleP('left'), left),
-    setProperty('always', elementPath, styleP('top'), top),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('left'),
+      setExplicitCssValue(cssPixelLength(left)),
+      parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('top'),
+      setExplicitCssValue(cssPixelLength(top)),
+      parentFlexDirection,
+    ),
     setProperty('always', elementPath, styleP('position'), 'absolute'),
   ]
 }

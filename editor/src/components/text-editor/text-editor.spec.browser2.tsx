@@ -1,4 +1,4 @@
-import { wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, wait } from '../../utils/utils.test-utils'
 import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
@@ -14,6 +14,7 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
+import { TextRelatedProperties } from 'src/core/properties/css-properties'
 
 describe('Use the text editor', () => {
   it('Click to edit text', async () => {
@@ -146,6 +147,54 @@ describe('Use the text editor', () => {
           </Storyboard>
         )`),
     )
+  })
+  it(`ensure that a bunch of the text editor properties are set to 'inherit'`, async () => {
+    const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+
+    await enterTextEditMode(editor)
+    const textEditorElement = document.getElementById(TextEditorSpanId)
+    if (textEditorElement == null) {
+      throw new Error('A text editor should exist at this point.')
+    }
+    expect(textEditorElement.style.font).toEqual('inherit')
+    expect(textEditorElement.style.fontFamily).toEqual('inherit')
+    expect(textEditorElement.style.fontFeatureSettings).toEqual('inherit')
+    expect(textEditorElement.style.fontKerning).toEqual('inherit')
+    expect(textEditorElement.style.fontOpticalSizing).toEqual('inherit')
+    expect(textEditorElement.style.fontSize).toEqual('inherit')
+    expect(textEditorElement.style.fontSizeAdjust).toEqual('inherit')
+    expect(textEditorElement.style.fontStretch).toEqual('inherit')
+    expect(textEditorElement.style.fontStyle).toEqual('inherit')
+    expect(textEditorElement.style.fontSynthesis).toEqual('inherit')
+    expect(textEditorElement.style.fontVariant).toEqual('inherit')
+    expect(textEditorElement.style.fontVariantCaps).toEqual('inherit')
+    expect(textEditorElement.style.fontVariantEastAsian).toEqual('inherit')
+    expect(textEditorElement.style.fontVariantLigatures).toEqual('inherit')
+    expect(textEditorElement.style.fontVariantNumeric).toEqual('inherit')
+    expect(textEditorElement.style.fontVariantPosition).toEqual('inherit')
+    expect(textEditorElement.style.fontVariationSettings).toEqual('inherit')
+    expect(textEditorElement.style.fontWeight).toEqual('inherit')
+    expect(textEditorElement.style.textAlign).toEqual('inherit')
+    expect(textEditorElement.style.textAlignLast).toEqual('inherit')
+    expect(textEditorElement.style.textCombineUpright).toEqual('inherit')
+    expect(textEditorElement.style.textDecorationColor).toEqual('inherit')
+    expect(textEditorElement.style.textDecorationLine).toEqual('inherit')
+    expect(textEditorElement.style.textDecorationSkipInk).toEqual('inherit')
+    expect(textEditorElement.style.textDecorationStyle).toEqual('inherit')
+    expect(textEditorElement.style.textDecorationThickness).toEqual('inherit')
+    expect(textEditorElement.style.textEmphasisColor).toEqual('inherit')
+    expect(textEditorElement.style.textEmphasisPosition).toEqual('inherit')
+    expect(textEditorElement.style.textEmphasisStyle).toEqual('inherit')
+    expect(textEditorElement.style.textIndent).toEqual('inherit')
+    expect(textEditorElement.style.textOrientation).toEqual('inherit')
+    expect(textEditorElement.style.textOverflow).toEqual('inherit')
+    expect(textEditorElement.style.textRendering).toEqual('inherit')
+    expect(textEditorElement.style.textShadow).toEqual('inherit')
+    expect(textEditorElement.style.textTransform).toEqual('inherit')
+    expect(textEditorElement.style.textUnderlineOffset).toEqual('inherit')
+    expect(textEditorElement.style.textUnderlinePosition).toEqual('inherit')
+    expect(textEditorElement.style.letterSpacing).toEqual('inherit')
+    expect(textEditorElement.style.lineHeight).toEqual('inherit')
   })
   describe('formatting shortcuts', () => {
     it('supports bold', async () => {
@@ -857,10 +906,12 @@ async function prepareTestModifierEditor(editor: EditorRenderResult) {
 }
 
 async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: string) {
-  pressKey(key, {
-    modifiers: mod,
-    targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
-  })
+  await expectSingleUndoStep(editor, async () =>
+    pressKey(key, {
+      modifiers: mod,
+      targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
+    }),
+  )
   await closeTextEditor()
   await editor.getDispatchFollowUpActionsFinished()
 }

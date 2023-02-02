@@ -8,10 +8,12 @@ import {
   updateGithubChecksums,
   updateGithubData,
 } from '../../../../components/editor/actions/action-creators'
-import { GithubRepo } from '../../../../components/editor/store/editor-state'
+import { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import {
   getBranchContentFromServer,
   GetBranchContentResponse,
+  githubAPIError,
+  githubAPIErrorFromResponse,
   runGithubOperation,
 } from '../helpers'
 
@@ -21,79 +23,67 @@ export async function updateProjectAgainstGithub(
   branchName: string,
   commitSha: string,
 ): Promise<void> {
-  await runGithubOperation({ name: 'updateAgainstBranch' }, dispatch, async () => {
-    const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null, null)
-    const specificCommitRequest = getBranchContentFromServer(
-      githubRepo,
-      branchName,
-      commitSha,
-      null,
-    )
+  await runGithubOperation(
+    { name: 'updateAgainstBranch' },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const branchLatestRequest = getBranchContentFromServer(githubRepo, branchName, null, null)
+      const specificCommitRequest = getBranchContentFromServer(
+        githubRepo,
+        branchName,
+        commitSha,
+        null,
+      )
 
-    const branchLatestResponse = await branchLatestRequest
-    const specificCommitResponse = await specificCommitRequest
+      const branchLatestResponse = await branchLatestRequest
+      const specificCommitResponse = await specificCommitRequest
 
-    if (branchLatestResponse.ok && specificCommitResponse.ok) {
+      if (!branchLatestResponse.ok) {
+        throw await githubAPIErrorFromResponse(operation, branchLatestResponse)
+      }
+      if (!specificCommitResponse.ok) {
+        throw await githubAPIErrorFromResponse(operation, specificCommitResponse)
+      }
+
       const branchLatestContent: GetBranchContentResponse = await branchLatestResponse.json()
-      const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
 
-      function failWithReason(failureReason: string): void {
-        dispatch(
-          [showToast(notice(`Error when updating against Github: ${failureReason}`, 'ERROR'))],
-          'everyone',
+      if (branchLatestContent.type === 'FAILURE') {
+        throw githubAPIError(operation, branchLatestContent.failureReason)
+      }
+      if (branchLatestContent.branch == null) {
+        throw githubAPIError(operation, `Could not find latest code for branch ${branchName}`)
+      }
+
+      const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
+      if (specificCommitContent.type === 'FAILURE') {
+        throw githubAPIError(operation, specificCommitContent.failureReason)
+      }
+      if (specificCommitContent.branch == null) {
+        throw githubAPIError(
+          operation,
+          `Could not find commit ${commitSha} for branch ${branchName}`,
         )
       }
 
-      if (branchLatestContent.type === 'SUCCESS') {
-        if (branchLatestContent.branch == null) {
-          failWithReason(`Could not find latest code for branch ${branchName}`)
-        } else {
-          if (specificCommitContent.type === 'SUCCESS') {
-            if (specificCommitContent.branch == null) {
-              failWithReason(`Could not find commit ${commitSha} for branch ${branchName}`)
-            } else {
-              dispatch(
-                [
-                  updateGithubChecksums(
-                    getProjectContentsChecksums(branchLatestContent.branch.content, {}),
-                  ),
-                  updateBranchContents(branchLatestContent.branch.content),
-                  updateAgainstGithub(
-                    branchLatestContent.branch.content,
-                    specificCommitContent.branch.content,
-                    branchLatestContent.branch.originCommit,
-                  ),
-                  updateGithubData({ upstreamChanges: null }),
-                  showToast(
-                    notice(
-                      `Github: Updated the project against the branch ${branchName}.`,
-                      'SUCCESS',
-                    ),
-                  ),
-                ],
-                'everyone',
-              )
-            }
-          } else {
-            failWithReason(specificCommitContent.failureReason)
-          }
-        }
-      } else {
-        failWithReason(branchLatestContent.failureReason)
-      }
-    } else {
-      const failureStatus = branchLatestResponse.ok
-        ? specificCommitResponse.status
-        : branchLatestResponse.status
       dispatch(
         [
+          updateGithubChecksums(
+            getProjectContentsChecksums(branchLatestContent.branch.content, {}),
+          ),
+          updateBranchContents(branchLatestContent.branch.content),
+          updateAgainstGithub(
+            branchLatestContent.branch.content,
+            specificCommitContent.branch.content,
+            branchLatestContent.branch.originCommit,
+          ),
+          updateGithubData({ upstreamChanges: null }),
           showToast(
-            notice(`Github: Unexpected status returned from endpoint: ${failureStatus}`, 'ERROR'),
+            notice(`Github: Updated the project against the branch ${branchName}.`, 'SUCCESS'),
           ),
         ],
         'everyone',
       )
-    }
-    return []
-  })
+      return []
+    },
+  )
 }

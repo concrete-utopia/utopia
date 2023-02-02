@@ -130,6 +130,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'NEW':
     case 'LOAD':
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
@@ -208,6 +209,7 @@ export function isUndoOrRedo(action: EditorAction): boolean {
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(isUndoOrRedo)
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isUndoOrRedo)
     case 'UNDO':
     case 'REDO':
@@ -222,6 +224,7 @@ export function isParsedModelUpdate(action: EditorAction): boolean {
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(isParsedModelUpdate)
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isParsedModelUpdate)
     case 'UPDATE_FROM_WORKER':
       return action.updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
@@ -235,6 +238,7 @@ export function isFromVSCode(action: EditorAction): boolean {
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(isFromVSCode)
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isFromVSCode)
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SEND_LINTER_REQUEST_MESSAGE':
@@ -249,6 +253,7 @@ export function isClearInteractionSession(action: EditorAction): boolean {
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(isClearInteractionSession)
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isClearInteractionSession)
     case 'CLEAR_INTERACTION_SESSION':
       return true
@@ -262,6 +267,7 @@ export function isCreateOrUpdateInteractionSession(action: EditorAction): boolea
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(isCreateOrUpdateInteractionSession)
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isCreateOrUpdateInteractionSession)
     case 'CREATE_INTERACTION_SESSION':
     case 'UPDATE_INTERACTION_SESSION':
@@ -276,6 +282,7 @@ export function shouldApplyClearInteractionSessionResult(action: EditorAction): 
     case 'TRANSIENT_ACTIONS':
       return action.transientActions.some(shouldApplyClearInteractionSessionResult)
     case 'ATOMIC':
+    case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(shouldApplyClearInteractionSessionResult)
     case 'CLEAR_INTERACTION_SESSION':
       return action.applyChanges
