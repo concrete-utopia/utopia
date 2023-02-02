@@ -435,25 +435,24 @@ function adjustPaddings(
   precision: AdjustPrecision,
 ): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> {
   const newPadding = offsetPaddingByEdge(paddingPropInteractedWith, delta, padding, precision)
-  if (adjustMode === 'individual') {
-    return newPadding
-  }
-
-  const newPaddingValue = newPadding[paddingPropInteractedWith]
-
-  if (adjustMode === 'all') {
-    return {
-      paddingTop: newPaddingValue,
-      paddingBottom: newPaddingValue,
-      paddingLeft: newPaddingValue,
-      paddingRight: newPaddingValue,
+  switch (adjustMode) {
+    case 'individual':
+      return newPadding
+    case 'all': {
+      const newPaddingValue = newPadding[paddingPropInteractedWith]
+      return {
+        paddingTop: newPaddingValue,
+        paddingBottom: newPaddingValue,
+        paddingLeft: newPaddingValue,
+        paddingRight: newPaddingValue,
+      }
     }
+    case 'cross-axis': {
+      const newPaddingValue = newPadding[paddingPropInteractedWith]
+      newPadding[opposite(paddingPropInteractedWith)] = newPaddingValue
+      return newPadding
+    }
+    default:
+      assertNever(adjustMode)
   }
-
-  if (adjustMode === 'cross-axis') {
-    newPadding[opposite(paddingPropInteractedWith)] = newPaddingValue
-    return newPadding
-  }
-
-  assertNever(adjustMode)
 }
