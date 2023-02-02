@@ -87,7 +87,7 @@ import {
   zeroCanvasPoint,
 } from '../core/shared/math-utils'
 import { ElementPath } from '../core/shared/project-file-types'
-import { getActionsForClipboardItems, parseClipboardData } from '../utils/clipboard'
+import { getActionsForClipboardItems, Clipboard } from '../utils/clipboard'
 import {
   CanvasMousePositionRaw,
   CanvasMousePositionRounded,
@@ -1598,7 +1598,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
-        void parseClipboardData(event.clipboardData).then((result) => {
+        void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor.projectContents,
             editor.canvas.openFile?.filename ?? null,

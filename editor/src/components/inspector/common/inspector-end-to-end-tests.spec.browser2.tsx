@@ -630,7 +630,7 @@ describe('inspector tests with real metadata', () => {
       'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -752,7 +752,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"203"`)
@@ -852,7 +852,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"80%"`)
@@ -951,7 +951,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
@@ -1050,7 +1050,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
@@ -1181,7 +1181,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1431,7 +1431,7 @@ describe('inspector tests with real metadata', () => {
       'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1538,7 +1538,7 @@ describe('inspector tests with real metadata', () => {
       'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1658,7 +1658,7 @@ describe('inspector tests with real metadata', () => {
       'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1766,7 +1766,7 @@ describe('inspector tests with real metadata', () => {
       'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',

@@ -6,7 +6,6 @@ import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'
 import { ElementPath } from '../../core/shared/project-file-types'
-import * as EditorActions from '../editor/actions/action-creators'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
@@ -15,15 +14,7 @@ import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import {
-  Section,
-  SectionTitleRow,
-  FlexRow,
-  Title,
-  SectionBodyArea,
-  FlexColumn,
-  InspectorSectionHeader,
-} from '../../uuiui'
+import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
@@ -166,10 +157,6 @@ export const NavigatorComponent = React.memo(() => {
     [dispatch],
   )
 
-  const toggleTwirler = React.useCallback(() => {
-    dispatch([EditorActions.togglePanel('navigator')])
-  }, [dispatch])
-
   const ItemList = (size: Size) => {
     if (size.height == null) {
       return null
@@ -210,11 +197,6 @@ export const NavigatorComponent = React.memo(() => {
         overscrollBehavior: 'contain',
       }}
     >
-      <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
-        <FlexRow flexGrow={1}>
-          <Title>Structure</Title>
-        </FlexRow>
-      </SectionTitleRow>
       <SectionBodyArea
         minimised={minimised}
         flexGrow={1}

@@ -1,11 +1,12 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { uniqBy } from '../../../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
   distance,
+  isInfinityRectangle,
   point,
   WindowPoint,
   windowPoint,
@@ -359,9 +360,10 @@ function useStartDragState(): (
       originalFrames = originalFrames.filter((f) => f.frame != null)
 
       const selectionArea = boundingRectangleArray(
-        selectedViews.map((view) => {
-          return MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
-        }),
+        mapDropNulls((view) => {
+          const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
+          return frame == null || isInfinityRectangle(frame) ? null : frame
+        }, selectedViews),
       )
 
       dispatch([
@@ -627,6 +629,7 @@ function useSelectOrLiveModeSelectAndHover(
   )
   const mouseHandler = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      const isLeftClick = event.button === 0
       const isDragIntention =
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
       const hasInteractionSessionWithMouseMoved =
@@ -658,7 +661,7 @@ function useSelectOrLiveModeSelectAndHover(
         }
       }
 
-      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active) {
+      if (isDragIntention || hasInteractionSessionWithMouseMoved || !active || !isLeftClick) {
         // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }

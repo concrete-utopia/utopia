@@ -5,7 +5,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   EditorState,
@@ -56,6 +56,7 @@ import { DRAW_TO_INSERT_TEXT_STRATEGY_ID } from '../canvas-strategies/strategies
 import { TextEditableControl } from './text-editable-control'
 import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { AbsoluteChildrenOutline } from './absolute-children-outline'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -316,7 +317,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     return selectionEnabled
       ? localHighlightedViews.map((path) => {
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-          if (frame == null) {
+          if (frame == null || isInfinityRectangle(frame)) {
             return null
           }
           const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
@@ -358,7 +359,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       .map((p) => {
         const elementPath = EP.fromString(p)
         const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, componentMetadata)
-        if (frame == null) {
+        if (frame == null || isInfinityRectangle(frame)) {
           return null
         }
         return (
@@ -405,6 +406,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {renderHighlightControls()}
           {renderTextEditableControls()}
           {unless(dragging, <LayoutParentControl />)}
+          {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
           <GuidelineControls />
           <ZeroSizedElementControls.control showAllPossibleElements={false} />

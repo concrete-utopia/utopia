@@ -21,7 +21,7 @@ import { RightMenuTab } from '../../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { CanvasRectangle, isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
 
@@ -97,12 +97,15 @@ function isIndicatorBeforeSiblingBBB(
   const parentFrame = MetadataUtils.getFrameInCanvasCoords(targetParent, metadata)
   const nextSiblingFrame = MetadataUtils.getFrameInCanvasCoords(targetSibling, metadata)
 
-  if (parentFrame == null || nextSiblingFrame == null) {
+  if (parentFrame == null || nextSiblingFrame == null || isInfinityRectangle(nextSiblingFrame)) {
     return false
   } else {
+    const isBelowRightOfParentTopLeft =
+      isInfinityRectangle(parentFrame) ||
+      (reparentLine.x >= parentFrame.x && reparentLine.y >= parentFrame.y)
+
     return (
-      reparentLine.x >= parentFrame.x &&
-      reparentLine.y >= parentFrame.y &&
+      isBelowRightOfParentTopLeft &&
       reparentLine.x <= nextSiblingFrame.x &&
       reparentLine.y <= nextSiblingFrame.y
     )
@@ -122,7 +125,12 @@ function isIndicatorBetweenSiblingsBBBCCC(
   )
   const prevSiblingFrame = MetadataUtils.getFrameInCanvasCoords(targetSiblingBefore, metadata)
   const nextSiblingFrame = MetadataUtils.getFrameInCanvasCoords(targetSiblingAfter, metadata)
-  if (prevSiblingFrame == null || nextSiblingFrame == null) {
+  if (
+    prevSiblingFrame == null ||
+    nextSiblingFrame == null ||
+    isInfinityRectangle(prevSiblingFrame) ||
+    isInfinityRectangle(nextSiblingFrame)
+  ) {
     return false
   } else {
     const prevSiblingEdge =

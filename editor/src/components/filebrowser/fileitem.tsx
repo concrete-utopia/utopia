@@ -7,7 +7,7 @@ import pathParse from 'path-parse'
 import React from 'react'
 import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
 import { ImageFile, ProjectFileType } from '../../core/shared/project-file-types'
-import { parseClipboardData } from '../../utils/clipboard'
+import { Clipboard } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
 import { ContextMenuItem, requireDispatch } from '../context-menu-items'
 import { ContextMenuWrapper } from '../context-menu-wrapper'
@@ -47,7 +47,7 @@ import {
 import { fileExists } from '../../core/model/project-file-utils'
 import { fileOverwriteModal, FileUploadInfo } from '../editor/store/editor-state'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { GithubFileStatus } from '../../core/shared/github'
+import { GithubFileStatus } from '../../core/shared/github/helpers'
 import { getFilenameParts } from '../images'
 import { getConflictMenuItems } from '../../core/shared/github-ui'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -528,7 +528,7 @@ class FileBrowserItemInner extends React.PureComponent<
       EditorActions.setFilebrowserDropTarget(null),
     ])
 
-    void parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
+    void Clipboard.parseClipboardData(event.dataTransfer).then((result: PasteResult) => {
       let actions: Array<EditorAction> = []
       let overwriteFiles: Array<FileUploadInfo> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {

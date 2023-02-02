@@ -7,6 +7,7 @@ import {
   CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
+  isInfinityRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
@@ -129,7 +130,7 @@ export function flexResizeBasicStrategy(
             canvasState.startingMetadata,
           )
 
-          if (originalBounds == null) {
+          if (originalBounds == null || isInfinityRectangle(originalBounds)) {
             return emptyStrategyApplicationResult
           }
 

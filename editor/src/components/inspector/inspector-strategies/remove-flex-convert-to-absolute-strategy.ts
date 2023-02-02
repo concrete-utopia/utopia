@@ -13,44 +13,11 @@ import {
   flexChildProps,
   flexContainerProps,
   nullOrNonEmpty,
+  addPositionAbsoluteTopLeft,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
-  styleP,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
-
-function positionAbsoluteRelativeToParentCommands(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return []
-  }
-
-  const left = element.specialSizeMeasurements.offset.x
-  const top = element.specialSizeMeasurements.offset.y
-
-  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
-
-  return [
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      styleP('left'),
-      setExplicitCssValue(cssPixelLength(left)),
-      parentFlexDirection,
-    ),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      styleP('top'),
-      setExplicitCssValue(cssPixelLength(top)),
-      parentFlexDirection,
-    ),
-    setProperty('always', elementPath, styleP('position'), 'absolute'),
-  ]
-}
 
 function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,
@@ -59,7 +26,7 @@ function removeFlexConvertToAbsoluteOne(
   const children = MetadataUtils.getChildrenPaths(metadata, elementPath)
   return [
     ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
-    ...children.flatMap((c) => positionAbsoluteRelativeToParentCommands(metadata, c)), // all children are converted to absolute,
+    ...children.flatMap((c) => addPositionAbsoluteTopLeft(metadata, c)), // all children are converted to absolute,
     ...children.flatMap((c) => sizeToVisualDimensions(metadata, c)), // with width/height based on measured dimensions
     ...children.flatMap((c) => pruneFlexPropsCommands(flexChildProps, c)),
     ...sizeToVisualDimensions(metadata, elementPath), // container is sized to keep its visual dimensions

@@ -16,6 +16,7 @@ import {
   CanvasRectangle,
   CanvasVector,
   LocalRectangle,
+  nullIfInfinity,
   offsetRect,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
@@ -186,9 +187,8 @@ export function getMoveCommandsForSelectedElement(
         canvasState.startingMetadata,
       )
 
-  const globalFrame = MetadataUtils.getFrameInCanvasCoords(
-    selectedElement,
-    canvasState.startingMetadata,
+  const globalFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
   )
 
   if (element == null) {
@@ -271,7 +271,7 @@ export function getMultiselectBounds(
   selectedElements: Array<ElementPath>,
 ): CanvasRectangle | null {
   const frames = mapDropNulls((element) => {
-    return MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata)
+    return nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(element, jsxMetadata))
   }, selectedElements)
 
   return boundingRectangleArray(frames)

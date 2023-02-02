@@ -1,5 +1,4 @@
 import { Key, Keyboard } from '../../utils/keyboard'
-import { objectMap } from '../../core/shared/object-utils'
 import {
   ComplexMap,
   emptyComplexMap,
@@ -7,6 +6,7 @@ import {
   getKeysFromComplexMap,
   getValueFromComplexMap,
 } from '../../utils/map'
+import { CSSProperties } from 'twind'
 
 const key = Keyboard.key
 
@@ -70,7 +70,7 @@ export const TOGGLE_NAVIGATOR = 'toggle-navigator'
 export const TOGGLE_INSPECTOR = 'toggle-inspector'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
-export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
+export const TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT = 'toggle-inspector-and-navigator'
 export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 export const TEXT_EDIT_MODE = 'text-edit-mode'
 export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
@@ -82,6 +82,8 @@ export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
 
 export const OPEN_EYEDROPPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
+export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
+export const RESIZE_TO_FIT = 'resize-to-fit'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -208,8 +210,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [TOGGLE_CODE_EDITOR_SHORTCUT]: shortcut('Toggle the code editor.', key('period', 'cmd')),
   // FIXME: Is this needed as well as TOGGLE_LEFT_MENU_SHORTCUT and TOGGLE_RIGHT_MENU_SHORTCUT?
-  [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: shortcut(
-    'Toggle the inspector and the left menu.',
+  [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: shortcut(
+    'Toggle the inspector and the navigator.',
     key('backslash', 'cmd'),
   ),
   [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('c', [])),
@@ -236,8 +238,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Convert selected elements to flex containers',
     key('a', ['shift']),
   ),
+  [REMOVE_ABSOLUTE_POSITIONING]: shortcut(`Strip absolute sizing props props`, key('x', [])),
   [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
   [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
+  [RESIZE_TO_FIT]: shortcut('Resize selected elements to fit', key('r', ['alt', 'cmd', 'shift'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

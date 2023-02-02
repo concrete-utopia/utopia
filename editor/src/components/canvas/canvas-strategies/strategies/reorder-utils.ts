@@ -5,6 +5,7 @@ import {
   canvasRectangle,
   CanvasRectangle,
   CanvasVector,
+  isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
 } from '../../../../core/shared/math-utils'
@@ -149,17 +150,17 @@ function findSiblingIndexUnderPoint(
       const siblingArea = (() => {
         if (direction === 'horizontal') {
           return canvasRectangle({
-            x: frame.x,
+            x: isInfinityRectangle(frame) ? -Infinity : frame.x,
             y: parentFrame.y,
-            width: frame.width,
+            width: isInfinityRectangle(frame) ? Infinity : frame.width,
             height: parentFrame.height,
           })
         } else {
           return canvasRectangle({
             x: parentFrame.x,
-            y: frame.y,
+            y: isInfinityRectangle(frame) ? -Infinity : frame.y,
             width: parentFrame.width,
-            height: frame.height,
+            height: isInfinityRectangle(frame) ? Infinity : frame.height,
           })
         }
       })()

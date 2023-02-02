@@ -25,6 +25,8 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
+import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
+import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -321,7 +323,12 @@ export const flexContainerProps = [
   styleP('justifyContent'),
 ]
 
-export const flexChildProps = [styleP('flex'), styleP('flexGrow'), styleP('flexShrink')]
+export const flexChildProps = [
+  styleP('flex'),
+  styleP('flexGrow'),
+  styleP('flexShrink'),
+  styleP('flexBasis'),
+]
 
 export function pruneFlexPropsCommands(
   props: PropertyPath[],
@@ -343,6 +350,7 @@ export function sizeToVisualDimensions(
   const height = element.specialSizeMeasurements.clientHeight
 
   return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
     setCssLengthProperty(
       'always',
       elementPath,
@@ -477,3 +485,55 @@ export function detectFillHugFixedState(
 }
 
 export const MaxContent = 'max-content' as const
+
+export function resizeToFitCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = [
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('horizontal'),
+    ) ?? []),
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('vertical'),
+    ) ?? []),
+  ]
+  return commands
+}
+
+export function addPositionAbsoluteTopLeft(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const left = element.specialSizeMeasurements.offset.x
+  const top = element.specialSizeMeasurements.offset.y
+
+  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
+  return [
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('left'),
+      setExplicitCssValue(cssPixelLength(left)),
+      parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('top'),
+      setExplicitCssValue(cssPixelLength(top)),
+      parentFlexDirection,
+    ),
+    setProperty('always', elementPath, styleP('position'), 'absolute'),
+  ]
+}
