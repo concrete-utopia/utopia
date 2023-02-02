@@ -157,7 +157,7 @@ specifiers:
   jest-fetch-mock: 3.0.1
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
-  jotai: ^1.4.2
+  jotai: 2.0.0
   jsdom: 17.0.0
   json5: 0.5.1
   jszip: 3.5.0
@@ -323,7 +323,7 @@ dependencies:
   immutability-helper: 3.1.1
   istextorbinary: 5.11.0
   jest-fetch-mock: 3.0.1
-  jotai: 1.4.2_c8568ef6511711a4cdb79f0a6d5315db
+  jotai: 2.0.0_react@18.1.0
   json5: 0.5.1
   jszip: 3.5.0
   keycode: 2.2.1
@@ -5989,7 +5989,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
+    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
     dev: false
 
   /compressible/2.0.18:
@@ -10418,44 +10418,16 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jotai/1.4.2_c8568ef6511711a4cdb79f0a6d5315db:
-    resolution: {integrity: sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==}
-    engines: {node: '>=12.7.0'}
+  /jotai/2.0.0_react@18.1.0:
+    resolution: {integrity: sha512-04G0CRZQgp3xrFAezd6X14psZ2TRGekHeYMBcbDJ/BR8ZJQPS+j0YkMTxUxyG58HJnN2+adfj5sWQWoqgtp1XQ==}
+    engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@babel/core': '*'
-      '@babel/template': '*'
-      '@urql/core': '*'
-      immer: '*'
-      optics-ts: '*'
-      react: '>=16.8'
-      react-query: '*'
-      valtio: '*'
-      wonka: '*'
-      xstate: '*'
+      react: '>=17.0.0'
     peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      '@babel/template':
-        optional: true
-      '@urql/core':
-        optional: true
-      immer:
-        optional: true
-      optics-ts:
-        optional: true
-      react-query:
-        optional: true
-      valtio:
-        optional: true
-      wonka:
-        optional: true
-      xstate:
+      react:
         optional: true
     dependencies:
-      '@babel/core': 7.15.5
-      immer: 3.2.0
       react: 18.1.0
-      xstate: 4.23.1
     dev: false
 
   /js-base64/2.6.4:

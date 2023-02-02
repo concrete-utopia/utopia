@@ -1,4 +1,5 @@
-import React from 'react'
+import { useAtom } from 'jotai'
+import React, { EventHandler, FocusEventHandler, MouseEventHandler, SyntheticEvent } from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../../core/shared/utils'
@@ -13,6 +14,11 @@ import {
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import { CSSNumber, isCSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
+import {
+  CanvasControlWithProps,
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../../common/inspector-atoms'
 import { InspectorInfo } from '../../../common/property-path-hooks'
 
 export type ControlMode =
@@ -74,6 +80,11 @@ export interface Sides {
 
 type UpdateShorthand = (sides: Sides, transient?: boolean) => void
 
+interface CanvasControls {
+  onHover?: CanvasControlWithProps<any>
+  onFocus?: CanvasControlWithProps<any>
+}
+
 export interface SplitChainedNumberInputProps<T> {
   name: string
   defaultMode?: ControlMode
@@ -98,6 +109,12 @@ export interface SplitChainedNumberInputProps<T> {
     oneValue?: string
     perDirection?: string
     perSide?: string
+  }
+  canvasControls?: {
+    top?: CanvasControls
+    left?: CanvasControls
+    bottom?: CanvasControls
+    right?: CanvasControls
   }
 }
 
@@ -160,7 +177,7 @@ const onSubmitValueShorthand =
   }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, top, left, bottom, right, controlModeOrder } = props
+  const { name, top, left, bottom, right, controlModeOrder, canvasControls } = props
 
   const [oneValue, setOneValue] = React.useState<CSSNumber | null>(null)
   const [horizontal, setHorizontal] = React.useState<CSSNumber | null>(null)
@@ -283,8 +300,31 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     [updateShorthandIfUsed, sidesVertical, excludeVertical],
   )
 
+  const [, setHoveredCanvasControls] = useAtom(InspectorHoveredCanvasControls)
+  const [, setFocusedCanvasControls] = useAtom(InspectorFocusedCanvasControls)
+
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
+      const {
+        top: topCanvasControls,
+        right: rightCanvasControls,
+        bottom: bottomCanvasControls,
+        left: leftCanvasControls,
+      } = canvasControls ?? {}
+
+      const onMouseEnterForControls =
+        (controls: Array<CanvasControlWithProps<any> | undefined>) => () =>
+          setHoveredCanvasControls(
+            controls.filter((c) => c != undefined) as Array<CanvasControlWithProps<any>>,
+          )
+      const onFocusForControls = (controls: Array<CanvasControlWithProps<any> | undefined>) => () =>
+        setFocusedCanvasControls(
+          controls.filter((c) => c != undefined) as Array<CanvasControlWithProps<any>>,
+        )
+
+      const onMouseLeave = () => setHoveredCanvasControls([])
+      const onBlur = () => setFocusedCanvasControls([])
+
       switch (mode) {
         case 'one-value':
           return [
@@ -298,6 +338,22 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               numberType: 'LengthPercent',
               defaultUnitToHide: 'px',
               controlStatus: allSides[0].controlStatus,
+              onMouseEnter: onMouseEnterForControls([
+                topCanvasControls?.onHover,
+                rightCanvasControls?.onHover,
+                bottomCanvasControls?.onHover,
+                leftCanvasControls?.onHover,
+              ]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([
+                  topCanvasControls?.onFocus,
+                  rightCanvasControls?.onFocus,
+                  bottomCanvasControls?.onFocus,
+                  leftCanvasControls?.onFocus,
+                ]),
+                onBlur: onBlur,
+              },
               testId: `${name}-one`,
             },
           ]
@@ -312,6 +368,18 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               numberType: 'LengthPercent',
               controlStatus: sidesHorizontal[0].controlStatus,
               defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([
+                rightCanvasControls?.onHover,
+                leftCanvasControls?.onHover,
+              ]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([
+                  rightCanvasControls?.onFocus,
+                  leftCanvasControls?.onFocus,
+                ]),
+                onBlur: onBlur,
+              },
               testId: `${name}-H`,
             },
             {
@@ -323,6 +391,18 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               numberType: 'LengthPercent',
               controlStatus: sidesVertical[0].controlStatus,
               defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([
+                topCanvasControls?.onHover,
+                bottomCanvasControls?.onHover,
+              ]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([
+                  topCanvasControls?.onFocus,
+                  bottomCanvasControls?.onFocus,
+                ]),
+                onBlur: onBlur,
+              },
               testId: `${name}-V`,
             },
           ]
@@ -337,6 +417,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               controlStatus: top.controlStatus,
               numberType: 'LengthPercent',
               defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([topCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([topCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
               testId: `${name}-T`,
             },
             {
@@ -348,6 +434,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               controlStatus: right.controlStatus,
               numberType: 'LengthPercent',
               defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([rightCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([rightCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
               testId: `${name}-R`,
             },
             {
@@ -359,6 +451,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               controlStatus: bottom.controlStatus,
               numberType: 'LengthPercent',
               defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
               testId: `${name}-B`,
             },
             {
@@ -370,6 +468,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               controlStatus: left.controlStatus,
               numberType: 'LengthPercent',
               defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([leftCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([leftCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
               testId: `${name}-L`,
             },
           ]
@@ -395,6 +499,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       onSubmitValueOne,
       onSubmitValueHorizontal,
       onSubmitValueVertical,
+      canvasControls,
+      setHoveredCanvasControls,
+      setFocusedCanvasControls,
     ])
 
   const tooltipTitle = React.useMemo(() => {

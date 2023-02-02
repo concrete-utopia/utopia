@@ -57,6 +57,11 @@ import { TextEditableControl } from './text-editable-control'
 import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { AbsoluteChildrenOutline } from './absolute-children-outline'
+import { useAtom } from 'jotai'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../inspector/common/inspector-atoms'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -222,6 +227,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const strategyControls = useGetApplicableStrategyControls()
+  const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
+  const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
   const anyStrategyActive = useEditorState(
     Substores.restOfStore,
@@ -401,6 +408,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
+          {inspectorFocusedControls.map((c) => (
+            <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
+          ))}
+          {inspectorHoveredControls.map((c) => (
+            <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
+          ))}
           {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
           {when(isSelectMode(editorMode), <InsertionControls />)}
           {renderHighlightControls()}
