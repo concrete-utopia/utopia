@@ -116,7 +116,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           targetParent,
           factory.targetIndex,
         )
-        if (strategy == null) {
+        if (strategy == null || insertionSubject.disableInsert === true) {
           return strategyApplicationResult([])
         }
 

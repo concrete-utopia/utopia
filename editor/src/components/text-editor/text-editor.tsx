@@ -358,6 +358,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     dispatch([
       enableInsertModeForJSXElement(defaultSpanElement(newUID), newUID, {}, null, {
         textEdit: true,
+        disableInsert: true,
       }),
       CanvasActions.createInteractionSession(
         createHoverInteractionViaMouse(
