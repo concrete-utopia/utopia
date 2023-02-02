@@ -2698,10 +2698,10 @@ export const UPDATE_FNS = {
           interfaceDesigner: {
             ...editor.interfaceDesigner,
             codePaneVisible: action.visible,
-            codePaneWidth:
-              action.visible && editor.interfaceDesigner.codePaneWidth < MIN_CODE_PANE_REOPEN_WIDTH
-                ? MIN_CODE_PANE_REOPEN_WIDTH
-                : editor.interfaceDesigner.codePaneWidth,
+            codePaneWidth: Math.max(
+              MIN_CODE_PANE_REOPEN_WIDTH,
+              editor.interfaceDesigner.codePaneWidth,
+            ),
           },
         }
       case 'misccodeeditor':
@@ -2824,6 +2824,10 @@ export const UPDATE_FNS = {
           interfaceDesigner: {
             ...editor.interfaceDesigner,
             codePaneVisible: !editor.interfaceDesigner.codePaneVisible,
+            codePaneWidth: Math.max(
+              MIN_CODE_PANE_REOPEN_WIDTH,
+              editor.interfaceDesigner.codePaneWidth,
+            ),
           },
         }
       case 'misccodeeditor':
