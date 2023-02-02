@@ -180,8 +180,8 @@ describe('Fixed / Fill / Hug control', () => {
         absoluteProjectWithInjectedStyle(`
           position: 'absolute',
           top: 10,
-          height: 100,
           width: '100%',
+          height: 100,
         `),
       )
     })
@@ -209,9 +209,9 @@ describe('Fixed / Fill / Hug control', () => {
 
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
         absoluteProjectWithInjectedStyle(`
+        width: '100%',
         height: '100%',
         contain: 'layout',
-        width: '100%',
         `),
       )
     })
@@ -272,8 +272,8 @@ describe('Fixed / Fill / Hug control', () => {
       expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
         absoluteProjectWithInjectedStyle(`
           width: '100%',
-          contain: 'layout',
           height: '100%',
+          contain: 'layout',
         `),
       )
     })
