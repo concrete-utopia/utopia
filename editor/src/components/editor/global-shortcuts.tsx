@@ -126,8 +126,8 @@ import {
   detectAreElementsFlexContainers,
   nukeAllAbsolutePositioningPropsCommands,
   addPositionAbsoluteTopLeft,
-  resizeToFitCommands,
   sizeToVisualDimensions,
+  toggleResizeToFitSetToFixed,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 
@@ -872,11 +872,11 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        return [
-          EditorActions.applyCommandsAction(
-            resizeToFitCommands(editor.jsxMetadata, editor.selectedViews),
-          ),
-        ]
+        const commands = toggleResizeToFitSetToFixed(editor.jsxMetadata, editor.selectedViews)
+        if (commands.length === 0) {
+          return []
+        }
+        return [EditorActions.applyCommandsAction(commands)]
       },
     })
   }

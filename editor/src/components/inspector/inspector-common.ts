@@ -557,3 +557,27 @@ export function addPositionAbsoluteTopLeft(
     setProperty('always', elementPath, styleP('position'), 'absolute'),
   ]
 }
+
+export function notFixedSizeOnEitherAxis(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return elementPaths.every((elementPath) => {
+    const horizontalState = detectFillHugFixedState('horizontal', metadata, elementPath)?.type
+    const verticalState = detectFillHugFixedState('vertical', metadata, elementPath)?.type
+    return horizontalState !== 'fixed' && verticalState !== 'fixed'
+  })
+}
+
+export function toggleResizeToFitSetToFixed(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): Array<CanvasCommand> {
+  if (elementPaths.length === 0) {
+    return []
+  }
+
+  return notFixedSizeOnEitherAxis(metadata, elementPaths)
+    ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
+    : resizeToFitCommands(metadata, elementPaths)
+}
