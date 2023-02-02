@@ -25,6 +25,10 @@ export function convertLayoutToFlexCommands(
   return elementPaths.flatMap((path) => {
     const childrenPaths = MetadataUtils.getChildrenPaths(metadata, path)
 
+    const parentFlexDirection =
+      MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
+        .parentFlexDirection ?? null
+
     if (childrenPaths.length === 0) {
       // fall back to a simple prop-setting without any kind of guessing
       return [setProperty('always', path, PP.create('style', 'display'), 'flex')]
@@ -46,8 +50,12 @@ export function convertLayoutToFlexCommands(
       return [
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
-        ...(childWidth100Percent ? [] : [setHugContentForAxis('horizontal', path)]),
-        ...(childHeight100Percent ? [] : [setHugContentForAxis('vertical', path)]),
+        ...(childWidth100Percent
+          ? []
+          : [setHugContentForAxis('horizontal', path, parentFlexDirection)]),
+        ...(childHeight100Percent
+          ? []
+          : [setHugContentForAxis('vertical', path, parentFlexDirection)]),
         ...childrenPaths.flatMap((child) => [
           ...nukeAllAbsolutePositioningPropsCommands(child),
           ...convertWidthToFlexGrowOptionally(metadata, child, direction),
@@ -59,8 +67,8 @@ export function convertLayoutToFlexCommands(
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
-      setHugContentForAxis('horizontal', path),
-      setHugContentForAxis('vertical', path),
+      setHugContentForAxis('horizontal', path, parentFlexDirection),
+      setHugContentForAxis('vertical', path, parentFlexDirection),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'padding'), padding),
       ...childrenPaths.flatMap((child) => [
         ...nukeAllAbsolutePositioningPropsCommands(child),

@@ -709,6 +709,17 @@ export function printCSSNumber(
   }
 }
 
+export function printCSSNumberOrKeyword(
+  input: CSSNumber | CSSKeyword,
+  defaultUnitToSkip: string | null,
+): string | number {
+  if (isCSSKeyword(input)) {
+    return input.value
+  } else {
+    return printCSSNumber(input, defaultUnitToSkip)
+  }
+}
+
 export function cssNumberToString(input: CSSNumber, showUnit: boolean = true): string {
   const printed = showUnit ? printCSSNumber(input, null) : fixNumber(input.value)
   return `${printed}`

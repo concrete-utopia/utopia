@@ -1,10 +1,16 @@
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  PropertyPath,
+  PropertyPathPart,
+} from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
+
+type PositionProp = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
 export interface SetProperty extends BaseCommand {
   type: 'SET_PROPERTY'
@@ -13,10 +19,10 @@ export interface SetProperty extends BaseCommand {
   value: string | number
 }
 
-export function setProperty(
+export function setProperty<T extends PropertyPathPart>(
   whenToRun: WhenToRun,
   element: ElementPath,
-  property: PropertyPath,
+  property: PropertyPath<[PropertyPathPart, T extends PositionProp ? never : T]>,
   value: string | number,
 ): SetProperty {
   return {
@@ -28,10 +34,10 @@ export function setProperty(
   }
 }
 
-export function setPropertyOmitNullProp(
+export function setPropertyOmitNullProp<T extends PropertyPathPart>(
   whenToRun: WhenToRun,
   element: ElementPath,
-  property: PropertyPath,
+  property: PropertyPath<[PropertyPathPart, T extends PositionProp ? never : T]>,
   value: string | number | null,
 ): [SetProperty] | [] {
   if (value == null) {

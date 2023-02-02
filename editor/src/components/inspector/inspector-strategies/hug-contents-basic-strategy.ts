@@ -3,8 +3,14 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasCommand } from '../../canvas/commands/commands'
+import {
+  SetCssLengthProperty,
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
 import { SetProperty, setProperty } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
+import { cssKeyword, cssUnitlessLength, FlexDirection } from '../common/css-utils'
 import {
   Axis,
   detectFillHugFixedState,
@@ -19,8 +25,18 @@ import { InspectorStrategy } from './inspector-strategy'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
-export function setHugContentForAxis(axis: Axis, target: ElementPath): SetProperty {
-  return setProperty('always', target, PP.create('style', widthHeightFromAxis(axis)), MaxContent)
+export function setHugContentForAxis(
+  axis: Axis,
+  target: ElementPath,
+  parentFlexDirection: FlexDirection | null,
+): SetCssLengthProperty {
+  return setCssLengthProperty(
+    'always',
+    target,
+    PP.create('style', widthHeightFromAxis(axis)),
+    setExplicitCssValue(cssKeyword(MaxContent)),
+    parentFlexDirection,
+  )
 }
 
 function hugContentsSingleElement(
@@ -28,9 +44,15 @@ function hugContentsSingleElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+
   const basicCommands = [
     nukeSizingPropsForAxisCommand(axis, elementPath),
-    setHugContentForAxis(axis, elementPath),
+    setHugContentForAxis(
+      axis,
+      elementPath,
+      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
   ]
 
   const chilren = MetadataUtils.getChildrenPaths(metadata, elementPath)

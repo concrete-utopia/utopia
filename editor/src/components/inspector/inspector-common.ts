@@ -7,6 +7,7 @@ import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import {
   CSSNumber,
   cssNumber,
+  cssPixelLength,
   FlexDirection,
   parseCSSLengthPercent,
   parseCSSNumber,
@@ -20,6 +21,10 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../canvas/commands/set-css-length-command'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
@@ -326,7 +331,8 @@ export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
 }
 
-export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create('style', prop)
+export const styleP = <K extends keyof CSSProperties>(prop: K): PropertyPath<['style', K]> =>
+  PP.create('style', prop)
 
 export const flexContainerProps = [
   styleP('flexDirection'),
@@ -365,8 +371,20 @@ export function sizeToVisualDimensions(
 
   return [
     ...pruneFlexPropsCommands(flexChildProps, elementPath),
-    setProperty('always', elementPath, styleP('width'), width),
-    setProperty('always', elementPath, styleP('height'), height),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(width)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(height)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
   ]
 }
 
@@ -519,9 +537,23 @@ export function addPositionAbsoluteTopLeft(
   const left = element.specialSizeMeasurements.offset.x
   const top = element.specialSizeMeasurements.offset.y
 
+  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
   return [
-    setProperty('always', elementPath, styleP('left'), left),
-    setProperty('always', elementPath, styleP('top'), top),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('left'),
+      setExplicitCssValue(cssPixelLength(left)),
+      parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('top'),
+      setExplicitCssValue(cssPixelLength(top)),
+      parentFlexDirection,
+    ),
     setProperty('always', elementPath, styleP('position'), 'absolute'),
   ]
 }
