@@ -24,9 +24,12 @@ import {
 } from '../../controls/select-mode/floating-number-indicator'
 import {
   CSSPaddingKey,
+  CSSPaddingMappedValues,
   deltaFromEdge,
   maybeFullPadding,
   offsetPaddingByEdge,
+  paddingAdjustMode,
+  PaddingAdjustMode,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
@@ -49,10 +52,11 @@ import {
   isInfinityRectangle,
 } from '../../../../core/shared/math-utils'
 import {
+  AdjustPrecision,
   canShowCanvasPropControl,
+  CSSNumberWithRenderedValue,
   indicatorMessage,
   offsetMeasurementByDelta,
-  precisionFromModifiers,
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
@@ -60,6 +64,7 @@ import { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
+import { Modifiers } from '../../../../utils/modifiers'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -72,6 +77,10 @@ const IndividualPaddingProps: Array<CSSPaddingKey> = [
 export const PaddingTearThreshold: number = -25
 
 export const SetPaddingStrategyName = 'Set Padding'
+
+function precisionFromModifiers(modifiers: Modifiers): AdjustPrecision {
+  return modifiers.cmd ? 'coarse' : 'precise'
+}
 
 export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interactionSession) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -178,7 +187,8 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const delta = newPaddingEdge.renderedValuePx < PaddingTearThreshold ? rawDelta : maxedDelta
 
-      const newPaddingMaxed = offsetPaddingByEdge(
+      const newPaddingMaxed = adjustPaddings(
+        paddingAdjustMode(interactionSession.interactionData.modifiers),
         paddingPropInteractedWith,
         delta,
         padding,
@@ -201,6 +211,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         },
       )
 
+      // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
         return strategyApplicationResult([
           ...basicCommands,
@@ -221,6 +232,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
 
+      // all 4 sides present - can be represented via the padding shorthand property
       if (allPaddingPropsDefined != null) {
         const paddingString = paddingToPaddingString(allPaddingPropsDefined)
         return strategyApplicationResult([
@@ -234,6 +246,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         ])
       }
 
+      // only some sides are present - longhand properties have to be used
       return strategyApplicationResult([
         ...basicCommands,
         deleteProperties('always', selectedElement, [
@@ -396,5 +409,50 @@ function indicatorPosition(
       return canvasPoint({ x: dragStart.x + dragDelta.x + Offset, y: dragStart.y + Offset })
     default:
       assertNever(edge)
+  }
+}
+
+function opposite(padding: CSSPaddingKey): CSSPaddingKey {
+  switch (padding) {
+    case 'paddingBottom':
+      return 'paddingTop'
+    case 'paddingTop':
+      return 'paddingBottom'
+    case 'paddingLeft':
+      return 'paddingRight'
+    case 'paddingRight':
+      return 'paddingLeft'
+    default:
+      assertNever(padding)
+  }
+}
+
+function adjustPaddings(
+  adjustMode: PaddingAdjustMode,
+  paddingPropInteractedWith: CSSPaddingKey,
+  delta: number,
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+  precision: AdjustPrecision,
+): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> {
+  const newPadding = offsetPaddingByEdge(paddingPropInteractedWith, delta, padding, precision)
+  switch (adjustMode) {
+    case 'individual':
+      return newPadding
+    case 'all': {
+      const newPaddingValue = newPadding[paddingPropInteractedWith]
+      return {
+        paddingTop: newPaddingValue,
+        paddingBottom: newPaddingValue,
+        paddingLeft: newPaddingValue,
+        paddingRight: newPaddingValue,
+      }
+    }
+    case 'cross-axis': {
+      const newPaddingValue = newPadding[paddingPropInteractedWith]
+      newPadding[opposite(paddingPropInteractedWith)] = newPaddingValue
+      return newPadding
+    }
+    default:
+      assertNever(adjustMode)
   }
 }
