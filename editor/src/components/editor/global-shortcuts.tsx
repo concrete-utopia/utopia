@@ -1032,19 +1032,8 @@ function detectBestWrapperElement(
     style: jsxAttributeValue(style, emptyComments),
   })
 
-  if (element.specialSizeMeasurements.parentFlexDirection.startsWith('row')) {
-    return {
-      element: jsxElement('div', uid, props, []),
-      importsToAdd: {},
-    }
+  return {
+    element: jsxElement('div', uid, props, []),
+    importsToAdd: {},
   }
-
-  if (element.specialSizeMeasurements.parentFlexDirection.startsWith('col')) {
-    return {
-      element: jsxElement('div', uid, props, []),
-      importsToAdd: {},
-    }
-  }
-
-  return 'default-empty-div'
 }
