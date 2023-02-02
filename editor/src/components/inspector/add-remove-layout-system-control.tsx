@@ -20,12 +20,8 @@ import {
 import { detectAreElementsFlexContainers } from './inspector-common'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSystemControlTestId'
-
-const LayoutSystemSectionTitle = () =>
-  isFeatureEnabled('Nine block control') ? 'Layout System' : 'New Layout System'
 
 interface AddRemoveLayoutSystemControlProps {}
 
@@ -86,7 +82,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
         }}
       >
         <InspectorSectionIcons.LayoutSystem />
-        <span>{LayoutSystemSectionTitle()}</span>
+        <span>AutoLayout: Flex</span>
       </FlexRow>
       {isFlexLayoutedContainer ? (
         <SquareButton

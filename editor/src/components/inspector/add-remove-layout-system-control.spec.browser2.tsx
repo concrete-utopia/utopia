@@ -47,19 +47,21 @@ describe('add layout system', () => {
     expect(div.style.display).toEqual('')
   })
 
-  it('adding flex layout converts child `width` to `flexGrow`', async () => {
+  it('adding (vertical) flex layout converts child `height` to `flexGrow`', async () => {
     const editor = await renderTestEditorWithCode(
-      project({ width: '100%', height: '100px' }),
+      project({ width: '100px', height: '100%' }),
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
     await expectSingleUndoStep(editor, () => clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
+    expect(div.style.flexDirection).toEqual('column')
 
     const child = editor.renderedDOM.getByTestId('child')
-    expect(child.style.width).toEqual('')
+    expect(child.style.height).toEqual('')
     expect(child.style.flexGrow).toEqual('1')
+    expect(child.style.width).toEqual('100px')
   })
 
   it('adding flex layout converts child `height` to `flexGrow` if flexDirection is set', async () => {

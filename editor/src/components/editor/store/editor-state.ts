@@ -264,7 +264,7 @@ export interface UserState extends UserConfiguration {
 }
 
 export interface GithubCommitAndPush {
-  name: 'commit-and-push'
+  name: 'commitAndPush'
 }
 
 export interface GithubListBranches {
@@ -291,6 +291,11 @@ export interface GithubListPullRequestsForBranch {
   branchName: string
 }
 
+export interface GithubSaveAsset {
+  name: 'saveAsset'
+  path: string
+}
+
 export type GithubOperation =
   | GithubCommitAndPush
   | GithubListBranches
@@ -298,11 +303,12 @@ export type GithubOperation =
   | GithubLoadRepositories
   | GithubUpdateAgainstBranch
   | GithubListPullRequestsForBranch
+  | GithubSaveAsset
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
-    case 'commit-and-push':
-      return 'Saving'
+    case 'commitAndPush':
+      return 'Saving to Github'
     case 'listBranches':
       return 'Listing branches'
     case 'loadBranch':
@@ -313,6 +319,8 @@ export function githubOperationPrettyName(op: GithubOperation): string {
       return 'Updating'
     case 'listPullRequestsForBranch':
       return 'Listing pull requests'
+    case 'saveAsset':
+      return 'Saving asset to Github'
     default:
       const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
@@ -345,7 +353,7 @@ export function isGithubLoadingBranch(
 }
 
 export function isGithubCommitting(operations: Array<GithubOperation>): boolean {
-  return operations.some((o) => o.name === 'commit-and-push')
+  return operations.some((o) => o.name === 'commitAndPush')
 }
 
 export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {

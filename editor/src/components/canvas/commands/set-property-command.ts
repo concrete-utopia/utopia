@@ -34,6 +34,19 @@ export function setProperty<T extends PropertyPathPart>(
   }
 }
 
+export function setPropertyOmitNullProp<T extends PropertyPathPart>(
+  whenToRun: WhenToRun,
+  element: ElementPath,
+  property: PropertyPath<[PropertyPathPart, T extends PositionProp ? never : T]>,
+  value: string | number | null,
+): [SetProperty] | [] {
+  if (value == null) {
+    return []
+  } else {
+    return [setProperty(whenToRun, element, property, value)]
+  }
+}
+
 export const runSetProperty: CommandFunction<SetProperty> = (
   editorState: EditorState,
   command: SetProperty,

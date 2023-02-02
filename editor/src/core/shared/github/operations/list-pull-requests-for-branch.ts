@@ -1,11 +1,19 @@
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
-import { notice } from '../../../../components/common/notice'
 import { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
-import { showToast, updateGithubData } from '../../../../components/editor/actions/action-creators'
-import { GithubRepo, PullRequest } from '../../../../components/editor/store/editor-state'
-import { GithubFailure, runGithubOperation } from '../helpers'
+import { updateGithubData } from '../../../../components/editor/actions/action-creators'
+import {
+  GithubOperation,
+  GithubRepo,
+  PullRequest,
+} from '../../../../components/editor/store/editor-state'
+import {
+  githubAPIError,
+  githubAPIErrorFromResponse,
+  GithubFailure,
+  runGithubOperation,
+} from '../helpers'
 
 export interface GetBranchPullRequestSuccess {
   type: 'SUCCESS'
@@ -36,7 +44,7 @@ export async function updatePullRequestsForBranch(
       branchName: branchName,
     },
     dispatch,
-    async () => {
+    async (operation: GithubOperation) => {
       const url = urljoin(
         UTOPIA_BACKEND,
         'github',
@@ -55,38 +63,27 @@ export async function updatePullRequestsForBranch(
         mode: MODE,
       })
 
-      if (response.ok) {
-        const responseBody: GetBranchPullRequestResponse = await response.json()
+      if (!response.ok) {
+        throw await githubAPIErrorFromResponse(operation, response)
+      }
 
-        switch (responseBody.type) {
-          case 'FAILURE':
-            return [
-              showToast(
-                notice(
-                  `Error when listing pull requests for branch: ${responseBody.failureReason}`,
-                  'ERROR',
-                ),
-              ),
-            ]
-          case 'SUCCESS':
-            return [
-              updateGithubData({
-                currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
-                  ...pr,
-                  number: getPullRequestNumberFromUrl(pr.htmlURL),
-                })),
-              }),
-            ]
-          default:
-            const _exhaustiveCheck: never = responseBody
-            throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
-        }
-      } else {
-        return [
-          showToast(
-            notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
-          ),
-        ]
+      const responseBody: GetBranchPullRequestResponse = await response.json()
+
+      switch (responseBody.type) {
+        case 'FAILURE':
+          throw githubAPIError(operation, responseBody.failureReason)
+        case 'SUCCESS':
+          return [
+            updateGithubData({
+              currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
+                ...pr,
+                number: getPullRequestNumberFromUrl(pr.htmlURL),
+              })),
+            }),
+          ]
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
       }
     },
   )

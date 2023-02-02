@@ -12,6 +12,7 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import {
   FileChecksums,
+  GithubOperation,
   GithubRepo,
   PersistentModel,
   projectGithubSettings,
@@ -20,6 +21,8 @@ import {
   dispatchPromiseActions,
   getBranchContentFromServer,
   GetBranchContentResponse,
+  githubAPIError,
+  githubAPIErrorFromResponse,
   GithubFailure,
   runGithubOperation,
 } from '../helpers'
@@ -47,73 +50,71 @@ export async function saveProjectToGithub(
   dispatch: EditorDispatch,
   options: SaveProjectToGithubOptions,
 ): Promise<void> {
-  await runGithubOperation({ name: 'commit-and-push' }, dispatch, async () => {
-    const { branchName, commitMessage } = options
+  await runGithubOperation(
+    { name: 'commitAndPush' },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const { branchName, commitMessage } = options
 
-    // If this is a straight push, load the repo before saving
-    // in order to retrieve the head origin commit hash
-    // and avoid a fast forward error.
-    let originCommit = persistentModel.githubSettings.originCommit
-    if (originCommit == null && targetRepository != null && branchName != null) {
-      const getBranchResponse = await getBranchContentFromServer(
-        targetRepository,
-        branchName,
-        null,
-        null,
-      )
-      if (getBranchResponse.ok) {
-        const content: GetBranchContentResponse = await getBranchResponse.json()
-        if (content.type === 'SUCCESS' && content.branch != null) {
-          originCommit = content.branch.originCommit
+      // If this is a straight push, load the repo before saving
+      // in order to retrieve the head origin commit hash
+      // and avoid a fast forward error.
+      let originCommit = persistentModel.githubSettings.originCommit
+      if (originCommit == null && targetRepository != null && branchName != null) {
+        const getBranchResponse = await getBranchContentFromServer(
+          targetRepository,
+          branchName,
+          null,
+          null,
+        )
+        if (getBranchResponse.ok) {
+          const content: GetBranchContentResponse = await getBranchResponse.json()
+          if (content.type === 'SUCCESS' && content.branch != null) {
+            originCommit = content.branch.originCommit
+          }
         }
       }
-    }
 
-    const patchedModel: PersistentModel = {
-      ...persistentModel,
-      githubSettings: {
-        ...persistentModel.githubSettings,
-        originCommit: originCommit,
-        targetRepository: targetRepository,
-      },
-    }
+      const patchedModel: PersistentModel = {
+        ...persistentModel,
+        githubSettings: {
+          ...persistentModel.githubSettings,
+          originCommit: originCommit,
+          targetRepository: targetRepository,
+        },
+      }
 
-    const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
+      const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
 
-    let includeQueryParams: boolean = false
-    let paramsRecord: Record<string, string> = {}
-    if (branchName != null) {
-      includeQueryParams = true
-      paramsRecord.branch_name = branchName
-    }
-    if (commitMessage != null) {
-      includeQueryParams = true
-      paramsRecord.commit_message = commitMessage
-    }
-    const searchParams = new URLSearchParams(paramsRecord)
-    const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
+      let includeQueryParams: boolean = false
+      let paramsRecord: Record<string, string> = {}
+      if (branchName != null) {
+        includeQueryParams = true
+        paramsRecord.branch_name = branchName
+      }
+      if (commitMessage != null) {
+        includeQueryParams = true
+        paramsRecord.commit_message = commitMessage
+      }
+      const searchParams = new URLSearchParams(paramsRecord)
+      const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
-    const postBody = JSON.stringify(patchedModel)
-    const response = await fetch(urlToUse, {
-      method: 'POST',
-      credentials: 'include',
-      headers: HEADERS,
-      mode: MODE,
-      body: postBody,
-    })
-    if (response.ok) {
+      const postBody = JSON.stringify(patchedModel)
+      const response = await fetch(urlToUse, {
+        method: 'POST',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+        body: postBody,
+      })
+      if (!response.ok) {
+        throw await githubAPIErrorFromResponse(operation, response)
+      }
+
       const responseBody: SaveToGithubResponse = await response.json()
       switch (responseBody.type) {
         case 'FAILURE':
-          dispatch(
-            [
-              showToast(
-                notice(`Error when saving to Github: ${responseBody.failureReason}`, 'ERROR'),
-              ),
-            ],
-            'everyone',
-          )
-          break
+          throw githubAPIError(operation, responseBody.failureReason)
         case 'SUCCESS':
           dispatch(
             [
@@ -146,18 +147,9 @@ export async function saveProjectToGithub(
           break
         default:
           const _exhaustiveCheck: never = responseBody
-          throw new Error(`Github: Unhandled response body ${JSON.stringify(responseBody)}`)
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
       }
-    } else {
-      dispatch(
-        [
-          showToast(
-            notice(`Github: Unexpected status returned from endpoint: ${response.status}`, 'ERROR'),
-          ),
-        ],
-        'everyone',
-      )
-    }
-    return []
-  })
+      return []
+    },
+  )
 }
