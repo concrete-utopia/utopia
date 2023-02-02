@@ -88,6 +88,7 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
     return [EditorActions.updateMouseButtonsPressed(null, event.button)]
@@ -179,17 +180,11 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
 
       actions.push(
-        ...handleKeyDown(
-          event,
-          editorStoreRef.current.editor,
-          editorStoreRef.current.derived,
-          namesByKey,
-          dispatch,
-        ),
+        ...handleKeyDown(event, editorStoreRef.current.editor, metadataRef, namesByKey, dispatch),
       )
       return actions
     },
-    [dispatch, editorStoreRef, namesByKey, setClearKeyboardInteraction],
+    [dispatch, editorStoreRef, metadataRef, namesByKey, setClearKeyboardInteraction],
   )
 
   const onWindowKeyUp = React.useCallback(

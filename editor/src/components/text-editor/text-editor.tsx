@@ -31,13 +31,9 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
-  toggleTextBoldWithUnset,
   toggleTextItalic,
-  toggleTextItalicWithUnset,
   toggleTextStrikeThrough,
-  toggleTextStrikeThroughWithUnset,
   toggleTextUnderline,
-  toggleTextUnderlineWithUnset,
 } from './text-editor-shortcut-helpers'
 import { useColorTheme } from '../../uuiui'
 import { arrayToObject } from '../../core/shared/array-utils'
@@ -104,41 +100,45 @@ const handleToggleShortcuts = (
 
   // Meta+b = bold
   if (meta && event.key === 'b') {
-    toggleTextBoldWithUnset(
+    toggleTextBold(
       target,
       specialSizeMeasurements?.fontWeight ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
   // Meta+i = italic
   if (meta && event.key === 'i') {
-    toggleTextItalicWithUnset(
+    toggleTextItalic(
       target,
       specialSizeMeasurements?.fontStyle ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
   // Meta+u = underline
   if (meta && event.key === 'u') {
-    toggleTextUnderlineWithUnset(
+    toggleTextUnderline(
       target,
       specialSizeMeasurements?.textDecorationLine ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }
   // Meta+shift+x = strikethrough
   if (meta && modifiers.shift && event.key === 'x') {
-    toggleTextStrikeThroughWithUnset(
+    toggleTextStrikeThrough(
       target,
       specialSizeMeasurements?.textDecorationLine ?? null,
       dispatch,
       metadataRef,
+      'separate-undo-step',
     )
     return []
   }

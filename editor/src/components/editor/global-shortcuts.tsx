@@ -104,7 +104,11 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributeValue,
+} from '../../core/shared/element-template'
 import {
   toggleTextBold,
   toggleTextItalic,
@@ -340,7 +344,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
-  derived: DerivedState,
+  metadataRef: { current: ElementInstanceMetadataMap },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): Array<EditorAction> {
@@ -733,42 +737,72 @@ export function handleKeyDown(
         return actions
       },
       [TOGGLE_TEXT_BOLD]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextBold(target, element?.specialSizeMeasurements.fontWeight ?? null)
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          let first = true
+          editor.selectedViews.forEach((target) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextBold(
+              target,
+              element?.specialSizeMeasurements.fontWeight ?? null,
+              dispatch,
+              metadataRef,
+              first ? 'separate-undo-step' : 'merge-with-previous',
+            )
+            first = false
+          })
+        }
+        return []
       },
       [TOGGLE_TEXT_ITALIC]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextItalic(target, element?.specialSizeMeasurements.fontStyle ?? null)
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          let first = true
+          editor.selectedViews.forEach((target) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextItalic(
+              target,
+              element?.specialSizeMeasurements.fontStyle ?? null,
+              dispatch,
+              metadataRef,
+              first ? 'separate-undo-step' : 'merge-with-previous',
+            )
+            first = false
+          })
+        }
+        return []
       },
       [TOGGLE_TEXT_UNDERLINE]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextUnderline(
-                target,
-                element?.specialSizeMeasurements.textDecorationLine ?? null,
-              )
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          let first = true
+          editor.selectedViews.forEach((target) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextUnderline(
+              target,
+              element?.specialSizeMeasurements.textDecorationLine ?? null,
+              dispatch,
+              metadataRef,
+              first ? 'separate-undo-step' : 'merge-with-previous',
+            )
+            first = false
+          })
+        }
+        return []
       },
       [TOGGLE_TEXT_STRIKE_THROUGH]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextStrikeThrough(
-                target,
-                element?.specialSizeMeasurements.textDecorationLine ?? null,
-              )
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          let first = true
+          editor.selectedViews.forEach((target) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextStrikeThrough(
+              target,
+              element?.specialSizeMeasurements.textDecorationLine ?? null,
+              dispatch,
+              metadataRef,
+              first ? 'separate-undo-step' : 'merge-with-previous',
+            )
+            first = false
+          })
+        }
+        return []
       },
       [PASTE_STYLE_PROPERTIES]: () => {
         return isSelectMode(editor.mode)
