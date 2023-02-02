@@ -87,7 +87,7 @@ export const RESIZE_TO_FIT = 'resize-to-fit'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
-const shortcutDetailsWithDefaults: ShortcutDetails = {
+export const shortcutDetailsWithDefaults: ShortcutDetails = {
   [DELETE_SELECTED_SHORTCUT]: shortcut('Delete the selected element.', [
     key('delete', []),
     key('backspace', []),

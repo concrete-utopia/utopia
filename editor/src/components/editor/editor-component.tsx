@@ -8,9 +8,7 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { IS_BROWSER_TEST_DEBUG, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { projectURLForProject } from '../../core/shared/utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
-import { Modifier } from '../../utils/modifiers'
 import {
   FlexColumn,
   LargerIcons,
@@ -19,8 +17,8 @@ import {
   SimpleFlexRow,
   ColorThemeComponent,
   TabComponent,
-  useColorTheme,
   UtopiaTheme,
+  colorTheme,
 } from '../../uuiui'
 import CanvasActions from '../canvas/canvas-actions'
 import {
@@ -41,7 +39,10 @@ import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
-import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
+import {
+  applyShortcutConfigurationToDefaults,
+  shortcutDetailsWithDefaults,
+} from './shortcut-definitions'
 import {
   emptyGithubSettings,
   githubOperationLocksEditor,
@@ -55,6 +56,9 @@ import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
+import { Modifier } from '../../utils/modifiers'
+import { capitalize } from '../../core/shared/string-utils'
+import { generateUUID } from '../../utils/utils'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -89,7 +93,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
     return [EditorActions.updateMouseButtonsPressed(null, event.button)]
   }, [])
@@ -213,12 +216,27 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     event.preventDefault()
   }, [])
 
+  const [showCheatsheet, setShowCheatsheet] = React.useState(false)
+
+  const handleCheatsheetKeydown = (e: KeyboardEvent) => {
+    if (e.metaKey && e.key === '/') {
+      e.preventDefault()
+      e.stopPropagation()
+      setShowCheatsheet((v) => !v)
+    }
+    if (e.key === 'Escape') {
+      setShowCheatsheet(false)
+    }
+  }
+
   React.useEffect(() => {
+    window.addEventListener('keydown', handleCheatsheetKeydown)
     window.addEventListener('contextmenu', preventDefault)
     window.addEventListener('mousedown', inputBlurForce, true)
     return function cleanup() {
       window.removeEventListener('contextmenu', preventDefault)
       window.removeEventListener('mousedown', inputBlurForce, true)
+      window.removeEventListener('keydown', handleCheatsheetKeydown)
     }
   }, [
     onWindowMouseDown,
@@ -286,8 +304,13 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [dispatch],
   )
 
+  const closeCheatsheet = React.useCallback(() => {
+    setShowCheatsheet(false)
+  }, [])
+
   return (
     <>
+      {when(showCheatsheet, <ShortcutsCheatsheet onClose={closeCheatsheet} />)}
       <ColorThemeComponent />
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
@@ -402,6 +425,179 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     </>
   )
 })
+
+const ShortcutsCheatsheet = ({ onClose }: { onClose: () => void }) => {
+  const stopPropagation = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+  }, [])
+
+  const normalizeCharacter = (s: string) => {
+    switch (s) {
+      case 'delete':
+      case 'backspace':
+        return '⌫'
+      case 'minus':
+        return '–'
+      case 'plus':
+        return '+'
+      case 'tab':
+        return '↹'
+      case 'forwardslash':
+        return '/'
+      case 'backslash':
+        return '\\'
+      case 'period':
+        return '.'
+      case 'enter':
+        return '⏎'
+      case 'esc':
+        return '⎋'
+      default:
+        return s
+    }
+  }
+
+  const shortcuts = Object.keys(shortcutDetailsWithDefaults).map((name) => {
+    const details = shortcutDetailsWithDefaults[name]
+    const keys = details.shortcutKeys
+      .map((key) => {
+        return {
+          id: generateUUID(),
+          character: normalizeCharacter(key.character),
+          cmd: key.modifiers.includes('cmd'),
+          shift: key.modifiers.includes('shift'),
+          alt: key.modifiers.includes('alt'),
+          ctrl: key.modifiers.includes('ctrl'),
+        }
+      })
+      .filter((key, idx, self) => {
+        // filter only unique shortcuts (accommodating for OS differences)
+        const same = self.find(
+          (other) =>
+            other.character === key.character &&
+            other.cmd === key.cmd &&
+            other.shift === key.shift &&
+            other.alt === key.alt &&
+            other.ctrl === key.ctrl,
+        )
+        return same != null ? idx === self.indexOf(same) : true
+      })
+    return {
+      id: generateUUID(),
+      description: details.description,
+      keys: keys,
+    }
+  })
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: colorTheme.fg6Opacity50.value,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        width: '100vw',
+        fontSize: 12,
+      }}
+      onMouseDown={onClose}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxHeight: '100%',
+          overflow: 'auto',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 600,
+            background: colorTheme.bg0.value,
+            margin: '20px auto',
+            padding: 20,
+            borderRadius: 2,
+            boxShadow: '0px 0px 6px #00000044',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+          onMouseDown={stopPropagation}
+        >
+          <div
+            style={{
+              paddingBottom: 10,
+              fontWeight: 700,
+              textAlign: 'center',
+            }}
+          >
+            Keyboard shortcuts
+          </div>
+          {shortcuts.map((shortcut, index) => {
+            const isLast = index >= shortcuts.length - 1
+            return (
+              <div
+                key={shortcut.id}
+                style={{
+                  borderBottom: !isLast ? `1px solid ${colorTheme.bg2.value}` : 0,
+                  paddingBottom: !isLast ? 10 : 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ flex: 1 }}>{shortcut.description}</div>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {shortcut.keys.map((key, idx) => {
+                    return (
+                      <div key={key.id} style={{ display: 'flex', gap: 4 }}>
+                        {when(key.cmd, <ModifierKey character={'⌘'} />)}
+                        {when(key.alt, <ModifierKey character={'⌥'} />)}
+                        {when(key.shift, <ModifierKey character={'⇧'} />)}
+                        {when(key.ctrl, <ModifierKey character={'^'} />)}
+                        <ModifierKey character={key.character} />
+                        {when(
+                          idx < shortcut.keys.length - 1,
+                          <div style={{ padding: '0 4px' }}>,</div>,
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ModifierKey = ({ character }: { character: string }) => {
+  return (
+    <div
+      style={{
+        borderRadius: 2,
+        padding: 4,
+        minWidth: 24,
+        minHeight: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: colorTheme.bg3.value,
+      }}
+    >
+      {capitalize(character)}
+    </div>
+  )
+}
 
 const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const dispatch = useDispatch()
