@@ -935,7 +935,16 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       transientProperties: null,
       resizeOptions: currentEditor.canvas.resizeOptions,
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
-      controls: currentEditor.canvas.controls,
+      controls: {
+        snappingGuidelines: currentEditor.canvas.controls.snappingGuidelines,
+        outlineHighlights: currentEditor.canvas.controls.outlineHighlights,
+        strategyIntendedBounds: currentEditor.canvas.controls.strategyIntendedBounds,
+        flexReparentTargetLines: currentEditor.canvas.controls.flexReparentTargetLines,
+        parentHighlightPaths: currentEditor.canvas.controls.parentHighlightPaths,
+        reparentedToPaths: poppedEditor.canvas.controls.reparentedToPaths,
+        dragToMoveIndicatorFlags: currentEditor.canvas.controls.dragToMoveIndicatorFlags,
+        parentOutlineHighlight: currentEditor.canvas.controls.parentOutlineHighlight,
+      },
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
