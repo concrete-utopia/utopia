@@ -936,6 +936,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       resizeOptions: currentEditor.canvas.resizeOptions,
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
       controls: currentEditor.canvas.controls,
+      reparentedToPaths: poppedEditor.canvas.reparentedToPaths,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
