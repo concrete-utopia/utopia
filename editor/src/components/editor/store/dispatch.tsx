@@ -80,6 +80,8 @@ function simpleStringifyAction(action: EditorAction): string {
       return `Transient: ${simpleStringifyActions(action.transientActions)}`
     case 'ATOMIC':
       return `Atomic: ${simpleStringifyActions(action.actions)}`
+    case 'MERGE_WITH_PREV_UNDO':
+      return `Merge with prev undo: ${simpleStringifyActions(action.actions)}`
     default:
       return action.action
   }
@@ -100,7 +102,7 @@ function processAction(
   if (action.action === 'TRANSIENT_ACTIONS') {
     // Drill into the array.
     return processActions(dispatchEvent, working, action.transientActions, spyCollector)
-  } else if (action.action === 'ATOMIC') {
+  } else if (action.action === 'ATOMIC' || action.action === 'MERGE_WITH_PREV_UNDO') {
     // Drill into the array.
     return processActions(dispatchEvent, working, action.actions, spyCollector)
   } else if (action.action === 'UNDO' && !History.canUndo(working.history)) {
@@ -398,6 +400,7 @@ export function editorDispatch(
     )
 
   const allTransient = dispatchedActions.every(isTransientAction)
+  const allMergeWithPrevUndo = dispatchedActions.every((a) => a.action === 'MERGE_WITH_PREV_UNDO')
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
@@ -497,6 +500,8 @@ export function editorDispatch(
   let newHistory: StateHistory
   if (transientOrNoChange) {
     newHistory = result.history
+  } else if (allMergeWithPrevUndo) {
+    newHistory = History.replaceLast(result.history, editorFilteredForFiles, frozenDerivedState)
   } else {
     newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
   }

@@ -3,6 +3,12 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../../canvas/commands/set-css-length-command'
+import { setProperty } from '../../canvas/commands/set-property-command'
+import { cssPixelLength } from '../common/css-utils'
+import {
   filterKeepFlexContainers,
   flexChildProps,
   flexContainerProps,

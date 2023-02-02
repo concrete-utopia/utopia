@@ -94,12 +94,12 @@ function elementComputedDimension(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
 ): number | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
+  if (elementPath == null) {
     return null
   }
 
-  return element.localFrame?.[prop] ?? null
+  const localFrame = MetadataUtils.getFrameOrZeroRect(elementPath, metadata)
+  return localFrame[prop]
 }
 
 interface FillHugFixedControlProps {}

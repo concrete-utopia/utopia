@@ -1,11 +1,12 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { uniqBy } from '../../../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
   distance,
+  isInfinityRectangle,
   point,
   WindowPoint,
   windowPoint,
@@ -359,9 +360,10 @@ function useStartDragState(): (
       originalFrames = originalFrames.filter((f) => f.frame != null)
 
       const selectionArea = boundingRectangleArray(
-        selectedViews.map((view) => {
-          return MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
-        }),
+        mapDropNulls((view) => {
+          const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
+          return frame == null || isInfinityRectangle(frame) ? null : frame
+        }, selectedViews),
       )
 
       dispatch([

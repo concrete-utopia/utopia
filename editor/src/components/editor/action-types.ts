@@ -261,6 +261,15 @@ export type TransientActions = {
   elementsToRerender: Array<ElementPath> | null
 }
 
+// This is a wrapper action which changes the undo behavior for the included actions.
+// When you wrap actions in this, dispatching them will not create a new undo step.
+// Instead of that the effects of the actions will be merged into the previous undo step.
+// (Practically the previous undo snapshot will be replaced with the result of these actions.)
+export type MergeWithPrevUndo = {
+  action: 'MERGE_WITH_PREV_UNDO'
+  actions: Array<EditorAction>
+}
+
 export type Atomic = {
   action: 'ATOMIC'
   actions: Array<EditorAction>
@@ -1070,13 +1079,6 @@ export type ToggleSelectionLock = {
   newValue: SelectionLocked
 }
 
-export interface SaveToGithub {
-  action: 'SAVE_TO_GITHUB'
-  targetRepository: GithubRepo
-  commitMessage: string
-  branchName: string
-}
-
 export interface UpdateAgainstGithub {
   action: 'UPDATE_AGAINST_GITHUB'
   branchLatestContent: ProjectContentTreeRoot
@@ -1118,6 +1120,7 @@ export type EditorAction =
   | MoveSelectedForward
   | SetZIndex
   | TransientActions
+  | MergeWithPrevUndo
   | Atomic
   | NewProject
   | Load
@@ -1266,7 +1269,6 @@ export type EditorAction =
   | RunEscapeHatch
   | SetElementsToRerender
   | ToggleSelectionLock
-  | SaveToGithub
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations

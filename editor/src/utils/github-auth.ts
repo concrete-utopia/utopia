@@ -4,7 +4,7 @@ import urljoin from 'url-join'
 import { LoginState } from '../common/user'
 import { EditorDispatch } from '../components/editor/action-types'
 import { setGithubState } from '../components/editor/actions/action-creators'
-import { updateUserDetailsWhenAuthenticated } from '../core/shared/github'
+import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 
 async function checkIfAuthenticatedWithGithub(): Promise<boolean> {
   const url = urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'status')

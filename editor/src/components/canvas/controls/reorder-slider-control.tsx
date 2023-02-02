@@ -9,6 +9,7 @@ import {
   rectanglesEqual,
   windowPoint,
   zeroCanvasRect,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
@@ -111,7 +112,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
     )
 
     const controlAreaTopLeft = React.useMemo(() => {
-      const centerPoint = getRectCenter(startingFrame ?? zeroCanvasRect)
+      const centerPoint = getRectCenter(zeroRectIfNullOrInfinity(startingFrame))
       return {
         x: centerPoint.x - IndicatorSize(scale) / 2 - startingIndex * IndicatorSize(scale),
         y: centerPoint.y - MenuHeight(scale) / 2,
@@ -121,7 +122,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
     const controlTopLeft = React.useMemo(() => {
       return {
         x: controlAreaTopLeft.x + latestIndex * IndicatorSize(scale) + IndicatorSize(scale) / 4,
-        y: getRectCenter(startingFrame ?? zeroCanvasRect).y - ControlSize(scale) / 2,
+        y: getRectCenter(zeroRectIfNullOrInfinity(startingFrame)).y - ControlSize(scale) / 2,
       } as CanvasPoint
     }, [startingFrame, controlAreaTopLeft, latestIndex, scale])
 

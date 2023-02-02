@@ -2,7 +2,12 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
-import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  isInfinityRectangle,
+} from '../../../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { setCanvasFrames } from '../../../editor/actions/action-creators'
@@ -25,6 +30,7 @@ import {
 } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 
 export function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -205,9 +211,10 @@ export function adjustAllSelectedFrames(
     // if any of the selected views have a Yoga parent, we bail out
     return []
   }
-  const selectedFrames = editor.selectedViews.map((view) =>
-    MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata),
-  )
+  const selectedFrames = mapDropNulls((view) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
+    return frame == null || isInfinityRectangle(frame) ? null : frame
+  }, editor.selectedViews)
 
   const boundingBox = Utils.boundingRectangleArray(selectedFrames)
 
@@ -248,7 +255,7 @@ export function adjustAllSelectedFrames(
     const newFrameAndTargets = Utils.stripNulls(
       editor.selectedViews.map((view) => {
         const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
-        if (frame == null) {
+        if (frame == null || isInfinityRectangle(frame)) {
           return null
         } else {
           const newFrame = Utils.transformFrameUsingBoundingBox(newBoundingBox, boundingBox, frame)
@@ -270,7 +277,7 @@ export function adjustAllSelectedFrames(
     const originalFrames: CanvasFrameAndTarget[] = Utils.stripNulls(
       editor.selectedViews.map((view) => {
         const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
-        if (frame == null) {
+        if (frame == null || isInfinityRectangle(frame)) {
           return null
         }
         return {

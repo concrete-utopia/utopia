@@ -20,6 +20,7 @@ import {
   roundTo,
   Size,
   size,
+  zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -332,7 +333,8 @@ function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | nu
 }
 
 function sizeFromElement(element: ElementInstanceMetadata): Size {
-  return size(element.globalFrame?.width ?? 0, element.globalFrame?.height ?? 0)
+  const globalFrame = zeroRectIfNullOrInfinity(element.globalFrame)
+  return size(globalFrame.width, globalFrame.height)
 }
 
 function measurementFromBorderRadius(
@@ -428,10 +430,7 @@ function borderRadiusFromData(
   }
 }
 
-function longhandFromEdgePosition(
-  mode: BorderRadiusAdjustMode,
-  corner: BorderRadiusCorner,
-): keyof ParsedCSSProperties {
+function longhandFromEdgePosition(mode: BorderRadiusAdjustMode, corner: BorderRadiusCorner) {
   if (mode === 'individual') {
     switch (corner) {
       case 'tl':
@@ -532,6 +531,14 @@ const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
   stylePropPathMappingFn(p, styleStringInArray)
 
 const setStylePropertyCommand =
-  <P extends ParsedCSSPropertiesKeys>(prop: P, value: string | number) =>
+  (
+    prop:
+      | 'borderRadius'
+      | 'borderTopLeftRadius'
+      | 'borderTopRightRadius'
+      | 'borderBottomLeftRadius'
+      | 'borderBottomRightRadius',
+    value: string | number,
+  ) =>
   (target: ElementPath): CanvasCommand =>
     setProperty('always', target, StylePaddingProp(prop), value)

@@ -3,29 +3,38 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
-import { NO_OP } from '../../../core/shared/utils'
 import {
+  CheckboxInput,
   colorTheme,
   FlexColumn,
   FlexRow,
   H2,
+  HeadlessStringInput,
   PopupList,
   Section,
   SectionBodyArea,
-  SectionTitleRow,
   StringInput,
-  Subdued,
-  Title,
   UtopiaTheme,
 } from '../../../uuiui'
+import { getControlStyles } from '../../../uuiui-deps'
+import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
+
 import { SelectOption } from '../../../uuiui-deps'
 import { useIsMyProject } from '../../common/server-hooks'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ForksGiven } from './forks-given'
+import {
+  FeatureName,
+  toggleFeatureEnabled,
+  isFeatureEnabled,
+  AllFeatureNames,
+} from '../../../utils/feature-switches'
+import json5 from 'json5'
+import { load } from '../../../components/editor/actions/actions'
 
 const themeOptions = [
   {
@@ -43,6 +52,47 @@ const themeOptions = [
 ]
 
 const defaultTheme = themeOptions[0]
+
+export const FeatureSwitchesSection = React.memo(() => {
+  if (AllFeatureNames.length > 0) {
+    return (
+      <React.Fragment>
+        <FlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
+          <H2>Experimental Feature Toggles</H2>
+        </FlexRow>
+        {AllFeatureNames.map((name) => (
+          <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
+        ))}
+      </React.Fragment>
+    )
+  } else {
+    return null
+  }
+})
+
+const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
+  const name = props.name
+  const id = `toggle-${name}`
+  const [changeCount, setChangeCount] = React.useState(0)
+  const forceRender = React.useCallback(() => setChangeCount(changeCount + 1), [changeCount])
+  const onChange = React.useCallback(() => {
+    toggleFeatureEnabled(name)
+    forceRender()
+  }, [forceRender, name])
+  return (
+    <FlexRow
+      style={{ paddingLeft: 12, paddingRight: 12, height: UtopiaTheme.layout.rowHeight.normal }}
+    >
+      <CheckboxInput
+        style={{ marginRight: 8 }}
+        id={id}
+        checked={isFeatureEnabled(name)}
+        onChange={onChange}
+      />
+      <label htmlFor={id}>{name}</label>
+    </FlexRow>
+  )
+})
 
 export const SettingsPane = React.memo(() => {
   const dispatch = useDispatch()
@@ -128,6 +178,28 @@ export const SettingsPane = React.memo(() => {
   const [name, changeProjectName] = useState(projectName),
     [description, changeProjectDescription] = useState(projectDescription)
 
+  const entireStateRef = useRefEditorState((store) => store)
+
+  const loadProjectContentJson = React.useCallback(
+    (value: string) => {
+      const confirmed = window.confirm(
+        'If you press OK, the inserted code will override the current project. Are you sure?',
+      )
+      if (confirmed) {
+        const persistentModel = json5.parse(value)
+        console.info('attempting to load new Project Contents JSON', persistentModel)
+        void load(
+          dispatch,
+          persistentModel,
+          entireStateRef.current.editor.projectName,
+          entireStateRef.current.editor.id!,
+          entireStateRef.current.builtInDependencies,
+        )
+      }
+    },
+    [dispatch, entireStateRef],
+  )
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -139,11 +211,8 @@ export const SettingsPane = React.memo(() => {
       }}
     >
       <Section>
-        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
-          <Title style={{ flexGrow: 1 }}>Settings</Title>
-        </SectionTitleRow>
         <UIGridRow
-          style={{ marginTop: 16, color: colorTheme.fg1.value }}
+          style={{ color: colorTheme.fg1.value }}
           padded
           variant='<---1fr--->|------172px-------|'
         >
@@ -189,10 +258,10 @@ export const SettingsPane = React.memo(() => {
             padded
             variant='<---1fr--->|------172px-------|'
           >
-            <H2> Theme </H2>
+            <H2>Application</H2>
           </UIGridRow>
           <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span style={{ color: colorTheme.fg2.value }}>Application </span>
+            <span style={{ color: colorTheme.fg2.value }}>Theme </span>
             <PopupList
               value={theme}
               options={themeOptions}
@@ -200,42 +269,19 @@ export const SettingsPane = React.memo(() => {
               style={{ width: 150 }}
             />
           </UIGridRow>
-          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-            <span style={{ color: colorTheme.fg2.value }}>VSCode </span>
-            <Subdued>Change from code editor.</Subdued>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <br />
+            <HeadlessStringInput
+              placeholder='Project Contents JSON'
+              onSubmitValue={loadProjectContentJson}
+              css={InspectorInputEmotionStyle({
+                hasLabel: false,
+                controlStyles: getControlStyles('simple'),
+              })}
+            />
           </UIGridRow>
-          <UIGridRow
-            style={{ color: colorTheme.fg1.value, marginTop: 16 }}
-            padded
-            variant='<---1fr--->|------172px-------|'
-          >
-            <H2>VSCode </H2>
-          </UIGridRow>
-
-          <FlexRow>
-            <div
-              style={{
-                height: 'initial',
-                minHeight: UtopiaTheme.layout.rowHeight.normal,
-                alignItems: 'flex-start',
-                paddingTop: 8,
-                paddingLeft: 8,
-                paddingRight: 8,
-                paddingBottom: 8,
-                whiteSpace: 'pre-wrap',
-                letterSpacing: 0.1,
-                lineHeight: '17px',
-                fontSize: '11px',
-              }}
-            >
-              <Subdued>
-                Settings can be changed in the code editor by opening the command palette and
-                searching for Settings (CMD+P on Mac, CTRL+P on Windows / Linux). We store settings
-                with each project.
-              </Subdued>
-            </div>
-          </FlexRow>
         </SectionBodyArea>
+        <FeatureSwitchesSection />
       </Section>
     </FlexColumn>
   )

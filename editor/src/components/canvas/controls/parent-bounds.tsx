@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import { CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import { isInsertMode } from '../../editor/editor-modes'
@@ -46,7 +46,9 @@ export const ImmediateParentBounds = controlForStrategyMemoized(
       'ImmediateParentBounds frame',
     )
 
-    return parentFrame == null ? null : drawBounds(parentFrame, scale)
+    return parentFrame == null || isInfinityRectangle(parentFrame)
+      ? null
+      : drawBounds(parentFrame, scale)
   },
 )
 
@@ -75,7 +77,9 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
     'ParentBounds frame',
   )
 
-  return parentFrame == null ? null : drawBounds(parentFrame, scale)
+  return parentFrame == null || isInfinityRectangle(parentFrame)
+    ? null
+    : drawBounds(parentFrame, scale)
 })
 
 function drawBounds(parentFrame: CanvasRectangle, scale: number) {

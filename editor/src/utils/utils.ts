@@ -8,7 +8,7 @@ import { NormalisedFrame } from 'utopia-api/core'
 import { fastForEach, NO_OP } from '../core/shared/utils'
 import {
   CanvasRectangle,
-  RectangleInner,
+  SimpleRectangle,
   CoordinateMarker,
   Rectangle,
   LocalRectangle,
@@ -28,8 +28,6 @@ import {
   zeroRectangleAtPoint,
   shiftToOrigin,
   rectOrigin,
-  rectSize,
-  setRectSize,
   rectContainsPoint,
   circleContainsPoint,
   ellipseContainsPoint,
@@ -260,12 +258,12 @@ export function normalisedFrameToCanvasFrame(frame: NormalisedFrame): CanvasRect
 
 export type ObtainChildren<T> = (elem: T, parents: Array<T>) => Array<T>
 
-export type GetFrame<T> = (elem: T, parents: Array<T>) => RectangleInner
+export type GetFrame<T> = (elem: T, parents: Array<T>) => SimpleRectangle
 
 export type HitTester<T> = {
   elem: T
   parents: Array<T>
-  frame: RectangleInner
+  frame: SimpleRectangle
 }
 
 export type Clock = {
@@ -954,8 +952,6 @@ export default {
   zeroRectangleAtPoint: zeroRectangleAtPoint,
   shiftToOrigin: shiftToOrigin,
   rectOrigin: rectOrigin,
-  rectSize: rectSize,
-  setRectSize: setRectSize,
   rectContainsPoint: rectContainsPoint,
   circleContainsPoint: circleContainsPoint,
   ellipseContainsPoint: ellipseContainsPoint,

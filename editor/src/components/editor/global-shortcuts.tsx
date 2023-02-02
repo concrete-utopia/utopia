@@ -21,7 +21,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode, WrapInView } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -63,7 +63,7 @@ import {
   TOGGLE_CODE_EDITOR_SHORTCUT,
   TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT,
   TOGGLE_HIDDEN_SHORTCUT,
-  TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT,
+  TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT,
   TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
   TOGGLE_PREVIEW_SHORTCUT,
@@ -104,7 +104,13 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
+  jsxElement,
+} from '../../core/shared/element-template'
 import {
   toggleTextBold,
   toggleTextItalic,
@@ -123,6 +129,7 @@ import {
   resizeToFitCommands,
   sizeToVisualDimensions,
 } from '../inspector/inspector-common'
+import { CSSProperties } from 'react'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -340,7 +347,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
-  derived: DerivedState,
+  metadataRef: { current: ElementInstanceMetadataMap },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): Array<EditorAction> {
@@ -502,8 +509,15 @@ export function handleKeyDown(
           : []
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+        return isSelectMode(editor.mode) && editor.selectedViews.length > 0
+          ? [
+              EditorActions.wrapInView(
+                editor.selectedViews,
+                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
+                  generateUidWithExistingComponents(editor.projectContents),
+                ),
+              ),
+            ]
           : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
@@ -513,8 +527,15 @@ export function handleKeyDown(
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+        return isSelectMode(editor.mode) && editor.selectedViews.length > 0
+          ? [
+              EditorActions.wrapInView(
+                editor.selectedViews,
+                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
+                  generateUidWithExistingComponents(editor.projectContents),
+                ),
+              ),
+            ]
           : []
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
@@ -665,8 +686,8 @@ export function handleKeyDown(
       [TOGGLE_CODE_EDITOR_SHORTCUT]: () => {
         return [EditorActions.toggleInterfaceDesignerCodeEditor()]
       },
-      [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
+        return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('navigator')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
@@ -733,42 +754,64 @@ export function handleKeyDown(
         return actions
       },
       [TOGGLE_TEXT_BOLD]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextBold(target, element?.specialSizeMeasurements.fontWeight ?? null)
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          editor.selectedViews.forEach((target, i) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextBold(
+              target,
+              element?.specialSizeMeasurements.fontWeight ?? null,
+              dispatch,
+              metadataRef,
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
+            )
+          })
+        }
+        return []
       },
       [TOGGLE_TEXT_ITALIC]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextItalic(target, element?.specialSizeMeasurements.fontStyle ?? null)
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          editor.selectedViews.forEach((target, i) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextItalic(
+              target,
+              element?.specialSizeMeasurements.fontStyle ?? null,
+              dispatch,
+              metadataRef,
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
+            )
+          })
+        }
+        return []
       },
       [TOGGLE_TEXT_UNDERLINE]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextUnderline(
-                target,
-                element?.specialSizeMeasurements.textDecorationLine ?? null,
-              )
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          editor.selectedViews.forEach((target, i) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextUnderline(
+              target,
+              element?.specialSizeMeasurements.textDecorationLine ?? null,
+              dispatch,
+              metadataRef,
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
+            )
+          })
+        }
+        return []
       },
       [TOGGLE_TEXT_STRIKE_THROUGH]: () => {
-        return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => {
-              const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-              return toggleTextStrikeThrough(
-                target,
-                element?.specialSizeMeasurements.textDecorationLine ?? null,
-              )
-            })
-          : []
+        if (isSelectMode(editor.mode)) {
+          editor.selectedViews.forEach((target, i) => {
+            const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+            toggleTextStrikeThrough(
+              target,
+              element?.specialSizeMeasurements.textDecorationLine ?? null,
+              dispatch,
+              metadataRef,
+              i === 0 ? 'separate-undo-step' : 'merge-with-previous',
+            )
+          })
+        }
+        return []
       },
       [PASTE_STYLE_PROPERTIES]: () => {
         return isSelectMode(editor.mode)
@@ -953,4 +996,44 @@ function addCreateHoverInteractionActionToSwitchModeAction(
         ),
       ]
     : [switchModeAction]
+}
+
+function detectBestWrapperElement(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  makeUid: () => string,
+): WrapInView['whatToWrapWith'] {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.parentFlexDirection == null ||
+    element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
+  ) {
+    return 'default-empty-div'
+  }
+
+  const uid = makeUid()
+
+  const style: CSSProperties = {
+    display: 'flex',
+    flexDirection: element.specialSizeMeasurements.parentFlexDirection,
+    contain: 'layout',
+  }
+
+  if (
+    element.specialSizeMeasurements.parentFlexGap != null &&
+    element.specialSizeMeasurements.parentFlexGap !== 0
+  ) {
+    style.gap = element.specialSizeMeasurements.parentFlexGap
+  }
+
+  const props = jsxAttributesFromMap({
+    'data-uid': jsxAttributeValue(uid, emptyComments),
+    style: jsxAttributeValue(style, emptyComments),
+  })
+
+  return {
+    element: jsxElement('div', uid, props, []),
+    importsToAdd: {},
+  }
 }

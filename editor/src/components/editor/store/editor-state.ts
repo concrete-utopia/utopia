@@ -83,6 +83,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
+  isFiniteRectangle,
   LocalRectangle,
   WindowPoint,
 } from '../../../core/shared/math-utils'
@@ -173,7 +174,7 @@ import {
   GithubFileStatus,
   RepositoryEntry,
   TreeConflicts,
-} from '../../../core/shared/github'
+} from '../../../core/shared/github/helpers'
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
@@ -262,8 +263,8 @@ export interface UserState extends UserConfiguration {
   githubState: GithubState
 }
 
-export interface GithubCommish {
-  name: 'commish'
+export interface GithubCommitAndPush {
+  name: 'commitAndPush'
 }
 
 export interface GithubListBranches {
@@ -290,18 +291,24 @@ export interface GithubListPullRequestsForBranch {
   branchName: string
 }
 
+export interface GithubSaveAsset {
+  name: 'saveAsset'
+  path: string
+}
+
 export type GithubOperation =
-  | GithubCommish
+  | GithubCommitAndPush
   | GithubListBranches
   | GithubLoadBranch
   | GithubLoadRepositories
   | GithubUpdateAgainstBranch
   | GithubListPullRequestsForBranch
+  | GithubSaveAsset
 
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
-    case 'commish':
-      return 'Saving'
+    case 'commitAndPush':
+      return 'Saving to Github'
     case 'listBranches':
       return 'Listing branches'
     case 'loadBranch':
@@ -312,6 +319,8 @@ export function githubOperationPrettyName(op: GithubOperation): string {
       return 'Updating'
     case 'listPullRequestsForBranch':
       return 'Listing pull requests'
+    case 'saveAsset':
+      return 'Saving asset to Github'
     default:
       const _exhaustiveCheck: never = op
       return 'Unknown operation' // this should never happen
@@ -343,8 +352,8 @@ export function isGithubLoadingBranch(
   )
 }
 
-export function isGithubCommishing(operations: Array<GithubOperation>): boolean {
-  return operations.some((o) => o.name === 'commish')
+export function isGithubCommitting(operations: Array<GithubOperation>): boolean {
+  return operations.some((o) => o.name === 'commitAndPush')
 }
 
 export function isGithubLoadingRepositories(operations: Array<GithubOperation>): boolean {
@@ -2333,7 +2342,9 @@ function getElementWarningsInner(
     // Check to see if this element is collapsed in one dimension.
     const globalFrame = elementMetadata.globalFrame
     const widthOrHeightZero =
-      globalFrame != null ? globalFrame.width === 0 || globalFrame.height === 0 : false
+      globalFrame != null &&
+      isFiniteRectangle(globalFrame) &&
+      (globalFrame.width === 0 || globalFrame.height === 0)
 
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.

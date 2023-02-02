@@ -32,7 +32,7 @@ import {
   GithubFileStatus,
   TreeConflicts,
   useGithubFileChanges,
-} from '../../core/shared/github'
+} from '../../core/shared/github/helpers'
 import { useDispatch } from '../editor/store/dispatch-context'
 
 export type FileBrowserItemType = 'file' | 'export'

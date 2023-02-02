@@ -25,6 +25,7 @@ import {
   isRight,
   left,
   eitherToMaybe,
+  mapEither,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -39,6 +40,9 @@ import {
   zeroCanvasRect,
   zeroLocalRect,
   canvasRectangle,
+  infinityCanvasRectangle,
+  infinityLocalRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -262,12 +266,12 @@ function addElementMetadataToMapWithFragments_MUTATE(
       elementMetadata.elementPath,
       left('fragment'),
       boundingRectangle(
-        existingMetadata.globalFrame ?? zeroCanvasRect,
-        elementMetadata.globalFrame ?? zeroCanvasRect,
+        zeroRectIfNullOrInfinity(existingMetadata.globalFrame),
+        zeroRectIfNullOrInfinity(elementMetadata.globalFrame),
       ),
       boundingRectangle(
-        existingMetadata.localFrame ?? zeroLocalRect,
-        elementMetadata.localFrame ?? zeroLocalRect,
+        zeroRectIfNullOrInfinity(existingMetadata.localFrame),
+        zeroRectIfNullOrInfinity(elementMetadata.localFrame),
       ),
       false,
       false,
@@ -930,6 +934,11 @@ function getSpecialMeasurements(
     !positionValueIsDefault(elementStyle.left)
   const hasTransform = elementStyle.transform !== 'none'
 
+  const gap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(elementStyle.gap)),
+  )
+
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
@@ -969,6 +978,7 @@ function getSpecialMeasurements(
     clientHeight,
     parentFlexDirection,
     parsedFlexGapValue,
+    gap,
     flexDirection,
     justifyContent,
     alignItems,
@@ -1059,8 +1069,8 @@ function walkCanvasRootFragment(
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
       canvasRootPath,
       left('Storyboard'),
-      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as CanvasRectangle,
-      { x: -Infinity, y: -Infinity, width: Infinity, height: Infinity } as LocalRectangle,
+      infinityCanvasRectangle,
+      infinityLocalRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,
