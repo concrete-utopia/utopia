@@ -125,6 +125,7 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
         <div
           key={id}
           style={{
+            visibility: distance > 0 ? 'visible' : 'hidden',
             position: 'absolute',
             top: Math.min(from.y, to.y),
             left: Math.min(from.x, to.x),
@@ -139,11 +140,12 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
           <div
             style={{
               margin: 4 / this.props.scale,
-              padding: 4 / this.props.scale,
+              paddingLeft: 4 / this.props.scale,
+              paddingRight: 4 / this.props.scale,
               borderRadius: 4 / this.props.scale,
               color: colorTheme.white.value,
               backgroundColor: StrokeColor,
-              fontSize: 12 / this.props.scale,
+              fontSize: 11 / this.props.scale,
             }}
           >
             {`${distance.toFixed(0)}`}
