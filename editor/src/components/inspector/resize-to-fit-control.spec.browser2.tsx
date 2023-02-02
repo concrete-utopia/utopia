@@ -49,6 +49,44 @@ describe('Resize to fit control', () => {
     expect(view.style.flexGrow).toEqual('')
     expect(view.style.flexBasis).toEqual('')
   })
+
+  it('when container is already set to hug, it is converted back to fixed size', async () => {
+    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+    const view = await selectView(editor)
+    await clickResizeToFit(editor)
+    await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
+
+    expect(view.style.width).toEqual('221px')
+    expect(view.style.minWidth).toEqual('')
+    expect(view.style.maxWidth).toEqual('')
+    expect(view.style.height).toEqual('154px')
+    expect(view.style.minHeight).toEqual('')
+    expect(view.style.maxHeight).toEqual('')
+    expect(view.style.flex).toEqual('')
+    expect(view.style.flexShrink).toEqual('')
+    expect(view.style.flexGrow).toEqual('')
+    expect(view.style.flexBasis).toEqual('')
+  })
+
+  it('when container is already set to hug, it is converted back to fixed size, with shortcut', async () => {
+    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+    const view = await selectView(editor)
+    await clickResizeToFit(editor)
+    await expectSingleUndoStep(editor, async () =>
+      pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } }),
+    )
+
+    expect(view.style.width).toEqual('221px')
+    expect(view.style.minWidth).toEqual('')
+    expect(view.style.maxWidth).toEqual('')
+    expect(view.style.height).toEqual('154px')
+    expect(view.style.minHeight).toEqual('')
+    expect(view.style.maxHeight).toEqual('')
+    expect(view.style.flex).toEqual('')
+    expect(view.style.flexShrink).toEqual('')
+    expect(view.style.flexGrow).toEqual('')
+    expect(view.style.flexBasis).toEqual('')
+  })
 })
 
 const ViewTestId = 'view'
