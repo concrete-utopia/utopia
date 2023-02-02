@@ -111,11 +111,11 @@ export type CanvasCommand =
   | ShowToastCommand
   | AddContainLayoutIfNeeded
 
-export const runCanvasCommand = (
+export function runCanvasCommand(
   editorState: EditorState,
   command: CanvasCommand,
   commandLifecycle: InteractionLifecycle,
-): CommandFunctionResult => {
+): CommandFunctionResult {
   switch (command.type) {
     case 'WILDCARD_PATCH':
       return runWildcardPatch(editorState, command)
@@ -211,7 +211,7 @@ export function foldAndApplyCommandsInner(
   let workingEditorState: EditorState = editorState
   let workingCommandDescriptions: Array<CommandDescription> = []
 
-  const runCommand = (command: CanvasCommand, shouldAccumulatePatches: boolean) => {
+  function runCommand(command: CanvasCommand, shouldAccumulatePatches: boolean): void {
     let shouldRunCommand: boolean
     if (commandLifecycle === 'mid-interaction') {
       shouldRunCommand = command.whenToRun === 'always' || command.whenToRun === 'mid-interaction'

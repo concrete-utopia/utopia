@@ -201,19 +201,6 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
 
-export function elementSupportsChildren(imports: Imports, element: JSXElementChild): boolean {
-  if (isJSXElement(element)) {
-    if (isUtopiaAPIComponent(element.name, imports)) {
-      return getJSXElementNameLastPart(element.name) === 'View'
-    } else {
-      // Be permissive about HTML elements.
-      return true
-    }
-  } else {
-    return false
-  }
-}
-
 export function transformJSXComponentAtPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPath,
@@ -447,7 +434,7 @@ export function insertJSXElementChild(
       components,
       targetParentIncludingStoryboardRoot,
       (parentElement) => {
-        if (isJSXElement(parentElement)) {
+        if (isJSXElementLikeWithChildren(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)

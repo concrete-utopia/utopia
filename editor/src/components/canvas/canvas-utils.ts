@@ -102,11 +102,11 @@ import {
   TransientCanvasState,
   transientCanvasState,
   transientFileState,
-  modifyUnderlyingTarget,
+  modifyUnderlyingTargetElement,
   modifyParseSuccessAtPath,
   getOpenUIJSFileKey,
   withUnderlyingTargetFromEditorState,
-  modifyUnderlyingForOpenFile,
+  modifyUnderlyingElementForOpenFile,
   TransientFilesState,
   forUnderlyingTargetFromEditorState,
   TransientFileState,
@@ -439,7 +439,7 @@ export function updateFramesOfScenesAndComponents(
       null,
       (success, underlyingElement) => underlyingElement,
     )
-    if (element == null) {
+    if (element == null || !isJSXElement(element)) {
       throw new Error(`Unexpected result when looking for element: ${element}`)
     }
 
@@ -466,7 +466,7 @@ export function updateFramesOfScenesAndComponents(
     if (isFlexContainer) {
       switch (frameAndTarget.type) {
         case 'FLEX_MOVE':
-          workingEditorState = modifyUnderlyingForOpenFile(
+          workingEditorState = modifyUnderlyingElementForOpenFile(
             originalTarget,
             workingEditorState,
             (elem) => elem,
@@ -756,7 +756,7 @@ export function updateFramesOfScenesAndComponents(
     if (propsToSet.length > 0 || propsToUnset.length > 0) {
       const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
 
-      workingEditorState = modifyUnderlyingForOpenFile(
+      workingEditorState = modifyUnderlyingElementForOpenFile(
         originalTarget,
         workingEditorState,
         (elem) => {
@@ -806,8 +806,10 @@ export function updateFramesOfScenesAndComponents(
     }
 
     // Round the frame details.
-    workingEditorState = modifyUnderlyingForOpenFile(staticTarget, workingEditorState, (attrs) =>
-      roundJSXElementLayoutValues(styleStringInArray, attrs),
+    workingEditorState = modifyUnderlyingElementForOpenFile(
+      staticTarget,
+      workingEditorState,
+      (attrs) => roundJSXElementLayoutValues(styleStringInArray, attrs),
     )
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
@@ -2354,7 +2356,7 @@ function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPa
   Utils.fastForEach(targets, (target) => {
     const staticPath = EP.dynamicPathToStaticPath(target)
     if (staticPath != null) {
-      workingEditorState = modifyUnderlyingForOpenFile(
+      workingEditorState = modifyUnderlyingElementForOpenFile(
         staticPath,
         editorState,
         (underlyingElement) => {
@@ -2646,7 +2648,7 @@ export function duplicate(
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
     ) => metadata
-    workingEditorState = modifyUnderlyingForOpenFile(
+    workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
       (elem) => elem,
@@ -3014,7 +3016,7 @@ function createCanvasTransientStateFromProperties(
   } else {
     const updatedEditor = Object.values(editor.canvas.transientProperties).reduce(
       (working, currentProp) => {
-        return modifyUnderlyingTarget(
+        return modifyUnderlyingTargetElement(
           currentProp.elementPath,
           Utils.forceNotNull('No open file found', getOpenUIJSFileKey(editor)),
           working,

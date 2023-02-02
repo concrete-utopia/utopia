@@ -1,3 +1,4 @@
+import { isJSXElement } from '../../../../core/shared/element-template'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   canvasRectangle,
@@ -160,7 +161,7 @@ export function keyboardAbsoluteResizeStrategy(
                 elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
               const elementGlobalFrame = elementMetadata?.globalFrame ?? null
 
-              if (element != null) {
+              if (element != null && isJSXElement(element)) {
                 const elementResult = createResizeCommands(
                   element,
                   selectedElement,

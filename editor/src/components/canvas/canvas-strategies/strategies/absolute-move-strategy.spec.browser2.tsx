@@ -24,15 +24,15 @@ import {
   mouseUpAtPoint,
 } from '../../event-helpers.test-utils'
 
-function dragElement(
+async function dragElement(
   canvasControlsLayer: HTMLElement,
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
-  midDragCallback?: () => void,
-) {
-  mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  midDragCallback?: () => Promise<void>,
+): Promise<void> {
+  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers,
     midDragCallback,
   })
@@ -152,7 +152,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -171,9 +171,9 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const endPoint = windowPoint({ x: targetElementBounds.x + 45, y: targetElementBounds.y - 20 })
 
-    mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
-    mouseUpAtPoint(canvasControlsLayer, endPoint)
+    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+    await mouseUpAtPoint(canvasControlsLayer, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -192,7 +192,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -222,7 +222,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -263,7 +263,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -321,7 +321,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: sceneLabelBounds.x + 5, y: sceneLabelBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(sceneLabel, startPoint, dragDelta, emptyModifiers)
+    await dragElement(sceneLabel, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -390,7 +390,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -455,7 +455,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -530,7 +530,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 41, y: -26 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -594,7 +594,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 50, y: targetElementBounds.y + 50 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -657,7 +657,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: 25 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -717,7 +717,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 9, y: -23 }) // 'bbb' will snap to bottom edge and middle of 'ccc'
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -762,7 +762,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 9, y: -23 })
 
-    dragElement(canvasControlsLayer, startPoint, dragDelta, cmdModifier)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -810,12 +810,12 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    dragElement(
+    await dragElement(
       canvasControlsLayer,
       startPoint,
       windowPoint({ x: 5, y: 5 }),
       emptyModifiers,
-      () => {
+      async () => {
         const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
         expect(parentOutlineControl).toBeDefined()
         const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
@@ -876,7 +876,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers, () => {
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers, async () => {
       expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
       expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
     })
@@ -906,7 +906,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
-    dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers, () => {
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers, async () => {
       expect(positioningFromCss(renderResult.renderedDOM.getByTestId('xmark-0').style)).toEqual({
         left: '67.5px',
         top: '-2.5px',

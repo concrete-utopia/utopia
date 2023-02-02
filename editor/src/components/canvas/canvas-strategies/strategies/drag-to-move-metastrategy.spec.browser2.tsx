@@ -53,12 +53,12 @@ describe('Drag To Move Metastrategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })
@@ -76,7 +76,7 @@ describe('Drag To Move Metastrategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
       const doNothingInSortedStrategies = strategies?.findIndex(
         (strategy) => strategy.name === 'DO_NOTHING',
@@ -86,8 +86,8 @@ describe('Drag To Move Metastrategy', () => {
       expect(doNothingInSortedStrategies).toEqual(-1)
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })
@@ -105,7 +105,7 @@ describe('Drag To Move Metastrategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: -100, y: -100 })
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
       const doNothingInSortedStrategies = strategies?.findIndex(
         (strategy) => strategy.name === 'DO_NOTHING',
@@ -117,8 +117,8 @@ describe('Drag To Move Metastrategy', () => {
       expect(doNothingInSortedStrategies).toEqual(-1)
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })
@@ -139,7 +139,7 @@ describe('Drag To Move Strategy Indicator', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: -50, y: 0 }) // moving it to the empty canvas
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
         'FLEX_REPARENT_TO_ABSOLUTE',
       )
@@ -156,8 +156,8 @@ describe('Drag To Move Strategy Indicator', () => {
       expect(indicator).toBeDefined()
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })
@@ -175,7 +175,7 @@ describe('Drag To Move Strategy Indicator', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('FLOW_REORDER')
       expect(
         renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
@@ -193,8 +193,8 @@ describe('Drag To Move Strategy Indicator', () => {
       expect(indicator).toBeDefined()
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })
@@ -220,7 +220,7 @@ describe('Drag To Move Strategy Indicator', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('ABSOLUTE_MOVE')
       expect(
         renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags.showIndicator,
@@ -238,8 +238,8 @@ describe('Drag To Move Strategy Indicator', () => {
       expect(indicator).toBeDefined()
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })
@@ -267,7 +267,7 @@ describe('Drag To Move Strategy Indicator', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
-    const midDragCallback = () => {
+    const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
         'ABSOLUTE_MOVE_ANCESTOR_1',
       )
@@ -287,8 +287,8 @@ describe('Drag To Move Strategy Indicator', () => {
       expect(indicator).toBeDefined()
     }
 
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: emptyModifiers,
       midDragCallback: midDragCallback,
     })

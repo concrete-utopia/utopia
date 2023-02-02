@@ -374,8 +374,8 @@ import {
   modifyOpenJSXElementsAndMetadata,
   modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
-  modifyUnderlyingForOpenFile,
-  modifyUnderlyingTarget,
+  modifyUnderlyingElementForOpenFile,
+  modifyUnderlyingTargetElement,
   packageJsonFileFromProjectContents,
   PersistentModel,
   persistentModelFromEditorModel,
@@ -1653,7 +1653,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     let unsetPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingForOpenFile(
+    const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
       editor,
       (element) => {
@@ -1685,7 +1685,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     let setPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingForOpenFile(
+    const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
       editor,
       (element) => {
@@ -2152,7 +2152,7 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
-    const withNewElement = modifyUnderlyingTarget(
+    const withNewElement = modifyUnderlyingTargetElement(
       action.parent,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
@@ -4310,7 +4310,7 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
-    return modifyUnderlyingTarget(
+    return modifyUnderlyingTargetElement(
       action.target,
       forceNotNull('Missing open file', editor.canvas.openFile?.filename),
       editor,
@@ -4835,7 +4835,7 @@ export const UPDATE_FNS = {
       return editor
     } else {
       let newSelectedViews: ElementPath[] = []
-      const withNewElement = modifyUnderlyingTarget(
+      const withNewElement = modifyUnderlyingTargetElement(
         action.targetParent,
         openFilename,
         editor,

@@ -21,6 +21,7 @@ import {
   transformJSXComponentAtPath,
   getUtopiaID,
   findJSXElementAtStaticPath,
+  findJSXElementChildAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -1638,7 +1639,7 @@ export function modifyOpenParseSuccess(
   ) => ParseSuccess,
   model: EditorState,
 ): EditorState {
-  return modifyUnderlyingTarget(
+  return modifyUnderlyingTargetElement(
     null,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
@@ -1716,7 +1717,7 @@ export function modifyOpenJSXElementsAndMetadata(
       topLevelElements: newTopLevelElements,
     }
   }
-  const beforeUpdatingMetadata = modifyUnderlyingForOpenFile(
+  const beforeUpdatingMetadata = modifyUnderlyingElementForOpenFile(
     target,
     model,
     (elem) => elem,
@@ -1734,7 +1735,7 @@ export function modifyOpenJsxElementAtPath(
   model: EditorState,
   revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
-  return modifyUnderlyingTarget(
+  return modifyUnderlyingTargetElement(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
@@ -1749,7 +1750,7 @@ export function modifyOpenJsxElementAtStaticPath(
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
-  return modifyUnderlyingTarget(
+  return modifyUnderlyingTargetElement(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
@@ -3093,7 +3094,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
   return success
 }
 
-export function newModifyUnderlyingTarget(
+export function modifyUnderlyingTarget(
   target: ElementPath | null,
   currentFilePath: string,
   editor: EditorState,
@@ -3156,7 +3157,24 @@ export function newModifyUnderlyingTarget(
   )
 }
 
-export function modifyUnderlyingTarget(
+export function modifyUnderlyingForOpenFile(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElementChild,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElementChild,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
+    editor,
+    modifyElement,
+  )
+}
+
+export function modifyUnderlyingTargetElement(
   target: ElementPath | null,
   currentFilePath: string,
   editor: EditorState,
@@ -3252,7 +3270,7 @@ function getNextRevisionsState(
   return nextRevisionState
 }
 
-export function modifyUnderlyingForOpenFile(
+export function modifyUnderlyingElementForOpenFile(
   target: ElementPath | null,
   editor: EditorState,
   modifyElement: (
@@ -3266,7 +3284,7 @@ export function modifyUnderlyingForOpenFile(
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
-  return modifyUnderlyingTarget(
+  return modifyUnderlyingTargetElement(
     target,
     forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
     editor,
@@ -3283,7 +3301,7 @@ export function withUnderlyingTarget<T>(
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementChild,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
     underlyingDynamicTarget: ElementPath,
@@ -3303,7 +3321,7 @@ export function withUnderlyingTarget<T>(
   ) {
     const parsed = underlyingTarget.textFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
-      const element = findJSXElementAtStaticPath(
+      const element = findJSXElementChildAtPath(
         getUtopiaJSXComponentsFromSuccess(parsed),
         underlyingTarget.normalisedPath,
       )
@@ -3328,7 +3346,7 @@ export function withUnderlyingTargetFromEditorState<T>(
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementChild,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => T,
@@ -3348,7 +3366,7 @@ export function forUnderlyingTargetFromEditorState(
   editor: EditorState,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementChild,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => void,
@@ -3363,7 +3381,7 @@ export function forUnderlyingTarget(
   openFile: string | null | undefined,
   withTarget: (
     success: ParseSuccess,
-    element: JSXElement,
+    element: JSXElementChild,
     underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => void,
@@ -3376,7 +3394,13 @@ export function getElementFromProjectContents(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
 ): JSXElement | null {
-  return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => element)
+  return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_, element) => {
+    if (isJSXElement(element)) {
+      return element
+    } else {
+      return null
+    }
+  })
 }
 
 export function getCurrentTheme(userConfiguration: ThemeSubstate['userState']): Theme {

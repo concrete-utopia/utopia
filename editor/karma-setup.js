@@ -13,3 +13,12 @@ window.BrowserFS = BrowserFS
 window.expect = expect
 window.jest = null
 window.KarmaTestEnvironment = true
+
+// This causes unhandled asynchronous exceptions (from promises) to fail tests.
+window.addEventListener(
+  'unhandledrejection',
+  (error) => {
+    throw new Error(`Unhandled asynchronous exception: ${error.reason}`)
+  },
+  { capture: true },
+)

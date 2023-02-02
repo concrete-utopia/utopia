@@ -49,7 +49,7 @@ export function getReparentTargetUnified(
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
-  const validTargetparentsUnderPoint = findValidTargetsUnderPoint(
+  const validTargetParentsUnderPoint = findValidTargetsUnderPoint(
     reparentSubjects,
     pointOnCanvas,
     cmdPressed,
@@ -64,7 +64,7 @@ export function getReparentTargetUnified(
   const targetParentWithPaddedInsertionZone: ReparentTarget | null =
     findParentByPaddedInsertionZone(
       metadata,
-      validTargetparentsUnderPoint,
+      validTargetParentsUnderPoint,
       reparentSubjects,
       canvasScale,
       pointOnCanvas,
@@ -75,7 +75,7 @@ export function getReparentTargetUnified(
   }
 
   // fall back to trying to find an absolute element, or the "background" area of an autolayout container
-  const targetParentPath = validTargetparentsUnderPoint[0]
+  const targetParentPath = validTargetParentsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
     return null
@@ -165,7 +165,7 @@ function findValidTargetsUnderPoint(
     )
 
     if (
-      isTargetOutsideOfContainingComponentUnderMouse(
+      isTargetParentOutsideOfContainingComponentUnderMouse(
         selectedElementsMetadata,
         allElementsUnderPoint,
         target,
@@ -231,11 +231,11 @@ function isTargetAParentOfAnySubject(
   return selectedElementsMetadata.some((maybeChild) => EP.isChildOf(maybeChild.elementPath, target))
 }
 
-function isTargetOutsideOfContainingComponentUnderMouse(
+function isTargetParentOutsideOfContainingComponentUnderMouse(
   selectedElementsMetadata: Array<ElementInstanceMetadata>,
   allElementsUnderPoint: Array<ElementPath>,
-  target: ElementPath,
-) {
+  possibleTargetParent: ElementPath,
+): boolean {
   const containingComponents = selectedElementsMetadata.map((e) =>
     EP.getContainingComponent(e.elementPath),
   )
@@ -244,7 +244,7 @@ function isTargetOutsideOfContainingComponentUnderMouse(
     allElementsUnderPoint.find((p) => EP.pathsEqual(c, p)),
   )
 
-  return containingComponentsUnderMouse.some((c) => EP.isDescendantOf(c, target))
+  return containingComponentsUnderMouse.some((c) => EP.isDescendantOf(c, possibleTargetParent))
 }
 
 function findParentByPaddedInsertionZone(
@@ -332,7 +332,7 @@ function findParentUnderPointByArea(
   metadata: ElementInstanceMetadataMap,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
-) {
+): ReparentTarget {
   const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,

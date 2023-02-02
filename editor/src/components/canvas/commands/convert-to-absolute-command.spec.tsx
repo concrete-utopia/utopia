@@ -12,6 +12,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { convertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
+import { isJSXElement } from '../../../core/shared/element-template'
 
 describe('convertToAbsolute', () => {
   it('sets position absolute', async () => {
@@ -41,13 +42,17 @@ describe('convertToAbsolute', () => {
       originalEditorState,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        const jsxAttributeResult = getJSXAttributeAtPath(
-          element.props,
-          stylePropPathMappingFn('position', styleStringInArray),
-        )
-        const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
-        if (currentValue !== null && isRight(currentValue)) {
-          return currentValue.value
+        if (isJSXElement(element)) {
+          const jsxAttributeResult = getJSXAttributeAtPath(
+            element.props,
+            stylePropPathMappingFn('position', styleStringInArray),
+          )
+          const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
+          if (currentValue !== null && isRight(currentValue)) {
+            return currentValue.value
+          } else {
+            return null
+          }
         } else {
           return null
         }
@@ -59,13 +64,17 @@ describe('convertToAbsolute', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        const jsxAttributeResult = getJSXAttributeAtPath(
-          element.props,
-          stylePropPathMappingFn('position', styleStringInArray),
-        )
-        const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
-        if (currentValue !== null && isRight(currentValue)) {
-          return currentValue.value
+        if (isJSXElement(element)) {
+          const jsxAttributeResult = getJSXAttributeAtPath(
+            element.props,
+            stylePropPathMappingFn('position', styleStringInArray),
+          )
+          const currentValue = jsxSimpleAttributeToValue(jsxAttributeResult.attribute)
+          if (currentValue !== null && isRight(currentValue)) {
+            return currentValue.value
+          } else {
+            return null
+          }
         } else {
           return null
         }

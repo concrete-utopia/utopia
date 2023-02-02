@@ -904,13 +904,13 @@ describe('Forced inserting into Static', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
-      midDragCallback: () => {
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+      midDragCallback: async () => {
         pressKey('2') // this should select the 'Draw to Insert (Abs, Forced)' strategy
       },
     })

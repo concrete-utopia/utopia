@@ -1679,6 +1679,8 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
   }
 
   const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+  elementsWithoutDomMetadata.sort()
+  elementsWithoutDomMetadata.reverse()
 
   const workingElements: ElementInstanceMetadataMap = {}
 
@@ -1689,10 +1691,20 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
       return
     }
 
+    const childrenFromWorking = children.map((child) => {
+      const childPathStr = EP.toString(child.elementPath)
+      const fromWorkingElements = workingElements[childPathStr]
+      if (fromWorkingElements == null) {
+        return child
+      } else {
+        return fromWorkingElements
+      }
+    })
+
     workingElements[pathStr] = {
       ...spyElem,
-      globalFrame: boundingRectangleArray(pluck(children, 'globalFrame')),
-      localFrame: boundingRectangleArray(pluck(children, 'localFrame')),
+      globalFrame: boundingRectangleArray(pluck(childrenFromWorking, 'globalFrame')),
+      localFrame: boundingRectangleArray(pluck(childrenFromWorking, 'localFrame')),
     }
   })
 

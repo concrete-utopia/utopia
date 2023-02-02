@@ -9,6 +9,8 @@ import {
   isIntrinsicHTMLElement,
   JSXElement,
   isIntrinsicElement,
+  JSXElementChild,
+  isJSXElement,
 } from '../shared/element-template'
 import {
   NodeModules,
@@ -66,60 +68,64 @@ export function getPropertyControlsForTarget(
     null,
     (
       success: ParseSuccess,
-      element: JSXElement,
+      element: JSXElementChild,
       underlyingTarget: StaticElementPath,
       underlyingFilePath: string,
     ) => {
-      const importedFrom = importedFromWhere(
-        underlyingFilePath,
-        element.name.baseVariable,
-        success.topLevelElements,
-        success.imports,
-      )
+      if (isJSXElement(element)) {
+        const importedFrom = importedFromWhere(
+          underlyingFilePath,
+          element.name.baseVariable,
+          success.topLevelElements,
+          success.imports,
+        )
 
-      let filenameForLookup: string | null = null
-      if (importedFrom == null) {
-        if (isIntrinsicElement(element.name)) {
-          if (isIntrinsicHTMLElement(element.name)) {
-            /**
-             * We detected an intrinsic HTML Element (such as div, a, span, etc...)
-             * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
-             * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
-             * but for now, I just return a one-size-fits-all PropertyControls result here
-             */
-            return HtmlElementStyleObjectProps
-          } else {
-            // you can add more intrinsic (ie not imported) element types here
-            return getThirdPartyControlsIntrinsic(
-              element.name.baseVariable,
-              propertyControlsInfo,
-              projectContents,
-            )
+        let filenameForLookup: string | null = null
+        if (importedFrom == null) {
+          if (isIntrinsicElement(element.name)) {
+            if (isIntrinsicHTMLElement(element.name)) {
+              /**
+               * We detected an intrinsic HTML Element (such as div, a, span, etc...)
+               * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
+               * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
+               * but for now, I just return a one-size-fits-all PropertyControls result here
+               */
+              return HtmlElementStyleObjectProps
+            } else {
+              // you can add more intrinsic (ie not imported) element types here
+              return getThirdPartyControlsIntrinsic(
+                element.name.baseVariable,
+                propertyControlsInfo,
+                projectContents,
+              )
+            }
+          } else if (openFilePath != null) {
+            filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           }
-        } else if (openFilePath != null) {
-          filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+        } else {
+          filenameForLookup = importedFrom.filePath
+        }
+
+        if (filenameForLookup == null) {
+          return null
+        } else {
+          const absolutePath = absolutePathFromRelativePath(
+            underlyingFilePath,
+            false,
+            filenameForLookup,
+          )
+          // If it's pointing at a path (as opposed to a package), strip off the filename extension.
+          const trimmedPath = absolutePath.includes('/')
+            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            : absolutePath
+
+          const originalName =
+            importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
+          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+          return propertyControlsInfo[trimmedPath]?.[nameAsString]?.properties
         }
       } else {
-        filenameForLookup = importedFrom.filePath
-      }
-
-      if (filenameForLookup == null) {
         return null
-      } else {
-        const absolutePath = absolutePathFromRelativePath(
-          underlyingFilePath,
-          false,
-          filenameForLookup,
-        )
-        // If it's pointing at a path (as opposed to a package), strip off the filename extension.
-        const trimmedPath = absolutePath.includes('/')
-          ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
-          : absolutePath
-
-        const originalName =
-          importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-        const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
-        return propertyControlsInfo[trimmedPath]?.[nameAsString]?.properties
       }
     },
   )
