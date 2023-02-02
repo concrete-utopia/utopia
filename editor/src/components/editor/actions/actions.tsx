@@ -3463,16 +3463,26 @@ export const UPDATE_FNS = {
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue(
-                {
-                  position: 'absolute',
-                  left: relativeFrame.x,
-                  top: relativeFrame.y,
-                  width: relativeFrame.width,
-                  height: relativeFrame.height,
-                },
-                emptyComments,
-              ),
+              style: MetadataUtils.isFlexLayoutedContainer(
+                MetadataUtils.findElementByElementPath(editor.jsxMetadata, parent),
+              )
+                ? jsxAttributeValue(
+                    {
+                      width: relativeFrame.width,
+                      height: relativeFrame.height,
+                    },
+                    emptyComments,
+                  )
+                : jsxAttributeValue(
+                    {
+                      position: 'absolute',
+                      left: relativeFrame.x,
+                      top: relativeFrame.y,
+                      width: relativeFrame.width,
+                      height: relativeFrame.height,
+                    },
+                    emptyComments,
+                  ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
               [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
             }),
