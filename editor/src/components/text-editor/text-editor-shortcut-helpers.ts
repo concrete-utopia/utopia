@@ -10,27 +10,22 @@ import * as PP from '../../core/shared/property-path'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
-export function toggleTextBold(target: ElementPath, fontWeight: string | null): EditorAction {
-  const toggledFontWeight = 'bold'
-  const defaultFontWeight = 'normal'
-  const currentValue = fontWeight === '400' ? defaultFontWeight : toggledFontWeight
+export type UndoBehavior = 'separate-undo-step' | 'merge-with-previous'
 
-  return toggleStyleProp(target, 'fontWeight', currentValue, toggledFontWeight, defaultFontWeight)
-}
-
-export function toggleTextBoldWithUnset(
+export function toggleTextBold(
   target: ElementPath,
   fontWeight: string | null,
   dispatch: EditorDispatch,
   metadataRef: {
     readonly current: ElementInstanceMetadataMap
   },
+  undoBehavior: UndoBehavior,
 ): void {
   const toggledFontWeight = 'bold'
   const defaultFontWeight = 'normal'
   const currentValue = fontWeight === '400' ? defaultFontWeight : toggledFontWeight
 
-  toggleStylePropWithUnset(
+  toggleStyleProp(
     target,
     'fontWeight',
     currentValue,
@@ -47,31 +42,23 @@ export function toggleTextBoldWithUnset(
       }
       return specialSizeMeasurements?.fontWeight ?? null
     },
+    undoBehavior,
   )
 }
 
 export function toggleTextItalic(
   target: ElementPath,
   currentFontStyle: string | null,
-): EditorAction {
-  const toggledFontStyle = 'italic'
-  const defaultFontStyle = 'normal'
-
-  return toggleStyleProp(target, 'fontStyle', currentFontStyle, toggledFontStyle, defaultFontStyle)
-}
-
-export function toggleTextItalicWithUnset(
-  target: ElementPath,
-  currentFontStyle: string | null,
   dispatch: EditorDispatch,
   metadataRef: {
     readonly current: ElementInstanceMetadataMap
   },
+  undoBehavior: UndoBehavior,
 ): void {
   const toggledFontStyle = 'italic'
   const defaultFontStyle = 'normal'
 
-  toggleStylePropWithUnset(
+  toggleStyleProp(
     target,
     'fontStyle',
     currentFontStyle,
@@ -85,37 +72,23 @@ export function toggleTextItalicWithUnset(
       )?.specialSizeMeasurements
       return specialSizeMeasurements?.fontStyle ?? null
     },
+    undoBehavior,
   )
 }
 
 export function toggleTextUnderline(
   target: ElementPath,
   currentTextDecorationLine: string | null,
-): EditorAction {
-  const toggledDecoration = 'underline'
-  const defaultDecoration = 'none'
-
-  return toggleStyleProp(
-    target,
-    'textDecoration',
-    currentTextDecorationLine,
-    toggledDecoration,
-    defaultDecoration,
-  )
-}
-
-export function toggleTextUnderlineWithUnset(
-  target: ElementPath,
-  currentTextDecorationLine: string | null,
   dispatch: EditorDispatch,
   metadataRef: {
     readonly current: ElementInstanceMetadataMap
   },
+  undoBehavior: UndoBehavior,
 ): void {
   const toggledDecoration = 'underline'
   const defaultDecoration = 'none'
 
-  toggleStylePropWithUnset(
+  toggleStyleProp(
     target,
     'textDecoration',
     currentTextDecorationLine,
@@ -129,37 +102,23 @@ export function toggleTextUnderlineWithUnset(
       )?.specialSizeMeasurements
       return specialSizeMeasurements?.textDecorationLine ?? null
     },
+    undoBehavior,
   )
 }
 
 export function toggleTextStrikeThrough(
   target: ElementPath,
   currentTextDecorationLine: string | null,
-): EditorAction {
-  const toggledDecoration = 'line-through'
-  const defaultDecoration = 'none'
-
-  return toggleStyleProp(
-    target,
-    'textDecoration',
-    currentTextDecorationLine,
-    toggledDecoration,
-    defaultDecoration,
-  )
-}
-
-export function toggleTextStrikeThroughWithUnset(
-  target: ElementPath,
-  currentTextDecorationLine: string | null,
   dispatch: EditorDispatch,
   metadataRef: {
     readonly current: ElementInstanceMetadataMap
   },
+  undoBehavior: UndoBehavior,
 ): void {
   const toggledDecoration = 'line-through'
   const defaultDecoration = 'none'
 
-  toggleStylePropWithUnset(
+  toggleStyleProp(
     target,
     'textDecoration',
     currentTextDecorationLine,
@@ -173,6 +132,7 @@ export function toggleTextStrikeThroughWithUnset(
       )?.specialSizeMeasurements
       return specialSizeMeasurements?.textDecorationLine ?? null
     },
+    undoBehavior,
   )
 }
 
@@ -182,46 +142,37 @@ const toggleStyleProp = (
   currentValue: string | null,
   toggledValue: string,
   defaultValue: string,
-): EditorAction => {
+  dispatch: EditorDispatch,
+  getComputedValue: () => string | null,
+  undoBehavior: UndoBehavior,
+): void => {
   const newValue = currentValue === toggledValue ? defaultValue : toggledValue
-  return EditorActions.setProperty(
+
+  const setAction = EditorActions.setProperty(
     elementPath,
     PP.create('style', prop),
     jsxAttributeValue(newValue, emptyComments),
   )
-}
 
-const toggleStylePropWithUnset = (
-  elementPath: ElementPath,
-  prop: string,
-  currentValue: string | null,
-  toggledValue: string,
-  defaultValue: string,
-  dispatch: EditorDispatch,
-  getComputedValue: () => string | null,
-): void => {
-  const newValue = currentValue === toggledValue ? defaultValue : toggledValue
   if (newValue === defaultValue) {
-    dispatch([EditorActions.unsetProperty(elementPath, PP.create('style', prop))])
+    const unsetAction = EditorActions.unsetProperty(elementPath, PP.create('style', prop))
+
+    const action =
+      undoBehavior === 'separate-undo-step'
+        ? unsetAction
+        : EditorActions.mergeWithPrevUndo([unsetAction])
+
+    dispatch([action])
     const computedValue = getComputedValue()
     if (computedValue !== newValue) {
-      dispatch([
-        EditorActions.mergeWithPrevUndo([
-          EditorActions.setProperty(
-            elementPath,
-            PP.create('style', prop),
-            jsxAttributeValue(newValue, emptyComments),
-          ),
-        ]),
-      ])
+      dispatch([EditorActions.mergeWithPrevUndo([setAction])])
     }
   } else {
-    dispatch([
-      EditorActions.setProperty(
-        elementPath,
-        PP.create('style', prop),
-        jsxAttributeValue(newValue, emptyComments),
-      ),
-    ])
+    const action =
+      undoBehavior === 'separate-undo-step'
+        ? setAction
+        : EditorActions.mergeWithPrevUndo([setAction])
+
+    dispatch([action])
   }
 }
