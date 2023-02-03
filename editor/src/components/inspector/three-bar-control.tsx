@@ -65,11 +65,11 @@ const LayerFlexDirection = (flexDirection: FlexDirection): FlexDirection => {
 }
 
 const ThreeBarContainer = styled('div', {
+  margin: 2,
   display: 'flex',
   aspectRatio: '1',
   width: ThreeBarContainerWidth,
-  border: '1px solid black',
-  padding: 2,
+  boxSizing: 'border-box',
 })
 
 const DotContainer = styled('div', {
@@ -103,6 +103,7 @@ const SlabLayer = styled('div', {
   height: '100%',
   width: '100%',
   display: 'flex',
+  padding: 1,
   flexDirection: 'column',
 })
 
@@ -257,6 +258,8 @@ export const ThreeBarControl = React.memo(() => {
     'FlexDirectionToggle, nFlexContainers',
   )
 
+  const colorTheme = useColorTheme()
+
   const packedSpacedSetting =
     useEditorState(
       Substores.metadata,
@@ -304,6 +307,7 @@ export const ThreeBarControl = React.memo(() => {
       style={{
         display: shouldShow ? 'flex' : 'none',
         flexDirection: ContainerFlexDirection(flexDirection),
+        border: `1px solid ${colorTheme.fg5.value}`,
       }}
     >
       <ThreeBarSection alignItems={'flex-start'} onClick={setAlignItemsStart} />
