@@ -1,4 +1,3 @@
-import { useAtom } from 'jotai'
 import React from 'react'
 
 import { useContextSelector } from 'use-context-selector'
@@ -14,6 +13,7 @@ import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/s
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { useEditorState, Substores } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -21,10 +21,6 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from '../../../common/control-status'
-import {
-  InspectorFocusedCanvasControls,
-  InspectorHoveredCanvasControls,
-} from '../../../common/inspector-atoms'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import {
   InspectorCallbackContext,
@@ -230,6 +226,11 @@ export const PaddingControl = React.memo(() => {
   )
 
   const { selectedViewsRef } = useInspectorContext()
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'PaddingControl selectedViews',
+  )
 
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
@@ -241,7 +242,7 @@ export const PaddingControl = React.memo(() => {
           props: {
             side: side,
             hoveredOrFocused: 'hovered',
-            targets: selectedViewsRef.current,
+            targets: selectedViews,
           },
           key: `subdued-padding-control-hovered-${side}`,
         },
@@ -250,13 +251,13 @@ export const PaddingControl = React.memo(() => {
           props: {
             side: side,
             hoveredOrFocused: 'focused',
-            targets: selectedViewsRef.current,
+            targets: selectedViews,
           },
           key: `subdued-padding-control-focused-${side}`,
         },
       }),
     )
-  }, [selectedViewsRef])
+  }, [selectedViews])
 
   return (
     <SplitChainedNumberInput

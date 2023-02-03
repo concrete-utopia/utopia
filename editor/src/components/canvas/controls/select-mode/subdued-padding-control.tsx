@@ -20,7 +20,6 @@ interface SubduedPaddingControlProps {
 
 export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((props) => {
   const { side, hoveredOrFocused, targets } = props
-  // TODO can we get away with ref editor state here?
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const isHorizontalPadding = side === 'left' || side === 'right'
@@ -59,9 +58,17 @@ export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((pro
           position: 'absolute',
           border: `1px ${solidOrDashed} ${color}`,
         }}
+        data-testid={getSubduedPaddingControlTestID(side, hoveredOrFocused)}
       />
     </CanvasOffsetWrapper>
   )
 })
+
+export function getSubduedPaddingControlTestID(
+  side: EdgePiece,
+  hoveredOrFocused: 'hovered' | 'focused',
+): string {
+  return `SubduedPaddingControl-${side}-${hoveredOrFocused}`
+}
 
 const numberToPxValue = (n: number) => n + 'px'
