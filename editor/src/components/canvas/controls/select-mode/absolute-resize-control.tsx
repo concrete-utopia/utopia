@@ -1,6 +1,10 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import {
   boundingRectangleArray,
   CanvasVector,
   nullIfInfinity,
@@ -9,12 +13,13 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
+import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { invert } from '../../../inspector/inspector-common'
+import { detectFillHugFixedState, FixedHugFill, invert } from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from '../../../inspector/inspector-strategies/inspector-strategy'
 import CanvasActions from '../../canvas-actions'
@@ -291,6 +296,51 @@ const ResizeEdge = React.memo(
   }),
 )
 
+const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
+  switch (state) {
+    case 'fill':
+      return 'Fill'
+    case 'fixed':
+      return `${actualSize}`
+    case 'hug':
+      return 'Hug'
+  }
+}
+
+function sizeLabelContents(
+  metadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+): [string, string] | null {
+  if (selectedElements.length === 0) {
+    return null
+  }
+
+  if (selectedElements.length === 1) {
+    const element = MetadataUtils.findElementByElementPath(metadata, selectedElements[0])
+    if (element == null) {
+      return null
+    }
+
+    const horizontal =
+      detectFillHugFixedState('horizontal', metadata, selectedElements[0])?.type ?? 'fixed'
+    const vertical =
+      detectFillHugFixedState('vertical', metadata, selectedElements[0])?.type ?? 'fixed'
+    return [
+      sizeLabel(horizontal, element.specialSizeMeasurements.clientWidth),
+      sizeLabel(vertical, element.specialSizeMeasurements.clientHeight),
+    ]
+  }
+
+  const boundingBox = boundingRectangleArray(
+    selectedElements.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
+  )
+  if (boundingBox != null) {
+    return [`${boundingBox.width}`, `${boundingBox.height}`]
+  }
+
+  return null
+}
+
 interface SizeLabelProps {
   targets: Array<ElementPath>
 }
@@ -308,9 +358,9 @@ const SizeLabel = React.memo(
       (store) => getMetadata(store.editor),
       'ResizeLabel metadata',
     )
-    const boundingBox = boundingRectangleArray(
-      targets.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
-    )
+
+    const label = sizeLabelContents(metadata, targets)
+
     return (
       <div
         ref={ref}
@@ -322,18 +372,21 @@ const SizeLabel = React.memo(
         }}
         data-testid='parent-resize-label'
       >
-        <div
-          style={{
-            marginTop: 8 / scale,
-            padding: 4 / scale,
-            borderRadius: 4 / scale,
-            color: colorTheme.white.value,
-            backgroundColor: colorTheme.secondaryBlue.value,
-            fontSize: 12 / scale,
-          }}
-        >
-          {boundingBox != null ? `${boundingBox.width} x ${boundingBox.height}` : ''}
-        </div>
+        {when(
+          label != null,
+          <div
+            style={{
+              marginTop: 8 / scale,
+              padding: `0px ${2 / scale}px`,
+              borderRadius: 2 / scale,
+              color: colorTheme.white.value,
+              backgroundColor: colorTheme.secondaryBlue.value,
+              fontSize: 11 / scale,
+            }}
+          >
+            {`${label![0]} x ${label![1]}`}
+          </div>,
+        )}
       </div>
     )
   }),

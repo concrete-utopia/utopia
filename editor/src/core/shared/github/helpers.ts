@@ -16,10 +16,12 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../../components/assets'
+import { notice } from '../../../components/common/notice'
 import { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
 import {
   deleteFile,
   removeFileConflict,
+  showToast,
   updateBranchContents,
   updateFile,
   updateGithubChecksums,
@@ -35,6 +37,7 @@ import {
   FileChecksums,
   GithubData,
   GithubOperation,
+  githubOperationPrettyName,
   GithubRepo,
   GithubUser,
   projectGithubSettings,
@@ -160,23 +163,67 @@ export interface GetGithubUserSuccess {
 
 export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 
-export type RunGithubOperationResult = {
-  promises: Array<EditorAction>
-}
+export type GithubOperationLogic = (operation: GithubOperation) => Promise<Array<EditorAction>>
 
 export async function runGithubOperation(
   operation: GithubOperation,
   dispatch: EditorDispatch,
-  logic: () => Promise<Array<EditorAction>>,
+  logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
+
+  const opName = githubOperationPrettyName(operation)
   try {
     dispatch([updateGithubOperations(operation, 'add')], 'everyone')
-    result = await logic()
+    result = await logic(operation)
+  } catch (error: any) {
+    dispatch(
+      [showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR'))],
+      'everyone',
+    )
+    console.error(`[GitHub] operation "${opName}" failed:`, error)
+    throw error
   } finally {
     dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
   }
+
   return result
+}
+
+export interface GithubAPIError {
+  operation: GithubOperation
+  status: string
+  data?: string
+}
+
+export function githubAPIError(
+  operation: GithubOperation,
+  status: string,
+  message?: string,
+): GithubAPIError {
+  return {
+    operation: operation,
+    status: status,
+    data: message,
+  }
+}
+
+export async function githubAPIErrorFromResponse(
+  operation: GithubOperation,
+  response: Response,
+): Promise<GithubAPIError> {
+  async function getText() {
+    try {
+      return await response.text()
+    } catch (e) {
+      return null
+    }
+  }
+  return {
+    operation: operation,
+    status: `${response.statusText} (${response.status})`,
+    data: (await getText()) ?? undefined,
+  }
 }
 
 export function connectRepo(
@@ -842,44 +889,53 @@ export async function saveGithubAsset(
   assetSha: string,
   projectID: string,
   path: string,
+  dispatch: EditorDispatch,
 ): Promise<void> {
-  const url = urljoin(
-    UTOPIA_BACKEND,
-    'github',
-    'branches',
-    githubRepo.owner,
-    githubRepo.repository,
-    'asset',
-    assetSha,
+  await runGithubOperation(
+    { name: 'saveAsset', path: path },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const url = urljoin(
+        UTOPIA_BACKEND,
+        'github',
+        'branches',
+        githubRepo.owner,
+        githubRepo.repository,
+        'asset',
+        assetSha,
+      )
+
+      const paramsRecord: Record<string, string> = {
+        project_id: projectID,
+        path: path,
+      }
+      const searchParams = new URLSearchParams(paramsRecord)
+      const urlToUse = `${url}?${searchParams}`
+
+      const response = await fetch(urlToUse, {
+        method: 'POST',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+      })
+      if (!response.ok) {
+        throw githubAPIErrorFromResponse(operation, response)
+      }
+
+      const responseBody: GithubSaveAssetResponse = await response.json()
+      switch (responseBody.type) {
+        case 'FAILURE':
+          throw githubAPIError(operation, responseBody.failureReason)
+        case 'SUCCESS':
+          await Promise.resolve()
+          break
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+      return []
+    },
   )
-
-  const paramsRecord: Record<string, string> = {
-    project_id: projectID,
-    path: path,
-  }
-  const searchParams = new URLSearchParams(paramsRecord)
-  const urlToUse = `${url}?${searchParams}`
-
-  const response = await fetch(urlToUse, {
-    method: 'POST',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
-  if (response.ok) {
-    const responseBody: GithubSaveAssetResponse = await response.json()
-    switch (responseBody.type) {
-      case 'FAILURE':
-        throw new Error(`Failed to save asset ${responseBody.failureReason}`)
-      case 'SUCCESS':
-        return Promise.resolve()
-      default:
-        const _exhaustiveCheck: never = responseBody
-        throw new Error(`Unhandled response body ${JSON.stringify(responseBody)}`)
-    }
-  } else {
-    throw new Error(`Failed to save asset due to status code ${response.status}.`)
-  }
 }
 
 export async function resolveConflict(
@@ -905,7 +961,7 @@ export async function resolveConflict(
     if (gitBlobSha == null) {
       saveAssetPromise = Promise.resolve()
     } else {
-      saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path)
+      saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path, dispatch)
     }
     void saveAssetPromise.then(() => {
       dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')

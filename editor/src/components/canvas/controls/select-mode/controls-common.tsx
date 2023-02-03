@@ -171,7 +171,7 @@ export function indicatorMessage(
   value: CSSNumberWithRenderedValue,
 ): string | number {
   if (isOverThreshold) {
-    return printCSSNumber(value.value, null)
+    return printCSSNumber(value.value, value.value.unit)
   }
 
   return Emdash // emdash

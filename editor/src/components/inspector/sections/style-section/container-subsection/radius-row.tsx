@@ -260,6 +260,7 @@ export const BorderRadiusControl = React.memo(() => {
         perSide: 'Radius per corner',
       }}
       controlModeOrder={['one-value', 'per-side']}
+      numberType={'LengthPercent'}
       selectedViews={selectedViewsRef.current}
       name='radius'
       defaultMode='one-value'

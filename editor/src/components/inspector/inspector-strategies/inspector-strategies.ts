@@ -2,12 +2,10 @@ import * as PP from '../../../core/shared/property-path'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import {
   Axis,
-  convertWidthToFlexGrow,
   filterKeepFlexContainers,
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
-  nukeAllAbsolutePositioningPropsCommands,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
   widthHeightFromAxis,
@@ -24,6 +22,44 @@ import {
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
+import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
+import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
+
+export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
+  {
+    name: 'Set flex-align',
+    strategy: (metadata, elementPaths) => {
+      const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+      if (elements.length === 0) {
+        return null
+      }
+
+      return elements.flatMap((path) => [
+        setProperty('always', path, PP.create('style', 'alignItems'), flexAlignment),
+      ])
+    },
+  },
+]
+
+export const setJustifyContentStrategies = (
+  justifyContent: FlexJustifyContent,
+): Array<InspectorStrategy> => [
+  {
+    name: 'Set justify-content',
+    strategy: (metadata, elementPaths) => {
+      const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+      if (elements.length === 0) {
+        return null
+      }
+
+      return elements.flatMap((path) => [
+        setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
+      ])
+    },
+  },
+]
 
 export const setFlexAlignJustifyContentStrategies = (
   flexAlignment: FlexAlignment,
@@ -90,14 +126,7 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
   {
     name: 'Add flex layout',
     strategy: (metadata, elementPaths) => {
-      return elementPaths.flatMap((path) => [
-        setProperty('always', path, PP.create('style', 'display'), 'flex'),
-        ...MetadataUtils.getChildrenPaths(metadata, path).flatMap((child) => [
-          ...nukeAllAbsolutePositioningPropsCommands(child),
-          ...sizeToVisualDimensions(metadata, child),
-          ...convertWidthToFlexGrow(metadata, child),
-        ]),
-      ])
+      return convertLayoutToFlexCommands(metadata, elementPaths)
     },
   },
 ]
@@ -158,3 +187,9 @@ export const setPropFixedStrategies = (
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   hugContentsBasicStrategy(axis),
 ]
+
+export const setSpacingModeSpaceBetweenStrategies: Array<InspectorStrategy> = [
+  setSpacingModeSpaceBetween,
+]
+
+export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpacingModePacked]

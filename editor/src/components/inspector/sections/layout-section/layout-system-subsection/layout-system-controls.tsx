@@ -276,6 +276,7 @@ export const PaddingControl = React.memo(() => {
       shorthand={shorthand}
       updateShorthand={updateShorthand}
       canvasControls={canvasControlsForSides}
+      numberType={'LengthPercent'}
     />
   )
 })

@@ -13,12 +13,17 @@ import {
 } from '../../../../../uuiui'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
-import { CSSNumber, isCSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
 import {
   CanvasControlWithProps,
   InspectorFocusedCanvasControls,
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'
+import {
+  CSSNumber,
+  CSSNumberType,
+  isCSSNumber,
+  UnknownOrEmptyInput,
+} from '../../../common/css-utils'
 import { InspectorInfo } from '../../../common/property-path-hooks'
 
 export type ControlMode =
@@ -116,6 +121,7 @@ export interface SplitChainedNumberInputProps<T> {
     bottom?: CanvasControls
     right?: CanvasControls
   }
+  numberType: CSSNumberType
 }
 
 function getInitialMode(
@@ -177,7 +183,7 @@ const onSubmitValueShorthand =
   }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, top, left, bottom, right, controlModeOrder, canvasControls } = props
+  const { name, top, left, bottom, right, controlModeOrder, canvasControls, numberType } = props
 
   const [oneValue, setOneValue] = React.useState<CSSNumber | null>(null)
   const [horizontal, setHorizontal] = React.useState<CSSNumber | null>(null)
@@ -264,8 +270,16 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   }, [isCmdPressedRef, mode, controlModeOrder])
 
   const updateShorthandIfUsed = React.useMemo(() => {
-    return props.shorthand.controlStatus === 'simple' ? props.updateShorthand : null
-  }, [props.shorthand, props.updateShorthand])
+    const allUnset =
+      top.controlStatus === 'trivial-default' &&
+      bottom.controlStatus === 'trivial-default' &&
+      left.controlStatus === 'trivial-default' &&
+      right.controlStatus === 'trivial-default'
+
+    const useShorthand = props.shorthand.controlStatus === 'simple' || allUnset
+
+    return useShorthand ? props.updateShorthand : null
+  }, [props.shorthand, props.updateShorthand, top, bottom, left, right])
 
   const onSubmitValueOne = React.useCallback(
     (transient: boolean) => () => {
@@ -335,7 +349,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               minimum: 0,
               onSubmitValue: onSubmitValueOne(false)(),
               onTransientSubmitValue: onSubmitValueOne(true)(),
-              numberType: 'LengthPercent',
+              numberType: numberType,
               defaultUnitToHide: 'px',
               controlStatus: allSides[0].controlStatus,
               onMouseEnter: onMouseEnterForControls([
@@ -365,7 +379,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               minimum: 0,
               onSubmitValue: onSubmitValueHorizontal(false)(),
               onTransientSubmitValue: onSubmitValueHorizontal(true)(),
-              numberType: 'LengthPercent',
+              numberType: numberType,
               controlStatus: sidesHorizontal[0].controlStatus,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([
@@ -388,7 +402,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               minimum: 0,
               onSubmitValue: onSubmitValueVertical(false)(),
               onTransientSubmitValue: onSubmitValueVertical(true)(),
-              numberType: 'LengthPercent',
+              numberType: numberType,
               controlStatus: sidesVertical[0].controlStatus,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([
@@ -415,7 +429,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               onSubmitValue: onSubmitValue(top),
               onTransientSubmitValue: onTransientSubmitValue(top),
               controlStatus: top.controlStatus,
-              numberType: 'LengthPercent',
+              numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([topCanvasControls?.onHover]),
               onMouseLeave: onMouseLeave,
@@ -432,7 +446,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               onSubmitValue: onSubmitValue(right),
               onTransientSubmitValue: onTransientSubmitValue(right),
               controlStatus: right.controlStatus,
-              numberType: 'LengthPercent',
+              numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([rightCanvasControls?.onHover]),
               onMouseLeave: onMouseLeave,
@@ -449,7 +463,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               onSubmitValue: onSubmitValue(bottom),
               onTransientSubmitValue: onTransientSubmitValue(bottom),
               controlStatus: bottom.controlStatus,
-              numberType: 'LengthPercent',
+              numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
               onMouseLeave: onMouseLeave,
@@ -466,7 +480,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               onSubmitValue: onSubmitValue(left),
               onTransientSubmitValue: onTransientSubmitValue(left),
               controlStatus: left.controlStatus,
-              numberType: 'LengthPercent',
+              numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([leftCanvasControls?.onHover]),
               onMouseLeave: onMouseLeave,
@@ -502,6 +516,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       canvasControls,
       setHoveredCanvasControls,
       setFocusedCanvasControls,
+      numberType,
     ])
 
   const tooltipTitle = React.useMemo(() => {
@@ -537,7 +552,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
       <Tooltip title={tooltipTitle}>
-        <SquareButton onClick={cycleToNextMode}>{modeIcon}</SquareButton>
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={cycleToNextMode}>
+          {modeIcon}
+        </SquareButton>
       </Tooltip>
       <ChainedNumberInput
         idPrefix={name}

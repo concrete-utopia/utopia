@@ -67,6 +67,22 @@ export function add(
   return newHistory
 }
 
+export function replaceLast(
+  stateHistory: StateHistory,
+  editor: EditorState,
+  derived: DerivedState,
+): StateHistory {
+  const newHistory = {
+    previous: stateHistory.previous,
+    current: {
+      editor: editor,
+      derived: derived,
+    },
+    next: [],
+  }
+  return newHistory
+}
+
 export function init(editor: EditorState, derived: DerivedState): StateHistory {
   return {
     previous: [],
