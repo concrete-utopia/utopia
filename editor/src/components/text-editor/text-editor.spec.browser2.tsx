@@ -22,7 +22,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText(' Utopia')
-    await closeTextEditor()
+    await expectSingleUndoStep(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -55,7 +55,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('Utopia')
-    await closeTextEditor()
+    await expectSingleUndoStep(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -120,7 +120,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('this is a <test> with bells & whistles')
-    await closeTextEditor()
+    await expectSingleUndoStep(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
