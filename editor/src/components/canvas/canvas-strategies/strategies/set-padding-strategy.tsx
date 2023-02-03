@@ -48,6 +48,7 @@ import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-h
 import {
   canvasPoint,
   CanvasPoint,
+  canvasVector,
   CanvasVector,
   isInfinityRectangle,
 } from '../../../../core/shared/math-utils'
@@ -353,13 +354,13 @@ function paddingValueIndicatorProps(
     interactionSession == null ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.activeControl.type !== 'PADDING_RESIZE_HANDLE' ||
-    interactionSession.interactionData.drag == null ||
     filteredSelectedElements.length !== 1
   ) {
     return null
   }
 
-  const { drag, dragStart } = interactionSession.interactionData
+  const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
+  const dragStart = interactionSession.interactionData.dragStart
 
   const edgePiece = interactionSession.activeControl.edgePiece
 
