@@ -60,8 +60,8 @@ async function enterInsertModeFromInsertMenu(
     y: insertButtonBounds.y + insertButtonBounds.height / 2,
   })
 
-  mouseMoveToPoint(insertButton, point)
-  mouseClickAtPoint(insertButton, point)
+  await mouseMoveToPoint(insertButton, point)
+  await mouseClickAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -77,8 +77,8 @@ async function enterInsertModeFromInsertMenuStartDrag(renderResult: EditorRender
     y: insertButtonBounds.y + insertButtonBounds.height / 2,
   })
 
-  mouseMoveToPoint(insertButton, point)
-  mouseDownAtPoint(insertButton, point)
+  await mouseMoveToPoint(insertButton, point)
+  await mouseDownAtPoint(insertButton, point)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -199,13 +199,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to inside ccc
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -279,13 +279,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to inside ccc
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -355,13 +355,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Click in bbb
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -456,13 +456,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Click in bbb
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -525,13 +525,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to outside of the scene
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -607,9 +607,9 @@ describe('Inserting into absolute', () => {
     await enterInsertModeFromInsertMenuStartDrag(renderResult)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
-    mouseDragFromPointToPointNoMouseDown(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPointNoMouseDown(canvasControlsLayer, startPoint, endPoint)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode)
@@ -652,13 +652,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to inside ccc
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -730,13 +730,13 @@ describe('Inserting into absolute', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Click in bbb
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -827,13 +827,13 @@ describe('Forced inserting into Static', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to inside ccc
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1018,7 +1018,7 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1033,7 +1033,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag horizontally close to the zero position
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1097,7 +1097,7 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1112,7 +1112,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBeforeSibling).toEqual(true)
 
     // Click horizontally close to the zero position
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1180,7 +1180,7 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1196,7 +1196,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag horizontally close to the first position
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1258,7 +1258,7 @@ describe('Inserting into flex row', () => {
       x: targetElementBounds.x + targetElementBounds.width + 5,
       y: targetElementBounds.y + targetElementBounds.height + 5,
     }) // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1274,7 +1274,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBetweenSiblings).toEqual(true)
 
     // Click horizontally close to the first position
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1342,7 +1342,7 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1359,7 +1359,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag starts horizontally close to the first position, dragging towards the top left
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1427,13 +1427,13 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag starts inside bbb
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1500,13 +1500,13 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Click inside bbb
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1577,7 +1577,7 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1593,7 +1593,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag starts inside bbb, but very close to its edge (3px)
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1657,7 +1657,7 @@ describe('Inserting into flex row', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1673,7 +1673,7 @@ describe('Inserting into flex row', () => {
     expect(indicatorBeforeSibling).toEqual(true)
 
     // Click inside bbb, but very close to its edge (3px)
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1777,7 +1777,7 @@ describe('Inserting into flex column', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1793,7 +1793,7 @@ describe('Inserting into flex column', () => {
     expect(indicatorBeforeSibling).toEqual(true)
 
     // Drag vertically close to the first position
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1858,7 +1858,7 @@ describe('Inserting into flex column', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1874,7 +1874,7 @@ describe('Inserting into flex column', () => {
     expect(indicatorBeforeSibling).toEqual(true)
 
     // Click vertically close to the first position
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1943,7 +1943,7 @@ describe('Inserting into flex column', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -1960,7 +1960,7 @@ describe('Inserting into flex column', () => {
     expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag vertically close to the first position
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2025,7 +2025,7 @@ describe('Inserting into flex column', () => {
     })
 
     // Move before clicking
-    mouseMoveToPoint(canvasControlsLayer, point)
+    await mouseMoveToPoint(canvasControlsLayer, point)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -2041,7 +2041,7 @@ describe('Inserting into flex column', () => {
     expect(indicatorBetweenSiblings).toEqual(true)
 
     // Click vertically close to the first position
-    mouseClickAtPoint(canvasControlsLayer, point)
+    await mouseClickAtPoint(canvasControlsLayer, point)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2110,7 +2110,7 @@ describe('Inserting into flex column', () => {
     })
 
     // Move before starting dragging
-    mouseMoveToPoint(canvasControlsLayer, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
     // Highlight should show the candidate parent
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
@@ -2126,7 +2126,7 @@ describe('Inserting into flex column', () => {
     expect(indicatorBetweenSiblings).toEqual(true)
 
     // Drag starts vertically close to the first position, dragging towards the top left
-    mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2335,13 +2335,13 @@ const testDragToInsertImageAspectRatio = async (inputCode: string, expectedCode:
   })
 
   // Move before starting dragging
-  mouseMoveToPoint(canvasControlsLayer, startPoint)
+  await mouseMoveToPoint(canvasControlsLayer, startPoint)
 
   // Highlight should show the candidate parent
   expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
   // Drag from inside bbb to inside ccc
-  mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+  await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 

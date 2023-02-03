@@ -24,7 +24,7 @@ async function openContextMenuAndClickOnItem(
 
   const contextMenuItem = await renderResult.renderedDOM.findByText(menuItemText)
   const contextMenuItemBounds = contextMenuItem.getBoundingClientRect()
-  mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
+  await mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
@@ -53,7 +53,7 @@ describe('canvas context menu', () => {
     await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
 
     // copy properties first
-    pressKey('c', { modifiers: altCmdModifier })
+    await pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
@@ -101,7 +101,7 @@ describe('canvas context menu', () => {
     await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
 
     // copy properties first
-    pressKey('c', { modifiers: altCmdModifier })
+    await pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)

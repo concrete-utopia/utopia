@@ -100,11 +100,16 @@ describe('Flex Reorder Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, canvasPoint({ x: 1, y: 1 }), {
-      modifiers: emptyModifiers,
-    })
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
+    await mouseDragFromPointWithDelta(
+      canvasControlsLayer,
+      startPoint,
+      canvasPoint({ x: 1, y: 1 }),
+      {
+        modifiers: emptyModifiers,
+      },
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

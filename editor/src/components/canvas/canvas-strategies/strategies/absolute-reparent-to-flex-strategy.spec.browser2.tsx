@@ -39,13 +39,13 @@ async function dragElement(
     y: targetElementBounds.y + targetElementBounds.height / 2,
   })
 
-  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
 
   if (skipMouseUp) {
-    mouseDownAtPoint(canvasControlsLayer, startPoint, {
+    await mouseDownAtPoint(canvasControlsLayer, startPoint, {
       modifiers: modifiers,
     })
-    mouseMoveToPoint(
+    await mouseMoveToPoint(
       canvasControlsLayer,
       {
         x: startPoint.x + dragDelta.x,
@@ -60,7 +60,7 @@ async function dragElement(
       },
     )
   } else {
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
       modifiers: modifiers,
     })
   }

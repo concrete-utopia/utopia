@@ -100,7 +100,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
 }
@@ -108,13 +108,13 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickOn(editor: EditorRenderResult, direction: FlexDirection) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(FlexDirectionToggleTestId(direction))
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
 async function rightClickOn(editor: EditorRenderResult, direction: FlexDirection) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(FlexDirectionToggleTestId(direction))
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 }, { eventOptions: { button: 1 } })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 }, { eventOptions: { button: 1 } })
 }
 
 function project(): string {

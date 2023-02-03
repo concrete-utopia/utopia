@@ -249,7 +249,7 @@ const TestProjectFlex = (flexWrap: 'wrap' | 'nowrap') => `
 </div>
 `
 
-function dragControl(
+async function dragControl(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
@@ -263,7 +263,7 @@ function dragControl(
     y: targetControlBounds.y + IconSize / 2,
   }
 
-  mouseDragFromPointWithDelta(targetControl, startPoint, dragDelta, {
+  await mouseDragFromPointWithDelta(targetControl, startPoint, dragDelta, {
     modifiers: modifiers,
     midDragCallback: async () => {
       expect(
@@ -289,7 +289,7 @@ describe('Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' left to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
-    dragControl(renderResult, dragDelta, emptyModifiers, [
+    await dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -315,7 +315,7 @@ describe('Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' right, the element is inserted into a row with conversion to inline-block
     const dragDelta = windowPoint({ x: ReorderChangeThreshold, y: 0 })
-    dragControl(renderResult, dragDelta, emptyModifiers, [
+    await dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -344,7 +344,7 @@ describe('Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' to the left, the element is inserted into a column with conversion to block
     const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
-    dragControl(renderResult, dragDelta, emptyModifiers, [
+    await dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -375,7 +375,7 @@ describe('Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' right, the element is inserted into a row with conversion to inline-flex
     const dragDelta = windowPoint({ x: ReorderChangeThreshold, y: 0 })
-    dragControl(renderResult, dragDelta, emptyModifiers, [
+    await dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -407,7 +407,7 @@ describe('Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' left, the element is inserted into a column with conversion to flex
     const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
-    dragControl(renderResult, dragDelta, emptyModifiers, [
+    await dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -437,7 +437,7 @@ describe('Reorder Slider Strategy', () => {
 
     // drag control for 'CCC' to the right
     const dragDelta = windowPoint({ x: ReorderChangeThreshold * 14, y: 0 })
-    dragControl(renderResult, dragDelta, emptyModifiers, [
+    await dragControl(renderResult, dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -504,7 +504,7 @@ describe('Reorder Slider Strategy Control', () => {
     )
 
     // Now hover over the element
-    mouseMoveToPoint(canvasControlsLayer, targetElementCenter)
+    await mouseMoveToPoint(canvasControlsLayer, targetElementCenter)
 
     const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
     expect(targetControl).not.toBeNull()
@@ -536,7 +536,7 @@ describe('Reorder Slider Strategy Control', () => {
     )
 
     // Now hover over the element to display the control
-    mouseMoveToPoint(canvasControlsLayer, targetElementCenter)
+    await mouseMoveToPoint(canvasControlsLayer, targetElementCenter)
 
     // Find the control
     const targetControlAtStart = renderResult.renderedDOM.getByTestId('reorder-slider-control')
@@ -558,8 +558,8 @@ describe('Reorder Slider Strategy Control', () => {
     }
 
     // Mouse down and start dragging the control way beyond the bounds of the target element
-    mouseDownAtPoint(targetControlAtStart, startPoint)
-    mouseMoveToPoint(targetControlAtStart, endPoint, {
+    await mouseDownAtPoint(targetControlAtStart, startPoint)
+    await mouseMoveToPoint(targetControlAtStart, endPoint, {
       eventOptions: {
         movementX: dragDelta.x,
         movementY: dragDelta.y,

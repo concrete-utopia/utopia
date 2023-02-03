@@ -113,7 +113,7 @@ async function doSelect(editor: EditorRenderResult) {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
   await editor.getDispatchFollowUpActionsFinished()
 }
 

@@ -233,7 +233,7 @@ describe('Padding resize strategy', () => {
       expect(paddingControlHandle.style.opacity).toEqual('0')
     })
 
-    mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
+    await mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
 
@@ -300,8 +300,8 @@ describe('Padding resize strategy', () => {
     }
 
     // Start a drag that will move the element
-    mouseDownAtPoint(canvasControlsLayer, divCenter)
-    mouseMoveToPoint(
+    await mouseDownAtPoint(canvasControlsLayer, divCenter)
+    await mouseMoveToPoint(
       canvasControlsLayer,
       { x: divCenter.x + 100, y: divCenter.y + 100 },
       { eventOptions: { buttons: 1 } },
@@ -656,7 +656,7 @@ async function testPaddingResizeForEdge(
     y: divBounds.y + 4,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
   const paddingControl = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
   const paddingControlBounds = paddingControl.getBoundingClientRect()
@@ -668,7 +668,7 @@ async function testPaddingResizeForEdge(
   const endPoint = offsetPointByEdge(edge, delta, paddingControlCenter)
 
   const modifiers = precision === 'coarse' ? shiftModifier : undefined
-  mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
+  await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
   await editor.getDispatchFollowUpActionsFinished()
 }
 

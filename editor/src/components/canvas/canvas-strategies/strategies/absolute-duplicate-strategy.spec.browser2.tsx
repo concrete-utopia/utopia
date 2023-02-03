@@ -10,12 +10,12 @@ import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/m
 import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 
-function dragElement(
+async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
-) {
+): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -23,8 +23,8 @@ function dragElement(
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
   const endPoint = offsetPoint(startPoint, dragDelta)
 
-  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
     modifiers: modifiers,
   })
 }
@@ -46,7 +46,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
-    dragElement(renderResult, 'bbb', dragDelta, altModifier)
+    await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -84,7 +84,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
-    dragElement(renderResult, 'bbb', dragDelta, altModifier)
+    await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
