@@ -145,7 +145,7 @@ export const light = {
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
   canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
   canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
-  canvasSelectionNotFocusable: base.darkgray,
+  canvasSelectionNotFocusable: base.neonpink,
   canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
   canvasDragOutlineBlock: lightBase.primary,
   canvasDragOutlineInline: base.red,
