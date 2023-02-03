@@ -279,9 +279,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         } else {
           if (elementState != null && savedContentRef.current !== content) {
             savedContentRef.current = content
-            requestAnimationFrame(() =>
-              dispatch([updateChildText(elementPath, escapeHTML(content))]),
-            )
+            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content)]))
           }
         }
       }
@@ -346,10 +344,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([
-        updateChildText(elementPath, escapeHTML(content)),
-        updateEditorMode(EditorModes.selectMode()),
-      ])
+      dispatch([getSaveAction(elementPath, content), updateEditorMode(EditorModes.selectMode())])
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode())])
     }
@@ -487,4 +482,8 @@ function filterEventHandlerProps(props: Record<string, any>) {
     ...filteredProps
   } = props
   return filteredProps
+}
+
+function getSaveAction(elementPath: ElementPath, content: string): EditorAction {
+  return updateChildText(elementPath, escapeHTML(content))
 }
