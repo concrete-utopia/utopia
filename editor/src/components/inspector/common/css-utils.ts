@@ -5229,8 +5229,13 @@ export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
     delete workingNewValue.style
     return workingNewValue
   } else {
+    const widthValue =
+      oldValue.width != null && oldValue.width.value.value > 0
+        ? oldValue.width
+        : cssLineWidth(cssNumber(1, 'px'))
     return {
       ...oldValue,
+      width: widthValue,
       style: cssLineStyle(cssKeyword('solid')),
     }
   }
