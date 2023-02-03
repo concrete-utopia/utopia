@@ -66,6 +66,7 @@ import { foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { Modifiers } from '../../../../utils/modifiers'
+import { Axis, detectFillHugFixedState } from '../../../inspector/inspector-common'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -188,10 +189,25 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const delta = newPaddingEdge.renderedValuePx < PaddingTearThreshold ? rawDelta : maxedDelta
 
-      const newPaddingMaxed = adjustPaddings(
+      const axis: Axis =
+        paddingPropInteractedWith === 'paddingBottom' || paddingPropInteractedWith === 'paddingTop'
+          ? 'vertical'
+          : 'horizontal'
+
+      const isHug =
+        detectFillHugFixedState(axis, canvasState.startingMetadata, selectedElement)?.type === 'hug'
+
+      const deltaAdjusted =
+        isHug &&
+        (paddingPropInteractedWith === 'paddingRight' ||
+          paddingPropInteractedWith === 'paddingBottom')
+          ? -delta
+          : delta
+
+      const newPaddingMaxed = adjustPaddingsWithAdjustMode(
         paddingAdjustMode(interactionSession.interactionData.modifiers),
         paddingPropInteractedWith,
-        delta,
+        deltaAdjusted,
         padding,
         precision,
       )
@@ -428,7 +444,7 @@ function opposite(padding: CSSPaddingKey): CSSPaddingKey {
   }
 }
 
-function adjustPaddings(
+function adjustPaddingsWithAdjustMode(
   adjustMode: PaddingAdjustMode,
   paddingPropInteractedWith: CSSPaddingKey,
   delta: number,
