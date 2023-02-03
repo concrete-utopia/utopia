@@ -66,7 +66,6 @@ import { foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { Modifiers } from '../../../../utils/modifiers'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
