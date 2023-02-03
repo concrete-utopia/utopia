@@ -241,6 +241,7 @@ export const PaddingControl = React.memo(() => {
       right={paddingRight}
       shorthand={shorthand}
       updateShorthand={updateShorthand}
+      numberType={'Px'}
     />
   )
 })
