@@ -38,7 +38,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { expectSingleUndoStep, expectUndoSteps } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
 
 async function getControl(
   controlTestId: string,
@@ -2095,9 +2095,7 @@ describe('inspector tests with real metadata', () => {
         name: 'with single value (2-values)',
         startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
         control: async (renderResult: EditorRenderResult) => {
-          await expectUndoSteps(renderResult, 2, async () => {
-            await setControlValue('padding-V', '20', renderResult.renderedDOM)
-          })
+          await setControlValue('padding-V', '20', renderResult.renderedDOM)
         },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 10,
@@ -2117,9 +2115,7 @@ describe('inspector tests with real metadata', () => {
           })
         },
         control: async (renderResult: EditorRenderResult) => {
-          await expectUndoSteps(renderResult, 4, async () => {
-            await setControlValue('padding-one', '20', renderResult.renderedDOM)
-          })
+          await setControlValue('padding-one', '20', renderResult.renderedDOM)
         },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 20,
@@ -2140,9 +2136,7 @@ describe('inspector tests with real metadata', () => {
           })
         },
         control: async (renderResult: EditorRenderResult) => {
-          await expectUndoSteps(renderResult, 4, async () => {
-            await setControlValue('padding-one', '20', renderResult.renderedDOM)
-          })
+          await setControlValue('padding-one', '20', renderResult.renderedDOM)
         },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 20,

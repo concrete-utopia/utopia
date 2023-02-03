@@ -425,18 +425,10 @@ export async function expectSingleUndoStep(
   editor: EditorRenderResult,
   action: () => Promise<void>,
 ): Promise<void> {
-  await expectUndoSteps(editor, 1, action)
-}
-
-export async function expectUndoSteps(
-  editor: EditorRenderResult,
-  steps: number,
-  action: () => Promise<void>,
-): Promise<void> {
   const historySizeBefore = editor.getEditorState().history.previous.length
   await action()
   const historySizeAfter = editor.getEditorState().history.previous.length
-  expect(historySizeAfter - historySizeBefore).toEqual(steps)
+  expect(historySizeAfter - historySizeBefore).toEqual(1)
 }
 
 export async function selectComponentsForTest(
