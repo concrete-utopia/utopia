@@ -1,5 +1,4 @@
 /* eslint-disable jest/expect-expect */
-import React from 'react'
 import { fireEvent, RenderResult, screen } from '@testing-library/react'
 import {
   BakedInStoryboardUID,
@@ -2052,6 +2051,131 @@ describe('inspector tests with real metadata', () => {
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+  })
+  describe('padding controls shorthand', () => {
+    function makeCodeSnippetWithKeyValue(props: { [key: string]: any }): string {
+      const propsStr = Object.keys(props)
+        .map((k) => `${k}: ${JSON.stringify(props[k])},`)
+        .join('\n')
+      return `
+        <div
+          data-uid='aaa'
+        >
+          <div
+            style={{ ${propsStr} }}
+            data-uid='bbb'
+          >test</div>
+        </div>
+    `
+    }
+
+    const tests = [
+      {
+        name: 'without props',
+        startSnippet: makeCodeSnippetWithKeyValue({}),
+        control: async (dom: any) => setControlValue('padding-V', '20', dom),
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '20px 0px' }),
+      },
+      {
+        name: 'with shorthand',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+        control: async (dom: any) => setControlValue('padding-one', '20', dom),
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: 20 }),
+      },
+      {
+        name: 'with single value (2-values)',
+        startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
+        control: async (dom: any) => setControlValue('padding-V', '20', dom),
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 10,
+          paddingTop: 20,
+          paddingBottom: 20,
+        }),
+      },
+      {
+        name: 'with single value (1-value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (dom: any) => setControlValue('padding-one', '20', dom),
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 20,
+          paddingTop: 20,
+          paddingBottom: 20,
+          paddingRight: 20,
+        }),
+      },
+      {
+        name: 'with multiple values (1-value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10, paddingRight: 20 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (dom: any) => setControlValue('padding-one', '20', dom),
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingTop: 20,
+          paddingBottom: 20,
+        }),
+      },
+      {
+        name: 'with shorthand (2-value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (dom: any) => setControlValue('padding-H', '20', dom),
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
+      },
+    ]
+
+    tests.forEach((tt) => {
+      it(`padding controls shorthand: ${tt.name}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(tt.startSnippet),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await act(async () => {
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        })
+
+        if (tt.before != null) {
+          await tt.before(renderResult)
+          await renderResult.getDispatchFollowUpActionsFinished()
+        }
+        await tt.control(renderResult.renderedDOM)
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], true)
+          await dispatchDone
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(tt.endSnippet),
+        )
+      })
+    })
   })
 })
 

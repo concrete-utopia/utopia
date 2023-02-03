@@ -445,7 +445,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
       <Tooltip title={tooltipTitle}>
-        <SquareButton onClick={cycleToNextMode}>{modeIcon}</SquareButton>
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={cycleToNextMode}>
+          {modeIcon}
+        </SquareButton>
       </Tooltip>
       <ChainedNumberInput
         idPrefix={name}
