@@ -1,6 +1,6 @@
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, Modifiers, shiftModifier } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
+import { expectSingleUndoStep, wait } from '../../../../utils/utils.test-utils'
 import { cssNumber } from '../../../inspector/common/css-utils'
 import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
@@ -817,7 +817,9 @@ async function testPaddingResizeForEdge(
     alt: mode === 'cross-axis' || mode === 'all',
     shift: mode === 'all',
   }
-  mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
+  await expectSingleUndoStep(editor, async () =>
+    mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers }),
+  )
   await editor.getDispatchFollowUpActionsFinished()
 }
 
