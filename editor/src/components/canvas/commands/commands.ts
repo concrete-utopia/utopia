@@ -189,10 +189,12 @@ export function foldAndApplyCommandsSimple(
   editorState: EditorState,
   commands: Array<CanvasCommand>,
 ): EditorState {
-  const updatedEditorState = commands.reduce((workingEditorState, command) => {
-    const patches = runCanvasCommand(workingEditorState, command, 'end-interaction')
-    return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
-  }, editorState)
+  const updatedEditorState = commands
+    .filter((c) => c.whenToRun === 'always' || c.whenToRun === 'on-complete')
+    .reduce((workingEditorState, command) => {
+      const patches = runCanvasCommand(workingEditorState, command, 'end-interaction')
+      return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
+    }, editorState)
 
   return updatedEditorState
 }
