@@ -355,8 +355,8 @@ async function runTest(
 
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   await dragElement(canvasControlsLayer, startPoint, windowPoint({ x: 20, y: 0 }), async () => {
-    mouseDownAtPoint(divToBeDragged, { x: x, y: y })
-    mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
+    await mouseDownAtPoint(divToBeDragged, { x: x, y: y })
+    await mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
 
     check(editor)
   })

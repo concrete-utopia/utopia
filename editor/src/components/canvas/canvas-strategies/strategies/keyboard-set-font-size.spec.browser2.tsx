@@ -164,10 +164,10 @@ async function doSelect(editor: EditorRenderResult, type: 'single' | 'double' = 
 
   switch (type) {
     case 'single':
-      mouseClickAtPoint(canvasControlsLayer, divCorner)
+      await mouseClickAtPoint(canvasControlsLayer, divCorner)
       break
     case 'double':
-      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+      await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
       break
     default:
       assertNever(type)

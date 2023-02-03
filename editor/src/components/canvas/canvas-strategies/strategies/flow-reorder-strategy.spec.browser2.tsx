@@ -183,19 +183,19 @@ async function dragElement(
   })
 }
 
-function startDraggingAnElement(
+async function startDraggingAnElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
-) {
+): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
 
-  mouseDownAtPoint(canvasControlsLayer, startPoint, {})
-  mouseMoveToPoint(canvasControlsLayer, dragDelta, {})
+  await mouseDownAtPoint(canvasControlsLayer, startPoint, {})
+  await mouseMoveToPoint(canvasControlsLayer, dragDelta, {})
 }
 
 describe('Flow Reorder Strategy (Mixed Display Type)', () => {
@@ -292,7 +292,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up a little
     const dragDelta = windowPoint({ x: 0, y: -10 })
-    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+    await startDraggingAnElement(renderResult, 'ccc', dragDelta)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
@@ -311,7 +311,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up a little
     const dragDelta = windowPoint({ x: 0, y: -10 })
-    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+    await startDraggingAnElement(renderResult, 'ccc', dragDelta)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
@@ -330,7 +330,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     // drag element 'CCC' up a little
     const dragDelta = windowPoint({ x: 0, y: -10 })
-    startDraggingAnElement(renderResult, 'ccc', dragDelta)
+    await startDraggingAnElement(renderResult, 'ccc', dragDelta)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies

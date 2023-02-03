@@ -286,9 +286,9 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
       expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
 
-      mouseMoveToPoint(fileItem, startPoint)
-      mouseDownAtPoint(fileItem, startPoint)
-      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
+      await mouseMoveToPoint(fileItem, startPoint)
+      await mouseDownAtPoint(fileItem, startPoint)
+      await dragElementToPoint(fileItem, canvasControlsLayer, startPoint, endPoint, [])
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual(
@@ -298,7 +298,7 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
       await editor.getDispatchFollowUpActionsFinished()
 
-      dropElementAtPoint(canvasControlsLayer, endPoint, [])
+      await dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -376,14 +376,20 @@ describe('image drag and drop', () => {
         y: targetFolderBounds.y + targetFolderBounds.height / 2,
       }
 
-      mouseMoveToPoint(fileItem, startPoint)
-      mouseDownAtPoint(fileItem, startPoint)
+      await mouseMoveToPoint(fileItem, startPoint)
+      await mouseDownAtPoint(fileItem, startPoint)
 
-      dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
+      await dragElementToPoint(fileItem, canvasControlsLayer, startPoint, canvasPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+      await switchDragAndDropElementTargets(
+        canvasControlsLayer,
+        targetFolder,
+        canvasPoint,
+        endPoint,
+        [],
+      )
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -391,7 +397,7 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
       expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
 
-      dropElementAtPoint(targetFolder, endPoint, [])
+      await dropElementAtPoint(targetFolder, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -425,7 +431,7 @@ describe('image drag and drop', () => {
         y: Math.floor(canvasSceneBounds.y + canvasSceneBounds.height / 2),
       }
 
-      dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
+      await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -439,14 +445,20 @@ describe('image drag and drop', () => {
         y: targetFolderBounds.y + targetFolderBounds.height / 2,
       }
 
-      switchDragAndDropElementTargets(canvasControlsLayer, targetFolder, canvasPoint, endPoint, [])
+      await switchDragAndDropElementTargets(
+        canvasControlsLayer,
+        targetFolder,
+        canvasPoint,
+        endPoint,
+        [],
+      )
 
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
       expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
 
-      dropElementAtPoint(targetFolder, endPoint, [])
+      await dropElementAtPoint(targetFolder, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -487,12 +499,12 @@ describe('image drag and drop', () => {
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
     expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
 
-    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
     expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
-    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+    await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -563,12 +575,12 @@ export var storyboard = (
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('NOT_DRAGGING')
     expect(editor.getEditorState().editor.canvas.cursor).toBeNull()
 
-    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
     expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
-    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+    await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -641,8 +653,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
-    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+    await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -707,8 +719,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
-    dropElementAtPoint(canvasControlsLayer, endPoint, [file])
+    await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+    await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -778,8 +790,8 @@ export var storyboard = (
       y: Math.floor(targetBounds.y + targetBounds.height / 2),
     }
 
-    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
-    dropElementAtPoint(canvasControlsLayer, endPoint, files)
+    await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    await dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
     await dropDone
@@ -877,8 +889,8 @@ export var storyboard = (
       y: targetBounds.y + targetBounds.height / 2,
     }
 
-    dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
-    dropElementAtPoint(canvasControlsLayer, endPoint, files)
+    await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    await dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
 

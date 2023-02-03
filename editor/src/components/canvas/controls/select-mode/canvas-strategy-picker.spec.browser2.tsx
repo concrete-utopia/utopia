@@ -84,8 +84,8 @@ async function startDraggingDefaultTarget(
   }
 
   // Start dragging
-  mouseDownAtPoint(canvasControls, startPoint, { modifiers: cmdModifier })
-  mouseMoveToPoint(canvasControls, endPoint, {
+  await mouseDownAtPoint(canvasControls, startPoint, { modifiers: cmdModifier })
+  await mouseMoveToPoint(canvasControls, endPoint, {
     modifiers: cmdModifier,
     eventOptions: { buttons: 1 },
   })

@@ -41,12 +41,12 @@ import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
 
-function resizeElement(
+async function resizeElement(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   edgePosition: EdgePosition,
   modifiers: Modifiers,
-) {
+): Promise<void> {
   const canvasControl = renderResult.renderedDOM.queryByTestId(
     `resize-control-${edgePosition.x}-${edgePosition.y}`,
   )
@@ -60,7 +60,7 @@ function resizeElement(
     y: resizeCornerBounds.y + 2,
   })
 
-  mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
+  await mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
 }
 
 // no mouseup here! it starts the interaction and resizes with drag delta
@@ -284,11 +284,11 @@ async function doDblClickTest(editor: EditorRenderResult, testId: string): Promi
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   const nineBlockControlSegment = editor.renderedDOM.getByTestId(testId)
 
-  mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 30 }, { eventOptions: { detail: 2 } })
+  await mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 30 }, { eventOptions: { detail: 2 } })
 
   return div
 }
@@ -453,7 +453,7 @@ describe('Absolute Resize Strategy', () => {
 
     expect(renderResult.renderedDOM.getByTestId('parent-resize-label')).toBeTruthy()
 
-    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       projectDoesHonourSizeProperties(340, 275),
@@ -469,7 +469,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -494,7 +494,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -527,7 +527,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 40, y: 50 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -564,7 +564,7 @@ describe('Absolute Resize Strategy', () => {
     const dragDelta = windowPoint({ x: 29, y: -23 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -612,7 +612,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -666,7 +666,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -719,7 +719,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -771,7 +771,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -838,7 +838,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -917,7 +917,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -996,7 +996,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -1075,7 +1075,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 100, y: -100 })
 
     await renderResult.dispatch([selectComponents(targets, false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, shiftModifier)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState()))
@@ -1121,7 +1121,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const supportsStyleDiv = renderResult.renderedDOM.getByTestId('supports-style-component')
@@ -1139,7 +1139,7 @@ export var storyboard = (
     const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const supportsStyleDiv = renderResult.renderedDOM.getByTestId(

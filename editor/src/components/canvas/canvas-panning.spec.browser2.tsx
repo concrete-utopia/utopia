@@ -24,7 +24,7 @@ describe(`pan while 'space' is held down`, () => {
     const startingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
 
     keyDown('Space')
-    mouseDragFromPointToPoint(
+    await mouseDragFromPointToPoint(
       canvasControlsLayer,
       {
         x: controlsBounds.x + controlsBounds.width / 2,
@@ -46,12 +46,12 @@ describe(`pan while 'space' is held down`, () => {
     const controlsBounds = canvasControlsLayer.getBoundingClientRect()
     const startingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
 
-    mouseDownAtPoint(canvasControlsLayer, {
+    await mouseDownAtPoint(canvasControlsLayer, {
       x: controlsBounds.x + controlsBounds.width / 2,
       y: controlsBounds.y + controlsBounds.height / 2,
     })
     keyDown('Space')
-    mouseMoveToPoint(
+    await mouseMoveToPoint(
       canvasControlsLayer,
       {
         x: controlsBounds.x + controlsBounds.width / 2 + 100,
