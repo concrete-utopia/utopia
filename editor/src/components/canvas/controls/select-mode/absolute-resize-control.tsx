@@ -377,11 +377,11 @@ const SizeLabel = React.memo(
           <div
             style={{
               marginTop: 8 / scale,
-              padding: 4 / scale,
-              borderRadius: 4 / scale,
+              padding: `0px ${2 / scale}px`,
+              borderRadius: 2 / scale,
               color: colorTheme.white.value,
               backgroundColor: colorTheme.secondaryBlue.value,
-              fontSize: 12 / scale,
+              fontSize: 11 / scale,
             }}
           >
             {`${label![0]} x ${label![1]}`}
