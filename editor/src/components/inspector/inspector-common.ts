@@ -558,7 +558,7 @@ export function addPositionAbsoluteTopLeft(
   ]
 }
 
-export function notFixedSizeOnEitherAxis(
+export function notFixedSizeOnBothAxes(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
 ): boolean {
@@ -577,7 +577,7 @@ export function toggleResizeToFitSetToFixed(
     return []
   }
 
-  return notFixedSizeOnEitherAxis(metadata, elementPaths)
+  return notFixedSizeOnBothAxes(metadata, elementPaths)
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
     : resizeToFitCommands(metadata, elementPaths)
 }

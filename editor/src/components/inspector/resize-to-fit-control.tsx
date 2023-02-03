@@ -5,14 +5,14 @@ import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
-import { notFixedSizeOnEitherAxis, toggleResizeToFitSetToFixed } from './inspector-common'
+import { notFixedSizeOnBothAxes, toggleResizeToFitSetToFixed } from './inspector-common'
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 
 const notFixedSizeOnEitherAxisSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
-  notFixedSizeOnEitherAxis,
+  notFixedSizeOnBothAxes,
 )
 
 interface ResizeToFitControlProps {}
