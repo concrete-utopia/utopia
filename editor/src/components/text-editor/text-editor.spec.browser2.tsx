@@ -22,7 +22,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText(' Utopia')
-    await closeTextEditor()
+    await expectSingleUndoStep(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -55,7 +55,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('Utopia')
-    await closeTextEditor()
+    await expectSingleUndoStep(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -120,7 +120,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('this is a <test> with bells & whistles')
-    await closeTextEditor()
+    await expectSingleUndoStep(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -430,6 +430,8 @@ describe('Use the text editor', () => {
 
         await wait(50) // give it time to adjust the caret position
 
+        typeText('l')
+
         await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
 
@@ -446,7 +448,7 @@ describe('Use the text editor', () => {
               data-testid='first-div'
               data-uid='first-div'
             >
-              Hello this
+              Helllo this
             </div>
             <div
               style={{ backgroundColor: 'red' }}

@@ -238,6 +238,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
+  const savedContentRef = React.useRef<string | null>(null)
+
   const scale = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.scale,
@@ -259,6 +261,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     }
 
     currentElement.focus()
+    savedContentRef.current = currentElement.textContent
 
     const elementCanvasFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
       elementPath,
@@ -272,10 +275,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          setTimeout(() => dispatch([deleteView(elementPath)]))
+          requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
         } else {
-          if (elementState != null) {
-            setTimeout(() => dispatch([updateChildText(elementPath, escapeHTML(content))]))
+          if (elementState != null && savedContentRef.current !== content) {
+            savedContentRef.current = content
+            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content)]))
           }
         }
       }
@@ -337,8 +341,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const onBlur = React.useCallback(() => {
-    dispatch([updateEditorMode(EditorModes.selectMode())])
-  }, [dispatch])
+    const content = myElement.current?.textContent
+    if (content != null && elementState != null && savedContentRef.current !== content) {
+      savedContentRef.current = content
+      dispatch([getSaveAction(elementPath, content), updateEditorMode(EditorModes.selectMode())])
+    } else {
+      dispatch([updateEditorMode(EditorModes.selectMode())])
+    }
+  }, [dispatch, elementPath, elementState])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -472,4 +482,8 @@ function filterEventHandlerProps(props: Record<string, any>) {
     ...filteredProps
   } = props
   return filteredProps
+}
+
+function getSaveAction(elementPath: ElementPath, content: string): EditorAction {
+  return updateChildText(elementPath, escapeHTML(content))
 }
