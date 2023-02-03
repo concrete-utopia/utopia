@@ -38,6 +38,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
+import { expectSingleUndoStep, expectUndoSteps } from '../../../utils/utils.test-utils'
 
 async function getControl(
   controlTestId: string,
@@ -2073,19 +2074,31 @@ describe('inspector tests with real metadata', () => {
       {
         name: 'without props',
         startSnippet: makeCodeSnippetWithKeyValue({}),
-        control: async (dom: any) => setControlValue('padding-V', '20', dom),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-V', '20', renderResult.renderedDOM)
+          })
+        },
         endSnippet: makeCodeSnippetWithKeyValue({ padding: '20px 0px' }),
       },
       {
         name: 'with shorthand',
         startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
-        control: async (dom: any) => setControlValue('padding-one', '20', dom),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
+        },
         endSnippet: makeCodeSnippetWithKeyValue({ padding: 20 }),
       },
       {
         name: 'with single value (2-values)',
         startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
-        control: async (dom: any) => setControlValue('padding-V', '20', dom),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectUndoSteps(renderResult, 2, async () => {
+            await setControlValue('padding-V', '20', renderResult.renderedDOM)
+          })
+        },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 10,
           paddingTop: 20,
@@ -2103,7 +2116,11 @@ describe('inspector tests with real metadata', () => {
             await renderResult.getDispatchFollowUpActionsFinished()
           })
         },
-        control: async (dom: any) => setControlValue('padding-one', '20', dom),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectUndoSteps(renderResult, 4, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
+        },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 20,
           paddingTop: 20,
@@ -2122,7 +2139,11 @@ describe('inspector tests with real metadata', () => {
             await renderResult.getDispatchFollowUpActionsFinished()
           })
         },
-        control: async (dom: any) => setControlValue('padding-one', '20', dom),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectUndoSteps(renderResult, 4, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
+        },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 20,
           paddingRight: 20,
@@ -2139,7 +2160,11 @@ describe('inspector tests with real metadata', () => {
             await renderResult.getDispatchFollowUpActionsFinished()
           })
         },
-        control: async (dom: any) => setControlValue('padding-H', '20', dom),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-H', '20', renderResult.renderedDOM)
+          })
+        },
         endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
       },
     ]
@@ -2161,7 +2186,7 @@ describe('inspector tests with real metadata', () => {
           await tt.before(renderResult)
           await renderResult.getDispatchFollowUpActionsFinished()
         }
-        await tt.control(renderResult.renderedDOM)
+        await tt.control(renderResult)
 
         await act(async () => {
           const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
