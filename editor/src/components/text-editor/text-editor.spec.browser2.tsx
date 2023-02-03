@@ -430,6 +430,8 @@ describe('Use the text editor', () => {
 
         await wait(50) // give it time to adjust the caret position
 
+        typeText('l')
+
         await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
 
@@ -446,7 +448,7 @@ describe('Use the text editor', () => {
               data-testid='first-div'
               data-uid='first-div'
             >
-              Hello this
+              Helllo this
             </div>
             <div
               style={{ backgroundColor: 'red' }}
