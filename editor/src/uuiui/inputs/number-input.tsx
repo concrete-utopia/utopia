@@ -808,7 +808,8 @@ interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 
   setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
-interface SimpleCSSNumberInputProps extends AbstractNumberInputProps<CSSNumber> {
+interface SimpleCSSNumberInputProps
+  extends Omit<AbstractNumberInputProps<CSSNumber>, 'numberType'> {
   onSubmitValue: OnSubmitValueOrEmpty<number>
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>
   onForcedSubmitValue: OnSubmitValueOrEmpty<number>
@@ -851,7 +852,6 @@ export const SimpleCSSNumberInput = React.memo(
     onSubmitValue,
     onTransientSubmitValue,
     onForcedSubmitValue,
-    numberType,
     ...sharedProps
   }: SimpleCSSNumberInputProps) => {
     const wrappedProps: NumberInputProps = {
