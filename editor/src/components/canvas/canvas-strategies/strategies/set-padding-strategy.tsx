@@ -10,7 +10,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CSSCursor, EdgePiece } from '../../canvas-types'
+import { CSSCursor, EdgePiece, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -30,6 +30,7 @@ import {
   offsetPaddingByEdge,
   paddingAdjustMode,
   PaddingAdjustMode,
+  paddingForEdgeSimplePadding,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
@@ -216,7 +217,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
 
       // Get child content size
-      // FIXME Filter absolute children
       const allChildPaths = MetadataUtils.getChildrenPaths(
         canvasState.startingMetadata,
         selectedElement,
@@ -236,29 +236,24 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
       const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
 
-      // const childrenBoundingFrame = MetadataUtils.getNonAbsoluteChildrenBoundingRectangle(
-      //   selectedElement,
-      //   canvasState.startingMetadata,
-      // )
-
-      // FIXME All dimensions, not just horizontal
       // FIXME include child offset
       // Check if child content size + padding exceeds parent size in that dimension
       const combinedPaddingInDimension =
-        (padding[paddingPropForEdge('left')]?.renderedValuePx ?? 0) +
-        (padding[paddingPropForEdge('right')]?.renderedValuePx ?? 0)
-      const combinedContentSize =
-        combinedPaddingInDimension + (childrenBoundingFrame?.width ?? 0) + delta
+        paddingForEdgeSimplePadding(edgePiece, padding) +
+        paddingForEdgeSimplePadding(oppositeEdgePiece(edgePiece), padding)
+      const dimensionKey = isHorizontalEdgePiece(edgePiece) ? 'width' : 'height'
+      const combinedContentSizeInDimension =
+        combinedPaddingInDimension + childrenBoundingFrame[dimensionKey] + delta
 
-      const newWidthDelta = combinedContentSize - targetFrame.width
-      if (newWidthDelta > 0) {
+      const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
+      if (sizeDelta > 0) {
         // FIXME Find the correct strategy to use for resizing
         basicCommands.push(
           adjustCssLengthProperty(
             'always',
             selectedElement,
-            stylePropPathMappingFn('width', styleStringInArray), // FIXME All dimensions, not just horizontal
-            roundTo(newWidthDelta, 0),
+            stylePropPathMappingFn(dimensionKey, styleStringInArray),
+            roundTo(sizeDelta, 0),
             undefined, // TODO Parent Bounds
             null, // TODO Parent Flex Direction
             'create-if-not-existing',

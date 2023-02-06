@@ -158,6 +158,13 @@ export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurem
   return padding[paddingPropForEdge(edgePiece)].renderedValuePx
 }
 
+export function paddingForEdgeSimplePadding(
+  edgePiece: EdgePiece,
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+): number {
+  return padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
+}
+
 export function offsetPaddingByEdge(
   prop: CSSPaddingKey,
   delta: number,
