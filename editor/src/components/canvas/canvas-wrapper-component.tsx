@@ -35,6 +35,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { FloatingScaleIndicator } from './controls/select-mode/floating-scale-indicator'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -142,7 +143,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           <CanvasStrategyPicker />
           <StrategyIndicator />
           <CanvasToolbar />
-
+          <FloatingScaleIndicator />
           {/* The error overlays are deliberately the last here so they hide other canvas UI */}
           {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
         </FlexColumn>
