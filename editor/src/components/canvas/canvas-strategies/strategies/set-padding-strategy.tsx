@@ -256,7 +256,9 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         const elementParentFlexDirection =
           elementMetadata?.specialSizeMeasurements.parentFlexDirection
 
-        // FIXME Find the correct strategy to use for resizing
+        // TODO We need a way to call the correct resizing strategy here, but they are all assuming
+        // the drag originates from a given edge, whereas we want to pass in the desired delta to a
+        // dimension and receive the required commands to resize the element
         basicCommands.push(
           adjustCssLengthProperty(
             'always',
@@ -265,7 +267,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             roundTo(sizeDelta, 0),
             parentDimensionPx,
             elementParentFlexDirection ?? null,
-            'create-if-not-existing',
+            'do-not-create-if-doesnt-exist',
           ),
         )
       }
