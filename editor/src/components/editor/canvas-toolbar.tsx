@@ -319,33 +319,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Scale</header>
-        <SquareButton
-          highlight
-          style={{ fontSize: 9, textAlign: 'center', width: 32 }}
-          onClick={zoom100pct}
-        >
-          {scale}x
-        </SquareButton>
-        <FlexRow>
-          <SquareButton
-            highlight
-            style={{ fontSize: 9, textAlign: 'center', width: 24 }}
-            onClick={zoomIn}
-          >
-            <LargerIcons.MagnifyingGlassMinus />
-          </SquareButton>
-          <SquareButton
-            highlight
-            style={{ fontSize: 9, textAlign: 'center', width: 24 }}
-            onClick={zoomOut}
-          >
-            <LargerIcons.MagnifyingGlassPlus />
-          </SquareButton>
-        </FlexRow>
-      </FlexColumn>
     </FlexColumn>
   )
 })
