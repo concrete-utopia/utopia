@@ -32,7 +32,7 @@ describe('shortcuts', () => {
         y: divBounds.y + 40,
       }
 
-      mouseClickAtPoint(canvasControlsLayer, divCorner)
+      await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
       expect(editor.getEditorState().editor.selectedViews.length).toEqual(1)
 
@@ -49,7 +49,7 @@ describe('shortcuts', () => {
         y: div2Bounds.y + 40,
       }
 
-      mouseClickAtPoint(canvasControlsLayer, div2Corner)
+      await mouseClickAtPoint(canvasControlsLayer, div2Corner)
 
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -71,9 +71,9 @@ describe('shortcuts', () => {
       y: divBounds.y + 40,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner)
+    await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
-    pressKey('x')
+    await pressKey('x')
 
     expect(div.style.position).toEqual('')
     expect(div.style.top).toEqual('')
@@ -133,7 +133,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('b', { modifiers: cmdModifier })
+    await pressKey('b', { modifiers: cmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -162,7 +162,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('b', { modifiers: cmdModifier })
+    await pressKey('b', { modifiers: cmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -191,7 +191,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('i', { modifiers: cmdModifier })
+    await pressKey('i', { modifiers: cmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -220,7 +220,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('i', { modifiers: cmdModifier })
+    await pressKey('i', { modifiers: cmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -249,7 +249,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('u', { modifiers: cmdModifier })
+    await pressKey('u', { modifiers: cmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -278,7 +278,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    pressKey('u', { modifiers: cmdModifier })
+    await pressKey('u', { modifiers: cmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -314,14 +314,14 @@ describe('global shortcuts to set properties', () => {
     await renderResult.dispatch(selectComponents([copyPropertiesFrom], false), true)
 
     // copy style properties first
-    pressKey('c', { modifiers: altCmdModifier })
+    await pressKey('c', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
     // paste style properties
-    pressKey('v', { modifiers: altCmdModifier })
+    await pressKey('v', { modifiers: altCmdModifier })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(

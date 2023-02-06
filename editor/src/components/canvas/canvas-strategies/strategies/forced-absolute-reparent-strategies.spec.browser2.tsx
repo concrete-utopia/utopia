@@ -325,7 +325,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
       dragDelta,
       cmdModifier,
       async function midDragCallback() {
-        pressKey('2') // this should select the Reparent (Abs) strategy
+        await pressKey('2') // this should select the Reparent (Abs) strategy
       },
     )
 

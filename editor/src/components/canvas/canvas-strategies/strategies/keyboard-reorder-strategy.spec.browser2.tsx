@@ -123,7 +123,7 @@ async function pressKeysRepeat(
   repeat: number,
 ) {
   for (var i = 1; i <= repeat; i++) {
-    pressKey(direction)
+    await pressKey(direction)
   }
   clock.current.tick(KeyboardInteractionTimeout)
   await renderResult.getDispatchFollowUpActionsFinished()

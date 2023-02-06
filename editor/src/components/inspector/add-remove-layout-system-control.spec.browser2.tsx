@@ -24,11 +24,17 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('')
 
-    await expectSingleUndoStep(editor, async () => pressKey('a', { modifiers: shiftModifier }))
+    await expectSingleUndoStep(
+      editor,
+      async () => await pressKey('a', { modifiers: shiftModifier }),
+    )
 
     expect(div.style.display).toEqual('flex')
 
-    await expectSingleUndoStep(editor, async () => pressKey('a', { modifiers: shiftModifier }))
+    await expectSingleUndoStep(
+      editor,
+      async () => await pressKey('a', { modifiers: shiftModifier }),
+    )
     expect(div.style.display).toEqual('')
   })
 
@@ -38,11 +44,11 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => await clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
 
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => await clickOn(editor))
 
     expect(div.style.display).toEqual('')
   })
@@ -53,7 +59,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => await clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
 
@@ -68,7 +74,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => await clickOn(editor))
 
     expect(div.style.display).toEqual('flex')
 
@@ -194,7 +200,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
 }
@@ -202,7 +208,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickOn(editor: EditorRenderResult) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
 function project({ width, height }: { width: string; height: string }): string {

@@ -19,7 +19,7 @@ describe('Text edit mode', () => {
   describe('Entering text edit mode', () => {
     it('Enters insert mode without selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('insert')
@@ -28,7 +28,7 @@ describe('Text edit mode', () => {
     it('Entering insert even if editable element is selected', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       await editor.getDispatchFollowUpActionsFinished()
@@ -81,7 +81,7 @@ describe('Text edit mode', () => {
     it('Entering text edit mode with pressing enter on a text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('enter')
+      await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -97,7 +97,7 @@ describe('Text edit mode', () => {
         'await-first-dom-report',
       )
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('enter')
+      await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -110,7 +110,7 @@ describe('Text edit mode', () => {
     it('Entering text edit mode with pressing enter on a text editable but empty selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithEmptyText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('enter')
+      await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -126,7 +126,7 @@ describe('Text edit mode', () => {
     it('Click to select text editable target', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-      pressKey('t')
+      await pressKey('t')
       await clickOnElement(editor, 'div')
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -142,7 +142,7 @@ describe('Text edit mode', () => {
         'await-first-dom-report',
       )
 
-      pressKey('t')
+      await pressKey('t')
       await clickOnElement(editor, 'div')
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')

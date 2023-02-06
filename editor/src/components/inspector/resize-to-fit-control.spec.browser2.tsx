@@ -13,7 +13,7 @@ describe('Resize to fit control', () => {
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
-    await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
+    await expectSingleUndoStep(editor, async () => await clickResizeToFit(editor))
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')
@@ -35,7 +35,7 @@ async function selectView(editor: EditorRenderResult): Promise<HTMLElement> {
     y: viewBounds.y + 40,
   }
 
-  mouseDoubleClickAtPoint(canvasControlsLayer, viewCorner)
+  await mouseDoubleClickAtPoint(canvasControlsLayer, viewCorner)
 
   return view
 }
@@ -43,7 +43,7 @@ async function selectView(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickResizeToFit(editor: EditorRenderResult) {
   const resizeToFitControl = editor.renderedDOM.getByTestId(ResizeToFitControlTestId)
 
-  mouseClickAtPoint(resizeToFitControl, { x: 2, y: 2 })
+  await mouseClickAtPoint(resizeToFitControl, { x: 2, y: 2 })
 }
 
 const project = `import * as React from 'react'

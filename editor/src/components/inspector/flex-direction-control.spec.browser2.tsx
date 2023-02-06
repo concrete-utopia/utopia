@@ -19,7 +19,7 @@ describe('set flex direction', () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const div = await selectDiv(editor)
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'row'))
+    await expectSingleUndoStep(editor, async () => await clickOn(editor, 'row'))
 
     expect(div.style.flexDirection).toEqual('row')
 
@@ -35,7 +35,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('row')
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, async () => await clickOn(editor, 'column'))
 
     expect(div.style.flexDirection).toEqual('column')
   })
@@ -47,7 +47,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    await expectSingleUndoStep(editor, () => rightClickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, async () => await rightClickOn(editor, 'column'))
 
     expect(div.style.flexDirection).toEqual('')
   })
