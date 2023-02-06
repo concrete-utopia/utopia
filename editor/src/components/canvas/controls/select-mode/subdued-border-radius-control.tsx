@@ -11,7 +11,8 @@ interface SubduedBorderRadiusControlProps {
   targets: Array<ElementPath>
 }
 
-export const SubduedBorderRadiusControlTestId = 'SubduedBorderRadiusControl'
+export const SubduedBorderRadiusControlTestId = (state: 'hovered' | 'focused'): string =>
+  `SubduedBorderRadiusControl-${state}`
 
 export const SubduedBorderRadiusControl = React.memo<SubduedBorderRadiusControlProps>((props) => {
   const { hoveredOrFocused, targets } = props
@@ -45,7 +46,7 @@ export const SubduedBorderRadiusControl = React.memo<SubduedBorderRadiusControlP
           position: 'absolute',
           border: `1px ${solidOrDashed} blue`,
         }}
-        data-testid={SubduedBorderRadiusControlTestId}
+        data-testid={SubduedBorderRadiusControlTestId(hoveredOrFocused)}
       />
     </CanvasOffsetWrapper>
   )
