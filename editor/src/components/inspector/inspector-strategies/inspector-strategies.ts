@@ -17,13 +17,11 @@ import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-s
 import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
-import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../../canvas/commands/set-css-length-command'
 import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
+import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
+import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {
@@ -102,6 +100,7 @@ export const removeFlexDirectionStrategies = (): Array<InspectorStrategy> => [
 export const updateFlexDirectionStrategies = (
   flexDirection: FlexDirection,
 ): Array<InspectorStrategy> => [
+  setFlexDirectionSwapAxes(flexDirection),
   {
     name: 'Set flex direction',
     strategy: (metadata, elementPaths) => {
@@ -159,30 +158,7 @@ export const setPropFixedStrategies = (
   whenToRun: WhenToRun,
   axis: Axis,
   value: CSSNumber,
-): Array<InspectorStrategy> => [
-  {
-    name: 'Set to Fixed',
-    strategy: (metadata, elementPaths) => {
-      if (elementPaths.length === 0) {
-        return null
-      }
-
-      return elementPaths.map((path) => {
-        const parentFlexDirection =
-          MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
-            .parentFlexDirection ?? null
-
-        return setCssLengthProperty(
-          whenToRun,
-          path,
-          PP.create('style', widthHeightFromAxis(axis)),
-          setExplicitCssValue(value),
-          parentFlexDirection,
-        )
-      })
-    },
-  },
-]
+): Array<InspectorStrategy> => [fixedSizeBasicStrategy(whenToRun, axis, value)]
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   hugContentsBasicStrategy(axis),
