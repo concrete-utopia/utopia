@@ -154,7 +154,7 @@ function guessPadding(
   const paddingLeft = firstChild.frame.x - parentRect.x
   const paddingRight =
     parentRect.x + parentRect.width - (lastChild?.frame.x + lastChild?.frame.width)
-  const horizontalPadding = Math.min(paddingLeft, paddingRight)
+  const horizontalPadding = Math.max(0, Math.min(paddingLeft, paddingRight))
   const paddingTop = firstChild.frame.y - parentRect.y
   const paddingBottom =
     parentRect.y + parentRect.height - (lastChild?.frame.y + lastChild?.frame.height)

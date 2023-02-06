@@ -87,7 +87,7 @@ export function measurementBasedOnOtherMeasurement(
 const FontSize = 11
 const PaddingV = 0
 const PaddingH = 2
-
+const ExplicitHeightHacked = 20
 const BorderRadius = 2
 
 interface CanvasLabelProps {
@@ -106,6 +106,8 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
   return (
     <div
       style={{
+        display: 'flex',
+        alignItems: 'center',
         fontSize: fontSize,
         paddingLeft: paddingH,
         paddingRight: paddingH,
@@ -114,6 +116,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         backgroundColor: color,
         color: textColor,
         borderRadius: borderRadius,
+        height: ExplicitHeightHacked / scale,
       }}
     >
       {value}
