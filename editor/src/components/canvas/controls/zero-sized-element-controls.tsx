@@ -21,12 +21,14 @@ import {
   CanvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
+  windowPoint,
+  point,
 } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -35,6 +37,10 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { EditorModes } from '../../editor/editor-modes'
 import * as EditorActions from '../../editor/actions/action-creators'
+import CanvasActions from '../canvas-actions'
+import { Modifier } from '../../../utils/modifiers'
+import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
+import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/interaction-state'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 interface ZeroSizedElementControlProps {
@@ -136,13 +142,8 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
   const colorTheme = useColorTheme()
   const { dispatch, element, canvasOffset, scale } = props
   const controlSize = 1 / scale
-  const onControlMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.stopPropagation()
-      dispatch(selectComponents([element.elementPath], false), 'everyone')
-    },
-    [dispatch, element.elementPath],
-  )
+
+  const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
   const onControlMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -311,6 +312,8 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
     event.stopPropagation()
   }, [])
 
+  const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
+
   const onControlMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.stopPropagation()
@@ -389,7 +392,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
     <CanvasOffsetWrapper>
       <div
         onMouseMove={onControlMouseMove}
-        onMouseDown={onControlStopPropagation}
+        onMouseDown={onControlMouseDown}
         onMouseUp={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
@@ -405,3 +408,42 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
     </CanvasOffsetWrapper>
   )
 })
+
+function useZeroSizeStartDrag(
+  target: ElementPath,
+): (event: React.MouseEvent<HTMLDivElement>) => void {
+  const dispatch = useDispatch()
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+  const selectedElements = useRefEditorState((store) => store.editor.selectedViews)
+
+  return React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+
+      const start = windowToCanvasCoordinates(
+        windowPoint(point(event.clientX, event.clientY)),
+      ).canvasPositionRounded
+
+      const isSelected = selectedElements.current.some((selectedElement) =>
+        EP.pathsEqual(selectedElement, target),
+      )
+      const optionalSelectActions = isSelected ? [] : selectComponents([target], false)
+
+      dispatch(
+        [
+          ...optionalSelectActions,
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start,
+              Modifier.modifiersForEvent(event),
+              boundingArea(),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ],
+        'everyone',
+      )
+    },
+    [dispatch, target, windowToCanvasCoordinates, selectedElements],
+  )
+}
