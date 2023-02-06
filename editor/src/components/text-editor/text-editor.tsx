@@ -333,6 +333,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       if (event.key === 'Escape') {
         // eslint-disable-next-line no-unused-expressions
         myElement.current?.blur()
+        dispatch([updateEditorMode(EditorModes.selectMode())])
       }
 
       event.stopPropagation()
@@ -344,9 +345,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([getSaveAction(elementPath, content), updateEditorMode(EditorModes.selectMode())])
+      dispatch([
+        getSaveAction(elementPath, content),
+        updateEditorMode(EditorModes.textEditMode(null, null, 'existing', 'no-text-selection')),
+      ])
     } else {
-      dispatch([updateEditorMode(EditorModes.selectMode())])
+      dispatch([
+        updateEditorMode(EditorModes.textEditMode(null, null, 'existing', 'no-text-selection')),
+      ])
     }
   }, [dispatch, elementPath, elementState])
 
@@ -355,7 +361,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     HTMLSpanElement
   > = {
     ref: myElement,
-    id: TextEditorSpanId,
     style: {
       // Ensure that font and text settings are inherited from
       // the containing element:
@@ -394,7 +399,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
 
-  return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
+  return React.createElement(
+    component,
+    filteredPassthroughProps,
+    <span {...editorProps} className={TextEditorSpanId} />,
+  )
 })
 
 async function setSelectionToOffset(
