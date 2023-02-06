@@ -24,6 +24,11 @@ import {
 import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
+import {
+  MinMaxDimension,
+  setMinMaxDimensionBasicStrategy,
+  unsetMinMaxDimensionBasicStrategy,
+} from './set-min-dimension-strategies'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {
@@ -193,3 +198,12 @@ export const setSpacingModeSpaceBetweenStrategies: Array<InspectorStrategy> = [
 ]
 
 export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpacingModePacked]
+
+export const setMinMaxDimensionStrategies = (
+  dimension: MinMaxDimension,
+  value: CSSNumber,
+): Array<InspectorStrategy> => [setMinMaxDimensionBasicStrategy(dimension, value)]
+
+export const unsetMinMaxDimensionStrategies = (
+  dimension: MinMaxDimension,
+): Array<InspectorStrategy> => [unsetMinMaxDimensionBasicStrategy(dimension)]

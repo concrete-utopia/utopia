@@ -1,5 +1,6 @@
 import React from 'react'
-import { FlexRow, InspectorSectionIcons, InspectorSubsectionHeader } from '../../uuiui'
+import { FlexColumn, FlexRow, InspectorSectionIcons, InspectorSubsectionHeader } from '../../uuiui'
+import { AdvancedControl } from './advanced-control'
 import { FillHugFixedControl } from './fill-hug-fixed-control'
 import { ResizeToFitControl } from './resize-to-fit-control'
 
@@ -20,9 +21,10 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
-      <FlexRow style={{ padding: 4, justifyContent: 'flex-end' }}>
+      <FlexColumn style={{ padding: 4, gap: 16 }}>
         <FillHugFixedControl />
-      </FlexRow>
+        <AdvancedControl />
+      </FlexColumn>
     </>
   )
 })
