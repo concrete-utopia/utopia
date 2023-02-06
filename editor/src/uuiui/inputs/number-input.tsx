@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { Interpolation, jsx } from '@emotion/react'
 import classNames from 'classnames'
-import React from 'react'
+import React, { MouseEventHandler } from 'react'
 import {
   cssNumber,
   CSSNumber,
@@ -143,6 +143,8 @@ export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
   onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
   onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
   setGlobalCursor?: (cursor: CSSCursor | null) => void
+  onMouseEnter?: MouseEventHandler
+  onMouseLeave?: MouseEventHandler
 }
 
 const ScrubThreshold = 3
@@ -172,6 +174,8 @@ export const NumberInput = React.memo<NumberInputProps>(
     numberType,
     defaultUnitToHide,
     setGlobalCursor,
+    onMouseEnter,
+    onMouseLeave,
   }) => {
     const nonNullPropsValue: CSSNumber = propsValue ?? cssNumber(0)
     const ref = React.useRef<HTMLInputElement>(null)
@@ -604,7 +608,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         : undefined
 
     return (
-      <div style={style}>
+      <div style={style} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
         <div
           className='number-input-container'
           css={{

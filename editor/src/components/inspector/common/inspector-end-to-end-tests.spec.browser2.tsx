@@ -39,6 +39,7 @@ import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
 import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { getSubduedPaddingControlTestID } from '../../canvas/controls/select-mode/subdued-padding-control'
 
 async function getControl(
   controlTestId: string,
@@ -2193,6 +2194,133 @@ describe('inspector tests with real metadata', () => {
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(tt.endSnippet),
         )
+      })
+    })
+  })
+
+  describe('canvas padding controls from the inspector', () => {
+    function makeCodeSnippetWithKeyValue(props: { [key: string]: any }): string {
+      const propsStr = Object.keys(props)
+        .map((k) => `${k}: ${JSON.stringify(props[k])},`)
+        .join('\n')
+      return `
+        <div
+          data-uid='aaa'
+        >
+          <div
+            style={{ ${propsStr} }}
+            data-uid='bbb'
+          >test</div>
+        </div>
+    `
+    }
+
+    const tests = [
+      {
+        name: 'single value shows controls on all sides',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px' }),
+        controlTestID: 'padding-one',
+        hoveredCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'hovered'),
+          getSubduedPaddingControlTestID('right', 'hovered'),
+          getSubduedPaddingControlTestID('bottom', 'hovered'),
+          getSubduedPaddingControlTestID('left', 'hovered'),
+        ],
+        focusedCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'focused'),
+          getSubduedPaddingControlTestID('right', 'focused'),
+          getSubduedPaddingControlTestID('bottom', 'focused'),
+          getSubduedPaddingControlTestID('left', 'focused'),
+        ],
+      },
+      {
+        name: 'per-direction H value shows controls on horizontal sides',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px' }),
+        controlTestID: 'padding-H',
+        hoveredCanvasControls: [
+          getSubduedPaddingControlTestID('right', 'hovered'),
+          getSubduedPaddingControlTestID('left', 'hovered'),
+        ],
+        focusedCanvasControls: [
+          getSubduedPaddingControlTestID('right', 'focused'),
+          getSubduedPaddingControlTestID('left', 'focused'),
+        ],
+      },
+      {
+        name: 'per-direction V value shows controls on vertical sides',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px' }),
+        controlTestID: 'padding-V',
+        hoveredCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'hovered'),
+          getSubduedPaddingControlTestID('bottom', 'hovered'),
+        ],
+        focusedCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'focused'),
+          getSubduedPaddingControlTestID('bottom', 'focused'),
+        ],
+      },
+      {
+        name: 'per-side T value shows controls on top side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-T',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('top', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('top', 'focused')],
+      },
+      {
+        name: 'per-side R value shows controls on right side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-R',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('right', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('right', 'focused')],
+      },
+      {
+        name: 'per-side B value shows controls on bottom side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-B',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('bottom', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('bottom', 'focused')],
+      },
+      {
+        name: 'per-side L value shows controls on left side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-L',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('left', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('left', 'focused')],
+      },
+    ]
+
+    tests.forEach((t) => {
+      it(`${t.name} when hovering and focusing`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(t.startSnippet),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await act(async () => {
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        })
+
+        const control = await getControl(t.controlTestID, renderResult.renderedDOM)
+
+        // Check the controls show when hovering
+        fireEvent.mouseEnter(control)
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const hoveredControls = t.hoveredCanvasControls.flatMap((expectedControl) =>
+          renderResult.renderedDOM.queryAllByTestId(expectedControl),
+        )
+        expect(hoveredControls.length).toEqual(t.hoveredCanvasControls.length)
+
+        // Check the controls show when focusing
+        fireEvent.focus(control)
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const focusedControls = t.focusedCanvasControls.flatMap((expectedControl) =>
+          renderResult.renderedDOM.queryAllByTestId(expectedControl),
+        )
+        expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
       })
     })
   })
