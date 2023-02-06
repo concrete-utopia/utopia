@@ -1661,21 +1661,42 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     }
 
     const spyElem = fromSpy[pathStr]
-    const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
-    const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
-    const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
-      childrenFromDom.every(
-        (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
-      ),
+
+    const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        spyElem.elementPath,
+        fromSpy,
+      )
+    const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
+
+    const { children: childrenFromDom, unfurledComponents: unfurledComponentsFromDom } =
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        spyElem.elementPath,
+        fromDOM,
+      )
+    const childrenAndUnfurledComponentsFromDom = [...childrenFromDom, ...unfurledComponentsFromDom]
+
+    const childrenAndUnfurledComponentsNotInDom = childrenAndUnfurledComponentsFromSpy.filter(
+      (childNotInDom) =>
+        childrenAndUnfurledComponentsFromDom.every(
+          (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
+        ),
     )
-    const recursiveChildren = childrenNotInDom.flatMap((c) => {
-      return findChildrenInDomRecursively(EP.toString(c.elementPath))
-    })
-    const children = [...childrenFromDom, ...recursiveChildren]
 
-    childrenInDomCache[pathStr] = children
+    const recursiveChildrenAndUnfurledComponents = childrenAndUnfurledComponentsNotInDom.flatMap(
+      (c) => {
+        return findChildrenInDomRecursively(EP.toString(c.elementPath))
+      },
+    )
 
-    return children
+    const childrenAndUnfurledComponents = [
+      ...childrenAndUnfurledComponentsFromDom,
+      ...recursiveChildrenAndUnfurledComponents,
+    ]
+
+    childrenInDomCache[pathStr] = childrenAndUnfurledComponents
+
+    return childrenAndUnfurledComponents
   }
 
   const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
