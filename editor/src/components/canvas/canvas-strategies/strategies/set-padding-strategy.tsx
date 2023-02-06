@@ -51,6 +51,8 @@ import {
   canvasVector,
   CanvasVector,
   isInfinityRectangle,
+  roundTo,
+  zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import {
   AdjustPrecision,
@@ -67,6 +69,7 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { Axis, detectFillHugFixedState } from '../../../inspector/inspector-common'
+import { adjustCssLengthProperty } from '../../commands/adjust-css-length-command'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -205,6 +208,63 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
         },
       )
+
+      // Get size of parent
+      const targetFrame = MetadataUtils.getFrameOrZeroRect(
+        selectedElement,
+        canvasState.startingMetadata,
+      )
+
+      // Get child content size
+      // FIXME Filter absolute children
+      const allChildPaths = MetadataUtils.getChildrenPaths(
+        canvasState.startingMetadata,
+        selectedElement,
+      )
+
+      const fixedSizeChildrenPaths = allChildPaths.filter(
+        (childPath) =>
+          detectFillHugFixedState('horizontal', canvasState.startingMetadata, childPath)?.type ===
+          'fixed',
+      )
+      const fixedSizeNonAbsoluteChildrenPaths = fixedSizeChildrenPaths.filter((childPath) =>
+        MetadataUtils.targetParticipatesInAutoLayout(canvasState.startingMetadata, childPath),
+      )
+      const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
+        fixedSizeNonAbsoluteChildrenPaths,
+        canvasState.startingMetadata,
+      )
+      const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
+
+      // const childrenBoundingFrame = MetadataUtils.getNonAbsoluteChildrenBoundingRectangle(
+      //   selectedElement,
+      //   canvasState.startingMetadata,
+      // )
+
+      // FIXME All dimensions, not just horizontal
+      // FIXME include child offset
+      // Check if child content size + padding exceeds parent size in that dimension
+      const combinedPaddingInDimension =
+        (padding[paddingPropForEdge('left')]?.renderedValuePx ?? 0) +
+        (padding[paddingPropForEdge('right')]?.renderedValuePx ?? 0)
+      const combinedContentSize =
+        combinedPaddingInDimension + (childrenBoundingFrame?.width ?? 0) + delta
+
+      const newWidthDelta = combinedContentSize - targetFrame.width
+      if (newWidthDelta > 0) {
+        // FIXME Find the correct strategy to use for resizing
+        basicCommands.push(
+          adjustCssLengthProperty(
+            'always',
+            selectedElement,
+            stylePropPathMappingFn('width', styleStringInArray), // FIXME All dimensions, not just horizontal
+            roundTo(newWidthDelta, 0),
+            undefined, // TODO Parent Bounds
+            null, // TODO Parent Flex Direction
+            'create-if-not-existing',
+          ),
+        )
+      }
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
