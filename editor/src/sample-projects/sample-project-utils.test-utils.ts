@@ -15,6 +15,7 @@ import {
   ParseFailure,
   isParseFailure,
   isUnparsed,
+  ParseSuccess,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
@@ -64,14 +65,8 @@ export function parseProjectContents(
   })
 }
 
-export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
-  const baseModel = complexDefaultProject()
-  const parsedFile = lintAndParse(
-    StoryboardFilePath,
-    appUiJsFile,
-    null,
-    emptySet(),
-  ) as ParsedTextFile
+export function getParseSuccessForStoryboardCode(appUiJsFile: string): ParseSuccess {
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null, emptySet())
 
   if (isParseFailure(parsedFile)) {
     const failure =
@@ -80,6 +75,12 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
   } else if (isUnparsed(parsedFile)) {
     throw new Error(`createTestProjectWithCode: Unexpected unparsed file.`)
   }
+  return parsedFile
+}
+
+export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
+  const baseModel = complexDefaultProject()
+  const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(appUiJsFile)
 
   return {
     ...baseModel,

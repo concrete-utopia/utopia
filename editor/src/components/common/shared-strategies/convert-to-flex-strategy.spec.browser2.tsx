@@ -14,8 +14,14 @@ import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-la
 import { FlexDirection } from '../../inspector/common/css-utils'
 import { FlexAlignment, FlexJustifyContent, MaxContent } from '../../inspector/inspector-common'
 
-type LTWH = [left: number, top: number, width: number | string, height: number | string]
-type Size = [width: number, height: number]
+type LTWH = [
+  left: number,
+  top: number,
+  width: number | string,
+  height: number | string,
+  uid?: string,
+]
+type Size = [width: number, height: number, uid?: string]
 type FlexProps = {
   left: number
   top: number
@@ -380,6 +386,50 @@ describe('Smart Convert To Flex', () => {
   })
 })
 
+describe('Smart Convert to Flex Reordering Children if Needed', () => {
+  let originalFSValue: boolean = false
+  before(() => {
+    originalFSValue = isFeatureEnabled('Nine block control')
+    setFeatureEnabled('Nine block control', true)
+  })
+
+  after(() => {
+    setFeatureEnabled('Nine block control', originalFSValue)
+  })
+
+  it('converts a horizontal layout with children out of order', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [130, 0, 50, 50, 'c'],
+        [65, 0, 50, 50, 'b'],
+        [0, 0, 50, 50, 'a'],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 50, 'a'],
+          [50, 50, 'b'],
+          [50, 50, 'c'],
+        ],
+      }),
+    )
+  })
+})
+
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
   const [parentL, parentT, parentW, parentH] = input.parent
   return renderTestEditorWithCode(
@@ -391,9 +441,10 @@ function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
       >
         ${input.children
           .map((child, i) => {
-            const [childL, childT, childW, childH] = child
+            const [childL, childT, childW, childH, maybeUid] = child
+            const uid = `child-${maybeUid ?? i}`
             return `<div 
-                data-uid='child-${i}' 
+                data-uid='${uid}' 
                 style={{ 
                   backgroundColor: '#aaaaaa33', 
                   position: 'absolute', 
@@ -426,9 +477,10 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
     >
       ${input.children
         .map((child, i) => {
-          const [childW, childH] = child
+          const [childW, childH, maybeUid] = child
+          const uid = `child-${maybeUid ?? i}`
           return `<div 
-                  data-uid='child-${i}'
+                  data-uid='${uid}'
                   style={{ 
                     backgroundColor: '#aaaaaa33',
                     width: ${JSON.stringify(childW)}, 

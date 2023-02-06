@@ -1,5 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
+import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -7,6 +8,7 @@ import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
+import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import {
   childIs100PercentSizedInEitherDirection,
@@ -39,6 +41,7 @@ export function convertLayoutToFlexCommands(
       path,
       childrenPaths,
     )
+    const sortedChildrenPaths = sortedChildren.map((c) => EP.dynamicPathToStaticPath(c.target))
 
     const [childWidth100Percent, childHeight100Percent] = childIs100PercentSizedInEitherDirection(
       metadata,
@@ -74,6 +77,7 @@ export function convertLayoutToFlexCommands(
         ...nukeAllAbsolutePositioningPropsCommands(child),
         ...sizeToVisualDimensions(metadata, child),
       ]),
+      rearrangeChildren('always', path, sortedChildrenPaths),
     ]
   })
 }
