@@ -1,6 +1,5 @@
 import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { elementPath } from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
@@ -8,11 +7,10 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import { FlexDirection } from '../common/css-utils'
 import {
   detectFillHugFixedState,
-  detectFlexDirection,
   detectFlexDirectionOne,
   nullOrNonEmpty,
 } from '../inspector-common'
-import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
+import { fillContainerStrategyFlexParent } from './fill-container-basic-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 
@@ -41,12 +39,13 @@ function setFlexDirectionSwapAxesSingleElement(
       verticalSizing?.type === 'fixed'
     ) {
       return [
-        ...(fillContainerStrategyBasic('vertical', 'default', false).strategy(metadata, [child]) ??
-          []),
         ...(fixedSizeBasicStrategy('always', 'horizontal', verticalSizing.value).strategy(
           metadata,
           [child],
         ) ?? []),
+        ...(fillContainerStrategyFlexParent('vertical', 'default', {
+          forceFlexDirectionForParent: direction,
+        }).strategy(metadata, [child]) ?? []),
       ]
     }
 
@@ -57,13 +56,13 @@ function setFlexDirectionSwapAxesSingleElement(
       horizontalSizing?.type === 'fixed'
     ) {
       return [
-        ...(fillContainerStrategyBasic('horizontal', 'default', false).strategy(metadata, [
-          child,
-        ]) ?? []),
         ...(fixedSizeBasicStrategy('always', 'vertical', horizontalSizing.value).strategy(
           metadata,
           [child],
         ) ?? []),
+        ...(fillContainerStrategyFlexParent('horizontal', 'default', {
+          forceFlexDirectionForParent: direction,
+        }).strategy(metadata, [child]) ?? []),
       ]
     }
 

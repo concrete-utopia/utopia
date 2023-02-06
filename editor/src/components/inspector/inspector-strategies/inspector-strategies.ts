@@ -8,7 +8,6 @@ import {
   FlexJustifyContent,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
-  widthHeightFromAxis,
 } from '../inspector-common'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
@@ -17,7 +16,10 @@ import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-s
 import { InspectorStrategy } from './inspector-strategy'
 import { WhenToRun } from '../../../components/canvas/commands/commands'
 import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
-import { fillContainerStrategyBasic } from './fill-container-basic-strategy'
+import {
+  fillContainerStrategyFlexParent,
+  fillContainerStrategyFlow,
+} from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
@@ -152,7 +154,10 @@ export const setPropFillStrategies = (
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
-): Array<InspectorStrategy> => [fillContainerStrategyBasic(axis, value, otherAxisSetToFill)]
+): Array<InspectorStrategy> => [
+  fillContainerStrategyFlexParent(axis, value),
+  fillContainerStrategyFlow(axis, value, otherAxisSetToFill),
+]
 
 export const setPropFixedStrategies = (
   whenToRun: WhenToRun,
