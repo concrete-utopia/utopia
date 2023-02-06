@@ -247,6 +247,15 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
       if (sizeDelta > 0) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(
+          canvasState.startingMetadata,
+          selectedElement,
+        )
+        const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
+        const parentDimensionPx = elementParentBounds?.[dimensionKey]
+        const elementParentFlexDirection =
+          elementMetadata?.specialSizeMeasurements.parentFlexDirection
+
         // FIXME Find the correct strategy to use for resizing
         basicCommands.push(
           adjustCssLengthProperty(
@@ -254,8 +263,8 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             selectedElement,
             stylePropPathMappingFn(dimensionKey, styleStringInArray),
             roundTo(sizeDelta, 0),
-            undefined, // TODO Parent Bounds
-            null, // TODO Parent Flex Direction
+            parentDimensionPx,
+            elementParentFlexDirection ?? null,
             'create-if-not-existing',
           ),
         )
