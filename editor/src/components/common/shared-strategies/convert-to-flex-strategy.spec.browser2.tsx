@@ -384,6 +384,45 @@ describe('Smart Convert To Flex', () => {
   `),
     )
   })
+
+  it('single overflowing child does not make negative padding', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 100, 100],
+      children: [[0, 0, 150, 50]],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        data-uid='parent'
+      >
+        <div 
+          data-uid='child-0'
+          style={{
+            backgroundColor: '#aaaaaa33', 
+            width: 150, 
+            height: 50, 
+            contain: 'layout',
+          }} 
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
 })
 
 describe('Smart Convert to Flex Reordering Children if Needed', () => {
