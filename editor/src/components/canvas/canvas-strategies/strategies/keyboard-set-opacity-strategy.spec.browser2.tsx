@@ -9,8 +9,8 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('a')
-      pressKey('b')
+      await pressKey('a')
+      await pressKey('b')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('') // nothing happens
@@ -21,8 +21,8 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('u')
-      pressKey('4')
+      await pressKey('u')
+      await pressKey('4')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('0.4')
@@ -33,8 +33,8 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('4')
-      pressKey('u')
+      await pressKey('4')
+      await pressKey('u')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('0.4')
@@ -45,8 +45,8 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('3')
-      pressKey('4')
+      await pressKey('3')
+      await pressKey('4')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('0.34')
@@ -57,8 +57,8 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('3')
-      pressKey('0')
+      await pressKey('3')
+      await pressKey('0')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('0.3')
@@ -69,8 +69,8 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('0')
-      pressKey('0')
+      await pressKey('0')
+      await pressKey('0')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('0')
@@ -81,9 +81,9 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('1')
-      pressKey('0')
-      pressKey('0')
+      await pressKey('1')
+      await pressKey('0')
+      await pressKey('0')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('1')
@@ -94,9 +94,9 @@ describe('adjust opacity with the keyboard', () => {
 
       const div = editor.renderedDOM.getByTestId('div')
       await doSelect(editor)
-      pressKey('4')
-      pressKey('2')
-      pressKey('0')
+      await pressKey('4')
+      await pressKey('2')
+      await pressKey('0')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.opacity).toEqual('0.2')

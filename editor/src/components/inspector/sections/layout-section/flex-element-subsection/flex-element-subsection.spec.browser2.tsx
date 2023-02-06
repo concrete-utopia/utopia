@@ -175,8 +175,8 @@ async function changeDimensionValue(
     y: divBounds.y + 40,
   }
 
-  act(() => {
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  await act(async () => {
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
   })
 
   // Modify the value.
@@ -189,8 +189,8 @@ async function changeDimensionValue(
     y: dimensionInputBounds.y + dimensionInputBounds.height / 2,
   }
 
-  act(() => {
-    mouseClickAtPoint(dimensionInput, dimensionInputCenter, {})
+  await act(async () => {
+    await mouseClickAtPoint(dimensionInput, dimensionInputCenter, {})
   })
 
   act(() => {
