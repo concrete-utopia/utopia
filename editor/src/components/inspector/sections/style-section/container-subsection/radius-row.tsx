@@ -2,9 +2,12 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
+import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import { foldEither, isRight, right } from '../../../../../core/shared/either'
 import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
+import { SubduedBorderRadiusControl } from '../../../../canvas/controls/select-mode/subdued-border-radius-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import {
   CSSBorderRadius,
   CSSBorderRadiusIndividual,
@@ -137,6 +140,12 @@ export const BorderRadiusControl = React.memo(() => {
 
   const shorthand = useInspectorLayoutInfo('borderRadius')
 
+  const selectedViews = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.selectedViews,
+    'BorderRadiusControl selectedViews',
+  )
+
   const updateShorthand = React.useCallback(
     (sides: Sides, transient?: boolean) => {
       const { top: tl, bottom: br, left: bl, right: tr } = sides
@@ -247,6 +256,31 @@ export const BorderRadiusControl = React.memo(() => {
     return update
   }, [borderRadius])
 
+  const canvasControlsForSides = React.useMemo(() => {
+    return mapArrayToDictionary(
+      ['top', 'right', 'bottom', 'left'],
+      (k) => k,
+      (side) => ({
+        onHover: {
+          control: SubduedBorderRadiusControl,
+          props: {
+            hoveredOrFocused: 'hovered',
+            targets: selectedViews,
+          },
+          key: `subdued-padding-control-hovered-${side}`,
+        },
+        onFocus: {
+          control: SubduedBorderRadiusControl,
+          props: {
+            hoveredOrFocused: 'focused',
+            targets: selectedViews,
+          },
+          key: `subdued-padding-control-focused-${side}`,
+        },
+      }),
+    )
+  }, [selectedViews])
+
   return (
     <SplitChainedNumberInput
       labels={{
@@ -290,6 +324,7 @@ export const BorderRadiusControl = React.memo(() => {
       }}
       shorthand={shorthand}
       updateShorthand={updateShorthand}
+      canvasControls={canvasControlsForSides}
     />
   )
 })
