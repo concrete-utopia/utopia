@@ -1,17 +1,15 @@
 import * as React from 'react'
-import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import {
   colorTheme,
   FlexColumn,
   FlexRow,
   Icn,
-  IcnSpacer,
+  LargerIcons,
   SquareButton,
   Tooltip as TooltipWithoutSpanFixme,
   TooltipProps,
   useColorTheme,
   UtopiaStyles,
-  UtopiaTheme,
 } from '../../uuiui'
 import { Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
@@ -34,7 +32,7 @@ import {
   useEnterTextEditMode,
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
-import { FloatingInsertMenuState, NavigatorWidthAtom, RightMenuTab } from './store/editor-state'
+import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 
@@ -52,6 +50,14 @@ export const CanvasToolbar = React.memo(() => {
   const insertSpanCallback = useEnterTextEditMode()
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
+
+  const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
+
+  const scale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'CanvasToolbar scale',
+  )
 
   const insertMenuMode = useEditorState(
     Substores.restOfEditor,
@@ -311,6 +317,33 @@ export const CanvasToolbar = React.memo(() => {
               onClick={toggleCodeEditorVisible}
             />
           </Tooltip>
+        </FlexRow>
+      </FlexColumn>
+      {/* ------------------------------------ */}
+      <FlexColumn style={{ padding: 4 }}>
+        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Scale</header>
+        <SquareButton
+          highlight
+          style={{ fontSize: 9, textAlign: 'center', width: 32 }}
+          onClick={zoom100pct}
+        >
+          {scale}x
+        </SquareButton>
+        <FlexRow>
+          <SquareButton
+            highlight
+            style={{ fontSize: 9, textAlign: 'center', width: 24 }}
+            onClick={zoomIn}
+          >
+            <LargerIcons.MagnifyingGlassMinus />
+          </SquareButton>
+          <SquareButton
+            highlight
+            style={{ fontSize: 9, textAlign: 'center', width: 24 }}
+            onClick={zoomOut}
+          >
+            <LargerIcons.MagnifyingGlassPlus />
+          </SquareButton>
         </FlexRow>
       </FlexColumn>
     </FlexColumn>
