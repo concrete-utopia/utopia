@@ -314,7 +314,7 @@ describe('Use the text editor', () => {
 
         const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-        pressKey('t')
+        await pressKey('t')
         await editor.getDispatchFollowUpActionsFinished()
         await mouseDragFromPointToPoint(canvasControlsLayer, { x: 500, y: 200 }, { x: 600, y: 300 })
 

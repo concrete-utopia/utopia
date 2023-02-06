@@ -73,7 +73,7 @@ async function dragFromInsertMenuDivButtonToPoint(
   await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
   const dragOutlineControl = renderResult.renderedDOM.getByTestId(DragOutlineControlTestId)
   expect(dragOutlineControl).not.toBeNull()
-  finishDraggingToPoint(targetPoint, modifiers, renderResult)
+  await finishDraggingToPoint(targetPoint, modifiers, renderResult)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }

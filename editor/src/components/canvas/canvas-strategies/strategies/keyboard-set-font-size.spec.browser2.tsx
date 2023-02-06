@@ -181,11 +181,11 @@ async function doTestWithDelta(
   delta: { decreaseBy: number; increaseBy: number },
 ) {
   for (let i = 0; i < delta.increaseBy; i++) {
-    pressKey('.', { modifiers: shiftCmdModifier })
+    await pressKey('.', { modifiers: shiftCmdModifier })
   }
 
   for (let i = 0; i < delta.decreaseBy; i++) {
-    pressKey(',', { modifiers: shiftCmdModifier })
+    await pressKey(',', { modifiers: shiftCmdModifier })
   }
 
   await editor.getDispatchFollowUpActionsFinished()

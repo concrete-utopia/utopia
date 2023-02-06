@@ -911,7 +911,7 @@ describe('Forced inserting into Static', () => {
 
     await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       midDragCallback: async () => {
-        pressKey('2') // this should select the 'Draw to Insert (Abs, Forced)' strategy
+        await pressKey('2') // this should select the 'Draw to Insert (Abs, Forced)' strategy
       },
     })
 
