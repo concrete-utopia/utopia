@@ -345,6 +345,13 @@ interface SizeLabelProps {
   targets: Array<ElementPath>
 }
 
+const FontSize = 11
+const PaddingV = 0
+const PaddingH = 2
+const ExplicitHeightHacked = 20
+const BorderRadius = 2
+const SizeLabelMarginTop = 8
+
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
     const scale = useEditorState(
@@ -376,12 +383,15 @@ const SizeLabel = React.memo(
           label != null,
           <div
             style={{
-              marginTop: 8 / scale,
-              padding: `0px ${2 / scale}px`,
-              borderRadius: 2 / scale,
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: SizeLabelMarginTop / scale,
+              padding: `${PaddingV}px ${PaddingH / scale}px`,
+              borderRadius: BorderRadius / scale,
               color: colorTheme.white.value,
               backgroundColor: colorTheme.secondaryBlue.value,
-              fontSize: 11 / scale,
+              fontSize: FontSize / scale,
+              height: ExplicitHeightHacked / scale,
             }}
           >
             {`${label![0]} x ${label![1]}`}
