@@ -275,6 +275,11 @@ export function fromString(path: string): ElementPath {
   }
 }
 
+export function fromStringStatic(pathString: string): StaticElementPath {
+  const path = fromString(pathString)
+  return dynamicPathToStaticPath(path)
+}
+
 function allElementPathsForPart(path: ElementPathPart): Array<ElementPathPart> {
   let paths: Array<ElementPathPart> = []
   for (var size = 1; size <= path.length; size++) {
