@@ -35,8 +35,6 @@ export const SubduedBorderRadiusControl = React.memo<SubduedBorderRadiusControlP
     ref.current.style.borderBottomRightRadius = `${borderRadius?.left ?? 0}px`
   })
 
-  const color = useColorTheme().brandPurple.value
-
   const solidOrDashed = hoveredOrFocused === 'focused' ? 'solid' : 'dashed'
 
   return (
@@ -45,7 +43,7 @@ export const SubduedBorderRadiusControl = React.memo<SubduedBorderRadiusControlP
         ref={sideRef}
         style={{
           position: 'absolute',
-          border: `1px ${solidOrDashed} ${color}`,
+          border: `1px ${solidOrDashed} blue`,
         }}
         data-testid={SubduedBorderRadiusControlTestId}
       />
