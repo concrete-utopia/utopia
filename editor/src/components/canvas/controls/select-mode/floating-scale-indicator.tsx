@@ -1,6 +1,6 @@
 import React from 'react'
 import { when } from '../../../../utils/react-conditionals'
-import { LargerIcons, SquareButton, useColorTheme } from '../../../../uuiui'
+import { LargerIcons, SquareButton, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { Utils } from '../../../../uuiui-deps'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -69,14 +69,14 @@ export const FloatingScaleIndicator = React.memo<FloatingScaleIndicatorProps>(()
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
-        top: 4,
-        left: `calc(50% - ${FloatingScaleIndicatorWidth / 2}px)`,
+        top: 12,
+        left: 100,
         width: FloatingScaleIndicatorWidth,
         height: FloatingScaleIndicatorHeight,
         backgroundColor: colorTheme.bg0.value,
         borderRadius: 24,
         padding: '4px 16px',
-        border: `1px solid black`,
+        boxShadow: UtopiaStyles.popup.boxShadow,
         fontSize: 12,
         opacity: shown ? 1 : 0,
         transform: 'opacity .3s',
