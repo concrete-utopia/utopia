@@ -469,6 +469,116 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
   })
 })
 
+describe('Smart Convert to Flex alignItems', () => {
+  let originalFSValue: boolean = false
+  before(() => {
+    originalFSValue = isFeatureEnabled('Nine block control')
+    setFeatureEnabled('Nine block control', true)
+  })
+
+  after(() => {
+    setFeatureEnabled('Nine block control', originalFSValue)
+  })
+
+  it('all elements aligned at the start become alignItems flex-start, but we omit that for simplicity', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 60],
+        [65, 0, 50, 30],
+        [130, 0, 50, 60],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 60],
+          [50, 30],
+          [50, 60],
+        ],
+      }),
+    )
+  })
+
+  it('elements aligned at their center become alignItems center', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 60],
+        [65, 15, 50, 30],
+        [130, 0, 50, 60],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+          alignItems: 'center',
+        },
+        children: [
+          [50, 60],
+          [50, 30],
+          [50, 60],
+        ],
+      }),
+    )
+  })
+
+  it('elements aligned at their bottom become alignItems flex-end', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 60],
+        [65, 30, 50, 30],
+        [130, 0, 50, 60],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+          alignItems: 'flex-end',
+        },
+        children: [
+          [50, 60],
+          [50, 30],
+          [50, 60],
+        ],
+      }),
+    )
+  })
+})
+
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
   const [parentL, parentT, parentW, parentH] = input.parent
   return renderTestEditorWithCode(
