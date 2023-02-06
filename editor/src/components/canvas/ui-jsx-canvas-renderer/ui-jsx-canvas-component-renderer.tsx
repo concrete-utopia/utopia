@@ -85,10 +85,9 @@ export function createComponentRendererComponent(params: {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
+      [UTOPIA_PATH_KEY]: pathsString, // TODO types?
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
-
-    const pathsString = realPassedProps[UTOPIA_PATH_KEY]
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 

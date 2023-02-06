@@ -3,7 +3,6 @@ import {
   testCanvasRenderInline,
   testCanvasRenderInlineMultifile,
 } from './ui-jsx-canvas.test-utils'
-import { renderTestEditorWithCode } from './ui-jsx.test-utils'
 
 describe('UiJsxCanvas', () => {
   it('#747 - DOM object constructor cannot be called as a function', () => {
@@ -178,13 +177,8 @@ export default function App(props) {
             \\"
             data-uid=\\"scene\\"
           >
-            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app:app-outer-div\\">
-              <div
-                data-uid=\\"inner-div\\"
-                data-path=\\"sb/scene/app:app-outer-div/inner-div\\"
-              >
-                hello
-              </div>
+            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app\\">
+              <div data-uid=\\"inner-div\\">hello</div>
             </div>
           </div>
         </div>
@@ -267,7 +261,6 @@ export default function App(props) {
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div
-            data-label=\\"Imported App\\"
             data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
             data-path=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
@@ -290,21 +283,16 @@ export default function App(props) {
               height: 812px;
             \\"
             data-uid=\\"scene-1-entity\\"
+            data-label=\\"Imported App\\"
           >
             <div
               data-uid=\\"app-outer-div\\"
-              data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div\\"
+              data-path=\\"storyboard-entity/scene-1-entity/app-entity\\"
             >
-              <div
-                data-uid=\\"inner-div\\"
-                data-path=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/inner-div\\"
-              >
-                hello
-              </div>
+              <div data-uid=\\"inner-div\\">hello</div>
             </div>
           </div>
           <div
-            data-label=\\"Same File App\\"
             data-utopia-scene-id=\\"storyboard-entity/scene-2-entity\\"
             data-path=\\"storyboard-entity/scene-2-entity\\"
             style=\\"
@@ -327,6 +315,7 @@ export default function App(props) {
               height: 812px;
             \\"
             data-uid=\\"scene-2-entity\\"
+            data-label=\\"Same File App\\"
           >
             <div
               data-uid=\\"same-file-app-div\\"
@@ -447,7 +436,6 @@ export default function () {
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div
-            data-label=\\"Imported App\\"
             data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
             data-path=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
@@ -470,6 +458,7 @@ export default function () {
               height: 812px;
             \\"
             data-uid=\\"scene-1-entity\\"
+            data-label=\\"Imported App\\"
           >
             <div
               data-uid=\\"app-outer-div\\"

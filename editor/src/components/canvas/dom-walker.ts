@@ -50,13 +50,7 @@ import {
   parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import {
-  EditorStateContext,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-  UtopiaStoreAPI,
-} from '../editor/store/store-hook'
+import { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,
