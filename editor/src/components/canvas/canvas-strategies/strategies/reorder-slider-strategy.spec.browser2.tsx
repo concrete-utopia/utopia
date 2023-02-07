@@ -265,7 +265,7 @@ function dragControl(
 
   mouseDragFromPointWithDelta(targetControl, startPoint, dragDelta, {
     modifiers: modifiers,
-    midDragCallback: () => {
+    midDragCallback: async () => {
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
       ).toEqual(expectedNavigatorTargetsDuringMove)
