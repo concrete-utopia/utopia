@@ -313,6 +313,7 @@
     "jest-environment-jsdom": "^27.2.2",
     "jest-matcher-deep-close-to": "2.0.1",
     "jest-transform-stub": "2.0.0",
+    "jotai-devtools": "^0.2.0",
     "jsdom": "17.0.0",
     "karma": "6.4.1",
     "karma-chrome-launcher": "3.1.1",
