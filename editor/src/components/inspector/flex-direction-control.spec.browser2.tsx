@@ -64,7 +64,7 @@ describe('set flex direction', () => {
     expect(div.style.flexDirection).toEqual('row')
   })
 
-  it('when updating flex direction, child sizes are hardcoded', async () => {
+  it('when updating flex direction, and children are set to fill container, cross axis sizings are swapped', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithFillContainerChildren(),
       'await-first-dom-report',
@@ -76,18 +76,21 @@ describe('set flex direction', () => {
 
     const blue = editor.renderedDOM.getByTestId('blue')
     expect(blue.style.flex).toEqual('')
-    expect(blue.style.width).toEqual('333px')
-    expect(blue.style.height).toEqual('170px')
+    expect(blue.style.height).toEqual('')
+    expect(blue.style.width).toEqual('170px')
+    expect(blue.style.flexGrow).toEqual('1')
 
     const red = editor.renderedDOM.getByTestId('red')
     expect(red.style.flex).toEqual('')
-    expect(red.style.width).toEqual('333px')
-    expect(red.style.height).toEqual('211px')
+    expect(red.style.height).toEqual('')
+    expect(red.style.width).toEqual('211px')
+    expect(red.style.flexGrow).toEqual('1')
 
     const green = editor.renderedDOM.getByTestId('green')
     expect(green.style.flex).toEqual('')
-    expect(green.style.width).toEqual('333px')
-    expect(green.style.height).toEqual('188px')
+    expect(green.style.height).toEqual('')
+    expect(green.style.width).toEqual('188px')
+    expect(green.style.flexGrow).toEqual('1')
   })
 })
 
