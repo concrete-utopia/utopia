@@ -14,6 +14,49 @@ import { fillContainerStrategyFlexParent } from './fill-container-basic-strategy
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { InspectorStrategy } from './inspector-strategy'
 
+function swapAxesCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedElement: ElementPath,
+  currentFlexDirection: FlexDirection | null,
+  flexDirectionToBeApplied: FlexDirection,
+): Array<CanvasCommand> {
+  const horizontalSizing = detectFillHugFixedState('horizontal', metadata, selectedElement)
+  const verticalSizing = detectFillHugFixedState('vertical', metadata, selectedElement)
+  if (
+    flexDirectionToBeApplied.startsWith('col') &&
+    currentFlexDirection?.startsWith('row') &&
+    horizontalSizing?.type === 'fill' &&
+    verticalSizing?.type === 'fixed'
+  ) {
+    return [
+      ...(fixedSizeBasicStrategy('always', 'horizontal', verticalSizing.value).strategy(metadata, [
+        selectedElement,
+      ]) ?? []),
+      ...(fillContainerStrategyFlexParent('vertical', 'default', {
+        forceFlexDirectionForParent: flexDirectionToBeApplied,
+      }).strategy(metadata, [selectedElement]) ?? []),
+    ]
+  }
+
+  if (
+    flexDirectionToBeApplied.startsWith('row') &&
+    currentFlexDirection?.startsWith('col') &&
+    verticalSizing?.type === 'fill' &&
+    horizontalSizing?.type === 'fixed'
+  ) {
+    return [
+      ...(fixedSizeBasicStrategy('always', 'vertical', horizontalSizing.value).strategy(metadata, [
+        selectedElement,
+      ]) ?? []),
+      ...(fillContainerStrategyFlexParent('horizontal', 'default', {
+        forceFlexDirectionForParent: flexDirectionToBeApplied,
+      }).strategy(metadata, [selectedElement]) ?? []),
+    ]
+  }
+
+  return []
+}
+
 function setFlexDirectionSwapAxesSingleElement(
   direction: FlexDirection,
   metadata: ElementInstanceMetadataMap,
@@ -29,45 +72,9 @@ function setFlexDirectionSwapAxesSingleElement(
 
   const currentFlexDirection = detectFlexDirectionOne(metadata, selectedElement)
 
-  const commands = MetadataUtils.getChildrenPaths(metadata, selectedElement).flatMap((child) => {
-    const horizontalSizing = detectFillHugFixedState('horizontal', metadata, child)
-    const verticalSizing = detectFillHugFixedState('vertical', metadata, child)
-    if (
-      direction.startsWith('col') &&
-      currentFlexDirection?.startsWith('row') &&
-      horizontalSizing?.type === 'fill' &&
-      verticalSizing?.type === 'fixed'
-    ) {
-      return [
-        ...(fixedSizeBasicStrategy('always', 'horizontal', verticalSizing.value).strategy(
-          metadata,
-          [child],
-        ) ?? []),
-        ...(fillContainerStrategyFlexParent('vertical', 'default', {
-          forceFlexDirectionForParent: direction,
-        }).strategy(metadata, [child]) ?? []),
-      ]
-    }
-
-    if (
-      direction.startsWith('row') &&
-      currentFlexDirection?.startsWith('col') &&
-      verticalSizing?.type === 'fill' &&
-      horizontalSizing?.type === 'fixed'
-    ) {
-      return [
-        ...(fixedSizeBasicStrategy('always', 'vertical', horizontalSizing.value).strategy(
-          metadata,
-          [child],
-        ) ?? []),
-        ...(fillContainerStrategyFlexParent('horizontal', 'default', {
-          forceFlexDirectionForParent: direction,
-        }).strategy(metadata, [child]) ?? []),
-      ]
-    }
-
-    return []
-  })
+  const commands = MetadataUtils.getChildrenPaths(metadata, selectedElement).flatMap((child) =>
+    swapAxesCommands(metadata, child, currentFlexDirection, direction),
+  )
 
   if (commands.length === 0) {
     return []
