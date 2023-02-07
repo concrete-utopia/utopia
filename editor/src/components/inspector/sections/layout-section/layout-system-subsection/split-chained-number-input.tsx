@@ -1,5 +1,5 @@
-import { useAtom } from 'jotai'
-import React, { EventHandler, FocusEventHandler, MouseEventHandler, SyntheticEvent } from 'react'
+import { useUpdateAtom } from 'jotai/utils'
+import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../../core/shared/utils'
@@ -14,18 +14,17 @@ import {
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
-  CanvasControlWithProps,
-  InspectorFocusedCanvasControls,
-  InspectorHoveredCanvasControls,
-} from '../../../common/inspector-atoms'
-import {
   CSSNumber,
   CSSNumberType,
   isCSSNumber,
   UnknownOrEmptyInput,
 } from '../../../common/css-utils'
+import {
+  CanvasControlWithProps,
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../../common/inspector-atoms'
 import { InspectorInfo } from '../../../common/property-path-hooks'
-import { useUpdateAtom } from 'jotai/utils'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
