@@ -226,6 +226,11 @@ export const PaddingControl = React.memo(() => {
   )
 
   const { selectedViewsRef } = useInspectorContext()
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'PaddingControl selectedViews',
+  )
 
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
@@ -237,6 +242,7 @@ export const PaddingControl = React.memo(() => {
           props: {
             side: side,
             hoveredOrFocused: 'hovered',
+            targets: selectedViews,
           },
           key: `subdued-padding-control-hovered-${side}`,
         },
@@ -245,12 +251,13 @@ export const PaddingControl = React.memo(() => {
           props: {
             side: side,
             hoveredOrFocused: 'focused',
+            targets: selectedViews,
           },
           key: `subdued-padding-control-focused-${side}`,
         },
       }),
     )
-  }, [])
+  }, [selectedViews])
 
   return (
     <SplitChainedNumberInput

@@ -1,7 +1,7 @@
 import React from 'react'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { useRefEditorState } from '../../../editor/store/store-hook'
 import { EdgePiece } from '../../canvas-types'
 import {
   combinePaddings,
@@ -15,16 +15,11 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 interface SubduedPaddingControlProps {
   side: EdgePiece
   hoveredOrFocused: 'hovered' | 'focused'
+  targets: Array<ElementPath>
 }
 
 export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((props) => {
-  const { side, hoveredOrFocused } = props
-  const targets = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'SubduedPaddingControl selectedViews',
-  )
-
+  const { side, hoveredOrFocused, targets } = props
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const isHorizontalPadding = side === 'left' || side === 'right'
