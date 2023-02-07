@@ -1,4 +1,4 @@
-import { useUpdateAtom } from 'jotai/utils'
+import { useSetAtom } from 'jotai'
 import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
@@ -314,8 +314,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     [updateShorthandIfUsed, sidesVertical, excludeVertical],
   )
 
-  const setHoveredCanvasControls = useUpdateAtom(InspectorHoveredCanvasControls)
-  const setFocusedCanvasControls = useUpdateAtom(InspectorFocusedCanvasControls)
+  const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
+  const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
