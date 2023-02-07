@@ -222,10 +222,15 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         selectedElement,
       )
 
+      const isHorizontalEdge = isHorizontalEdgePiece(edgePiece)
+
       const fixedSizeChildrenPaths = allChildPaths.filter(
         (childPath) =>
-          detectFillHugFixedState('horizontal', canvasState.startingMetadata, childPath)?.type ===
-          'fixed',
+          detectFillHugFixedState(
+            isHorizontalEdge ? 'horizontal' : 'vertical',
+            canvasState.startingMetadata,
+            childPath,
+          )?.type === 'fixed',
       )
       const fixedSizeNonAbsoluteChildrenPaths = fixedSizeChildrenPaths.filter((childPath) =>
         MetadataUtils.targetParticipatesInAutoLayout(canvasState.startingMetadata, childPath),
@@ -241,7 +246,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const combinedPaddingInDimension =
         paddingForEdgeSimplePadding(edgePiece, padding) +
         paddingForEdgeSimplePadding(oppositeEdgePiece(edgePiece), padding)
-      const dimensionKey = isHorizontalEdgePiece(edgePiece) ? 'width' : 'height'
+      const dimensionKey = isHorizontalEdge ? 'width' : 'height'
       const combinedContentSizeInDimension =
         combinedPaddingInDimension + childrenBoundingFrame[dimensionKey] + delta
 
