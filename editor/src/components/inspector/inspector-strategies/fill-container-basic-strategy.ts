@@ -3,7 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { clamp } from '../../../core/shared/math-utils'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { cssNumber, printCSSNumber } from '../common/css-utils'
+import { cssNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
 import {
   fillContainerApplicable,
   nukeAllAbsolutePositioningPropsCommands,
@@ -12,6 +12,7 @@ import {
   detectParentFlexDirection,
   nukeSizingPropsForAxisCommand,
   Axis,
+  nullOrNonEmpty,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 import {
@@ -19,12 +20,12 @@ import {
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 
-export const fillContainerStrategyBasic = (
+export const fillContainerStrategyFlow = (
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): InspectorStrategy => ({
-  name: 'Set to Fill Container',
+  name: 'Set tp Fill Container',
   strategy: (metadata, elementPaths) => {
     const elements = elementPaths.filter(fillContainerApplicable)
 
@@ -34,25 +35,51 @@ export const fillContainerStrategyBasic = (
 
     return elements.flatMap((path) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, path)
-      if (!MetadataUtils.isParentFlexLayoutedContainerForElement(instance)) {
-        const checkedValue =
-          value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
-        const nukePositioningCommands = otherAxisSetToFill
-          ? nukeAllAbsolutePositioningPropsCommands(path)
-          : [nukePositioningPropsForAxisCommand(axis, path)]
-        return [
-          ...nukePositioningCommands,
-          setCssLengthProperty(
-            'always',
-            path,
-            PP.create('style', widthHeightFromAxis(axis)),
-            setExplicitCssValue(checkedValue),
-            instance?.specialSizeMeasurements.parentFlexDirection ?? null,
-          ),
-        ]
-      }
+      const checkedValue =
+        value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
+      const nukePositioningCommands = otherAxisSetToFill
+        ? nukeAllAbsolutePositioningPropsCommands(path)
+        : [nukePositioningPropsForAxisCommand(axis, path)]
+      return [
+        ...nukePositioningCommands,
+        setCssLengthProperty(
+          'always',
+          path,
+          PP.create('style', widthHeightFromAxis(axis)),
+          setExplicitCssValue(checkedValue),
+          instance?.specialSizeMeasurements.parentFlexDirection ?? null,
+        ),
+      ]
+    })
+  },
+})
 
-      const flexDirection = detectParentFlexDirection(metadata, path) ?? 'row'
+export interface FillContainerStrategyFlexParentOverrides {
+  forceFlexDirectionForParent: FlexDirection
+}
+
+export const fillContainerStrategyFlexParent = (
+  axis: Axis,
+  value: 'default' | number,
+  overrides: Partial<FillContainerStrategyFlexParentOverrides> = {},
+): InspectorStrategy => ({
+  name: 'Set to Fill Container, in flex layout',
+  strategy: (metadata, elementPaths) => {
+    const elements = elementPaths.filter(
+      (path) =>
+        fillContainerApplicable(path) &&
+        MetadataUtils.isParentFlexLayoutedContainerForElement(
+          MetadataUtils.findElementByElementPath(metadata, path),
+        ),
+    )
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    const commands = elements.flatMap((path) => {
+      const flexDirection =
+        overrides.forceFlexDirectionForParent ?? detectParentFlexDirection(metadata, path) ?? 'row'
 
       if (
         (flexDirection.startsWith('row') && axis === 'vertical') ||
@@ -85,5 +112,7 @@ export const fillContainerStrategyBasic = (
         ),
       ]
     })
+
+    return nullOrNonEmpty(commands)
   },
 })
