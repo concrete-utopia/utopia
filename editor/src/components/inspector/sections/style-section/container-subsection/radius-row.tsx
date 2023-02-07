@@ -140,12 +140,6 @@ export const BorderRadiusControl = React.memo(() => {
 
   const shorthand = useInspectorLayoutInfo('borderRadius')
 
-  const selectedViews = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.selectedViews,
-    'BorderRadiusControl selectedViews',
-  )
-
   const updateShorthand = React.useCallback(
     (sides: Sides, transient?: boolean) => {
       const { top: tl, bottom: br, left: bl, right: tr } = sides
@@ -265,7 +259,6 @@ export const BorderRadiusControl = React.memo(() => {
           control: SubduedBorderRadiusControl,
           props: {
             hoveredOrFocused: 'hovered',
-            targets: selectedViews,
           },
           key: `subdued-border-radius-control-hovered`,
         },
@@ -273,13 +266,12 @@ export const BorderRadiusControl = React.memo(() => {
           control: SubduedBorderRadiusControl,
           props: {
             hoveredOrFocused: 'focused',
-            targets: selectedViews,
           },
           key: `subdued-border-radius-control-focused`,
         },
       }),
     )
-  }, [selectedViews])
+  }, [])
 
   return (
     <SplitChainedNumberInput

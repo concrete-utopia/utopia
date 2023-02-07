@@ -2,20 +2,24 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
-import { useRefEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
 interface SubduedBorderRadiusControlProps {
   hoveredOrFocused: 'hovered' | 'focused'
-  targets: Array<ElementPath>
 }
 
 export const SubduedBorderRadiusControlTestId = (state: 'hovered' | 'focused'): string =>
   `SubduedBorderRadiusControl-${state}`
 
 export const SubduedBorderRadiusControl = React.memo<SubduedBorderRadiusControlProps>((props) => {
-  const { hoveredOrFocused, targets } = props
+  const { hoveredOrFocused } = props
+  const targets = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'SubduedBorderRadiusControl  selectedViews',
+  )
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   // TODO Multiselect
