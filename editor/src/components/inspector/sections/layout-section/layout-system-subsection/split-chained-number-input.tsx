@@ -25,6 +25,7 @@ import {
   UnknownOrEmptyInput,
 } from '../../../common/css-utils'
 import { InspectorInfo } from '../../../common/property-path-hooks'
+import { useUpdateAtom } from 'jotai/utils'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
@@ -314,8 +315,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     [updateShorthandIfUsed, sidesVertical, excludeVertical],
   )
 
-  const [, setHoveredCanvasControls] = useAtom(InspectorHoveredCanvasControls)
-  const [, setFocusedCanvasControls] = useAtom(InspectorFocusedCanvasControls)
+  const setHoveredCanvasControls = useUpdateAtom(InspectorHoveredCanvasControls)
+  const setFocusedCanvasControls = useUpdateAtom(InspectorFocusedCanvasControls)
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
