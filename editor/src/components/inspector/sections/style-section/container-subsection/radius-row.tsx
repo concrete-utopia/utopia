@@ -258,7 +258,7 @@ export const BorderRadiusControl = React.memo(() => {
 
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
-      ['top', 'right', 'bottom', 'left'],
+      ['top'],
       (k) => k,
       (side) => ({
         onHover: {
@@ -267,7 +267,7 @@ export const BorderRadiusControl = React.memo(() => {
             hoveredOrFocused: 'hovered',
             targets: selectedViews,
           },
-          key: `subdued-padding-control-hovered-${side}`,
+          key: `subdued-border-radius-control-hovered`,
         },
         onFocus: {
           control: SubduedBorderRadiusControl,
@@ -275,7 +275,7 @@ export const BorderRadiusControl = React.memo(() => {
             hoveredOrFocused: 'focused',
             targets: selectedViews,
           },
-          key: `subdued-padding-control-focused-${side}`,
+          key: `subdued-border-radius-control-focused`,
         },
       }),
     )
