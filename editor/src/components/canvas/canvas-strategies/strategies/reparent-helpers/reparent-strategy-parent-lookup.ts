@@ -8,6 +8,7 @@ import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  isJSXFragment,
 } from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -127,6 +128,17 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
+    const targetElement = MetadataUtils.findElementByElementPath(metadata, target)
+
+    if (targetElement == null) {
+      return false
+    }
+
+    // TODO: later we should allow reparenting into fragments
+    if (MetadataUtils.isFragmentFromMetadata(targetElement)) {
+      return false
+    }
+
     const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
 
     if (currentParent) {
