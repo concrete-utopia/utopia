@@ -8,12 +8,13 @@ import {
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import * as PP from '../../../../../core/shared/property-path'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
 import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useEditorState, Substores } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -35,7 +36,11 @@ import {
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { Sides, SplitChainedNumberInput } from './split-chained-number-input'
+import {
+  handleSplitChainedEvent,
+  SplitChainedEvent,
+  SplitChainedNumberInput,
+} from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -208,22 +213,7 @@ export const PaddingControl = React.memo(() => {
     )
 
   const shorthand = useInspectorLayoutInfo('padding')
-
-  const updateShorthand = React.useCallback(
-    (sides: Sides, transient?: boolean) => {
-      const { top, bottom, left, right } = sides
-      shorthand.onSubmitValue(
-        {
-          paddingTop: top,
-          paddingBottom: bottom,
-          paddingLeft: left,
-          paddingRight: right,
-        },
-        transient,
-      )
-    },
-    [shorthand],
-  )
+  const dispatch = useDispatch()
 
   const { selectedViewsRef } = useInspectorContext()
   const selectedViews = useEditorState(
@@ -259,6 +249,24 @@ export const PaddingControl = React.memo(() => {
     )
   }, [selectedViews])
 
+  const eventHandler = React.useCallback(
+    (e: SplitChainedEvent, useShorthand: boolean) => {
+      handleSplitChainedEvent(
+        e,
+        dispatch,
+        selectedViewsRef.current[0],
+        PP.create('style', 'padding'),
+        {
+          T: PP.create('style', 'paddingTop'),
+          B: PP.create('style', 'paddingBottom'),
+          L: PP.create('style', 'paddingLeft'),
+          R: PP.create('style', 'paddingRight'),
+        },
+      )(useShorthand)
+    },
+    [dispatch, selectedViewsRef],
+  )
+
   return (
     <SplitChainedNumberInput
       controlModeOrder={['one-value', 'per-direction', 'per-side']}
@@ -275,9 +283,9 @@ export const PaddingControl = React.memo(() => {
       bottom={paddingBottom}
       right={paddingRight}
       shorthand={shorthand}
-      updateShorthand={updateShorthand}
       canvasControls={canvasControlsForSides}
       numberType={'LengthPercent'}
+      eventHandler={eventHandler}
     />
   )
 })
