@@ -2,9 +2,12 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
+import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import { foldEither, isRight, right } from '../../../../../core/shared/either'
 import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
+import { SubduedBorderRadiusControl } from '../../../../canvas/controls/select-mode/subdued-border-radius-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import {
   CSSBorderRadius,
   CSSBorderRadiusIndividual,
@@ -247,6 +250,29 @@ export const BorderRadiusControl = React.memo(() => {
     return update
   }, [borderRadius])
 
+  const canvasControlsForSides = React.useMemo(() => {
+    return mapArrayToDictionary(
+      ['top'],
+      (k) => k,
+      (side) => ({
+        onHover: {
+          control: SubduedBorderRadiusControl,
+          props: {
+            hoveredOrFocused: 'hovered',
+          },
+          key: `subdued-border-radius-control-hovered`,
+        },
+        onFocus: {
+          control: SubduedBorderRadiusControl,
+          props: {
+            hoveredOrFocused: 'focused',
+          },
+          key: `subdued-border-radius-control-focused`,
+        },
+      }),
+    )
+  }, [])
+
   return (
     <SplitChainedNumberInput
       labels={{
@@ -290,6 +316,7 @@ export const BorderRadiusControl = React.memo(() => {
       }}
       shorthand={shorthand}
       updateShorthand={updateShorthand}
+      canvasControls={canvasControlsForSides}
     />
   )
 })
