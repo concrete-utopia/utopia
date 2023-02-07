@@ -39,10 +39,10 @@ async function dragResizeControl(
 
   const endPoint = offsetPoint(startPoint, dragDelta)
 
-  mouseMoveToPoint(resizeControl, startPoint)
-  mouseDownAtPoint(resizeControl, startPoint)
-  mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 }, modifiers })
-  mouseUpAtPoint(canvasControlsLayer, endPoint)
+  await mouseMoveToPoint(resizeControl, startPoint)
+  await mouseDownAtPoint(resizeControl, startPoint)
+  await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 }, modifiers })
+  await mouseUpAtPoint(canvasControlsLayer, endPoint)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }

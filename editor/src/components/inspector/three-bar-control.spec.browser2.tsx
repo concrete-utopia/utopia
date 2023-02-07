@@ -67,7 +67,7 @@ async function doTest(editor: EditorRenderResult, controlId: string): Promise<HT
   const control = editor.renderedDOM.getByTestId(controlId)
   const controlBounds = control.getBoundingClientRect()
   await expectSingleUndoStep(editor, async () => {
-    mouseClickAtPoint(control, { x: controlBounds.top + 10, y: controlBounds.left + 10 })
+    await mouseClickAtPoint(control, { x: controlBounds.top + 10, y: controlBounds.left + 10 })
   })
   return div
 }

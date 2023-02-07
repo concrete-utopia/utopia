@@ -100,11 +100,16 @@ describe('Flex Reorder Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, canvasPoint({ x: 1, y: 1 }), {
-      modifiers: emptyModifiers,
-    })
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
+    await mouseDragFromPointWithDelta(
+      canvasControlsLayer,
+      startPoint,
+      canvasPoint({ x: 1, y: 1 }),
+      {
+        modifiers: emptyModifiers,
+      },
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -122,16 +127,23 @@ describe('Flex Reorder Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, canvasPoint({ x: 62, y: 0 }), {
-      modifiers: emptyModifiers,
-      midDragCallback: () => {
-        expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('FLEX_REORDER')
-        expect(
-          renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-        ).toEqual(2)
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(
+      canvasControlsLayer,
+      startPoint,
+      canvasPoint({ x: 62, y: 0 }),
+      {
+        modifiers: emptyModifiers,
+        midDragCallback: async () => {
+          expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+            'FLEX_REORDER',
+          )
+          expect(
+            renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+          ).toEqual(2)
+        },
       },
-    })
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -179,16 +191,23 @@ describe('Flex Reorder Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, canvasPoint({ x: 62, y: 0 }), {
-      modifiers: emptyModifiers,
-      midDragCallback: () => {
-        expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('FLEX_REORDER')
-        expect(
-          renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-        ).toEqual(3)
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(
+      canvasControlsLayer,
+      startPoint,
+      canvasPoint({ x: 62, y: 0 }),
+      {
+        modifiers: emptyModifiers,
+        midDragCallback: async () => {
+          expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+            'FLEX_REORDER',
+          )
+          expect(
+            renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+          ).toEqual(3)
+        },
       },
-    })
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -248,16 +267,23 @@ describe('Flex Reorder Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, canvasPoint({ x: 62, y: 0 }), {
-      modifiers: emptyModifiers,
-      midDragCallback: () => {
-        expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('FLEX_REORDER')
-        expect(
-          renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-        ).toEqual(0)
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(
+      canvasControlsLayer,
+      startPoint,
+      canvasPoint({ x: 62, y: 0 }),
+      {
+        modifiers: emptyModifiers,
+        midDragCallback: async () => {
+          expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+            'FLEX_REORDER',
+          )
+          expect(
+            renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+          ).toEqual(0)
+        },
       },
-    })
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

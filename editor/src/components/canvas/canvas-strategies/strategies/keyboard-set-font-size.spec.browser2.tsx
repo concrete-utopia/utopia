@@ -164,10 +164,10 @@ async function doSelect(editor: EditorRenderResult, type: 'single' | 'double' = 
 
   switch (type) {
     case 'single':
-      mouseClickAtPoint(canvasControlsLayer, divCorner)
+      await mouseClickAtPoint(canvasControlsLayer, divCorner)
       break
     case 'double':
-      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+      await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
       break
     default:
       assertNever(type)
@@ -181,11 +181,11 @@ async function doTestWithDelta(
   delta: { decreaseBy: number; increaseBy: number },
 ) {
   for (let i = 0; i < delta.increaseBy; i++) {
-    pressKey('.', { modifiers: shiftCmdModifier })
+    await pressKey('.', { modifiers: shiftCmdModifier })
   }
 
   for (let i = 0; i < delta.decreaseBy; i++) {
-    pressKey(',', { modifiers: shiftCmdModifier })
+    await pressKey(',', { modifiers: shiftCmdModifier })
   }
 
   await editor.getDispatchFollowUpActionsFinished()

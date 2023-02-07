@@ -69,7 +69,7 @@ describe('Padding resize strategy', () => {
       y: divBounds.y + 40,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = EdgePieces.flatMap((edge) => [
       ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
@@ -116,7 +116,7 @@ describe('Padding resize strategy', () => {
       y: divBounds.y + 24,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
@@ -156,7 +156,7 @@ describe('Padding resize strategy', () => {
       y: divBounds.y + 24,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
@@ -191,7 +191,7 @@ describe('Padding resize strategy', () => {
       y: divBounds.y + 1,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = EdgePieces.flatMap((edge) => [
       ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
@@ -222,7 +222,7 @@ describe('Padding resize strategy', () => {
       y: divBounds.y + 4,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingResizeControlContainerBounds = div.getBoundingClientRect()
     const paddingResizeControlContainerCorner = {
@@ -236,7 +236,7 @@ describe('Padding resize strategy', () => {
       expect(paddingControlHandle.style.opacity).toEqual('0')
     })
 
-    mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
+    await mouseMoveToPoint(canvasControlsLayer, paddingResizeControlContainerCorner)
 
     await wait(PaddingResizeControlHoverTimeout + 1)
 
@@ -271,7 +271,7 @@ describe('Padding resize strategy', () => {
       y: divBounds.y + 4,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     EdgePieces.forEach((edge) => {
       const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
@@ -303,8 +303,8 @@ describe('Padding resize strategy', () => {
     }
 
     // Start a drag that will move the element
-    mouseDownAtPoint(canvasControlsLayer, divCenter)
-    mouseMoveToPoint(
+    await mouseDownAtPoint(canvasControlsLayer, divCenter)
+    await mouseMoveToPoint(
       canvasControlsLayer,
       { x: divCenter.x + 100, y: divCenter.y + 100 },
       { eventOptions: { buttons: 1 } },
@@ -620,7 +620,7 @@ describe('Padding resize strategy', () => {
         'await-first-dom-report',
       )
 
-      clickOnMyDiv(editor)
+      await clickOnMyDiv(editor)
       EdgePieces.forEach((edge) => {
         const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
         expect(paddingControlOuter).toBeTruthy()
@@ -637,7 +637,7 @@ describe('Padding resize strategy', () => {
         'await-first-dom-report',
       )
 
-      clickOnMyDiv(editor)
+      await clickOnMyDiv(editor)
       EdgePieces.forEach((edge) => {
         const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
         expect(paddingControlOuter).toBeTruthy()
@@ -656,7 +656,7 @@ describe('Padding resize strategy', () => {
         'await-first-dom-report',
       )
 
-      clickOnMyDiv(editor)
+      await clickOnMyDiv(editor)
       const paddingControls = EdgePieces.flatMap((edge) => [
         ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
         ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
@@ -800,7 +800,7 @@ async function testPaddingResizeForEdge(
     y: divBounds.y + 4,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
   const paddingControl = editor.renderedDOM.getByTestId(paddingControlHandleTestId(edge))
   const paddingControlBounds = paddingControl.getBoundingClientRect()
@@ -817,9 +817,11 @@ async function testPaddingResizeForEdge(
     alt: mode === 'cross-axis' || mode === 'all',
     shift: mode === 'all',
   }
-  await expectSingleUndoStep(editor, async () =>
-    mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers }),
-  )
+  await expectSingleUndoStep(editor, async () => {
+    await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, {
+      modifiers,
+    })
+  })
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -941,7 +943,7 @@ function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<str
     .join('\n')
 }
 
-function clickOnMyDiv(editor: EditorRenderResult) {
+async function clickOnMyDiv(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
@@ -950,7 +952,7 @@ function clickOnMyDiv(editor: EditorRenderResult) {
     y: divBounds.y + 24,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 }
 interface HorribleComponentProps {
   internalPadding?: string

@@ -19,7 +19,9 @@ describe('set flex direction', () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const div = await selectDiv(editor)
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'row'))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor, 'row')
+    })
 
     expect(div.style.flexDirection).toEqual('row')
 
@@ -35,7 +37,9 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('row')
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor, 'column')
+    })
 
     expect(div.style.flexDirection).toEqual('column')
   })
@@ -47,7 +51,9 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    await expectSingleUndoStep(editor, () => rightClickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, async () => {
+      await rightClickOn(editor, 'column')
+    })
 
     expect(div.style.flexDirection).toEqual('')
   })
@@ -100,7 +106,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
 }
@@ -108,13 +114,13 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickOn(editor: EditorRenderResult, direction: FlexDirection) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(FlexDirectionToggleTestId(direction))
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
 async function rightClickOn(editor: EditorRenderResult, direction: FlexDirection) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(FlexDirectionToggleTestId(direction))
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 }, { eventOptions: { button: 1 } })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 }, { eventOptions: { button: 1 } })
 }
 
 function project(): string {
