@@ -105,6 +105,24 @@ jobs:
       AUTH0_ENDPOINT: enter.utopia.app
       AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
     steps:
+      # Create a comment immediately so that the first comment can be used as a "Try me" link
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc-initial
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Try me
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc-initial.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            '## Try me'
+            (building...)
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
       - name: Extract branch name
@@ -150,6 +168,25 @@ jobs:
         working-directory: editor/lib/
         run: |
           tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
+      # Update the "Try me" comment with the new status. We have to find it again because it
+      # might not have existed during the previous search
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Try me
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            '## Try me'
+            (deploying...)
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
@@ -163,6 +200,16 @@ jobs:
         shell: bash
         run: |
           curl -s -o /dev/null -w "FLUSH STAGING HTTP RESPONSE CODE: %{http_code}" -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'
+      # Update the "Try me" comment with the actual link
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            '## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})'
 
   performance-test:
     name: Run Performance Tests
@@ -219,7 +266,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            [Link to test editor](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})
             Performance test results:
             ${{ steps.run-performance-test.outputs.perf-result }}
       - name: Build Discord Message
@@ -272,7 +318,7 @@ jobs:
 
   system-test:
     name: Run System Tests
-    if: ${{ false }}  # Disabling this as it is never completing now
+    if: ${{ false }} # Disabling this as it is never completing now
     runs-on: ubuntu-latest
     needs: [deploy-staging]
     env:
