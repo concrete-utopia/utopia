@@ -241,7 +241,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       )
       const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
 
-      // FIXME include child offset
       // Check if child content size + padding exceeds parent size in that dimension
       const combinedPaddingInDimension =
         paddingForEdgeSimplePadding(edgePiece, padding) +
