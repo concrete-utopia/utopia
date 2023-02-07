@@ -70,7 +70,10 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { Axis, detectFillHugFixedState } from '../../../inspector/inspector-common'
-import { adjustCssLengthProperty } from '../../commands/adjust-css-length-command'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../../commands/adjust-css-length-command'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -210,70 +213,78 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         },
       )
 
-      // Get size of parent
       const targetFrame = MetadataUtils.getFrameOrZeroRect(
         selectedElement,
         canvasState.startingMetadata,
       )
 
-      // Get child content size
       const allChildPaths = MetadataUtils.getChildrenPaths(
         canvasState.startingMetadata,
         selectedElement,
       )
 
-      const isHorizontalEdge = isHorizontalEdgePiece(edgePiece)
-
-      const fixedSizeChildrenPaths = allChildPaths.filter(
-        (childPath) =>
-          detectFillHugFixedState(
-            isHorizontalEdge ? 'horizontal' : 'vertical',
-            canvasState.startingMetadata,
-            childPath,
-          )?.type === 'fixed',
-      )
-      const fixedSizeNonAbsoluteChildrenPaths = fixedSizeChildrenPaths.filter((childPath) =>
+      const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
         MetadataUtils.targetParticipatesInAutoLayout(canvasState.startingMetadata, childPath),
       )
-      const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
-        fixedSizeNonAbsoluteChildrenPaths,
+
+      const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
+        selectedElement,
       )
-      const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
+      const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
+      const elementParentFlexDirection =
+        elementMetadata?.specialSizeMeasurements.parentFlexDirection
 
-      // Check if child content size + padding exceeds parent size in that dimension
-      const combinedPaddingInDimension =
-        paddingForEdgeSimplePadding(edgePiece, padding) +
-        paddingForEdgeSimplePadding(oppositeEdgePiece(edgePiece), padding)
-      const dimensionKey = isHorizontalEdge ? 'width' : 'height'
-      const combinedContentSizeInDimension =
-        combinedPaddingInDimension + childrenBoundingFrame[dimensionKey] + delta
+      const adjustSizeCommandForDimension = (
+        dimension: 'horizontal' | 'vertical',
+      ): AdjustCssLengthProperty | null => {
+        const edgePieceToUse = dimension === 'horizontal' ? 'left' : 'top'
+        const combinedPaddingInDimension =
+          paddingForEdgeSimplePadding(edgePieceToUse, newPaddingMaxed) +
+          paddingForEdgeSimplePadding(oppositeEdgePiece(edgePieceToUse), newPaddingMaxed)
 
-      const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
-      if (sizeDelta > 0) {
-        const elementMetadata = MetadataUtils.findElementByElementPath(
-          canvasState.startingMetadata,
-          selectedElement,
+        const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
+          (childPath) =>
+            detectFillHugFixedState(dimension, canvasState.startingMetadata, childPath)?.type ===
+            'fixed',
         )
-        const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
-        const parentDimensionPx = elementParentBounds?.[dimensionKey]
-        const elementParentFlexDirection =
-          elementMetadata?.specialSizeMeasurements.parentFlexDirection
+        const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
+          fixedSizeChildrenPaths,
+          canvasState.startingMetadata,
+        )
+        const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
+
+        const dimensionKey = dimension === 'horizontal' ? 'width' : 'height'
+        const combinedContentSizeInDimension =
+          combinedPaddingInDimension + childrenBoundingFrame[dimensionKey]
 
         // TODO We need a way to call the correct resizing strategy here, but they are all assuming
         // the drag originates from a given edge, whereas we want to pass in the desired delta to a
         // dimension and receive the required commands to resize the element
-        basicCommands.push(
-          adjustCssLengthProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(dimensionKey, styleStringInArray),
-            roundTo(sizeDelta, 0),
-            parentDimensionPx,
-            elementParentFlexDirection ?? null,
-            'do-not-create-if-doesnt-exist',
-          ),
-        )
+        const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
+        return sizeDelta <= 0
+          ? null
+          : adjustCssLengthProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(dimensionKey, styleStringInArray),
+              roundTo(sizeDelta, 0),
+              elementParentBounds?.[dimensionKey],
+              elementParentFlexDirection ?? null,
+              'do-not-create-if-doesnt-exist',
+            )
+      }
+
+      const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
+      const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
+
+      // Check if child content size + padding exceeds parent size in each dimension
+      if (horizontalSizeAdjustment != null) {
+        basicCommands.push(horizontalSizeAdjustment)
+      }
+
+      if (verticalSizeAdjustment != null) {
+        basicCommands.push(verticalSizeAdjustment)
       }
 
       // "tearing off" padding
