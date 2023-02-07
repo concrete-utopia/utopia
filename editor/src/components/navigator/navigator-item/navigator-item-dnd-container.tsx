@@ -25,6 +25,7 @@ import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state
 import { useRefEditorState } from '../../../components/editor/store/store-hook'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { useColorTheme } from '../../../uuiui'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -144,17 +145,17 @@ function onHover(
       return
     }
 
-    if (isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut)) {
-      if (propsOfDraggedItem.appropriateDropTargetHint?.type !== 'before') {
-        propsOfDraggedItem.editorDispatch(
-          [
-            ...targetAction,
-            showNavigatorDropTargetHint('before', propsOfDropTargetItem.elementPath),
-          ],
-          'leftpane',
-        )
-      }
-    } else if (
+    if (
+      isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut) &&
+      propsOfDraggedItem.appropriateDropTargetHint?.type !== 'before'
+    ) {
+      return propsOfDraggedItem.editorDispatch(
+        [...targetAction, showNavigatorDropTargetHint('before', propsOfDropTargetItem.elementPath)],
+        'leftpane',
+      )
+    }
+
+    if (
       isCursorInBottomArea(dropTargetRectangle, cursor.y, numberOfAreasToCut) &&
       (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed)
     ) {
@@ -172,23 +173,26 @@ function onHover(
         )
         const targetDistance = Math.min(cursorTargetDepth, maximumTargetDepth)
         const targetTP = EP.getNthParent(propsOfDraggedItem.elementPath, targetDistance)
+
         if (
           propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
           !EP.pathsEqual(propsOfDraggedItem.appropriateDropTargetHint?.target, targetTP)
         ) {
-          propsOfDraggedItem.editorDispatch(
+          return propsOfDraggedItem.editorDispatch(
             [...targetAction, showNavigatorDropTargetHint('after', targetTP)],
             'leftpane',
           )
         }
-      } else if (
+      }
+
+      if (
         propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
         !EP.pathsEqual(
           propsOfDraggedItem.appropriateDropTargetHint?.target,
           propsOfDropTargetItem.elementPath,
         )
       ) {
-        propsOfDraggedItem.editorDispatch(
+        return propsOfDraggedItem.editorDispatch(
           [
             ...targetAction,
             showNavigatorDropTargetHint('after', propsOfDropTargetItem.elementPath),
@@ -196,17 +200,19 @@ function onHover(
           'leftpane',
         )
       }
-    } else if (canReparent) {
-      if (propsOfDraggedItem.appropriateDropTargetHint?.type !== 'reparent') {
-        propsOfDraggedItem.editorDispatch(
-          [
-            ...targetAction,
-            showNavigatorDropTargetHint('reparent', propsOfDropTargetItem.elementPath),
-          ],
-          'leftpane',
-        )
-      }
-    } else if (propsOfDraggedItem.appropriateDropTargetHint?.type !== null) {
+    }
+
+    if (canReparent && propsOfDraggedItem.appropriateDropTargetHint?.type !== 'reparent') {
+      return propsOfDraggedItem.editorDispatch(
+        [
+          ...targetAction,
+          showNavigatorDropTargetHint('reparent', propsOfDropTargetItem.elementPath),
+        ],
+        'leftpane',
+      )
+    }
+
+    if (propsOfDraggedItem.appropriateDropTargetHint?.type !== null) {
       propsOfDraggedItem.editorDispatch([showNavigatorDropTargetHint(null, null)], 'leftpane')
     }
   }
@@ -221,10 +227,16 @@ function beginDrag(
   return props
 }
 
+interface NavigatorItemDndWrapperProps {
+  borderColor: string
+}
+
 export class NavigatorItemDndWrapper extends PureComponent<
-  NavigatorItemDragAndDropWrapperProps & CollectResults
+  NavigatorItemDragAndDropWrapperProps & CollectResults & NavigatorItemDndWrapperProps
 > {
-  constructor(props: NavigatorItemDragAndDropWrapperProps & CollectResults) {
+  constructor(
+    props: NavigatorItemDragAndDropWrapperProps & CollectResults & NavigatorItemDndWrapperProps,
+  ) {
     super(props)
   }
 
@@ -249,7 +261,19 @@ export class NavigatorItemDndWrapper extends PureComponent<
         key='navigatorItem'
         id={`navigator-item-${safeComponentId}`}
         data-testid={`navigator-item-${safeComponentId}`}
-        style={props.windowStyle}
+        style={{
+          ...props.windowStyle,
+          boxSizing: 'border-box',
+          transform: this.props.isDragging ? 'scale(0.5)' : undefined,
+          ...(this.props.isOver && this.props.appropriateDropTargetHint?.type === 'reparent'
+            ? {
+                border: `2px solid ${this.props.borderColor}`,
+                borderRadius: 3,
+              }
+            : {
+                border: '2px solid transparent',
+              }),
+        }}
       >
         <NavigatorItem
           elementPath={this.props.elementPath}
@@ -357,10 +381,17 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
   const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
+  const colorTheme = useColorTheme()
+
   return (
     <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
       <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
-        <NavigatorItemDndWrapper {...props} isOver={isOver} isDragging={isDragging} />
+        <NavigatorItemDndWrapper
+          {...props}
+          borderColor={colorTheme.navigatorResizeHintBorder.value}
+          isOver={isOver}
+          isDragging={isDragging}
+        />
       </div>
     </div>
   )
