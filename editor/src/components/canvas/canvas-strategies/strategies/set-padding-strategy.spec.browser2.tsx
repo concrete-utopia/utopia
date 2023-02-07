@@ -817,13 +817,11 @@ async function testPaddingResizeForEdge(
     alt: mode === 'cross-axis' || mode === 'all',
     shift: mode === 'all',
   }
-  await expectSingleUndoStep(
-    editor,
-    async () =>
-      await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, {
-        modifiers,
-      }),
-  )
+  await expectSingleUndoStep(editor, async () => {
+    await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, {
+      modifiers,
+    })
+  })
   await editor.getDispatchFollowUpActionsFinished()
 }
 

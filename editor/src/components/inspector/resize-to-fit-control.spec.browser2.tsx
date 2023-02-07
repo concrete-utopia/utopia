@@ -17,7 +17,9 @@ describe('Resize to fit control', () => {
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
-    await expectSingleUndoStep(editor, async () => await clickResizeToFit(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickResizeToFit(editor)
+    })
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')

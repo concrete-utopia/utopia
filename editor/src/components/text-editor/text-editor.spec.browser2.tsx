@@ -426,7 +426,7 @@ describe('Use the text editor', () => {
           y: divBounds.y + 10,
         }
 
-        mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+        await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
         await editor.getDispatchFollowUpActionsFinished()
 
         await wait(50) // give it time to adjust the caret position
@@ -482,7 +482,7 @@ describe('Use the text editor', () => {
           y: divBounds.y + 10,
         }
 
-        mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+        await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
         await editor.getDispatchFollowUpActionsFinished()
 
         await wait(50) // give it time to adjust the caret position
@@ -909,14 +909,12 @@ async function prepareTestModifierEditor(editor: EditorRenderResult) {
 }
 
 async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: string) {
-  await expectSingleUndoStep(
-    editor,
-    async () =>
-      await pressKey(key, {
-        modifiers: mod,
-        targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
-      }),
-  )
+  await expectSingleUndoStep(editor, async () => {
+    await pressKey(key, {
+      modifiers: mod,
+      targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
+    })
+  })
   await closeTextEditor()
   await editor.getDispatchFollowUpActionsFinished()
 }

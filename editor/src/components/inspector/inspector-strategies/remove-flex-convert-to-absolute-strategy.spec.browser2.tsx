@@ -18,7 +18,9 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const root = await selectDiv(editor)
 
-    await expectSingleUndoStep(editor, async () => await clickOn(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor)
+    })
 
     expect(root.style.display).toEqual('')
     expect(root.style.alignItems).toEqual('')

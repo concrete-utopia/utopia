@@ -654,5 +654,5 @@ async function convertParentToFlex(editor: EditorRenderResult) {
 async function clickOnPlusButton(editor: EditorRenderResult) {
   const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
 
-  mouseClickAtPoint(plusButton, { x: 2, y: 2 })
+  await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
 }

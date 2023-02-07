@@ -91,7 +91,7 @@ describe('Pasting an image onto the canvas', () => {
     const containerBounds = container.getBoundingClientRect()
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: containerBounds.left + 1,
       y: containerBounds.top + 1,
     })

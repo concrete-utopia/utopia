@@ -57,10 +57,9 @@ async function doTest(
     NineBlockTestId(justifyContent, alignItems),
   )
 
-  await expectSingleUndoStep(
-    editor,
-    async () => await mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 }),
-  )
+  await expectSingleUndoStep(editor, async () => {
+    await mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 })
+  })
 
   return div
 }

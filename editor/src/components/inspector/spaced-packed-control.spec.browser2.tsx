@@ -20,7 +20,9 @@ describe('spaced - packed control', () => {
     const div = editor.renderedDOM.getByTestId(ParentId)
     expect(div.style.gap).toEqual('48px')
 
-    await expectSingleUndoStep(editor, () => clickButton(editor, SpacedLabelCopy))
+    await expectSingleUndoStep(editor, async () => {
+      await clickButton(editor, SpacedLabelCopy)
+    })
     expect(div.style.gap).toEqual('')
     expect(div.style.justifyContent).toEqual('space-between')
   })
@@ -40,7 +42,7 @@ describe('spaced - packed control', () => {
 async function clickButton(editor: EditorRenderResult, button: SpacedPackedButtonLabel) {
   const buttonElement = editor.renderedDOM.getByText(button)
   const buttonBounds = buttonElement.getBoundingClientRect()
-  mouseClickAtPoint(buttonElement, { x: buttonBounds.top + 10, y: buttonBounds.left + 10 })
+  await mouseClickAtPoint(buttonElement, { x: buttonBounds.top + 10, y: buttonBounds.left + 10 })
 }
 
 const project = `import * as React from 'react'

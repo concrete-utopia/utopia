@@ -73,7 +73,9 @@ describe('shortcuts', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/${TestIdOne}`)])
 
-      await expectSingleUndoStep(editor, async () => await pressKey('x'))
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.position).toEqual('')
@@ -95,7 +97,9 @@ describe('shortcuts', () => {
         EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
       ])
 
-      await expectSingleUndoStep(editor, async () => pressKey('x'))
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(div.style.position).toEqual('absolute')
@@ -191,10 +195,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(
-      renderResult,
-      async () => await pressKey('b', { modifiers: cmdModifier }),
-    )
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('b', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -223,10 +226,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(
-      renderResult,
-      async () => await pressKey('b', { modifiers: cmdModifier }),
-    )
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('b', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -253,10 +255,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(
-      renderResult,
-      async () => await pressKey('i', { modifiers: cmdModifier }),
-    )
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('i', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -285,10 +286,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(
-      renderResult,
-      async () => await pressKey('i', { modifiers: cmdModifier }),
-    )
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('i', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -317,10 +317,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(
-      renderResult,
-      async () => await pressKey('u', { modifiers: cmdModifier }),
-    )
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('u', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -349,10 +348,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(
-      renderResult,
-      async () => await pressKey('u', { modifiers: cmdModifier }),
-    )
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('u', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(

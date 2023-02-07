@@ -366,7 +366,7 @@ async function setupRemovalTest(buttonToPress: string): Promise<string> {
 
   const inspectorButton = editor.renderedDOM.getByTestId(buttonToPress)
   const inspectorButtonBounds = inspectorButton.getBoundingClientRect()
-  mouseClickAtPoint(inspectorButton, {
+  await mouseClickAtPoint(inspectorButton, {
     x: inspectorButtonBounds.x + 1,
     y: inspectorButtonBounds.y + 1,
   })
