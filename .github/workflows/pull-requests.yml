@@ -121,7 +121,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            '## Try me'
+            ## Try me
             (building...)
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -185,7 +185,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            '## Try me'
+            ## Try me
             (deploying...)
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
@@ -209,7 +209,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            '## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})'
+            ## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})
 
   performance-test:
     name: Run Performance Tests
