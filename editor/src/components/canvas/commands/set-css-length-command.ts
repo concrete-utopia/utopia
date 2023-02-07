@@ -15,21 +15,23 @@ import { ElementPath, PropertyPath } from '../../../core/shared/project-file-typ
 import * as PP from '../../../core/shared/property-path'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
+  CSSKeyword,
   CSSNumber,
   cssPixelLength,
   FlexDirection,
   parseCSSPercent,
   printCSSNumber,
+  printCSSNumberOrKeyword,
 } from '../../inspector/common/css-utils'
 import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 type CssNumberOrKeepOriginalUnit =
-  | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber }
+  | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
   | { type: 'KEEP_ORIGINAL_UNIT'; valuePx: number; parentDimensionPx: number | undefined }
 
-export function setExplicitCssValue(value: CSSNumber): CssNumberOrKeepOriginalUnit {
+export function setExplicitCssValue(value: CSSNumber | CSSKeyword): CssNumberOrKeepOriginalUnit {
   return { type: 'EXPLICIT_CSS_NUMBER', value: value }
 }
 
@@ -137,7 +139,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
         ? command.value.value
         : cssPixelLength(command.value.valuePx)
 
-    const printedValue = printCSSNumber(newCssValue, 'px')
+    const printedValue = printCSSNumberOrKeyword(newCssValue, 'px')
 
     propsToUpdate.push({
       path: command.property,

@@ -173,9 +173,9 @@ async function clickOnElement(
   }
 
   if (singleOrDoubleClick === 'single-click') {
-    mouseClickAtPoint(canvasControlsLayer, divCorner)
+    await mouseClickAtPoint(canvasControlsLayer, divCorner)
   } else {
-    mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
   }
   await editor.getDispatchFollowUpActionsFinished()
 }

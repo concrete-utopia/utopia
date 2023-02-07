@@ -207,7 +207,6 @@ import type {
   ElementPaste,
   SetGithubState,
   SetProperty,
-  SaveToGithub,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
@@ -227,6 +226,7 @@ import type {
   UpdateColorSwatches,
   PasteProperties,
   CopyProperties,
+  MergeWithPrevUndo,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -324,6 +324,13 @@ export function transientActions(
     action: 'TRANSIENT_ACTIONS',
     transientActions: actions,
     elementsToRerender: elementsToRerender,
+  }
+}
+
+export function mergeWithPrevUndo(actions: Array<EditorAction>): MergeWithPrevUndo {
+  return {
+    action: 'MERGE_WITH_PREV_UNDO',
+    actions: actions,
   }
 }
 
@@ -1698,19 +1705,6 @@ export function toggleSelectionLock(
     action: 'TOGGLE_SELECTION_LOCK',
     targets: targets,
     newValue: newValue,
-  }
-}
-
-export function saveToGithub(
-  targetRepository: GithubRepo,
-  branchName: string,
-  commitMessage: string,
-): SaveToGithub {
-  return {
-    action: 'SAVE_TO_GITHUB',
-    targetRepository: targetRepository,
-    branchName: branchName,
-    commitMessage: commitMessage,
   }
 }
 

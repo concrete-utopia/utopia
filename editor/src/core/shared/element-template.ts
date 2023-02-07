@@ -4,8 +4,15 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
-import { Either, left, right } from './either'
+import {
+  CanvasRectangle,
+  LocalRectangle,
+  LocalPoint,
+  zeroCanvasRect,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
+} from './math-utils'
+import { Either, foldEither, isLeft, left, right } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -1563,8 +1570,8 @@ export function createNotImported(path: string, variableName: string): ImportInf
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
-  globalFrame: CanvasRectangle | null
-  localFrame: LocalRectangle | null
+  globalFrame: MaybeInfinityCanvasRectangle | null
+  localFrame: MaybeInfinityLocalRectangle | null
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -1577,8 +1584,8 @@ export interface ElementInstanceMetadata {
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
-  globalFrame: CanvasRectangle | null,
-  localFrame: LocalRectangle | null,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+  localFrame: MaybeInfinityLocalRectangle | null,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
@@ -1626,6 +1633,7 @@ export interface SpecialSizeMeasurements {
   clientHeight: number
   parentFlexDirection: FlexDirection | null
   parentFlexGap: number
+  gap: number | null
   flexDirection: FlexDirection | null
   justifyContent: FlexJustifyContent | null
   alignItems: FlexAlignment | null
@@ -1663,6 +1671,7 @@ export function specialSizeMeasurements(
   clientHeight: number,
   parentFlexDirection: FlexDirection | null,
   parentFlexGap: number,
+  gap: number | null,
   flexDirection: FlexDirection | null,
   justifyContent: FlexJustifyContent | null,
   alignItems: FlexAlignment | null,
@@ -1699,6 +1708,7 @@ export function specialSizeMeasurements(
     clientHeight,
     parentFlexDirection,
     parentFlexGap,
+    gap: gap,
     flexDirection,
     justifyContent,
     alignItems,
@@ -1740,6 +1750,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   null,
   0,
+  null,
   null,
   null,
   null,

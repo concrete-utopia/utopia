@@ -9,6 +9,7 @@ import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/
 import {
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
+  isInfinityRectangle,
   rectangleDifference,
   roundTo,
   SimpleRectangle,
@@ -161,7 +162,11 @@ export function absoluteResizeBoundingBoxStrategy(
                   canvasState.startingMetadata,
                 )
 
-                if (element == null || originalFrame == null) {
+                if (
+                  element == null ||
+                  originalFrame == null ||
+                  isInfinityRectangle(originalFrame)
+                ) {
                   return []
                 }
 

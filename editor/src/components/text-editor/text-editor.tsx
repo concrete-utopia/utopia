@@ -1,5 +1,5 @@
 import { unescape } from 'he'
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -17,7 +17,7 @@ import {
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { ApplyCommandsAction, EditorAction } from '../editor/action-types'
+import { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
@@ -36,6 +36,8 @@ import {
   toggleTextUnderline,
 } from './text-editor-shortcut-helpers'
 import { useColorTheme } from '../../uuiui'
+import { mapArrayToDictionary } from '../../core/shared/array-utils'
+import { TextRelatedProperties } from '../../core/properties/css-properties'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -70,6 +72,10 @@ export function escapeHTML(s: string): string {
 
 // editor → canvas
 export function unescapeHTML(s: string): string {
+  if (s.length === 0) {
+    return ''
+  }
+
   const unescaped = unescape(s)
 
   // We need to add a trailing newline so that the contenteditable can render and reach the last newline
@@ -79,31 +85,62 @@ export function unescapeHTML(s: string): string {
 
 const handleToggleShortcuts = (
   event: React.KeyboardEvent<Element>,
-  metadata: ElementInstanceMetadataMap,
+  metadataRef: {
+    readonly current: ElementInstanceMetadataMap
+  },
   target: ElementPath,
+  dispatch: EditorDispatch,
 ): Array<EditorAction> => {
   const modifiers = Modifier.modifiersForEvent(event)
   const meta = modifiers.cmd || modifiers.ctrl
   const specialSizeMeasurements = MetadataUtils.findElementByElementPath(
-    metadata,
+    metadataRef.current,
     target,
   )?.specialSizeMeasurements
 
   // Meta+b = bold
   if (meta && event.key === 'b') {
-    return [toggleTextBold(target, specialSizeMeasurements?.fontWeight ?? null)]
+    toggleTextBold(
+      target,
+      specialSizeMeasurements?.fontWeight ?? null,
+      dispatch,
+      metadataRef,
+      'separate-undo-step',
+    )
+    return []
   }
   // Meta+i = italic
   if (meta && event.key === 'i') {
-    return [toggleTextItalic(target, specialSizeMeasurements?.fontStyle ?? null)]
+    toggleTextItalic(
+      target,
+      specialSizeMeasurements?.fontStyle ?? null,
+      dispatch,
+      metadataRef,
+      'separate-undo-step',
+    )
+    return []
   }
   // Meta+u = underline
   if (meta && event.key === 'u') {
-    return [toggleTextUnderline(target, specialSizeMeasurements?.textDecorationLine ?? null)]
+    toggleTextUnderline(
+      target,
+      specialSizeMeasurements?.textDecorationLine ?? null,
+      dispatch,
+      metadataRef,
+      'separate-undo-step',
+    )
+    return []
   }
   // Meta+shift+x = strikethrough
   if (meta && modifiers.shift && event.key === 'x') {
-    return [toggleTextStrikeThrough(target, specialSizeMeasurements?.textDecorationLine ?? null)]
+    toggleTextStrikeThrough(
+      target,
+      specialSizeMeasurements?.textDecorationLine ?? null,
+      dispatch,
+      metadataRef,
+      'separate-undo-step',
+    )
+    return []
   }
   return []
 }
@@ -201,6 +238,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
+  const savedContentRef = React.useRef<string | null>(null)
+
   const scale = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.scale,
@@ -222,9 +261,13 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     }
 
     currentElement.focus()
+    savedContentRef.current = currentElement.textContent
 
-    const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
-    if (element?.globalFrame?.width === 0) {
+    const elementCanvasFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+      elementPath,
+      metadataRef.current,
+    )
+    if (elementCanvasFrame.width === 0) {
       currentElement.style.minWidth = '0.5px'
     }
 
@@ -232,10 +275,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       const content = currentElement.textContent
       if (content != null) {
         if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          setTimeout(() => dispatch([deleteView(elementPath)]))
+          requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
         } else {
-          if (elementState != null) {
-            setTimeout(() => dispatch([updateChildText(elementPath, escapeHTML(content))]))
+          if (elementState != null && savedContentRef.current !== content) {
+            savedContentRef.current = content
+            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content)]))
           }
         }
       }
@@ -273,7 +317,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const onKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
       const shortcuts = [
-        ...handleToggleShortcuts(event, metadataRef.current, elementPath),
+        ...handleToggleShortcuts(event, metadataRef, elementPath, dispatch),
         ...handleSetFontSizeShortcut(event, metadataRef.current, elementPath),
         ...handleSetFontWeightShortcut(event, metadataRef.current, elementPath),
       ]
@@ -297,8 +341,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const onBlur = React.useCallback(() => {
-    dispatch([updateEditorMode(EditorModes.selectMode())])
-  }, [dispatch])
+    const content = myElement.current?.textContent
+    if (content != null && elementState != null && savedContentRef.current !== content) {
+      savedContentRef.current = content
+      dispatch([getSaveAction(elementPath, content), updateEditorMode(EditorModes.selectMode())])
+    } else {
+      dispatch([updateEditorMode(EditorModes.selectMode())])
+    }
+  }, [dispatch, elementPath, elementState])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -307,6 +357,13 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     ref: myElement,
     id: TextEditorSpanId,
     style: {
+      // Ensure that font and text settings are inherited from
+      // the containing element:
+      ...mapArrayToDictionary<keyof CSSProperties, 'inherit', keyof CSSProperties>(
+        TextRelatedProperties,
+        (key) => key,
+        () => 'inherit',
+      ),
       // These properties need to be set to get the positioning that
       // is required of the text editor element itself:
       display: 'inline-block',
@@ -314,52 +371,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       height: '100%',
       // text editor outline
       boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
-      // Ensure that font and text settings are inherited from
-      // the containing element:
-      font: 'inherit',
-      fontFamily: 'inherit',
-      fontFeatureSettings: 'inherit',
-      fontKerning: 'inherit',
-      fontLanguageOverride: 'inherit',
-      fontOpticalSizing: 'inherit',
-      fontSize: 'inherit',
-      fontSizeAdjust: 'inherit',
-      fontStretch: 'inherit',
-      fontStyle: 'inherit',
-      fontSynthesis: 'inherit',
-      fontVariant: 'inherit',
-      fontVariantCaps: 'inherit',
-      fontVariantEastAsian: 'inherit',
-      fontVariantLigatures: 'inherit',
-      fontVariantNumeric: 'inherit',
-      fontVariantPosition: 'inherit',
-      fontVariationSettings: 'inherit',
-      fontWeight: 'inherit',
-      textAlign: 'inherit',
-      textAlignLast: 'inherit',
-      textCombineUpright: 'inherit',
-      textDecorationColor: 'inherit',
-      textDecorationLine: 'inherit',
-      textDecorationSkip: 'inherit',
-      textDecorationSkipInk: 'inherit',
-      textDecorationStyle: 'inherit',
-      textDecorationThickness: 'inherit',
-      textDecorationWidth: 'inherit',
-      textEmphasisColor: 'inherit',
-      textEmphasisPosition: 'inherit',
-      textEmphasisStyle: 'inherit',
-      textIndent: 'inherit',
-      textJustify: 'inherit',
-      textOrientation: 'inherit',
-      textOverflow: 'inherit',
-      textRendering: 'inherit',
-      textShadow: 'inherit',
-      textSizeAdjust: 'inherit',
-      textTransform: 'inherit',
-      textUnderlineOffset: 'inherit',
-      textUnderlinePosition: 'inherit',
-      letterSpacing: 'inherit',
-      lineHeight: 'inherit',
       // Prevent double applying these properties:
       opacity: 1,
     },
@@ -471,4 +482,8 @@ function filterEventHandlerProps(props: Record<string, any>) {
     ...filteredProps
   } = props
   return filteredProps
+}
+
+function getSaveAction(elementPath: ElementPath, content: string): EditorAction {
+  return updateChildText(elementPath, escapeHTML(content))
 }

@@ -6,7 +6,7 @@ import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/elem
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import {
   CSSNumber,
-  cssNumber,
+  cssPixelLength,
   FlexDirection,
   parseCSSLengthPercent,
   parseCSSNumber,
@@ -20,6 +20,13 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
+import { shallowEqual } from '../../core/shared/equality-utils'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../canvas/commands/set-css-length-command'
+import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
+import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -240,7 +247,7 @@ export function justifyContentAlignItemsEquals(
     : alignItems === other.alignItems && justifyContent === other.justifyContent
 }
 
-function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean): boolean {
+function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean = shallowEqual): boolean {
   if (objects.length === 0) {
     return false
   }
@@ -272,17 +279,26 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
   }
 }
 
-export function convertWidthToFlexGrow(
+export function childIs100PercentSizedInEitherDirection(
   metadataMap: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): Array<CanvasCommand> {
+): [childHorizontal100: boolean, childVertical100: boolean] {
+  return [
+    childIs100PercentSizedInDirection(metadataMap, elementPath, 'row'),
+    childIs100PercentSizedInDirection(metadataMap, elementPath, 'column'),
+  ]
+}
+
+function childIs100PercentSizedInDirection(
+  metadataMap: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection,
+): boolean {
   const element = MetadataUtils.getJSXElementFromMetadata(metadataMap, elementPath)
   const metadata = MetadataUtils.findElementByElementPath(metadataMap, elementPath)
   if (element == null || metadata == null) {
-    return []
+    return false
   }
-
-  const parentFlexDirection = metadata.specialSizeMeasurements.parentFlexDirection ?? 'row'
   const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
 
   const matches =
@@ -291,9 +307,20 @@ export function convertWidthToFlexGrow(
       getSimpleAttributeAtPath(right(element.props), PP.create('style', prop)),
     ) === '100%'
 
-  if (!matches) {
+  return matches
+}
+
+export function convertWidthToFlexGrowOptionally(
+  metadataMap: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection,
+): Array<CanvasCommand> {
+  if (!childIs100PercentSizedInDirection(metadataMap, elementPath, parentFlexDirection)) {
     return []
   }
+
+  const prop = parentFlexDirection.startsWith('row') ? 'width' : 'height'
+
   return [
     deleteProperties('always', elementPath, [PP.create('style', prop)]),
     setProperty('always', elementPath, PP.create('style', 'flexGrow'), 1),
@@ -304,7 +331,8 @@ export function nullOrNonEmpty<T>(ts: Array<T>): Array<T> | null {
   return ts.length === 0 ? null : ts
 }
 
-export const styleP = (prop: keyof CSSProperties): PropertyPath => PP.create('style', prop)
+export const styleP = <K extends keyof CSSProperties>(prop: K): PropertyPath<['style', K]> =>
+  PP.create('style', prop)
 
 export const flexContainerProps = [
   styleP('flexDirection'),
@@ -315,7 +343,12 @@ export const flexContainerProps = [
   styleP('justifyContent'),
 ]
 
-export const flexChildProps = [styleP('flex'), styleP('flexGrow'), styleP('flexShrink')]
+export const flexChildProps = [
+  styleP('flex'),
+  styleP('flexGrow'),
+  styleP('flexShrink'),
+  styleP('flexBasis'),
+]
 
 export function pruneFlexPropsCommands(
   props: PropertyPath[],
@@ -337,8 +370,21 @@ export function sizeToVisualDimensions(
   const height = element.specialSizeMeasurements.clientHeight
 
   return [
-    setProperty('always', elementPath, styleP('width'), width),
-    setProperty('always', elementPath, styleP('height'), height),
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(width)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(height)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
   ]
 }
 
@@ -459,3 +505,103 @@ export function detectFillHugFixedState(
 }
 
 export const MaxContent = 'max-content' as const
+
+export type PackedSpaced = 'packed' | 'spaced'
+
+function detectPackedSpacedSettingInner(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): PackedSpaced {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  return element?.specialSizeMeasurements.justifyContent === 'space-between' ? 'spaced' : 'packed'
+}
+
+export function detectPackedSpacedSetting(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): PackedSpaced | null {
+  if (elementPaths.length === 0) {
+    return null
+  }
+  const detectedPackedSpacedSettings = elementPaths.map((path) =>
+    detectPackedSpacedSettingInner(metadata, path),
+  )
+  return allElemsEqual(detectedPackedSpacedSettings)
+    ? detectedPackedSpacedSettings.at(0) ?? null
+    : null
+}
+export function resizeToFitCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = [
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('horizontal'),
+    ) ?? []),
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropHugStrategies('vertical'),
+    ) ?? []),
+  ]
+  return commands
+}
+
+export function addPositionAbsoluteTopLeft(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const left = element.specialSizeMeasurements.offset.x
+  const top = element.specialSizeMeasurements.offset.y
+
+  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
+  return [
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('left'),
+      setExplicitCssValue(cssPixelLength(left)),
+      parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('top'),
+      setExplicitCssValue(cssPixelLength(top)),
+      parentFlexDirection,
+    ),
+    setProperty('always', elementPath, styleP('position'), 'absolute'),
+  ]
+}
+
+export function notFixedSizeOnBothAxes(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return elementPaths.every((elementPath) => {
+    const horizontalState = detectFillHugFixedState('horizontal', metadata, elementPath)?.type
+    const verticalState = detectFillHugFixedState('vertical', metadata, elementPath)?.type
+    return horizontalState !== 'fixed' && verticalState !== 'fixed'
+  })
+}
+
+export function toggleResizeToFitSetToFixed(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): Array<CanvasCommand> {
+  if (elementPaths.length === 0) {
+    return []
+  }
+
+  return notFixedSizeOnBothAxes(metadata, elementPaths)
+    ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
+    : resizeToFitCommands(metadata, elementPaths)
+}

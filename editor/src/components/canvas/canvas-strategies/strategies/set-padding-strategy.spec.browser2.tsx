@@ -1,10 +1,12 @@
 import { assertNever } from '../../../../core/shared/utils'
-import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
+import { cmdModifier, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import { expectSingleUndoStep, wait } from '../../../../utils/utils.test-utils'
+import { cssNumber } from '../../../inspector/common/css-utils'
 import { EdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   AdjustPrecision,
+  cssNumberWithRenderedValue,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import {
@@ -25,6 +27,7 @@ import {
   CSSPaddingMappedValues,
   combinePaddings,
   paddingPropForEdge,
+  PaddingAdjustMode,
 } from '../../padding-utils'
 import {
   EditorRenderResult,
@@ -527,7 +530,87 @@ describe('Padding resize strategy', () => {
     )
   })
 
-  describe('Padding controls on compoenent instances', () => {
+  describe('Adjust multiple edges simultaneously', () => {
+    it('adjust along the horizontal cross-axis', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithLongHandPaddingValues({
+          paddingBottom: `'10px'`,
+          paddingTop: `'10px'`,
+          paddingLeft: `'10px'`,
+          paddingRight: `'10px'`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await testPaddingResizeForEdge(editor, 10, 'left', 'precise', 'cross-axis')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithStringPaddingValues(
+          paddingToPaddingString({
+            paddingBottom: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
+            paddingTop: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
+            paddingLeft: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingRight: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+          }),
+        ),
+      )
+    })
+
+    it('adjust along the vertical cross-axis', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithLongHandPaddingValues({
+          paddingBottom: `'10px'`,
+          paddingTop: `'10px'`,
+          paddingLeft: `'10px'`,
+          paddingRight: `'10px'`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await testPaddingResizeForEdge(editor, 10, 'top', 'precise', 'cross-axis')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithStringPaddingValues(
+          paddingToPaddingString({
+            paddingBottom: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingTop: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingLeft: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
+            paddingRight: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
+          }),
+        ),
+      )
+    })
+
+    it('adjust all 4 paddings at the same time', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithLongHandPaddingValues({
+          paddingBottom: `'10px'`,
+          paddingTop: `'10px'`,
+          paddingLeft: `'10px'`,
+          paddingRight: `'10px'`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await testPaddingResizeForEdge(editor, 10, 'top', 'precise', 'all')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithStringPaddingValues(
+          paddingToPaddingString({
+            paddingBottom: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingTop: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingLeft: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingRight: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+          }),
+        ),
+      )
+    })
+  })
+
+  describe('Padding controls on component instances', () => {
     it('controls are shown if padding is specified on the component instance', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithComponentThatDefinesPaddingInternally({
@@ -588,11 +671,11 @@ describe('Padding resize strategy', () => {
     // eslint-disable-next-line jest/expect-expect
     it('top', async () => testAdjustIndividualPaddingValue('top', 'precise'))
     // eslint-disable-next-line jest/expect-expect
-    it('bottom', async () => testAdjustIndividualPaddingValue('top', 'precise'))
+    it('bottom', async () => testAdjustIndividualPaddingValue('bottom', 'precise'))
     // eslint-disable-next-line jest/expect-expect
-    it('left', async () => testAdjustIndividualPaddingValue('top', 'precise'))
+    it('left', async () => testAdjustIndividualPaddingValue('left', 'precise'))
     // eslint-disable-next-line jest/expect-expect
-    it('right', async () => testAdjustIndividualPaddingValue('top', 'precise'))
+    it('right', async () => testAdjustIndividualPaddingValue('right', 'precise'))
   })
 
   describe('Adjusting individual padding values, coarse', () => {
@@ -600,11 +683,31 @@ describe('Padding resize strategy', () => {
     // eslint-disable-next-line jest/expect-expect
     it('top', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
     // eslint-disable-next-line jest/expect-expect
-    it('bottom', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
+    it('bottom', async () => testAdjustIndividualPaddingValue('bottom', 'coarse'))
     // eslint-disable-next-line jest/expect-expect
-    it('left', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
+    it('left', async () => testAdjustIndividualPaddingValue('left', 'coarse'))
     // eslint-disable-next-line jest/expect-expect
-    it('right', async () => testAdjustIndividualPaddingValue('top', 'coarse'))
+    it('right', async () => testAdjustIndividualPaddingValue('right', 'coarse'))
+  })
+
+  describe('Adjusting individual padding values, with container set to hug', () => {
+    // the expect is in `testAdjustIndividualPaddingValue`
+    // eslint-disable-next-line jest/expect-expect
+    it('top', async () => {
+      await testAdjustIndividualPaddingValueWithHuggingContainer('top', 'coarse', 12, 12)
+    })
+    // eslint-disable-next-line jest/expect-expect
+    it('bottom', async () => {
+      await testAdjustIndividualPaddingValueWithHuggingContainer('bottom', 'coarse', 12, -12)
+    })
+    // eslint-disable-next-line jest/expect-expect
+    it('left', async () => {
+      await testAdjustIndividualPaddingValueWithHuggingContainer('left', 'coarse', 12, 12)
+    })
+    // eslint-disable-next-line jest/expect-expect
+    it('right', async () => {
+      await testAdjustIndividualPaddingValueWithHuggingContainer('right', 'coarse', 12, -12)
+    })
   })
 })
 
@@ -642,11 +745,52 @@ async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: Adju
   )
 }
 
+async function testAdjustIndividualPaddingValueWithHuggingContainer(
+  edge: EdgePiece,
+  precision: AdjustPrecision,
+  intendedDragDelta: number,
+  actualDragDelta: number,
+) {
+  const padding: CSSPaddingMeasurements = {
+    paddingTop: unitlessCSSNumberWithRenderedValue(22),
+    paddingBottom: unitlessCSSNumberWithRenderedValue(33),
+    paddingLeft: unitlessCSSNumberWithRenderedValue(44),
+    paddingRight: unitlessCSSNumberWithRenderedValue(55),
+  }
+
+  const editor = await renderTestEditorWithCode(
+    makeTestProjectCodeWithHugContentsContainerStringPaddingValues(paddingToPaddingString(padding)),
+    'await-first-dom-report',
+  )
+
+  const defaultPadding: CSSPaddingMappedValues<number> = {
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+  }
+
+  await testPaddingResizeForEdge(editor, intendedDragDelta, edge, precision)
+  await editor.getDispatchFollowUpActionsFinished()
+
+  expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+    makeTestProjectCodeWithHugContentsContainerStringPaddingValues(
+      paddingToPaddingString(
+        combinePaddings(
+          defaultPadding,
+          offsetPaddingByEdge(paddingPropForEdge(edge), actualDragDelta, padding, precision),
+        ),
+      ),
+    ),
+  )
+}
+
 async function testPaddingResizeForEdge(
   editor: EditorRenderResult,
   delta: number,
   edge: EdgePiece,
   precision: AdjustPrecision,
+  mode: PaddingAdjustMode = 'individual',
 ) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
@@ -667,8 +811,17 @@ async function testPaddingResizeForEdge(
   }
   const endPoint = offsetPointByEdge(edge, delta, paddingControlCenter)
 
-  const modifiers = precision === 'coarse' ? shiftModifier : undefined
-  await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, { modifiers })
+  const modifiers: Modifiers = {
+    ctrl: false,
+    cmd: precision === 'coarse',
+    alt: mode === 'cross-axis' || mode === 'all',
+    shift: mode === 'all',
+  }
+  await expectSingleUndoStep(editor, async () => {
+    await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, {
+      modifiers,
+    })
+  })
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -714,6 +867,34 @@ function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
             backgroundColor: '#aaaaaa33',
             width: '100%',
             height: '100%',
+          }}
+          data-uid='002'
+        />
+      </div>
+    </div>`)
+}
+
+function makeTestProjectCodeWithHugContentsContainerStringPaddingValues(padding: string): string {
+  return makeTestProjectCodeWithSnippet(`
+    <div data-uid='root'>
+      <div
+        data-uid='mydiv'
+        data-testid='mydiv'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 28,
+          top: 28,
+          width: 'max-content',
+          height: 'max-content',
+          padding: '${padding}',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 342,
+            height: 274,
           }}
           data-uid='002'
         />

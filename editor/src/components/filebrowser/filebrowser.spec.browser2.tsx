@@ -221,7 +221,7 @@ describe('File browser tests', () => {
       y: fileItemBounds.y + 5,
     }
 
-    mouseClickAtPoint(fileItem, fileItemBoundsCenter)
+    await mouseClickAtPoint(fileItem, fileItemBoundsCenter)
     await editor.getDispatchFollowUpActionsFinished()
 
     const actions = editor.getRecordedActions()

@@ -709,6 +709,17 @@ export function printCSSNumber(
   }
 }
 
+export function printCSSNumberOrKeyword(
+  input: CSSNumber | CSSKeyword,
+  defaultUnitToSkip: string | null,
+): string | number {
+  if (isCSSKeyword(input)) {
+    return input.value
+  } else {
+    return printCSSNumber(input, defaultUnitToSkip)
+  }
+}
+
 export function cssNumberToString(input: CSSNumber, showUnit: boolean = true): string {
   const printed = showUnit ? printCSSNumber(input, null) : fixNumber(input.value)
   return `${printed}`
@@ -5218,8 +5229,13 @@ export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
     delete workingNewValue.style
     return workingNewValue
   } else {
+    const widthValue =
+      oldValue.width != null && oldValue.width.value.value > 0
+        ? oldValue.width
+        : cssLineWidth(cssNumber(1, 'px'))
     return {
       ...oldValue,
+      width: widthValue,
       style: cssLineStyle(cssKeyword('solid')),
     }
   }

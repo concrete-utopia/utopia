@@ -1,11 +1,14 @@
-import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
-import { wait } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
+  EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
+  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -15,6 +18,8 @@ import { selectComponents } from './actions/meta-actions'
 
 const TestIdOne = 'one'
 const TestIdTwo = 'two'
+const StoryBoardId = 'StoryBoardId'
+const ParentId = 'ParentId'
 const backgroundColor = '#384C5CAB'
 
 // for some reason, ctrl + c does not trigger the eyedropper in tests
@@ -60,26 +65,50 @@ describe('shortcuts', () => {
     })
   })
 
-  it('x to remove positioning props from the selected element', async () => {
-    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+  describe('x', () => {
+    it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId(TestIdOne)
-    const divBounds = div.getBoundingClientRect()
-    const divCorner = {
-      x: divBounds.x + 50,
-      y: divBounds.y + 40,
-    }
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
 
-    await mouseClickAtPoint(canvasControlsLayer, divCorner)
+      await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/${TestIdOne}`)])
 
-    await pressKey('x')
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+      await editor.getDispatchFollowUpActionsFinished()
 
-    expect(div.style.position).toEqual('')
-    expect(div.style.top).toEqual('')
-    expect(div.style.bottom).toEqual('')
-    expect(div.style.left).toEqual('')
-    expect(div.style.right).toEqual('')
+      expect(div.style.position).toEqual('')
+      expect(div.style.top).toEqual('')
+      expect(div.style.bottom).toEqual('')
+      expect(div.style.left).toEqual('')
+      expect(div.style.right).toEqual('')
+    })
+
+    it('when the selected element participates in the layout, absolute positioning props are added to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlexLayout,
+        'await-first-dom-report',
+      )
+
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
+      ])
+
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.position).toEqual('absolute')
+      expect(div.style.top).toEqual('47px')
+      expect(div.style.left).toEqual('50px')
+      expect(div.style.width).toEqual('340px')
+      expect(div.style.height).toEqual('363px')
+      expect(div.style.contain).toEqual('layout')
+    })
   })
 })
 
@@ -87,7 +116,7 @@ const project = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
     export var storyboard = (
-  <Storyboard data-uid='0cd'>
+  <Storyboard data-uid='${StoryBoardId}'>
     <div
       data-testid='${TestIdOne}'
       style={{
@@ -98,7 +127,7 @@ import { Scene, Storyboard } from 'utopia-api'
         width: 161,
         height: 171,
       }}
-      data-uid='e6b'
+      data-uid='${TestIdOne}'
     />
     <div
       data-testid='${TestIdTwo}'
@@ -110,8 +139,41 @@ import { Scene, Storyboard } from 'utopia-api'
         width: 173,
         height: 222,
       }}
-      data-uid='ecf'
+      data-uid='${TestIdTwo}'
     />
+  </Storyboard>
+)
+`
+
+const projectWithChildInFlexLayout = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='${StoryBoardId}'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 67,
+        top: 128,
+        width: 340,
+        height: 363,
+        display: 'flex',
+        padding: '47px 20px 20px 50px',
+      }}
+      data-uid='${ParentId}'
+    >
+      <div
+        data-testid='${TestIdOne}'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          contain: 'layout',
+          height: '100%',
+          flexGrow: 1
+        }}
+        data-uid='${TestIdOne}'
+      />
+    </div>
   </Storyboard>
 )
 `
@@ -133,7 +195,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await pressKey('b', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('b', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -146,7 +210,7 @@ describe('global shortcuts to set properties', () => {
       ),
     )
   })
-  it('cmd + b toggles text to normal if it was bold', async () => {
+  it('cmd + b unsets font weight if it was bold', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
@@ -162,14 +226,14 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await pressKey('b', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('b', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
-          <div
-            style={{ fontWeight: 'normal' }}
-            data-uid='bbb'
+          <div style={{}} data-uid='bbb'
           >hello text</div>
         </div>`,
       ),
@@ -191,7 +255,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await pressKey('i', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('i', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -204,7 +270,7 @@ describe('global shortcuts to set properties', () => {
       ),
     )
   })
-  it('cmd + i toggles text to normal if it was italic', async () => {
+  it('cmd + i unsets font style if it was italic', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
@@ -220,13 +286,15 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await pressKey('i', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('i', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{ fontStyle: 'normal' }}
+            style={{}}
             data-uid='bbb'
           >hello text</div>
         </div>`,
@@ -249,7 +317,9 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await pressKey('u', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('u', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -262,7 +332,7 @@ describe('global shortcuts to set properties', () => {
       ),
     )
   })
-  it('cmd + u toggles text to none if it was underlined', async () => {
+  it('cmd + u unsets text decoration if it was underlined', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
@@ -278,13 +348,15 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await pressKey('u', { modifiers: cmdModifier })
+    await expectSingleUndoStep(renderResult, async () => {
+      await pressKey('u', { modifiers: cmdModifier })
+    })
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div
-            style={{ textDecoration: 'none' }}
+            style={{}}
             data-uid='bbb'
           >hello text</div>
         </div>`,
@@ -339,3 +411,335 @@ describe('global shortcuts to set properties', () => {
     )
   })
 })
+
+describe('group selection', () => {
+  it('wraps flex row children in a container with flex row set', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboardChildren(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 138,
+        width: 513,
+        height: 364,
+        display: 'flex',
+        gap: 42,
+      }}
+      data-uid='e5b'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 139,
+          height: 130,
+          contain: 'layout',
+        }}
+        data-uid='6de'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 119,
+          height: 213,
+          contain: 'layout',
+        }}
+        data-uid='8f4'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 99,
+          height: 132,
+          contain: 'layout',
+        }}
+        data-uid='0e8'
+      />
+    </div>`),
+      'await-first-dom-report',
+    )
+
+    await doGroup(editor)
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 138,
+        width: 513,
+        height: 364,
+        display: 'flex',
+        gap: 42,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          contain: 'layout',
+          gap: 42,
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 139,
+            height: 130,
+            contain: 'layout',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 119,
+            height: 213,
+            contain: 'layout',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 99,
+          height: 132,
+          contain: 'layout',
+        }}
+      />
+    </div>`),
+    )
+  })
+  it('wraps flex column children in a container with flex column set', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboardChildren(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 138,
+        width: 513,
+        height: 364,
+        display: 'flex',
+        gap: 42,
+        flexDirection: 'column'
+      }}
+      data-uid='e5b'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 139,
+          height: 130,
+          contain: 'layout',
+        }}
+        data-uid='6de'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 119,
+          height: 213,
+          contain: 'layout',
+        }}
+        data-uid='8f4'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 99,
+          height: 132,
+          contain: 'layout',
+        }}
+        data-uid='0e8'
+      />
+    </div>`),
+      'await-first-dom-report',
+    )
+    await doGroup(editor)
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 138,
+        width: 513,
+        height: 364,
+        display: 'flex',
+        gap: 42,
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          contain: 'layout',
+          gap: 42,
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 139,
+            height: 130,
+            contain: 'layout',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 119,
+            height: 213,
+            contain: 'layout',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 99,
+          height: 132,
+          contain: 'layout',
+        }}
+      />
+    </div>`),
+    )
+  })
+  it('wraps div children in a simple div', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboardChildren(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 138,
+        width: 429,
+        height: 548,
+      }}
+      data-uid='e5b'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 139,
+          height: 130,
+          contain: 'layout',
+        }}
+        data-uid='6de'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 119,
+          height: 213,
+          contain: 'layout',
+        }}
+        data-uid='8f4'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 99,
+          height: 132,
+          contain: 'layout',
+        }}
+        data-uid='0e8'
+      />
+    </div>`),
+      'await-first-dom-report',
+    )
+
+    await doGroup(editor)
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 200,
+        top: 138,
+        width: 429,
+        height: 548,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 139,
+          height: 343,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 139,
+            height: 130,
+            contain: 'layout',
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 119,
+            height: 213,
+            contain: 'layout',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 99,
+          height: 132,
+          contain: 'layout',
+        }}
+      />
+    </div>`),
+    )
+  })
+})
+
+async function doGroup(editor: EditorRenderResult) {
+  await selectComponentsForTest(editor, [EP.fromString(`sb/e5b/6de`), EP.fromString(`sb/e5b/8f4`)])
+  await expectSingleUndoStep(editor, async () => pressKey('g', { modifiers: cmdModifier }))
+}
+
+function makeTestProjectCodeWithStoryboardChildren(storyboardChildren: string): string {
+  const code = `
+    import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+
+    export var ${BakedInStoryboardVariableName} = (props) => {
+      return (
+        <Storyboard data-uid='sb'>
+          ${storyboardChildren}
+        </Storyboard>
+      )
+    }
+  `
+
+  return formatTestProjectCode(code)
+}
+
+function makeTestProjectCodeWithStoryboardChildrenNoUids(storyboardChildren: string): string {
+  const code = `
+    import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+
+    export var ${BakedInStoryboardVariableName} = (props) => {
+      return (
+        <Storyboard>
+          ${storyboardChildren}
+        </Storyboard>
+      )
+    }
+  `
+
+  return formatTestProjectCode(code)
+}

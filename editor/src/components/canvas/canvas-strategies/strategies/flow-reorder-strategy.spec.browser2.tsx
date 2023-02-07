@@ -12,7 +12,12 @@ import {
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
-import { rectangleDifference, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import {
+  isInfinityRectangle,
+  rectangleDifference,
+  windowPoint,
+  WindowPoint,
+} from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
@@ -255,7 +260,12 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
       renderResult.getEditorState().editor.jsxMetadata,
     )
 
-    if (elementAFrame == null || elementBFrame == null) {
+    if (
+      elementAFrame == null ||
+      elementBFrame == null ||
+      isInfinityRectangle(elementAFrame) ||
+      isInfinityRectangle(elementBFrame)
+    ) {
       assert.fail()
     } else {
       // drag element 'B' over 'A' will skip reorder

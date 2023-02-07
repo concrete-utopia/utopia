@@ -5,7 +5,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, isInfinityRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   EditorState,
@@ -57,6 +57,11 @@ import { TextEditableControl } from './text-editable-control'
 import { TextEditCanvasOverlay } from './text-edit-mode/text-edit-canvas-overlay'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { AbsoluteChildrenOutline } from './absolute-children-outline'
+import { useAtom } from 'jotai'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../inspector/common/inspector-atoms'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -222,6 +227,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
   const strategyControls = useGetApplicableStrategyControls()
+  const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
+  const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
   const anyStrategyActive = useEditorState(
     Substores.restOfStore,
@@ -317,7 +324,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     return selectionEnabled
       ? localHighlightedViews.map((path) => {
           const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
-          if (frame == null) {
+          if (frame == null || isInfinityRectangle(frame)) {
             return null
           }
           const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
@@ -359,7 +366,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       .map((p) => {
         const elementPath = EP.fromString(p)
         const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, componentMetadata)
-        if (frame == null) {
+        if (frame == null || isInfinityRectangle(frame)) {
           return null
         }
         return (
@@ -401,6 +408,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {when(
         resizeStatus !== 'disabled',
         <>
+          {inspectorFocusedControls.map((c) => (
+            <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
+          ))}
+          {inspectorHoveredControls.map((c) => (
+            <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
+          ))}
           {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
           {when(isSelectMode(editorMode), <InsertionControls />)}
           {renderHighlightControls()}

@@ -3,7 +3,12 @@ import { stripNulls } from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import { canvasRectangle, CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  CanvasVector,
+  isInfinityRectangle,
+} from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
@@ -108,23 +113,24 @@ export function gapControlBoundsFromMetadata(
   const elementPadding =
     MetadataUtils.findElementByElementPath(elementMetadata, selectedElement)
       ?.specialSizeMeasurements.padding ?? sides(0, 0, 0, 0)
-  const parentBounds = optionalMap(
-    (b) => inset(elementPadding, b),
-    MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata),
-  )
-  if (parentBounds == null) {
+  const parentFrame = MetadataUtils.getFrameInCanvasCoords(selectedElement, elementMetadata)
+  if (parentFrame == null || isInfinityRectangle(parentFrame)) {
     return []
   }
+
+  const parentBounds = inset(elementPadding, parentFrame)
 
   const children = MetadataUtils.getChildrenPaths(elementMetadata, selectedElement)
   const childCanvasBounds = stripNulls(
     children
-      .map((childPath) =>
-        optionalMap(
-          (frame) => ({ path: childPath, bounds: frame }),
-          MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata),
-        ),
-      )
+      .map((childPath) => {
+        const childFrame = MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata)
+        if (childFrame == null || isInfinityRectangle(childFrame)) {
+          return null
+        } else {
+          return { path: childPath, bounds: childFrame }
+        }
+      })
       .slice(0, -1),
   )
 
@@ -155,22 +161,26 @@ export function maybeFlexGapFromElement(
     return null
   }
 
+  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
+    return null
+  }
+
   const children = MetadataUtils.getChildren(metadata, elementPath)
   if (children.length < 2) {
     return null
   }
 
-  const flexGap = children[0].specialSizeMeasurements.parentFlexGap
+  const gap = element.specialSizeMeasurements.gap ?? 0
 
   const gapFromProps: CSSNumber | undefined = defaultEither(
     undefined,
     getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
   )
 
-  const flexDirection = children[0].specialSizeMeasurements.parentFlexDirection ?? 'row'
+  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: { renderedValuePx: flexGap, value: gapFromProps ?? cssNumber(0) },
+    value: { renderedValuePx: gap, value: gapFromProps ?? cssNumber(0) },
     direction: flexDirection,
   }
 }

@@ -16,12 +16,19 @@ import {
   setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import {
+  CanvasPoint,
+  CanvasRectangle,
+  isInfinityRectangle,
+  isFiniteRectangle,
+  windowPoint,
+  point,
+} from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -30,6 +37,10 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { EditorModes } from '../../editor/editor-modes'
 import * as EditorActions from '../../editor/actions/action-creators'
+import CanvasActions from '../canvas-actions'
+import { Modifier } from '../../../utils/modifiers'
+import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
+import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/interaction-state'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 interface ZeroSizedElementControlProps {
@@ -73,6 +84,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
           return Object.values(store.editor.jsxMetadata).filter((element) => {
             return (
               element.globalFrame != null &&
+              isFiniteRectangle(element.globalFrame) &&
               isZeroSizedElement(element.globalFrame) &&
               MetadataUtils.targetElementSupportsChildren(projectContents, element)
             )
@@ -85,6 +97,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
                 return false
               } else {
                 return (
+                  isFiniteRectangle(child.globalFrame) &&
                   isZeroSizedElement(child.globalFrame) &&
                   MetadataUtils.targetElementSupportsChildren(projectContents, child)
                 )
@@ -129,13 +142,8 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
   const colorTheme = useColorTheme()
   const { dispatch, element, canvasOffset, scale } = props
   const controlSize = 1 / scale
-  const onControlMouseDown = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      event.stopPropagation()
-      dispatch(selectComponents([element.elementPath], false), 'everyone')
-    },
-    [dispatch, element.elementPath],
-  )
+
+  const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
   const onControlMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -155,7 +163,7 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
     [dispatch, props.isHighlighted],
   )
 
-  if (element.globalFrame == null) {
+  if (element.globalFrame == null || isInfinityRectangle(element.globalFrame)) {
     return null
   } else {
     const frame = element.globalFrame
@@ -245,7 +253,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
         return mapDropNulls((path) => {
           const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
           const frame = MetadataUtils.getFrameInCanvasCoords(path, store.editor.jsxMetadata)
-          if (frame != null && isZeroSizedElement(frame)) {
+          if (frame != null && isFiniteRectangle(frame) && isZeroSizedElement(frame)) {
             return element
           } else {
             return null
@@ -265,7 +273,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
     return (
       <React.Fragment>
         {zeroSizeElements.map((element) => {
-          if (element.globalFrame != null) {
+          if (element.globalFrame != null && isFiniteRectangle(element.globalFrame)) {
             return (
               <React.Fragment>
                 <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
@@ -303,6 +311,8 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
   const onControlStopPropagation = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
   }, [])
+
+  const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
   const onControlMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -382,7 +392,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
     <CanvasOffsetWrapper>
       <div
         onMouseMove={onControlMouseMove}
-        onMouseDown={onControlStopPropagation}
+        onMouseDown={onControlMouseDown}
         onMouseUp={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
@@ -398,3 +408,42 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
     </CanvasOffsetWrapper>
   )
 })
+
+function useZeroSizeStartDrag(
+  target: ElementPath,
+): (event: React.MouseEvent<HTMLDivElement>) => void {
+  const dispatch = useDispatch()
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+  const selectedElements = useRefEditorState((store) => store.editor.selectedViews)
+
+  return React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+
+      const start = windowToCanvasCoordinates(
+        windowPoint(point(event.clientX, event.clientY)),
+      ).canvasPositionRounded
+
+      const isSelected = selectedElements.current.some((selectedElement) =>
+        EP.pathsEqual(selectedElement, target),
+      )
+      const optionalSelectActions = isSelected ? [] : selectComponents([target], false)
+
+      dispatch(
+        [
+          ...optionalSelectActions,
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start,
+              Modifier.modifiersForEvent(event),
+              boundingArea(),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ],
+        'everyone',
+      )
+    },
+    [dispatch, target, windowToCanvasCoordinates, selectedElements],
+  )
+}

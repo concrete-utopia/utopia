@@ -3,7 +3,11 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { flatMapArray, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { CanvasRectangle } from '../../../../core/shared/math-utils'
+import {
+  CanvasRectangle,
+  isInfinityRectangle,
+  nullIfInfinity,
+} from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -17,7 +21,7 @@ function getDistanceGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<Guideline> {
   const frame = MetadataUtils.getFrameInCanvasCoords(highlightedView, componentMetadata)
-  if (frame == null) {
+  if (frame == null || isInfinityRectangle(frame)) {
     return []
   } else {
     return Guidelines.guidelinesForFrame(frame, false)
@@ -78,7 +82,9 @@ const DistanceGuidelineControlInner = React.memo(() => {
         }
       } else {
         return mapDropNulls((element) => {
-          return MetadataUtils.getFrameInCanvasCoords(element, store.editor.jsxMetadata)
+          return nullIfInfinity(
+            MetadataUtils.getFrameInCanvasCoords(element, store.editor.jsxMetadata),
+          )
         }, store.editor.selectedViews)
       }
     },

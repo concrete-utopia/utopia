@@ -60,6 +60,7 @@ import {
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { styleStringInArray } from '../../utils/common-constants'
+import { forceNotNull } from '../shared/optional-utils'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -362,6 +363,41 @@ export function findJSXElementAtStaticPath(
   } else {
     return null
   }
+}
+
+export function rearrangeJsxChildren(
+  target: StaticElementPath,
+  rearrangedChildPaths: Array<StaticElementPath>,
+  rootElements: Array<UtopiaJSXComponent>,
+): Array<UtopiaJSXComponent> {
+  const lastElementPathPart = EP.lastElementPathForPath(target)
+  return lastElementPathPart == null
+    ? rootElements
+    : transformAtPathOptionally(
+        rootElements,
+        lastElementPathPart,
+        (parentElement: JSXElementChild) => {
+          if (isJSXElementLikeWithChildren(parentElement)) {
+            const originalChildren = parentElement.children
+            if (originalChildren.length !== rearrangedChildPaths.length) {
+              throw new Error(
+                `rearrangeJsxChildren error: target parent's children count (${originalChildren.length}) does not match input array length (${rearrangedChildPaths.length})`,
+              )
+            }
+
+            const rearrangedChildren = rearrangedChildPaths.map((path) => {
+              const targetUid = EP.toUid(path)
+              return forceNotNull(
+                `rearrangeJsxChildren did not find child with uid ${targetUid}`,
+                originalChildren.find((c) => getUtopiaID(c) === targetUid),
+              )
+            })
+            return { ...parentElement, children: rearrangedChildren }
+          } else {
+            return parentElement
+          }
+        },
+      ).elements
 }
 
 export function removeJSXElementChild(

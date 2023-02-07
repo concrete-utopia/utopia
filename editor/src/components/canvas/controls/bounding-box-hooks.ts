@@ -1,7 +1,11 @@
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
-import { boundingRectangleArray, CanvasRectangle } from '../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  CanvasRectangle,
+  isFiniteRectangle,
+} from '../../../core/shared/math-utils'
 import {
   Substores,
   useRefEditorState,
@@ -46,7 +50,7 @@ function useBoundingBoxFromMetadataRef(
     let frames: Array<CanvasRectangle> = []
     fastForEach(selectedElements, (view) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, metadataRef.current)
-      if (frame != null) {
+      if (frame != null && isFiniteRectangle(frame)) {
         frames.push(frame)
       }
     })

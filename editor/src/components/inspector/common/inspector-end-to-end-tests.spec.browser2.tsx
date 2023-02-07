@@ -1,5 +1,4 @@
 /* eslint-disable jest/expect-expect */
-import React from 'react'
 import { fireEvent, RenderResult, screen } from '@testing-library/react'
 import {
   BakedInStoryboardUID,
@@ -39,6 +38,8 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
+import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { getSubduedPaddingControlTestID } from '../../canvas/controls/select-mode/subdued-padding-control'
 
 async function getControl(
   controlTestId: string,
@@ -630,7 +631,7 @@ describe('inspector tests with real metadata', () => {
       'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -752,7 +753,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"203"`)
@@ -852,7 +853,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"80%"`)
@@ -951,7 +952,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
@@ -1050,7 +1051,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
@@ -1181,7 +1182,7 @@ describe('inspector tests with real metadata', () => {
       'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1431,7 +1432,7 @@ describe('inspector tests with real metadata', () => {
       'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1538,7 +1539,7 @@ describe('inspector tests with real metadata', () => {
       'padding-one',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1658,7 +1659,7 @@ describe('inspector tests with real metadata', () => {
       'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -1766,7 +1767,7 @@ describe('inspector tests with real metadata', () => {
       'padding-H',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
-      'radius-all-number-input',
+      'radius-one',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
@@ -2052,6 +2053,276 @@ describe('inspector tests with real metadata', () => {
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+  })
+  describe('padding controls shorthand', () => {
+    function makeCodeSnippetWithKeyValue(props: { [key: string]: any }): string {
+      const propsStr = Object.keys(props)
+        .map((k) => `${k}: ${JSON.stringify(props[k])},`)
+        .join('\n')
+      return `
+        <div
+          data-uid='aaa'
+        >
+          <div
+            style={{ ${propsStr} }}
+            data-uid='bbb'
+          >test</div>
+        </div>
+    `
+    }
+
+    const tests = [
+      {
+        name: 'without props',
+        startSnippet: makeCodeSnippetWithKeyValue({}),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-V', '20', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '20px 0px' }),
+      },
+      {
+        name: 'with shorthand',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: 20 }),
+      },
+      {
+        name: 'with single value (2-values)',
+        startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
+        control: async (renderResult: EditorRenderResult) => {
+          await setControlValue('padding-V', '20', renderResult.renderedDOM)
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 10,
+          paddingTop: 20,
+          paddingBottom: 20,
+        }),
+      },
+      {
+        name: 'with single value (1-value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (renderResult: EditorRenderResult) => {
+          await setControlValue('padding-one', '20', renderResult.renderedDOM)
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 20,
+          paddingTop: 20,
+          paddingBottom: 20,
+          paddingRight: 20,
+        }),
+      },
+      {
+        name: 'with multiple values (1-value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10, paddingRight: 20 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (renderResult: EditorRenderResult) => {
+          await setControlValue('padding-one', '20', renderResult.renderedDOM)
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingTop: 20,
+          paddingBottom: 20,
+        }),
+      },
+      {
+        name: 'with shorthand (2-value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-H', '20', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
+      },
+    ]
+
+    tests.forEach((tt) => {
+      it(`padding controls shorthand: ${tt.name}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(tt.startSnippet),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await act(async () => {
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        })
+
+        if (tt.before != null) {
+          await tt.before(renderResult)
+          await renderResult.getDispatchFollowUpActionsFinished()
+        }
+        await tt.control(renderResult)
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], true)
+          await dispatchDone
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(tt.endSnippet),
+        )
+      })
+    })
+  })
+
+  describe('canvas padding controls from the inspector', () => {
+    function makeCodeSnippetWithKeyValue(props: { [key: string]: any }): string {
+      const propsStr = Object.keys(props)
+        .map((k) => `${k}: ${JSON.stringify(props[k])},`)
+        .join('\n')
+      return `
+        <div
+          data-uid='aaa'
+        >
+          <div
+            style={{ ${propsStr} }}
+            data-uid='bbb'
+          >test</div>
+        </div>
+    `
+    }
+
+    const tests = [
+      {
+        name: 'single value shows controls on all sides',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px' }),
+        controlTestID: 'padding-one',
+        hoveredCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'hovered'),
+          getSubduedPaddingControlTestID('right', 'hovered'),
+          getSubduedPaddingControlTestID('bottom', 'hovered'),
+          getSubduedPaddingControlTestID('left', 'hovered'),
+        ],
+        focusedCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'focused'),
+          getSubduedPaddingControlTestID('right', 'focused'),
+          getSubduedPaddingControlTestID('bottom', 'focused'),
+          getSubduedPaddingControlTestID('left', 'focused'),
+        ],
+      },
+      {
+        name: 'per-direction H value shows controls on horizontal sides',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px' }),
+        controlTestID: 'padding-H',
+        hoveredCanvasControls: [
+          getSubduedPaddingControlTestID('right', 'hovered'),
+          getSubduedPaddingControlTestID('left', 'hovered'),
+        ],
+        focusedCanvasControls: [
+          getSubduedPaddingControlTestID('right', 'focused'),
+          getSubduedPaddingControlTestID('left', 'focused'),
+        ],
+      },
+      {
+        name: 'per-direction V value shows controls on vertical sides',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px' }),
+        controlTestID: 'padding-V',
+        hoveredCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'hovered'),
+          getSubduedPaddingControlTestID('bottom', 'hovered'),
+        ],
+        focusedCanvasControls: [
+          getSubduedPaddingControlTestID('top', 'focused'),
+          getSubduedPaddingControlTestID('bottom', 'focused'),
+        ],
+      },
+      {
+        name: 'per-side T value shows controls on top side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-T',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('top', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('top', 'focused')],
+      },
+      {
+        name: 'per-side R value shows controls on right side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-R',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('right', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('right', 'focused')],
+      },
+      {
+        name: 'per-side B value shows controls on bottom side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-B',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('bottom', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('bottom', 'focused')],
+      },
+      {
+        name: 'per-side L value shows controls on left side',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '50px 60px 70px 80px' }),
+        controlTestID: 'padding-L',
+        hoveredCanvasControls: [getSubduedPaddingControlTestID('left', 'hovered')],
+        focusedCanvasControls: [getSubduedPaddingControlTestID('left', 'focused')],
+      },
+    ]
+
+    tests.forEach((t) => {
+      it(`${t.name} when hovering and focusing`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(t.startSnippet),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await act(async () => {
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        })
+
+        const control = await getControl(t.controlTestID, renderResult.renderedDOM)
+
+        // Check the controls show when hovering
+        fireEvent.mouseEnter(control)
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const hoveredControls = t.hoveredCanvasControls.flatMap((expectedControl) =>
+          renderResult.renderedDOM.queryAllByTestId(expectedControl),
+        )
+        expect(hoveredControls.length).toEqual(t.hoveredCanvasControls.length)
+
+        // Check the controls show when focusing
+        fireEvent.focus(control)
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const focusedControls = t.focusedCanvasControls.flatMap((expectedControl) =>
+          renderResult.renderedDOM.queryAllByTestId(expectedControl),
+        )
+        expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
+      })
+    })
   })
 })
 

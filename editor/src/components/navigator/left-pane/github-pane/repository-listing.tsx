@@ -20,10 +20,10 @@ import {
 import { UIGridRow } from '../../../../components/inspector/widgets/ui-grid-row'
 import {
   connectRepo,
-  getUsersPublicGithubRepositories,
   parseGithubProjectString,
   RepositoryEntry,
-} from '../../../../core/shared/github'
+} from '../../../../core/shared/github/helpers'
+import { getUsersPublicGithubRepositories } from '../../../../core/shared/github/operations/load-repositories'
 import { when } from '../../../../utils/react-conditionals'
 import { Button, colorTheme, FlexColumn, FlexRow, StringInput } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'

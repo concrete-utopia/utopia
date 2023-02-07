@@ -11,6 +11,7 @@ import {
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
+  isInfinityRectangle,
 } from '../../core/shared/math-utils'
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -57,14 +58,13 @@ function getFramesInCanvasContextUncached(
       }
     }
     const globalFrame = component.globalFrame
-    /*
-    if (globalFrame == null) {
+    if (globalFrame != null && isInfinityRectangle(globalFrame)) {
+      // TODO Will this work for the storyboard?
       return {
         boundingRect: null,
         frames: [],
       }
     }
-    */
 
     const overflows = MetadataUtils.overflows(allElementProps, componentTree.path)
     const includeClippedNext = useBoundingFrames && overflows

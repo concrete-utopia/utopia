@@ -1,6 +1,11 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { findLastIndex, reverse } from '../../../core/shared/array-utils'
-import { canvasRectangle, CanvasRectangle, zeroCanvasRect } from '../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  zeroCanvasRect,
+  zeroRectIfNullOrInfinity,
+} from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -71,7 +76,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(
     newParentDirection,
     forwardsOrBackwards,
-    parentFrame,
+    zeroRectIfNullOrInfinity(parentFrame),
     siblings,
     editor.jsxMetadata,
   )

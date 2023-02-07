@@ -261,12 +261,11 @@ export async function mouseDragFromPointToPointNoMouseDown(
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
-    midDragCallback?: () => void
+    midDragCallback?: () => Promise<void>
   } = {},
 ): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
   const staggerMoveEvents = options.staggerMoveEvents ?? true
-  const midDragCallback = options.midDragCallback ?? NO_OP
 
   const delta: Point = {
     x: endPoint.x - startPoint.x,
@@ -317,9 +316,11 @@ export async function mouseDragFromPointToPointNoMouseDown(
     )
   }
 
-  midDragCallback()
+  if (options.midDragCallback != null) {
+    await options.midDragCallback()
+  }
 
-  mouseUpAtPoint(eventSourceElement, endPoint, {
+  await mouseUpAtPoint(eventSourceElement, endPoint, {
     ...options,
     eventOptions: mouseUpOptions,
   })
@@ -693,5 +694,26 @@ export async function switchDragAndDropElementTargets(
   })
   await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
+  })
+}
+
+// https://github.com/testing-library/react-testing-library/issues/339 as above makeDragEvent,
+// though it uses a different property name the issue is still the same
+export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Array<File>) {
+  const pasteEvent = createEvent.paste(eventSourceElement)
+  Object.defineProperty(pasteEvent, 'clipboardData', {
+    value: {
+      getData: () => '',
+      items: images.map((f) => ({ kind: 'file', getAsFile: () => f })),
+      files: {
+        item: (itemIndex: number) => images[itemIndex],
+        length: images.length,
+      },
+      types: ['Files'],
+    },
+  })
+
+  act(() => {
+    fireEvent(eventSourceElement, pasteEvent)
   })
 }

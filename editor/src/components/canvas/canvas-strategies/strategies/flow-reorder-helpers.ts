@@ -7,7 +7,14 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
-import { CanvasRectangle, CanvasVector, mod } from '../../../../core/shared/math-utils'
+import {
+  CanvasRectangle,
+  CanvasVector,
+  isInfinityRectangle,
+  mod,
+  zeroCanvasRect,
+  zeroRectIfNullOrInfinity,
+} from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { Direction, ForwardOrReverse } from '../../../inspector/common/css-utils'
@@ -77,7 +84,7 @@ export function singleAxisAutoLayoutContainerDirections(
           metadata,
         )
       ) {
-        return child.globalFrame
+        return zeroRectIfNullOrInfinity(child.globalFrame)
       } else {
         return null
       }
@@ -111,7 +118,10 @@ export function singleAxisAutoLayoutContainerDirections(
         allHorizontalOrVertical = false
       }
       if (child.globalFrame != null) {
-        childrenFrames.push(child.globalFrame)
+        const childFrame = isInfinityRectangle(child.globalFrame)
+          ? zeroCanvasRect
+          : child.globalFrame
+        childrenFrames.push(childFrame)
       }
     })
 

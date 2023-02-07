@@ -79,7 +79,11 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import { PropertyPath, ElementPath } from '../../../core/shared/project-file-types'
+import {
+  PropertyPath,
+  ElementPath,
+  PropertyPathPart,
+} from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import { fastForEach } from '../../../core/shared/utils'
@@ -352,6 +356,14 @@ export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(p
   return useInspectorInfo([prop], transformValue, untransformValue, elementPathMappingFn)
 }
 
+export function stylePropPathMappingFn<
+  P extends ParsedCSSPropertiesKeys,
+  T extends PropertyPathPart,
+>(p: P, target: readonly [T]): PropertyPath<[T, P]>
+export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
+  p: P,
+  target: readonly string[],
+): PropertyPath
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
   p: P,
   target: readonly string[],

@@ -2,15 +2,18 @@ import React from 'react'
 
 import { useContextSelector } from 'use-context-selector'
 import { LayoutSystem } from 'utopia-api/core'
+import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
+import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { useEditorState, Substores } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -180,7 +183,7 @@ export const PaddingRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<-auto-><----------1fr--------->'>
+      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
         <PropertyLabel
           target={paddingPropsToUnset}
           propNamesToUnset={contextMenuLabel}
@@ -223,9 +226,47 @@ export const PaddingControl = React.memo(() => {
   )
 
   const { selectedViewsRef } = useInspectorContext()
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'PaddingControl selectedViews',
+  )
+
+  const canvasControlsForSides = React.useMemo(() => {
+    return mapArrayToDictionary(
+      ['top', 'right', 'bottom', 'left'],
+      (k) => k,
+      (side) => ({
+        onHover: {
+          control: SubduedPaddingControl,
+          props: {
+            side: side,
+            hoveredOrFocused: 'hovered',
+            targets: selectedViews,
+          },
+          key: `subdued-padding-control-hovered-${side}`,
+        },
+        onFocus: {
+          control: SubduedPaddingControl,
+          props: {
+            side: side,
+            hoveredOrFocused: 'focused',
+            targets: selectedViews,
+          },
+          key: `subdued-padding-control-focused-${side}`,
+        },
+      }),
+    )
+  }, [selectedViews])
 
   return (
     <SplitChainedNumberInput
+      controlModeOrder={['one-value', 'per-direction', 'per-side']}
+      tooltips={{
+        oneValue: 'Padding',
+        perDirection: 'Padding per direction',
+        perSide: 'Padding per side',
+      }}
       selectedViews={selectedViewsRef.current}
       name='padding'
       defaultMode='per-direction'
@@ -235,6 +276,8 @@ export const PaddingControl = React.memo(() => {
       right={paddingRight}
       shorthand={shorthand}
       updateShorthand={updateShorthand}
+      canvasControls={canvasControlsForSides}
+      numberType={'LengthPercent'}
     />
   )
 })

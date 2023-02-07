@@ -2,12 +2,9 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { OptionsType } from 'react-select'
-import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
-import utils from '../../../../../utils/utils'
+import { foldEither, isRight, right } from '../../../../../core/shared/either'
+import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { SelectOption } from '../../../controls/select-control'
-import { SliderControl } from '../../../controls/slider-control'
 import {
   CSSBorderRadius,
   CSSBorderRadiusIndividual,
@@ -16,65 +13,18 @@ import {
   defaultBorderRadiusIndividual,
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
-  framePinToCSSNumber,
-  getCSSNumberValue,
 } from '../../../common/css-utils'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import {
+  useInspectorContext,
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+} from '../../../common/property-path-hooks'
+import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
-  useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  PopupList,
-  ChainedNumberInput,
-  NumberInput,
-} from '../../../../../uuiui'
-import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
-import { SliderNumberControl } from '../../../controls/slider-number-control'
-
-function updateRadiusType(
-  newRadiusTypeValue: SelectOption,
-  borderRadius: CSSBorderRadius,
-): CSSBorderRadius {
-  if (newRadiusTypeValue.value === 'individual') {
-    if (isLeft(borderRadius)) {
-      return right({
-        tl: borderRadius.value,
-        tr: borderRadius.value,
-        br: borderRadius.value,
-        bl: borderRadius.value,
-      })
-    } else {
-      return borderRadius
-    }
-  } else {
-    if (isRight(borderRadius)) {
-      return left(borderRadius.value.tl)
-    } else {
-      return borderRadius
-    }
-  }
-}
-
-function updateBorderRadiusAll(
-  newBorderRadiusAllValue: number,
-  borderRadius: CSSBorderRadius,
-): CSSBorderRadius {
-  if (isLeft(borderRadius)) {
-    return left({
-      ...borderRadius.value,
-      value: newBorderRadiusAllValue,
-    })
-  } else {
-    return left({
-      ...borderRadius.value.tr,
-      value: newBorderRadiusAllValue,
-    })
-  }
-}
-
-function updateBorderRadiusAllCSSNumber(newBorderRadiusAllValue: CSSNumber): CSSBorderRadius {
-  return left(newBorderRadiusAllValue)
-}
+  Sides,
+  SplitChainedNumberInput,
+} from '../../layout-section/layout-system-subsection/split-chained-number-input'
 
 function updateBorderRadiusTL(
   newBorderRadiusTLValue: CSSNumber | EmptyInputValue,
@@ -152,171 +102,194 @@ function updateBorderRadiusBR(
   }
 }
 
-const radiusTypeOptions: OptionsType<SelectOption> = [
-  {
-    value: 'all',
-    label: 'Radius',
-  },
-  {
-    value: 'individual',
-    label: 'Corners',
-  },
-]
-
-function getSliderMax(widthPin: CSSNumber | undefined, heightPin: CSSNumber | undefined): number {
-  const defaultMax = 100
-  const width = utils.defaultIfNull(defaultMax, getCSSNumberValue(widthPin))
-  const height = utils.defaultIfNull(defaultMax, getCSSNumberValue(heightPin))
-  return Math.min(width, height)
-}
-
 export const RadiusRow = React.memo(() => {
-  const {
-    value: borderRadiusValue,
-    controlStatus,
-    controlStyles,
-    useSubmitValueFactory,
-    onUnsetValues,
-  } = useInspectorStyleInfo('borderRadius')
-  const valueWidth = useInspectorLayoutInfo('width')
-  const valueHeight = useInspectorLayoutInfo('height')
-  const sliderMax = getSliderMax(valueWidth.value, valueHeight.value)
-
-  const [onBorderRadiusTypeSubmitValue] = useSubmitValueFactory(updateRadiusType)
-  const [onBorderRadiusAllSubmitCSSNumberValue, onBorderRadiusAllTransientSubmitCSSNumberValue] =
-    useSubmitValueFactory(updateBorderRadiusAllCSSNumber)
-  const [onBorderRadiusAllSubmitValue, onBorderRadiusAllTransientSubmitValue] =
-    useSubmitValueFactory(updateBorderRadiusAll)
-  const [onBorderRadiusTLSubmitValue, onBorderRadiusTLTransientSubmitValue] =
-    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusTL))
-  const [onBorderRadiusTRSubmitValue, onBorderRadiusTRTransientSubmitValue] =
-    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusTR))
-  const [onBorderRadiusBLSubmitValue, onBorderRadiusBLTransientSubmitValue] =
-    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusBL))
-  const [onBorderRadiusBRSubmitValue, onBorderRadiusBRTransientSubmitValue] =
-    useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderRadiusBR))
-
-  const borderRadiusContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
+  const { value: borderRadiusValue, onUnsetValues } = useInspectorStyleInfo('borderRadius')
+  const contextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     borderRadiusValue != null,
     ['borderRadius'],
     onUnsetValues,
   )
-
-  const radiusTypeValue = isLeft(borderRadiusValue) ? radiusTypeOptions[0] : radiusTypeOptions[1]
-
-  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    onBorderRadiusAllSubmitCSSNumberValue,
-    onUnsetValues,
-  )
-  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    onBorderRadiusAllTransientSubmitCSSNumberValue,
-    onUnsetValues,
-  )
-
-  const transformBorderRadiusAllNumberToCSSNumber = React.useCallback<
-    (newValue: number) => CSSNumber
-  >(
-    (newValue) => {
-      const updatedValue = updateBorderRadiusAll(newValue, borderRadiusValue)
-      if (isLeft(updatedValue)) {
-        return updatedValue.value
-      } else {
-        return updatedValue.value.tr
-      }
-    },
-    [borderRadiusValue],
-  )
-
+  const contextMenuLabel = React.useMemo(() => ['border radius'], [])
   return (
     <InspectorContextMenuWrapper
       id='borderRadius-subsection-context-menu'
-      items={borderRadiusContextMenuItems}
+      items={contextMenuItems}
       data={null}
     >
-      <UIGridRow
-        padded={true}
-        variant='<---1fr--->|------172px-------|'
-        style={{ paddingLeft: 0, maxWidth: '100%' }}
-      >
-        <PopupList
-          value={radiusTypeValue}
-          options={radiusTypeOptions}
-          onSubmitValue={onBorderRadiusTypeSubmitValue}
-          containerMode='showBorderOnHover'
-          controlStyles={controlStyles}
+      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
+        <PropertyLabel
+          target={[]}
+          propNamesToUnset={contextMenuLabel}
           style={{
-            maxWidth: '100%',
-            overflow: 'hidden',
+            paddingBottom: 20,
           }}
-        />
-        {isRight(borderRadiusValue) ? (
-          <div>
-            <ChainedNumberInput
-              idPrefix='borderRadius'
-              propsArray={[
-                {
-                  numberType: 'LengthPercent',
-                  value: borderRadiusValue.value.tl,
-                  onSubmitValue: onBorderRadiusTLSubmitValue,
-                  onTransientSubmitValue: onBorderRadiusTLTransientSubmitValue,
-                  controlStatus: controlStatus,
-                  testId: 'border-radius-tl',
-                  defaultUnitToHide: 'px',
-                },
-                {
-                  numberType: 'LengthPercent',
-                  value: borderRadiusValue.value.tr,
-                  onSubmitValue: onBorderRadiusTRSubmitValue,
-                  onTransientSubmitValue: onBorderRadiusTRTransientSubmitValue,
-                  controlStatus: controlStatus,
-                  testId: 'border-radius-tr',
-                  defaultUnitToHide: 'px',
-                },
-                {
-                  numberType: 'LengthPercent',
-                  value: borderRadiusValue.value.bl,
-                  onSubmitValue: onBorderRadiusBLSubmitValue,
-                  onTransientSubmitValue: onBorderRadiusBLTransientSubmitValue,
-                  controlStatus: controlStatus,
-                  testId: 'border-radius-bl',
-                  defaultUnitToHide: 'px',
-                },
-                {
-                  numberType: 'LengthPercent',
-                  value: borderRadiusValue.value.br,
-                  onSubmitValue: onBorderRadiusBRSubmitValue,
-                  onTransientSubmitValue: onBorderRadiusBRTransientSubmitValue,
-                  controlStatus: controlStatus,
-                  testId: 'border-radius-br',
-                  defaultUnitToHide: 'px',
-                },
-              ]}
-            />
-          </div>
-        ) : (
-          <SliderNumberControl
-            id='radius-all'
-            key='radius-all'
-            testId='radius-all'
-            value={borderRadiusValue.value}
-            DEPRECATED_controlOptions={{
-              minimum: 0,
-              maximum: sliderMax / 2,
-              stepSize: 0.5,
-            }}
-            controlStatus={controlStatus}
-            controlStyles={controlStyles}
-            minimum={0}
-            numberType='Length'
-            defaultUnitToHide={'px'}
-            onSubmitValue={wrappedOnSubmitValue}
-            onTransientSubmitValue={wrappedOnTransientSubmitValue}
-            onSliderSubmitValue={onBorderRadiusAllSubmitValue}
-            onSliderTransientSubmitValue={onBorderRadiusAllTransientSubmitValue}
-            transformSliderValueToCSSNumber={transformBorderRadiusAllNumberToCSSNumber}
-          />
-        )}
+        >
+          Radius
+        </PropertyLabel>
+        <BorderRadiusControl />
       </UIGridRow>
     </InspectorContextMenuWrapper>
+  )
+})
+
+export const BorderRadiusControl = React.memo(() => {
+  const borderRadius = useInspectorStyleInfo('borderRadius')
+
+  const shorthand = useInspectorLayoutInfo('borderRadius')
+
+  const updateShorthand = React.useCallback(
+    (sides: Sides, transient?: boolean) => {
+      const { top: tl, bottom: br, left: bl, right: tr } = sides
+      shorthand.onSubmitValue(
+        {
+          type: 'RIGHT',
+          value: {
+            tl: tl,
+            tr: tr,
+            br: br,
+            bl: bl,
+          },
+        },
+        transient,
+      )
+    },
+    [shorthand],
+  )
+
+  const { selectedViewsRef } = useInspectorContext()
+
+  const tl: CSSNumber = React.useMemo(
+    () =>
+      foldEither(
+        (n) => n,
+        (i) => i.tl,
+        borderRadius.value,
+      ),
+    [borderRadius],
+  )
+  const tr: CSSNumber = React.useMemo(
+    () =>
+      foldEither(
+        (n) => n,
+        (i) => i.tr,
+        borderRadius.value,
+      ),
+    [borderRadius],
+  )
+  const bl: CSSNumber = React.useMemo(
+    () =>
+      foldEither(
+        (n) => n,
+        (i) => i.bl,
+        borderRadius.value,
+      ),
+    [borderRadius],
+  )
+  const br: CSSNumber = React.useMemo(
+    () =>
+      foldEither(
+        (n) => n,
+        (i) => i.br,
+        borderRadius.value,
+      ),
+    [borderRadius],
+  )
+
+  const onSubmitValueTL = React.useCallback(() => {
+    const [update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusTL(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+  const onTransientSubmitValueTL = React.useCallback(() => {
+    const [, update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusTL(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+
+  const onSubmitValueTR = React.useCallback(() => {
+    const [update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusTR(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+  const onTransientSubmitValueTR = React.useCallback(() => {
+    const [, update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusTR(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+
+  const onSubmitValueBL = React.useCallback(() => {
+    const [update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusBL(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+  const onTransientSubmitValueBL = React.useCallback(() => {
+    const [, update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusBL(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+
+  const onSubmitValueBR = React.useCallback(() => {
+    const [update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusBR(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+  const onTransientSubmitValueBR = React.useCallback(() => {
+    const [, update] = borderRadius.useSubmitValueFactory((newValue: CSSNumber) =>
+      updateBorderRadiusBR(newValue, borderRadius.value),
+    )
+    return update
+  }, [borderRadius])
+
+  return (
+    <SplitChainedNumberInput
+      labels={{
+        top: 'TL',
+        bottom: 'BR',
+        left: 'BL',
+        right: 'TR',
+      }}
+      tooltips={{
+        oneValue: 'Radius',
+        perSide: 'Radius per corner',
+      }}
+      controlModeOrder={['one-value', 'per-side']}
+      numberType={'LengthPercent'}
+      selectedViews={selectedViewsRef.current}
+      name='radius'
+      defaultMode='one-value'
+      top={{
+        ...borderRadius,
+        value: tl,
+        onSubmitValue: onSubmitValueTL(),
+        onTransientSubmitValue: onTransientSubmitValueTL(),
+      }}
+      left={{
+        ...borderRadius,
+        value: bl,
+        onSubmitValue: onSubmitValueBL(),
+        onTransientSubmitValue: onTransientSubmitValueBL(),
+      }}
+      bottom={{
+        ...borderRadius,
+        value: br,
+        onSubmitValue: onSubmitValueBR(),
+        onTransientSubmitValue: onTransientSubmitValueBR(),
+      }}
+      right={{
+        ...borderRadius,
+        value: tr,
+        onSubmitValue: onSubmitValueTR(),
+        onTransientSubmitValue: onTransientSubmitValueTR(),
+      }}
+      shorthand={shorthand}
+      updateShorthand={updateShorthand}
+    />
   )
 })
