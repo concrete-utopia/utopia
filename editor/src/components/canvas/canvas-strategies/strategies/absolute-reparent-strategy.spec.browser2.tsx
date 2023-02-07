@@ -655,6 +655,114 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(createCodeForProject(40, 50))
   })
 
+  xit('reparents across from one fragment to within (not directly inside) another', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(`
+import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export var App = (props) => {
+  return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+    <>
+      <div
+        style={{ backgroundColor: 'grey', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      />
+    </>
+    <>
+      <div
+        style={{ backgroundColor: 'blue', position: 'absolute', left: 300, top: 300, width: 50, height: 50 }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+    </>
+  </div>)
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`),
+      'await-first-dom-report',
+    )
+
+    const bbbBounds = (await renderResult.renderedDOM.findByTestId('bbb')).getBoundingClientRect()
+    const bbbCenter = {
+      x: bbbBounds.x + bbbBounds.width / 2,
+      y: bbbBounds.y + bbbBounds.height / 2,
+    }
+
+    const cccBounds = (await renderResult.renderedDOM.findByTestId('ccc')).getBoundingClientRect()
+    const cccCenter = {
+      x: cccBounds.x + cccBounds.width / 2,
+      y: cccBounds.y + cccBounds.height / 2,
+    }
+
+    const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
+    await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(
+        `
+import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
+
+export var App = (props) => {
+  return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+    <>
+      <div
+        style={{ backgroundColor: 'grey', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
+        data-uid='bbb'
+        data-testid='bbb'
+      >
+        <div
+          style={{ backgroundColor: 'blue', position: 'absolute', left: 100, top: 100, width: 50, height: 50 }}
+          data-uid='ccc'
+          data-testid='ccc'
+        />
+      </div>
+    </>
+    <>
+    </>
+  </div>)
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
+        PrettierConfig,
+      ),
+    )
+  })
+
   it('renders correctly with ChildrenHider set to hide children', async () => {
     const renderResult = await renderTestEditorWithCode(
       getChildrenHiderProjectCode(true),
