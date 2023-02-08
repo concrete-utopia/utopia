@@ -685,7 +685,10 @@ export class Editor {
 let canvasUpdateId: number = 0
 
 const AtomsDevtools = (props: { children: React.ReactNode }) => {
-  useAtomsDevtools(`Utopia Jotai Atoms Debug Store`)
+  if (!PRODUCTION_ENV) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useAtomsDevtools(`Utopia Jotai Atoms Debug Store`)
+  }
   return <>{props.children}</>
 }
 
