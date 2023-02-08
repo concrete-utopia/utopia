@@ -4,7 +4,6 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import { foldEither } from '../../../../../core/shared/either'
-import * as PP from '../../../../../core/shared/property-path'
 import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
 import { SubduedBorderRadiusControl } from '../../../../canvas/controls/select-mode/subdued-border-radius-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -18,8 +17,7 @@ import {
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
-  handleSplitChainedEvent,
-  SplitChainedEvent,
+  longhandShorthandEventHandler,
   SplitChainedNumberInput,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
 
@@ -99,24 +97,6 @@ export const BorderRadiusControl = React.memo(() => {
     [borderRadius],
   )
 
-  const eventHandler = React.useCallback(
-    (e: SplitChainedEvent, useShorthand: boolean) => {
-      handleSplitChainedEvent(
-        e,
-        dispatch,
-        selectedViewsRef.current[0],
-        PP.create('style', 'borderRadius'),
-        {
-          T: PP.create('style', 'borderTopLeftRadius'),
-          B: PP.create('style', 'borderBottomRightRadius'),
-          L: PP.create('style', 'borderBottomLeftRadius'),
-          R: PP.create('style', 'borderTopRightRadius'),
-        },
-      )(useShorthand)
-    },
-    [dispatch, selectedViewsRef],
-  )
-
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
       ['top'],
@@ -175,7 +155,17 @@ export const BorderRadiusControl = React.memo(() => {
       }}
       shorthand={shorthand}
       canvasControls={canvasControlsForSides}
-      eventHandler={eventHandler}
+      eventHandler={longhandShorthandEventHandler(
+        'borderRadius',
+        {
+          T: 'borderTopLeftRadius',
+          B: 'borderBottomRightRadius',
+          L: 'borderBottomLeftRadius',
+          R: 'borderTopRightRadius',
+        },
+        selectedViewsRef.current[0],
+        dispatch,
+      )}
     />
   )
 })

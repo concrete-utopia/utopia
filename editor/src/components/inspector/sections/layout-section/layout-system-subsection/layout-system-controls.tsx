@@ -8,7 +8,6 @@ import {
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
-import * as PP from '../../../../../core/shared/property-path'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
 import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -37,9 +36,7 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
-  SplitControlValues,
-  handleSplitChainedEvent,
-  SplitChainedEvent,
+  longhandShorthandEventHandler,
   SplitChainedNumberInput,
 } from './split-chained-number-input'
 
@@ -250,24 +247,6 @@ export const PaddingControl = React.memo(() => {
     )
   }, [selectedViews])
 
-  const eventHandler = React.useCallback(
-    (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
-      handleSplitChainedEvent(
-        e,
-        dispatch,
-        selectedViewsRef.current[0],
-        PP.create('style', 'padding'),
-        {
-          T: PP.create('style', 'paddingTop'),
-          B: PP.create('style', 'paddingBottom'),
-          L: PP.create('style', 'paddingLeft'),
-          R: PP.create('style', 'paddingRight'),
-        },
-      )(useShorthand, aggregates)
-    },
-    [dispatch, selectedViewsRef],
-  )
-
   return (
     <SplitChainedNumberInput
       controlModeOrder={['one-value', 'per-direction', 'per-side']}
@@ -286,7 +265,17 @@ export const PaddingControl = React.memo(() => {
       shorthand={shorthand}
       canvasControls={canvasControlsForSides}
       numberType={'LengthPercent'}
-      eventHandler={eventHandler}
+      eventHandler={longhandShorthandEventHandler(
+        'padding',
+        {
+          T: 'paddingTop',
+          L: 'paddingLeft',
+          B: 'paddingBottom',
+          R: 'paddingRight',
+        },
+        selectedViewsRef.current[0],
+        dispatch,
+      )}
     />
   )
 })

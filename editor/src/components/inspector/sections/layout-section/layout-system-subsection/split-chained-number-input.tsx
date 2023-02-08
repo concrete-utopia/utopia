@@ -4,6 +4,7 @@ import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
+import * as PP from '../../../../../core/shared/property-path'
 import { assertNever } from '../../../../../core/shared/utils'
 import {
   ChainedNumberInput,
@@ -120,12 +121,14 @@ export interface SplitChainedNumberInputProps<T> {
     right?: CanvasControls
   }
   numberType: CSSNumberType
-  eventHandler: (
-    e: SplitChainedEvent,
-    aggregates: SplitControlValues,
-    useShorthand: boolean,
-  ) => void
+  eventHandler: SplitChainedNumberInputEventHandler
 }
+
+type SplitChainedNumberInputEventHandler = (
+  e: SplitChainedEvent,
+  aggregates: SplitControlValues,
+  useShorthand: boolean,
+) => void
 
 function getInitialMode(
   aggOne: CSSNumber | null,
@@ -260,6 +263,30 @@ export const handleSplitChainedEvent =
 
     dispatch(getActions())
   }
+
+export const longhandShorthandEventHandler = (
+  shorthand: string,
+  longhands: { T: string; B: string; L: string; R: string },
+  elementPath: ElementPath,
+  dispatch: EditorDispatch,
+): SplitChainedNumberInputEventHandler => {
+  const shorthandPath = PP.create('style', shorthand)
+  const longhandPath = {
+    T: PP.create('style', longhands.T),
+    B: PP.create('style', longhands.B),
+    L: PP.create('style', longhands.L),
+    R: PP.create('style', longhands.R),
+  }
+  return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
+    handleSplitChainedEvent(
+      e,
+      dispatch,
+      elementPath,
+      shorthandPath,
+      longhandPath,
+    )(useShorthand, aggregates)
+  }
+}
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
   const {
