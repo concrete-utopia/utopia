@@ -170,9 +170,9 @@ export const CanvasToolbar = React.memo(() => {
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Scale</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom in' placement='bottom'>
+          <Tooltip title='Zoom to 100%' placement='bottom'>
             <SquareButton highlight style={{ textAlign: 'center', width: 32 }} onClick={zoom100pct}>
-              {zoomLevel}x
+              {zoomLevel * 100}%
             </SquareButton>
           </Tooltip>
         </FlexRow>
