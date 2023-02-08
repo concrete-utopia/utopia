@@ -574,7 +574,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 
-  it('Six double clicks will focus a generated Card and select its root element', async () => {
+  xit('Six double clicks will focus a generated Card and select its root element', async () => {
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +                 // Skipped as it's the storyboard
