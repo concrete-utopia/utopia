@@ -194,9 +194,11 @@ const handleSplitChainedEvent =
         element,
         path,
         jsxAttributeValue(
-          mapDropNulls((v) => v, values)
-            .map((v) => printCSSNumber(v, null))
-            .join(' '),
+          values.length === 1 && values[0] != null
+            ? printCSSNumber(values[0], 'px')
+            : mapDropNulls((v) => v, values)
+                .map((v) => printCSSNumber(v, null))
+                .join(' '),
           emptyComments,
         ),
       )
@@ -383,15 +385,18 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
   }, [isCmdPressedRef, mode, controlModeOrder])
 
-  const useShorthand = React.useMemo(() => {
-    const allUnset =
+  const allUnset = React.useMemo(() => {
+    return (
       top.controlStatus === 'trivial-default' &&
       bottom.controlStatus === 'trivial-default' &&
       left.controlStatus === 'trivial-default' &&
       right.controlStatus === 'trivial-default'
+    )
+  }, [top, left, bottom, right])
 
+  const useShorthand = React.useMemo(() => {
     return props.shorthand.controlStatus === 'simple' || allUnset
-  }, [top, left, bottom, right, props.shorthand])
+  }, [allUnset, props.shorthand])
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
@@ -454,7 +459,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         eventHandler(
           { type: 'four-value', value: { type: 'T', value: v } },
           aggregates,
-          useShorthand,
+          useShorthand && !allUnset,
         ),
       )
 
@@ -462,7 +467,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         eventHandler(
           { type: 'four-value', value: { type: 'R', value: v } },
           aggregates,
-          useShorthand,
+          useShorthand && !allUnset,
         ),
       )
 
@@ -470,7 +475,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         eventHandler(
           { type: 'four-value', value: { type: 'B', value: v } },
           aggregates,
-          useShorthand,
+          useShorthand && !allUnset,
         ),
       )
 
@@ -478,7 +483,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         eventHandler(
           { type: 'four-value', value: { type: 'L', value: v } },
           aggregates,
-          useShorthand,
+          useShorthand && !allUnset,
         ),
       )
 
@@ -660,6 +665,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       eventHandler,
       useShorthand,
       aggregates,
+      allUnset,
     ])
 
   const tooltipTitle = React.useMemo(() => {
