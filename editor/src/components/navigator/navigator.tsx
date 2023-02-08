@@ -115,7 +115,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 
 const CustomDragLayer = React.memo(() => {
   const { isDragging, currentOffset, item } = useDragLayer((monitor) => ({
-    item: monitor.getItem() as NavigatorItemDragAndDropWrapperProps,
+    item: monitor.getItem() as NavigatorItemDragAndDropWrapperProps | null,
     currentOffset: monitor.getClientOffset(),
     isDragging: monitor.isDragging(),
   }))
