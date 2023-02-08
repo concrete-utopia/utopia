@@ -7,7 +7,10 @@ import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
-import { DragSelection } from './navigator-item/navigator-item-dnd-container'
+import {
+  DragSelection,
+  NavigatorItemDragAndDropWrapperProps,
+} from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
@@ -22,6 +25,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { useDragLayer } from 'react-dnd'
 import { NavigatorRowLabel } from './navigator-item/navigator-item'
 import { NO_OP } from '../../core/shared/utils'
+import { when } from '../../utils/react-conditionals'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -110,9 +114,8 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 })
 
 const CustomDragLayer = React.memo(() => {
-  const { isDragging, currentOffset } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    itemType: monitor.getItemType(),
+  const { isDragging, currentOffset, item } = useDragLayer((monitor) => ({
+    item: monitor.getItem() as NavigatorItemDragAndDropWrapperProps,
     currentOffset: monitor.getClientOffset(),
     isDragging: monitor.isDragging(),
   }))
@@ -131,7 +134,8 @@ const CustomDragLayer = React.memo(() => {
         left: 0,
       }}
     >
-      {isDragging && (
+      {when(
+        isDragging,
         <FlexRow
           style={{
             width: 100,
@@ -142,22 +146,22 @@ const CustomDragLayer = React.memo(() => {
             color: 'white',
             position: 'absolute',
             transform: `translate3d(${(currentOffset?.x ?? 0) - 550}px, ${
-              // TODO: figure out why DOM is like it is
+              // TODO: find a better way to position this element
               (currentOffset?.y ?? 0) - 50
             }px, 0)`,
           }}
         >
           <NavigatorRowLabel
-            elementPath={EP.elementPath([[]])}
+            elementPath={item?.elementPath ?? EP.elementPath([[]])}
             iconColor='on-highlight-main'
             warningText={null}
             renamingTarget={null}
             selected={true}
-            label={'div'}
+            label={item?.label ?? ''}
             isDynamic={false}
             dispatch={NO_OP}
           />
-        </FlexRow>
+        </FlexRow>,
       )}
     </div>
   )
