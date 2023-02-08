@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai'
 import React from 'react'
+import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
@@ -119,7 +120,11 @@ export interface SplitChainedNumberInputProps<T> {
     right?: CanvasControls
   }
   numberType: CSSNumberType
-  eventHandler: (e: SplitChainedEvent, useShorthand: boolean) => void
+  eventHandler: (
+    e: SplitChainedEvent,
+    aggregates: SplitControlValues,
+    useShorthand: boolean,
+  ) => void
 }
 
 function getInitialMode(
@@ -156,6 +161,16 @@ export type SplitChainedEvent =
   | { type: 'two-value'; value: TwoValue }
   | { type: 'four-value'; value: FourValue }
 
+export type SplitControlValues = {
+  oneValue: CSSNumber | null
+  horizontal: CSSNumber | null
+  vertical: CSSNumber | null
+  top: CSSNumber
+  left: CSSNumber
+  bottom: CSSNumber
+  right: CSSNumber
+}
+
 export const handleSplitChainedEvent =
   (
     e: SplitChainedEvent,
@@ -169,50 +184,75 @@ export const handleSplitChainedEvent =
       R: PropertyPath
     },
   ) =>
-  (useShorthand: boolean): void => {
-    const setProp = (path: PropertyPath, value: CSSNumber): EditorAction => {
+  (useShorthand: boolean, aggregates: SplitControlValues): void => {
+    const setProp = (path: PropertyPath, values: (CSSNumber | null)[]): EditorAction => {
       return setProp_UNSAFE(
         element,
         path,
-        jsxAttributeValue(printCSSNumber(value, null), emptyComments),
+        jsxAttributeValue(
+          mapDropNulls((v) => v, values)
+            .map((v) => printCSSNumber(v, null))
+            .join(' '),
+          emptyComments,
+        ),
       )
     }
+
+    const horizontal = aggregates.horizontal ?? { value: 0, unit: 'px' }
+    const vertical = aggregates.vertical ?? { value: 0, unit: 'px' }
+
+    const unsetAllIndividual = [
+      unsetProperty(element, longhand.T),
+      unsetProperty(element, longhand.L),
+      unsetProperty(element, longhand.B),
+      unsetProperty(element, longhand.R),
+    ]
 
     const getActions = (): Array<EditorAction> => {
       switch (e.type) {
         case 'one-value':
           return useShorthand
-            ? [
-                setProp(shorthand, e.value),
-                unsetProperty(element, longhand.T),
-                unsetProperty(element, longhand.L),
-                unsetProperty(element, longhand.B),
-                unsetProperty(element, longhand.R),
-              ]
+            ? [...unsetAllIndividual, setProp(shorthand, [e.value])]
             : [
-                setProp(longhand.T, e.value),
-                setProp(longhand.L, e.value),
-                setProp(longhand.B, e.value),
-                setProp(longhand.R, e.value),
+                setProp(longhand.T, [e.value]),
+                setProp(longhand.L, [e.value]),
+                setProp(longhand.B, [e.value]),
+                setProp(longhand.R, [e.value]),
               ]
         case 'two-value':
-          return [
-            ...(useShorthand ? [unsetProperty(element, shorthand)] : []),
-            ...(e.value.type === 'V'
-              ? [setProp(longhand.T, e.value.value), setProp(longhand.B, e.value.value)]
-              : []),
-            ...(e.value.type === 'H'
-              ? [setProp(longhand.L, e.value.value), setProp(longhand.R, e.value.value)]
-              : []),
-          ]
+          return useShorthand
+            ? [
+                ...unsetAllIndividual,
+                ...(e.value.type === 'V' ? [setProp(shorthand, [e.value.value, horizontal])] : []),
+                ...(e.value.type === 'H' ? [setProp(shorthand, [vertical, e.value.value])] : []),
+              ]
+            : [
+                unsetProperty(element, shorthand),
+                ...(e.value.type === 'V'
+                  ? [setProp(longhand.T, [e.value.value]), setProp(longhand.B, [e.value.value])]
+                  : []),
+                ...(e.value.type === 'H'
+                  ? [setProp(longhand.L, [e.value.value]), setProp(longhand.R, [e.value.value])]
+                  : []),
+              ]
         case 'four-value':
-          return [
-            unsetProperty(element, shorthand),
-            ...(e.value.type === 'T' ? [setProp(longhand.T, e.value.value)] : []),
-            ...(e.value.type === 'L' ? [setProp(longhand.L, e.value.value)] : []),
-            ...(e.value.type === 'B' ? [setProp(longhand.B, e.value.value)] : []),
-            ...(e.value.type === 'R' ? [setProp(longhand.R, e.value.value)] : []),
-          ]
+          return useShorthand
+            ? [
+                ...unsetAllIndividual,
+                setProp(shorthand, [
+                  e.value.type === 'T' ? e.value.value : aggregates.top,
+                  e.value.type === 'R' ? e.value.value : aggregates.right,
+                  e.value.type === 'B' ? e.value.value : aggregates.bottom,
+                  e.value.type === 'L' ? e.value.value : aggregates.left,
+                ]),
+              ]
+            : [
+                unsetProperty(element, shorthand),
+                ...(e.value.type === 'T' ? [setProp(longhand.T, [e.value.value])] : []),
+                ...(e.value.type === 'R' ? [setProp(longhand.R, [e.value.value])] : []),
+                ...(e.value.type === 'B' ? [setProp(longhand.B, [e.value.value])] : []),
+                ...(e.value.type === 'L' ? [setProp(longhand.L, [e.value.value])] : []),
+              ]
         default:
           assertNever(e)
       }
@@ -324,6 +364,18 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const [, setHoveredCanvasControls] = useAtom(InspectorHoveredCanvasControls)
   const [, setFocusedCanvasControls] = useAtom(InspectorFocusedCanvasControls)
 
+  const aggregates: SplitControlValues = React.useMemo(() => {
+    return {
+      oneValue,
+      horizontal,
+      vertical,
+      top: top.value,
+      left: left.value,
+      bottom: bottom.value,
+      right: right.value,
+    }
+  }, [oneValue, horizontal, vertical, top, left, bottom, right])
+
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
       const {
@@ -350,49 +402,73 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'one-value', value: newValue }, useShorthand)
+        eventHandler({ type: 'one-value', value: newValue }, aggregates, useShorthand)
       }
 
       const onSubmitValueHorizontal = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'two-value', value: { type: 'H', value: newValue } }, useShorthand)
+        eventHandler(
+          { type: 'two-value', value: { type: 'H', value: newValue } },
+          aggregates,
+          useShorthand,
+        )
       }
 
       const onSubmitValueVertical = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'two-value', value: { type: 'V', value: newValue } }, useShorthand)
+        eventHandler(
+          { type: 'two-value', value: { type: 'V', value: newValue } },
+          aggregates,
+          useShorthand,
+        )
       }
 
       const onSubmitValueTop = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'four-value', value: { type: 'T', value: newValue } }, useShorthand)
+        eventHandler(
+          { type: 'four-value', value: { type: 'T', value: newValue } },
+          aggregates,
+          useShorthand,
+        )
       }
 
       const onSubmitValueRight = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'four-value', value: { type: 'R', value: newValue } }, useShorthand)
+        eventHandler(
+          { type: 'four-value', value: { type: 'R', value: newValue } },
+          aggregates,
+          useShorthand,
+        )
       }
 
       const onSubmitValueBottom = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'four-value', value: { type: 'B', value: newValue } }, useShorthand)
+        eventHandler(
+          { type: 'four-value', value: { type: 'B', value: newValue } },
+          aggregates,
+          useShorthand,
+        )
       }
 
       const onSubmitValueLeft = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
         if (!isCSSNumber(newValue)) {
           return
         }
-        eventHandler({ type: 'four-value', value: { type: 'L', value: newValue } }, useShorthand)
+        eventHandler(
+          { type: 'four-value', value: { type: 'L', value: newValue } },
+          aggregates,
+          useShorthand,
+        )
       }
 
       switch (mode) {
@@ -572,6 +648,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       numberType,
       eventHandler,
       useShorthand,
+      aggregates,
     ])
 
   const tooltipTitle = React.useMemo(() => {

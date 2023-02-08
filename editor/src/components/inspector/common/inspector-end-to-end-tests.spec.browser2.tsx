@@ -2091,7 +2091,7 @@ describe('inspector tests with real metadata', () => {
             await setControlValue('padding-one', '20', renderResult.renderedDOM)
           })
         },
-        endSnippet: makeCodeSnippetWithKeyValue({ padding: 20 }),
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '20px' }),
       },
       {
         name: 'with single value (2-values)',
@@ -2100,9 +2100,9 @@ describe('inspector tests with real metadata', () => {
           await setControlValue('padding-V', '20', renderResult.renderedDOM)
         },
         endSnippet: makeCodeSnippetWithKeyValue({
-          paddingLeft: 10,
-          paddingTop: 20,
-          paddingBottom: 20,
+          paddingLeft: 10, // no unit because it wasn't affected by the change
+          paddingTop: '20px',
+          paddingBottom: '20px',
         }),
       },
       {
@@ -2117,13 +2117,15 @@ describe('inspector tests with real metadata', () => {
           })
         },
         control: async (renderResult: EditorRenderResult) => {
-          await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
         },
         endSnippet: makeCodeSnippetWithKeyValue({
-          paddingLeft: 20,
-          paddingTop: 20,
-          paddingBottom: 20,
-          paddingRight: 20,
+          paddingLeft: '20px',
+          paddingTop: '20px',
+          paddingBottom: '20px',
+          paddingRight: '20px',
         }),
       },
       {
@@ -2138,13 +2140,15 @@ describe('inspector tests with real metadata', () => {
           })
         },
         control: async (renderResult: EditorRenderResult) => {
-          await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
         },
         endSnippet: makeCodeSnippetWithKeyValue({
-          paddingLeft: 20,
-          paddingRight: 20,
-          paddingTop: 20,
-          paddingBottom: 20,
+          paddingLeft: '20px',
+          paddingRight: '20px',
+          paddingTop: '20px',
+          paddingBottom: '20px',
         }),
       },
       {
@@ -2165,8 +2169,8 @@ describe('inspector tests with real metadata', () => {
       },
     ]
 
-    tests.forEach((tt) => {
-      it(`padding controls shorthand: ${tt.name}`, async () => {
+    tests.forEach((tt, idx) => {
+      it(`(${idx + 1}) padding controls shorthand: ${tt.name}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(tt.startSnippet),
           'await-first-dom-report',

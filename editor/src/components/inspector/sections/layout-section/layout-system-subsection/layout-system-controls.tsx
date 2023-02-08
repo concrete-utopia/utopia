@@ -37,6 +37,7 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
+  SplitControlValues,
   handleSplitChainedEvent,
   SplitChainedEvent,
   SplitChainedNumberInput,
@@ -250,7 +251,7 @@ export const PaddingControl = React.memo(() => {
   }, [selectedViews])
 
   const eventHandler = React.useCallback(
-    (e: SplitChainedEvent, useShorthand: boolean) => {
+    (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
       handleSplitChainedEvent(
         e,
         dispatch,
@@ -262,7 +263,7 @@ export const PaddingControl = React.memo(() => {
           L: PP.create('style', 'paddingLeft'),
           R: PP.create('style', 'paddingRight'),
         },
-      )(useShorthand)
+      )(useShorthand, aggregates)
     },
     [dispatch, selectedViewsRef],
   )
