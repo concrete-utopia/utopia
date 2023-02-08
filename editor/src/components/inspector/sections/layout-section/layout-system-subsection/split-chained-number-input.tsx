@@ -1,4 +1,4 @@
-import { useAtom } from 'jotai'
+import { useSetAtom } from 'jotai'
 import React from 'react'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
@@ -393,8 +393,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return props.shorthand.controlStatus === 'simple' || allUnset
   }, [top, left, bottom, right, props.shorthand])
 
-  const [, setHoveredCanvasControls] = useAtom(InspectorHoveredCanvasControls)
-  const [, setFocusedCanvasControls] = useAtom(InspectorFocusedCanvasControls)
+  const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
+  const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
 
   const aggregates: SplitControlValues = React.useMemo(() => {
     return {
