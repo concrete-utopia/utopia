@@ -1,5 +1,5 @@
-import { useAtom } from 'jotai'
-import React, { EventHandler, FocusEventHandler, MouseEventHandler, SyntheticEvent } from 'react'
+import { useSetAtom } from 'jotai'
+import React from 'react'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../../core/shared/utils'
@@ -14,16 +14,16 @@ import {
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
-  CanvasControlWithProps,
-  InspectorFocusedCanvasControls,
-  InspectorHoveredCanvasControls,
-} from '../../../common/inspector-atoms'
-import {
   CSSNumber,
   CSSNumberType,
   isCSSNumber,
   UnknownOrEmptyInput,
 } from '../../../common/css-utils'
+import {
+  CanvasControlWithProps,
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../../common/inspector-atoms'
 import { InspectorInfo } from '../../../common/property-path-hooks'
 
 export type ControlMode =
@@ -314,8 +314,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     [updateShorthandIfUsed, sidesVertical, excludeVertical],
   )
 
-  const [, setHoveredCanvasControls] = useAtom(InspectorHoveredCanvasControls)
-  const [, setFocusedCanvasControls] = useAtom(InspectorFocusedCanvasControls)
+  const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
+  const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
