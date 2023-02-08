@@ -14,7 +14,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { EdgePosition, edgePosition } from '../../canvas-types'
+import { EdgePosition, edgePosition, EdgePositionTopRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 
@@ -416,6 +416,117 @@ describe('Flex Resize', () => {
         )
       })
     })
+  })
+})
+
+describe('resize with flexBasis set', () => {
+  it('updates flexBasis in a flex row', async () => {
+    const testProject = makeTestProjectCodeWithSnippet(`
+    <div
+      data-uid='aaa'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        display: 'flex',
+      }}
+    >
+      <div
+        data-uid='bbb'
+        style={{
+          flexBasis: 80,
+          height: 190,
+          backgroundColor: '#FF0000',
+        }}
+      />
+    </div>
+    `)
+    const renderResult = await renderTestEditorWithCode(testProject, 'await-first-dom-report')
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+
+    await dragResizeControl(
+      renderResult,
+      target,
+      EdgePositionTopRight,
+      canvasPoint({ x: 15, y: 20 }),
+    )
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          display: 'flex',
+        }}
+      >
+        <div
+          data-uid='bbb'
+          style={{
+            flexBasis: 95,
+            height: 170,
+            backgroundColor: '#FF0000',
+          }}
+        />
+      </div>`),
+    )
+  })
+  it('updates flexBasis in a flex column', async () => {
+    const testProject = makeTestProjectCodeWithSnippet(`
+    <div
+      data-uid='aaa'
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <div
+        data-uid='bbb'
+        style={{
+          flexBasis: 80,
+          width: 190,
+          backgroundColor: '#FF0000',
+        }}
+      />
+    </div>
+    `)
+    const renderResult = await renderTestEditorWithCode(testProject, 'await-first-dom-report')
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+
+    await dragResizeControl(
+      renderResult,
+      target,
+      EdgePositionTopRight,
+      canvasPoint({ x: 15, y: 20 }),
+    )
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        <div
+          data-uid='bbb'
+          style={{
+            flexBasis: 60,
+            width: 205,
+            backgroundColor: '#FF0000',
+          }}
+        />
+      </div>`),
+    )
   })
 })
 
