@@ -308,10 +308,6 @@ interface ZeroSizeResizeControlProps {
 export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlProps) => {
   const { dispatch, element, maybeClearHighlightsOnHoverEnd } = props
 
-  const onControlStopPropagation = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation()
-  }, [])
-
   const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
   const onControlMouseMove = React.useCallback(
@@ -320,6 +316,14 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       maybeClearHighlightsOnHoverEnd()
     },
     [maybeClearHighlightsOnHoverEnd],
+  )
+
+  const onControlMouseUp = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation()
+      dispatch([CanvasActions.clearInteractionSession(true)], 'everyone')
+    },
+    [dispatch],
   )
 
   const onControlDoubleClick = React.useCallback(() => {
@@ -386,6 +390,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         )
       })
       dispatch([...setPropActions, CanvasActions.clearInteractionSession(false)], 'everyone')
+      // dispatch(setPropActions, 'everyone')
     }
   }, [dispatch, element, props.frame])
 
@@ -394,7 +399,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       <div
         onMouseMove={onControlMouseMove}
         onMouseDown={onControlMouseDown}
-        onMouseUp={onControlStopPropagation}
+        onMouseUp={onControlMouseUp}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
         data-testid={ZeroSizedControlTestID}
