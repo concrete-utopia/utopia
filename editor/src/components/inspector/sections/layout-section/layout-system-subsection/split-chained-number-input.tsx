@@ -227,17 +227,15 @@ const handleSplitChainedEvent =
           return useShorthand
             ? [
                 ...unsetAllIndividual,
-                ...(e.value.type === 'V' ? [setProp(shorthand, [e.value.value, horizontal])] : []),
-                ...(e.value.type === 'H' ? [setProp(shorthand, [vertical, e.value.value])] : []),
+                ...(e.value.type === 'V'
+                  ? [setProp(shorthand, [e.value.value, horizontal])]
+                  : [setProp(shorthand, [vertical, e.value.value])]),
               ]
             : [
                 unsetProperty(element, shorthand),
                 ...(e.value.type === 'V'
                   ? [setProp(longhand.T, [e.value.value]), setProp(longhand.B, [e.value.value])]
-                  : []),
-                ...(e.value.type === 'H'
-                  ? [setProp(longhand.L, [e.value.value]), setProp(longhand.R, [e.value.value])]
-                  : []),
+                  : [setProp(longhand.L, [e.value.value]), setProp(longhand.R, [e.value.value])]),
               ]
         case 'four-value':
           return useShorthand
