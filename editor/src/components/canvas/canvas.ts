@@ -22,6 +22,7 @@ import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
 import { maybeToArray } from '../../core/shared/optional-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -136,21 +137,39 @@ const Canvas = {
     TargetSearchType.ParentsOfSelected,
   ],
   getFramesInCanvasContext: memoize(getFramesInCanvasContextUncached, { maxSize: 2 }),
-  jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {
+  jumpToParent(
+    selectedViews: Array<ElementPath>,
+    metadata: ElementInstanceMetadataMap,
+  ): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:
         // Nothing is selected, so do nothing.
         return null
       case 1:
+        const getFirstValidParent = (path: ElementPath): ElementPath | null => {
+          const parentPath = EP.parentPath(path)
+          if (parentPath == null) {
+            return null
+          }
+          if (isFeatureEnabled('Fragment support')) {
+            return parentPath
+          }
+          const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+          if (MetadataUtils.isFragmentFromMetadata(parentElement)) {
+            return getFirstValidParent(parentPath)
+          }
+          return parentPath
+        }
+
         // Only a single element is selected...
-        const parentPath = EP.parentPath(selectedViews[0])
+        const parentPath = getFirstValidParent(selectedViews[0])
         if (parentPath == null) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
-        } else {
-          // ...the selected element has a parent, so select that.
-          return parentPath
         }
+        // ...the selected element has a parent, so select that.
+        return parentPath
+
       default:
         // Multiple elements are selected so select the topmost element amongst them.
         const newSelection: ElementPath | null = selectedViews.reduce(
