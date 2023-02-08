@@ -109,6 +109,7 @@ import {
   FlexDirection,
   ForwardOrReverse,
 } from '../../components/inspector/common/css-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1012,10 +1013,13 @@ export const MetadataUtils = {
         if (subTree != null) {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
+          const element = MetadataUtils.findElementByElementPath(metadata, path)
+          const isFragment = MetadataUtils.isFragmentFromMetadata(element)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
+            (isFeatureEnabled('Fragment support') || !isFragment) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
