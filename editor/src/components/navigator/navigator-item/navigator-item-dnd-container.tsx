@@ -19,8 +19,11 @@ import {
 import { CollectResults, isCursorInBottomArea, isCursorInTopArea } from '../drag-and-drop-utils'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
-import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
-import { JSXElementName } from '../../../core/shared/element-template'
+import {
+  NavigatorHintBottom,
+  NavigatorHintCircleDiameter,
+  NavigatorHintTop,
+} from './navigator-item-components'
 import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
 import { useRefEditorState } from '../../../components/editor/store/store-hook'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
@@ -101,7 +104,12 @@ function onDrop(
 }
 
 function getHintPadding(elementPath: ElementPath): number {
-  return getElementPadding(elementPath) + ExpansionArrowWidth + PreviewIconSize / 2
+  return (
+    getElementPadding(elementPath) +
+    ExpansionArrowWidth +
+    PreviewIconSize / 2 -
+    NavigatorHintCircleDiameter
+  )
 }
 
 function isCursorInLeftAreaOfItem(x: number, elementPath: ElementPath) {
@@ -264,7 +272,6 @@ export class NavigatorItemDndWrapper extends PureComponent<
         style={{
           ...props.windowStyle,
           boxSizing: 'border-box',
-          transform: this.props.isDragging ? 'scale(0.5)' : undefined,
           ...(this.props.isOver && this.props.appropriateDropTargetHint?.type === 'reparent'
             ? {
                 border: `2px solid ${this.props.borderColor}`,

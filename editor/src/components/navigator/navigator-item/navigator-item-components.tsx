@@ -14,6 +14,8 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 import { SelectionLocked } from '../../canvas/canvas-types'
 
+export const NavigatorHintCircleDiameter = 8
+
 interface NavigatorHintProps {
   shouldBeShown: boolean
   getMarginForHint: () => number
@@ -28,15 +30,36 @@ export const NavigatorHintTop: React.FunctionComponent<
       <div
         style={{
           marginLeft: props.getMarginForHint(),
-          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-          height: 2,
+          backgroundColor: '#00abff',
           position: 'absolute',
           top: 0,
           width: '100%',
-          borderRadius: '2px',
-          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          height: 'max-content',
         }}
-      />
+      >
+        <div
+          style={{
+            backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+            height: 2,
+            flexGrow: 1,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: colorTheme.bg0.value,
+            width: NavigatorHintCircleDiameter,
+            height: NavigatorHintCircleDiameter,
+            contain: 'layout',
+            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            borderRadius: 3,
+          }}
+        />
+      </div>
     )
   } else {
     return null
@@ -52,15 +75,36 @@ export const NavigatorHintBottom: React.FunctionComponent<
       <div
         style={{
           marginLeft: props.getMarginForHint(),
-          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-          height: 2,
+          backgroundColor: '#00abff',
           position: 'absolute',
           bottom: 0,
           width: '100%',
-          borderRadius: '2px',
-          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          height: 'max-content',
         }}
-      />
+      >
+        <div
+          style={{
+            backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+            height: 2,
+            flexGrow: 1,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: colorTheme.bg0.value,
+            width: NavigatorHintCircleDiameter,
+            height: NavigatorHintCircleDiameter,
+            contain: 'layout',
+            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            borderRadius: 3,
+          }}
+        />
+      </div>
     )
   } else {
     return null
