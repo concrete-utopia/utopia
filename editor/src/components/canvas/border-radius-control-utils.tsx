@@ -14,7 +14,7 @@ export type BorderRadiusAdjustMode = 'individual' | 'all'
 
 export const BorderRadiusHandleSize = (scale: number): { padding: number; size: number } => ({
   padding: 2 / scale,
-  size: 8 / scale,
+  size: 6 / scale,
 })
 
 export const BorderRadiusHandleDotSize = (scale: number): number => 2 / scale
