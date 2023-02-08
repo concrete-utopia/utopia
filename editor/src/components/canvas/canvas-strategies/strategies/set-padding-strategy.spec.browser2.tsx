@@ -2,7 +2,7 @@ import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 import { expectSingleUndoStep, wait } from '../../../../utils/utils.test-utils'
 import { cssNumber } from '../../../inspector/common/css-utils'
-import { EdgePiece } from '../../canvas-types'
+import { EdgePiece, isHorizontalEdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   AdjustPrecision,
@@ -532,79 +532,103 @@ describe('Padding resize strategy', () => {
 
   describe('Adjust multiple edges simultaneously', () => {
     it('adjust along the horizontal cross-axis', async () => {
+      const width = 200
+      const height = 200
       const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithLongHandPaddingValues({
-          paddingBottom: `'10px'`,
-          paddingTop: `'10px'`,
-          paddingLeft: `'10px'`,
-          paddingRight: `'10px'`,
-        }),
+        makeTestProjectCodeWithLongHandPaddingValues(
+          {
+            paddingBottom: `'10px'`,
+            paddingTop: `'10px'`,
+            paddingLeft: `'10px'`,
+            paddingRight: `'10px'`,
+          },
+          width,
+          height,
+        ),
         'await-first-dom-report',
       )
 
-      await testPaddingResizeForEdge(editor, 10, 'left', 'precise', 'cross-axis')
+      await testPaddingResizeForEdge(editor, 50, 'left', 'precise', 'cross-axis')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithStringPaddingValues(
           paddingToPaddingString({
-            paddingBottom: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
-            paddingTop: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
-            paddingLeft: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
-            paddingRight: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingBottom: cssNumberWithPX(10),
+            paddingTop: cssNumberWithPX(10),
+            paddingLeft: cssNumberWithPX(60),
+            paddingRight: cssNumberWithPX(60),
           }),
+          width + 20,
+          height,
         ),
       )
     })
 
     it('adjust along the vertical cross-axis', async () => {
+      const width = 200
+      const height = 200
       const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithLongHandPaddingValues({
-          paddingBottom: `'10px'`,
-          paddingTop: `'10px'`,
-          paddingLeft: `'10px'`,
-          paddingRight: `'10px'`,
-        }),
+        makeTestProjectCodeWithLongHandPaddingValues(
+          {
+            paddingBottom: `'10px'`,
+            paddingTop: `'10px'`,
+            paddingLeft: `'10px'`,
+            paddingRight: `'10px'`,
+          },
+          width,
+          height,
+        ),
         'await-first-dom-report',
       )
 
-      await testPaddingResizeForEdge(editor, 10, 'top', 'precise', 'cross-axis')
+      await testPaddingResizeForEdge(editor, 50, 'top', 'precise', 'cross-axis')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithStringPaddingValues(
           paddingToPaddingString({
-            paddingBottom: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
-            paddingTop: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
-            paddingLeft: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
-            paddingRight: cssNumberWithRenderedValue(cssNumber(10, 'px'), 10),
+            paddingBottom: cssNumberWithPX(60),
+            paddingTop: cssNumberWithPX(60),
+            paddingLeft: cssNumberWithPX(10),
+            paddingRight: cssNumberWithPX(10),
           }),
+          width,
+          height + 20,
         ),
       )
     })
 
     it('adjust all 4 paddings at the same time', async () => {
+      const width = 200
+      const height = 200
       const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithLongHandPaddingValues({
-          paddingBottom: `'10px'`,
-          paddingTop: `'10px'`,
-          paddingLeft: `'10px'`,
-          paddingRight: `'10px'`,
-        }),
+        makeTestProjectCodeWithLongHandPaddingValues(
+          {
+            paddingBottom: `'10px'`,
+            paddingTop: `'10px'`,
+            paddingLeft: `'10px'`,
+            paddingRight: `'10px'`,
+          },
+          width,
+          height,
+        ),
         'await-first-dom-report',
       )
 
-      await testPaddingResizeForEdge(editor, 10, 'top', 'precise', 'all')
+      await testPaddingResizeForEdge(editor, 50, 'top', 'precise', 'all')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithStringPaddingValues(
           paddingToPaddingString({
-            paddingBottom: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
-            paddingTop: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
-            paddingLeft: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
-            paddingRight: cssNumberWithRenderedValue(cssNumber(20, 'px'), 20),
+            paddingBottom: cssNumberWithPX(60),
+            paddingTop: cssNumberWithPX(60),
+            paddingLeft: cssNumberWithPX(60),
+            paddingRight: cssNumberWithPX(60),
           }),
+          width + 20,
+          height + 20,
         ),
       )
     })
@@ -712,15 +736,30 @@ describe('Padding resize strategy', () => {
 })
 
 async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: AdjustPrecision) {
+  const width = 200
+  const height = 200
+  const dragDelta = 100
+
+  const paddingTop = 10
+  const paddingBottom = 20
+  const paddingLeft = 30
+  const paddingRight = 40
+
+  const widthDelta = paddingLeft + paddingRight + dragDelta + 100 - width
+  const heightDelta = paddingTop + paddingBottom + dragDelta + 100 - height
+  const expectedWidth = isHorizontalEdgePiece(edge) && widthDelta > 0 ? width + widthDelta : width
+  const expectedHeight =
+    !isHorizontalEdgePiece(edge) && heightDelta > 0 ? height + heightDelta : height
+
   const padding: CSSPaddingMeasurements = {
-    paddingTop: unitlessCSSNumberWithRenderedValue(22),
-    paddingBottom: unitlessCSSNumberWithRenderedValue(33),
-    paddingLeft: unitlessCSSNumberWithRenderedValue(44),
-    paddingRight: unitlessCSSNumberWithRenderedValue(55),
+    paddingTop: unitlessCSSNumberWithRenderedValue(paddingTop),
+    paddingBottom: unitlessCSSNumberWithRenderedValue(paddingBottom),
+    paddingLeft: unitlessCSSNumberWithRenderedValue(paddingLeft),
+    paddingRight: unitlessCSSNumberWithRenderedValue(paddingRight),
   }
-  const dragDelta = 12
+
   const editor = await renderTestEditorWithCode(
-    makeTestProjectCodeWithStringPaddingValues(paddingToPaddingString(padding)),
+    makeTestProjectCodeWithStringPaddingValues(paddingToPaddingString(padding), width, height),
     'await-first-dom-report',
   )
 
@@ -741,6 +780,8 @@ async function testAdjustIndividualPaddingValue(edge: EdgePiece, precision: Adju
           offsetPaddingByEdge(paddingPropForEdge(edge), dragDelta, padding, precision),
         ),
       ),
+      expectedWidth,
+      expectedHeight,
     ),
   )
 }
@@ -784,6 +825,8 @@ async function testAdjustIndividualPaddingValueWithHuggingContainer(
     ),
   )
 }
+
+const cssNumberWithPX = (n: number) => cssNumberWithRenderedValue(cssNumber(n, 'px'), n)
 
 async function testPaddingResizeForEdge(
   editor: EditorRenderResult,
@@ -844,27 +887,32 @@ function offsetPointByEdge(edge: EdgePiece, delta: number, point: Point): Point 
   }
 }
 
-function makeTestProjectCodeWithStringPaddingValues(padding: string): string {
+function makeTestProjectCodeWithStringPaddingValues(
+  padding: string,
+  width: number = 400,
+  height: number = 400,
+): string {
   return makeTestProjectCodeWithSnippet(`
     <div data-uid='root'>
       <div
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
+          boxSizing: 'border-box',
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: 28,
-          top: 28,
-          width: 612,
-          height: 461,
+          left: 0,
+          top: 0,
+          width: ${width},
+          height: ${height},
           padding: '${padding}',
         }}
       >
         <div
           style={{
             backgroundColor: '#aaaaaa33',
-            width: '100%',
-            height: '100%',
+            width: 100,
+            height: 100,
           }}
           data-uid='002'
         />
@@ -879,10 +927,11 @@ function makeTestProjectCodeWithHugContentsContainerStringPaddingValues(padding:
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
+          boxSizing: 'border-box',
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: 28,
-          top: 28,
+          left: 0,
+          top: 0,
           width: 'max-content',
           height: 'max-content',
           padding: '${padding}',
@@ -891,8 +940,8 @@ function makeTestProjectCodeWithHugContentsContainerStringPaddingValues(padding:
         <div
           style={{
             backgroundColor: '#aaaaaa33',
-            width: 342,
-            height: 274,
+            width: 100,
+            height: 100,
           }}
           data-uid='002'
         />
@@ -902,6 +951,8 @@ function makeTestProjectCodeWithHugContentsContainerStringPaddingValues(padding:
 
 function makeTestProjectCodeWithLongHandPaddingValues(
   padding: Partial<CSSPaddingMappedValues<string>>,
+  width: number = 400,
+  height: number = 400,
 ): string {
   return makeTestProjectCodeWithSnippet(`
     <div data-uid='root'>
@@ -909,20 +960,21 @@ function makeTestProjectCodeWithLongHandPaddingValues(
         data-uid='mydiv'
         data-testid='mydiv'
         style={{
+          boxSizing: 'border-box',
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: 28,
-          top: 28,
-          width: 612,
-          height: 461,
+          left: 0,
+          top: 0,
+          width: ${width},
+          height: ${height},
           ${formatPaddingLonghandValues(padding)}
         }}
       >
         <div
           style={{
             backgroundColor: '#aaaaaa33',
-            width: '100%',
-            height: '100%',
+            width: 100,
+            height: 100,
           }}
           data-uid='002'
         />
