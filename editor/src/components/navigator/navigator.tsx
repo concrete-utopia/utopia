@@ -14,11 +14,14 @@ import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
+import { Section, SectionBodyArea, FlexColumn, FlexRow, useColorTheme } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { useDragLayer } from 'react-dnd'
+import { NavigatorRowLabel } from './navigator-item/navigator-item'
+import { NO_OP } from '../../core/shared/utils'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -103,6 +106,60 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}
     />
+  )
+})
+
+const CustomDragLayer = React.memo(() => {
+  const { isDragging, currentOffset } = useDragLayer((monitor) => ({
+    item: monitor.getItem(),
+    itemType: monitor.getItemType(),
+    currentOffset: monitor.getClientOffset(),
+    isDragging: monitor.isDragging(),
+  }))
+
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      data-testid='draglayer'
+      style={{
+        pointerEvents: 'none',
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 0,
+        left: 0,
+      }}
+    >
+      {isDragging && (
+        <FlexRow
+          style={{
+            width: 100,
+            height: 20,
+            borderRadius: 4,
+            opacity: 0.5,
+            backgroundColor: colorTheme.secondaryBlue.value,
+            color: 'white',
+            position: 'absolute',
+            transform: `translate3d(${(currentOffset?.x ?? 0) - 550}px, ${
+              // TODO: figure out why DOM is like it is
+              (currentOffset?.y ?? 0) - 50
+            }px, 0)`,
+          }}
+        >
+          <NavigatorRowLabel
+            elementPath={EP.elementPath([[]])}
+            iconColor='on-highlight-main'
+            warningText={null}
+            renamingTarget={null}
+            selected={true}
+            label={'div'}
+            isDynamic={false}
+            dispatch={NO_OP}
+          />
+        </FlexRow>
+      )}
+    </div>
   )
 })
 
@@ -228,6 +285,7 @@ export const NavigatorComponent = React.memo(() => {
             {ItemList}
           </AutoSizer>
         </FlexColumn>
+        <CustomDragLayer data-testid='draglayer' />
       </SectionBodyArea>
     </Section>
   )

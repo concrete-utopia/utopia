@@ -29,6 +29,7 @@ import { useRefEditorState } from '../../../components/editor/store/store-hook'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useColorTheme } from '../../../uuiui'
+import { getEmptyImage } from 'react-dnd-html5-backend'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -320,7 +321,7 @@ interface DropCollectedProps {
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
-  const [{ isDragging }, drag] = useDrag(
+  const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'NAVIGATOR_ITEM',
       collect: (monitor) => ({
@@ -390,9 +391,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   const colorTheme = useColorTheme()
 
+  React.useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true })
+  })
+
   return (
-    <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
-      <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
+    <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
+      <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
         <NavigatorItemDndWrapper
           {...props}
           borderColor={colorTheme.navigatorResizeHintBorder.value}

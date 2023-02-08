@@ -412,7 +412,7 @@ interface NavigatorRowLabelProps {
   dispatch: EditorDispatch
 }
 
-const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
+export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
       <LayoutIcon
