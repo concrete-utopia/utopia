@@ -330,6 +330,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
           EditorActions.switchEditorMode(
             EditorModes.textEditMode(element.elementPath, null, 'existing', 'no-text-selection'),
           ),
+          CanvasActions.clearInteractionSession(false),
         ],
         'everyone',
       )
@@ -384,7 +385,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
           jsxAttributeValue(prop.value, emptyComments),
         )
       })
-      dispatch(setPropActions, 'everyone')
+      dispatch([...setPropActions, CanvasActions.clearInteractionSession(false)], 'everyone')
     }
   }, [dispatch, element, props.frame])
 
