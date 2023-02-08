@@ -2100,7 +2100,7 @@ describe('inspector tests with real metadata', () => {
           await setControlValue('padding-V', '20', renderResult.renderedDOM)
         },
         endSnippet: makeCodeSnippetWithKeyValue({
-          paddingLeft: 10, // no unit because it wasn't affected by the change
+          paddingLeft: 10,
           paddingTop: 20,
           paddingBottom: 20,
         }),
