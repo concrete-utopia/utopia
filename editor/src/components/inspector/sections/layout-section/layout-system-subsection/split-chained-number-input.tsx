@@ -288,6 +288,13 @@ export const longhandShorthandEventHandler = (
   }
 }
 
+const whenCSSNumber = (fn: (v: CSSNumber) => any) => (v: UnknownOrEmptyInput<CSSNumber>) => {
+  if (!isCSSNumber(v)) {
+    return
+  }
+  fn(v)
+}
+
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
   const {
     name,
@@ -425,78 +432,57 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       const onMouseLeave = () => setHoveredCanvasControls([])
       const onBlur = () => setFocusedCanvasControls([])
 
-      const onSubmitValueOne = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
-        eventHandler({ type: 'one-value', value: newValue }, aggregates, useShorthand)
-      }
+      const onSubmitValueOne = whenCSSNumber((v) =>
+        eventHandler({ type: 'one-value', value: v }, aggregates, useShorthand),
+      )
 
-      const onSubmitValueHorizontal = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
+      const onSubmitValueHorizontal = whenCSSNumber((v) =>
         eventHandler(
-          { type: 'two-value', value: { type: 'H', value: newValue } },
+          { type: 'two-value', value: { type: 'H', value: v } },
           aggregates,
           useShorthand,
-        )
-      }
+        ),
+      )
 
-      const onSubmitValueVertical = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
+      const onSubmitValueVertical = whenCSSNumber((v) =>
         eventHandler(
-          { type: 'two-value', value: { type: 'V', value: newValue } },
+          { type: 'two-value', value: { type: 'V', value: v } },
           aggregates,
           useShorthand,
-        )
-      }
+        ),
+      )
 
-      const onSubmitValueTop = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
+      const onSubmitValueTop = whenCSSNumber((v) =>
         eventHandler(
-          { type: 'four-value', value: { type: 'T', value: newValue } },
+          { type: 'four-value', value: { type: 'T', value: v } },
           aggregates,
           useShorthand,
-        )
-      }
+        ),
+      )
 
-      const onSubmitValueRight = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
+      const onSubmitValueRight = whenCSSNumber((v) =>
         eventHandler(
-          { type: 'four-value', value: { type: 'R', value: newValue } },
+          { type: 'four-value', value: { type: 'R', value: v } },
           aggregates,
           useShorthand,
-        )
-      }
+        ),
+      )
 
-      const onSubmitValueBottom = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
+      const onSubmitValueBottom = whenCSSNumber((v) =>
         eventHandler(
-          { type: 'four-value', value: { type: 'B', value: newValue } },
+          { type: 'four-value', value: { type: 'B', value: v } },
           aggregates,
           useShorthand,
-        )
-      }
+        ),
+      )
 
-      const onSubmitValueLeft = (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(newValue)) {
-          return
-        }
+      const onSubmitValueLeft = whenCSSNumber((v) =>
         eventHandler(
-          { type: 'four-value', value: { type: 'L', value: newValue } },
+          { type: 'four-value', value: { type: 'L', value: v } },
           aggregates,
           useShorthand,
-        )
-      }
+        ),
+      )
 
       switch (mode) {
         case 'one-value':

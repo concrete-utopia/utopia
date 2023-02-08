@@ -2124,8 +2124,8 @@ describe('inspector tests with real metadata', () => {
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: '20px',
           paddingTop: '20px',
-          paddingBottom: '20px',
           paddingRight: '20px',
+          paddingBottom: '20px',
         }),
       },
       {
