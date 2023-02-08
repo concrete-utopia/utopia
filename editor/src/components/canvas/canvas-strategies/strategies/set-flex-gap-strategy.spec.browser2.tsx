@@ -47,7 +47,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -107,7 +107,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -159,7 +159,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -178,7 +178,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -200,7 +200,7 @@ export var storyboard = (
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -223,7 +223,7 @@ export var storyboard = (
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -241,7 +241,7 @@ export var storyboard = (
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
     }
 
-    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -264,7 +264,7 @@ export var storyboard = (
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -282,7 +282,9 @@ export var storyboard = (
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
     }
 
-    mouseDragFromPointToPoint(gapControlHandle, center, endPoint, { modifiers: shiftModifier })
+    await mouseDragFromPointToPoint(gapControlHandle, center, endPoint, {
+      modifiers: shiftModifier,
+    })
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -300,7 +302,7 @@ export var storyboard = (
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -318,7 +320,7 @@ export var storyboard = (
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
     }
 
-    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -339,7 +341,7 @@ export var storyboard = (
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -357,7 +359,7 @@ export var storyboard = (
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + dragDelta,
     }
 
-    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -375,7 +377,7 @@ export var storyboard = (
     const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
-    mouseClickAtPoint(canvasControlsLayer, {
+    await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
       y: divBounds.y + 5,
     })
@@ -393,7 +395,7 @@ export var storyboard = (
       y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2),
     }
 
-    mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+    await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -555,7 +557,7 @@ async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
   const div = editor.renderedDOM.getByTestId(DivTestId)
   const divBounds = div.getBoundingClientRect()
 
-  mouseClickAtPoint(canvasControlsLayer, {
+  await mouseClickAtPoint(canvasControlsLayer, {
     x: divBounds.x + 5,
     y: divBounds.y + 5,
   })
@@ -573,7 +575,7 @@ async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
     y: Math.floor(gapControlBounds.y + gapControlBounds.height / 2) + delta.y,
   }
 
-  mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
+  await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
   await editor.getDispatchFollowUpActionsFinished()
 }
 

@@ -21,7 +21,7 @@ describe('draw-to-insert text', () => {
       const div = editor.renderedDOM.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       const outsideDiv = {
@@ -29,7 +29,7 @@ describe('draw-to-insert text', () => {
         y: divBounds.y + 100,
       }
 
-      mouseDragFromPointToPoint(canvasControlsLayer, outsideDiv, {
+      await mouseDragFromPointToPoint(canvasControlsLayer, outsideDiv, {
         x: outsideDiv.x + 100,
         y: outsideDiv.y + 250,
       })
@@ -87,7 +87,7 @@ describe('draw-to-insert text', () => {
       const div = editor.renderedDOM.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       const outsideDiv = {
@@ -95,7 +95,7 @@ describe('draw-to-insert text', () => {
         y: divBounds.y + 100,
       }
 
-      mouseClickAtPoint(canvasControlsLayer, outsideDiv)
+      await mouseClickAtPoint(canvasControlsLayer, outsideDiv)
       await editor.getDispatchFollowUpActionsFinished()
 
       typeText('Utopia')
@@ -149,7 +149,7 @@ describe('draw-to-insert text', () => {
       const div = editor.renderedDOM.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       const insideDiv = {
@@ -157,7 +157,7 @@ describe('draw-to-insert text', () => {
         y: divBounds.y + divBounds.height / 2,
       }
 
-      mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
+      await mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
         x: insideDiv.x + 50,
         y: insideDiv.y + 50,
       })
@@ -225,7 +225,7 @@ describe('draw-to-insert text', () => {
       const div = editor.renderedDOM.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       const insideDiv = {
@@ -233,7 +233,7 @@ describe('draw-to-insert text', () => {
         y: divBounds.y + divBounds.height / 2,
       }
 
-      mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
+      await mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
         x: insideDiv.x + 50,
         y: insideDiv.y + 50,
       })
@@ -284,7 +284,7 @@ describe('draw-to-insert text', () => {
       const editor = await renderTestEditorWithCode(emptyProject, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       const insideDiv = {
@@ -292,7 +292,7 @@ describe('draw-to-insert text', () => {
         y: 500,
       }
 
-      mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
+      await mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
         x: insideDiv.x + 50,
         y: insideDiv.y + 50,
       })
@@ -337,7 +337,7 @@ function typeText(text: string) {
 }
 
 async function closeTextEditor() {
-  pressKey('Escape')
+  await pressKey('Escape')
   await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 

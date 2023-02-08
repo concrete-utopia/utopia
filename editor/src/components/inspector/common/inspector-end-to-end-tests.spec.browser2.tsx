@@ -38,8 +38,9 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, wait } from '../../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../../canvas/controls/select-mode/subdued-padding-control'
+import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 
 async function getControl(
   controlTestId: string,
@@ -2301,6 +2302,76 @@ describe('inspector tests with real metadata', () => {
         await act(async () => {
           await renderResult.dispatch([selectComponents([targetPath], false)], false)
         })
+
+        const control = await getControl(t.controlTestID, renderResult.renderedDOM)
+
+        // Check the controls show when hovering
+        fireEvent.mouseEnter(control)
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const hoveredControls = t.hoveredCanvasControls.flatMap((expectedControl) =>
+          renderResult.renderedDOM.queryAllByTestId(expectedControl),
+        )
+        expect(hoveredControls.length).toEqual(t.hoveredCanvasControls.length)
+
+        // Check the controls show when focusing
+        fireEvent.focus(control)
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        const focusedControls = t.focusedCanvasControls.flatMap((expectedControl) =>
+          renderResult.renderedDOM.queryAllByTestId(expectedControl),
+        )
+        expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
+      })
+    })
+  })
+
+  describe('border radius controls from the inspector', () => {
+    function makeCodeSnippetWithKeyValue(props: { [key: string]: any }): string {
+      const propsStr = Object.keys(props)
+        .map((k) => `${k}: ${JSON.stringify(props[k])},`)
+        .join('\n')
+      return `
+        <div
+          data-uid='aaa'
+        >
+          <div
+            style={{ ${propsStr} }}
+            data-uid='bbb'
+          >test</div>
+        </div>
+    `
+    }
+
+    const tests = [
+      {
+        name: 'single value shows the highlight control',
+        startSnippet: makeCodeSnippetWithKeyValue({
+          border: '1px solid black',
+          borderRadius: 5,
+          width: 20,
+          height: 20,
+        }),
+        controlTestID: 'radius-one',
+        hoveredCanvasControls: [SubduedBorderRadiusControlTestId('hovered')],
+        focusedCanvasControls: [SubduedBorderRadiusControlTestId('focused')],
+      },
+    ]
+
+    tests.forEach((t) => {
+      it(`${t.name} when hovering and focusing`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(t.startSnippet),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await act(async () => {
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        })
+
+        // await wait(300000)
 
         const control = await getControl(t.controlTestID, renderResult.renderedDOM)
 

@@ -51,15 +51,15 @@ async function doTest(
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   const nineBlockControlSegment = editor.renderedDOM.getByTestId(
     NineBlockTestId(justifyContent, alignItems),
   )
 
-  await expectSingleUndoStep(editor, async () =>
-    mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 }),
-  )
+  await expectSingleUndoStep(editor, async () => {
+    await mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 })
+  })
 
   return div
 }

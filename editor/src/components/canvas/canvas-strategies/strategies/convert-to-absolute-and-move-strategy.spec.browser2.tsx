@@ -449,7 +449,7 @@ describe('Convert to absolute/escape hatch', () => {
     const element = renderResult.renderedDOM.getByTestId('child1')
     const elementBounds = element.getBoundingClientRect()
 
-    mouseDownAtPoint(
+    await mouseDownAtPoint(
       canvasControlsLayer,
       {
         x: elementBounds.x + 10,
@@ -457,7 +457,7 @@ describe('Convert to absolute/escape hatch', () => {
       },
       { modifiers: cmdModifier },
     )
-    mouseMoveToPoint(canvasControlsLayer, {
+    await mouseMoveToPoint(canvasControlsLayer, {
       x: elementBounds.x + 50,
       y: elementBounds.y + 50,
     })

@@ -19,7 +19,9 @@ describe('set flex direction', () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const div = await selectDiv(editor)
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'row'))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor, 'row')
+    })
 
     expect(div.style.flexDirection).toEqual('row')
 
@@ -35,7 +37,9 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('row')
 
-    await expectSingleUndoStep(editor, () => clickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor, 'column')
+    })
 
     expect(div.style.flexDirection).toEqual('column')
   })
@@ -47,7 +51,9 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    await expectSingleUndoStep(editor, () => rightClickOn(editor, 'column'))
+    await expectSingleUndoStep(editor, async () => {
+      await rightClickOn(editor, 'column')
+    })
 
     expect(div.style.flexDirection).toEqual('')
   })
@@ -64,7 +70,7 @@ describe('set flex direction', () => {
     expect(div.style.flexDirection).toEqual('row')
   })
 
-  it('when updating flex direction, child sizes are hardcoded', async () => {
+  it('when updating flex direction, and children are set to fill container, cross axis sizings are swapped', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithFillContainerChildren(),
       'await-first-dom-report',
@@ -76,18 +82,21 @@ describe('set flex direction', () => {
 
     const blue = editor.renderedDOM.getByTestId('blue')
     expect(blue.style.flex).toEqual('')
-    expect(blue.style.width).toEqual('333px')
-    expect(blue.style.height).toEqual('170px')
+    expect(blue.style.height).toEqual('')
+    expect(blue.style.width).toEqual('170px')
+    expect(blue.style.flexGrow).toEqual('1')
 
     const red = editor.renderedDOM.getByTestId('red')
     expect(red.style.flex).toEqual('')
-    expect(red.style.width).toEqual('333px')
-    expect(red.style.height).toEqual('211px')
+    expect(red.style.height).toEqual('')
+    expect(red.style.width).toEqual('211px')
+    expect(red.style.flexGrow).toEqual('1')
 
     const green = editor.renderedDOM.getByTestId('green')
     expect(green.style.flex).toEqual('')
-    expect(green.style.width).toEqual('333px')
-    expect(green.style.height).toEqual('188px')
+    expect(green.style.height).toEqual('')
+    expect(green.style.width).toEqual('188px')
+    expect(green.style.flexGrow).toEqual('1')
   })
 })
 
@@ -100,7 +109,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
 }
@@ -108,13 +117,13 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickOn(editor: EditorRenderResult, direction: FlexDirection) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(FlexDirectionToggleTestId(direction))
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
 async function rightClickOn(editor: EditorRenderResult, direction: FlexDirection) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(FlexDirectionToggleTestId(direction))
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 }, { eventOptions: { button: 1 } })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 }, { eventOptions: { button: 1 } })
 }
 
 function project(): string {

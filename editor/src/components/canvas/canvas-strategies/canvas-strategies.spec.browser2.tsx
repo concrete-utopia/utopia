@@ -109,20 +109,20 @@ async function getGuidelineRenderResult(scale: number) {
   return renderResult
 }
 
-function startElementDragNoMouseUp(
+async function startElementDragNoMouseUp(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
-) {
+): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 })
   const endPoint = offsetPoint(startPoint, dragDelta)
-  mouseDownAtPoint(canvasControl, startPoint, { modifiers: modifiers })
-  mouseMoveToPoint(canvasControl, endPoint, {
+  await mouseDownAtPoint(canvasControl, startPoint, { modifiers: modifiers })
+  await mouseMoveToPoint(canvasControl, endPoint, {
     modifiers: modifiers,
     eventOptions: { buttons: 1 },
   })
@@ -252,7 +252,12 @@ describe('Strategy Fitness', () => {
     await renderResult.dispatch([selectComponents([targetElement], false)], false)
 
     // we don't want to mouse up to avoid clearInteractionSession
-    startElementDragNoMouseUp(renderResult, 'bbb', windowPoint({ x: 15, y: 15 }), emptyModifiers)
+    await startElementDragNoMouseUp(
+      renderResult,
+      'bbb',
+      windowPoint({ x: 15, y: 15 }),
+      emptyModifiers,
+    )
 
     const canvasStrategy = renderResult.getEditorState().strategyState.currentStrategy
     expect(canvasStrategy).toEqual('FLEX_REORDER')

@@ -18,14 +18,15 @@ import {
 } from '../../../../core/model/scene-utils'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { CSSCursor } from '../../canvas-types'
-import { NO_OP } from '../../../../core/shared/utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { wait } from '../../../../utils/utils.test-utils'
+import { objectMap } from '../../../../core/shared/object-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
 }
 
-function dragElement(
+async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
@@ -39,15 +40,15 @@ function dragElement(
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
   const midDragCallback =
     checkCursor == null
-      ? NO_OP
-      : () => {
+      ? undefined
+      : async () => {
           expect(getCursorFromEditor(renderResult.getEditorState().editor)).toEqual(
             checkCursor.cursor,
           )
         }
 
-  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
     midDragCallback: midDragCallback,
   })
@@ -137,7 +138,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -193,7 +194,7 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -275,7 +276,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null)
+    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -341,7 +342,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null)
+    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -412,7 +413,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -483,7 +484,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null)
+    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -553,7 +554,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: 150 })
-    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -647,7 +648,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -661,7 +662,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: -150 })
-    dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
+    await dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
       cursor: CSSCursor.NotPermitted,
     })
 
@@ -681,7 +682,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: 0, y: -150 })
-    dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
+    await dragElement(renderResult, 'child-to-reparent', dragDelta, cmdModifier, {
       cursor: CSSCursor.Move,
     })
 

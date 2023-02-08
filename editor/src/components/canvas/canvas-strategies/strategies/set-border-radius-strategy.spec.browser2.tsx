@@ -43,7 +43,7 @@ describe('set border radius strategy', () => {
       y: divBounds.y + 40,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
       editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
@@ -63,7 +63,7 @@ describe('set border radius strategy', () => {
       y: divBounds.y + 40,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
       editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
@@ -86,7 +86,7 @@ describe('set border radius strategy', () => {
       y: divBounds.y + 1,
     }
 
-    mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
     const paddingControls = BorderRadiusCorners.flatMap((corner) =>
       editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
@@ -105,7 +105,7 @@ describe('set border radius strategy', () => {
         'await-first-dom-report',
       )
 
-      clickOnMyDiv(editor)
+      await clickOnMyDiv(editor)
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
         editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
       )
@@ -119,7 +119,7 @@ describe('set border radius strategy', () => {
         'await-first-dom-report',
       )
 
-      clickOnMyDiv(editor)
+      await clickOnMyDiv(editor)
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
         editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
       )
@@ -135,7 +135,7 @@ describe('set border radius strategy', () => {
         'await-first-dom-report',
       )
 
-      clickOnMyDiv(editor)
+      await clickOnMyDiv(editor)
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
         editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
       )
@@ -162,7 +162,7 @@ describe('set border radius strategy', () => {
       const selectedViews = [fromString('Storyboard/Horrible:RootDiv')]
       await editor.dispatch([selectComponents(selectedViews, false)], true)
 
-      mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+      await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
         editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
@@ -237,7 +237,7 @@ describe('set border radius strategy', () => {
       codeForDragTest(`borderRadius: '200px'`),
     )
 
-    resizeElement(
+    await resizeElement(
       editor,
       windowPoint({ x: -300, y: -300 }),
       EdgePositionBottomRight,
@@ -424,7 +424,7 @@ async function doDragTest(
     y: divBounds.y + Math.floor(divBounds.height / 2),
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 
   const borderRadiusControl = editor.renderedDOM.getByTestId(CircularHandleTestId(corner))
   const borderRadiusControlBounds = borderRadiusControl.getBoundingClientRect()
@@ -436,9 +436,9 @@ async function doDragTest(
 
   const dragDelta = dragDeltaFromEdgePosition(corner, offset)
 
-  mouseEnterAtPoint(borderRadiusControl, divCorner)
+  await mouseEnterAtPoint(borderRadiusControl, divCorner)
 
-  mouseDragFromPointToPoint(
+  await mouseDragFromPointToPoint(
     borderRadiusControl,
     center,
     {
@@ -465,12 +465,12 @@ function dragDeltaFromEdgePosition(corner: BorderRadiusCorner, offset: number): 
   }
 }
 
-function resizeElement(
+async function resizeElement(
   renderResult: EditorRenderResult,
   dragDelta: WindowPoint,
   edgePosition: EdgePosition,
   modifiers: Modifiers,
-) {
+): Promise<void> {
   const canvasControl = renderResult.renderedDOM.getByTestId(
     `resize-control-${edgePosition.x}-${edgePosition.y}`,
   )
@@ -481,10 +481,10 @@ function resizeElement(
     y: resizeCornerBounds.y + 2,
   })
 
-  mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
+  await mouseDragFromPointWithDelta(canvasControl, startPoint, dragDelta, { modifiers: modifiers })
 }
 
-function clickOnMyDiv(editor: EditorRenderResult) {
+async function clickOnMyDiv(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
@@ -493,7 +493,7 @@ function clickOnMyDiv(editor: EditorRenderResult) {
     y: divBounds.y + 24,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+  await mouseClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
 }
 interface HorribleComponentProps {
   internalBorderRadius?: string
