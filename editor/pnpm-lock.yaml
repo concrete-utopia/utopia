@@ -158,7 +158,7 @@ specifiers:
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
   jotai: 2.0.0
-  jotai-devtools: ^0.2.0
+  jotai-devtools: 0.2.0
   jsdom: 17.0.0
   json5: 0.5.1
   jszip: 3.5.0
@@ -325,6 +325,7 @@ dependencies:
   istextorbinary: 5.11.0
   jest-fetch-mock: 3.0.1
   jotai: 2.0.0_react@18.1.0
+  jotai-devtools: 0.2.0_jotai@2.0.0+react@18.1.0
   json5: 0.5.1
   jszip: 3.5.0
   keycode: 2.2.1
@@ -498,7 +499,6 @@ devDependencies:
   jest-environment-jsdom: 27.2.4
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
-  jotai-devtools: 0.2.0_jotai@2.0.0+react@18.1.0
   jsdom: 17.0.0
   karma: 6.4.1
   karma-chrome-launcher: 3.1.1
@@ -3007,7 +3007,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       immutable: 4.2.4
-    dev: true
+    dev: false
 
   /@relative-ci/agent/2.1.0_webpack@5.52.0:
     resolution: {integrity: sha512-XhLSuCa4mDQIhm0Lpe5Tzx6+5UojkPaEYSTImgf/xwZGC3ikT84mf6wDxX0J6UNRkoObegQrpr5MDkgOPSo6oQ==}
@@ -9180,7 +9180,7 @@ packages:
 
   /immutable/4.2.4:
     resolution: {integrity: sha512-WDxL3Hheb1JkRN3sQkyujNlL/xRjAo3rJtaU5xeufUauG66JdMr32bLj4gF+vWl84DIA3Zxw7tiAjneYzRRw+w==}
-    dev: true
+    dev: false
 
   /import-fresh/2.0.0:
     resolution: {integrity: sha512-eZ5H8rcgYazHbKC3PG4ClHNykCSxtAhxSSEM+2mb+7evD2CKF5V7c0dNum7AdpDh0ZdICwZY9sRSn8f+KH96sg==}
@@ -10451,7 +10451,7 @@ packages:
       react: 18.1.0
     transitivePeerDependencies:
       - redux
-    dev: true
+    dev: false
 
   /jotai/2.0.0_react@18.1.0:
     resolution: {integrity: sha512-04G0CRZQgp3xrFAezd6X14psZ2TRGekHeYMBcbDJ/BR8ZJQPS+j0YkMTxUxyG58HJnN2+adfj5sWQWoqgtp1XQ==}
