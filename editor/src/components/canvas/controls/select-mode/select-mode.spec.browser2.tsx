@@ -27,6 +27,7 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
+import { setFeatureEnabled } from '../../../../utils/feature-switches'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -574,7 +575,8 @@ describe('Select Mode Double Clicking With Fragments', () => {
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 
-  xit('Six double clicks will focus a generated Card and select its root element', async () => {
+  it('Six double clicks will focus a generated Card and select its root element', async () => {
+    setFeatureEnabled('Fragment support', true)
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +                 // Skipped as it's the storyboard
@@ -598,8 +600,8 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const doubleClick = createDoubleClicker(
       canvasControlsLayer,
-      cardSceneRootBounds.left + 130,
-      cardSceneRootBounds.top + 220,
+      cardSceneRootBounds.left + 50,
+      cardSceneRootBounds.top + 50,
     )
 
     await doubleClick()
@@ -615,9 +617,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
     await doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+    setFeatureEnabled('Fragment support', false)
   })
 
   it('Eight double clicks will focus a generated Card and select the Button inside', async () => {
+    setFeatureEnabled('Fragment support', true)
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +                 // Skipped as it's the storyboard
@@ -657,6 +661,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
     await doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+    setFeatureEnabled('Fragment support', false)
   })
 })
 
