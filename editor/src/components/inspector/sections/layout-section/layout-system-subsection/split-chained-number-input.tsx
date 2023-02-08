@@ -174,7 +174,7 @@ export type SplitControlValues = {
   right: CSSNumber
 }
 
-export const handleSplitChainedEvent =
+const handleSplitChainedEvent =
   (
     e: SplitChainedEvent,
     dispatch: EditorDispatch,
@@ -270,21 +270,13 @@ export const longhandShorthandEventHandler = (
   elementPath: ElementPath,
   dispatch: EditorDispatch,
 ): SplitChainedNumberInputEventHandler => {
-  const shorthandPath = PP.create('style', shorthand)
-  const longhandPath = {
-    T: PP.create('style', longhands.T),
-    B: PP.create('style', longhands.B),
-    L: PP.create('style', longhands.L),
-    R: PP.create('style', longhands.R),
-  }
   return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
-    handleSplitChainedEvent(
-      e,
-      dispatch,
-      elementPath,
-      shorthandPath,
-      longhandPath,
-    )(useShorthand, aggregates)
+    handleSplitChainedEvent(e, dispatch, elementPath, PP.create('style', shorthand), {
+      T: PP.create('style', longhands.T),
+      B: PP.create('style', longhands.B),
+      L: PP.create('style', longhands.L),
+      R: PP.create('style', longhands.R),
+    })(useShorthand, aggregates)
   }
 }
 
