@@ -51,14 +51,6 @@ export const CanvasToolbar = React.memo(() => {
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
 
-  const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
-
-  const scale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'CanvasToolbar scale',
-  )
-
   const insertMenuMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
@@ -127,6 +119,8 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch, zoomLevel],
   )
 
+  const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
+
   const isLiveMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
@@ -174,6 +168,33 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
+        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Scale</header>
+        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
+          <Tooltip title='Zoom in' placement='bottom'>
+            <SquareButton highlight style={{ textAlign: 'center', width: 32 }} onClick={zoom100pct}>
+              {zoomLevel}x
+            </SquareButton>
+          </Tooltip>
+        </FlexRow>
+
+        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
+          <Tooltip title='Zoom in' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-plus'
+              iconCategory='semantic'
+              onClick={zoomIn}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom out' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-minus'
+              iconCategory='semantic'
+              onClick={zoomOut}
+            />
+          </Tooltip>
+        </FlexRow>
+        <Divider />
+        {/* ------------------------------------ */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Select' placement='bottom'>
@@ -188,20 +209,6 @@ export const CanvasToolbar = React.memo(() => {
               iconType='pure-text'
               primary={spanInsertion}
               onClick={insertSpanCallback}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom in' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-plus'
-              iconCategory='semantic'
-              onClick={zoomIn}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom out' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-minus'
-              iconCategory='semantic'
-              onClick={zoomOut}
             />
           </Tooltip>
         </FlexRow>
