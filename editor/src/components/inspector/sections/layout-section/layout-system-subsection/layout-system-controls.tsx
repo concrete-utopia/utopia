@@ -269,9 +269,9 @@ export const PaddingControl = React.memo(() => {
         'padding',
         {
           T: 'paddingTop',
-          L: 'paddingLeft',
-          B: 'paddingBottom',
           R: 'paddingRight',
+          B: 'paddingBottom',
+          L: 'paddingLeft',
         },
         selectedViewsRef.current[0],
         dispatch,

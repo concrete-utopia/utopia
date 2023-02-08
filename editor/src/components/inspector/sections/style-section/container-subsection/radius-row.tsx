@@ -159,9 +159,9 @@ export const BorderRadiusControl = React.memo(() => {
         'borderRadius',
         {
           T: 'borderTopLeftRadius',
+          R: 'borderTopRightRadius',
           B: 'borderBottomRightRadius',
           L: 'borderBottomLeftRadius',
-          R: 'borderTopRightRadius',
         },
         selectedViewsRef.current[0],
         dispatch,

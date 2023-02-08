@@ -34,7 +34,7 @@ import { InspectorInfo } from '../../../common/property-path-hooks'
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
   | 'per-direction' // two values that group per direction (vertical / horizontal)
-  | 'per-side' // one distinct value per side (TLBR)
+  | 'per-side' // one distinct value per side (TRBL)
 
 interface ControlCSSNumber {
   controlStatus: ControlStatus
@@ -153,10 +153,11 @@ function getInitialMode(
 }
 
 export type FourValue =
-  | { type: 'L'; value: CSSNumber }
-  | { type: 'R'; value: CSSNumber }
   | { type: 'T'; value: CSSNumber }
+  | { type: 'R'; value: CSSNumber }
   | { type: 'B'; value: CSSNumber }
+  | { type: 'L'; value: CSSNumber }
+
 export type TwoValue = { type: 'V'; value: CSSNumber } | { type: 'H'; value: CSSNumber }
 
 export type SplitChainedEvent =
@@ -169,9 +170,9 @@ export type SplitControlValues = {
   horizontal: CSSNumber | null
   vertical: CSSNumber | null
   top: CSSNumber
-  left: CSSNumber
-  bottom: CSSNumber
   right: CSSNumber
+  bottom: CSSNumber
+  left: CSSNumber
 }
 
 const handleSplitChainedEvent =
@@ -182,9 +183,9 @@ const handleSplitChainedEvent =
     shorthand: PropertyPath,
     longhand: {
       T: PropertyPath
-      L: PropertyPath
-      B: PropertyPath
       R: PropertyPath
+      B: PropertyPath
+      L: PropertyPath
     },
   ) =>
   (useShorthand: boolean, aggregates: SplitControlValues): void => {
@@ -206,9 +207,9 @@ const handleSplitChainedEvent =
 
     const unsetAllIndividual = [
       unsetProperty(element, longhand.T),
-      unsetProperty(element, longhand.L),
-      unsetProperty(element, longhand.B),
       unsetProperty(element, longhand.R),
+      unsetProperty(element, longhand.B),
+      unsetProperty(element, longhand.L),
     ]
 
     const getActions = (): Array<EditorAction> => {
@@ -218,9 +219,9 @@ const handleSplitChainedEvent =
             ? [...unsetAllIndividual, setProp(shorthand, [e.value])]
             : [
                 setProp(longhand.T, [e.value]),
-                setProp(longhand.L, [e.value]),
-                setProp(longhand.B, [e.value]),
                 setProp(longhand.R, [e.value]),
+                setProp(longhand.B, [e.value]),
+                setProp(longhand.L, [e.value]),
               ]
         case 'two-value':
           return useShorthand
@@ -243,6 +244,7 @@ const handleSplitChainedEvent =
             ? [
                 ...unsetAllIndividual,
                 setProp(shorthand, [
+                  // order here is important! TRBL
                   e.value.type === 'T' ? e.value.value : aggregates.top,
                   e.value.type === 'R' ? e.value.value : aggregates.right,
                   e.value.type === 'B' ? e.value.value : aggregates.bottom,
@@ -250,6 +252,7 @@ const handleSplitChainedEvent =
                 ]),
               ]
             : [
+                // order here is important! TRBL
                 unsetProperty(element, shorthand),
                 ...(e.value.type === 'T' ? [setProp(longhand.T, [e.value.value])] : []),
                 ...(e.value.type === 'R' ? [setProp(longhand.R, [e.value.value])] : []),
@@ -266,16 +269,21 @@ const handleSplitChainedEvent =
 
 export const longhandShorthandEventHandler = (
   shorthand: string,
-  longhands: { T: string; B: string; L: string; R: string },
+  longhands: {
+    T: string
+    R: string
+    B: string
+    L: string
+  },
   elementPath: ElementPath,
   dispatch: EditorDispatch,
 ): SplitChainedNumberInputEventHandler => {
   return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
     handleSplitChainedEvent(e, dispatch, elementPath, PP.create('style', shorthand), {
       T: PP.create('style', longhands.T),
+      R: PP.create('style', longhands.R),
       B: PP.create('style', longhands.B),
       L: PP.create('style', longhands.L),
-      R: PP.create('style', longhands.R),
     })(useShorthand, aggregates)
   }
 }
@@ -389,9 +397,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       horizontal,
       vertical,
       top: top.value,
-      left: left.value,
-      bottom: bottom.value,
       right: right.value,
+      bottom: bottom.value,
+      left: left.value,
     }
   }, [oneValue, horizontal, vertical, top, left, bottom, right])
 
