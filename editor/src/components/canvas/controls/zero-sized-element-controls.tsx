@@ -390,7 +390,6 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         )
       })
       dispatch([...setPropActions, CanvasActions.clearInteractionSession(false)], 'everyone')
-      // dispatch(setPropActions, 'everyone')
     }
   }, [dispatch, element, props.frame])
 
