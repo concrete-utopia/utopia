@@ -866,6 +866,8 @@ function getSpecialMeasurements(
   const parentFlexDirection = eitherToMaybe(
     parseFlexDirection(parentElementStyle?.flexDirection, null),
   )
+  const parentJustifyContent = getFlexJustifyContent(parentElementStyle?.justifyContent ?? null)
+
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
@@ -977,6 +979,7 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parentJustifyContent,
     parsedFlexGapValue,
     gap,
     flexDirection,
