@@ -35,6 +35,8 @@ import {
   jsxElementName,
   jsxElementNameEquals,
   isJSXElementLikeWithChildren,
+  JSXFragment,
+  jsxFragment,
 } from '../shared/element-template'
 import {
   Imports,
@@ -163,16 +165,25 @@ function isUtopiaJSXElement(
 ): element is JSXElement {
   return isJSXElement(element as any)
 }
+
 function isUtopiaJSXArbitraryBlock(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSXArbitraryBlock {
   return isJSXArbitraryBlock(element as any)
 }
+
 function isUtopiaJSXTextBlock(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSXTextBlock {
   return isJSXTextBlock(element as any)
 }
+
+function isUtopiaJSXFragment(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXFragment {
+  return isJSXFragment(element as any)
+}
+
 function isElementInstanceMetadata(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is ElementInstanceMetadata {
@@ -182,6 +193,8 @@ function isElementInstanceMetadata(
 export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
   if (isUtopiaJSXElement(element)) {
     return setUtopiaIDOnJSXElement(element, uid)
+  } else if (isUtopiaJSXFragment(element)) {
+    return jsxFragment(uid, element.children)
   } else {
     throw new Error(`Unable to set utopia id on ${element.type}`)
   }

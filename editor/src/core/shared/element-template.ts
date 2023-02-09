@@ -1732,7 +1732,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     x: 0,
     y: 0,
   } as LocalPoint,
-  zeroCanvasRect,
+  null,
   zeroCanvasRect,
   true,
   EP.emptyElementPath,

@@ -1170,7 +1170,15 @@ export const MetadataUtils = {
       }
     }
 
-    return zeroCanvasRect
+    // Potentially here the parent was something like a fragment that itself doesn't have
+    // the above properties set, so we should move up the hierarchy to find one where they are set.
+    const nextAncestor =
+      targetParent == null || EP.isEmptyPath(targetParent) ? null : EP.parentPath(targetParent)
+    if (nextAncestor == null) {
+      return zeroCanvasRect
+    } else {
+      return MetadataUtils.getParentCoordinateSystemBounds(nextAncestor, metadata)
+    }
   },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath | null,
