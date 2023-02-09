@@ -1712,10 +1712,14 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
   }
 
   const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+  const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
+    const globalFrame = zeroRectIfNullOrInfinity(fromDOM[p].globalFrame)
+    return globalFrame.width === 0 || globalFrame.height === 0
+  })
 
   const workingElements: ElementInstanceMetadataMap = {}
 
-  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
+  fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
     const spyElem = fromSpy[pathStr]
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
