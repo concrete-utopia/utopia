@@ -16,7 +16,7 @@ import { EditorPanel } from '../common/actions/index'
 import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { xor } from '../../core/shared/utils'
+import { assertNever, xor } from '../../core/shared/utils'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   DragInteractionData,
@@ -754,12 +754,31 @@ export function oppositeEdgePositionPart(part: EdgePositionPart): EdgePositionPa
   }
 }
 
-export type EdgePiece = 'top' | 'bottom' | 'left' | 'right'
-
 export function oppositeEdgePosition(edgePos: EdgePosition): EdgePosition {
   return {
     x: oppositeEdgePositionPart(edgePos.x),
     y: oppositeEdgePositionPart(edgePos.y),
+  }
+}
+
+export type EdgePiece = 'top' | 'bottom' | 'left' | 'right'
+
+export function isHorizontalEdgePiece(edgePiece: EdgePiece): boolean {
+  return edgePiece === 'left' || edgePiece === 'right'
+}
+
+export function oppositeEdgePiece(edgePiece: EdgePiece): EdgePiece {
+  switch (edgePiece) {
+    case 'left':
+      return 'right'
+    case 'right':
+      return 'left'
+    case 'top':
+      return 'bottom'
+    case 'bottom':
+      return 'top'
+    default:
+      assertNever(edgePiece)
   }
 }
 
