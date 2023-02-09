@@ -28,6 +28,7 @@ import { executeFirstApplicableStrategy } from './inspector-strategies/inspector
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
+import { useHighlighPaddingHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
 
 export const NineBlockTestId = (
   alignItems: FlexAlignment,
@@ -275,6 +276,8 @@ export const NineBlockControl = React.memo(() => {
     [dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
   )
 
+  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+
   const callbacks: {
     [key in NineKey]: () => void
   } = React.useMemo(
@@ -296,6 +299,8 @@ export const NineBlockControl = React.memo(() => {
 
   return (
     <div
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         margin: 2,
         height: 100,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
+import { mapArrayToDictionary, mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -54,6 +54,9 @@ import {
   useTextEditModeSelectAndHover,
 } from '../text-edit-mode/text-edit-mode-hooks'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { useSetAtom } from 'jotai'
+import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
+import { SubduedPaddingControl } from './subdued-padding-control'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -864,4 +867,42 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 
     window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }, [dispatch, editorStoreRef])
+}
+
+export function useHighlighPaddingHandlers(): {
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+} {
+  const paddingControlsForHover = React.useMemo(() => {
+    return mapArrayToDictionary(
+      ['top', 'right', 'bottom', 'left'],
+      (k) => k,
+      (side) => ({
+        control: SubduedPaddingControl,
+        props: {
+          side: side,
+          hoveredOrFocused: 'hovered',
+        },
+        key: `subdued-padding-control-hovered-${side}`,
+      }),
+    )
+  }, [])
+
+  const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
+
+  const onMouseEnter = React.useCallback(() => {
+    setHoveredCanvasControls([
+      paddingControlsForHover['top'],
+      paddingControlsForHover['right'],
+      paddingControlsForHover['bottom'],
+      paddingControlsForHover['left'],
+    ])
+  }, [paddingControlsForHover, setHoveredCanvasControls])
+
+  const onMouseLeave = React.useCallback(
+    () => setHoveredCanvasControls([]),
+    [setHoveredCanvasControls],
+  )
+
+  return { onMouseEnter, onMouseLeave }
 }

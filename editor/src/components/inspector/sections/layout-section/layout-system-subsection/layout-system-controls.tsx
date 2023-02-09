@@ -9,11 +9,11 @@ import {
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
+import { useHighlighPaddingHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
 import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -180,22 +180,32 @@ export const PaddingRow = React.memo(() => {
     [contextMenuLabel, metadata.propertyStatus.set, metadata.onUnsetValues],
   )
 
+  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+
   return (
     <InspectorContextMenuWrapper
       id='padding-subsection-context-menu'
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
-        <PropertyLabel
-          target={paddingPropsToUnset}
-          propNamesToUnset={contextMenuLabel}
-          style={{
-            paddingBottom: 20,
-          }}
-        >
-          Padding
-        </PropertyLabel>
+      <UIGridRow
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        tall
+        padded={true}
+        variant='<---1fr--->|------172px-------|'
+      >
+        <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+          <PropertyLabel
+            target={paddingPropsToUnset}
+            propNamesToUnset={contextMenuLabel}
+            style={{
+              paddingBottom: 20,
+            }}
+          >
+            Padding
+          </PropertyLabel>
+        </div>
         <PaddingControl />
       </UIGridRow>
     </InspectorContextMenuWrapper>

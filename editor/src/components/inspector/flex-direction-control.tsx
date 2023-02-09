@@ -3,6 +3,7 @@ import { createSelector } from 'reselect'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
+import { useHighlighPaddingHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -69,12 +70,16 @@ export const FlexDirectionToggle = React.memo(() => {
     [dispatch, metadataRef, selectedViewsRef],
   )
 
+  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+
   if (nFlexContainers === 0) {
     return null
   }
 
   return (
     <div
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         display: 'grid',
         gridTemplateRows: '1fr',

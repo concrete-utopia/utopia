@@ -2,6 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { assertNever } from '../../core/shared/utils'
 import { ControlStatus, getControlStyles } from '../../uuiui-deps'
+import { useHighlighPaddingHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { OptionChainControl, OptionChainOption } from './controls/option-chain-control'
@@ -67,9 +68,16 @@ export const SpacedPackedControl = React.memo(() => {
     [dispatch, metadataRef, selectedViewsRef],
   )
 
+  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+
   const controlStatus: ControlStatus = 'simple'
   return (
-    <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+    <UIGridRow
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      padded={true}
+      variant='<---1fr--->|------172px-------|'
+    >
       Spacing
       <OptionChainControl
         id={'spaced-packed-control'}
