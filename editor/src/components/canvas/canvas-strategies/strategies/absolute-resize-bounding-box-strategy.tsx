@@ -45,6 +45,7 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
+  targetPaths,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import {
@@ -59,8 +60,79 @@ import {
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
+import { toString } from '../../../../core/shared/element-path'
 
 export function absoluteResizeBoundingBoxStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  return (
+    [groupLikeResizeStrategy, realAbsoluteResizeBoundingBoxStrategy]
+      .map((s) => s(canvasState, interactionSession))
+      .find((s) => s != null) ?? null
+  )
+}
+
+function groupLikeResizeStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+
+  let actualTargetsIfApplicable: Array<ElementPath> = []
+
+  const isApplicable =
+    selectedElements.length > 0 &&
+    getDragTargets(selectedElements).every((path) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        path,
+      )
+
+      const elementProps = canvasState?.startingAllElementProps[toString(path)]
+
+      const hasNoWidthOrHeightProps =
+        elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
+
+      const parentIsNotFlex = elementMetadata?.specialSizeMeasurements.parentLayoutSystem !== 'flex'
+
+      const isApplicableElement =
+        elementMetadata?.specialSizeMeasurements.position === 'static' &&
+        elementMetadata?.specialSizeMeasurements.layoutSystemForChildren === 'flow' &&
+        hasNoWidthOrHeightProps &&
+        parentIsNotFlex
+
+      if (isApplicableElement) {
+        const childPaths = MetadataUtils.getChildrenPaths(canvasState.startingMetadata, path)
+        actualTargetsIfApplicable.push(...childPaths)
+      }
+
+      return isApplicableElement
+    })
+
+  if (!isApplicable) {
+    return null
+  }
+
+  // behave like realAbsoluteResizeBoundingBoxStrategy were the original multiselection, then delegate to realAbsoluteMoveStrategy
+  const updatedCanvasState: InteractionCanvasState = {
+    ...canvasState,
+    interactionTarget: targetPaths(actualTargetsIfApplicable),
+  }
+
+  const realStrat = realAbsoluteResizeBoundingBoxStrategy(updatedCanvasState, interactionSession)
+  if (realStrat == null) {
+    return null
+  }
+
+  return {
+    ...realStrat,
+    id: 'GROUP_LIKE_RESIZE',
+    name: 'Resize (children)',
+  }
+}
+
+function realAbsoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
