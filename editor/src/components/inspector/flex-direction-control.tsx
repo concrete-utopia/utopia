@@ -25,6 +25,9 @@ const nFlexContainersSelector = createSelector(
   selectedViewsSelector,
   numberOfFlexContainers,
 )
+
+export const FlexDirectionControlTestId = 'FlexDirectionControlTestId'
+
 export const FlexDirectionToggleTestId = (direction: FlexDirection): string =>
   `FlexDirectionToggle-${direction}`
 
@@ -78,6 +81,7 @@ export const FlexDirectionToggle = React.memo(() => {
 
   return (
     <div
+      data-testid={FlexDirectionControlTestId}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={{

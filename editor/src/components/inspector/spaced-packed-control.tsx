@@ -15,6 +15,8 @@ import {
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { UIGridRow } from './widgets/ui-grid-row'
 
+export const SpacedPackedControlTestId = 'SpacedPackedControlTestId'
+
 export const PackedLabelCopy = 'Packed' as const
 export const SpacedLabelCopy = 'Spaced' as const
 
@@ -73,6 +75,7 @@ export const SpacedPackedControl = React.memo(() => {
   const controlStatus: ControlStatus = 'simple'
   return (
     <UIGridRow
+      data-testid={SpacedPackedControlTestId}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       padded={true}

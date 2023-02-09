@@ -30,6 +30,8 @@ import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
 import { useHighlighPaddingHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
 
+export const NineBlockControlTestId = 'NineBlockControlTestId'
+
 export const NineBlockTestId = (
   alignItems: FlexAlignment,
   justifyContent: FlexJustifyContent,
@@ -299,6 +301,7 @@ export const NineBlockControl = React.memo(() => {
 
   return (
     <div
+      data-testid={NineBlockControlTestId}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={{
