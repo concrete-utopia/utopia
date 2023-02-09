@@ -33,7 +33,8 @@ export const runLocalNavigatorAction = function (
         navigator: NavigatorStateKeepDeepEquality(model.navigator, {
           ...model.navigator,
           dropTargetHint: {
-            target: action.target,
+            displayAtElementPath: action.displayAtElementPath,
+            moveToElementPath: action.moveToElementPath,
             type: action.type,
           },
         }).value,

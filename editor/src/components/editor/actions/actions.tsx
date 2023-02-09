@@ -963,7 +963,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     navigator: {
       minimised: currentEditor.navigator.minimised,
       dropTargetHint: {
-        target: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: poppedEditor.navigator.collapsedViews,

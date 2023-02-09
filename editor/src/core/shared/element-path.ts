@@ -653,6 +653,13 @@ function dropFromPath(path: ElementPath, n: number): ElementPath {
 
 export const getNthParent = dropFromPath
 
+export function dropNPathParts(path: ElementPath, n: number): ElementPath {
+  if (n <= 0) {
+    return path
+  }
+  return dropNPathParts(parentPath(path), n - 1)
+}
+
 export function replaceIfAncestor(
   path: ElementPath,
   replaceSearch: ElementPath,

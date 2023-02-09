@@ -591,7 +591,8 @@ export const DefaultTheme: ThemeSetting = 'system'
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
 export interface DropTargetHint {
-  target: ElementPath | null
+  displayAtElementPath: ElementPath | null
+  moveToElementPath: ElementPath | null
   type: DropTargetType
 }
 
@@ -2270,7 +2271,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     navigator: {
       minimised: false,
       dropTargetHint: {
-        target: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: [],
@@ -2606,7 +2608,8 @@ export function editorModelFromPersistentModel(
     saveError: false,
     navigator: {
       dropTargetHint: {
-        target: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: [],

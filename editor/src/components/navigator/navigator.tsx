@@ -7,25 +7,18 @@ import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
-import {
-  DragSelection,
-  NavigatorItemDragAndDropWrapperProps,
-} from './navigator-item/navigator-item-dnd-container'
+import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import { Section, SectionBodyArea, FlexColumn, FlexRow, useColorTheme } from '../../uuiui'
+import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { useDragLayer } from 'react-dnd'
-import { NavigatorRowLabel } from './navigator-item/navigator-item'
-import { NO_OP } from '../../core/shared/utils'
-import { when } from '../../utils/react-conditionals'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -49,10 +42,8 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     }
   })
   const getDistanceFromAncestorWhereImTheLastLeaf = React.useCallback(
-    (componentId: string, distance: number): number => {
-      // TODO FIXME HOLY SHIT THIS IS STUCK IN OLDE WORLDE
-      console.error('FIX getDistanceFromAncestorWhereImTheLastLeaf')
-      return distance
+    (elementPath: ElementPath): number => {
+      return EP.navigatorDepth(elementPath)
     },
     [],
   )
@@ -110,60 +101,6 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}
     />
-  )
-})
-
-const CustomDragLayer = React.memo(() => {
-  const { isDragging, currentOffset, item } = useDragLayer((monitor) => ({
-    item: monitor.getItem() as NavigatorItemDragAndDropWrapperProps | null,
-    currentOffset: monitor.getClientOffset(),
-    isDragging: monitor.isDragging(),
-  }))
-
-  const colorTheme = useColorTheme()
-
-  return (
-    <div
-      data-testid='draglayer'
-      style={{
-        pointerEvents: 'none',
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        top: 0,
-        left: 0,
-      }}
-    >
-      {when(
-        isDragging,
-        <FlexRow
-          style={{
-            width: 100,
-            height: 20,
-            borderRadius: 4,
-            opacity: 0.5,
-            backgroundColor: colorTheme.secondaryBlue.value,
-            color: 'white',
-            position: 'absolute',
-            transform: `translate3d(${(currentOffset?.x ?? 0) - 550}px, ${
-              // TODO: find a better way to position this element
-              (currentOffset?.y ?? 0) - 50
-            }px, 0)`,
-          }}
-        >
-          <NavigatorRowLabel
-            elementPath={item?.elementPath ?? EP.elementPath([[]])}
-            iconColor='on-highlight-main'
-            warningText={null}
-            renamingTarget={null}
-            selected={true}
-            label={item?.label ?? ''}
-            isDynamic={false}
-            dispatch={NO_OP}
-          />
-        </FlexRow>,
-      )}
-    </div>
   )
 })
 
@@ -289,7 +226,6 @@ export const NavigatorComponent = React.memo(() => {
             {ItemList}
           </AutoSizer>
         </FlexColumn>
-        <CustomDragLayer data-testid='draglayer' />
       </SectionBodyArea>
     </Section>
   )

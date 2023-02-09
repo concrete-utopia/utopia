@@ -1100,7 +1100,9 @@ describe('Navigator', () => {
     )
 
     expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(null)
-    expect(renderResult.getEditorState().editor.navigator.dropTargetHint.target).toEqual(null)
+    expect(
+      renderResult.getEditorState().editor.navigator.dropTargetHint.displayAtElementPath,
+    ).toEqual(null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

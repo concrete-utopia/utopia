@@ -12,12 +12,10 @@ import {
   JSXElementChild,
   jsxElementName,
 } from '../../../core/shared/element-template'
-import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { getValueFromComplexMap } from '../../../utils/map'
-import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   defaultElementWarnings,
@@ -37,7 +35,7 @@ interface NavigatorItemWrapperProps {
   targetComponentKey: string
   elementPath: ElementPath
   getDragSelections: () => Array<DragSelection>
-  getMaximumDistance: (componentId: string, initialDistance: number) => number
+  getMaximumDistance: (elementPath: ElementPath) => number
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
 }
@@ -176,7 +174,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         // Only capture this if it relates to the current navigator item, as it may change while
         // dragging around the navigator but we don't want the entire navigator to re-render each time.
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
-        if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
+        if (
+          EP.pathsEqual(
+            store.editor.navigator.dropTargetHint.displayAtElementPath,
+            props.elementPath,
+          )
+        ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
         const elementIsCollapsed = EP.containsPath(

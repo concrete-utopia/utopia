@@ -18,7 +18,7 @@ export const NavigatorHintCircleDiameter = 8
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
-  getMarginForHint: () => number
+  margin: number
 }
 
 export const NavigatorHintTop: React.FunctionComponent<
@@ -29,7 +29,7 @@ export const NavigatorHintTop: React.FunctionComponent<
     return (
       <div
         style={{
-          marginLeft: props.getMarginForHint(),
+          marginLeft: props.margin,
           backgroundColor: '#00abff',
           position: 'absolute',
           top: 0,
@@ -74,7 +74,7 @@ export const NavigatorHintBottom: React.FunctionComponent<
     return (
       <div
         style={{
-          marginLeft: props.getMarginForHint(),
+          marginLeft: props.margin,
           backgroundColor: '#00abff',
           position: 'absolute',
           bottom: 0,
