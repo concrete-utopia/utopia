@@ -174,12 +174,12 @@ function onHover(
         cursorDelta.x < -BasePaddingUnit &&
         EP.parentPath(propsOfDraggedItem.elementPath) != null
       ) {
-        const maximumTargetDepth = EP.navigatorDepth(propsOfDraggedItem.elementPath)
+        const maximumTargetDepth = EP.navigatorDepth(propsOfDropTargetItem.elementPath)
         const cursorTargetDepth = Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
 
         const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
 
-        const targetPath = EP.dropNPathParts(propsOfDraggedItem.elementPath, targetDepth)
+        const targetPath = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth)
 
         if (
           propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
