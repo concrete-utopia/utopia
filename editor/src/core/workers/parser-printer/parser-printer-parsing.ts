@@ -1649,6 +1649,7 @@ function createJSXElementOrFragmentAllocatingUID(
   children: JSXElementChildren,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  imports: Imports,
 ): WithParserMetadata<SuccessfullyParsedElement> {
   const dataUIDAttribute = parseUID(props)
   const { uid: newUID, attributes: updatedProps } = foldEither(
@@ -1690,16 +1691,19 @@ function createJSXElementOrFragmentAllocatingUID(
     },
     dataUIDAttribute,
   )
+
   const startPosition = TS.getLineAndCharacterOfPosition(
     sourceFile,
     originatingElement.getStart(sourceFile, false),
   )
+
+  const isFragment = name == null || isReactFragmentName(name, imports)
+
   return withParserMetadata(
     {
-      value:
-        name == null
-          ? jsxFragment(newUID, children)
-          : jsxElement(name, newUID, updatedProps.value, children),
+      value: isFragment
+        ? jsxFragment(newUID, children)
+        : jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
     },
@@ -1902,6 +1906,7 @@ export function parseOutJSXElements(
               childElems,
               highlightBounds,
               alreadyExistingUIDs,
+              imports,
             )
             highlightBounds = parsedElement.highlightBounds
             return right(parsedElement.value)
@@ -1953,6 +1958,43 @@ function isJsxNameKnown(
     const knownNames = knownElements.concat(knownImportedNames as string[])
     const result = [...knownNames, 'Fragment'].includes(name.baseVariable)
     return result
+  }
+}
+
+function isReactFragmentName(name: JSXElementName, imports: Imports): boolean {
+  if (imports == null) {
+    return false
+  }
+  const possibleReactImport = imports['react']
+  if (possibleReactImport == null) {
+    return false
+  } else {
+    if (possibleReactImport.importedAs != null) {
+      if (
+        jsxElementNameEquals(name, jsxElementName(possibleReactImport.importedAs, ['Fragment']))
+      ) {
+        return true
+      }
+    }
+    if (possibleReactImport.importedWithName != null) {
+      if (
+        jsxElementNameEquals(
+          name,
+          jsxElementName(possibleReactImport.importedWithName, ['Fragment']),
+        )
+      ) {
+        return true
+      }
+    }
+    const fromWithin = possibleReactImport.importedFromWithin.find(
+      (within) => within.name === 'Fragment',
+    )
+    if (fromWithin != null) {
+      if (jsxElementNameEquals(name, jsxElementName(fromWithin.alias, []))) {
+        return true
+      }
+    }
+    return false
   }
 }
 
