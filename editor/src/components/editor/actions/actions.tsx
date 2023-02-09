@@ -471,6 +471,7 @@ import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strat
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1905,7 +1906,14 @@ export const UPDATE_FNS = {
       (path) => !EP.containsPath(path, newlySelectedPaths),
     )
 
-    const filteredNewlySelectedPaths = newlySelectedPaths
+    const filteredNewlySelectedPaths = newlySelectedPaths.filter((path) => {
+      if (isFeatureEnabled('Fragment support')) {
+        return true
+      }
+
+      const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+      return !MetadataUtils.isFragmentFromMetadata(element)
+    })
 
     const updatedEditor: EditorModel = {
       ...editor,
