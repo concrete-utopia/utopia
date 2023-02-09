@@ -2117,13 +2117,15 @@ describe('inspector tests with real metadata', () => {
           })
         },
         control: async (renderResult: EditorRenderResult) => {
-          await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
         },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 20,
           paddingTop: 20,
-          paddingBottom: 20,
           paddingRight: 20,
+          paddingBottom: 20,
         }),
       },
       {
@@ -2138,7 +2140,9 @@ describe('inspector tests with real metadata', () => {
           })
         },
         control: async (renderResult: EditorRenderResult) => {
-          await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '20', renderResult.renderedDOM)
+          })
         },
         endSnippet: makeCodeSnippetWithKeyValue({
           paddingLeft: 20,
@@ -2163,10 +2167,44 @@ describe('inspector tests with real metadata', () => {
         },
         endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
       },
+      {
+        name: 'single value with no other values set',
+        startSnippet: makeCodeSnippetWithKeyValue({}),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-R', '20', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ paddingRight: 20 }),
+      },
+      {
+        name: 'single value with shorthand set',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-R', '20', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px 10px 10px' }),
+      },
     ]
 
-    tests.forEach((tt) => {
-      it(`padding controls shorthand: ${tt.name}`, async () => {
+    tests.forEach((tt, idx) => {
+      it(`(${idx + 1}) padding controls shorthand: ${tt.name}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(tt.startSnippet),
           'await-first-dom-report',

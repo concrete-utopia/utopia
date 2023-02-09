@@ -13,7 +13,7 @@ import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/s
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useEditorState, Substores } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -35,7 +35,10 @@ import {
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { Sides, SplitChainedNumberInput } from './split-chained-number-input'
+import {
+  longhandShorthandEventHandler,
+  SplitChainedNumberInput,
+} from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -208,29 +211,9 @@ export const PaddingControl = React.memo(() => {
     )
 
   const shorthand = useInspectorLayoutInfo('padding')
-
-  const updateShorthand = React.useCallback(
-    (sides: Sides, transient?: boolean) => {
-      const { top, bottom, left, right } = sides
-      shorthand.onSubmitValue(
-        {
-          paddingTop: top,
-          paddingBottom: bottom,
-          paddingLeft: left,
-          paddingRight: right,
-        },
-        transient,
-      )
-    },
-    [shorthand],
-  )
+  const dispatch = useDispatch()
 
   const { selectedViewsRef } = useInspectorContext()
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'PaddingControl selectedViews',
-  )
 
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
@@ -242,7 +225,6 @@ export const PaddingControl = React.memo(() => {
           props: {
             side: side,
             hoveredOrFocused: 'hovered',
-            targets: selectedViews,
           },
           key: `subdued-padding-control-hovered-${side}`,
         },
@@ -251,13 +233,12 @@ export const PaddingControl = React.memo(() => {
           props: {
             side: side,
             hoveredOrFocused: 'focused',
-            targets: selectedViews,
           },
           key: `subdued-padding-control-focused-${side}`,
         },
       }),
     )
-  }, [selectedViews])
+  }, [])
 
   return (
     <SplitChainedNumberInput
@@ -275,9 +256,19 @@ export const PaddingControl = React.memo(() => {
       bottom={paddingBottom}
       right={paddingRight}
       shorthand={shorthand}
-      updateShorthand={updateShorthand}
       canvasControls={canvasControlsForSides}
       numberType={'LengthPercent'}
+      eventHandler={longhandShorthandEventHandler(
+        'padding',
+        {
+          T: 'paddingTop',
+          R: 'paddingRight',
+          B: 'paddingBottom',
+          L: 'paddingLeft',
+        },
+        selectedViewsRef.current[0],
+        dispatch,
+      )}
     />
   )
 })
