@@ -35,7 +35,11 @@ import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
+  mouseDragFromPointWithDelta,
+} from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
@@ -293,11 +297,7 @@ async function doDblClickTest(
 
   const nineBlockControlSegment = editor.renderedDOM.getByTestId(testId)
 
-  await mouseClickAtPoint(
-    nineBlockControlSegment,
-    { x: 2, y: verticalOffset },
-    { eventOptions: { detail: 2 } },
-  )
+  await mouseDoubleClickAtPoint(nineBlockControlSegment, { x: 2, y: verticalOffset })
 
   return div
 }

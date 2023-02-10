@@ -183,19 +183,11 @@ const ResizePoint = React.memo(
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
 
-    const onEdgeDblClick = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        if (event.detail !== 2) {
-          return
-        }
-        dispatch([
-          applyCommandsAction(
-            resizeToFitCommands(metadataRef.current, selectedElementsRef.current),
-          ),
-        ])
-      },
-      [dispatch, metadataRef, selectedElementsRef],
-    )
+    const onEdgeDblClick = React.useCallback(() => {
+      dispatch([
+        applyCommandsAction(resizeToFitCommands(metadataRef.current, selectedElementsRef.current)),
+      ])
+    }, [dispatch, metadataRef, selectedElementsRef])
 
     return (
       <div
@@ -225,7 +217,7 @@ const ResizePoint = React.memo(
           }}
         />
         <div
-          onClick={onEdgeDblClick}
+          onDoubleClick={onEdgeDblClick}
           style={{
             position: 'relative',
             width: ResizePointMouseAreaSize / scale,
@@ -280,21 +272,14 @@ const ResizeEdge = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
-    const onEdgeDblClick = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        if (event.detail !== 2) {
-          return
-        }
-
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedElementsRef.current,
-          setPropHugStrategies(invert(props.direction)),
-        )
-      },
-      [dispatch, metadataRef, props.direction, selectedElementsRef],
-    )
+    const onEdgeDblClick = React.useCallback(() => {
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedElementsRef.current,
+        setPropHugStrategies(invert(props.direction)),
+      )
+    }, [dispatch, metadataRef, props.direction, selectedElementsRef])
 
     const lineSize = ResizeMouseAreaSize / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
@@ -303,7 +288,7 @@ const ResizeEdge = React.memo(
     const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
-        onClick={onEdgeDblClick}
+        onDoubleClick={onEdgeDblClick}
         ref={ref}
         style={{
           position: 'absolute',
