@@ -8,25 +8,18 @@ import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
-import {
-  clampValue,
-  numberIsZero,
-  roundTo,
-  zeroRectIfNullOrInfinity,
-} from '../../../../../core/shared/math-utils'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
-import { styleStringInArray } from '../../../../../utils/common-constants'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
-import { oppositeEdgePiece } from '../../../../canvas/canvas-types'
-import {
-  adjustCssLengthProperty,
-  AdjustCssLengthProperty,
-} from '../../../../canvas/commands/adjust-css-length-command'
-import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import {
   getSizeUpdateCommandsForNewPadding,
   pixelPaddingFromPadding,
 } from '../../../../canvas/padding-utils'
+import { useSetHoveredControlsHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
+import {
+  SubduedPaddingControl,
+  SubduedPaddingControlProps,
+} from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction, switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
@@ -38,6 +31,7 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from '../../../common/control-status'
+import { CanvasControlWithProps } from '../../../common/inspector-atoms'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import {
   InspectorCallbackContext,
@@ -50,7 +44,6 @@ import {
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
 import { OptionChainControl } from '../../../controls/option-chain-control'
-import { detectFillHugFixedState } from '../../../inspector-common'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
@@ -201,22 +194,50 @@ export const PaddingRow = React.memo(() => {
     [contextMenuLabel, metadata.propertyStatus.set, metadata.onUnsetValues],
   )
 
+  const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
+    React.useMemo(
+      () =>
+        EdgePieces.map((side) => ({
+          control: SubduedPaddingControl,
+          props: {
+            side: side,
+            hoveredOrFocused: 'hovered',
+          },
+          key: `subdued-padding-control-hovered-${side}`,
+        })),
+      [],
+    )
+
+  const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedPaddingControlProps>()
+  const onMouseEnterWithPaddingControls = React.useCallback(
+    () => onMouseEnter(paddingControlsForHover),
+    [onMouseEnter, paddingControlsForHover],
+  )
+
   return (
     <InspectorContextMenuWrapper
       id='padding-subsection-context-menu'
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
-        <PropertyLabel
-          target={paddingPropsToUnset}
-          propNamesToUnset={contextMenuLabel}
-          style={{
-            paddingBottom: 20,
-          }}
-        >
-          Padding
-        </PropertyLabel>
+      <UIGridRow
+        onMouseEnter={onMouseEnterWithPaddingControls}
+        onMouseLeave={onMouseLeave}
+        tall
+        padded={true}
+        variant='<---1fr--->|------172px-------|'
+      >
+        <div onMouseEnter={onMouseEnterWithPaddingControls} onMouseLeave={onMouseLeave}>
+          <PropertyLabel
+            target={paddingPropsToUnset}
+            propNamesToUnset={contextMenuLabel}
+            style={{
+              paddingBottom: 20,
+            }}
+          >
+            Padding
+          </PropertyLabel>
+        </div>
         <PaddingControl />
       </UIGridRow>
     </InspectorContextMenuWrapper>

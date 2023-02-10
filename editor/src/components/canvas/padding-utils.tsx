@@ -1,7 +1,7 @@
 import { styleStringInArray } from '../../utils/common-constants'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { defaultEither, Either, isLeft, right } from '../../core/shared/either'
+import { defaultEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import {
   CanvasVector,
@@ -29,6 +29,8 @@ import {
 } from './commands/adjust-css-length-command'
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
+
+export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
 export type CSSPaddingKey = keyof CSSPadding
 export type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }

@@ -911,7 +911,8 @@ export const MetadataUtils = {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
       const elementValue = element.element.value
       return (
-        elementValue.children.length >= 1 && elementValue.children.some((c) => isJSXTextBlock(c))
+        elementValue.children.length >= 1 &&
+        elementValue.children.some((c) => isJSXTextBlock(c) || isJSXArbitraryBlock(c))
       )
     }
     return false

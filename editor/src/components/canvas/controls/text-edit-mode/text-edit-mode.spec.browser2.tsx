@@ -50,6 +50,20 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Entering text edit mode with double click on selected text editable element with only code inside', async () => {
+      const editor = await renderTestEditorWithCode(projectWithCodeText, 'await-first-dom-report')
+      await selectElement(editor, EP.fromString('sb/39e'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
     it('Entering text edit mode with double click on selected multiline text editable element', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithMultilineText,
@@ -179,6 +193,30 @@ async function clickOnElement(
   }
   await editor.getDispatchFollowUpActionsFinished()
 }
+
+const projectWithCodeText = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+const title = 'Hello'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      {title}
+    </div>
+  </Storyboard>
+)
+`)
 
 const projectWithText = formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
