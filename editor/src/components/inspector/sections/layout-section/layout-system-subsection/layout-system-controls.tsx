@@ -9,8 +9,12 @@ import {
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
-import { useHighlighPaddingHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
-import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import { useSetHoveredControlsHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
+import {
+  SubduedPaddingControl,
+  SubduedPaddingControlProps,
+} from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
@@ -21,6 +25,7 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from '../../../common/control-status'
+import { CanvasControlWithProps } from '../../../common/inspector-atoms'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import {
   InspectorCallbackContext,
@@ -180,7 +185,25 @@ export const PaddingRow = React.memo(() => {
     [contextMenuLabel, metadata.propertyStatus.set, metadata.onUnsetValues],
   )
 
-  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+  const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
+    React.useMemo(
+      () =>
+        EdgePieces.map((side) => ({
+          control: SubduedPaddingControl,
+          props: {
+            side: side,
+            hoveredOrFocused: 'hovered',
+          },
+          key: `subdued-padding-control-hovered-${side}`,
+        })),
+      [],
+    )
+
+  const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedPaddingControlProps>()
+  const onMouseEnterWithPaddingControls = React.useCallback(
+    () => onMouseEnter(paddingControlsForHover),
+    [onMouseEnter, paddingControlsForHover],
+  )
 
   return (
     <InspectorContextMenuWrapper
@@ -189,13 +212,13 @@ export const PaddingRow = React.memo(() => {
       data={null}
     >
       <UIGridRow
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={onMouseEnterWithPaddingControls}
         onMouseLeave={onMouseLeave}
         tall
         padded={true}
         variant='<---1fr--->|------172px-------|'
       >
-        <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+        <div onMouseEnter={onMouseEnterWithPaddingControls} onMouseLeave={onMouseLeave}>
           <PropertyLabel
             target={paddingPropsToUnset}
             propNamesToUnset={contextMenuLabel}

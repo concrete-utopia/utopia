@@ -3,11 +3,17 @@ import { createSelector } from 'reselect'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
-import { useHighlighPaddingHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
+import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
+import {
+  SubduedPaddingControlProps,
+  SubduedPaddingControl,
+} from '../canvas/controls/select-mode/subdued-padding-control'
+import { EdgePieces } from '../canvas/padding-utils'
 import { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
+import { CanvasControlWithProps } from './common/inspector-atoms'
 import {
   flexDirectionSelector,
   metadataSelector,
@@ -73,7 +79,25 @@ export const FlexDirectionToggle = React.memo(() => {
     [dispatch, metadataRef, selectedViewsRef],
   )
 
-  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+  const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
+    React.useMemo(
+      () =>
+        EdgePieces.map((side) => ({
+          control: SubduedPaddingControl,
+          props: {
+            side: side,
+            hoveredOrFocused: 'hovered',
+          },
+          key: `subdued-padding-control-hovered-${side}`,
+        })),
+      [],
+    )
+
+  const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedPaddingControlProps>()
+  const onMouseEnterWithPaddingControls = React.useCallback(
+    () => onMouseEnter(paddingControlsForHover),
+    [onMouseEnter, paddingControlsForHover],
+  )
 
   if (nFlexContainers === 0) {
     return null
@@ -82,7 +106,7 @@ export const FlexDirectionToggle = React.memo(() => {
   return (
     <div
       data-testid={FlexDirectionControlTestId}
-      onMouseEnter={onMouseEnter}
+      onMouseEnter={onMouseEnterWithPaddingControls}
       onMouseLeave={onMouseLeave}
       style={{
         display: 'grid',

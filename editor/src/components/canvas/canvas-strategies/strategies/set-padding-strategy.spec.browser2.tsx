@@ -28,6 +28,7 @@ import {
   combinePaddings,
   paddingPropForEdge,
   PaddingAdjustMode,
+  EdgePieces,
 } from '../../padding-utils'
 import {
   EditorRenderResult,
@@ -36,8 +37,6 @@ import {
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
 import { PaddingTearThreshold, SetPaddingStrategyName } from './set-padding-strategy'
-
-const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
 describe('Padding resize strategy', () => {
   it('Padding resize handle is not present for elements that have no padding set', async () => {

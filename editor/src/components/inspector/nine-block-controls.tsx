@@ -28,7 +28,13 @@ import { executeFirstApplicableStrategy } from './inspector-strategies/inspector
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
-import { useHighlighPaddingHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
+import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
+import {
+  SubduedPaddingControlProps,
+  SubduedPaddingControl,
+} from '../canvas/controls/select-mode/subdued-padding-control'
+import { EdgePieces } from '../canvas/padding-utils'
+import { CanvasControlWithProps } from './common/inspector-atoms'
 
 export const NineBlockControlTestId = 'NineBlockControlTestId'
 
@@ -278,7 +284,25 @@ export const NineBlockControl = React.memo(() => {
     [dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
   )
 
-  const { onMouseEnter, onMouseLeave } = useHighlighPaddingHandlers()
+  const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
+    React.useMemo(
+      () =>
+        EdgePieces.map((side) => ({
+          control: SubduedPaddingControl,
+          props: {
+            side: side,
+            hoveredOrFocused: 'hovered',
+          },
+          key: `subdued-padding-control-hovered-${side}`,
+        })),
+      [],
+    )
+
+  const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedPaddingControlProps>()
+  const onMouseEnterWithPaddingControls = React.useCallback(
+    () => onMouseEnter(paddingControlsForHover),
+    [onMouseEnter, paddingControlsForHover],
+  )
 
   const callbacks: {
     [key in NineKey]: () => void
@@ -302,7 +326,7 @@ export const NineBlockControl = React.memo(() => {
   return (
     <div
       data-testid={NineBlockControlTestId}
-      onMouseEnter={onMouseEnter}
+      onMouseEnter={onMouseEnterWithPaddingControls}
       onMouseLeave={onMouseLeave}
       style={{
         margin: 2,

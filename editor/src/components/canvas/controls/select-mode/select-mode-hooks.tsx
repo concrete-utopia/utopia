@@ -55,8 +55,13 @@ import {
 } from '../text-edit-mode/text-edit-mode-hooks'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useSetAtom } from 'jotai'
-import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
-import { SubduedPaddingControl } from './subdued-padding-control'
+import {
+  CanvasControlWithProps,
+  InspectorHoveredCanvasControls,
+} from '../../../inspector/common/inspector-atoms'
+import { SubduedPaddingControl, SubduedPaddingControlProps } from './subdued-padding-control'
+import { ControlWithProps } from '../../canvas-strategies/canvas-strategy-types'
+import { EdgePieces } from '../../padding-utils'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -869,35 +874,18 @@ export function useClearKeyboardInteraction(editorStoreRef: {
   }, [dispatch, editorStoreRef])
 }
 
-export function useHighlightPaddingHandlers(): {
-  onMouseEnter: () => void
+export function useSetHoveredControlsHandlers<T>(): {
+  onMouseEnter: (controls: Array<CanvasControlWithProps<T>>) => void
   onMouseLeave: () => void
 } {
-  const paddingControlsForHover = React.useMemo(() => {
-    return mapArrayToDictionary(
-      ['top', 'right', 'bottom', 'left'],
-      (k) => k,
-      (side) => ({
-        control: SubduedPaddingControl,
-        props: {
-          side: side,
-          hoveredOrFocused: 'hovered',
-        },
-        key: `subdued-padding-control-hovered-${side}`,
-      }),
-    )
-  }, [])
-
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
 
-  const onMouseEnter = React.useCallback(() => {
-    setHoveredCanvasControls([
-      paddingControlsForHover['top'],
-      paddingControlsForHover['right'],
-      paddingControlsForHover['bottom'],
-      paddingControlsForHover['left'],
-    ])
-  }, [paddingControlsForHover, setHoveredCanvasControls])
+  const onMouseEnter = React.useCallback(
+    (controls: Array<CanvasControlWithProps<T>>) => {
+      setHoveredCanvasControls(controls)
+    },
+    [setHoveredCanvasControls],
+  )
 
   const onMouseLeave = React.useCallback(
     () => setHoveredCanvasControls([]),
