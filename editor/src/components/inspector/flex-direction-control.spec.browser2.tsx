@@ -1,10 +1,16 @@
+import * as EP from '../../core/shared/element-path'
 import { setFeatureEnabled } from '../../utils/feature-switches'
-import { expectSingleUndoStep } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  hoverControlWithCheck,
+  selectComponentsForTest,
+} from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
+import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { FlexDirection } from './common/css-utils'
-import { FlexDirectionToggleTestId } from './flex-direction-control'
+import { FlexDirectionControlTestId, FlexDirectionToggleTestId } from './flex-direction-control'
 
 describe('set flex direction', () => {
   before(() => {
@@ -97,6 +103,21 @@ describe('set flex direction', () => {
     expect(green.style.height).toEqual('')
     expect(green.style.width).toEqual('188px')
     expect(green.style.flexGrow).toEqual('1')
+  })
+
+  it('when spaced/packed control is hovered, padding hihglights are shown', async () => {
+    const editor = await renderTestEditorWithCode(projectWithPadding, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/div')])
+    await hoverControlWithCheck(editor, FlexDirectionControlTestId, async () => {
+      const controls = [
+        getSubduedPaddingControlTestID('top', 'hovered'),
+        getSubduedPaddingControlTestID('bottom', 'hovered'),
+        getSubduedPaddingControlTestID('left', 'hovered'),
+        getSubduedPaddingControlTestID('right', 'hovered'),
+      ].flatMap((id) => editor.renderedDOM.queryAllByTestId(id))
+
+      expect(controls.length).toEqual(4)
+    })
   })
 })
 
@@ -211,3 +232,26 @@ function projectWithFillContainerChildren(): string {
   )
   `
 }
+
+const projectWithPadding = `import * as React from 'react'
+import { Scene, Storyboard, FlexCol } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -189,
+        top: 34,
+        width: 326,
+        height: 168,
+        display: 'flex',
+        padding: 20,
+      }}
+      data-uid='div'
+    />
+  </Storyboard>
+)
+`

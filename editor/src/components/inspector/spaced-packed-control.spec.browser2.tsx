@@ -1,9 +1,18 @@
 import * as EP from '../../core/shared/element-path'
 import { setFeatureEnabled } from '../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  hoverControlWithCheck,
+  selectComponentsForTest,
+} from '../../utils/utils.test-utils'
+import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { PackedLabelCopy, SpacedLabelCopy } from './spaced-packed-control'
+import {
+  PackedLabelCopy,
+  SpacedLabelCopy,
+  SpacedPackedControlTestId,
+} from './spaced-packed-control'
 
 type SpacedPackedButtonLabel = typeof PackedLabelCopy | typeof SpacedLabelCopy
 
@@ -36,6 +45,21 @@ describe('spaced - packed control', () => {
     await expectSingleUndoStep(editor, () => clickButton(editor, SpacedLabelCopy))
     await expectSingleUndoStep(editor, () => clickButton(editor, PackedLabelCopy))
     expect(div.style.justifyContent).toEqual('flex-start')
+  })
+
+  it('when spaced/packed control is hovered, padding hihglights are shown', async () => {
+    const editor = await renderTestEditorWithCode(projectWithPadding, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/div')])
+    await hoverControlWithCheck(editor, SpacedPackedControlTestId, async () => {
+      const controls = [
+        getSubduedPaddingControlTestID('top', 'hovered'),
+        getSubduedPaddingControlTestID('bottom', 'hovered'),
+        getSubduedPaddingControlTestID('left', 'hovered'),
+        getSubduedPaddingControlTestID('right', 'hovered'),
+      ].flatMap((id) => editor.renderedDOM.queryAllByTestId(id))
+
+      expect(controls.length).toEqual(4)
+    })
   })
 })
 
@@ -111,6 +135,29 @@ export var storyboard = (
         />
       </div>
     </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithPadding = `import * as React from 'react'
+import { Scene, Storyboard, FlexCol } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -189,
+        top: 34,
+        width: 326,
+        height: 168,
+        display: 'flex',
+        padding: 20,
+      }}
+      data-uid='div'
+    />
   </Storyboard>
 )
 `

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
+import { mapArrayToDictionary, mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -54,6 +54,14 @@ import {
   useTextEditModeSelectAndHover,
 } from '../text-edit-mode/text-edit-mode-hooks'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { useSetAtom } from 'jotai'
+import {
+  CanvasControlWithProps,
+  InspectorHoveredCanvasControls,
+} from '../../../inspector/common/inspector-atoms'
+import { SubduedPaddingControl, SubduedPaddingControlProps } from './subdued-padding-control'
+import { ControlWithProps } from '../../canvas-strategies/canvas-strategy-types'
+import { EdgePieces } from '../../padding-utils'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -864,4 +872,25 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 
     window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }, [dispatch, editorStoreRef])
+}
+
+export function useSetHoveredControlsHandlers<T>(): {
+  onMouseEnter: (controls: Array<CanvasControlWithProps<T>>) => void
+  onMouseLeave: () => void
+} {
+  const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
+
+  const onMouseEnter = React.useCallback(
+    (controls: Array<CanvasControlWithProps<T>>) => {
+      setHoveredCanvasControls(controls)
+    },
+    [setHoveredCanvasControls],
+  )
+
+  const onMouseLeave = React.useCallback(
+    () => setHoveredCanvasControls([]),
+    [setHoveredCanvasControls],
+  )
+
+  return { onMouseEnter, onMouseLeave }
 }

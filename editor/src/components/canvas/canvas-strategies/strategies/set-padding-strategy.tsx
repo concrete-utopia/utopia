@@ -10,7 +10,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CSSCursor, EdgePiece } from '../../canvas-types'
+import { CSSCursor, EdgePiece, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -30,6 +30,7 @@ import {
   offsetPaddingByEdge,
   paddingAdjustMode,
   PaddingAdjustMode,
+  paddingForEdgeSimplePadding,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
@@ -51,6 +52,8 @@ import {
   canvasVector,
   CanvasVector,
   isInfinityRectangle,
+  roundTo,
+  zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import {
   AdjustPrecision,
@@ -67,6 +70,10 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import { Modifiers } from '../../../../utils/modifiers'
 import { Axis, detectFillHugFixedState } from '../../../inspector/inspector-common'
+import {
+  AdjustCssLengthProperty,
+  adjustCssLengthProperty,
+} from '../../commands/adjust-css-length-command'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -205,6 +212,80 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
         },
       )
+
+      const targetFrame = MetadataUtils.getFrameOrZeroRect(
+        selectedElement,
+        canvasState.startingMetadata,
+      )
+
+      const allChildPaths = MetadataUtils.getChildrenPaths(
+        canvasState.startingMetadata,
+        selectedElement,
+      )
+
+      const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
+        MetadataUtils.targetParticipatesInAutoLayout(canvasState.startingMetadata, childPath),
+      )
+
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        selectedElement,
+      )
+      const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
+      const elementParentFlexDirection =
+        elementMetadata?.specialSizeMeasurements.parentFlexDirection
+
+      const adjustSizeCommandForDimension = (
+        dimension: 'horizontal' | 'vertical',
+      ): AdjustCssLengthProperty | null => {
+        const edgePieceToUse = dimension === 'horizontal' ? 'left' : 'top'
+        const combinedPaddingInDimension =
+          paddingForEdgeSimplePadding(edgePieceToUse, newPaddingMaxed) +
+          paddingForEdgeSimplePadding(oppositeEdgePiece(edgePieceToUse), newPaddingMaxed)
+
+        const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
+          (childPath) =>
+            detectFillHugFixedState(dimension, canvasState.startingMetadata, childPath)?.type ===
+            'fixed',
+        )
+        const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
+          fixedSizeChildrenPaths,
+          canvasState.startingMetadata,
+        )
+        const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
+
+        const dimensionKey = dimension === 'horizontal' ? 'width' : 'height'
+        const combinedContentSizeInDimension =
+          combinedPaddingInDimension + childrenBoundingFrame[dimensionKey]
+
+        // TODO We need a way to call the correct resizing strategy here, but they are all assuming
+        // the drag originates from a given edge, whereas we want to pass in the desired delta to a
+        // dimension and receive the required commands to resize the element
+        const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
+        return sizeDelta <= 0
+          ? null
+          : adjustCssLengthProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(dimensionKey, styleStringInArray),
+              roundTo(sizeDelta, 0),
+              elementParentBounds?.[dimensionKey],
+              elementParentFlexDirection ?? null,
+              'do-not-create-if-doesnt-exist',
+            )
+      }
+
+      const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
+      const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
+
+      // Check if child content size + padding exceeds parent size in each dimension
+      if (horizontalSizeAdjustment != null) {
+        basicCommands.push(horizontalSizeAdjustment)
+      }
+
+      if (verticalSizeAdjustment != null) {
+        basicCommands.push(verticalSizeAdjustment)
+      }
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
