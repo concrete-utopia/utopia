@@ -1845,6 +1845,20 @@ export function parseOutJSXElements(
             commentsFromAfterAttributes = getComments(sourceText, child)
           }
         })
+
+        // empty element fix: if the element contains only fragments, remove any empty text blocks
+        // that may have been introduced in between due to the code formatting
+        if (isRight(children)) {
+          const nonEmptyTextBlockChildren = children.value.filter(
+            (c) => !(isJSXTextBlock(c) && c.text.trim().length === 0),
+          )
+          const onlyFragments =
+            nonEmptyTextBlockChildren.length > 0 &&
+            nonEmptyTextBlockChildren.every((e) => isJSXFragment(e))
+          if (onlyFragments) {
+            children = right(nonEmptyTextBlockChildren)
+          }
+        }
         break
       case TS.SyntaxKind.JsxFragment:
         children = mapEither((parsedChildren) => {
