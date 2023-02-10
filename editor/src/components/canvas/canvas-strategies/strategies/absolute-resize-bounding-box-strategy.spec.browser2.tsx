@@ -279,7 +279,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 async function doDblClickTest(
   editor: EditorRenderResult,
   testId: string,
-  offset = 30,
+  verticalOffset: number = 30,
 ): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
@@ -295,7 +295,7 @@ async function doDblClickTest(
 
   await mouseClickAtPoint(
     nineBlockControlSegment,
-    { x: 2, y: offset },
+    { x: 2, y: verticalOffset },
     { eventOptions: { detail: 2 } },
   )
 
@@ -1324,8 +1324,6 @@ describe('double click on resize corner', () => {
       projectForEdgeDblClickWithText,
       'await-first-dom-report',
     )
-
-    // await wait(10000)
 
     const view = await doDblClickTest(editor, ResizePointTestId(EdgePositionTopLeft), 1)
 
