@@ -3,6 +3,7 @@ import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { intersection } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever, NO_OP } from '../../core/shared/utils'
@@ -77,19 +78,6 @@ function selectOption(value: FixedHugFillMode): SelectOption {
   }
 }
 
-const FillHugFixedControlOptions = ({
-  hugAvailable,
-  fillAvailable,
-}: {
-  hugAvailable: boolean
-  fillAvailable: boolean
-}): Array<SelectOption> =>
-  stripNulls([
-    selectOption('fixed'),
-    hugAvailable ? selectOption('hug') : null,
-    fillAvailable ? selectOption('fill') : null,
-  ])
-
 function elementComputedDimension(
   prop: 'width' | 'height',
   metadata: ElementInstanceMetadataMap,
@@ -105,21 +93,33 @@ function elementComputedDimension(
 
 interface FillHugFixedControlProps {}
 
-// TODO: the options returned should take all selected elements into consideration
+function fixedFillHugModeForElement(
+  metadata: ElementInstanceMetadataMap,
+  selectedView: ElementPath,
+): Set<FixedHugFillMode> {
+  return new Set(
+    stripNulls([
+      'fixed',
+      hugContentsApplicableForText(metadata, selectedView) ||
+      hugContentsApplicableForContainer(metadata, selectedView)
+        ? 'hug'
+        : null,
+      fillContainerApplicable(selectedView) ? 'fill' : null,
+    ]),
+  )
+}
+
 const optionsSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (metadata, selectedViews) => {
-    const selectedView = selectedViews.at(0)
-    if (selectedView == null) {
-      return null
-    }
-    return FillHugFixedControlOptions({
-      hugAvailable:
-        hugContentsApplicableForText(metadata, selectedView) ||
-        hugContentsApplicableForContainer(metadata, selectedView),
-      fillAvailable: fillContainerApplicable(selectedView),
-    })
+    const applicableOptions: Array<FixedHugFillMode> = [
+      ...intersection(
+        selectedViews.map((selectedView) => fixedFillHugModeForElement(metadata, selectedView)),
+      ),
+    ]
+
+    return applicableOptions.map(selectOption)
   },
 )
 
