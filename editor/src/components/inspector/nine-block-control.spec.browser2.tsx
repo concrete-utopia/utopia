@@ -1,10 +1,16 @@
+import * as EP from '../../core/shared/element-path'
 import { setFeatureEnabled } from '../../utils/feature-switches'
-import { expectSingleUndoStep } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  hoverControlWithCheck,
+  selectComponentsForTest,
+} from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
+import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { StartCenterEnd } from './inspector-common'
-import { NineBlockSectors, NineBlockTestId } from './nine-block-controls'
+import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
 
 describe('Nine-block control', () => {
   before(() => {
@@ -35,6 +41,21 @@ describe('Nine-block control', () => {
         expect(div.style.alignItems).toEqual(alignItems)
       })
     }
+  })
+
+  it('when nine-block control is hovered, padding hihglights are shown', async () => {
+    const editor = await renderTestEditorWithCode(projectWithPadding, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('sb/div')])
+    await hoverControlWithCheck(editor, NineBlockControlTestId, async () => {
+      const controls = [
+        getSubduedPaddingControlTestID('top', 'hovered'),
+        getSubduedPaddingControlTestID('bottom', 'hovered'),
+        getSubduedPaddingControlTestID('left', 'hovered'),
+        getSubduedPaddingControlTestID('right', 'hovered'),
+      ].flatMap((id) => editor.renderedDOM.queryAllByTestId(id))
+
+      expect(controls.length).toEqual(4)
+    })
   })
 })
 
@@ -130,3 +151,26 @@ function projectFlexColumn(): string {
   )
   `
 }
+
+const projectWithPadding = `import * as React from 'react'
+import { Scene, Storyboard, FlexCol } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -189,
+        top: 34,
+        width: 326,
+        height: 168,
+        display: 'flex',
+        padding: 20,
+      }}
+      data-uid='div'
+    />
+  </Storyboard>
+)
+`
