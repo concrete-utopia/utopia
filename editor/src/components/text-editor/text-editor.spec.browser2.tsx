@@ -292,7 +292,6 @@ describe('Use the text editor', () => {
 
       await pressShortcut(editor, cmdModifier, 'b')
 
-      await wait(1000)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         projectWithStyle({ fontWeight: 'bold' }),
       )
