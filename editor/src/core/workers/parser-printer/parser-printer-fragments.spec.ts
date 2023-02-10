@@ -60,7 +60,7 @@ describe('JSX parser', () => {
               }}
               data-uid='aaa'
             >
-              <>
+              <React.Fragment>
                 <div
                   data-label='random-div'
                   style={{ width: 100, height: 100 }}
@@ -75,7 +75,7 @@ describe('JSX parser', () => {
                     />
                   </>
                 </div>
-              </>
+              </React.Fragment>
               <div data-uid='ddd'>World</div>
             </View>
           )

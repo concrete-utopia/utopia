@@ -1028,16 +1028,19 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
     },
   )
 
-export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine2EqualityCalls(
+export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
   (fragment) => fragment.children,
   JSXElementChildArrayKeepDeepEquality,
   (fragment) => fragment.uid,
   StringKeepDeepEquality,
-  (children, uniqueID) => {
+  (fragment) => fragment.longForm,
+  BooleanKeepDeepEquality,
+  (children, uid, longForm) => {
     return {
       type: 'JSX_FRAGMENT',
       children: children,
-      uid: uniqueID,
+      uid: uid,
+      longForm: longForm,
     }
   },
 )

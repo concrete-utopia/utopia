@@ -1702,7 +1702,7 @@ function createJSXElementOrFragmentAllocatingUID(
   return withParserMetadata(
     {
       value: isFragment
-        ? jsxFragment(newUID, children)
+        ? jsxFragment(newUID, children, name != null)
         : jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,

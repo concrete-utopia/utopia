@@ -108,54 +108,58 @@ const mainComponentForTests = utopiaJSXComponent(
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     }),
     [
-      jsxFragment('kkk', [
-        jsxElement(
-          'Ellipse',
-          'bbb',
-          jsxAttributesFromMap({
-            layout: jsxAttributeValue(
-              {
-                left: 150,
-                top: 25,
-                width: 100,
-                height: 100,
-              },
-              emptyComments,
-            ),
-            style: jsxAttributeNestedObjectSimple(
-              jsxAttributesFromMap({
-                backgroundColor: jsxAttributeValue('lightgreen', emptyComments),
-              }),
-              emptyComments,
-            ),
-            'data-uid': jsxAttributeValue('bbb', emptyComments),
-          }),
-          [],
-        ),
-        jsxElement(
-          'Rectangle',
-          'ccc',
-          jsxAttributesFromMap({
-            layout: jsxAttributeValue(
-              {
-                left: 25,
-                top: 25,
-                width: 100,
-                height: 100,
-              },
-              emptyComments,
-            ),
-            style: jsxAttributeNestedObjectSimple(
-              jsxAttributesFromMap({
-                backgroundColor: jsxAttributeValue('orange', emptyComments),
-              }),
-              emptyComments,
-            ),
-            'data-uid': jsxAttributeValue('ccc', emptyComments),
-          }),
-          [],
-        ),
-      ]),
+      jsxFragment(
+        'kkk',
+        [
+          jsxElement(
+            'Ellipse',
+            'bbb',
+            jsxAttributesFromMap({
+              layout: jsxAttributeValue(
+                {
+                  left: 150,
+                  top: 25,
+                  width: 100,
+                  height: 100,
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  backgroundColor: jsxAttributeValue('lightgreen', emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('bbb', emptyComments),
+            }),
+            [],
+          ),
+          jsxElement(
+            'Rectangle',
+            'ccc',
+            jsxAttributesFromMap({
+              layout: jsxAttributeValue(
+                {
+                  left: 25,
+                  top: 25,
+                  width: 100,
+                  height: 100,
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  backgroundColor: jsxAttributeValue('orange', emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('ccc', emptyComments),
+            }),
+            [],
+          ),
+        ],
+        true,
+      ),
       jsxElement(
         'View',
         'ddd',

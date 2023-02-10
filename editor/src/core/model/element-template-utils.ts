@@ -194,7 +194,7 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
   if (isUtopiaJSXElement(element)) {
     return setUtopiaIDOnJSXElement(element, uid)
   } else if (isUtopiaJSXFragment(element)) {
-    return jsxFragment(uid, element.children)
+    return jsxFragment(uid, element.children, element.longForm)
   } else {
     throw new Error(`Unable to set utopia id on ${element.type}`)
   }
