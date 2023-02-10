@@ -16,10 +16,16 @@ import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { applyCommandsAction } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { detectFillHugFixedState, FixedHugFill, invert } from '../../../inspector/inspector-common'
+import {
+  detectFillHugFixedState,
+  FixedHugFill,
+  invert,
+  resizeToFitCommands,
+} from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from '../../../inspector/inspector-strategies/inspector-strategy'
 import CanvasActions from '../../canvas-actions'
@@ -141,6 +147,8 @@ interface ResizePointProps {
   position: EdgePosition
 }
 
+export const ResizePointTestId = (position: EdgePosition): string =>
+  `resize-control-${position.x}-${position.y}`
 const ResizePointMouseAreaSize = 12
 const ResizePointMouseAreaOffset = ResizePointMouseAreaSize / 2
 const ResizePointSize = 6
@@ -172,6 +180,23 @@ const ResizePoint = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
+    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+
+    const onEdgeDblClick = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.detail !== 2) {
+          return
+        }
+        dispatch([
+          applyCommandsAction(
+            resizeToFitCommands(metadataRef.current, selectedElementsRef.current),
+          ),
+        ])
+      },
+      [dispatch, metadataRef, selectedElementsRef],
+    )
+
     return (
       <div
         ref={ref}
@@ -200,6 +225,7 @@ const ResizePoint = React.memo(
           }}
         />
         <div
+          onClick={onEdgeDblClick}
           style={{
             position: 'relative',
             width: ResizePointMouseAreaSize / scale,
@@ -212,7 +238,7 @@ const ResizePoint = React.memo(
           }}
           onMouseDown={onPointMouseDown}
           onMouseMove={onMouseMove}
-          data-testid={`resize-control-${props.position.x}-${props.position.y}`}
+          data-testid={ResizePointTestId(props.position)}
         />
       </div>
     )
@@ -256,7 +282,7 @@ const ResizeEdge = React.memo(
 
     const onEdgeDblClick = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
-        if (event.detail != 2) {
+        if (event.detail !== 2) {
           return
         }
 
