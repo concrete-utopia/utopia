@@ -25,11 +25,16 @@ import {
   NavigatorHintTop,
 } from './navigator-item-components'
 import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
-import { useRefEditorState } from '../../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../../components/editor/store/store-hook'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useColorTheme } from '../../../uuiui'
 import { getEmptyImage } from 'react-dnd-html5-backend'
+import { createSelector } from 'reselect'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -259,81 +264,92 @@ interface NavigatorItemDndWrapperProps {
   borderColor: string
 }
 
-export class NavigatorItemDndWrapper extends PureComponent<
+export const NavigatorItemDndWrapper = React.memo<
   NavigatorItemDragAndDropWrapperProps & CollectResults & NavigatorItemDndWrapperProps
-> {
-  constructor(
-    props: NavigatorItemDragAndDropWrapperProps & CollectResults & NavigatorItemDndWrapperProps,
-  ) {
-    super(props)
-  }
-
-  getMarginForHint = (): number => {
+>((props) => {
+  const getMarginForHint = React.useCallback((): number => {
     if (
-      this.props.isOver &&
-      this.props.appropriateDropTargetHint?.moveToElementPath != null &&
-      this.props.appropriateDropTargetHint?.type !== 'reparent'
+      props.isOver &&
+      props.appropriateDropTargetHint?.moveToElementPath != null &&
+      props.appropriateDropTargetHint?.type !== 'reparent'
     ) {
-      return getHintPadding(this.props.appropriateDropTargetHint?.moveToElementPath)
+      return getHintPadding(props.appropriateDropTargetHint?.moveToElementPath)
     } else {
       return 0
     }
-  }
+  }, [
+    props.appropriateDropTargetHint?.moveToElementPath,
+    props.appropriateDropTargetHint?.type,
+    props.isOver,
+  ])
 
-  render(): React.ReactElement {
-    const props = this.props
-    const safeComponentId = EP.toVarSafeComponentId(this.props.elementPath)
+  const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
-    const margin = this.getMarginForHint()
+  const moveToElementPath = useEditorState(
+    Substores.navigator,
+    (store) => store.editor.navigator.dropTargetHint.moveToElementPath,
+    'NavigatorItemDndWrapper moveToElementPath',
+  )
 
-    return (
-      <div
-        key='navigatorItem'
-        id={`navigator-item-${safeComponentId}`}
-        data-testid={`navigator-item-${safeComponentId}`}
-        style={{
-          ...props.windowStyle,
-          boxSizing: 'border-box',
-          ...(this.props.isOver && this.props.appropriateDropTargetHint?.type === 'reparent'
-            ? {
-                border: `2px solid ${this.props.borderColor}`,
-                borderRadius: 3,
-              }
-            : {
-                border: '2px solid transparent',
-              }),
-        }}
-      >
-        <NavigatorItem
-          elementPath={this.props.elementPath}
-          index={this.props.index}
-          getSelectedViewsInRange={this.props.getSelectedViewsInRange}
-          noOfChildren={this.props.noOfChildren}
-          label={this.props.label}
-          dispatch={this.props.editorDispatch}
-          isHighlighted={this.props.highlighted}
-          isElementVisible={this.props.isElementVisible}
-          renamingTarget={this.props.renamingTarget}
-          collapsed={this.props.collapsed}
-          selected={this.props.selected}
-          elementWarnings={this.props.elementWarnings}
-        />
-        <NavigatorHintTop
-          shouldBeShown={
-            this.props.isOver && this.props.appropriateDropTargetHint?.type === 'before'
-          }
-          margin={margin}
-        />
-        <NavigatorHintBottom
-          shouldBeShown={
-            this.props.isOver && this.props.appropriateDropTargetHint?.type === 'after'
-          }
-          margin={margin}
-        />
-      </div>
-    )
-  }
-}
+  const dropTargetHintType = useEditorState(
+    Substores.navigator,
+    (store) => store.editor.navigator.dropTargetHint.type,
+    'NavigatorItemDndWrapper dropTargetHintType',
+  )
+
+  const margin = getMarginForHint()
+
+  const shouldShowParentOutline =
+    dropTargetHintType == null
+      ? false
+      : dropTargetHintType === 'reparent'
+      ? props.isOver
+      : moveToElementPath != null &&
+        EP.pathsEqual(props.elementPath, EP.parentPath(moveToElementPath))
+
+  return (
+    <div
+      key='navigatorItem'
+      id={`navigator-item-${safeComponentId}`}
+      data-testid={`navigator-item-${safeComponentId}`}
+      style={{
+        ...props.windowStyle,
+        boxSizing: 'border-box',
+        ...(shouldShowParentOutline
+          ? {
+              border: `2px solid ${props.borderColor}`,
+              borderRadius: 3,
+            }
+          : {
+              border: '2px solid transparent',
+            }),
+      }}
+    >
+      <NavigatorItem
+        elementPath={props.elementPath}
+        index={props.index}
+        getSelectedViewsInRange={props.getSelectedViewsInRange}
+        noOfChildren={props.noOfChildren}
+        label={props.label}
+        dispatch={props.editorDispatch}
+        isHighlighted={props.highlighted}
+        isElementVisible={props.isElementVisible}
+        renamingTarget={props.renamingTarget}
+        collapsed={props.collapsed}
+        selected={props.selected}
+        elementWarnings={props.elementWarnings}
+      />
+      <NavigatorHintTop
+        shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'before'}
+        margin={margin}
+      />
+      <NavigatorHintBottom
+        shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'after'}
+        margin={margin}
+      />
+    </div>
+  )
+})
 
 interface DropCollectedProps {
   isOver: boolean
@@ -409,6 +425,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     },
     [drop, dropRef],
   )
+
   const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
   const colorTheme = useColorTheme()

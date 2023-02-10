@@ -4,17 +4,9 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { Either, foldEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  isJSXElement,
-  JSXElementChild,
-  jsxElementName,
-} from '../../../core/shared/element-template'
+import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { nullableDeepEquality } from '../../../utils/deep-equality'
-import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
@@ -48,13 +40,6 @@ const targetElementMetadataSelector = createSelector(
   },
 )
 
-const targetJsxElementSelector = createSelector(
-  targetElementMetadataSelector,
-  (metadata): Either<string, JSXElementChild> | undefined => {
-    return metadata?.element
-  },
-)
-
 const targetInNavigatorItemsSelector = createSelector(
   (store: EditorStorePatched) => store.derived.navigatorTargets,
   (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
@@ -74,17 +59,6 @@ const targetSupportsChildrenSelector = createSelector(
     return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
   },
 )
-
-const staticNameSelector = createSelector(targetJsxElementSelector, (targetElement) => {
-  if (targetElement == null) {
-    return null
-  }
-  return foldEither(
-    (intrinsic) => jsxElementName(intrinsic, []),
-    (element) => (isJSXElement(element) ? element.name : null),
-    targetElement,
-  )
-})
 
 const labelSelector = createSelector(
   targetElementMetadataSelector,
@@ -119,10 +93,6 @@ const noOfChildrenSelector = createSelector(
     }
     return result
   },
-)
-
-const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
-  JSXElementNameKeepDeepEqualityCall,
 )
 
 export const NavigatorItemWrapper: React.FunctionComponent<

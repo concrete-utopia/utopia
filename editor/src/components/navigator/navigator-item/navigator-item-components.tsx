@@ -56,7 +56,7 @@ export const NavigatorHintTop: React.FunctionComponent<
             height: NavigatorHintCircleDiameter,
             contain: 'layout',
             border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            borderRadius: 3,
+            borderRadius: '50%',
           }}
         />
       </div>
@@ -101,7 +101,7 @@ export const NavigatorHintBottom: React.FunctionComponent<
             height: NavigatorHintCircleDiameter,
             contain: 'layout',
             border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            borderRadius: 3,
+            borderRadius: '50%',
           }}
         />
       </div>
