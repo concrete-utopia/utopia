@@ -33504,34 +33504,9 @@ Object {
             "uid": "bbb",
           },
         ],
-        "name": Object {
-          "baseVariable": "React",
-          "propertyPath": Object {
-            "propertyElements": Array [
-              "Fragment",
-            ],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "fff",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
+        "type": "JSX_FRAGMENT",
         "uid": "fff",
+        "uniqueID": "",
       },
     },
     "elementPath": Object {
@@ -33548,12 +33523,7 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": null,
-      "filePath": "react",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "React",
-    },
+    "importInfo": null,
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -37404,6 +37374,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             data-path=\\"eee/fff/app:aaa/ggg/bbb/33e/ccc\\"
           ></div>
         </div>
+
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
       </div>
     </div>
@@ -37727,6 +37698,12 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "text": "
+      ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
             "children": Array [
               Object {
                 "children": Array [
@@ -37870,34 +37847,15 @@ Object {
                 "uid": "bbb",
               },
             ],
-            "name": Object {
-              "baseVariable": "React",
-              "propertyPath": Object {
-                "propertyElements": Array [
-                  "Fragment",
-                ],
-              },
-            },
-            "props": Array [
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "data-uid",
-                "type": "JSX_ATTRIBUTES_ENTRY",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "ggg",
-                },
-              },
-            ],
-            "type": "JSX_ELEMENT",
+            "type": "JSX_FRAGMENT",
             "uid": "ggg",
+            "uniqueID": "",
+          },
+          Object {
+            "text": "
+      ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
           },
           Object {
             "children": Array [
@@ -38416,34 +38374,9 @@ export var storyboard = (
             "uid": "bbb",
           },
         ],
-        "name": Object {
-          "baseVariable": "React",
-          "propertyPath": Object {
-            "propertyElements": Array [
-              "Fragment",
-            ],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "ggg",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
+        "type": "JSX_FRAGMENT",
         "uid": "ggg",
+        "uniqueID": "",
       },
     },
     "elementPath": Object {
@@ -38461,12 +38394,7 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
-    "importInfo": Object {
-      "exportedName": null,
-      "filePath": "react",
-      "type": "IMPORTED_ORIGIN",
-      "variableName": "React",
-    },
+    "importInfo": null,
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,

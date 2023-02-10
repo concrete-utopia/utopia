@@ -20,12 +20,14 @@ describe('JSX parser', () => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - View - aaa
-            JSX_ELEMENT - React.Fragment - ggg
+            JSX_TEXT_BLOCK
+            JSX_FRAGMENT
               JSX_ELEMENT - div - bbb
                 JSX_TEXT_BLOCK
                 JSX_FRAGMENT
                   JSX_ELEMENT - div - ccc
                 JSX_TEXT_BLOCK
+            JSX_TEXT_BLOCK
             JSX_ELEMENT - div - ddd
               JSX_TEXT_BLOCK
         UNPARSED_CODE
@@ -58,7 +60,7 @@ describe('JSX parser', () => {
               }}
               data-uid='aaa'
             >
-              <React.Fragment data-uid='ggg'>
+              <>
                 <div
                   data-label='random-div'
                   style={{ width: 100, height: 100 }}
@@ -73,7 +75,7 @@ describe('JSX parser', () => {
                     />
                   </>
                 </div>
-              </React.Fragment>
+              </>
               <div data-uid='ddd'>World</div>
             </View>
           )
