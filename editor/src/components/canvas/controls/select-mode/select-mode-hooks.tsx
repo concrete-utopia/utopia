@@ -869,7 +869,7 @@ export function useClearKeyboardInteraction(editorStoreRef: {
   }, [dispatch, editorStoreRef])
 }
 
-export function useHighlighPaddingHandlers(): {
+export function useHighlightPaddingHandlers(): {
   onMouseEnter: () => void
   onMouseLeave: () => void
 } {
