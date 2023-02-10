@@ -1912,7 +1912,7 @@ export const UPDATE_FNS = {
       }
 
       const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-      return element != null && !MetadataUtils.isFragmentFromMetadata(element)
+      return !MetadataUtils.isFragmentFromMetadata(element)
     })
 
     const updatedEditor: EditorModel = {
