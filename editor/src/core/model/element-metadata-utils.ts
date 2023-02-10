@@ -1689,7 +1689,9 @@ export const MetadataUtils = {
     return result
   },
   isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    return element != null && isRight(element.element) && isJSXFragment(element.element.value)
+    return (
+      element?.element != null && isRight(element.element) && isJSXFragment(element.element.value)
+    )
   },
 }
 
