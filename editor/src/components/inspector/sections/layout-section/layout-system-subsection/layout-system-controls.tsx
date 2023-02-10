@@ -23,7 +23,10 @@ import {
   AdjustCssLengthProperty,
 } from '../../../../canvas/commands/adjust-css-length-command'
 import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
-import { pixelPaddingFromPadding } from '../../../../canvas/padding-utils'
+import {
+  getSizeUpdateCommandsForNewPadding,
+  pixelPaddingFromPadding,
+} from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction, switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
@@ -268,94 +271,47 @@ export const PaddingControl = React.memo(() => {
     (e: SplitChainedEvent, aggregates: SplitControlValues) => {
       const selectedElement = selectedViewsRef.current[0]
       const metadata = metadataRef.current
-      const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
-
-      const allChildPaths = MetadataUtils.getChildrenPaths(metadata, selectedElement)
-
-      const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
-        MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),
-      )
 
       const elementMetadata = MetadataUtils.findElementByElementPath(metadata, selectedElement)
       const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
-      const elementParentFlexDirection =
-        elementMetadata?.specialSizeMeasurements.parentFlexDirection
+      const parentWidth = elementParentBounds?.width ?? 0
+      const parentHeight = elementParentBounds?.height ?? 0
 
-      const adjustSizeCommandForDimension = (
-        dimension: 'horizontal' | 'vertical',
-      ): AdjustCssLengthProperty | null => {
-        const isHorizontal = dimension === 'horizontal'
-        const dimensionKey = isHorizontal ? 'width' : 'height'
-        const relevantParentSize = elementParentBounds?.[dimensionKey]
+      const pixelPaddingTop = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('T', e) ?? aggregates['top'],
+        parentHeight,
+      )
+      const pixelPaddingBottom = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('B', e) ?? aggregates['bottom'],
+        parentHeight,
+      )
+      const pixelPaddingRight = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('R', e) ?? aggregates['right'],
+        parentWidth,
+      )
+      const pixelPaddingLeft = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('L', e) ?? aggregates['left'],
+        parentWidth,
+      )
 
-        const edgePieceToUse = dimension === 'horizontal' ? 'left' : 'top'
-        const pixelPaddingSide1 = pixelPaddingFromPadding(
-          splitChainedEventValueForProp(isHorizontal ? 'R' : 'T', e) ?? aggregates[edgePieceToUse],
-          relevantParentSize ?? 0,
-        )
-        const pixelPaddingSide2 = pixelPaddingFromPadding(
-          splitChainedEventValueForProp(isHorizontal ? 'L' : 'B', e) ??
-            aggregates[oppositeEdgePiece(edgePieceToUse)],
-          relevantParentSize ?? 0,
-        )
-
-        if (pixelPaddingSide1 == null || pixelPaddingSide2 == null) {
-          return null
-        }
-
-        const combinedPaddingInDimension = pixelPaddingSide1 + pixelPaddingSide2
-
-        const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
-          (childPath) => detectFillHugFixedState(dimension, metadata, childPath)?.type === 'fixed',
-        )
-        const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
-          fixedSizeChildrenPaths,
-          metadata,
-        )
-        const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
-
-        const combinedContentSizeInDimension =
-          combinedPaddingInDimension + childrenBoundingFrame[dimensionKey]
-
-        // TODO We need a way to call the correct resizing strategy here, but they are all assuming
-        // the drag originates from a given edge, whereas we want to pass in the desired delta to a
-        // dimension and receive the required commands to resize the element
-        const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
-
-        // clamp the delta so that the resultant frame will never be smaller than the starting frame
-        // when scrubbing
-        const clampedSizeDelta = Math.max(
-          roundTo(sizeDelta, 0),
-          startingFrame[dimensionKey] - targetFrame[dimensionKey],
-        )
-
-        return numberIsZero(clampedSizeDelta)
+      const combinedXPadding =
+        pixelPaddingLeft == null || pixelPaddingRight == null
           ? null
-          : adjustCssLengthProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(dimensionKey, styleStringInArray),
-              clampedSizeDelta,
-              elementParentBounds?.[dimensionKey],
-              elementParentFlexDirection ?? null,
-              'do-not-create-if-doesnt-exist',
-            )
-      }
+          : pixelPaddingLeft + pixelPaddingRight
+      const combinedYPadding =
+        pixelPaddingTop == null || pixelPaddingBottom == null
+          ? null
+          : pixelPaddingTop + pixelPaddingBottom
 
-      const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
-      const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
+      const adjustSizeCommands = getSizeUpdateCommandsForNewPadding(
+        combinedXPadding,
+        combinedYPadding,
+        startingFrame,
+        selectedViewsRef.current,
+        metadataRef.current,
+      )
 
-      // Check if child content size + padding exceeds parent size in each dimension
-      let adjustLengthCommands: Array<AdjustCssLengthProperty> = []
-      if (horizontalSizeAdjustment != null) {
-        adjustLengthCommands.push(horizontalSizeAdjustment)
-      }
-
-      if (verticalSizeAdjustment != null) {
-        adjustLengthCommands.push(verticalSizeAdjustment)
-      }
-
-      return adjustLengthCommands.length > 0 ? [applyCommandsAction(adjustLengthCommands)] : []
+      return adjustSizeCommands.length > 0 ? [applyCommandsAction(adjustSizeCommands)] : []
     },
     [metadataRef, selectedViewsRef, startingFrame],
   )
