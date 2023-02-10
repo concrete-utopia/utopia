@@ -3,7 +3,7 @@ import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, Either, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import { CanvasVector } from '../../core/shared/math-utils'
+import { CanvasVector, Size } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
@@ -226,4 +226,19 @@ export function paddingAdjustMode(modifiers: Modifiers): PaddingAdjustMode {
     return 'cross-axis'
   }
   return 'individual'
+}
+
+export function pixelPaddingFromPadding(
+  padding: CSSNumber,
+  parentSizeInDimension: number,
+): number | null {
+  switch (padding.unit) {
+    case 'px':
+    case null:
+      return padding.value
+    case '%':
+      return (padding.value / 100) * parentSizeInDimension
+    default:
+      return null // TODO Should we support other units here?
+  }
 }

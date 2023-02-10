@@ -2,18 +2,32 @@ import React from 'react'
 
 import { useContextSelector } from 'use-context-selector'
 import { LayoutSystem } from 'utopia-api/core'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
+import {
+  clampValue,
+  numberIsZero,
+  roundTo,
+  zeroRectIfNullOrInfinity,
+} from '../../../../../core/shared/math-utils'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { styleStringInArray } from '../../../../../utils/common-constants'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
+import { oppositeEdgePiece } from '../../../../canvas/canvas-types'
+import {
+  adjustCssLengthProperty,
+  AdjustCssLengthProperty,
+} from '../../../../canvas/commands/adjust-css-length-command'
 import { SubduedPaddingControl } from '../../../../canvas/controls/select-mode/subdued-padding-control'
+import { pixelPaddingFromPadding } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
+import { applyCommandsAction, switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -33,11 +47,15 @@ import {
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
 import { OptionChainControl } from '../../../controls/option-chain-control'
+import { detectFillHugFixedState } from '../../../inspector-common'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   longhandShorthandEventHandler,
+  SplitChainedEvent,
+  splitChainedEventValueForProp,
   SplitChainedNumberInput,
+  SplitControlValues,
 } from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
@@ -240,6 +258,108 @@ export const PaddingControl = React.memo(() => {
     )
   }, [])
 
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const startingFrame = MetadataUtils.getFrameOrZeroRect(
+    selectedViewsRef.current[0],
+    metadataRef.current,
+  )
+
+  const onPaddingChange = React.useCallback(
+    (e: SplitChainedEvent, aggregates: SplitControlValues) => {
+      const selectedElement = selectedViewsRef.current[0]
+      const metadata = metadataRef.current
+      const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
+
+      const allChildPaths = MetadataUtils.getChildrenPaths(metadata, selectedElement)
+
+      const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
+        MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),
+      )
+
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, selectedElement)
+      const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
+      const elementParentFlexDirection =
+        elementMetadata?.specialSizeMeasurements.parentFlexDirection
+
+      const adjustSizeCommandForDimension = (
+        dimension: 'horizontal' | 'vertical',
+      ): AdjustCssLengthProperty | null => {
+        const isHorizontal = dimension === 'horizontal'
+        const dimensionKey = isHorizontal ? 'width' : 'height'
+        const relevantParentSize = elementParentBounds?.[dimensionKey]
+
+        const edgePieceToUse = dimension === 'horizontal' ? 'left' : 'top'
+        const pixelPaddingSide1 = pixelPaddingFromPadding(
+          splitChainedEventValueForProp(isHorizontal ? 'R' : 'T', e) ?? aggregates[edgePieceToUse],
+          relevantParentSize ?? 0,
+        )
+        const pixelPaddingSide2 = pixelPaddingFromPadding(
+          splitChainedEventValueForProp(isHorizontal ? 'L' : 'B', e) ??
+            aggregates[oppositeEdgePiece(edgePieceToUse)],
+          relevantParentSize ?? 0,
+        )
+
+        if (pixelPaddingSide1 == null || pixelPaddingSide2 == null) {
+          return null
+        }
+
+        const combinedPaddingInDimension = pixelPaddingSide1 + pixelPaddingSide2
+
+        const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
+          (childPath) => detectFillHugFixedState(dimension, metadata, childPath)?.type === 'fixed',
+        )
+        const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
+          fixedSizeChildrenPaths,
+          metadata,
+        )
+        const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
+
+        const combinedContentSizeInDimension =
+          combinedPaddingInDimension + childrenBoundingFrame[dimensionKey]
+
+        // TODO We need a way to call the correct resizing strategy here, but they are all assuming
+        // the drag originates from a given edge, whereas we want to pass in the desired delta to a
+        // dimension and receive the required commands to resize the element
+        const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
+
+        // clamp the delta so that the resultant frame will never be smaller than the starting frame
+        // when scrubbing
+        const clampedSizeDelta = Math.max(
+          roundTo(sizeDelta, 0),
+          startingFrame[dimensionKey] - targetFrame[dimensionKey],
+        )
+
+        return numberIsZero(clampedSizeDelta)
+          ? null
+          : adjustCssLengthProperty(
+              'always',
+              selectedElement,
+              stylePropPathMappingFn(dimensionKey, styleStringInArray),
+              clampedSizeDelta,
+              elementParentBounds?.[dimensionKey],
+              elementParentFlexDirection ?? null,
+              'do-not-create-if-doesnt-exist',
+            )
+      }
+
+      const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
+      const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
+
+      // Check if child content size + padding exceeds parent size in each dimension
+      let adjustLengthCommands: Array<AdjustCssLengthProperty> = []
+      if (horizontalSizeAdjustment != null) {
+        adjustLengthCommands.push(horizontalSizeAdjustment)
+      }
+
+      if (verticalSizeAdjustment != null) {
+        adjustLengthCommands.push(verticalSizeAdjustment)
+      }
+
+      return adjustLengthCommands.length > 0 ? [applyCommandsAction(adjustLengthCommands)] : []
+    },
+    [metadataRef, selectedViewsRef, startingFrame],
+  )
+
   return (
     <SplitChainedNumberInput
       controlModeOrder={['one-value', 'per-direction', 'per-side']}
@@ -268,6 +388,7 @@ export const PaddingControl = React.memo(() => {
         },
         selectedViewsRef.current[0],
         dispatch,
+        onPaddingChange,
       )}
     />
   )
