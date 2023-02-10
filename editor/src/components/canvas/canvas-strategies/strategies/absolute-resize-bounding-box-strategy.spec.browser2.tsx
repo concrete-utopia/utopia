@@ -40,6 +40,7 @@ import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
+import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -275,7 +276,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 `
 }
 
-async function doDblClickTest(editor: EditorRenderResult, testId: string): Promise<HTMLElement> {
+async function doDblClickTest(
+  editor: EditorRenderResult,
+  testId: string,
+  offset = 30,
+): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
@@ -288,7 +293,11 @@ async function doDblClickTest(editor: EditorRenderResult, testId: string): Promi
 
   const nineBlockControlSegment = editor.renderedDOM.getByTestId(testId)
 
-  await mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 30 }, { eventOptions: { detail: 2 } })
+  await mouseClickAtPoint(
+    nineBlockControlSegment,
+    { x: 2, y: offset },
+    { eventOptions: { detail: 2 } },
+  )
 
   return div
 }
@@ -1303,5 +1312,32 @@ describe('Double click on resize edge', () => {
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
     expect(div.style.width).toEqual(MaxContent)
     expect(div.style.height).toEqual('445px')
+  })
+})
+
+describe('double click on resize corner', () => {
+  before(() => setFeatureEnabled('Nine block control', true))
+  after(() => setFeatureEnabled('Nine block control', false))
+
+  it('resizes to fit when resize corner is double clicked', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectForEdgeDblClickWithText,
+      'await-first-dom-report',
+    )
+
+    // await wait(10000)
+
+    const view = await doDblClickTest(editor, ResizePointTestId(EdgePositionTopLeft), 1)
+
+    expect(view.style.width).toEqual(MaxContent)
+    expect(view.style.minWidth).toEqual('')
+    expect(view.style.maxWidth).toEqual('')
+    expect(view.style.height).toEqual(MaxContent)
+    expect(view.style.minHeight).toEqual('')
+    expect(view.style.maxHeight).toEqual('')
+    expect(view.style.flex).toEqual('')
+    expect(view.style.flexShrink).toEqual('')
+    expect(view.style.flexGrow).toEqual('')
+    expect(view.style.flexBasis).toEqual('')
   })
 })
