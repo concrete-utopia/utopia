@@ -34,7 +34,7 @@ import {
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
 
-type FixedHugFillMode = FixedHugFill['type']
+export type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
   if (a === undefined && b === undefined) {
@@ -56,25 +56,23 @@ export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const HugContentsLabel = 'Hug contents' as const
 
-function selectOption(value: FixedHugFillMode): SelectOption {
-  switch (value) {
+export function selectOptionLabel(mode: FixedHugFillMode): string {
+  switch (mode) {
     case 'fill':
-      return {
-        value: 'fill',
-        label: FillContainerLabel,
-      }
+      return FillContainerLabel
     case 'fixed':
-      return {
-        value: 'fixed',
-        label: FixedLabel,
-      }
+      return FixedLabel
     case 'hug':
-      return {
-        value: 'hug',
-        label: HugContentsLabel,
-      }
+      return HugContentsLabel
     default:
-      assertNever(value)
+      assertNever(mode)
+  }
+}
+
+function selectOption(mode: FixedHugFillMode): SelectOption {
+  return {
+    value: mode,
+    label: selectOptionLabel(mode),
   }
 }
 

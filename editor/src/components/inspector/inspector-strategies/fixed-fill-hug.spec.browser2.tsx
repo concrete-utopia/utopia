@@ -1,7 +1,12 @@
 import { act, fireEvent } from '@testing-library/react'
+import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  wait,
+} from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
@@ -14,8 +19,10 @@ import { FlexDirection } from '../common/css-utils'
 import {
   FillContainerLabel,
   FillFixedHugControlId,
+  FixedHugFillMode,
   FixedLabel,
   HugContentsLabel,
+  selectOptionLabel,
 } from '../fill-hug-fixed-control'
 import { MaxContent } from '../inspector-common'
 
@@ -507,7 +514,39 @@ describe('Fixed / Fill / Hug control', () => {
       })
     })
   })
+
+  // the expect is in `expectOptionsToBePresent`
+  // eslint-disable-next-line jest/expect-expect
+  it('when toggling between element, options in the dropdown are updated', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithElementsToToggleBetween,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/upper')])
+    await openDropdownViaLabel(editor, 'fixed')
+    await expectOptionsToBePresent(editor, ['fixed'])
+
+    // await wait(10000)
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/lower')])
+    await openDropdownViaLabel(editor, 'fixed')
+    await expectOptionsToBePresent(editor, ['fixed', 'hug'])
+  })
 })
+
+async function expectOptionsToBePresent(
+  editor: EditorRenderResult,
+  modes: Array<FixedHugFillMode>,
+) {
+  expect(
+    modes.map((mode) => editor.renderedDOM.queryAllByText(selectOptionLabel(mode)[0])).length,
+  ).toEqual(modes.length)
+}
+
+async function openDropdownViaLabel(editor: EditorRenderResult, mode: FixedHugFillMode) {
+  const control = (await editor.renderedDOM.findAllByText(selectOptionLabel(mode)))[1]
+  await mouseClickAtPoint(control, { x: 5, y: 5 })
+}
 
 async function select(
   editor: EditorRenderResult,
@@ -887,3 +926,53 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )`)
+
+const projectWithElementsToToggleBetween = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 16,
+        top: 10,
+        width: 200,
+        height: 200,
+      }}
+      data-uid='upper'
+    >
+      <div
+        style={{
+          backgroundColor: '#F6141433',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+        }}
+      />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 10,
+        top: 220,
+        width: 200,
+        height: 200,
+      }}
+      data-uid='lower'
+    >
+      <div
+        style={{
+          backgroundColor: '#F6141433',
+          width: 100,
+          height: 100,
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
