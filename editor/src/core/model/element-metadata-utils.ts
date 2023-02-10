@@ -1014,8 +1014,7 @@ export const MetadataUtils = {
         if (subTree != null) {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-          const element = MetadataUtils.findElementByElementPath(metadata, path)
-          const isFragment = MetadataUtils.isFragmentFromMetadata(element)
+          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
@@ -1687,6 +1686,14 @@ export const MetadataUtils = {
     })
 
     return result
+  },
+  isElementPathFragmentFromMetadata(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath | null,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(componentMetadata, elementPath)
+
+    return MetadataUtils.isFragmentFromMetadata(element)
   },
   isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (

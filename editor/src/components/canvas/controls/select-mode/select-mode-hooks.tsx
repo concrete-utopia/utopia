@@ -196,8 +196,10 @@ function collectSelectableSiblings(
           siblings.push(child)
 
           const isLocked = lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))
-          const childElement = MetadataUtils.findElementByElementPath(componentMetadata, child)
-          const isFragment = MetadataUtils.isFragmentFromMetadata(childElement)
+          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
+            componentMetadata,
+            child,
+          )
           // If this element is locked we want to recurse the children
           if (isLocked || (!isFeatureEnabled('Fragment support') && isFragment)) {
             addChildrenAndUnfurledFocusedComponents([child])
@@ -267,8 +269,7 @@ export function getSelectableViews(
   }
 
   return selectableElements.filter((p) => {
-    const element = MetadataUtils.findElementByElementPath(componentMetadata, p)
-    return !MetadataUtils.isFragmentFromMetadata(element)
+    return !MetadataUtils.isElementPathFragmentFromMetadata(componentMetadata, p)
   })
 }
 

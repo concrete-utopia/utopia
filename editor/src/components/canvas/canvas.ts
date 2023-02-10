@@ -154,8 +154,7 @@ const Canvas = {
           if (isFeatureEnabled('Fragment support')) {
             return parentPath
           }
-          const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
-          if (MetadataUtils.isFragmentFromMetadata(parentElement)) {
+          if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, parentPath)) {
             return getFirstValidParent(parentPath)
           }
           return parentPath
