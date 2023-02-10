@@ -1,18 +1,12 @@
 import React from 'react'
-import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { EdgePiece } from '../../canvas-types'
-import {
-  combinePaddings,
-  paddingFromSpecialSizeMeasurements,
-  paddingPropForEdge,
-  simplePaddingFromMetadata,
-} from '../../padding-utils'
+import { paddingPropForEdge, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
-interface SubduedPaddingControlProps {
+export interface SubduedPaddingControlProps {
   side: EdgePiece
   hoveredOrFocused: 'hovered' | 'focused'
 }

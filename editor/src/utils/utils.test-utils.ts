@@ -72,6 +72,7 @@ import {
 } from '../components/canvas/canvas-strategies/interaction-state'
 import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
+import { fireEvent } from '@testing-library/react'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -437,4 +438,15 @@ export async function selectComponentsForTest(
 ): Promise<void> {
   await editor.dispatch([selectComponents(paths, false)], true)
   await editor.getDispatchFollowUpActionsFinished()
+}
+
+export async function hoverControlWithCheck(
+  editor: EditorRenderResult,
+  controlTestId: string,
+  check: () => Promise<void>,
+): Promise<void> {
+  const control = (await editor.renderedDOM.findByTestId(controlTestId)) as HTMLInputElement
+  fireEvent.mouseEnter(control)
+  await editor.getDispatchFollowUpActionsFinished()
+  await check()
 }
