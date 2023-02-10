@@ -1,4 +1,5 @@
 import React from 'react'
+import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
@@ -104,20 +105,26 @@ function elementComputedDimension(
 
 interface FillHugFixedControlProps {}
 
-export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const optionsRef = useRefEditorState((store) => {
-    const selectedView = selectedViewsSelector(store).at(0)
+// TODO: the options returned should take all selected elements into consideration
+const optionsSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (metadata, selectedViews) => {
+    const selectedView = selectedViews.at(0)
     if (selectedView == null) {
       return null
     }
-    const metadata = metadataSelector(store)
     return FillHugFixedControlOptions({
       hugAvailable:
         hugContentsApplicableForText(metadata, selectedView) ||
         hugContentsApplicableForContainer(metadata, selectedView),
       fillAvailable: fillContainerApplicable(selectedView),
     })
-  })
+  },
+)
+
+export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
+  const options = useEditorState(Substores.metadata, optionsSelector, 'FillHugFixedControl options')
 
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
@@ -279,7 +286,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const controlStylesRef = React.useRef(getControlStyles('simple'))
 
-  if (optionsRef.current == null) {
+  if (options == null) {
     return null
   }
 
@@ -298,7 +305,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     >
       <PopupList
         value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
-        options={optionsRef.current}
+        options={options}
         onSubmitValue={onSubmitWidth}
         controlStyles={controlStylesRef.current}
         containerMode='showBorderOnHover'
@@ -322,7 +329,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       />
       <PopupList
         value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
-        options={optionsRef.current}
+        options={options}
         onSubmitValue={onSubmitHeight}
         controlStyles={controlStylesRef.current}
         containerMode='showBorderOnHover'
