@@ -1,19 +1,12 @@
 import { isRight } from '../core/shared/either'
 import { notNullIsTextFile, ProjectContents, ProjectFile } from '../core/shared/project-file-types'
 import { createComplexDefaultProjectContents } from '../sample-projects/sample-project-utils'
-import {
-  compose4Lenses,
-  fromField,
-  fromTypeGuard,
-  fromObjectField,
-  GeneralLens,
-  toFirst,
-} from './lens'
+import { compose4Lenses, fromField, fromTypeGuard, fromObjectField, toFirst } from './lens'
 
 describe('lenses connected up', () => {
   it('should be able to retrieve data from a model', () => {
     const projectContents = createComplexDefaultProjectContents()
-    const lens: GeneralLens<ProjectContents, string> = compose4Lenses(
+    const lens = compose4Lenses(
       fromObjectField<ProjectFile, ProjectContents>('/package.json'),
       fromTypeGuard(notNullIsTextFile),
       fromField('fileContents'),
