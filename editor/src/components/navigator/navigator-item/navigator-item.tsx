@@ -49,6 +49,7 @@ export interface NavigatorItemInnerProps {
   renamingTarget: ElementPath | null
   selected: boolean
   elementWarnings: ElementWarnings
+  shouldShowParentOutline: boolean
 }
 
 function selectItem(
@@ -361,42 +362,57 @@ export const NavigatorItem: React.FunctionComponent<
     ...resultingStyle.style,
   })
 
+  const border: React.CSSProperties = React.useMemo(
+    () =>
+      props.shouldShowParentOutline
+        ? {
+            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            borderRadius: 3,
+          }
+        : {
+            border: '2px solid transparent',
+          },
+    [colorTheme.navigatorResizeHintBorder.value, props.shouldShowParentOutline],
+  )
+
   return (
-    <FlexRow
-      style={rowStyle}
-      onMouseDown={select}
-      onMouseMove={highlight}
-      onDoubleClick={focusComponent}
-    >
-      <FlexRow style={containerStyle}>
-        <ExpandableIndicator
-          key='expandable-indicator'
-          visible={childComponentCount > 0 || isFocusedComponent}
-          collapsed={collapsed}
-          selected={selected && !isInsideComponent}
-          onMouseDown={collapse}
-          style={{ transform: 'scale(0.8)', opacity: 0.5 }}
-        />
-        <NavigatorRowLabel
+    <div style={border}>
+      <FlexRow
+        style={rowStyle}
+        onMouseDown={select}
+        onMouseMove={highlight}
+        onDoubleClick={focusComponent}
+      >
+        <FlexRow style={containerStyle}>
+          <ExpandableIndicator
+            key='expandable-indicator'
+            visible={childComponentCount > 0 || isFocusedComponent}
+            collapsed={collapsed}
+            selected={selected && !isInsideComponent}
+            onMouseDown={collapse}
+            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
+          />
+          <NavigatorRowLabel
+            elementPath={elementPath}
+            label={props.label}
+            renamingTarget={props.renamingTarget}
+            selected={props.selected}
+            dispatch={props.dispatch}
+            isDynamic={isDynamic}
+            iconColor={resultingStyle.iconColor}
+            warningText={warningText}
+          />
+        </FlexRow>
+        <NavigatorItemActionSheet
           elementPath={elementPath}
-          label={props.label}
-          renamingTarget={props.renamingTarget}
-          selected={props.selected}
-          dispatch={props.dispatch}
-          isDynamic={isDynamic}
-          iconColor={resultingStyle.iconColor}
-          warningText={warningText}
+          selected={selected}
+          highlighted={isHighlighted}
+          isVisibleOnCanvas={isElementVisible}
+          instanceOriginalComponentName={null}
+          dispatch={dispatch}
         />
       </FlexRow>
-      <NavigatorItemActionSheet
-        elementPath={elementPath}
-        selected={selected}
-        highlighted={isHighlighted}
-        isVisibleOnCanvas={isElementVisible}
-        instanceOriginalComponentName={null}
-        dispatch={dispatch}
-      />
-    </FlexRow>
+    </div>
   )
 })
 NavigatorItem.displayName = 'NavigatorItem'

@@ -248,7 +248,6 @@ function beginDrag(
 }
 
 interface NavigatorItemDndWrapperProps {
-  borderColor: string
   indexInParent: number
 }
 
@@ -291,15 +290,6 @@ export const NavigatorItemDndWrapper = React.memo<
       data-testid={`navigator-item-${safeComponentId}`}
       style={{
         ...props.windowStyle,
-        boxSizing: 'border-box',
-        ...(shouldShowParentOutline
-          ? {
-              border: `2px solid ${props.borderColor}`,
-              borderRadius: 3,
-            }
-          : {
-              border: '2px solid transparent',
-            }),
       }}
     >
       <NavigatorItem
@@ -315,6 +305,7 @@ export const NavigatorItemDndWrapper = React.memo<
         collapsed={props.collapsed}
         selected={props.selected}
         elementWarnings={props.elementWarnings}
+        shouldShowParentOutline={shouldShowParentOutline}
       />
       {when(
         props.indexInParent === 0,
@@ -418,8 +409,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
-  const colorTheme = useColorTheme()
-
   React.useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true })
   })
@@ -429,7 +418,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
         <NavigatorItemDndWrapper
           {...props}
-          borderColor={colorTheme.navigatorResizeHintBorder.value}
           isOver={isOver}
           isDragging={isDragging}
           indexInParent={indexInParent}
