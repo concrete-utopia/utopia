@@ -1,5 +1,6 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
+import { createSelector } from 'reselect'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
@@ -15,7 +16,7 @@ import {
 } from '../../../../../uuiui'
 import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
 import { setProp_UNSAFE, unsetProperty } from '../../../../editor/actions/action-creators'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
@@ -30,6 +31,7 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'
 import { InspectorInfo } from '../../../common/property-path-hooks'
+import { selectedViewsSelector } from '../../../inpector-selectors'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
@@ -98,7 +100,6 @@ export interface SplitChainedNumberInputProps<T> {
   bottom: ControlCSSNumber
   right: ControlCSSNumber
   shorthand: InspectorInfo<T>
-  selectedViews: ElementPath[]
   controlModeOrder: ControlMode[]
   labels?: {
     top?: string
@@ -124,7 +125,7 @@ export interface SplitChainedNumberInputProps<T> {
   eventHandler: SplitChainedNumberInputEventHandler
 }
 
-type SplitChainedNumberInputEventHandler = (
+export type SplitChainedNumberInputEventHandler = (
   e: SplitChainedEvent,
   aggregates: SplitControlValues,
   useShorthand: boolean,
@@ -295,6 +296,8 @@ const whenCSSNumber = (fn: (v: CSSNumber) => any) => (v: UnknownOrEmptyInput<CSS
   fn(v)
 }
 
+const SelectedViewsSelector = createSelector(selectedViewsSelector, (x) => x)
+
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
   const {
     name,
@@ -319,6 +322,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const sidesVertical = React.useMemo(() => [top, bottom], [top, bottom])
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    SelectedViewsSelector,
+    'PaddingControl selectedViews',
+  )
 
   const isCurrentModeApplicable = React.useCallback(() => {
     if (mode === 'one-value' && oneValue == null) {
@@ -358,7 +367,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   React.useEffect(() => {
     updateMode()
-  }, [props.selectedViews, updateMode, props.shorthand])
+  }, [selectedViews, updateMode, props.shorthand])
 
   React.useEffect(() => {
     updateAggregates()
@@ -368,7 +377,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return function () {
       setMode(null)
     }
-  }, [props.selectedViews])
+  }, [selectedViews])
 
   React.useEffect(() => {
     if (!isCurrentModeApplicable()) {
