@@ -2,7 +2,7 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import {
   EditorState,
   modifyParseSuccessAtPath,
-  modifyUnderlyingForOpenFile,
+  modifyUnderlyingElementForOpenFile,
 } from '../../../components/editor/store/editor-state'
 import {
   Imports,

@@ -3,6 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
   isJSXAttributeNotFound,
+  isJSXElement,
   jsxAttributeValue,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
@@ -44,11 +45,15 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
     editorState,
     false,
     (_, element) => {
-      return foldEither(
-        () => false,
-        (value) => !isJSXAttributeNotFound(value),
-        getModifiableJSXAttributeAtPath(element.props, command.property),
-      )
+      if (isJSXElement(element)) {
+        return foldEither(
+          () => false,
+          (value) => !isJSXAttributeNotFound(value),
+          getModifiableJSXAttributeAtPath(element.props, command.property),
+        )
+      } else {
+        return false
+      }
     },
   )
 

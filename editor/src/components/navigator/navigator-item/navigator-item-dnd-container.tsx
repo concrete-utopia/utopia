@@ -22,7 +22,11 @@ import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-i
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
 import { JSXElementName } from '../../../core/shared/element-template'
 import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
-import { useRefEditorState } from '../../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../../components/editor/store/store-hook'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
@@ -52,6 +56,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
+  visibleNavigatorTargets: Array<ElementPath>
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
@@ -99,16 +104,31 @@ function onDrop(
   }
 }
 
-function getHintPadding(elementPath: ElementPath): number {
-  return getElementPadding(elementPath) + ExpansionArrowWidth + PreviewIconSize / 2
+function getHintPadding(
+  elementPath: ElementPath,
+  visibleNavigatorTargets: Array<ElementPath>,
+): number {
+  return (
+    getElementPadding(elementPath, visibleNavigatorTargets) +
+    ExpansionArrowWidth +
+    PreviewIconSize / 2
+  )
 }
 
-function isCursorInLeftAreaOfItem(x: number, elementPath: ElementPath) {
-  return x < getHintPadding(elementPath)
+function isCursorInLeftAreaOfItem(
+  x: number,
+  elementPath: ElementPath,
+  visibleNavigatorTargets: Array<ElementPath>,
+) {
+  return x < getHintPadding(elementPath, visibleNavigatorTargets)
 }
 
-function getTargetDepthFromMousePosition(x: number, elementPath: ElementPath) {
-  return Math.floor((getHintPadding(elementPath) - x) / BasePaddingUnit)
+function getTargetDepthFromMousePosition(
+  x: number,
+  elementPath: ElementPath,
+  visibleNavigatorTargets: Array<ElementPath>,
+) {
+  return Math.floor((getHintPadding(elementPath, visibleNavigatorTargets) - x) / BasePaddingUnit)
 }
 
 function onHover(
@@ -116,6 +136,7 @@ function onHover(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
   component: HTMLDivElement | null,
+  visibleNavigatorTargets: Array<ElementPath>,
 ): void {
   if (
     monitor != null &&
@@ -159,7 +180,11 @@ function onHover(
       (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed)
     ) {
       if (
-        isCursorInLeftAreaOfItem(cursor.x, propsOfDraggedItem.elementPath) &&
+        isCursorInLeftAreaOfItem(
+          cursor.x,
+          propsOfDraggedItem.elementPath,
+          visibleNavigatorTargets,
+        ) &&
         EP.parentPath(propsOfDraggedItem.elementPath) != null
       ) {
         const maximumTargetDepth = propsOfDraggedItem.getMaximumDistance(
@@ -169,6 +194,7 @@ function onHover(
         const cursorTargetDepth = getTargetDepthFromMousePosition(
           cursor.x,
           propsOfDraggedItem.elementPath,
+          visibleNavigatorTargets,
         )
         const targetDistance = Math.min(cursorTargetDepth, maximumTargetDepth)
         const targetTP = EP.getNthParent(propsOfDraggedItem.elementPath, targetDistance)
@@ -234,7 +260,10 @@ export class NavigatorItemDndWrapper extends PureComponent<
       this.props.appropriateDropTargetHint?.target != null &&
       this.props.appropriateDropTargetHint?.type !== 'reparent'
     ) {
-      return getHintPadding(this.props.appropriateDropTargetHint.target)
+      return getHintPadding(
+        this.props.appropriateDropTargetHint.target,
+        this.props.visibleNavigatorTargets,
+      )
     } else {
       return 0
     }
@@ -264,6 +293,7 @@ export class NavigatorItemDndWrapper extends PureComponent<
           collapsed={this.props.collapsed}
           selected={this.props.selected}
           elementWarnings={this.props.elementWarnings}
+          visibleNavigatorTargets={this.props.visibleNavigatorTargets}
         />
         <NavigatorHintTop
           shouldBeShown={
@@ -324,7 +354,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHover(item, props, monitor, dropRef.current)
+        onHover(item, props, monitor, dropRef.current, props.visibleNavigatorTargets)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor, dropRef.current)

@@ -24,18 +24,19 @@ import {
   UtopiaJSXComponent,
   isJSXFragment,
   getJSXAttribute,
-  getJSXElementNameAsString,
   Param,
   JSXAttributes,
   JSXAttributesPart,
   JSXAttribute,
-  JSXAttributesSpread,
   JSXArrayElement,
   JSXProperty,
   isSpreadAssignment,
   isJSXAttributeOtherJavaScript,
   jsxElementName,
   jsxElementNameEquals,
+  isJSXElementLike,
+  JSXFragment,
+  jsxFragment,
 } from '../shared/element-template'
 import {
   Imports,
@@ -43,7 +44,6 @@ import {
   isTextFile,
   StaticElementPathPart,
   StaticElementPath,
-  ElementPath,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -57,12 +57,9 @@ import { assertNever, fastForEach } from '../shared/utils'
 import {
   isUtopiaAPIComponent,
   getComponentsFromTopLevelElements,
-  isGivenUtopiaAPIElement,
   isSceneAgainstImports,
 } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import { TransientFilesState } from '../../components/editor/store/editor-state'
-import { getSimpleAttributeAtPath } from './element-metadata-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { styleStringInArray } from '../../utils/common-constants'
 import { forceNotNull } from '../shared/optional-utils'
@@ -168,16 +165,25 @@ function isUtopiaJSXElement(
 ): element is JSXElement {
   return isJSXElement(element as any)
 }
+
 function isUtopiaJSXArbitraryBlock(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSXArbitraryBlock {
   return isJSXArbitraryBlock(element as any)
 }
+
 function isUtopiaJSXTextBlock(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSXTextBlock {
   return isJSXTextBlock(element as any)
 }
+
+function isUtopiaJSXFragment(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXFragment {
+  return isJSXFragment(element as any)
+}
+
 function isElementInstanceMetadata(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is ElementInstanceMetadata {
@@ -187,6 +193,8 @@ function isElementInstanceMetadata(
 export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
   if (isUtopiaJSXElement(element)) {
     return setUtopiaIDOnJSXElement(element, uid)
+  } else if (isUtopiaJSXFragment(element)) {
+    return jsxFragment(uid, element.children, element.longForm)
   } else {
     throw new Error(`Unable to set utopia id on ${element.type}`)
   }
@@ -202,28 +210,15 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {
-    return element.uniqueID
+    return element.uid
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
-}
-
-export function elementSupportsChildren(imports: Imports, element: JSXElementChild): boolean {
-  if (isJSXElement(element)) {
-    if (isUtopiaAPIComponent(element.name, imports)) {
-      return getJSXElementNameLastPart(element.name) === 'View'
-    } else {
-      // Be permissive about HTML elements.
-      return true
-    }
-  } else {
-    return false
-  }
 }
 
 export function transformJSXComponentAtPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPath,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
   const lastElementPathPart = EP.lastElementPathForPath(path)
   return lastElementPathPart == null
@@ -234,7 +229,7 @@ export function transformJSXComponentAtPath(
 export function transformJSXComponentAtElementPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
   const transformResult = transformAtPathOptionally(components, path, transform)
 
@@ -248,14 +243,14 @@ export function transformJSXComponentAtElementPath(
 function transformAtPathOptionally(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
-  transform: (elem: JSXElement) => JSXElement,
+  transform: (elem: JSXElementChild) => JSXElementChild,
 ): EP.ElementsTransformResult<UtopiaJSXComponent> {
   function findAndTransformAtPathInner(
     element: JSXElementChild,
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (isJSXElement(element)) {
+    if (isJSXElementLike(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         // transform
         if (tailPath.length === 0) {
@@ -295,21 +290,6 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSXFragment(element)) {
-      let childrenUpdated: boolean = false
-      const updatedChildren = element.children.map((child) => {
-        const possibleUpdate = findAndTransformAtPathInner(child, workingPath)
-        if (possibleUpdate != null) {
-          childrenUpdated = true
-        }
-        return Utils.defaultIfNull(child, possibleUpdate)
-      })
-      if (childrenUpdated) {
-        return {
-          ...element,
-          children: updatedChildren,
-        }
-      }
     }
     return null
   }
@@ -344,7 +324,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElement(element)) {
+    if (isJSXElementLike(element)) {
       const uid = getUtopiaID(element)
       if (uid === firstUIDOrIndex) {
         const tailPath = workingPath.slice(1)
@@ -368,14 +348,6 @@ export function findJSXElementChildAtPath(
         const withinResult = findAtPathInner(elementWithin, workingPath)
         if (withinResult != null) {
           return withinResult
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      const children = element.children
-      for (const child of children) {
-        const childResult = findAtPathInner(child, workingPath)
-        if (childResult != null) {
-          return childResult
         }
       }
     }
@@ -414,23 +386,31 @@ export function rearrangeJsxChildren(
   const lastElementPathPart = EP.lastElementPathForPath(target)
   return lastElementPathPart == null
     ? rootElements
-    : transformAtPathOptionally(rootElements, lastElementPathPart, (parentElement: JSXElement) => {
-        const originalChildren = parentElement.children
-        if (originalChildren.length !== rearrangedChildPaths.length) {
-          throw new Error(
-            `rearrangeJsxChildren error: target parent's children count (${originalChildren.length}) does not match input array length (${rearrangedChildPaths.length})`,
-          )
-        }
+    : transformAtPathOptionally(
+        rootElements,
+        lastElementPathPart,
+        (parentElement: JSXElementChild) => {
+          if (isJSXElementLike(parentElement)) {
+            const originalChildren = parentElement.children
+            if (originalChildren.length !== rearrangedChildPaths.length) {
+              throw new Error(
+                `rearrangeJsxChildren error: target parent's children count (${originalChildren.length}) does not match input array length (${rearrangedChildPaths.length})`,
+              )
+            }
 
-        const rearrangedChildren = rearrangedChildPaths.map((path) => {
-          const targetUid = EP.toUid(path)
-          return forceNotNull(
-            `rearrangeJsxChildren did not find child with uid ${targetUid}`,
-            originalChildren.find((c) => getUtopiaID(c) === targetUid),
-          )
-        })
-        return { ...parentElement, children: rearrangedChildren }
-      }).elements
+            const rearrangedChildren = rearrangedChildPaths.map((path) => {
+              const targetUid = EP.toUid(path)
+              return forceNotNull(
+                `rearrangeJsxChildren did not find child with uid ${targetUid}`,
+                originalChildren.find((c) => getUtopiaID(c) === targetUid),
+              )
+            })
+            return { ...parentElement, children: rearrangedChildren }
+          } else {
+            return parentElement
+          }
+        },
+      ).elements
 }
 
 export function removeJSXElementChild(
@@ -473,9 +453,13 @@ export function removeJSXElementChild(
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
   return lastElementPathPart == null
     ? rootElements
-    : transformAtPathOptionally(rootElements, lastElementPathPart, (parentElement: JSXElement) => {
-        return removeRelevantChild(parentElement, true)
-      }).elements
+    : transformAtPathOptionally(
+        rootElements,
+        lastElementPathPart,
+        (parentElement: JSXElementChild) => {
+          return removeRelevantChild(parentElement, true)
+        },
+      ).elements
 }
 
 export function insertJSXElementChild(
@@ -499,7 +483,7 @@ export function insertJSXElementChild(
       components,
       targetParentIncludingStoryboardRoot,
       (parentElement) => {
-        if (isJSXElement(parentElement)) {
+        if (isJSXElementLike(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)
