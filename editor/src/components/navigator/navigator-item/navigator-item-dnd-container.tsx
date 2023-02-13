@@ -150,7 +150,9 @@ function onHover(
       : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
 
     const canReparent = propsOfDropTargetItem.supportsChildren
-    const numberOfAreasToCut = canReparent ? 2 : 1
+    // if it's the first item, we allow both the top and the bottom hint
+    // if reparenting is possible, hovering the middle of an item shows the reparent outline
+    const numberOfAreasToCut = (indexInParent === 0 ? 2 : 1) + (canReparent ? 1 : 0)
 
     if (cursor == null || cursorDelta == null) {
       return
@@ -229,12 +231,10 @@ function onHover(
       )
     }
 
-    if (propsOfDraggedItem.appropriateDropTargetHint?.type !== null) {
-      return propsOfDraggedItem.editorDispatch(
-        [showNavigatorDropTargetHint(null, null, null)],
-        'leftpane',
-      )
-    }
+    return propsOfDraggedItem.editorDispatch(
+      [showNavigatorDropTargetHint(null, null, null)],
+      'leftpane',
+    )
   }
 }
 
