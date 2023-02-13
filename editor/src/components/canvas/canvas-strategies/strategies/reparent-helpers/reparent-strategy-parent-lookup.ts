@@ -4,7 +4,7 @@ import {
 } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { isRight } from '../../../../../core/shared/either'
+import { isLeft } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -458,16 +458,18 @@ export function flowParentAbsoluteOrStatic(
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
+  const flattenFragmentChildren = (c: ElementInstanceMetadata): ElementInstanceMetadata[] => {
+    if (isLeft(c.element)) {
+      return [c]
+    }
+    if (!isJSXFragment(c.element.value)) {
+      return [c]
+    }
+    return MetadataUtils.getChildren(metadata, c.elementPath).flatMap(flattenFragmentChildren)
+  }
   const children = MetadataUtils.getChildren(metadata, parent)
     // filter out fragment blocks and merge their children with the parent children
-    .flatMap((c) => {
-      if (isRight(c.element)) {
-        if (isJSXFragment(c.element.value)) {
-          return MetadataUtils.getChildren(metadata, c.elementPath)
-        }
-      }
-      return c
-    })
+    .flatMap(flattenFragmentChildren)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {
