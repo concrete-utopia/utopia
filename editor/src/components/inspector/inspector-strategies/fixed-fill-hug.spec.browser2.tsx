@@ -2,11 +2,7 @@ import { act, fireEvent } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  wait,
-} from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
@@ -525,8 +521,6 @@ describe('Fixed / Fill / Hug control', () => {
     await selectComponentsForTest(editor, [EP.fromString('sb/upper')])
     await openDropdownViaLabel(editor, 'fixed')
     await expectOptionsToBePresent(editor, ['fixed'])
-
-    // await wait(10000)
 
     await selectComponentsForTest(editor, [EP.fromString('sb/lower')])
     await openDropdownViaLabel(editor, 'fixed')
