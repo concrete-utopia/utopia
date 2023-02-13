@@ -34,7 +34,7 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useColorTheme } from '../../../uuiui'
 import { getEmptyImage } from 'react-dnd-html5-backend'
-import { createSelector } from 'reselect'
+import { when } from '../../../utils/react-conditionals'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -125,6 +125,7 @@ function onHover(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
   component: HTMLDivElement | null,
+  indexInParent: number,
 ): void {
   if (
     monitor != null &&
@@ -147,14 +148,32 @@ function onHover(
     const targetAction = propsOfDraggedItem.highlighted
       ? []
       : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
+
     const canReparent = propsOfDropTargetItem.supportsChildren
-    const numberOfAreasToCut = canReparent ? 3 : 2
+    const numberOfAreasToCut = canReparent ? 2 : 1
 
     if (cursor == null || cursorDelta == null) {
       return
     }
 
+    const targetPathWithReparentWiggle = (() => {
+      if (
+        cursorDelta.x >= -BasePaddingUnit ||
+        EP.parentPath(propsOfDraggedItem.elementPath) == null
+      ) {
+        return propsOfDropTargetItem.elementPath
+      }
+
+      const maximumTargetDepth = EP.navigatorDepth(propsOfDropTargetItem.elementPath)
+      const cursorTargetDepth = Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
+
+      const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
+
+      return EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth)
+    })()
+
     if (
+      indexInParent === 0 &&
       isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut) &&
       propsOfDraggedItem.appropriateDropTargetHint?.type !== 'before'
     ) {
@@ -163,7 +182,7 @@ function onHover(
           ...targetAction,
           showNavigatorDropTargetHint(
             'before',
-            propsOfDropTargetItem.elementPath,
+            targetPathWithReparentWiggle,
             propsOfDropTargetItem.elementPath,
           ),
         ],
@@ -176,38 +195,6 @@ function onHover(
       (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed)
     ) {
       if (
-        cursorDelta.x < -BasePaddingUnit &&
-        EP.parentPath(propsOfDraggedItem.elementPath) != null
-      ) {
-        const maximumTargetDepth = EP.navigatorDepth(propsOfDropTargetItem.elementPath)
-        const cursorTargetDepth = Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
-
-        const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
-
-        const targetPath = EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth)
-
-        if (
-          propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
-          !EP.pathsEqual(
-            propsOfDraggedItem.appropriateDropTargetHint.moveToElementPath,
-            targetPath,
-          ) ||
-          !EP.pathsEqual(
-            propsOfDraggedItem.appropriateDropTargetHint?.displayAtElementPath,
-            propsOfDropTargetItem.elementPath,
-          )
-        ) {
-          return propsOfDraggedItem.editorDispatch(
-            [
-              ...targetAction,
-              showNavigatorDropTargetHint('after', targetPath, propsOfDropTargetItem.elementPath),
-            ],
-            'leftpane',
-          )
-        }
-      }
-
-      if (
         propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
         !EP.pathsEqual(
           propsOfDraggedItem.appropriateDropTargetHint?.displayAtElementPath,
@@ -219,7 +206,7 @@ function onHover(
             ...targetAction,
             showNavigatorDropTargetHint(
               'after',
-              propsOfDropTargetItem.elementPath,
+              targetPathWithReparentWiggle,
               propsOfDropTargetItem.elementPath,
             ),
           ],
@@ -262,27 +249,12 @@ function beginDrag(
 
 interface NavigatorItemDndWrapperProps {
   borderColor: string
+  indexInParent: number
 }
 
 export const NavigatorItemDndWrapper = React.memo<
   NavigatorItemDragAndDropWrapperProps & CollectResults & NavigatorItemDndWrapperProps
 >((props) => {
-  const getMarginForHint = React.useCallback((): number => {
-    if (
-      props.isOver &&
-      props.appropriateDropTargetHint?.moveToElementPath != null &&
-      props.appropriateDropTargetHint?.type !== 'reparent'
-    ) {
-      return getHintPadding(props.appropriateDropTargetHint?.moveToElementPath)
-    } else {
-      return 0
-    }
-  }, [
-    props.appropriateDropTargetHint?.moveToElementPath,
-    props.appropriateDropTargetHint?.type,
-    props.isOver,
-  ])
-
   const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
 
   const moveToElementPath = useEditorState(
@@ -297,7 +269,12 @@ export const NavigatorItemDndWrapper = React.memo<
     'NavigatorItemDndWrapper dropTargetHintType',
   )
 
-  const margin = getMarginForHint()
+  const margin =
+    props.isOver &&
+    moveToElementPath != null &&
+    props.appropriateDropTargetHint?.type !== 'reparent'
+      ? getHintPadding(moveToElementPath)
+      : 0
 
   const shouldShowParentOutline =
     dropTargetHintType == null
@@ -339,10 +316,13 @@ export const NavigatorItemDndWrapper = React.memo<
         selected={props.selected}
         elementWarnings={props.elementWarnings}
       />
-      <NavigatorHintTop
-        shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'before'}
-        margin={margin}
-      />
+      {when(
+        props.indexInParent === 0,
+        <NavigatorHintTop
+          shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'before'}
+          margin={margin}
+        />,
+      )}
       <NavigatorHintBottom
         shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'after'}
         margin={margin}
@@ -357,6 +337,16 @@ interface DropCollectedProps {
 }
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
+  const metadata = useEditorState(Substores.metadata, (store) => store.editor.jsxMetadata, 'aaa')
+
+  const indexInParent = React.useMemo(() => {
+    const parentPath = EP.parentPath(props.elementPath)
+    const pathString = EP.toString(props.elementPath)
+    return MetadataUtils.getChildrenPaths(metadata, parentPath)
+      .map((path) => EP.toString(path))
+      .findIndex((path) => path === pathString)
+  }, [metadata, props.elementPath])
+
   const editorStateRef = useRefEditorState((store) => store.editor)
 
   const [{ isDragging }, drag, preview] = useDrag(
@@ -394,7 +384,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHover(item, props, monitor, dropRef.current)
+        onHover(item, props, monitor, dropRef.current, indexInParent)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor, dropRef.current)
@@ -442,6 +432,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           borderColor={colorTheme.navigatorResizeHintBorder.value}
           isOver={isOver}
           isDragging={isDragging}
+          indexInParent={indexInParent}
         />
       </div>
     </div>
