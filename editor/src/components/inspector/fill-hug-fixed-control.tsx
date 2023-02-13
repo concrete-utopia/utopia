@@ -115,7 +115,9 @@ const optionsSelector = createSelector(
   (metadata, selectedViews) => {
     const applicableOptions: Array<FixedHugFillMode> = [
       ...intersection(
-        selectedViews.map((selectedView) => fixedFillHugModeForElement(metadata, selectedView)),
+        selectedViews.map((selectedView) =>
+          getFixedFillHugOptionsForElement(metadata, selectedView),
+        ),
       ),
     ]
 
