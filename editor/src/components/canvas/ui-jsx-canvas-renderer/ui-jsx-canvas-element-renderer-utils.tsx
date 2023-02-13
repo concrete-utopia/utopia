@@ -401,10 +401,6 @@ function trimWhitespaces(
   return trimmedText
 }
 
-export var Fragment: React.FunctionComponent<React.PropsWithChildren<any>> = ({ children }) => {
-  return <>{children}</>
-}
-
 function renderJSXElement(
   key: string,
   jsx: JSXElementLike,
@@ -496,7 +492,7 @@ function renderJSXElement(
   const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
 
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
-  const FinalElementOrFragment = elementIsFragment ? Fragment : FinalElement
+  const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
