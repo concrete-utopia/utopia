@@ -3,11 +3,11 @@ import { MapLike } from 'typescript'
 import { right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
   emptyAttributeMetadatada,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
-  JSXElement,
+  JSXElementLike,
+  isJSXElement,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -15,10 +15,9 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
-import { fastForEach } from '../../../core/shared/utils'
 
 export function buildSpyWrappedElement(
-  jsx: JSXElement,
+  jsx: JSXElementLike,
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
@@ -53,7 +52,9 @@ export function buildSpyWrappedElement(
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
       label: null,
-      importInfo: importInfoFromImportDetails(jsx.name, imports, filePath),
+      importInfo: isJSXElement(jsx)
+        ? importInfoFromImportDetails(jsx.name, imports, filePath)
+        : null,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

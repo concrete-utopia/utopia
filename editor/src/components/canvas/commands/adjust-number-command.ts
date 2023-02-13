@@ -25,7 +25,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  modifyUnderlyingForOpenFile,
+  modifyUnderlyingElementForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -185,7 +185,7 @@ export function applyValuesAtPath(
 ): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
   let editorStatePatch: EditorStatePatch = {}
 
-  const workingEditorState = modifyUnderlyingForOpenFile(
+  const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,
     (element: JSXElement) => {

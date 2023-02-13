@@ -168,6 +168,11 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
+  const visibleNavigatorTargets = useEditorState(
+    Substores.derived,
+    (store) => store.derived.visibleNavigatorTargets,
+    'NavigatorItemWrapper navigatorTargets',
+  )
   const dispatch = useDispatch()
   const { isElementVisible, renamingTarget, appropriateDropTargetHint, isCollapsed } =
     useEditorState(
@@ -211,6 +216,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     renamingTarget: renamingTarget,
     elementWarnings: elementWarnings,
     windowStyle: props.windowStyle,
+    visibleNavigatorTargets: visibleNavigatorTargets,
   }
 
   return <NavigatorItemContainer {...navigatorItemProps} />

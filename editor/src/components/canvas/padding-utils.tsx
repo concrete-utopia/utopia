@@ -1,7 +1,7 @@
 import { styleStringInArray } from '../../utils/common-constants'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { defaultEither, Either, isLeft, right } from '../../core/shared/either'
+import { defaultEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -17,6 +17,8 @@ import {
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
 import { Modifiers } from '../../utils/modifiers'
+
+export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
 export type CSSPaddingKey = keyof CSSPadding
 export type CSSPaddingMappedValues<T> = { [key in CSSPaddingKey]: T }
@@ -156,6 +158,13 @@ export function paddingPropForEdge(edgePiece: EdgePiece): CSSPaddingKey {
 
 export function paddingForEdge(edgePiece: EdgePiece, padding: CSSPaddingMeasurements): number {
   return padding[paddingPropForEdge(edgePiece)].renderedValuePx
+}
+
+export function paddingForEdgeSimplePadding(
+  edgePiece: EdgePiece,
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+): number {
+  return padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
 }
 
 export function offsetPaddingByEdge(

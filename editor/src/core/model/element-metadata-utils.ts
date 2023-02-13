@@ -47,6 +47,7 @@ import {
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
   isImportedOrigin,
+  isJSXFragment,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -65,7 +66,6 @@ import {
   LocalRectangle,
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
-  roundPointToNearestHalf,
   Size,
   zeroCanvasRect,
   zeroLocalRect,
@@ -87,7 +87,6 @@ import {
   isImportedComponent,
   isAnimatedElement,
   isUtopiaAPIComponent,
-  getUtopiaJSXComponentsFromSuccess,
   isViewLikeFromMetadata,
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
@@ -110,6 +109,7 @@ import {
   FlexDirection,
   ForwardOrReverse,
 } from '../../components/inspector/common/css-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -911,7 +911,8 @@ export const MetadataUtils = {
     if (isRight(element.element) && isJSXElement(element.element.value)) {
       const elementValue = element.element.value
       return (
-        elementValue.children.length >= 1 && elementValue.children.some((c) => isJSXTextBlock(c))
+        elementValue.children.length >= 1 &&
+        elementValue.children.some((c) => isJSXTextBlock(c) || isJSXArbitraryBlock(c))
       )
     }
     return false
@@ -1013,10 +1014,12 @@ export const MetadataUtils = {
         if (subTree != null) {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
+          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
+            (isFeatureEnabled('Fragment support') || !isFragment) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
@@ -1167,7 +1170,15 @@ export const MetadataUtils = {
       }
     }
 
-    return zeroCanvasRect
+    // Potentially here the parent was something like a fragment that itself doesn't have
+    // the above properties set, so we should move up the hierarchy to find one where they are set.
+    const nextAncestor =
+      targetParent == null || EP.isEmptyPath(targetParent) ? null : EP.parentPath(targetParent)
+    if (nextAncestor == null) {
+      return zeroCanvasRect
+    } else {
+      return MetadataUtils.getParentCoordinateSystemBounds(nextAncestor, metadata)
+    }
   },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath | null,
@@ -1246,7 +1257,7 @@ export const MetadataUtils = {
             case 'JSX_ARBITRARY_BLOCK':
               return '(code)'
             case 'JSX_FRAGMENT':
-              return '(fragment)'
+              return 'Fragment'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)
@@ -1676,6 +1687,19 @@ export const MetadataUtils = {
 
     return result
   },
+  isElementPathFragmentFromMetadata(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath | null,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(componentMetadata, elementPath)
+
+    return MetadataUtils.isFragmentFromMetadata(element)
+  },
+  isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null && isRight(element.element) && isJSXFragment(element.element.value)
+    )
+  },
 }
 
 // Those elements which are not in the dom have empty globalFrame and localFrame
@@ -1694,28 +1718,55 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     }
 
     const spyElem = fromSpy[pathStr]
-    const childrenFromSpy = MetadataUtils.getChildren(fromSpy, spyElem.elementPath)
-    const childrenFromDom = MetadataUtils.getChildren(fromDOM, spyElem.elementPath)
-    const childrenNotInDom = childrenFromSpy.filter((childNotInDom) =>
-      childrenFromDom.every(
-        (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
-      ),
+
+    const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        spyElem.elementPath,
+        fromSpy,
+      )
+    const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
+
+    const { children: childrenFromDom, unfurledComponents: unfurledComponentsFromDom } =
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        spyElem.elementPath,
+        fromDOM,
+      )
+    const childrenAndUnfurledComponentsFromDom = [...childrenFromDom, ...unfurledComponentsFromDom]
+
+    const childrenAndUnfurledComponentsNotInDom = childrenAndUnfurledComponentsFromSpy.filter(
+      (childNotInDom) =>
+        childrenAndUnfurledComponentsFromDom.every(
+          (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
+        ),
     )
-    const recursiveChildren = childrenNotInDom.flatMap((c) => {
-      return findChildrenInDomRecursively(EP.toString(c.elementPath))
-    })
-    const children = [...childrenFromDom, ...recursiveChildren]
 
-    childrenInDomCache[pathStr] = children
+    const recursiveChildrenAndUnfurledComponents = childrenAndUnfurledComponentsNotInDom.flatMap(
+      (c) => {
+        return findChildrenInDomRecursively(EP.toString(c.elementPath))
+      },
+    )
 
-    return children
+    const childrenAndUnfurledComponents = [
+      ...childrenAndUnfurledComponentsFromDom,
+      ...recursiveChildrenAndUnfurledComponents,
+    ]
+
+    childrenInDomCache[pathStr] = childrenAndUnfurledComponents
+
+    return childrenAndUnfurledComponents
   }
 
-  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
   const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
     const globalFrame = zeroRectIfNullOrInfinity(fromDOM[p].globalFrame)
     return globalFrame.width === 0 || globalFrame.height === 0
   })
+
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+  // Sort and then reverse these, so that lower level elements are handled ahead of their parents
+  // and ancestors. This means that if there are a grandparent and parent which both lack global frames
+  // then the parent is fixed ahead of the grandparent, which will be based on the parent.
+  elementsWithoutDomMetadata.sort()
+  elementsWithoutDomMetadata.reverse()
 
   const workingElements: ElementInstanceMetadataMap = {}
 
@@ -1726,14 +1777,24 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
       return
     }
 
-    const childrenGlobalFrames = mapDropNulls((c) => c.globalFrame, children)
+    const childrenFromWorking = children.map((child) => {
+      const childPathStr = EP.toString(child.elementPath)
+      const fromWorkingElements = workingElements[childPathStr]
+      if (fromWorkingElements == null) {
+        return child
+      } else {
+        return fromWorkingElements
+      }
+    })
+
+    const childrenGlobalFrames = mapDropNulls((c) => c.globalFrame, childrenFromWorking)
     const childrenNonInfinityGlobalFrames = childrenGlobalFrames.filter(isFiniteRectangle)
     const childrenBoundingGlobalFrame =
       childrenNonInfinityGlobalFrames.length === childrenGlobalFrames.length
         ? boundingRectangleArray(childrenNonInfinityGlobalFrames)
         : infinityCanvasRectangle
 
-    const childrenLocalFrames = mapDropNulls((c) => c.localFrame, children)
+    const childrenLocalFrames = mapDropNulls((c) => c.localFrame, childrenFromWorking)
     const childrenNonInfinityLocalFrames = childrenLocalFrames.filter(isFiniteRectangle)
     const childrenBoundingLocalFrame =
       childrenNonInfinityLocalFrames.length === childrenLocalFrames.length

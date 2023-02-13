@@ -13,6 +13,7 @@ import {
 } from '../ui-jsx.test-utils'
 import { adjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
 import { updateEditorStateWithPatches } from './commands'
+import { isJSXElement } from '../../../core/shared/element-template'
 
 describe('adjustNumberProperty', () => {
   it('works for left style prop', async () => {
@@ -34,10 +35,14 @@ describe('adjustNumberProperty', () => {
       originalEditorState,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(
-          element.props,
-          stylePropPathMappingFn('left', styleStringInArray),
-        )
+        if (isJSXElement(element)) {
+          return getNumberPropertyFromProps(
+            element.props,
+            stylePropPathMappingFn('left', styleStringInArray),
+          )
+        } else {
+          return null
+        }
       },
     )!
 
@@ -65,10 +70,14 @@ describe('adjustNumberProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(
-          element.props,
-          stylePropPathMappingFn('left', styleStringInArray),
-        )
+        if (isJSXElement(element)) {
+          return getNumberPropertyFromProps(
+            element.props,
+            stylePropPathMappingFn('left', styleStringInArray),
+          )
+        } else {
+          return null
+        }
       },
     )
 
@@ -115,10 +124,14 @@ describe('adjustNumberProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(
-          element.props,
-          stylePropPathMappingFn('left', styleStringInArray),
-        )
+        if (isJSXElement(element)) {
+          return getNumberPropertyFromProps(
+            element.props,
+            stylePropPathMappingFn('left', styleStringInArray),
+          )
+        } else {
+          return null
+        }
       },
     )
 

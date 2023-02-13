@@ -4,10 +4,12 @@ import {
 } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
+import { isLeft } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  isJSXFragment,
 } from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -51,7 +53,7 @@ export function getReparentTargetUnified(
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
-  const validTargetparentsUnderPoint = findValidTargetsUnderPoint(
+  const validTargetParentsUnderPoint = findValidTargetsUnderPoint(
     reparentSubjects,
     pointOnCanvas,
     cmdPressed,
@@ -66,7 +68,7 @@ export function getReparentTargetUnified(
   const targetParentWithPaddedInsertionZone: ReparentTarget | null =
     findParentByPaddedInsertionZone(
       metadata,
-      validTargetparentsUnderPoint,
+      validTargetParentsUnderPoint,
       reparentSubjects,
       canvasScale,
       pointOnCanvas,
@@ -77,7 +79,7 @@ export function getReparentTargetUnified(
   }
 
   // fall back to trying to find an absolute element, or the "background" area of an autolayout container
-  const targetParentPath = validTargetparentsUnderPoint[0]
+  const targetParentPath = validTargetParentsUnderPoint[0]
   if (targetParentPath == null) {
     // none of the targets were under the mouse, fallback return
     return null
@@ -131,6 +133,11 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
+    // TODO: later we should allow reparenting into fragments
+    if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, target)) {
+      return false
+    }
+
     const currentParent = isTargetAParentOfAnySubject(reparentSubjects, metadata, target)
 
     if (currentParent) {
@@ -174,7 +181,7 @@ function findValidTargetsUnderPoint(
     )
 
     if (
-      isTargetOutsideOfContainingComponentUnderMouse(
+      isTargetParentOutsideOfContainingComponentUnderMouse(
         selectedElementsMetadata,
         allElementsUnderPoint,
         target,
@@ -240,11 +247,11 @@ function isTargetAParentOfAnySubject(
   return selectedElementsMetadata.some((maybeChild) => EP.isChildOf(maybeChild.elementPath, target))
 }
 
-function isTargetOutsideOfContainingComponentUnderMouse(
+function isTargetParentOutsideOfContainingComponentUnderMouse(
   selectedElementsMetadata: Array<ElementInstanceMetadata>,
   allElementsUnderPoint: Array<ElementPath>,
-  target: ElementPath,
-) {
+  possibleTargetParent: ElementPath,
+): boolean {
   const containingComponents = selectedElementsMetadata.map((e) =>
     EP.getContainingComponent(e.elementPath),
   )
@@ -253,7 +260,7 @@ function isTargetOutsideOfContainingComponentUnderMouse(
     allElementsUnderPoint.find((p) => EP.pathsEqual(c, p)),
   )
 
-  return containingComponentsUnderMouse.some((c) => EP.isDescendantOf(c, target))
+  return containingComponentsUnderMouse.some((c) => EP.isDescendantOf(c, possibleTargetParent))
 }
 
 function findParentByPaddedInsertionZone(
@@ -341,7 +348,7 @@ function findParentUnderPointByArea(
   metadata: ElementInstanceMetadataMap,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
-) {
+): ReparentTarget {
   const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,
@@ -451,7 +458,18 @@ export function flowParentAbsoluteOrStatic(
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
+  const flattenFragmentChildren = (c: ElementInstanceMetadata): ElementInstanceMetadata[] => {
+    if (isLeft(c.element)) {
+      return [c]
+    }
+    if (!isJSXFragment(c.element.value)) {
+      return [c]
+    }
+    return MetadataUtils.getChildren(metadata, c.elementPath).flatMap(flattenFragmentChildren)
+  }
   const children = MetadataUtils.getChildren(metadata, parent)
+    // filter out fragment blocks and merge their children with the parent children
+    .flatMap(flattenFragmentChildren)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {
