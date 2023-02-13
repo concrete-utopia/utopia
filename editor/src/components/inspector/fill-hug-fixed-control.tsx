@@ -91,7 +91,7 @@ function elementComputedDimension(
 
 interface FillHugFixedControlProps {}
 
-function fixedFillHugModeForElement(
+function getFixedFillHugOptionsForElement(
   metadata: ElementInstanceMetadataMap,
   selectedView: ElementPath,
 ): Set<FixedHugFillMode> {
