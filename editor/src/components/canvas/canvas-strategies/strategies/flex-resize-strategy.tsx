@@ -64,6 +64,7 @@ import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import * as EP from '../../../../core/shared/element-path'
 import { sides } from 'utopia-api/core'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { deleteProperties } from '../../commands/delete-properties-command'
 
 export function flexResizeStrategy(
   canvasState: InteractionCanvasState,
@@ -200,9 +201,6 @@ export function flexResizeStrategy(
             parent: number | undefined,
             parentFlexDirection: FlexDirection | null,
           ): AdjustCssLengthProperty[] => {
-            if (elementDimension == null && (original === resized || hasSizedParent)) {
-              return []
-            }
             return [
               adjustCssLengthProperty(
                 'always',
@@ -240,6 +238,11 @@ export function flexResizeStrategy(
                   1,
                 ),
               )
+              resizeCommands.push(
+                deleteProperties('always', selectedElement, [
+                  stylePropPathMappingFn(widthPropToUse, styleStringInArray),
+                ]),
+              )
             } else {
               resizeCommands.push(
                 ...makeResizeCommand(
@@ -263,6 +266,11 @@ export function flexResizeStrategy(
                   1,
                 ),
               )
+              resizeCommands.push(
+                deleteProperties('always', selectedElement, [
+                  stylePropPathMappingFn(heightPropToUse, styleStringInArray),
+                ]),
+              )
             } else {
               resizeCommands.push(
                 ...makeResizeCommand(
@@ -275,6 +283,16 @@ export function flexResizeStrategy(
                 ),
               )
             }
+          }
+          if (
+            snapToParentEdge === 'horizontal-no-snap' ||
+            snapToParentEdge === 'vertical-no-snap'
+          ) {
+            resizeCommands.push(
+              deleteProperties('always', selectedElement, [
+                stylePropPathMappingFn('flexGrow', styleStringInArray),
+              ]),
+            )
           }
 
           return strategyApplicationResult([
@@ -390,7 +408,7 @@ function shouldSnapToParentEdge(
   parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
-): 'horizontal' | 'vertical' | null {
+): 'horizontal' | 'horizontal-no-snap' | 'vertical' | 'vertical-no-snap' | null {
   const parentPadding = element.specialSizeMeasurements.parentPadding
   const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
 
@@ -434,14 +452,14 @@ function shouldSnapToParentEdge(
         const rightPadding = parentPadding.right ?? 0
         return elementRightEdge + SnappingThreshold > parentRightEdge - rightPadding
           ? 'horizontal'
-          : null
+          : 'horizontal-no-snap'
       }
     } else if (isDraggingEdge(EdgePositionLeft)) {
       if (parentJustifyContent === 'flex-end' || parentJustifyContent === 'center') {
         const leftPadding = parentPadding.left ?? 0
         return parentBounds.x - leftPadding > resizedBounds.x + SnappingThreshold
           ? 'horizontal'
-          : null
+          : 'horizontal-no-snap'
       }
     }
   } else {
@@ -456,12 +474,14 @@ function shouldSnapToParentEdge(
         const bottomPadding = parentPadding.bottom ?? 0
         return elementBottomEdge + SnappingThreshold > parentBottomEdge - bottomPadding
           ? 'vertical'
-          : null
+          : 'vertical-no-snap'
       }
     } else if (isDraggingEdge(EdgePositionTop)) {
       if (parentJustifyContent === 'flex-end' || parentJustifyContent === 'center') {
         const topPadding = parentPadding.top ?? 0
-        return parentBounds.y - topPadding > resizedBounds.y + SnappingThreshold ? 'vertical' : null
+        return parentBounds.y - topPadding > resizedBounds.y + SnappingThreshold
+          ? 'vertical'
+          : 'vertical-no-snap'
       }
     }
   }
