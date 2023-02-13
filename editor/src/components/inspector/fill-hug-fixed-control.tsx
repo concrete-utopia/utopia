@@ -89,6 +89,8 @@ function elementComputedDimension(
   return localFrame[prop]
 }
 
+const simpleControlStyles = getControlStyles('simple')
+
 interface FillHugFixedControlProps {}
 
 function fixedFillHugModeForElement(
@@ -282,8 +284,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     [dispatch, fillsContainerVerticallyRef, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
-  const controlStylesRef = React.useRef(getControlStyles('simple'))
-
   if (options == null) {
     return null
   }
@@ -305,7 +305,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
         options={options}
         onSubmitValue={onSubmitWidth}
-        controlStyles={controlStylesRef.current}
+        controlStyles={simpleControlStyles}
         containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
@@ -329,7 +329,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
         options={options}
         onSubmitValue={onSubmitHeight}
-        controlStyles={controlStylesRef.current}
+        controlStyles={simpleControlStyles}
         containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
