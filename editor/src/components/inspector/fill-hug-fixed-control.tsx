@@ -93,7 +93,7 @@ const simpleControlStyles = getControlStyles('simple')
 
 interface FillHugFixedControlProps {}
 
-function fixedFillHugModeForElement(
+function getFixedFillHugOptionsForElement(
   metadata: ElementInstanceMetadataMap,
   selectedView: ElementPath,
 ): Set<FixedHugFillMode> {
