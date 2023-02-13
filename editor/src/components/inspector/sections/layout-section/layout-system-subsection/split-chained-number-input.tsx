@@ -1,6 +1,5 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
-import { createSelector } from 'reselect'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
@@ -296,8 +295,6 @@ const whenCSSNumber = (fn: (v: CSSNumber) => any) => (v: UnknownOrEmptyInput<CSS
   fn(v)
 }
 
-const SelectedViewsSelector = createSelector(selectedViewsSelector, (x) => x)
-
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
   const {
     name,
@@ -325,7 +322,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
-    SelectedViewsSelector,
+    selectedViewsSelector,
     'PaddingControl selectedViews',
   )
 
