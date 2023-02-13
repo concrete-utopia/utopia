@@ -62,6 +62,7 @@ import {
   isImportStatement,
   isJSXAttributeValue,
   isJSXElement,
+  isJSXFragment,
   isPartOfJSXAttributeValue,
   JSXAttributes,
   jsxAttributesFromMap,
@@ -69,6 +70,7 @@ import {
   JSXAttributeValue,
   JSXElement,
   jsxElement,
+  JSXElementChild,
   JSXElementChildren,
   jsxElementName,
   jsxTextBlock,
@@ -372,8 +374,8 @@ import {
   modifyOpenJSXElementsAndMetadata,
   modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
-  modifyUnderlyingForOpenFile,
-  modifyUnderlyingTarget,
+  modifyUnderlyingElementForOpenFile,
+  modifyUnderlyingTargetElement,
   packageJsonFileFromProjectContents,
   PersistentModel,
   persistentModelFromEditorModel,
@@ -469,6 +471,7 @@ import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strat
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -560,9 +563,13 @@ function setPropertyOnTargetAtElementPath(
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElement) =>
-      applyUpdateToJSXElement(e, updateFn),
-    )
+    return transformJSXComponentAtElementPath(components, target, (e: JSXElementChild) => {
+      if (isJSXElement(e)) {
+        return applyUpdateToJSXElement(e, updateFn)
+      } else {
+        return e
+      }
+    })
   }, editor)
 }
 
@@ -1640,7 +1647,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     let unsetPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingForOpenFile(
+    const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
       editor,
       (element) => {
@@ -1672,7 +1679,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     let setPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingForOpenFile(
+    const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
       editor,
       (element) => {
@@ -1899,7 +1906,14 @@ export const UPDATE_FNS = {
       (path) => !EP.containsPath(path, newlySelectedPaths),
     )
 
-    const filteredNewlySelectedPaths = newlySelectedPaths
+    const filteredNewlySelectedPaths = newlySelectedPaths.filter((path) => {
+      if (isFeatureEnabled('Fragment support')) {
+        return true
+      }
+
+      return !MetadataUtils.isElementPathFragmentFromMetadata(editor.jsxMetadata, path)
+    })
+
     const updatedEditor: EditorModel = {
       ...editor,
       highlightedViews: newHighlightedViews,
@@ -1910,12 +1924,8 @@ export const UPDATE_FNS = {
           : updateNavigatorCollapsedState(filteredNewlySelectedPaths, editor.navigator),
       pasteTargetsToIgnore: [],
     }
-    if (filteredNewlySelectedPaths === newlySelectedPaths) {
-      return updatedEditor
-    } else {
-      const showToastAction = showToast(notice(`Only one scene can be selected`, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(showToastAction, updatedEditor, dispatch)
-    }
+
+    return updatedEditor
   },
   CLEAR_SELECTION: (editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {
@@ -2133,7 +2143,7 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
-    const withNewElement = modifyUnderlyingTarget(
+    const withNewElement = modifyUnderlyingTargetElement(
       action.parent,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
@@ -4290,7 +4300,7 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
-    return modifyUnderlyingTarget(
+    return modifyUnderlyingTargetElement(
       action.target,
       forceNotNull('Missing open file', editor.canvas.openFile?.filename),
       editor,
@@ -4815,7 +4825,7 @@ export const UPDATE_FNS = {
       return editor
     } else {
       let newSelectedViews: ElementPath[] = []
-      const withNewElement = modifyUnderlyingTarget(
+      const withNewElement = modifyUnderlyingTargetElement(
         action.targetParent,
         openFilename,
         editor,
@@ -4860,8 +4870,12 @@ export const UPDATE_FNS = {
               utopiaComponents,
               action.targetParent,
               (parentElement) => {
-                insertedElementChildren.push(...parentElement.children)
-                return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
+                if (isJSXElement(parentElement)) {
+                  insertedElementChildren.push(...parentElement.children)
+                  return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
+                } else {
+                  throw new Error(`Not handled yet.`)
+                }
               },
             )
           }

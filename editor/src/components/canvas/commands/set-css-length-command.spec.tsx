@@ -1,4 +1,5 @@
 import { CSSObject } from '@emotion/styled'
+import { isJSXElement } from '../../../core/shared/element-template'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
@@ -54,10 +55,14 @@ describe('setCssLengthProperty', () => {
       patchedEditor,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return getNumberPropertyFromProps(
-          element.props,
-          stylePropPathMappingFn('height', styleStringInArray),
-        )
+        if (isJSXElement(element)) {
+          return getNumberPropertyFromProps(
+            element.props,
+            stylePropPathMappingFn('height', styleStringInArray),
+          )
+        } else {
+          return null
+        }
       },
     )
 
@@ -221,16 +226,20 @@ function getStylePropForElement(
   editor: EditorState,
   elementPath: ElementPath,
   styleProp: keyof ParsedCSSProperties,
-) {
+): number | null {
   return withUnderlyingTargetFromEditorState(
     elementPath,
     editor,
     null,
     (success, element, underlyingTarget, underlyingFilePath) => {
-      return getNumberPropertyFromProps(
-        element.props,
-        stylePropPathMappingFn(styleProp, styleStringInArray),
-      )
+      if (isJSXElement(element)) {
+        return getNumberPropertyFromProps(
+          element.props,
+          stylePropPathMappingFn(styleProp, styleStringInArray),
+        )
+      } else {
+        return null
+      }
     },
   )
 }

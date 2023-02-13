@@ -21,6 +21,8 @@ import { buildTree, ElementPathTree, getSubTree } from '../../core/shared/elemen
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
+import { maybeToArray } from '../../core/shared/optional-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -57,7 +59,7 @@ function getFramesInCanvasContextUncached(
       }
     }
     const globalFrame = component.globalFrame
-    if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    if (globalFrame != null && isInfinityRectangle(globalFrame)) {
       // TODO Will this work for the storyboard?
       return {
         boundingRect: null,
@@ -80,19 +82,24 @@ function getFramesInCanvasContextUncached(
 
     const childFrames = children.map((child) => {
       const recurseResults = recurseChildren(child)
-      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      const rectToBoundWith =
+        includeClippedNext || globalFrame == null ? recurseResults.boundingRect : globalFrame
       return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
     })
     const unfurledFrames = unfurledComponents.map((unfurledElement) => {
       const recurseResults = recurseChildren(unfurledElement)
-      const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
+      const rectToBoundWith =
+        includeClippedNext || globalFrame == null ? recurseResults.boundingRect : globalFrame
       return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
     })
     const allFrames = [...childFrames, ...unfurledFrames]
     const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
     if (allFrames.length > 0 && allChildrenBounds != null) {
       const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
-      const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
+      const boundingRect =
+        globalFrame == null
+          ? allChildrenBounds
+          : Utils.boundingRectangle(globalFrame, allChildrenBounds)
       const toAppend: FrameWithPath = { path: component.elementPath, frame: boundingRect }
       return {
         boundingRect: boundingRect,
@@ -100,8 +107,9 @@ function getFramesInCanvasContextUncached(
       }
     } else {
       const boundingRect = globalFrame
-      const toAppend = { path: component.elementPath, frame: boundingRect }
-      return { boundingRect: boundingRect, frames: [toAppend] }
+      const toAppend: FrameWithPath | null =
+        boundingRect == null ? null : { path: component.elementPath, frame: boundingRect }
+      return { boundingRect: boundingRect, frames: maybeToArray(toAppend) }
     }
   }
 
@@ -129,21 +137,38 @@ const Canvas = {
     TargetSearchType.ParentsOfSelected,
   ],
   getFramesInCanvasContext: memoize(getFramesInCanvasContextUncached, { maxSize: 2 }),
-  jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {
+  jumpToParent(
+    selectedViews: Array<ElementPath>,
+    metadata: ElementInstanceMetadataMap,
+  ): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:
         // Nothing is selected, so do nothing.
         return null
       case 1:
+        const getFirstValidParent = (path: ElementPath): ElementPath | null => {
+          const parentPath = EP.parentPath(path)
+          if (parentPath == null) {
+            return null
+          }
+          if (isFeatureEnabled('Fragment support')) {
+            return parentPath
+          }
+          if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, parentPath)) {
+            return getFirstValidParent(parentPath)
+          }
+          return parentPath
+        }
+
         // Only a single element is selected...
-        const parentPath = EP.parentPath(selectedViews[0])
+        const parentPath = getFirstValidParent(selectedViews[0])
         if (parentPath == null) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
-        } else {
-          // ...the selected element has a parent, so select that.
-          return parentPath
         }
+        // ...the selected element has a parent, so select that.
+        return parentPath
+
       default:
         // Multiple elements are selected so select the topmost element amongst them.
         const newSelection: ElementPath | null = selectedViews.reduce(

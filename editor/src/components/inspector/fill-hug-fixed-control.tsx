@@ -1,9 +1,11 @@
 import React from 'react'
+import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { PopupList, SimpleCSSNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
@@ -32,7 +34,7 @@ import {
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
 
-type FixedHugFillMode = FixedHugFill['type']
+export type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
   if (a === undefined && b === undefined) {
@@ -54,40 +56,25 @@ export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const HugContentsLabel = 'Hug contents' as const
 
-function selectOption(value: FixedHugFillMode): SelectOption {
-  switch (value) {
+export function selectOptionLabel(mode: FixedHugFillMode): string {
+  switch (mode) {
     case 'fill':
-      return {
-        value: 'fill',
-        label: FillContainerLabel,
-      }
+      return FillContainerLabel
     case 'fixed':
-      return {
-        value: 'fixed',
-        label: FixedLabel,
-      }
+      return FixedLabel
     case 'hug':
-      return {
-        value: 'hug',
-        label: HugContentsLabel,
-      }
+      return HugContentsLabel
     default:
-      assertNever(value)
+      assertNever(mode)
   }
 }
 
-const FillHugFixedControlOptions = ({
-  hugAvailable,
-  fillAvailable,
-}: {
-  hugAvailable: boolean
-  fillAvailable: boolean
-}): Array<SelectOption> =>
-  stripNulls([
-    selectOption('fixed'),
-    hugAvailable ? selectOption('hug') : null,
-    fillAvailable ? selectOption('fill') : null,
-  ])
+function selectOption(mode: FixedHugFillMode): SelectOption {
+  return {
+    value: mode,
+    label: selectOptionLabel(mode),
+  }
+}
 
 function elementComputedDimension(
   prop: 'width' | 'height',
@@ -102,22 +89,44 @@ function elementComputedDimension(
   return localFrame[prop]
 }
 
+const simpleControlStyles = getControlStyles('simple')
+
 interface FillHugFixedControlProps {}
 
+function getFixedFillHugOptionsForElement(
+  metadata: ElementInstanceMetadataMap,
+  selectedView: ElementPath,
+): Set<FixedHugFillMode> {
+  return new Set(
+    stripNulls([
+      'fixed',
+      hugContentsApplicableForText(metadata, selectedView) ||
+      hugContentsApplicableForContainer(metadata, selectedView)
+        ? 'hug'
+        : null,
+      fillContainerApplicable(selectedView) ? 'fill' : null,
+    ]),
+  )
+}
+
+const optionsSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (metadata, selectedViews) => {
+    const applicableOptions: Array<FixedHugFillMode> = [
+      ...intersection(
+        selectedViews.map((selectedView) =>
+          getFixedFillHugOptionsForElement(metadata, selectedView),
+        ),
+      ),
+    ]
+
+    return applicableOptions.map(selectOption)
+  },
+)
+
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const optionsRef = useRefEditorState((store) => {
-    const selectedView = selectedViewsSelector(store).at(0)
-    if (selectedView == null) {
-      return null
-    }
-    const metadata = metadataSelector(store)
-    return FillHugFixedControlOptions({
-      hugAvailable:
-        hugContentsApplicableForText(metadata, selectedView) ||
-        hugContentsApplicableForContainer(metadata, selectedView),
-      fillAvailable: fillContainerApplicable(selectedView),
-    })
-  })
+  const options = useEditorState(Substores.metadata, optionsSelector, 'FillHugFixedControl options')
 
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
@@ -277,9 +286,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     [dispatch, fillsContainerVerticallyRef, metadataRef, selectedViewsRef, widthComputedValueRef],
   )
 
-  const controlStylesRef = React.useRef(getControlStyles('simple'))
-
-  if (optionsRef.current == null) {
+  if (options == null) {
     return null
   }
 
@@ -298,9 +305,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     >
       <PopupList
         value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
-        options={optionsRef.current}
+        options={options}
         onSubmitValue={onSubmitWidth}
-        controlStyles={controlStylesRef.current}
+        controlStyles={simpleControlStyles}
         containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
@@ -322,9 +329,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       />
       <PopupList
         value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
-        options={optionsRef.current}
+        options={options}
         onSubmitValue={onSubmitHeight}
-        controlStyles={controlStylesRef.current}
+        controlStyles={simpleControlStyles}
         containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput

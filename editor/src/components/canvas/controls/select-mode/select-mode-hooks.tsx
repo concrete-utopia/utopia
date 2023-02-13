@@ -54,14 +54,12 @@ import {
   useTextEditModeSelectAndHover,
 } from '../text-edit-mode/text-edit-mode-hooks'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
 import {
   CanvasControlWithProps,
   InspectorHoveredCanvasControls,
 } from '../../../inspector/common/inspector-atoms'
-import { SubduedPaddingControl, SubduedPaddingControlProps } from './subdued-padding-control'
-import { ControlWithProps } from '../../canvas-strategies/canvas-strategy-types'
-import { EdgePieces } from '../../padding-utils'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -202,8 +200,13 @@ function collectSelectableSiblings(
         fastForEach(ancestorChildren, (child) => {
           siblings.push(child)
 
+          const isLocked = lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))
+          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
+            componentMetadata,
+            child,
+          )
           // If this element is locked we want to recurse the children
-          if (lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))) {
+          if (isLocked || (!isFeatureEnabled('Fragment support') && isFragment)) {
             addChildrenAndUnfurledFocusedComponents([child])
           }
         })
@@ -264,7 +267,15 @@ export function getSelectableViews(
     ...hiddenInstances,
     ...getAllLockedElementPaths(componentMetadata, lockedElements),
   ]
-  return filterNonSelectableElements(nonSelectableElements, candidateViews)
+
+  const selectableElements = filterNonSelectableElements(nonSelectableElements, candidateViews)
+  if (isFeatureEnabled('Fragment support')) {
+    return selectableElements
+  }
+
+  return selectableElements.filter((p) => {
+    return !MetadataUtils.isElementPathFragmentFromMetadata(componentMetadata, p)
+  })
 }
 
 export function useFindValidTarget(): (

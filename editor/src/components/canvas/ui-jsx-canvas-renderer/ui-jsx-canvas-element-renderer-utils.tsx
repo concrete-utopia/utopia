@@ -18,11 +18,10 @@ import {
   isIntrinsicElement,
   isIntrinsicHTMLElement,
   JSXArbitraryBlock,
-  getJSXAttribute,
   emptyComments,
   jsxTextBlock,
-  JSXTextBlock,
-  JSXElementChildren,
+  isJSXFragment,
+  JSXElementLike,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -286,39 +285,32 @@ export function renderCoreElement(
       return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
-      let renderedChildren: Array<React.ReactChild> = []
-      fastForEach(element.children, (child) => {
-        const childPath = optionalMap(
-          (path) => EP.appendToPath(EP.parentPath(path), getUtopiaID(child)),
-          elementPath,
-        )
-        const renderResult = renderCoreElement(
-          child,
-          childPath,
-          rootScope,
-          inScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
-          codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          filePath,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-        )
-        renderedChildren.push(renderResult)
-      })
-      return <>{renderedChildren}</>
+      const key = optionalMap(EP.toString, elementPath) ?? element.uid
+
+      return renderJSXElement(
+        key,
+        element,
+        elementPath,
+        parentComponentInputProps,
+        requireResult,
+        rootScope,
+        inScope,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        [],
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        null,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+      )
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
@@ -409,9 +401,13 @@ function trimWhitespaces(
   return trimmedText
 }
 
+export var Fragment: React.FunctionComponent<React.PropsWithChildren<any>> = ({ children }) => {
+  return <>{children}</>
+}
+
 function renderJSXElement(
   key: string,
-  jsx: JSXElement,
+  jsx: JSXElementLike,
   elementPath: ElementPath | null,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
@@ -470,7 +466,8 @@ function renderJSXElement(
     )
   }
 
-  const elementIsIntrinsic = isIntrinsicElement(jsx.name)
+  const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
+  const elementIsFragment = isJSXFragment(jsx)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
@@ -486,7 +483,9 @@ function renderJSXElement(
 
   // Not necessary to check the top level elements, as we'll use a comparison of the
   // elements from scope and import to confirm it's not a top level element.
-  const importedFrom = importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
+  const importedFrom = elementIsFragment
+    ? null
+    : importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
   const elementIsScene =
     !elementIsIntrinsic &&
     importedFrom != null &&
@@ -497,6 +496,7 @@ function renderJSXElement(
   const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
 
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
+  const FinalElementOrFragment = elementIsFragment ? Fragment : FinalElement
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
@@ -516,7 +516,7 @@ function renderJSXElement(
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  if (FinalElement == null) {
+  if (!elementIsFragment && FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
@@ -554,7 +554,7 @@ function renderJSXElement(
       metadataContext,
       updateInvalidatedPaths,
       childrenElements,
-      FinalElement,
+      FinalElementOrFragment,
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
@@ -565,7 +565,7 @@ function renderJSXElement(
     return renderComponentUsingJsxFactoryFunction(
       inScope,
       jsxFactoryFunctionName,
-      FinalElement,
+      FinalElementOrFragment,
       finalPropsIcludingElementPath,
       ...childrenElements,
     )
@@ -631,8 +631,8 @@ function runJSXArbitraryBlock(
   return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
 }
 
-function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any> | null): any {
-  if (scope == null) {
+function getElementFromScope(jsxElementToLookup: JSXElementLike, scope: MapLike<any> | null): any {
+  if (scope == null || isJSXFragment(jsxElementToLookup)) {
     return undefined
   } else {
     if (jsxElementToLookup.name.baseVariable in scope) {
