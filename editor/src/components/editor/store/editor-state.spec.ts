@@ -2,7 +2,7 @@ import {
   createEditorState,
   defaultModifyParseSuccess,
   EditorState,
-  modifyUnderlyingTarget,
+  modifyUnderlyingTargetElement,
   StoryboardFilePath,
 } from './editor-state'
 import {
@@ -53,7 +53,7 @@ describe('modifyUnderlyingTarget', () => {
   }
   it('changes something in the same file', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
-    const actualResult = modifyUnderlyingTarget(
+    const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
       '/src/app.js',
       startingEditorModel,
@@ -98,7 +98,7 @@ describe('modifyUnderlyingTarget', () => {
   })
   it('changes something in the imports of the same file', () => {
     const pathToElement = EP.fromString('card-outer-div/card-inner-div')
-    const actualResult = modifyUnderlyingTarget(
+    const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
       '/src/card.js',
       startingEditorModel,
@@ -135,7 +135,7 @@ describe('modifyUnderlyingTarget', () => {
     const pathToElement = EP.fromString(
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
     )
-    const actualResult = modifyUnderlyingTarget(
+    const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
       StoryboardFilePath,
       startingEditorModel,
@@ -186,7 +186,7 @@ describe('modifyUnderlyingTarget', () => {
   it('tries to change something in a nonsense template path', () => {
     const pathToElement = EP.fromString('moon-palace/living-room')
     const modifyCall = () =>
-      modifyUnderlyingTarget(
+      modifyUnderlyingTargetElement(
         pathToElement,
         '/src/app.js',
         startingEditorModel,
@@ -204,7 +204,7 @@ describe('modifyUnderlyingTarget', () => {
   it('tries to change something in a nonsense file path', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
     const modifyCall = () =>
-      modifyUnderlyingTarget(
+      modifyUnderlyingTargetElement(
         pathToElement,
         '/src/kitchen.js',
         startingEditorModel,
@@ -228,7 +228,7 @@ describe('Revision state management', () => {
   }
   it('changes something in a file sets revision state to PARSED_AHEAD', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
-    const actualResult = modifyUnderlyingTarget(
+    const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
       '/src/app.js',
       startingEditorModel,
@@ -248,7 +248,7 @@ describe('Revision state management', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
 
     // This is just initialization, make /src/app.js PARSED_AHEAD
-    const actualResult = modifyUnderlyingTarget(
+    const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
       '/src/app.js',
       startingEditorModel,
@@ -267,7 +267,7 @@ describe('Revision state management', () => {
 
     // This is the tested feature, RevisionsState.ParsedAheadNeedsReparsing should be kept even if
     // it is tried to be updated to RevisionsState.ParsedAhead
-    const actualResult2 = modifyUnderlyingTarget(
+    const actualResult2 = modifyUnderlyingTargetElement(
       pathToElement,
       '/src/app.js',
       actualResult,

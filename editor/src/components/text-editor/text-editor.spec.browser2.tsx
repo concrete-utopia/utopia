@@ -14,7 +14,6 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
-import { TextRelatedProperties } from 'src/core/properties/css-properties'
 
 describe('Use the text editor', () => {
   it('Click to edit text', async () => {

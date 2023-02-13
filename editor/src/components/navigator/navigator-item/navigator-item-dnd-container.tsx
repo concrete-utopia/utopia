@@ -32,7 +32,6 @@ import {
 } from '../../../components/editor/store/store-hook'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { useColorTheme } from '../../../uuiui'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 
@@ -61,6 +60,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
+  visibleNavigatorTargets: Array<ElementPath>
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
@@ -110,7 +110,7 @@ function onDrop(
   }
 }
 
-function getHintPadding(path: ElementPath): number {
+function getHintPadding(path: ElementPath, visibleNavigatorTargets: Array<ElementPath>): number {
   return (
     EP.navigatorDepth(path) * BasePaddingUnit +
     ExpansionArrowWidth +
@@ -125,6 +125,7 @@ function onHover(
   monitor: DropTargetMonitor | null,
   component: HTMLDivElement | null,
   indexInParent: number,
+  visibleNavigatorTargets: Array<ElementPath>,
 ): void {
   if (
     monitor != null &&
@@ -271,7 +272,7 @@ export const NavigatorItemDndWrapper = React.memo<
     props.isOver &&
     moveToElementPath != null &&
     props.appropriateDropTargetHint?.type !== 'reparent'
-      ? getHintPadding(moveToElementPath)
+      ? getHintPadding(moveToElementPath, props.visibleNavigatorTargets)
       : 0
 
   const shouldShowParentOutline =
@@ -305,6 +306,7 @@ export const NavigatorItemDndWrapper = React.memo<
         selected={props.selected}
         elementWarnings={props.elementWarnings}
         shouldShowParentOutline={shouldShowParentOutline}
+        visibleNavigatorTargets={props.visibleNavigatorTargets}
       />
       {when(
         props.indexInParent === 0,
@@ -374,7 +376,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHover(item, props, monitor, dropRef.current, indexInParent)
+        onHover(item, props, monitor, dropRef.current, indexInParent, props.visibleNavigatorTargets)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor, dropRef.current)

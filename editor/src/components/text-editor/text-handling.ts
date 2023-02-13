@@ -2,7 +2,7 @@ import { ElementPath, RevisionsState } from '../../core/shared/project-file-type
 import {
   EditorState,
   getElementFromProjectContents,
-  modifyUnderlyingTarget,
+  modifyUnderlyingTargetElement,
 } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import {
@@ -211,7 +211,7 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
         }
 
         // Modify the editor state.
-        return modifyUnderlyingTarget(
+        return modifyUnderlyingTargetElement(
           targetParent,
           openFile,
           editor,

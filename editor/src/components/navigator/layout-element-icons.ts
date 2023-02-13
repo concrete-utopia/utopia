@@ -6,6 +6,7 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
+  isJSXFragment,
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { Imports, ElementPath } from '../../core/shared/project-file-types'
@@ -136,6 +137,16 @@ function createLayoutIconProps(
 export function createElementIconPropsFromMetadata(
   element: ElementInstanceMetadata | null,
 ): IcnPropsBase {
+  const isFragment = MetadataUtils.isFragmentFromMetadata(element)
+  if (isFragment) {
+    return {
+      category: 'element',
+      type: 'group-open',
+      width: 18,
+      height: 18,
+    }
+  }
+
   const isButton = MetadataUtils.isButtonFromMetadata(element)
   if (isButton) {
     return {
