@@ -288,9 +288,6 @@ export const NavigatorItemDndWrapper = React.memo<
       key='navigatorItem'
       id={`navigator-item-${safeComponentId}`}
       data-testid={`navigator-item-${safeComponentId}`}
-      style={{
-        ...props.windowStyle,
-      }}
     >
       <NavigatorItem
         elementPath={props.elementPath}
@@ -415,14 +412,20 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   })
 
   return (
-    <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
-      <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
-        <NavigatorItemDndWrapper
-          {...props}
-          isOver={isOver}
-          isDragging={isDragging}
-          indexInParent={indexInParent}
-        />
+    <div
+      style={{
+        ...props.windowStyle,
+      }}
+    >
+      <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
+        <div ref={attachDrop} data-testid={`navigator-item-drop-${safeComponentId}`}>
+          <NavigatorItemDndWrapper
+            {...props}
+            isOver={isOver}
+            isDragging={isDragging}
+            indexInParent={indexInParent}
+          />
+        </div>
       </div>
     </div>
   )

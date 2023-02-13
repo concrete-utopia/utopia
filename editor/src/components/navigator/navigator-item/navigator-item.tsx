@@ -381,11 +381,11 @@ export const NavigatorItem: React.FunctionComponent<
     () =>
       props.shouldShowParentOutline
         ? {
-            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
             borderRadius: 3,
           }
         : {
-            border: '2px solid transparent',
+            border: '1px solid transparent',
           },
     [colorTheme.navigatorResizeHintBorder.value, props.shouldShowParentOutline],
   )

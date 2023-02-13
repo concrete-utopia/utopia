@@ -3,12 +3,14 @@ export interface CollectResults {
   isOver: boolean
 }
 
+const OuterHoverThreshold = 20
+
 export function isCursorInTopArea(
   rectangle: ClientRect,
   cursorY: number,
   numberOfAreasToCut: number,
 ): boolean {
-  return rectangle.top + rectangle.height / numberOfAreasToCut > cursorY
+  return rectangle.top + OuterHoverThreshold > cursorY
 }
 
 export function isCursorInBottomArea(
@@ -16,5 +18,5 @@ export function isCursorInBottomArea(
   cursorY: number,
   numberOfAreasToCut: number,
 ): boolean {
-  return rectangle.bottom - rectangle.height / numberOfAreasToCut < cursorY
+  return rectangle.bottom - OuterHoverThreshold < cursorY
 }
