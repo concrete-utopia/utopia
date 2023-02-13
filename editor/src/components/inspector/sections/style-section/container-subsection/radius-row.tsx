@@ -8,16 +8,17 @@ import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
 import { SubduedBorderRadiusControl } from '../../../../canvas/controls/select-mode/subdued-border-radius-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useEditorState, Substores } from '../../../../editor/store/store-hook'
 import { CSSNumber } from '../../../common/css-utils'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { selectedViewsSelector } from '../../../inpector-selectors'
+import {
+  useInspectorContext,
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+} from '../../../common/property-path-hooks'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   longhandShorthandEventHandler,
   SplitChainedNumberInput,
-  SplitChainedNumberInputEventHandler,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
 
 export const RadiusRow = React.memo(() => {
@@ -56,6 +57,8 @@ export const BorderRadiusControl = React.memo(() => {
   const shorthand = useInspectorLayoutInfo('borderRadius')
 
   const dispatch = useDispatch()
+
+  const { selectedViewsRef } = useInspectorContext()
 
   const tl: CSSNumber = React.useMemo(
     () =>
@@ -117,28 +120,6 @@ export const BorderRadiusControl = React.memo(() => {
     )
   }, [])
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    'PaddingControl selectedViews',
-  )
-
-  const onSplitChainedEvent: SplitChainedNumberInputEventHandler = React.useMemo(
-    () =>
-      longhandShorthandEventHandler(
-        'borderRadius',
-        {
-          T: 'borderTopLeftRadius',
-          R: 'borderTopRightRadius',
-          B: 'borderBottomRightRadius',
-          L: 'borderBottomLeftRadius',
-        },
-        selectedViews[0],
-        dispatch,
-      ),
-    [dispatch, selectedViews],
-  )
-
   return (
     <SplitChainedNumberInput
       labels={{
@@ -173,7 +154,17 @@ export const BorderRadiusControl = React.memo(() => {
       }}
       shorthand={shorthand}
       canvasControls={canvasControlsForSides}
-      eventHandler={onSplitChainedEvent}
+      eventHandler={longhandShorthandEventHandler(
+        'borderRadius',
+        {
+          T: 'borderTopLeftRadius',
+          R: 'borderTopRightRadius',
+          B: 'borderBottomRightRadius',
+          L: 'borderBottomLeftRadius',
+        },
+        selectedViewsRef.current[0],
+        dispatch,
+      )}
     />
   )
 })

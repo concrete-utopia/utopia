@@ -18,7 +18,6 @@ import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -33,18 +32,17 @@ import {
   InspectorInfo,
   InspectorPropsContext,
   stylePropPathMappingFn,
+  useInspectorContext,
   useInspectorInfoSimpleUntyped,
   useInspectorLayoutInfo,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
 import { OptionChainControl } from '../../../controls/option-chain-control'
-import { selectedViewsSelector } from '../../../inpector-selectors'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   longhandShorthandEventHandler,
   SplitChainedNumberInput,
-  SplitChainedNumberInputEventHandler,
 } from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
@@ -248,6 +246,8 @@ export const PaddingControl = React.memo(() => {
   const shorthand = useInspectorLayoutInfo('padding')
   const dispatch = useDispatch()
 
+  const { selectedViewsRef } = useInspectorContext()
+
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
       ['top', 'right', 'bottom', 'left'],
@@ -273,28 +273,6 @@ export const PaddingControl = React.memo(() => {
     )
   }, [])
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    'PaddingControl selectedViews',
-  )
-
-  const onSplitChainedEvent: SplitChainedNumberInputEventHandler = React.useMemo(
-    () =>
-      longhandShorthandEventHandler(
-        'padding',
-        {
-          T: 'paddingTop',
-          R: 'paddingRight',
-          B: 'paddingBottom',
-          L: 'paddingLeft',
-        },
-        selectedViews[0],
-        dispatch,
-      ),
-    [dispatch, selectedViews],
-  )
-
   return (
     <SplitChainedNumberInput
       controlModeOrder={['one-value', 'per-direction', 'per-side']}
@@ -312,7 +290,17 @@ export const PaddingControl = React.memo(() => {
       shorthand={shorthand}
       canvasControls={canvasControlsForSides}
       numberType={'LengthPercent'}
-      eventHandler={onSplitChainedEvent}
+      eventHandler={longhandShorthandEventHandler(
+        'padding',
+        {
+          T: 'paddingTop',
+          R: 'paddingRight',
+          B: 'paddingBottom',
+          L: 'paddingLeft',
+        },
+        selectedViewsRef.current[0],
+        dispatch,
+      )}
     />
   )
 })
