@@ -2,7 +2,7 @@ import {
   ElementsWithin,
   isJSXArbitraryBlock,
   isJSXElement,
-  isJSXElementLikeWithChildren,
+  isJSXElementLike,
   isJSXFragment,
   isJSXTextBlock,
   isUtopiaJSXComponent,
@@ -244,7 +244,7 @@ function compareAndWalkElements(
    */
 
   if (oldElement != null) {
-    if (isJSXElementLikeWithChildren(oldElement) && isJSXElementLikeWithChildren(newElement)) {
+    if (isJSXElementLike(oldElement) && isJSXElementLike(newElement)) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
       const path = EP.appendToElementPath(pathSoFar, newUid)

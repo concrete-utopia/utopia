@@ -1067,7 +1067,7 @@ export function isJSXFragment(element: JSXElementChild): element is JSXFragment 
   return element.type === 'JSX_FRAGMENT'
 }
 
-export function isJSXElementLikeWithChildren(element: JSXElementChild): element is JSXElementLike {
+export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
 }
 

@@ -34,7 +34,7 @@ import {
   isJSXAttributeOtherJavaScript,
   jsxElementName,
   jsxElementNameEquals,
-  isJSXElementLikeWithChildren,
+  isJSXElementLike,
   JSXFragment,
   jsxFragment,
 } from '../shared/element-template'
@@ -250,7 +250,7 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (isJSXElementLikeWithChildren(element)) {
+    if (isJSXElementLike(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         // transform
         if (tailPath.length === 0) {
@@ -324,7 +324,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLikeWithChildren(element)) {
+    if (isJSXElementLike(element)) {
       const uid = getUtopiaID(element)
       if (uid === firstUIDOrIndex) {
         const tailPath = workingPath.slice(1)
@@ -390,7 +390,7 @@ export function rearrangeJsxChildren(
         rootElements,
         lastElementPathPart,
         (parentElement: JSXElementChild) => {
-          if (isJSXElementLikeWithChildren(parentElement)) {
+          if (isJSXElementLike(parentElement)) {
             const originalChildren = parentElement.children
             if (originalChildren.length !== rearrangedChildPaths.length) {
               throw new Error(
@@ -483,7 +483,7 @@ export function insertJSXElementChild(
       components,
       targetParentIncludingStoryboardRoot,
       (parentElement) => {
-        if (isJSXElementLikeWithChildren(parentElement)) {
+        if (isJSXElementLike(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)

@@ -2,7 +2,7 @@ import { getUtopiaID } from '../../model/element-template-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import {
   isJSXElement,
-  isJSXElementLikeWithChildren,
+  isJSXElementLike,
   isJSXFragment,
   JSXElementChild,
 } from '../../shared/element-template'
@@ -718,7 +718,7 @@ function getUidTree(parsedFile: ParsedTextFile): string {
         const uidWithoutRandomUUID = uid.includes('-') ? 'random-uuid' : uid
         printedUidLines.push(`${'  '.repeat(depthSoFar)}${uidWithoutRandomUUID}`)
 
-        if (element != null && isJSXElementLikeWithChildren(element)) {
+        if (element != null && isJSXElementLike(element)) {
           walkElementChildren(depthSoFar + 1, element.children)
         }
       })

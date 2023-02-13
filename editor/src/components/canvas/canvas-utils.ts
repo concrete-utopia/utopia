@@ -37,7 +37,7 @@ import {
   emptyComments,
   jsxElementName,
   jsxElementNameEquals,
-  isJSXElementLikeWithChildren,
+  isJSXElementLike,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -2944,7 +2944,7 @@ export function getValidElementPathsFromElement(
   transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
-  if (isJSXElementLikeWithChildren(element)) {
+  if (isJSXElementLike(element)) {
     const isScene = isSceneElement(element, filePath, projectContents)
     const uid = getUtopiaID(element)
     const path = parentIsInstance
