@@ -226,11 +226,11 @@ export function flexResizeStrategy(
           )
 
           const dimensionToUpdate = anySelectedElementAspectRatioLocked
-            ? { horizontal: true, vertical: true }
+            ? { width: true, height: true }
             : dimensionToSetForEdgePosition(edgePosition)
 
           let resizeCommands: Array<CanvasCommand> = []
-          if (dimensionToUpdate.horizontal) {
+          if (dimensionToUpdate.width) {
             if (snapToParentEdge === 'horizontal') {
               resizeCommands.push(
                 setProperty(
@@ -253,7 +253,7 @@ export function flexResizeStrategy(
               )
             }
           }
-          if (dimensionToUpdate.vertical) {
+          if (dimensionToUpdate.height) {
             if (snapToParentEdge === 'horizontal') {
               resizeCommands.push(
                 setProperty(
@@ -470,11 +470,11 @@ function shouldSnapToParentEdge(
 }
 
 function dimensionToSetForEdgePosition(edgePosition: EdgePosition): {
-  horizontal: boolean
-  vertical: boolean
+  width: boolean
+  height: boolean
 } {
   return {
-    horizontal: edgePosition.x === 0 || edgePosition.x === 1,
-    vertical: edgePosition.y === 0 || edgePosition.y === 1,
+    width: edgePosition.x === 0 || edgePosition.x === 1,
+    height: edgePosition.y === 0 || edgePosition.y === 1,
   }
 }
