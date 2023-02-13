@@ -53,7 +53,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   highlighted: boolean // TODO are we sure about this?
   collapsed: boolean // TODO are we sure about this?
   getDragSelections: () => Array<DragSelection>
-  getMaximumDistance: (elementPath: ElementPath) => number
   getSelectedViewsInRange: (index: number) => Array<ElementPath> // TODO remove me
   supportsChildren: boolean
   noOfChildren: number

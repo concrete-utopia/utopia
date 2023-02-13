@@ -27,7 +27,6 @@ interface NavigatorItemWrapperProps {
   targetComponentKey: string
   elementPath: ElementPath
   getDragSelections: () => Array<DragSelection>
-  getMaximumDistance: (elementPath: ElementPath) => number
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
 }
@@ -174,7 +173,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     highlighted: isHighlighted,
     collapsed: isCollapsed,
     getDragSelections: props.getDragSelections,
-    getMaximumDistance: props.getMaximumDistance,
     getSelectedViewsInRange: props.getSelectedViewsInRange,
     appropriateDropTargetHint: appropriateDropTargetHint,
     supportsChildren: supportsChildren,

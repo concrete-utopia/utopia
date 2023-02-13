@@ -41,12 +41,6 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       dragSelections: dragSelections,
     }
   })
-  const getDistanceFromAncestorWhereImTheLastLeaf = React.useCallback(
-    (elementPath: ElementPath): number => {
-      return EP.navigatorDepth(elementPath)
-    },
-    [],
-  )
 
   const getDragSelections = React.useCallback((): Array<DragSelection> => {
     return editorSliceRef.current.dragSelections
@@ -96,7 +90,6 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       index={index}
       targetComponentKey={componentKey}
       elementPath={targetPath}
-      getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
       getDragSelections={getDragSelections}
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}
