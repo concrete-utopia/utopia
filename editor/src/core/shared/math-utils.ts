@@ -1109,12 +1109,3 @@ export function resize(
   const desiredHeight = (desiredSize.width / aspectRatio) ^ 0
   return size(desiredSize.width, desiredHeight)
 }
-
-export function intersection<T>(sets: Array<Set<T>>): Set<T> {
-  const [first, ...rest] = sets
-  if (first == null) {
-    return new Set()
-  }
-
-  return rest.reduce((acc, v) => new Set([...acc].filter((x) => v.has(x))), first)
-}

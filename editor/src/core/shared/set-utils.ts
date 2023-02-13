@@ -20,3 +20,12 @@ export function setsEqual<T>(first: Set<T>, second: Set<T>): boolean {
     }
   }
 }
+
+export function intersection<T>(sets: Array<Set<T>>): Set<T> {
+  const [first, ...rest] = sets
+  if (first == null) {
+    return new Set()
+  }
+
+  return rest.reduce((acc, v) => new Set([...acc].filter((x) => v.has(x))), first)
+}
