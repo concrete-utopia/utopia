@@ -2,7 +2,11 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
 import {
   CanvasPoint,
   canvasRectangle,
@@ -11,11 +15,19 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
+import {
+  EdgePosition,
+  EdgePositionRight,
+  oppositeEdgePosition,
+  EdgePositionBottom,
+  EdgePositionLeft,
+  EdgePositionTop,
+} from '../../canvas-types'
 import {
   isEdgePositionACorner,
   isEdgePositionAHorizontalEdge,
   pickPointOnRect,
+  SnappingThreshold,
 } from '../../canvas-utils'
 import {
   AdjustCssLengthProperty,
@@ -46,8 +58,14 @@ import {
   resizeBoundingBox,
 } from './resize-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
+import { CanvasCommand } from '../../commands/commands'
+import { setProperty } from '../../commands/set-property-command'
+import { detectFillHugFixedState } from '../../../inspector/inspector-common'
+import * as EP from '../../../../core/shared/element-path'
+import { sides } from 'utopia-api/core'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 
-export function flexResizeBasicStrategy(
+export function flexResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
@@ -63,10 +81,9 @@ export function flexResizeBasicStrategy(
   ) {
     return null
   }
-  const metadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    selectedElements[0],
-  )
+  const target = selectedElements[0]
+  const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, target)
+
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
   const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
@@ -98,8 +115,8 @@ export function flexResizeBasicStrategy(
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
   return {
-    id: 'FLEX_RESIZE_BASIC',
-    name: 'Flex Resize (Basic)',
+    id: 'FLEX_RESIZE',
+    name: 'Flex Resize',
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
@@ -131,7 +148,7 @@ export function flexResizeBasicStrategy(
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
       (hasDimensions || !hasSizedParent)
-        ? 1
+        ? 2
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
       if (
@@ -199,24 +216,66 @@ export function flexResizeBasicStrategy(
             ]
           }
 
-          const resizeCommands: Array<AdjustCssLengthProperty> = [
-            ...makeResizeCommand(
-              widthPropToUse,
-              elementDimensionsProps?.[widthPropToUse],
-              originalBounds.width,
-              resizedBounds.width,
-              elementParentBounds?.width,
-              elementParentFlexDirection,
-            ),
-            ...makeResizeCommand(
-              heightPropToUse,
-              elementDimensionsProps?.[heightPropToUse],
-              originalBounds.height,
-              resizedBounds.height,
-              elementParentBounds?.height,
-              elementParentFlexDirection,
-            ),
-          ]
+          const snapToParentEdge = shouldSnapToParentEdge(
+            edgePosition,
+            resizedBounds,
+            elementParentBounds,
+            elementParentFlexDirection,
+            metadata,
+            canvasState.startingMetadata,
+          )
+
+          const dimensionToUpdate = anySelectedElementAspectRatioLocked
+            ? { horizontal: true, vertical: true }
+            : dimensionToSetForEdgePosition(edgePosition)
+
+          let resizeCommands: Array<CanvasCommand> = []
+          if (dimensionToUpdate.horizontal) {
+            if (snapToParentEdge === 'horizontal') {
+              resizeCommands.push(
+                setProperty(
+                  'always',
+                  selectedElement,
+                  stylePropPathMappingFn('flexGrow', styleStringInArray),
+                  1,
+                ),
+              )
+            } else {
+              resizeCommands.push(
+                ...makeResizeCommand(
+                  widthPropToUse,
+                  elementDimensionsProps?.[widthPropToUse],
+                  originalBounds.width,
+                  resizedBounds.width,
+                  elementParentBounds?.width,
+                  elementParentFlexDirection,
+                ),
+              )
+            }
+          }
+          if (dimensionToUpdate.vertical) {
+            if (snapToParentEdge === 'horizontal') {
+              resizeCommands.push(
+                setProperty(
+                  'always',
+                  selectedElement,
+                  stylePropPathMappingFn('flexGrow', styleStringInArray),
+                  1,
+                ),
+              )
+            } else {
+              resizeCommands.push(
+                ...makeResizeCommand(
+                  heightPropToUse,
+                  elementDimensionsProps?.[heightPropToUse],
+                  originalBounds.height,
+                  resizedBounds.height,
+                  elementParentBounds?.height,
+                  elementParentFlexDirection,
+                ),
+              )
+            }
+          }
 
           return strategyApplicationResult([
             ...resizeCommands,
@@ -321,5 +380,101 @@ const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensi
     width: getOffsetPropValue('width', attrs),
     height: getOffsetPropValue('height', attrs),
     flexBasis: getOffsetPropValue('flexBasis', attrs),
+  }
+}
+
+function shouldSnapToParentEdge(
+  edgePosition: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  parentBounds: CanvasRectangle | null,
+  parentFlexDirection: FlexDirection | null,
+  element: ElementInstanceMetadata,
+  startingMetadata: ElementInstanceMetadataMap,
+): 'horizontal' | 'vertical' | null {
+  const parentPadding = element.specialSizeMeasurements.parentPadding
+  const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
+
+  const anySiblingFillSized = MetadataUtils.getSiblings(startingMetadata, element.elementPath)
+    .filter((sibling) => !EP.pathsEqual(sibling.elementPath, element.elementPath))
+    .some((sibling) => {
+      const fillHugFixedState = detectFillHugFixedState(
+        parentFlexDirection === 'row' ? 'horizontal' : 'vertical',
+        startingMetadata,
+        sibling.elementPath,
+      )
+      return (
+        MetadataUtils.elementParticipatesInAutoLayout(sibling) && fillHugFixedState?.type === 'fill'
+      )
+    })
+  if (anySiblingFillSized) {
+    return null
+  }
+
+  if (parentFlexDirection === 'row-reverse' || parentFlexDirection === 'column-reverse') {
+    return null
+  }
+
+  if (parentBounds == null) {
+    return null
+  }
+
+  function isDraggingEdge(targetEdgePosition: EdgePosition): boolean {
+    return edgePosition.x === targetEdgePosition.x && edgePosition.y === targetEdgePosition.y
+  }
+
+  if (parentFlexDirection === 'row') {
+    if (isDraggingEdge(EdgePositionRight)) {
+      if (
+        parentJustifyContent == null ||
+        parentJustifyContent === 'flex-start' ||
+        parentJustifyContent === 'center'
+      ) {
+        const parentRightEdge = parentBounds.x + parentBounds.width
+        const elementRightEdge = resizedBounds.x + resizedBounds.width
+        const rightPadding = parentPadding.right ?? 0
+        return elementRightEdge + SnappingThreshold > parentRightEdge - rightPadding
+          ? 'horizontal'
+          : null
+      }
+    } else if (isDraggingEdge(EdgePositionLeft)) {
+      if (parentJustifyContent === 'flex-end' || parentJustifyContent === 'center') {
+        const leftPadding = parentPadding.left ?? 0
+        return parentBounds.x - leftPadding > resizedBounds.x + SnappingThreshold
+          ? 'horizontal'
+          : null
+      }
+    }
+  } else {
+    if (isDraggingEdge(EdgePositionBottom)) {
+      if (
+        parentJustifyContent == null ||
+        parentJustifyContent === 'flex-start' ||
+        parentJustifyContent === 'center'
+      ) {
+        const parentBottomEdge = parentBounds.y + parentBounds.height
+        const elementBottomEdge = resizedBounds.y + resizedBounds.height
+        const bottomPadding = parentPadding.bottom ?? 0
+        return elementBottomEdge + SnappingThreshold > parentBottomEdge - bottomPadding
+          ? 'vertical'
+          : null
+      }
+    } else if (isDraggingEdge(EdgePositionTop)) {
+      if (parentJustifyContent === 'flex-end' || parentJustifyContent === 'center') {
+        const topPadding = parentPadding.top ?? 0
+        return parentBounds.y - topPadding > resizedBounds.y + SnappingThreshold ? 'vertical' : null
+      }
+    }
+  }
+
+  return null
+}
+
+function dimensionToSetForEdgePosition(edgePosition: EdgePosition): {
+  horizontal: boolean
+  vertical: boolean
+} {
+  return {
+    horizontal: edgePosition.x === 0 || edgePosition.x === 1,
+    vertical: edgePosition.y === 0 || edgePosition.y === 1,
   }
 }
