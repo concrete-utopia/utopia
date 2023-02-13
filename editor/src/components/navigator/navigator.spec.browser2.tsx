@@ -13,6 +13,7 @@ import { CSSCursor } from '../canvas/canvas-types'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
+import { wait } from '../../utils/utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -979,7 +980,7 @@ describe('Navigator', () => {
     const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
     const dragTo = {
       x: firstDivElementCenter.x,
-      y: firstDivElementRect.y + 10,
+      y: firstDivElementRect.y + 20,
     }
 
     const dragDelta = windowPoint({
