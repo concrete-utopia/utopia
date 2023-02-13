@@ -22,6 +22,10 @@ import {
   EdgePositionBottom,
   EdgePositionLeft,
   EdgePositionTop,
+  EdgePositionTopRight,
+  EdgePositionBottomRight,
+  EdgePositionTopLeft,
+  EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
   isEdgePositionACorner,
@@ -257,7 +261,7 @@ export function flexResizeStrategy(
             }
           }
           if (dimensionToUpdate.height) {
-            if (snapToParentEdge === 'horizontal') {
+            if (snapToParentEdge === 'vertical') {
               resizeCommands.push(
                 setProperty(
                   'always',
@@ -441,7 +445,11 @@ function shouldSnapToParentEdge(
   }
 
   if (parentFlexDirection === 'row') {
-    if (isDraggingEdge(EdgePositionRight)) {
+    if (
+      isDraggingEdge(EdgePositionRight) ||
+      isDraggingEdge(EdgePositionTopRight) ||
+      isDraggingEdge(EdgePositionBottomRight)
+    ) {
       if (
         parentJustifyContent == null ||
         parentJustifyContent === 'flex-start' ||
@@ -454,7 +462,11 @@ function shouldSnapToParentEdge(
           ? 'horizontal'
           : 'horizontal-no-snap'
       }
-    } else if (isDraggingEdge(EdgePositionLeft)) {
+    } else if (
+      isDraggingEdge(EdgePositionLeft) ||
+      isDraggingEdge(EdgePositionTopLeft) ||
+      isDraggingEdge(EdgePositionBottomLeft)
+    ) {
       if (parentJustifyContent === 'flex-end' || parentJustifyContent === 'center') {
         const leftPadding = parentPadding.left ?? 0
         return parentBounds.x - leftPadding > resizedBounds.x + SnappingThreshold
@@ -463,7 +475,11 @@ function shouldSnapToParentEdge(
       }
     }
   } else {
-    if (isDraggingEdge(EdgePositionBottom)) {
+    if (
+      isDraggingEdge(EdgePositionBottom) ||
+      isDraggingEdge(EdgePositionBottomLeft) ||
+      isDraggingEdge(EdgePositionBottomRight)
+    ) {
       if (
         parentJustifyContent == null ||
         parentJustifyContent === 'flex-start' ||
@@ -476,7 +492,11 @@ function shouldSnapToParentEdge(
           ? 'vertical'
           : 'vertical-no-snap'
       }
-    } else if (isDraggingEdge(EdgePositionTop)) {
+    } else if (
+      isDraggingEdge(EdgePositionTop) ||
+      isDraggingEdge(EdgePositionTopLeft) ||
+      isDraggingEdge(EdgePositionTopRight)
+    ) {
       if (parentJustifyContent === 'flex-end' || parentJustifyContent === 'center') {
         const topPadding = parentPadding.top ?? 0
         return parentBounds.y - topPadding > resizedBounds.y + SnappingThreshold
