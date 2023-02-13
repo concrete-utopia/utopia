@@ -890,6 +890,14 @@ function getSpecialMeasurements(
     parseCSSLength(elementStyle.paddingLeft),
   )
 
+  const parentPadding = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(parentElementStyle?.paddingTop),
+    parseCSSLength(parentElementStyle?.paddingRight),
+    parseCSSLength(parentElementStyle?.paddingBottom),
+    parseCSSLength(parentElementStyle?.paddingLeft),
+  )
+
   let naturalWidth: number | null = null
   let naturalHeight: number | null = null
   if (element.tagName === 'IMG') {
@@ -981,6 +989,9 @@ function getSpecialMeasurements(
     parentFlexDirection,
     parentJustifyContent,
     parsedFlexGapValue,
+    isRight(parentPadding)
+      ? parentPadding.value
+      : sides(undefined, undefined, undefined, undefined),
     gap,
     flexDirection,
     justifyContent,

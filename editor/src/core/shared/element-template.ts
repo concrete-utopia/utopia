@@ -1642,6 +1642,7 @@ export interface SpecialSizeMeasurements {
   parentFlexDirection: FlexDirection | null
   parentJustifyContent: FlexJustifyContent | null
   parentFlexGap: number
+  parentPadding: Sides
   gap: number | null
   flexDirection: FlexDirection | null
   justifyContent: FlexJustifyContent | null
@@ -1681,6 +1682,7 @@ export function specialSizeMeasurements(
   parentFlexDirection: FlexDirection | null,
   parentJustifyContent: FlexJustifyContent | null,
   parentFlexGap: number,
+  parentPadding: Sides,
   gap: number | null,
   flexDirection: FlexDirection | null,
   justifyContent: FlexJustifyContent | null,
@@ -1719,6 +1721,7 @@ export function specialSizeMeasurements(
     parentFlexDirection,
     parentJustifyContent,
     parentFlexGap,
+    parentPadding,
     gap: gap,
     flexDirection,
     justifyContent,
@@ -1762,6 +1765,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   0,
+  sides(undefined, undefined, undefined, undefined),
   null,
   null,
   null,
