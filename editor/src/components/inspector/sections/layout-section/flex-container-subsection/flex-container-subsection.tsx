@@ -82,7 +82,6 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           justifyFlexEnd={justifyFlexEnd}
         />
       </UIGridRow>
-      <FlexGapControl />
       <FlexAlignItemsControl
         value={alignItems.value}
         controlStatus={alignItems.controlStatus}
