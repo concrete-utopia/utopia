@@ -3,7 +3,7 @@ export interface CollectResults {
   isOver: boolean
 }
 
-const OuterHoverThreshold = 15
+const OuterHoverThreshold = 10
 
 export function isCursorInTopArea(rectangle: ClientRect, cursorY: number): boolean {
   return rectangle.top + OuterHoverThreshold > cursorY

@@ -1096,7 +1096,7 @@ describe('Navigator', () => {
     const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
     const dragTo = {
       x: firstDivElementCenter.x,
-      y: firstDivElementRect.y + 20,
+      y: firstDivElementRect.y + 15,
     }
 
     const dragDelta = windowPoint({
