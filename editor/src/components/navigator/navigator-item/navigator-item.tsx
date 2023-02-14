@@ -377,21 +377,14 @@ export const NavigatorItem: React.FunctionComponent<
     ...resultingStyle.style,
   })
 
-  const border: React.CSSProperties = React.useMemo(
-    () =>
-      props.shouldShowParentOutline
-        ? {
-            border: `1px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            borderRadius: 3,
-          }
-        : {
-            border: '1px solid transparent',
-          },
-    [colorTheme.navigatorResizeHintBorder.value, props.shouldShowParentOutline],
-  )
-
   return (
-    <div style={border}>
+    <div
+      style={{
+        border: `1px solid ${
+          props.shouldShowParentOutline ? colorTheme.navigatorResizeHintBorder.value : 'transparent'
+        }`,
+      }}
+    >
       <FlexRow
         style={rowStyle}
         onMouseDown={select}

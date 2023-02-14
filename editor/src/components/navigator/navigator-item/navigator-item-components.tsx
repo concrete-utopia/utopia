@@ -33,7 +33,7 @@ export const NavigatorHintTop: React.FunctionComponent<
         marginLeft: props.margin,
         backgroundColor: '#00abff',
         position: 'absolute',
-        top: 0,
+        top: 1,
         width: '100%',
         display: 'flex',
         flexDirection: 'row',
@@ -49,7 +49,7 @@ export const NavigatorHintTop: React.FunctionComponent<
           flexGrow: 1,
         }}
       />
-      {/* <div
+      <div
         style={{
           position: 'absolute',
           backgroundColor: colorTheme.bg0.value,
@@ -59,7 +59,7 @@ export const NavigatorHintTop: React.FunctionComponent<
           border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
           borderRadius: '50%',
         }}
-      /> */}
+      />
     </div>
   )
 })
@@ -71,12 +71,11 @@ export const NavigatorHintBottom: React.FunctionComponent<
   return (
     <div
       style={{
-        transform: 'translate(0, -50%)',
         opacity: props.shouldBeShown ? 1 : 0,
         marginLeft: props.margin,
         backgroundColor: '#00abff',
         position: 'absolute',
-        bottom: 0,
+        bottom: -(NavigatorHintCircleDiameter / 2),
         width: '100%',
         display: 'flex',
         flexDirection: 'row',
@@ -92,17 +91,17 @@ export const NavigatorHintBottom: React.FunctionComponent<
           flexGrow: 1,
         }}
       />
-      {/* <div
-          style={{
-            position: 'absolute',
-            backgroundColor: colorTheme.bg0.value,
-            width: NavigatorHintCircleDiameter,
-            height: NavigatorHintCircleDiameter,
-            contain: 'layout',
-            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            borderRadius: '50%',
-          }}
-        /> */}
+      <div
+        style={{
+          position: 'absolute',
+          backgroundColor: colorTheme.bg0.value,
+          width: NavigatorHintCircleDiameter,
+          height: NavigatorHintCircleDiameter,
+          contain: 'layout',
+          border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+          borderRadius: '50%',
+        }}
+      />
     </div>
   )
 })

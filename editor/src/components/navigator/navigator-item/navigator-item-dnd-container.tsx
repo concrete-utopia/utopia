@@ -110,9 +110,9 @@ function onDrop(
   }
 }
 
-function getHintPadding(path: ElementPath, visibleNavigatorTargets: Array<ElementPath>): number {
+function getHintPaddingForDepth(depth: number): number {
   return (
-    EP.navigatorDepth(path) * BasePaddingUnit +
+    depth * BasePaddingUnit +
     ExpansionArrowWidth +
     PreviewIconSize / 2 -
     NavigatorHintCircleDiameter
@@ -124,8 +124,6 @@ function onHover(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
   component: HTMLDivElement | null,
-  indexInParent: number,
-  visibleNavigatorTargets: Array<ElementPath>,
 ): void {
   if (
     monitor != null &&
@@ -150,9 +148,6 @@ function onHover(
       : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
 
     const canReparent = propsOfDropTargetItem.supportsChildren
-    // if it's the first item, we allow both the top and the bottom hint
-    // if reparenting is possible, hovering the middle of an item shows the reparent outline
-    const numberOfAreasToCut = (indexInParent === 0 ? 2 : 1) + (canReparent ? 1 : 0)
 
     if (cursor == null || cursorDelta == null) {
       return
@@ -175,8 +170,7 @@ function onHover(
     })()
 
     if (
-      indexInParent === 0 &&
-      isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut) &&
+      isCursorInTopArea(dropTargetRectangle, cursor.y) &&
       propsOfDraggedItem.appropriateDropTargetHint?.type !== 'before'
     ) {
       return propsOfDraggedItem.editorDispatch(
@@ -193,9 +187,19 @@ function onHover(
     }
 
     if (
-      isCursorInBottomArea(dropTargetRectangle, cursor.y, numberOfAreasToCut) &&
+      isCursorInBottomArea(dropTargetRectangle, cursor.y) &&
       (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed)
     ) {
+      if (canReparent && cursorDelta.x >= BasePaddingUnit) {
+        return propsOfDraggedItem.editorDispatch([
+          ...targetAction,
+          showNavigatorDropTargetHint(
+            'reparent',
+            propsOfDropTargetItem.elementPath,
+            propsOfDropTargetItem.elementPath,
+          ),
+        ])
+      }
       if (
         propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
         !EP.pathsEqual(
@@ -268,12 +272,34 @@ export const NavigatorItemDndWrapper = React.memo<
     'NavigatorItemDndWrapper dropTargetHintType',
   )
 
-  const margin =
+  const shouldShowBottomHint =
     props.isOver &&
-    moveToElementPath != null &&
-    props.appropriateDropTargetHint?.type !== 'reparent'
-      ? getHintPadding(moveToElementPath, props.visibleNavigatorTargets)
-      : 0
+    (props.appropriateDropTargetHint?.type === 'after' ||
+      props.appropriateDropTargetHint?.type === 'reparent')
+
+  const margin = (() => {
+    if (!props.isOver) {
+      return 0
+    }
+    if (
+      props.appropriateDropTargetHint?.type === 'reparent' &&
+      props.appropriateDropTargetHint.moveToElementPath != null
+    ) {
+      return getHintPaddingForDepth(
+        EP.navigatorDepth(props.appropriateDropTargetHint.moveToElementPath) + 1,
+      )
+    }
+    if (
+      props.appropriateDropTargetHint?.type != null &&
+      props.appropriateDropTargetHint.moveToElementPath != null
+    ) {
+      return getHintPaddingForDepth(
+        EP.navigatorDepth(props.appropriateDropTargetHint.moveToElementPath),
+      )
+    }
+
+    return 0
+  })()
 
   const shouldShowParentOutline =
     dropTargetHintType == null
@@ -305,17 +331,11 @@ export const NavigatorItemDndWrapper = React.memo<
         shouldShowParentOutline={shouldShowParentOutline}
         visibleNavigatorTargets={props.visibleNavigatorTargets}
       />
-      {when(
-        props.indexInParent === 0,
-        <NavigatorHintTop
-          shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'before'}
-          margin={margin}
-        />,
-      )}
-      <NavigatorHintBottom
-        shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'after'}
+      <NavigatorHintTop
+        shouldBeShown={props.isOver && props.appropriateDropTargetHint?.type === 'before'}
         margin={margin}
       />
+      <NavigatorHintBottom shouldBeShown={shouldShowBottomHint} margin={margin} />
     </div>
   )
 })
@@ -373,7 +393,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHover(item, props, monitor, dropRef.current, indexInParent, props.visibleNavigatorTargets)
+        onHover(item, props, monitor, dropRef.current)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor, dropRef.current)
