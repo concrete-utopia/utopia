@@ -11,6 +11,7 @@ import { UIGridRow } from './widgets/ui-grid-row'
 import { PaddingRow } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
 import { ThreeBarControl } from './three-bar-control'
+import { FlexGapControl } from './sections/layout-section/flex-container-subsection/flex-container-controls'
 
 const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
@@ -40,6 +41,7 @@ export const FlexSection = React.memo(() => {
             <ThreeBarControl />
           </UIGridRow>
           <PaddingRow />
+          <FlexGapControl />
         </>,
       )}
     </div>
