@@ -62,7 +62,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     'Should have a valid flex orientation.',
     staticContainerDirection.forwardOrReverse,
   )
-  const siblings = MetadataUtils.getChildren(editor.jsxMetadata, command.target).map(
+  const siblings = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, command.target).map(
     (sibling) => sibling.elementPath,
   )
 

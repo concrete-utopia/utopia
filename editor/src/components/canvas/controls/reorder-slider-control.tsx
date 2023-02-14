@@ -66,7 +66,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       Substores.fullStore,
       (store) => {
         if (target != null) {
-          const siblingPaths = MetadataUtils.getSiblingsProjectContentsOrdered(
+          const siblingPaths = MetadataUtils.getSiblingsOrdered(
             store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
             target,
           ).map((sibling) => sibling.elementPath)
@@ -75,7 +75,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
             MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
 
           if (isDragging) {
-            const startingSiblingsMetadata = MetadataUtils.getSiblings(
+            const startingSiblingsMetadata = MetadataUtils.getSiblingsUnordered(
               store.strategyState.startingMetadata,
               target,
             ).map((sibling) => sibling.elementPath)

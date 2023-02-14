@@ -464,9 +464,11 @@ export function flowParentAbsoluteOrStatic(
     if (!isJSXFragment(c.element.value)) {
       return [c]
     }
-    return MetadataUtils.getChildren(metadata, c.elementPath).flatMap(flattenFragmentChildren)
+    return MetadataUtils.getChildrenUnordered(metadata, c.elementPath).flatMap(
+      flattenFragmentChildren,
+    )
   }
-  const children = MetadataUtils.getChildren(metadata, parent)
+  const children = MetadataUtils.getChildrenUnordered(metadata, parent)
     // filter out fragment blocks and merge their children with the parent children
     .flatMap(flattenFragmentChildren)
 
@@ -536,7 +538,7 @@ function isSingleAxisAutoLayoutCompatibleWithReorder(
   if (parentIsFlexLayout) {
     return true
   }
-  const flowChildren = MetadataUtils.getChildren(metadata, parent).filter(
+  const flowChildren = MetadataUtils.getChildrenUnordered(metadata, parent).filter(
     MetadataUtils.elementParticipatesInAutoLayout,
   )
   return flowChildren.length > 1
