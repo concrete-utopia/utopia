@@ -2,7 +2,13 @@ import * as PP from '../../core/shared/property-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isStoryboardChild, parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  isJSXElement,
+  jsxElementName,
+  jsxElementNameEquals,
+} from '../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import {
   CSSNumber,
@@ -27,6 +33,8 @@ import {
 } from '../canvas/commands/set-css-length-command'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import { Size } from '../../core/shared/math-utils'
+import { inlineHtmlElements } from '../../utils/html-elements'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -355,6 +363,53 @@ export function pruneFlexPropsCommands(
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   return [deleteProperties('always', elementPath, props)]
+}
+
+export function isElementDisplayInline(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean {
+  return (
+    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements
+      ?.display === 'inline'
+  )
+}
+
+export function isIntrinsicallyInlineElement(element: ElementInstanceMetadata | null): boolean {
+  if (element == null) {
+    return false
+  }
+
+  const jsxElementOfElement = defaultEither(null, element.element)
+  return (
+    jsxElementOfElement?.type === 'JSX_ELEMENT' &&
+    inlineHtmlElements.some((e) =>
+      jsxElementNameEquals(jsxElementName(e, []), jsxElementOfElement.name),
+    )
+  )
+}
+
+export function sizeElementAsDisplayBlock(
+  elementPath: ElementPath,
+  size: Size,
+): Array<CanvasCommand> {
+  return [
+    setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(size.width)),
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(size.height)),
+      null,
+    ),
+  ]
 }
 
 export function sizeToVisualDimensions(

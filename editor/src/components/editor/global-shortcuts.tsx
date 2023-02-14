@@ -110,6 +110,8 @@ import {
   jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -128,8 +130,14 @@ import {
   addPositionAbsoluteTopLeft,
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
+  isIntrinsicallyInlineElement,
+  sizeElementAsDisplayBlock,
+  isElementDisplayInline,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
+import { defaultEither } from '../../core/shared/either'
+import { inlineHtmlElements } from '../../utils/html-elements'
+import { size } from '../../core/shared/math-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -855,15 +863,33 @@ export function handleKeyDown(
         return [
           EditorActions.applyCommandsAction(
             editor.selectedViews.flatMap((elementPath) => {
-              if (
-                MetadataUtils.isPositionAbsolute(
-                  MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath),
-                )
-              ) {
-                return nukeAllAbsolutePositioningPropsCommands(elementPath)
-              } else {
+              const element = MetadataUtils.findElementByElementPath(
+                editor.jsxMetadata,
+                elementPath,
+              )
+              if (element == null) {
+                return []
+              }
+
+              if (MetadataUtils.isPositionAbsolute(element)) {
                 return [
-                  ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                  ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+                  /**
+                   * the `isElementDisplayInline` check is not performed here because elements with
+                   * `position: absolute` are treated as `display: block`
+                   */
+                  ...(isIntrinsicallyInlineElement(element)
+                    ? sizeElementAsDisplayBlock(elementPath, size(100, 50))
+                    : []),
+                ]
+              } else {
+                const isInlineElement =
+                  isIntrinsicallyInlineElement(element) &&
+                  isElementDisplayInline(editor.jsxMetadata, elementPath)
+                return [
+                  ...(isInlineElement
+                    ? sizeElementAsDisplayBlock(elementPath, size(100, 50))
+                    : sizeToVisualDimensions(editor.jsxMetadata, elementPath)),
                   ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
                 ]
               }
