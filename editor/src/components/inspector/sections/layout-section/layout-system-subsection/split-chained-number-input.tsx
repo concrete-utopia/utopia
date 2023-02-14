@@ -243,22 +243,16 @@ const handleSplitChainedEvent =
             return false
           }
 
-          let otherDirections: CSSNumberOrNull[] = []
+          let shorthandOtherDirections: CSSNumberOrNull[] = []
           if (useShorthand) {
             if (e.value.type === 'V') {
-              otherDirections.push(aggregates.horizontal)
+              shorthandOtherDirections.push(aggregates.horizontal)
             } else {
-              otherDirections.push(aggregates.vertical)
-            }
-          } else {
-            if (e.value.type === 'V') {
-              otherDirections.push(aggregates.top, aggregates.bottom)
-            } else {
-              otherDirections.push(aggregates.right, aggregates.left)
+              shorthandOtherDirections.push(aggregates.vertical)
             }
           }
 
-          return !useShorthand || otherDirections.every((o) => o === null || o.value === 0)
+          return !useShorthand || shorthandOtherDirections.every((o) => o === null || o.value === 0)
 
         case 'four-value':
           if (e.value.value != null) {
