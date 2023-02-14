@@ -480,7 +480,6 @@ describe('group selection', () => {
           flexDirection: 'row',
           contain: 'layout',
           gap: 42,
-          position: 'relative',
         }}
       >
         <div
@@ -578,7 +577,6 @@ describe('group selection', () => {
           flexDirection: 'column',
           contain: 'layout',
           gap: 42,
-          position: 'relative',
         }}
       >
         <div
@@ -609,7 +607,7 @@ describe('group selection', () => {
     </div>`),
     )
   })
-  it('wraps div children in a simple div', async () => {
+  it('wraps flow children in a simple unstyled div', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithStoryboardChildren(`<div
       style={{
@@ -666,15 +664,7 @@ describe('group selection', () => {
         height: 548,
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 139,
-          height: 343,
-        }}
-      >
+      <div>
         <div
           style={{
             backgroundColor: '#aaaaaa33',
