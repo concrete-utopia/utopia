@@ -109,6 +109,35 @@ describe('shortcuts', () => {
       expect(div.style.height).toEqual('363px')
       expect(div.style.contain).toEqual('layout')
     })
+
+    it('does not convert spans to zero-sized elements', async () => {
+      const editor = await renderTestEditorWithCode(projectWithSpan, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/span')])
+
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(div.style.position).toEqual('')
+      expect(div.style.display).toEqual('inline-block')
+      expect(div.style.width).toEqual('182px')
+      expect(div.style.height).toEqual('130px')
+
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(div.style.position).toEqual('absolute')
+      expect(div.style.display).toEqual('inline-block')
+      expect(div.style.width).toEqual('182px')
+      expect(div.style.height).toEqual('130px')
+      expect(div.style.top).toEqual('0px')
+      expect(div.style.left).toEqual('0px')
+    })
   })
 })
 
@@ -174,6 +203,29 @@ export var storyboard = (
         data-uid='${TestIdOne}'
       />
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithSpan = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <span
+      style={{
+        position: 'absolute',
+        wordBreak: 'break-word',
+        left: 172,
+        top: 189,
+        width: 182,
+        height: 130,
+      }}
+      data-testid='${TestIdOne}'
+      data-uid='span'
+    >
+      hello there
+    </span>
   </Storyboard>
 )
 `
