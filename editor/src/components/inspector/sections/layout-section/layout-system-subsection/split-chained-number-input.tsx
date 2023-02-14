@@ -281,16 +281,22 @@ export const longhandShorthandEventHandler = (
     B: string
     L: string
   },
-  elementPath: ElementPath,
+  selectedViewsRef: { current: Array<ElementPath> },
   dispatch: EditorDispatch,
 ): SplitChainedNumberInputEventHandler => {
   return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
-    handleSplitChainedEvent(e, dispatch, elementPath, PP.create('style', shorthand), {
-      T: PP.create('style', longhands.T),
-      R: PP.create('style', longhands.R),
-      B: PP.create('style', longhands.B),
-      L: PP.create('style', longhands.L),
-    })(useShorthand, aggregates)
+    handleSplitChainedEvent(
+      e,
+      dispatch,
+      selectedViewsRef.current[0],
+      PP.create('style', shorthand),
+      {
+        T: PP.create('style', longhands.T),
+        R: PP.create('style', longhands.R),
+        B: PP.create('style', longhands.B),
+        L: PP.create('style', longhands.L),
+      },
+    )(useShorthand, aggregates)
   }
 }
 
