@@ -12,8 +12,10 @@ import {
   localRectangle,
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
 import { MapLike } from 'typescript'
+import { duplicateSelected } from '../editor/actions/action-creators'
 
 disableStoredStateforTests()
 
@@ -162,6 +164,41 @@ describe('DOM Walker tests', () => {
       }
     })
   })
+
+  it('Handles path invalidation when no scene is present', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectWithoutScene,
+      'await-first-dom-report',
+    )
+    const metadataBeforeUpdate = renderResult.getEditorState().editor.jsxMetadata
+    const globalFramesBeforeUpdate = objectMap(
+      (element) => zeroRectIfNullOrInfinity(element.globalFrame),
+      metadataBeforeUpdate,
+    )
+
+    const target = `${BakedInStoryboardUID}/flex-container/aaa`
+    await renderResult.dispatch(selectComponents([EP.fromString(target)], false), true)
+    await renderResult.dispatch([duplicateSelected()], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const metadataAfterUpdate = renderResult.getEditorState().editor.jsxMetadata
+    const globalFramesAfterUpdate = objectMap(
+      (element) => zeroRectIfNullOrInfinity(element.globalFrame),
+      metadataAfterUpdate,
+    )
+
+    // Duplicating the element should have caused the rendered frames of the previously existing elements to shrink
+
+    expect(
+      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].width,
+    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].width)
+    expect(
+      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].width,
+    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].width)
+    expect(
+      globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].width,
+    ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].width)
+  })
 })
 
 describe('Capturing closest offset parent', () => {
@@ -260,6 +297,58 @@ export var storyboard = (props) => {
           style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
         />
       </Scene>
+    </Storyboard>
+  )
+}
+`
+
+const TestProjectWithoutScene = `
+import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 10,
+          top: 10,
+          width: 400,
+          height: 100,
+          display: 'flex',
+        }}
+        data-uid='flex-container'
+      >
+        <div
+          style={{
+            backgroundColor: '#00FFFB33',
+            flexGrow: 1,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='aaa'
+        />
+        <div
+          style={{
+            backgroundColor: '#B300FF33',
+            flexGrow: 1,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='bbb'
+        />
+        <div
+          style={{
+            backgroundColor: '#55FF0033',
+            flexGrow: 1,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='ccc'
+        />
+      </div>
     </Storyboard>
   )
 }

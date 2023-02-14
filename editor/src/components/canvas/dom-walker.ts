@@ -482,7 +482,7 @@ export function runDomWalker({
         ? walkCanvasRootFragment(
             canvasRootContainer,
             rootMetadataInStateRef,
-            domWalkerMutableState.invalidatedPaths, // TODO does walkCanvasRootFragment ever uses invalidatedPaths right now?
+            domWalkerMutableState.invalidatedPaths,
             domWalkerMutableState.invalidatedPathsForStylesheetCache,
             selectedViews,
             !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
@@ -1267,8 +1267,16 @@ function walkElements(
       }
     }
 
+    let invalidatedElement = false
+
     const pathsWithStrings = getPathWithStringsOnDomElement(element)
     for (const pathWithString of pathsWithStrings) {
+      invalidatedElement =
+        invalidated ||
+        (ObserversAvailable &&
+          invalidatedPaths.size > 0 &&
+          invalidatedPaths.has(pathWithString.asString))
+
       invalidatedPaths.delete(pathWithString.asString) // mutation!
     }
 
@@ -1307,7 +1315,7 @@ function walkElements(
           invalidatedPaths,
           invalidatedPathsForStylesheetCache,
           selectedViews,
-          invalidated,
+          invalidatedElement,
           scale,
           containerRectLazy,
           additionalElementsToUpdate,
@@ -1332,7 +1340,7 @@ function walkElements(
       invalidatedPaths,
       invalidatedPathsForStylesheetCache,
       rootMetadataInStateRef,
-      invalidated,
+      invalidatedElement,
       selectedViews,
       additionalElementsToUpdate,
     )
