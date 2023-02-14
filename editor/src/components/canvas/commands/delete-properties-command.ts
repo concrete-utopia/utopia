@@ -10,7 +10,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  modifyUnderlyingForOpenFile,
+  modifyUnderlyingElementForOpenFile,
 } from '../../../components/editor/store/editor-state'
 import { drop } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
@@ -65,7 +65,7 @@ export function deleteValuesAtPath(
 ): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
   let editorStatePatch: EditorStatePatch = {}
 
-  const workingEditorState = modifyUnderlyingForOpenFile(
+  const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,
     (element: JSXElement) => {

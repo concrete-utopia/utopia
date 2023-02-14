@@ -4,6 +4,7 @@ import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/s
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reorderElement, runReorderElement } from './reorder-element-command'
+import { isJSXElementLike } from '../../../core/shared/element-template'
 
 describe('runReorderElement', () => {
   it.each([
@@ -88,7 +89,11 @@ describe('runReorderElement', () => {
         patchedEditor,
         null,
         (_, element) => {
-          return element.children
+          if (isJSXElementLike(element)) {
+            return element.children
+          } else {
+            return []
+          }
         },
       )
 

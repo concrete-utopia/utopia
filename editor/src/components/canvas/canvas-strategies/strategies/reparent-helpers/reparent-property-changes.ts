@@ -135,33 +135,38 @@ export function getAbsoluteReparentPropertyChanges(
     MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
       ?.specialSizeMeasurements.flexDirection ?? null
 
-  return [
-    ...mapDropNulls(
-      (pin) => {
-        const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-        return createAdjustCssLengthProperty(
-          pin,
-          horizontal ? offsetTL.x : offsetTL.y,
-          horizontal ? newParentFrame?.width : newParentFrame?.height,
-          newParentFlexDirection,
-        )
-      },
-      ['top', 'left'] as const,
-    ),
-    ...mapDropNulls(
-      (pin) => {
-        const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-        return createAdjustCssLengthProperty(
-          pin,
-          horizontal ? offsetBR.x : offsetBR.y,
-          horizontal ? newParentFrame?.width : newParentFrame?.height,
-          newParentFlexDirection,
-        )
-      },
-      ['bottom', 'right'] as const,
-    ),
-    ...mapDropNulls((pin) => createConvertCssPercentToPx(pin), ['width', 'height'] as const),
-  ]
+  const topLeftCommands = mapDropNulls(
+    (pin) => {
+      const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+      return createAdjustCssLengthProperty(
+        pin,
+        horizontal ? offsetTL.x : offsetTL.y,
+        horizontal ? newParentFrame?.width : newParentFrame?.height,
+        newParentFlexDirection,
+      )
+    },
+    ['top', 'left'] as const,
+  )
+
+  const bottomRightCommands = mapDropNulls(
+    (pin) => {
+      const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+      return createAdjustCssLengthProperty(
+        pin,
+        horizontal ? offsetBR.x : offsetBR.y,
+        horizontal ? newParentFrame?.width : newParentFrame?.height,
+        newParentFlexDirection,
+      )
+    },
+    ['bottom', 'right'] as const,
+  )
+
+  const widthHeightCommands = mapDropNulls((pin) => createConvertCssPercentToPx(pin), [
+    'width',
+    'height',
+  ] as const)
+
+  return [...topLeftCommands, ...bottomRightCommands, ...widthHeightCommands]
 }
 
 export function getStaticReparentPropertyChanges(

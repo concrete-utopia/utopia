@@ -252,7 +252,7 @@ function withUID<T>(
       return node.getText(sourceFile)
     }
   }
-  for (const property of attributes.properties) {
+  for (const property of attributes?.properties ?? []) {
     if (TS.isJsxAttribute(property)) {
       if (nodeGetText(property.name) === 'data-uid') {
         if (property.initializer != null) {

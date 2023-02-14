@@ -1,7 +1,10 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
+import { mapDropNulls } from '../../../../../core/shared/array-utils'
+import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
+import * as PP from '../../../../../core/shared/property-path'
 import { assertNever } from '../../../../../core/shared/utils'
 import {
   ChainedNumberInput,
@@ -9,14 +12,16 @@ import {
   NumberInputProps,
   SquareButton,
   Tooltip,
-  wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../../uuiui'
+import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
+import { setProp_UNSAFE, unsetProperty } from '../../../../editor/actions/action-creators'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
   CSSNumberType,
   isCSSNumber,
+  printCSSNumber,
   UnknownOrEmptyInput,
 } from '../../../common/css-utils'
 import {
@@ -29,15 +34,12 @@ import { InspectorInfo } from '../../../common/property-path-hooks'
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
   | 'per-direction' // two values that group per direction (vertical / horizontal)
-  | 'per-side' // one distinct value per side (TLBR)
+  | 'per-side' // one distinct value per side (TRBL)
 
 interface ControlCSSNumber {
   controlStatus: ControlStatus
   propertyStatus: PropertyStatus
   value: CSSNumber
-  onSubmitValue: (newValue: CSSNumber, transient?: boolean) => void
-  onTransientSubmitValue: (newValue: CSSNumber) => void
-  onUnsetValues: () => void
 }
 
 function isControlStatusActive(status: ControlStatus): boolean {
@@ -83,8 +85,6 @@ export interface Sides {
   right: CSSNumber
 }
 
-type UpdateShorthand = (sides: Sides, transient?: boolean) => void
-
 interface CanvasControls {
   onHover?: CanvasControlWithProps<any>
   onFocus?: CanvasControlWithProps<any>
@@ -98,7 +98,6 @@ export interface SplitChainedNumberInputProps<T> {
   bottom: ControlCSSNumber
   right: ControlCSSNumber
   shorthand: InspectorInfo<T>
-  updateShorthand: UpdateShorthand
   selectedViews: ElementPath[]
   controlModeOrder: ControlMode[]
   labels?: {
@@ -122,7 +121,14 @@ export interface SplitChainedNumberInputProps<T> {
     right?: CanvasControls
   }
   numberType: CSSNumberType
+  eventHandler: SplitChainedNumberInputEventHandler
 }
+
+type SplitChainedNumberInputEventHandler = (
+  e: SplitChainedEvent,
+  aggregates: SplitControlValues,
+  useShorthand: boolean,
+) => void
 
 function getInitialMode(
   aggOne: CSSNumber | null,
@@ -146,44 +152,162 @@ function getInitialMode(
   return defaultMode
 }
 
-function onSubmitValue(old: ControlCSSNumber) {
-  return wrappedEmptyOrUnknownOnSubmitValue(old.onSubmitValue, old.onUnsetValues)
+export type FourValue =
+  | { type: 'T'; value: CSSNumber }
+  | { type: 'R'; value: CSSNumber }
+  | { type: 'B'; value: CSSNumber }
+  | { type: 'L'; value: CSSNumber }
+
+export type TwoValue = { type: 'V'; value: CSSNumber } | { type: 'H'; value: CSSNumber }
+
+export type SplitChainedEvent =
+  | { type: 'one-value'; value: CSSNumber }
+  | { type: 'two-value'; value: TwoValue }
+  | { type: 'four-value'; value: FourValue }
+
+export type SplitControlValues = {
+  oneValue: CSSNumber | null
+  horizontal: CSSNumber | null
+  vertical: CSSNumber | null
+  top: CSSNumber
+  right: CSSNumber
+  bottom: CSSNumber
+  left: CSSNumber
 }
 
-function onTransientSubmitValue(old: ControlCSSNumber) {
-  return wrappedEmptyOrUnknownOnSubmitValue(old.onTransientSubmitValue, old.onUnsetValues)
-}
-
-const onSubmitValueShorthand =
+const handleSplitChainedEvent =
   (
-    update: (v: CSSNumber) => void,
-    updateShorthand: UpdateShorthand | null,
-    sides: Array<ControlCSSNumber>,
-    keepSides: Partial<Sides>,
-    transient?: boolean,
+    e: SplitChainedEvent,
+    dispatch: EditorDispatch,
+    element: ElementPath,
+    shorthand: PropertyPath,
+    longhand: {
+      T: PropertyPath
+      R: PropertyPath
+      B: PropertyPath
+      L: PropertyPath
+    },
   ) =>
-  (input: UnknownOrEmptyInput<CSSNumber>) => {
-    if (!isCSSNumber(input)) {
-      return
-    }
-    update(input)
-    if (updateShorthand != null) {
-      updateShorthand(
-        {
-          top: keepSides.top ?? input,
-          left: keepSides.left ?? input,
-          bottom: keepSides.bottom ?? input,
-          right: keepSides.right ?? input,
-        },
-        transient,
+  (useShorthand: boolean, aggregates: SplitControlValues): void => {
+    const setProp = (path: PropertyPath, values: (CSSNumber | null)[]): EditorAction => {
+      return setProp_UNSAFE(
+        element,
+        path,
+        jsxAttributeValue(
+          values.length === 1 && values[0] != null
+            ? printCSSNumber(values[0], 'px')
+            : mapDropNulls((v) => v, values)
+                .map((v) => printCSSNumber(v, null))
+                .join(' '),
+          emptyComments,
+        ),
       )
-    } else {
-      sides.forEach((side) => side.onSubmitValue(input, transient))
     }
+
+    const horizontal = aggregates.horizontal ?? { value: 0, unit: 'px' }
+    const vertical = aggregates.vertical ?? { value: 0, unit: 'px' }
+
+    const unsetAllIndividual = [
+      unsetProperty(element, longhand.T),
+      unsetProperty(element, longhand.R),
+      unsetProperty(element, longhand.B),
+      unsetProperty(element, longhand.L),
+    ]
+
+    const getActions = (): Array<EditorAction> => {
+      switch (e.type) {
+        case 'one-value':
+          return useShorthand
+            ? [...unsetAllIndividual, setProp(shorthand, [e.value])]
+            : [
+                setProp(longhand.T, [e.value]),
+                setProp(longhand.R, [e.value]),
+                setProp(longhand.B, [e.value]),
+                setProp(longhand.L, [e.value]),
+              ]
+        case 'two-value':
+          return useShorthand
+            ? [
+                ...unsetAllIndividual,
+                ...(e.value.type === 'V'
+                  ? [setProp(shorthand, [e.value.value, horizontal])]
+                  : [setProp(shorthand, [vertical, e.value.value])]),
+              ]
+            : [
+                unsetProperty(element, shorthand),
+                ...(e.value.type === 'V'
+                  ? [setProp(longhand.T, [e.value.value]), setProp(longhand.B, [e.value.value])]
+                  : [setProp(longhand.L, [e.value.value]), setProp(longhand.R, [e.value.value])]),
+              ]
+        case 'four-value':
+          return useShorthand
+            ? [
+                ...unsetAllIndividual,
+                setProp(shorthand, [
+                  // order here is important! TRBL
+                  e.value.type === 'T' ? e.value.value : aggregates.top,
+                  e.value.type === 'R' ? e.value.value : aggregates.right,
+                  e.value.type === 'B' ? e.value.value : aggregates.bottom,
+                  e.value.type === 'L' ? e.value.value : aggregates.left,
+                ]),
+              ]
+            : [
+                // order here is important! TRBL
+                unsetProperty(element, shorthand),
+                ...(e.value.type === 'T' ? [setProp(longhand.T, [e.value.value])] : []),
+                ...(e.value.type === 'R' ? [setProp(longhand.R, [e.value.value])] : []),
+                ...(e.value.type === 'B' ? [setProp(longhand.B, [e.value.value])] : []),
+                ...(e.value.type === 'L' ? [setProp(longhand.L, [e.value.value])] : []),
+              ]
+        default:
+          assertNever(e)
+      }
+    }
+
+    dispatch(getActions())
   }
 
+export const longhandShorthandEventHandler = (
+  shorthand: string,
+  longhands: {
+    T: string
+    R: string
+    B: string
+    L: string
+  },
+  elementPath: ElementPath,
+  dispatch: EditorDispatch,
+): SplitChainedNumberInputEventHandler => {
+  return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
+    handleSplitChainedEvent(e, dispatch, elementPath, PP.create('style', shorthand), {
+      T: PP.create('style', longhands.T),
+      R: PP.create('style', longhands.R),
+      B: PP.create('style', longhands.B),
+      L: PP.create('style', longhands.L),
+    })(useShorthand, aggregates)
+  }
+}
+
+const whenCSSNumber = (fn: (v: CSSNumber) => any) => (v: UnknownOrEmptyInput<CSSNumber>) => {
+  if (!isCSSNumber(v)) {
+    return
+  }
+  fn(v)
+}
+
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, top, left, bottom, right, controlModeOrder, canvasControls, numberType } = props
+  const {
+    name,
+    top,
+    left,
+    bottom,
+    right,
+    controlModeOrder,
+    canvasControls,
+    numberType,
+    eventHandler,
+    labels,
+  } = props
 
   const [oneValue, setOneValue] = React.useState<CSSNumber | null>(null)
   const [horizontal, setHorizontal] = React.useState<CSSNumber | null>(null)
@@ -193,14 +317,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
   const sidesHorizontal = React.useMemo(() => [left, right], [left, right])
   const sidesVertical = React.useMemo(() => [top, bottom], [top, bottom])
-  const excludeHorizontal = React.useMemo(
-    () => ({ top: top.value, bottom: bottom.value }),
-    [top, bottom],
-  )
-  const excludeVertical = React.useMemo(
-    () => ({ left: left.value, right: right.value }),
-    [left, right],
-  )
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
@@ -269,53 +385,33 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
   }, [isCmdPressedRef, mode, controlModeOrder])
 
-  const updateShorthandIfUsed = React.useMemo(() => {
-    const allUnset =
+  const allUnset = React.useMemo(() => {
+    return (
       top.controlStatus === 'trivial-default' &&
       bottom.controlStatus === 'trivial-default' &&
       left.controlStatus === 'trivial-default' &&
       right.controlStatus === 'trivial-default'
+    )
+  }, [top, left, bottom, right])
 
-    const useShorthand = props.shorthand.controlStatus === 'simple' || allUnset
-
-    return useShorthand ? props.updateShorthand : null
-  }, [props.shorthand, props.updateShorthand, top, bottom, left, right])
-
-  const onSubmitValueOne = React.useCallback(
-    (transient: boolean) => () => {
-      return onSubmitValueShorthand(setOneValue, updateShorthandIfUsed, allSides, {}, transient)
-    },
-    [updateShorthandIfUsed, allSides],
-  )
-
-  const onSubmitValueHorizontal = React.useCallback(
-    (transient: boolean) => () => {
-      return onSubmitValueShorthand(
-        setHorizontal,
-        updateShorthandIfUsed,
-        sidesHorizontal,
-        excludeHorizontal,
-        transient,
-      )
-    },
-    [updateShorthandIfUsed, sidesHorizontal, excludeHorizontal],
-  )
-
-  const onSubmitValueVertical = React.useCallback(
-    (transient: boolean) => () => {
-      return onSubmitValueShorthand(
-        setVertical,
-        updateShorthandIfUsed,
-        sidesVertical,
-        excludeVertical,
-        transient,
-      )
-    },
-    [updateShorthandIfUsed, sidesVertical, excludeVertical],
-  )
+  const useShorthand = React.useMemo(() => {
+    return props.shorthand.controlStatus === 'simple' || allUnset
+  }, [allUnset, props.shorthand])
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
+
+  const aggregates: SplitControlValues = React.useMemo(() => {
+    return {
+      oneValue,
+      horizontal,
+      vertical,
+      top: top.value,
+      right: right.value,
+      bottom: bottom.value,
+      left: left.value,
+    }
+  }, [oneValue, horizontal, vertical, top, left, bottom, right])
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
@@ -339,16 +435,68 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       const onMouseLeave = () => setHoveredCanvasControls([])
       const onBlur = () => setFocusedCanvasControls([])
 
+      const onSubmitValueOne = whenCSSNumber((v) =>
+        eventHandler({ type: 'one-value', value: v }, aggregates, useShorthand),
+      )
+
+      const onSubmitValueHorizontal = whenCSSNumber((v) =>
+        eventHandler(
+          { type: 'two-value', value: { type: 'H', value: v } },
+          aggregates,
+          useShorthand,
+        ),
+      )
+
+      const onSubmitValueVertical = whenCSSNumber((v) =>
+        eventHandler(
+          { type: 'two-value', value: { type: 'V', value: v } },
+          aggregates,
+          useShorthand,
+        ),
+      )
+
+      const onSubmitValueTop = whenCSSNumber((v) =>
+        eventHandler(
+          { type: 'four-value', value: { type: 'T', value: v } },
+          aggregates,
+          useShorthand && !allUnset,
+        ),
+      )
+
+      const onSubmitValueRight = whenCSSNumber((v) =>
+        eventHandler(
+          { type: 'four-value', value: { type: 'R', value: v } },
+          aggregates,
+          useShorthand && !allUnset,
+        ),
+      )
+
+      const onSubmitValueBottom = whenCSSNumber((v) =>
+        eventHandler(
+          { type: 'four-value', value: { type: 'B', value: v } },
+          aggregates,
+          useShorthand && !allUnset,
+        ),
+      )
+
+      const onSubmitValueLeft = whenCSSNumber((v) =>
+        eventHandler(
+          { type: 'four-value', value: { type: 'L', value: v } },
+          aggregates,
+          useShorthand && !allUnset,
+        ),
+      )
+
       switch (mode) {
         case 'one-value':
           return [
             {
               style: { width: '100%' },
               value: oneValue,
-              DEPRECATED_labelBelow: props.labels?.oneValue ?? '↔',
+              DEPRECATED_labelBelow: labels?.oneValue ?? '↔',
               minimum: 0,
-              onSubmitValue: onSubmitValueOne(false)(),
-              onTransientSubmitValue: onSubmitValueOne(true)(),
+              onSubmitValue: onSubmitValueOne,
+              onTransientSubmitValue: onSubmitValueOne,
               numberType: numberType,
               defaultUnitToHide: 'px',
               controlStatus: allSides[0].controlStatus,
@@ -375,10 +523,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               value: horizontal,
-              DEPRECATED_labelBelow: props.labels?.horizontal ?? 'H',
+              DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
               minimum: 0,
-              onSubmitValue: onSubmitValueHorizontal(false)(),
-              onTransientSubmitValue: onSubmitValueHorizontal(true)(),
+              onSubmitValue: onSubmitValueHorizontal,
+              onTransientSubmitValue: onSubmitValueHorizontal,
               numberType: numberType,
               controlStatus: sidesHorizontal[0].controlStatus,
               defaultUnitToHide: 'px',
@@ -398,10 +546,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: vertical,
-              DEPRECATED_labelBelow: props.labels?.vertical ?? 'V',
+              DEPRECATED_labelBelow: labels?.vertical ?? 'V',
               minimum: 0,
-              onSubmitValue: onSubmitValueVertical(false)(),
-              onTransientSubmitValue: onSubmitValueVertical(true)(),
+              onSubmitValue: onSubmitValueVertical,
+              onTransientSubmitValue: onSubmitValueVertical,
               numberType: numberType,
               controlStatus: sidesVertical[0].controlStatus,
               defaultUnitToHide: 'px',
@@ -424,10 +572,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               value: top.value,
-              DEPRECATED_labelBelow: props.labels?.top ?? 'T',
+              DEPRECATED_labelBelow: labels?.top ?? 'T',
               minimum: 0,
-              onSubmitValue: onSubmitValue(top),
-              onTransientSubmitValue: onTransientSubmitValue(top),
+              onSubmitValue: onSubmitValueTop,
+              onTransientSubmitValue: onSubmitValueTop,
               controlStatus: top.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
@@ -441,10 +589,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: right.value,
-              DEPRECATED_labelBelow: props.labels?.right ?? 'R',
+              DEPRECATED_labelBelow: labels?.right ?? 'R',
               minimum: 0,
-              onSubmitValue: onSubmitValue(right),
-              onTransientSubmitValue: onTransientSubmitValue(right),
+              onSubmitValue: onSubmitValueRight,
+              onTransientSubmitValue: onSubmitValueRight,
               controlStatus: right.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
@@ -458,10 +606,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: bottom.value,
-              DEPRECATED_labelBelow: props.labels?.bottom ?? 'B',
+              DEPRECATED_labelBelow: labels?.bottom ?? 'B',
               minimum: 0,
-              onSubmitValue: onSubmitValue(bottom),
-              onTransientSubmitValue: onTransientSubmitValue(bottom),
+              onSubmitValue: onSubmitValueBottom,
+              onTransientSubmitValue: onSubmitValueBottom,
               controlStatus: bottom.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
@@ -475,10 +623,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               value: left.value,
-              DEPRECATED_labelBelow: props.labels?.left ?? 'L',
+              DEPRECATED_labelBelow: labels?.left ?? 'L',
               minimum: 0,
-              onSubmitValue: onSubmitValue(left),
-              onTransientSubmitValue: onTransientSubmitValue(left),
+              onSubmitValue: onSubmitValueLeft,
+              onTransientSubmitValue: onSubmitValueLeft,
               controlStatus: left.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
@@ -509,14 +657,15 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       name,
       sidesHorizontal,
       sidesVertical,
-      props.labels,
-      onSubmitValueOne,
-      onSubmitValueHorizontal,
-      onSubmitValueVertical,
+      labels,
       canvasControls,
       setHoveredCanvasControls,
       setFocusedCanvasControls,
       numberType,
+      eventHandler,
+      useShorthand,
+      aggregates,
+      allUnset,
     ])
 
   const tooltipTitle = React.useMemo(() => {

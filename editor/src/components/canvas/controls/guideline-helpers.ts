@@ -40,10 +40,14 @@ export function collectParentAndSiblingGuidelines(
         // for now we only snap to parents and sibligns and not us or our descendants
         const isSibling = EP.isSiblingOf(maybeTarget, target)
         const isParent = EP.pathsEqual(parent, maybeTarget)
+        const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
+          componentMetadata,
+          maybeTarget,
+        )
         const notSelectedOrDescendantOfSelected = targets.every(
           (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
         )
-        if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
+        if ((isSibling || isParent) && !isFragment && notSelectedOrDescendantOfSelected) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null && isFiniteRectangle(frame)) {
             result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
@@ -77,8 +81,12 @@ export function collectSelfAndChildrenGuidelines(
 
       Utils.fastForEach(allPaths, (maybeTarget) => {
         if (EP.isChildOf(maybeTarget, target) && EP.toUid(maybeTarget) !== insertingElementId) {
+          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
+            componentMetadata,
+            maybeTarget,
+          )
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
-          if (frame != null && isFiniteRectangle(frame)) {
+          if (frame != null && isFiniteRectangle(frame) && !isFragment) {
             result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
           }
         }

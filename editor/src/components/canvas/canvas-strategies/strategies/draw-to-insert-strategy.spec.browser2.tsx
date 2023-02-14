@@ -782,6 +782,171 @@ describe('Inserting into absolute', () => {
       `),
     )
   })
+
+  it('Ignores fragments and flattens their children', async () => {
+    const inputWithFragments = makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#09F',
+              position: 'absolute',
+              left: 20,
+              top: 30,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='b01'
+          />
+          <div
+            style={{
+              backgroundColor: '#09F',
+              position: 'absolute',
+              left: 100,
+              top: 100,
+              width: 100,
+              height: 50,
+            }}
+            data-uid='b02'
+          />
+          <>
+            <div
+              style={{
+                backgroundColor: '#09F',
+                position: 'absolute',
+                left: 300,
+                top: 300,
+                width: 25,
+                height: 25,
+              }}
+              data-uid='b03'
+            />
+          </>
+        </React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#09F',
+            position: 'absolute',
+            left: 200,
+            top: 400,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='b04'
+        />
+      </div>
+    `)
+
+    const renderResult = await setupInsertTest(inputWithFragments)
+    await enterInsertModeFromInsertMenu(renderResult)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 200,
+      y: targetElementBounds.y + 200,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 250,
+      y: targetElementBounds.y + 250,
+    })
+
+    // Move before starting dragging
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    // Highlight should show the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+
+    // Drag from inside bbb to inside ccc
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the inserted element is a child of bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#09F',
+              position: 'absolute',
+              left: 20,
+              top: 30,
+              width: 50,
+              height: 50,
+            }}
+            data-uid='b01'
+          />
+          <div
+            style={{
+              backgroundColor: '#09F',
+              position: 'absolute',
+              left: 100,
+              top: 100,
+              width: 100,
+              height: 50,
+            }}
+            data-uid='b02'
+          />
+          <>
+            <div
+              style={{
+                backgroundColor: '#09F',
+                position: 'absolute',
+                left: 300,
+                top: 300,
+                width: 25,
+                height: 25,
+              }}
+              data-uid='b03'
+            />
+          </>
+        </React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#09F',
+            position: 'absolute',
+            left: 200,
+            top: 400,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='b04'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 200,
+            top: 200,
+            width: 50,
+            height: 50,
+          }}
+          data-uid='ddd'
+        />
+      </div>
+      `),
+    )
+  })
 })
 
 describe('Forced inserting into Static', () => {

@@ -5,6 +5,7 @@ import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
+import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
@@ -683,6 +684,14 @@ export class Editor {
 
 let canvasUpdateId: number = 0
 
+const AtomsDevtools = (props: { children: React.ReactNode }) => {
+  if (!PRODUCTION_ENV) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useAtomsDevtools(`Utopia Jotai Atoms Debug Store`)
+  }
+  return <>{props.children}</>
+}
+
 export const EditorRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
   mainStore: UtopiaStoreAPI
@@ -699,21 +708,23 @@ export const EditorRoot: React.FunctionComponent<{
   domWalkerMutableState,
 }) => {
   return (
-    <DispatchContext.Provider value={dispatch}>
-      <OriginalMainEditorStateContext.Provider value={mainStore}>
-        <EditorStateContext.Provider value={mainStore}>
-          <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-            <CanvasStateContext.Provider value={canvasStore}>
-              <LowPriorityStateContext.Provider value={lowPriorityStore}>
-                <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                  <EditorComponent />
-                </UiJsxCanvasCtxAtom.Provider>
-              </LowPriorityStateContext.Provider>
-            </CanvasStateContext.Provider>
-          </DomWalkerMutableStateCtx.Provider>
-        </EditorStateContext.Provider>
-      </OriginalMainEditorStateContext.Provider>
-    </DispatchContext.Provider>
+    <AtomsDevtools>
+      <DispatchContext.Provider value={dispatch}>
+        <OriginalMainEditorStateContext.Provider value={mainStore}>
+          <EditorStateContext.Provider value={mainStore}>
+            <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
+              <CanvasStateContext.Provider value={canvasStore}>
+                <LowPriorityStateContext.Provider value={lowPriorityStore}>
+                  <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+                    <EditorComponent />
+                  </UiJsxCanvasCtxAtom.Provider>
+                </LowPriorityStateContext.Provider>
+              </CanvasStateContext.Provider>
+            </DomWalkerMutableStateCtx.Provider>
+          </EditorStateContext.Provider>
+        </OriginalMainEditorStateContext.Provider>
+      </DispatchContext.Provider>
+    </AtomsDevtools>
   )
 }
 

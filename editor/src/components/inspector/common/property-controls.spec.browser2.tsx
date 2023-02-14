@@ -12,6 +12,7 @@ import { act } from 'react-dom/test-utils'
 import {
   emptyComments,
   getJSXAttribute,
+  isJSXElement,
   jsxAttributeValue,
 } from '../../../core/shared/element-template'
 
@@ -165,7 +166,7 @@ describe('Automatically derived property controls', () => {
     )
     if (element == null) {
       throw new Error('Element could not be found.')
-    } else {
+    } else if (isJSXElement(element)) {
       const cardsAttribute = getJSXAttribute(element.props, 'cards')
       if (cardsAttribute == null) {
         throw new Error("The 'cards' attribute does not exist.")
@@ -181,6 +182,8 @@ describe('Automatically derived property controls', () => {
           ),
         )
       }
+    } else {
+      throw new Error('Was not a JSXElement.')
     }
   })
 })
