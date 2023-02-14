@@ -59,7 +59,7 @@ function groupLikeMoveStrategy(
 
       const elementProps = canvasState?.startingAllElementProps[toString(path)]
 
-      const hasNoWidthOrHeightProps =
+      const hasNoWidthAndHeightProps =
         elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
       const parentIsNotFlex = elementMetadata?.specialSizeMeasurements.parentLayoutSystem !== 'flex'
@@ -67,7 +67,7 @@ function groupLikeMoveStrategy(
       const isApplicableElement =
         elementMetadata?.specialSizeMeasurements.position === 'static' &&
         elementMetadata?.specialSizeMeasurements.layoutSystemForChildren === 'flow' &&
-        hasNoWidthOrHeightProps &&
+        hasNoWidthAndHeightProps &&
         parentIsNotFlex
 
       if (isApplicableElement) {
