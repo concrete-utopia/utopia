@@ -158,6 +158,7 @@ export function defaultSpanElement(uid: string): JSXElement {
       style: jsxAttributeValue(
         {
           position: 'absolute',
+          display: 'inline-block',
           wordBreak: 'break-word',
         },
         emptyComments,
