@@ -1,6 +1,5 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
@@ -16,12 +15,7 @@ import {
 } from '../../../../../uuiui'
 import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
 import { setProp_UNSAFE, unsetProperty } from '../../../../editor/actions/action-creators'
-import {
-  Substores,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-} from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
@@ -332,12 +326,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  useSelectorWithCallback(
+  const selectedViews = useEditorState(
     Substores.selectedViews,
     selectedViewsSelector,
-    () => {
-      updateMode('forced')
-    },
     'PaddingControl selectedViews',
   )
 
@@ -361,32 +352,35 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return { oneValue: newOneValue, horizontal: newHorizontal, vertical: newVertical }
   }, [allSides, sidesHorizontal, sidesVertical])
 
-  const updateMode = React.useCallback(
-    (force?: 'forced') => {
-      if (mode != null && force !== 'forced') {
-        return
-      }
+  const updateMode = React.useCallback(() => {
+    if (mode != null) {
+      return
+    }
 
-      const aggregates = updateAggregates()
-      const newMode = getInitialMode(
-        aggregates.oneValue,
-        aggregates.horizontal,
-        aggregates.vertical,
-        areAllSidesSet(allSides),
-        props.defaultMode ?? 'per-side',
-      )
-      setMode(newMode)
-    },
-    [props.defaultMode, mode, allSides, updateAggregates],
-  )
+    const aggregates = updateAggregates()
+    const newMode = getInitialMode(
+      aggregates.oneValue,
+      aggregates.horizontal,
+      aggregates.vertical,
+      areAllSidesSet(allSides),
+      props.defaultMode ?? 'per-side',
+    )
+    setMode(newMode)
+  }, [props.defaultMode, mode, allSides, updateAggregates])
 
   React.useEffect(() => {
     updateMode()
-  }, [updateMode, props.shorthand])
+  }, [selectedViews, updateMode, props.shorthand])
 
   React.useEffect(() => {
     updateAggregates()
   }, [updateAggregates])
+
+  React.useEffect(() => {
+    return function () {
+      setMode(null)
+    }
+  }, [selectedViews])
 
   React.useEffect(() => {
     if (!isCurrentModeApplicable()) {
