@@ -19,8 +19,10 @@ import {
   useColorTheme,
 } from '../../../../../uuiui'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 
-const LayoutSystemSectionTitle = () => 'Layout System Props'
+const LayoutSystemSectionTitle = () =>
+  isFeatureEnabled('Nine block control') ? 'Layout System Props' : 'Layout System'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements

@@ -36,6 +36,8 @@ import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shor
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
+import { unless } from '../../../../../utils/react-conditionals'
 import { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
 
 interface PinsLayoutNumberControlProps {
@@ -610,11 +612,26 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
     isNotUnsetOrDefault(minHeight) ||
     isNotUnsetOrDefault(maxHeight)
   const [minMaxToggled, setMinMaxToggled] = usePropControlledStateV2(hasMinMaxValues)
+  const toggleMinMax = React.useCallback(() => {
+    setMinMaxToggled(!minMaxToggled)
+  }, [minMaxToggled, setMinMaxToggled])
 
   const { resetAllPins, framePins, togglePin } = usePinToggling()
 
   return (
     <>
+      {unless(
+        isFeatureEnabled('Nine block control'),
+        <WidthHeightRow
+          layoutType={layoutType}
+          togglePin={togglePin}
+          framePins={framePins}
+          toggleMinMax={toggleMinMax}
+          parentFlexDirection={parentFlexDirection}
+          aspectRatioLocked={aspectRatioLocked}
+          toggleAspectRatioLock={toggleAspectRatioLock}
+        />,
+      )}
       {minMaxToggled ? (
         <>
           <MinimumsRow />

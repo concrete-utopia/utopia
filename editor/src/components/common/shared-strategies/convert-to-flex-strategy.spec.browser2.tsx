@@ -1,5 +1,5 @@
 import { appendNewElementPath } from '../../../core/shared/element-path'
-import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests, wait } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -35,6 +35,8 @@ type FlexProps = {
 }
 
 describe('Smart Convert To Flex', () => {
+  setFeatureForTests('Nine block control', true)
+
   it('handles zero children well', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -415,6 +417,8 @@ describe('Smart Convert To Flex', () => {
 })
 
 describe('Smart Convert to Flex Reordering Children if Needed', () => {
+  setFeatureForTests('Nine block control', true)
+
   it('converts a horizontal layout with children out of order', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -449,6 +453,8 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
 })
 
 describe('Smart Convert to Flex alignItems', () => {
+  setFeatureForTests('Nine block control', true)
+
   it('all elements aligned at the start become alignItems flex-start, but we omit that for simplicity', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],

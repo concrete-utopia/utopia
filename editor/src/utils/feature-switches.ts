@@ -11,6 +11,7 @@ export type FeatureName =
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
   | 'Canvas Strategies Debug Panel'
+  | 'Nine block control'
   | 'Project Thumbnail Generation'
   | 'Fragment support'
 
@@ -24,6 +25,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Re-parse Project Button',
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
+  'Nine block control',
   'Project Thumbnail Generation',
   'Fragment support',
 ]
@@ -37,6 +39,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
+  'Nine block control': false,
   'Project Thumbnail Generation': false,
   'Fragment support': false,
 }

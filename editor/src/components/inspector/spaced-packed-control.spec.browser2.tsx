@@ -3,6 +3,7 @@ import {
   expectSingleUndoStep,
   hoverControlWithCheck,
   selectComponentsForTest,
+  setFeatureForTests,
 } from '../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
@@ -20,6 +21,8 @@ const SceneId = 'sc'
 const ParentId = 'p'
 
 describe('spaced - packed control', () => {
+  setFeatureForTests('Nine block control', true)
+
   it('set element to spaced layout', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString(`${StoryboardId}/${SceneId}/${ParentId}`)])
