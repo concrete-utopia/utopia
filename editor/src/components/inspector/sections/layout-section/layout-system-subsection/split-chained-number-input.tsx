@@ -243,16 +243,15 @@ const handleSplitChainedEvent =
             return false
           }
 
-          let shorthandOtherDirections: CSSNumberOrNull[] = []
           if (useShorthand) {
             if (e.value.type === 'V') {
-              shorthandOtherDirections.push(aggregates.horizontal)
+              return aggregates.horizontal === null || aggregates.horizontal.value === 0
             } else {
-              shorthandOtherDirections.push(aggregates.vertical)
+              return aggregates.vertical === null || aggregates.vertical.value === 0
             }
+          } else {
+            return true
           }
-
-          return !useShorthand || shorthandOtherDirections.every((o) => o === null || o.value === 0)
 
         case 'four-value':
           if (e.value.value != null) {
