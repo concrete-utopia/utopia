@@ -287,11 +287,16 @@ export const MetadataUtils = {
       MetadataUtils.findElementByElementPath(elements, target),
     )
   },
-  getChildrenParticipatingInAutoLayout(
+  getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    return MetadataUtils.getChildren(elements, target).filter(
+    return MetadataUtils.getOrderedChildren(elements, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
+  },
+  hasStaticChildren(elements: ElementInstanceMetadataMap, target: ElementPath): boolean {
+    return MetadataUtils.getChildren(elements, target).some(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -545,6 +550,7 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleChildren
   },
+  // FIXME Rename to getOrderedChildrenPaths
   getChildrenPathsProjectContentsOrdered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
@@ -571,6 +577,18 @@ export const MetadataUtils = {
       }
     }
     return result
+  },
+  getOrderedChildren(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    return mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return MetadataUtils.findElementByElementPath(elements, elementPath)
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
   },
   getDescendantPaths(
     elements: ElementInstanceMetadataMap,

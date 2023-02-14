@@ -380,8 +380,7 @@ function findParentUnderPointByArea(
           pointOnCanvas,
         )
 
-      const hasStaticChildren =
-        MetadataUtils.getChildrenParticipatingInAutoLayout(metadata, targetParentPath).length > 0
+      const hasStaticChildren = MetadataUtils.hasStaticChildren(metadata, targetParentPath)
 
       return {
         shouldReparent: true,
