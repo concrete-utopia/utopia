@@ -1757,7 +1757,13 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
   }
 
   const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
-    const globalFrame = zeroRectIfNullOrInfinity(fromDOM[p]?.globalFrame)
+    const globalFrame = fromDOM[p]?.globalFrame
+    if (globalFrame == null) {
+      return true
+    }
+    if (isInfinityRectangle(globalFrame)) {
+      return false
+    }
     return globalFrame.width === 0 || globalFrame.height === 0
   })
 
