@@ -136,8 +136,10 @@ import {
   addPositionAbsoluteTopLeft,
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
+  isIntrinsicallyInlineElement,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
+import { setProperty } from '../canvas/commands/set-property-command'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -863,12 +865,29 @@ export function handleKeyDown(
         return [
           EditorActions.applyCommandsAction(
             editor.selectedViews.flatMap((elementPath) => {
-              if (
-                MetadataUtils.isPositionAbsolute(
-                  MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath),
-                )
-              ) {
-                return nukeAllAbsolutePositioningPropsCommands(elementPath)
+              const element = MetadataUtils.findElementByElementPath(
+                editor.jsxMetadata,
+                elementPath,
+              )
+              if (element == null) {
+                return []
+              }
+
+              if (MetadataUtils.isPositionAbsolute(element)) {
+                return [
+                  ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+                  ...(isIntrinsicallyInlineElement(element)
+                    ? [
+                        ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                        setProperty(
+                          'always',
+                          elementPath,
+                          PP.create('style', 'display'),
+                          'inline-block',
+                        ),
+                      ]
+                    : []),
+                ]
               } else {
                 return [
                   ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),

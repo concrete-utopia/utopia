@@ -38,7 +38,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { expectSingleUndoStep, wait } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../../canvas/controls/select-mode/subdued-padding-control'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 
@@ -2201,6 +2201,108 @@ describe('inspector tests with real metadata', () => {
         },
         endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px 10px 10px' }),
       },
+      {
+        name: 'delete value (shorthand, one value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({}),
+      },
+      {
+        name: 'delete value (longhand, one value)',
+        startSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 10,
+          paddingRight: 10,
+          paddingTop: 10,
+          paddingBottom: 10,
+        }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-one', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({}),
+      },
+      {
+        name: 'delete value (shorthand, two value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-H', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 0px' }),
+      },
+      {
+        name: 'delete value (longhand, two value)',
+        startSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 10,
+          paddingRight: 10,
+          paddingTop: 20,
+          paddingBottom: 20,
+        }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-H', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({
+          paddingTop: 20,
+          paddingBottom: 20,
+        }),
+      },
+      {
+        name: 'delete value (shorthand, two value, all empty)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 10px' }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-H', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({}),
+      },
+      {
+        name: 'delete value (shorthand, four value)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px 30px 40px' }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-R', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 0px 30px 40px' }),
+      },
+      {
+        name: 'delete value (shorthand, four value, all empty)',
+        startSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 20px 0px 0px' }),
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-R', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 0px 0px 0px' }),
+      },
+      {
+        name: 'delete value (longhand, four value)',
+        startSnippet: makeCodeSnippetWithKeyValue({
+          paddingLeft: 10,
+          paddingTop: 20,
+        }),
+        before: async (renderResult: EditorRenderResult) => {
+          await act(async () => {
+            fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+            await renderResult.getDispatchFollowUpActionsFinished()
+          })
+        },
+        control: async (renderResult: EditorRenderResult) => {
+          await expectSingleUndoStep(renderResult, async () => {
+            await setControlValue('padding-T', '', renderResult.renderedDOM)
+          })
+        },
+        endSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
+      },
     ]
 
     tests.forEach((tt, idx) => {
@@ -2234,6 +2336,21 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(tt.endSnippet),
         )
       })
+    })
+
+    it('applies padding to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithTwoDivs, 'await-first-dom-report')
+      const one = editor.renderedDOM.getByTestId('one')
+      const two = editor.renderedDOM.getByTestId('two')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/one')])
+      await selectComponentsForTest(editor, [EP.fromString('sb/two')])
+
+      await setControlValue('padding-H', '20', editor.renderedDOM)
+
+      expect(one.style.padding).toEqual('')
+
+      expect(two.style.padding).toEqual('0px 20px')
     })
   })
 
@@ -2361,6 +2478,23 @@ describe('inspector tests with real metadata', () => {
         )
         expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
       })
+    })
+  })
+
+  describe('border radius controls', () => {
+    it('applied border radius to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithTwoDivs, 'await-first-dom-report')
+      const one = editor.renderedDOM.getByTestId('one')
+      const two = editor.renderedDOM.getByTestId('two')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/one')])
+      await selectComponentsForTest(editor, [EP.fromString('sb/two')])
+
+      await setControlValue('radius-one', '20', editor.renderedDOM)
+
+      expect(one.style.borderRadius).toEqual('')
+
+      expect(two.style.borderRadius).toEqual('20px')
     })
   })
 
@@ -2622,3 +2756,54 @@ describe('Undo behavior in inspector', () => {
     )
   })
 })
+
+const projectWithTwoDivs = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-uid={"one"}
+      data-testid={"one"}
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 149,
+        top: 195,
+        width: 412,
+        height: 447,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+      />
+    </div>
+    <div
+      data-uid={"two"}
+      data-testid={"two"}
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 717,
+        top: 195,
+        width: 412,
+        height: 447,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`

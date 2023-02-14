@@ -27,7 +27,7 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
+import { setFeatureForTests } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -612,10 +612,11 @@ describe('Select Mode Double Clicking With Fragments', () => {
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 
-  it('Six double clicks will focus a generated Card and select its root element', async () => {
-    setFeatureEnabled('Fragment support', true)
-    // prettier-ignore
-    const desiredPath = EP.fromString(
+  describe('Double click tests with fragments feature switch', () => {
+    setFeatureForTests('Fragment support', true)
+    it('Six double clicks will focus a generated Card and select its root element', async () => {
+      // prettier-ignore
+      const desiredPath = EP.fromString(
       'sb' +                 // Skipped as it's the storyboard
       '/scene-CardList' +    // Skipped because we skip over Scenes
       '/CardList-instance' + // <- First double click
@@ -625,42 +626,40 @@ describe('Select Mode Double Clicking With Fragments', () => {
       ':Card-Root',          // <- Sixth double click
     )
 
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectAlpineClimbWithFragments,
-      'await-first-dom-report',
-    )
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectAlpineClimbWithFragments,
+        'await-first-dom-report',
+      )
 
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
-    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+      const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+      const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const doubleClick = createDoubleClicker(
-      canvasControlsLayer,
-      cardSceneRootBounds.left + 50,
-      cardSceneRootBounds.top + 50,
-    )
+      const doubleClick = createDoubleClicker(
+        canvasControlsLayer,
+        cardSceneRootBounds.left + 50,
+        cardSceneRootBounds.top + 50,
+      )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
 
-    expect(renderResult.getEditorState().editor.focusedElementPath).toEqual(
-      EP.parentPath(desiredPath),
-    )
+      expect(renderResult.getEditorState().editor.focusedElementPath).toEqual(
+        EP.parentPath(desiredPath),
+      )
 
-    await doubleClick()
+      await doubleClick()
 
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
-    setFeatureEnabled('Fragment support', false)
-  })
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+    })
 
-  it('Eight double clicks will focus a generated Card and select the Button inside', async () => {
-    setFeatureEnabled('Fragment support', true)
-    // prettier-ignore
-    const desiredPath = EP.fromString(
+    it('Eight double clicks will focus a generated Card and select the Button inside', async () => {
+      // prettier-ignore
+      const desiredPath = EP.fromString(
       'sb' +                 // Skipped as it's the storyboard
       '/scene-CardList' +    // Skipped because we skip over Scenes
       '/CardList-instance' + // <- First double click
@@ -672,33 +671,33 @@ describe('Select Mode Double Clicking With Fragments', () => {
       '/Card-Button-3',      // <- Eighth double click
     )
 
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectAlpineClimbWithFragments,
-      'await-first-dom-report',
-    )
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectAlpineClimbWithFragments,
+        'await-first-dom-report',
+      )
 
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
-    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+      const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+      const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-    const doubleClick = createDoubleClicker(
-      canvasControlsLayer,
-      cardSceneRootBounds.left + 130,
-      cardSceneRootBounds.top + 220,
-    )
+      const doubleClick = createDoubleClicker(
+        canvasControlsLayer,
+        cardSceneRootBounds.left + 130,
+        cardSceneRootBounds.top + 220,
+      )
 
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
-    await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
+      await doubleClick()
 
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
-    setFeatureEnabled('Fragment support', false)
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+    })
   })
 })
 
