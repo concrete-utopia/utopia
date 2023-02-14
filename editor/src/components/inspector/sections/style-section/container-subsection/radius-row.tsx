@@ -134,7 +134,6 @@ export const BorderRadiusControl = React.memo(() => {
       }}
       controlModeOrder={['one-value', 'per-side']}
       numberType={'LengthPercent'}
-      selectedViews={selectedViewsRef.current}
       name='radius'
       defaultMode='one-value'
       top={{
@@ -163,7 +162,7 @@ export const BorderRadiusControl = React.memo(() => {
           B: 'borderBottomRightRadius',
           L: 'borderBottomLeftRadius',
         },
-        selectedViewsRef.current[0],
+        selectedViewsRef,
         dispatch,
       )}
     />
