@@ -76,7 +76,6 @@ import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
@@ -351,8 +350,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
-          {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
+          <FlexSection />
+          <SizingSection />
           <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}

@@ -1,13 +1,11 @@
 import { shiftModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep, setFeatureForTests } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
-  setFeatureForTests('Nine block control', true)
-
   it('add and remove layout system via keyboard shortcut', async () => {
     const editor = await renderTestEditorWithCode(
       project({ width: '100px', height: '100px' }),

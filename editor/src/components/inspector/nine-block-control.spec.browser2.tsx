@@ -3,7 +3,6 @@ import {
   expectSingleUndoStep,
   hoverControlWithCheck,
   selectComponentsForTest,
-  setFeatureForTests,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
@@ -13,8 +12,6 @@ import { StartCenterEnd } from './inspector-common'
 import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
 
 describe('Nine-block control', () => {
-  setFeatureForTests('Nine block control', true)
-
   describe('in flex row', () => {
     for (const [justifyContent, alignItems] of NineBlockSectors) {
       it(`set ${justifyContent} and ${alignItems} via the nine-block control`, async () => {

@@ -1,12 +1,10 @@
-import { expectSingleUndoStep, setFeatureForTests } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from '../add-remove-layout-system-control'
 
 describe('remove-flex-convert-to-absolute strategy', () => {
-  setFeatureForTests('Nine block control', true)
-
   it('remove flex layout', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const root = await selectDiv(editor)

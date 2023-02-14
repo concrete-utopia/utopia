@@ -1,4 +1,4 @@
-import { expectSingleUndoStep, setFeatureForTests } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -10,8 +10,6 @@ import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
 
 describe('Resize to fit control', () => {
-  setFeatureForTests('Nine block control', true)
-
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
