@@ -7,7 +7,11 @@ import {
 import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponents, setHoveredView } from '../../../editor/actions/action-creators'
+import {
+  duplicateSelected,
+  selectComponents,
+  setHoveredView,
+} from '../../../editor/actions/action-creators'
 import { IconSize } from '../../controls/reorder-slider-control'
 import { ReorderChangeThreshold } from './flow-reorder-helpers'
 import {
@@ -612,6 +616,26 @@ describe('Reorder Slider Strategy Control', () => {
     )
 
     await selectAndHover('utopia-storyboard-uid/scene-aaa/app-entity:container/ccc', renderResult)
+
+    const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
+    expect(targetControl).toBeNull()
+  })
+  it('the reorder control is not visible on simple, 1d flow layouts for metadata with out of order children', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProjectSimpleBlocks),
+      'await-first-dom-report',
+    )
+
+    // Select and duplicate the first element, as that will modify the metadata in a way that
+    // the Object.keys order won't match the children order
+
+    const firstElementPath = 'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa'
+    const path = EP.fromString(firstElementPath)
+    await renderResult.dispatch([selectComponents([path], false)], true)
+    await renderResult.dispatch([duplicateSelected()], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await selectAndHover(firstElementPath, renderResult)
 
     const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
     expect(targetControl).toBeNull()
