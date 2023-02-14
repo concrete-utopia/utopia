@@ -2282,7 +2282,7 @@ describe('inspector tests with real metadata', () => {
             await setControlValue('padding-R', '', renderResult.renderedDOM)
           })
         },
-        endSnippet: makeCodeSnippetWithKeyValue({}),
+        endSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 0px 0px 0px' }),
       },
       {
         name: 'delete value (longhand, four value)',

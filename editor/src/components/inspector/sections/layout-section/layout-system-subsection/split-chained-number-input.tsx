@@ -256,10 +256,7 @@ const handleSplitChainedEvent =
             ...(e.value.type === 'B' ? [aggregates.top, aggregates.right, aggregates.left] : []),
             ...(e.value.type === 'L' ? [aggregates.top, aggregates.right, aggregates.bottom] : []),
           ]
-          return (
-            e.value.value == null &&
-            (!useShorthand || otherSides.every((o) => o == null || o.value === 0))
-          )
+          return e.value.value == null && (!useShorthand || otherSides.every((o) => o == null))
         default:
           assertNever(e)
       }
