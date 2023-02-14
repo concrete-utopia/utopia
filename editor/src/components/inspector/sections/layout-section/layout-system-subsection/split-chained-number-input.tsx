@@ -21,6 +21,7 @@ import {
   CSSNumber,
   CSSNumberType,
   isCSSNumber,
+  isEmptyInputValue,
   printCSSNumber,
   UnknownOrEmptyInput,
 } from '../../../common/css-utils'
@@ -152,23 +153,25 @@ function getInitialMode(
   return defaultMode
 }
 
-export type FourValue =
-  | { type: 'T'; value: CSSNumber }
-  | { type: 'R'; value: CSSNumber }
-  | { type: 'B'; value: CSSNumber }
-  | { type: 'L'; value: CSSNumber }
+type CSSNumberOrNull = CSSNumber | null
 
-export type TwoValue = { type: 'V'; value: CSSNumber } | { type: 'H'; value: CSSNumber }
+export type FourValue =
+  | { type: 'T'; value: CSSNumberOrNull }
+  | { type: 'R'; value: CSSNumberOrNull }
+  | { type: 'B'; value: CSSNumberOrNull }
+  | { type: 'L'; value: CSSNumberOrNull }
+
+export type TwoValue = { type: 'V'; value: CSSNumberOrNull } | { type: 'H'; value: CSSNumberOrNull }
 
 export type SplitChainedEvent =
-  | { type: 'one-value'; value: CSSNumber }
+  | { type: 'one-value'; value: CSSNumberOrNull }
   | { type: 'two-value'; value: TwoValue }
   | { type: 'four-value'; value: FourValue }
 
 export type SplitControlValues = {
-  oneValue: CSSNumber | null
-  horizontal: CSSNumber | null
-  vertical: CSSNumber | null
+  oneValue: CSSNumberOrNull
+  horizontal: CSSNumberOrNull
+  vertical: CSSNumberOrNull
   top: CSSNumber
   right: CSSNumber
   bottom: CSSNumber
@@ -189,14 +192,19 @@ const handleSplitChainedEvent =
     },
   ) =>
   (useShorthand: boolean, aggregates: SplitControlValues): void => {
-    const setProp = (path: PropertyPath, values: (CSSNumber | null)[]): EditorAction => {
+    function emptyCSSNumber(): CSSNumber {
+      return { value: 0, unit: 'px' }
+    }
+
+    function setProp(path: PropertyPath, values: (CSSNumber | null)[]): EditorAction {
+      const normalizedValues = values.map((v) => (useShorthand && v == null ? emptyCSSNumber() : v))
       return setProp_UNSAFE(
         element,
         path,
         jsxAttributeValue(
-          values.length === 1 && values[0] != null
-            ? printCSSNumber(values[0], 'px')
-            : mapDropNulls((v) => v, values)
+          normalizedValues.length === 1 && normalizedValues[0] != null
+            ? printCSSNumber(normalizedValues[0], 'px')
+            : mapDropNulls((v) => v, normalizedValues)
                 .map((v) => printCSSNumber(v, null))
                 .join(' '),
           emptyComments,
@@ -204,8 +212,8 @@ const handleSplitChainedEvent =
       )
     }
 
-    const horizontal = aggregates.horizontal ?? { value: 0, unit: 'px' }
-    const vertical = aggregates.vertical ?? { value: 0, unit: 'px' }
+    const horizontal = aggregates.horizontal ?? emptyCSSNumber()
+    const vertical = aggregates.vertical ?? emptyCSSNumber()
 
     const unsetAllIndividual = [
       unsetProperty(element, longhand.T),
@@ -213,6 +221,73 @@ const handleSplitChainedEvent =
       unsetProperty(element, longhand.B),
       unsetProperty(element, longhand.L),
     ]
+
+    function actionsOrUnset(
+      actions: EditorAction[],
+      unset: boolean,
+      unsetPaths: PropertyPath[],
+    ): EditorAction[] {
+      if (unset) {
+        return unsetPaths.map((path) => unsetProperty(element, path))
+      }
+      return actions
+    }
+
+    function shouldUnset(): boolean {
+      switch (e.type) {
+        case 'one-value':
+          return e.value == null
+        case 'two-value':
+          const otherDirections = useShorthand
+            ? e.value.type === 'V'
+              ? [aggregates.horizontal]
+              : [aggregates.vertical]
+            : e.value.type === 'V'
+            ? [aggregates.top, aggregates.bottom]
+            : [aggregates.right, aggregates.left]
+          return (
+            e.value.value == null &&
+            (!useShorthand || otherDirections.every((o) => o === null || o.value === 0))
+          )
+        case 'four-value':
+          const otherSides = [
+            ...(e.value.type === 'T' ? [aggregates.right, aggregates.bottom, aggregates.left] : []),
+            ...(e.value.type === 'R' ? [aggregates.top, aggregates.bottom, aggregates.left] : []),
+            ...(e.value.type === 'B' ? [aggregates.top, aggregates.right, aggregates.left] : []),
+            ...(e.value.type === 'L' ? [aggregates.top, aggregates.right, aggregates.bottom] : []),
+          ]
+          return (
+            e.value.value == null &&
+            (!useShorthand || otherSides.every((o) => o == null || o.value === 0))
+          )
+        default:
+          assertNever(e)
+      }
+    }
+
+    function getUnsetPaths(): PropertyPath[] {
+      switch (e.type) {
+        case 'one-value':
+          return useShorthand ? [shorthand] : [longhand.T, longhand.R, longhand.B, longhand.L]
+        case 'two-value':
+          return useShorthand
+            ? [shorthand]
+            : e.value.type === 'V'
+            ? [longhand.T, longhand.B]
+            : [longhand.R, longhand.L]
+        case 'four-value':
+          return useShorthand
+            ? [shorthand]
+            : [
+                ...(e.value.type === 'T' ? [longhand.T] : []),
+                ...(e.value.type === 'R' ? [longhand.R] : []),
+                ...(e.value.type === 'B' ? [longhand.B] : []),
+                ...(e.value.type === 'L' ? [longhand.L] : []),
+              ]
+        default:
+          assertNever(e)
+      }
+    }
 
     const getActions = (): Array<EditorAction> => {
       switch (e.type) {
@@ -264,7 +339,7 @@ const handleSplitChainedEvent =
       }
     }
 
-    dispatch(getActions())
+    dispatch(actionsOrUnset(getActions(), shouldUnset(), getUnsetPaths()))
   }
 
 export const longhandShorthandEventHandler = (
@@ -288,11 +363,12 @@ export const longhandShorthandEventHandler = (
   }
 }
 
-const whenCSSNumber = (fn: (v: CSSNumber) => any) => (v: UnknownOrEmptyInput<CSSNumber>) => {
-  if (!isCSSNumber(v)) {
-    return
+const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyInput<CSSNumber>) => {
+  if (isEmptyInputValue(v)) {
+    fn(null)
+  } else if (isCSSNumber(v)) {
+    fn(v)
   }
-  fn(v)
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
