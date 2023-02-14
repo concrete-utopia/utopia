@@ -1,8 +1,11 @@
 import { act, fireEvent } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
-import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  setFeatureForTests,
+} from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
@@ -23,8 +26,7 @@ import {
 import { MaxContent } from '../inspector-common'
 
 describe('Fixed / Fill / Hug control', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   describe('fill container', () => {
     it('set width to fill container in flex row', async () => {

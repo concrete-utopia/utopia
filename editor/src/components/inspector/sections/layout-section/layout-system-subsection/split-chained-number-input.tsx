@@ -15,7 +15,7 @@ import {
 } from '../../../../../uuiui'
 import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
 import { setProp_UNSAFE, unsetProperty } from '../../../../editor/actions/action-creators'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
@@ -31,6 +31,7 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'
 import { InspectorInfo } from '../../../common/property-path-hooks'
+import { selectedViewsSelector } from '../../../inpector-selectors'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
@@ -99,7 +100,6 @@ export interface SplitChainedNumberInputProps<T> {
   bottom: ControlCSSNumber
   right: ControlCSSNumber
   shorthand: InspectorInfo<T>
-  selectedViews: ElementPath[]
   controlModeOrder: ControlMode[]
   labels?: {
     top?: string
@@ -125,7 +125,7 @@ export interface SplitChainedNumberInputProps<T> {
   eventHandler: SplitChainedNumberInputEventHandler
 }
 
-type SplitChainedNumberInputEventHandler = (
+export type SplitChainedNumberInputEventHandler = (
   e: SplitChainedEvent,
   aggregates: SplitControlValues,
   useShorthand: boolean,
@@ -350,16 +350,22 @@ export const longhandShorthandEventHandler = (
     B: string
     L: string
   },
-  elementPath: ElementPath,
+  selectedViewsRef: { current: Array<ElementPath> },
   dispatch: EditorDispatch,
 ): SplitChainedNumberInputEventHandler => {
   return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
-    handleSplitChainedEvent(e, dispatch, elementPath, PP.create('style', shorthand), {
-      T: PP.create('style', longhands.T),
-      R: PP.create('style', longhands.R),
-      B: PP.create('style', longhands.B),
-      L: PP.create('style', longhands.L),
-    })(useShorthand, aggregates)
+    handleSplitChainedEvent(
+      e,
+      dispatch,
+      selectedViewsRef.current[0],
+      PP.create('style', shorthand),
+      {
+        T: PP.create('style', longhands.T),
+        R: PP.create('style', longhands.R),
+        B: PP.create('style', longhands.B),
+        L: PP.create('style', longhands.L),
+      },
+    )(useShorthand, aggregates)
   }
 }
 
@@ -395,6 +401,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const sidesVertical = React.useMemo(() => [top, bottom], [top, bottom])
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    'PaddingControl selectedViews',
+  )
 
   const isCurrentModeApplicable = React.useCallback(() => {
     if (mode === 'one-value' && oneValue == null) {
@@ -434,7 +446,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   React.useEffect(() => {
     updateMode()
-  }, [props.selectedViews, updateMode, props.shorthand])
+  }, [selectedViews, updateMode, props.shorthand])
 
   React.useEffect(() => {
     updateAggregates()
@@ -444,7 +456,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return function () {
       setMode(null)
     }
-  }, [props.selectedViews])
+  }, [selectedViews])
 
   React.useEffect(() => {
     if (!isCurrentModeApplicable()) {

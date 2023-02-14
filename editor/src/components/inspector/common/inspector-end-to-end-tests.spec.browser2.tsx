@@ -38,7 +38,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../../canvas/controls/select-mode/subdued-padding-control'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 
@@ -2337,6 +2337,21 @@ describe('inspector tests with real metadata', () => {
         )
       })
     })
+
+    it('applies padding to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithTwoDivs, 'await-first-dom-report')
+      const one = editor.renderedDOM.getByTestId('one')
+      const two = editor.renderedDOM.getByTestId('two')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/one')])
+      await selectComponentsForTest(editor, [EP.fromString('sb/two')])
+
+      await setControlValue('padding-H', '20', editor.renderedDOM)
+
+      expect(one.style.padding).toEqual('')
+
+      expect(two.style.padding).toEqual('0px 20px')
+    })
   })
 
   describe('canvas padding controls from the inspector', () => {
@@ -2463,6 +2478,23 @@ describe('inspector tests with real metadata', () => {
         )
         expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
       })
+    })
+  })
+
+  describe('border radius controls', () => {
+    it('applied border radius to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithTwoDivs, 'await-first-dom-report')
+      const one = editor.renderedDOM.getByTestId('one')
+      const two = editor.renderedDOM.getByTestId('two')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/one')])
+      await selectComponentsForTest(editor, [EP.fromString('sb/two')])
+
+      await setControlValue('radius-one', '20', editor.renderedDOM)
+
+      expect(one.style.borderRadius).toEqual('')
+
+      expect(two.style.borderRadius).toEqual('20px')
     })
   })
 
@@ -2724,3 +2756,54 @@ describe('Undo behavior in inspector', () => {
     )
   })
 })
+
+const projectWithTwoDivs = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-uid={"one"}
+      data-testid={"one"}
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 149,
+        top: 195,
+        width: 412,
+        height: 447,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+      />
+    </div>
+    <div
+      data-uid={"two"}
+      data-testid={"two"}
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 717,
+        top: 195,
+        width: 412,
+        height: 447,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
