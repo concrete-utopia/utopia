@@ -178,6 +178,8 @@ export type SplitControlValues = {
   left: CSSNumber
 }
 
+const emptyCSSNumber: CSSNumber = { value: 0, unit: 'px' }
+
 const handleSplitChainedEvent =
   (
     e: SplitChainedEvent,
@@ -192,12 +194,8 @@ const handleSplitChainedEvent =
     },
   ) =>
   (useShorthand: boolean, aggregates: SplitControlValues): void => {
-    function emptyCSSNumber(): CSSNumber {
-      return { value: 0, unit: 'px' }
-    }
-
     function setProp(path: PropertyPath, values: (CSSNumber | null)[]): EditorAction {
-      const normalizedValues = values.map((v) => (useShorthand && v == null ? emptyCSSNumber() : v))
+      const normalizedValues = values.map((v) => (useShorthand && v == null ? emptyCSSNumber : v))
       return setProp_UNSAFE(
         element,
         path,
@@ -212,8 +210,8 @@ const handleSplitChainedEvent =
       )
     }
 
-    const horizontal = aggregates.horizontal ?? emptyCSSNumber()
-    const vertical = aggregates.vertical ?? emptyCSSNumber()
+    const horizontal = aggregates.horizontal ?? emptyCSSNumber
+    const vertical = aggregates.vertical ?? emptyCSSNumber
 
     const unsetAllIndividual = [
       unsetProperty(element, longhand.T),
