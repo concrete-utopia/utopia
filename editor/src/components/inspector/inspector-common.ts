@@ -33,7 +33,7 @@ import {
 } from '../canvas/commands/set-css-length-command'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { Size } from '../../core/shared/math-utils'
+import { isInfinityRectangle, Size } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -389,29 +389,6 @@ export function isIntrinsicallyInlineElement(element: ElementInstanceMetadata | 
   )
 }
 
-export function sizeElementAsDisplayBlock(
-  elementPath: ElementPath,
-  size: Size,
-): Array<CanvasCommand> {
-  return [
-    setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      styleP('width'),
-      setExplicitCssValue(cssPixelLength(size.width)),
-      null,
-    ),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      styleP('height'),
-      setExplicitCssValue(cssPixelLength(size.height)),
-      null,
-    ),
-  ]
-}
-
 export function sizeToVisualDimensions(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
@@ -421,8 +398,13 @@ export function sizeToVisualDimensions(
     return []
   }
 
-  const width = element.specialSizeMeasurements.clientWidth
-  const height = element.specialSizeMeasurements.clientHeight
+  const globalFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    return []
+  }
+
+  const width = globalFrame.width
+  const height = globalFrame.height
 
   return [
     ...pruneFlexPropsCommands(flexChildProps, elementPath),
