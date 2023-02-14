@@ -17,6 +17,8 @@ import {
   FlexDirectionControl,
   getDirectionAwareLabels,
 } from './flex-container-controls'
+import { unless } from '../../../../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 
 export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {
   // Right now flex layout isn't supported on groups, so just don't show the controls if a group is selected
@@ -82,6 +84,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           justifyFlexEnd={justifyFlexEnd}
         />
       </UIGridRow>
+      {unless(isFeatureEnabled('Nine block control'), <FlexGapControl />)}
       <FlexAlignItemsControl
         value={alignItems.value}
         controlStatus={alignItems.controlStatus}
