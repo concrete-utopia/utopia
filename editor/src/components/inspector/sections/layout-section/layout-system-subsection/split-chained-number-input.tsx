@@ -237,50 +237,81 @@ const handleSplitChainedEvent =
       switch (e.type) {
         case 'one-value':
           return e.value == null
+
         case 'two-value':
-          const otherDirections = useShorthand
-            ? e.value.type === 'V'
-              ? [aggregates.horizontal]
-              : [aggregates.vertical]
-            : e.value.type === 'V'
-            ? [aggregates.top, aggregates.bottom]
-            : [aggregates.right, aggregates.left]
-          return (
-            e.value.value == null &&
-            (!useShorthand || otherDirections.every((o) => o === null || o.value === 0))
-          )
+          if (e.value.value != null) {
+            return false
+          }
+
+          let otherDirections: CSSNumberOrNull[] = []
+          if (useShorthand) {
+            if (e.value.type === 'V') {
+              otherDirections.push(aggregates.horizontal)
+            } else {
+              otherDirections.push(aggregates.vertical)
+            }
+          } else {
+            if (e.value.type === 'V') {
+              otherDirections.push(aggregates.top, aggregates.bottom)
+            } else {
+              otherDirections.push(aggregates.right, aggregates.left)
+            }
+          }
+
+          return !useShorthand || otherDirections.every((o) => o === null || o.value === 0)
+
         case 'four-value':
-          const otherSides = [
-            ...(e.value.type === 'T' ? [aggregates.right, aggregates.bottom, aggregates.left] : []),
-            ...(e.value.type === 'R' ? [aggregates.top, aggregates.bottom, aggregates.left] : []),
-            ...(e.value.type === 'B' ? [aggregates.top, aggregates.right, aggregates.left] : []),
-            ...(e.value.type === 'L' ? [aggregates.top, aggregates.right, aggregates.bottom] : []),
-          ]
-          return e.value.value == null && (!useShorthand || otherSides.every((o) => o == null))
+          if (e.value.value != null) {
+            return false
+          }
+
+          let otherSides: CSSNumber[] = []
+          if (e.value.type !== 'T') {
+            otherSides.push(aggregates.top)
+          }
+          if (e.value.type !== 'R') {
+            otherSides.push(aggregates.right)
+          }
+          if (e.value.type !== 'B') {
+            otherSides.push(aggregates.bottom)
+          }
+          if (e.value.type !== 'L') {
+            otherSides.push(aggregates.left)
+          }
+
+          return !useShorthand || otherSides.every((o) => o == null)
+
         default:
           assertNever(e)
       }
     }
 
     function getUnsetPaths(): PropertyPath[] {
+      if (useShorthand) {
+        return [shorthand]
+      }
+
       switch (e.type) {
         case 'one-value':
-          return useShorthand ? [shorthand] : [longhand.T, longhand.R, longhand.B, longhand.L]
+          return [longhand.T, longhand.R, longhand.B, longhand.L]
+
         case 'two-value':
-          return useShorthand
-            ? [shorthand]
-            : e.value.type === 'V'
-            ? [longhand.T, longhand.B]
-            : [longhand.R, longhand.L]
+          if (e.value.type === 'V') {
+            return [longhand.T, longhand.B]
+          }
+          return [longhand.R, longhand.L]
+
         case 'four-value':
-          return useShorthand
-            ? [shorthand]
-            : [
-                ...(e.value.type === 'T' ? [longhand.T] : []),
-                ...(e.value.type === 'R' ? [longhand.R] : []),
-                ...(e.value.type === 'B' ? [longhand.B] : []),
-                ...(e.value.type === 'L' ? [longhand.L] : []),
-              ]
+          if (e.value.type === 'T') {
+            return [longhand.T]
+          } else if (e.value.type === 'R') {
+            return [longhand.R]
+          } else if (e.value.type === 'B') {
+            return [longhand.B]
+          } else {
+            return [longhand.L]
+          }
+
         default:
           assertNever(e)
       }
