@@ -1,6 +1,9 @@
 import * as EP from '../../core/shared/element-path'
-import { setFeatureEnabled } from '../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  setFeatureForTests,
+} from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { FlexDirection } from './common/css-utils'
@@ -12,7 +15,8 @@ const SceneId = 'sc'
 const ParentId = 'p'
 
 describe('three bar control', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
+  setFeatureForTests('Nine block control', true)
+
   describe('set align-items in flex-direcion: column', () => {
     it('align-items: start', async () => {
       const editor = await renderTestEditorWithCode(project('row'), 'await-first-dom-report')

@@ -1,6 +1,5 @@
 import { appendNewElementPath } from '../../../core/shared/element-path'
-import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, wait } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests, wait } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -36,15 +35,7 @@ type FlexProps = {
 }
 
 describe('Smart Convert To Flex', () => {
-  let originalFSValue: boolean = false
-  before(() => {
-    originalFSValue = isFeatureEnabled('Nine block control')
-    setFeatureEnabled('Nine block control', true)
-  })
-
-  after(() => {
-    setFeatureEnabled('Nine block control', originalFSValue)
-  })
+  setFeatureForTests('Nine block control', true)
 
   it('handles zero children well', async () => {
     const editor = await renderProjectWith({
@@ -426,15 +417,7 @@ describe('Smart Convert To Flex', () => {
 })
 
 describe('Smart Convert to Flex Reordering Children if Needed', () => {
-  let originalFSValue: boolean = false
-  before(() => {
-    originalFSValue = isFeatureEnabled('Nine block control')
-    setFeatureEnabled('Nine block control', true)
-  })
-
-  after(() => {
-    setFeatureEnabled('Nine block control', originalFSValue)
-  })
+  setFeatureForTests('Nine block control', true)
 
   it('converts a horizontal layout with children out of order', async () => {
     const editor = await renderProjectWith({
@@ -470,15 +453,7 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
 })
 
 describe('Smart Convert to Flex alignItems', () => {
-  let originalFSValue: boolean = false
-  before(() => {
-    originalFSValue = isFeatureEnabled('Nine block control')
-    setFeatureEnabled('Nine block control', true)
-  })
-
-  after(() => {
-    setFeatureEnabled('Nine block control', originalFSValue)
-  })
+  setFeatureForTests('Nine block control', true)
 
   it('all elements aligned at the start become alignItems flex-start, but we omit that for simplicity', async () => {
     const editor = await renderProjectWith({
