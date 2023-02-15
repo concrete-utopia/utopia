@@ -14,6 +14,7 @@ import { SelectionLocked } from '../../canvas/canvas-types'
 export const NavigatorHintCircleDiameter = 8
 
 interface NavigatorHintProps {
+  testId: string
   shouldBeShown: boolean
   margin: number
 }
@@ -23,6 +24,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
     const colorTheme = useColorTheme()
     return (
       <div
+        data-testid={props.testId}
         ref={ref}
         style={{
           transform: 'translate(0, 100%)',
@@ -64,6 +66,7 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
     const colorTheme = useColorTheme()
     return (
       <div
+        data-testid={props.testId}
         ref={ref}
         style={{
           position: 'relative',

@@ -464,7 +464,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     >
       {when(
         props.index === 0,
-        <NavigatorHintTop ref={topDropRef} shouldBeShown={isOverTopHint} margin={margin} />,
+        <NavigatorHintTop
+          testId={`navigator-item-drop-before-${safeComponentId}`}
+          ref={topDropRef}
+          shouldBeShown={isOverTopHint}
+          margin={margin}
+        />,
       )}
       <div ref={reparentDropRef} data-testid={`navigator-item-drop-${safeComponentId}`}>
         <div
@@ -491,6 +496,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         </div>
       </div>
       <NavigatorHintBottom
+        testId={`navigator-item-drop-after-${safeComponentId}`}
         ref={bottomDropRef}
         shouldBeShown={shouldShowBottomHint}
         margin={margin}
