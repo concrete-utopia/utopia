@@ -12,7 +12,6 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
-import { wait } from '../../utils/utils.test-utils'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -1002,7 +1001,7 @@ describe('Navigator', () => {
     const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
     const dragTo = {
       x: firstDivElementCenter.x,
-      y: firstDivElementRect.y + firstDivElementRect.height - 3,
+      y: firstDivElementRect.y + firstDivElementRect.height,
     }
 
     const dragDelta = windowPoint({
@@ -1021,7 +1020,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -1068,7 +1067,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -1149,7 +1148,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
         windowPoint(dragMeElementCenter),
         windowPoint({ x: -65, y: 0 }),
         'apply-hover-events',
