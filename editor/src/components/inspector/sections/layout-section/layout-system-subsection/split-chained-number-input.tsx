@@ -1,6 +1,7 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
+import { toString } from '../../../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
 import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
@@ -64,7 +65,7 @@ function isControlStatusActive(status: ControlStatus): boolean {
 }
 
 // compare the given values and if they're equal return their shared value, or null otherwise
-function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | null {
+function getSharedValueIfEqualSides(values: ControlCSSNumber[]): ControlCSSNumber | null {
   const normalUnit = (unit: CSSNumber['unit'] | null) => {
     return unit == null ? 'px' : unit
   }
@@ -78,34 +79,43 @@ function getSharedValueIfEqualSides(values: ControlCSSNumber[]): CSSNumber | nul
   if (!areEqual) {
     return null
   }
-  return values[0].value
+  return values[0]
 }
 
-function areAllSidesSet(values: ControlCSSNumber[]): boolean {
+export function areAllSidesSet(values: ControlCSSNumber[]): boolean {
   return values.every((v) => isControlStatusActive(v.controlStatus))
 }
 
-export interface Sides {
-  top: CSSNumber
-  bottom: CSSNumber
-  left: CSSNumber
-  right: CSSNumber
+export interface SidesAbstract<T> {
+  top: T
+  bottom: T
+  left: T
+  right: T
 }
+
+export type Sides = SidesAbstract<CSSNumber>
+export type SidesCSSNumber = SidesAbstract<ControlCSSNumber>
 
 interface CanvasControls {
   onHover?: CanvasControlWithProps<any>
   onFocus?: CanvasControlWithProps<any>
 }
 
+export interface SplitChainedNumberInputValues {
+  oneValue: ControlCSSNumber | null
+  twoValue: [ControlCSSNumber | null, ControlCSSNumber | null]
+  fourValue: [
+    ControlCSSNumber | null,
+    ControlCSSNumber | null,
+    ControlCSSNumber | null,
+    ControlCSSNumber | null,
+  ]
+}
+
 export interface SplitChainedNumberInputProps<T> {
   name: string
-  defaultMode?: ControlMode
-  top: ControlCSSNumber
-  left: ControlCSSNumber
-  bottom: ControlCSSNumber
-  right: ControlCSSNumber
-  shorthand: InspectorInfo<T>
-  controlModeOrder: ControlMode[]
+  mode: ControlMode | null
+  overrideModeCallback: () => void
   labels?: {
     top?: string
     bottom?: string
@@ -126,17 +136,14 @@ export interface SplitChainedNumberInputProps<T> {
     bottom?: CanvasControls
     right?: CanvasControls
   }
+  values: SplitChainedNumberInputValues
   numberType: CSSNumberType
   eventHandler: SplitChainedNumberInputEventHandler
 }
 
-export type SplitChainedNumberInputEventHandler = (
-  e: SplitChainedEvent,
-  aggregates: SplitControlValues,
-  useShorthand: boolean,
-) => void
+export type SplitChainedNumberInputEventHandler = (e: SplitChainedEvent) => void
 
-function getInitialMode(
+export function getInitialMode(
   aggOne: CSSNumber | null,
   aggHorizontal: CSSNumber | null,
   aggVertical: CSSNumber | null,
@@ -375,9 +382,11 @@ export const longhandShorthandEventHandler = (
     L: string
   },
   selectedViewsRef: { current: Array<ElementPath> },
+  useShorthand: boolean,
+  aggregates: SplitControlValues,
   dispatch: EditorDispatch,
 ): SplitChainedNumberInputEventHandler => {
-  return (e: SplitChainedEvent, aggregates: SplitControlValues, useShorthand: boolean) => {
+  return (e: SplitChainedEvent) => {
     handleSplitChainedEvent(
       e,
       dispatch,
@@ -402,125 +411,10 @@ const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyIn
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const {
-    name,
-    top,
-    left,
-    bottom,
-    right,
-    controlModeOrder,
-    canvasControls,
-    numberType,
-    eventHandler,
-    labels,
-  } = props
-
-  const [oneValue, setOneValue] = React.useState<CSSNumber | null>(null)
-  const [horizontal, setHorizontal] = React.useState<CSSNumber | null>(null)
-  const [vertical, setVertical] = React.useState<CSSNumber | null>(null)
-  const [mode, setMode] = React.useState<ControlMode | null>(null)
-
-  const allSides = React.useMemo(() => [top, left, bottom, right], [top, left, bottom, right])
-  const sidesHorizontal = React.useMemo(() => [left, right], [left, right])
-  const sidesVertical = React.useMemo(() => [top, bottom], [top, bottom])
-
-  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
-
-  const isCurrentModeApplicable = React.useCallback(() => {
-    if (mode === 'one-value' && oneValue == null) {
-      return false
-    }
-    if (mode === 'per-direction' && horizontal == null && vertical == null) {
-      return false
-    }
-    return true
-  }, [mode, oneValue, horizontal, vertical])
-
-  const updateAggregates = React.useCallback(() => {
-    const newOneValue = getSharedValueIfEqualSides(allSides)
-    setOneValue(newOneValue)
-    const newHorizontal = getSharedValueIfEqualSides(sidesHorizontal)
-    setHorizontal(newHorizontal)
-    const newVertical = getSharedValueIfEqualSides(sidesVertical)
-    setVertical(newVertical)
-    return { oneValue: newOneValue, horizontal: newHorizontal, vertical: newVertical }
-  }, [allSides, sidesHorizontal, sidesVertical])
-
-  const updateMode = React.useCallback(
-    (forced?: 'forced') => {
-      if (mode != null && forced !== 'forced') {
-        return
-      }
-
-      const aggregates = updateAggregates()
-      const newMode = getInitialMode(
-        aggregates.oneValue,
-        aggregates.horizontal,
-        aggregates.vertical,
-        areAllSidesSet(allSides),
-        props.defaultMode ?? 'per-side',
-      )
-      setMode(newMode)
-    },
-    [props.defaultMode, mode, allSides, updateAggregates],
-  )
-
-  useSelectorWithCallback(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    () => {
-      // console.log(`updateMode('forced')`)
-      updateMode('forced')
-    },
-    'SplitChainedNumberInput selected views update',
-  )
-
-  React.useEffect(() => {
-    updateAggregates()
-  }, [updateAggregates])
-
-  React.useEffect(() => {
-    if (!isCurrentModeApplicable()) {
-      updateMode()
-    }
-  }, [isCurrentModeApplicable, updateMode])
-
-  const cycleToNextMode = React.useCallback(() => {
-    if (mode == null) {
-      return
-    }
-    const delta = isCmdPressedRef.current ? -1 : 1
-    const index = controlModeOrder.indexOf(mode) + delta
-    setMode(controlModeOrder[wrapValue(index, 0, controlModeOrder.length - 1)])
-  }, [isCmdPressedRef, mode, controlModeOrder])
-
-  const allUnset = React.useMemo(() => {
-    return (
-      top.controlStatus === 'trivial-default' &&
-      bottom.controlStatus === 'trivial-default' &&
-      left.controlStatus === 'trivial-default' &&
-      right.controlStatus === 'trivial-default'
-    )
-  }, [top, left, bottom, right])
-
-  const useShorthand = React.useMemo(() => {
-    return props.shorthand.controlStatus === 'simple' || allUnset
-  }, [allUnset, props.shorthand])
+  const { name, canvasControls, numberType, eventHandler, labels, values } = props
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
-
-  const aggregates: SplitControlValues = React.useMemo(() => {
-    return {
-      oneValue,
-      horizontal,
-      vertical,
-      top: top.value,
-      right: right.value,
-      bottom: bottom.value,
-      left: left.value,
-    }
-  }, [oneValue, horizontal, vertical, top, left, bottom, right])
 
   const chainedPropsToRender: Array<Omit<NumberInputProps, 'chained' | 'id'>> =
     React.useMemo(() => {
@@ -544,71 +438,45 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       const onMouseLeave = () => setHoveredCanvasControls([])
       const onBlur = () => setFocusedCanvasControls([])
 
-      const onSubmitValueOne = whenCSSNumber((v) =>
-        eventHandler({ type: 'one-value', value: v }, aggregates, useShorthand),
-      )
+      const onSubmitValueOne = whenCSSNumber((v) => eventHandler({ type: 'one-value', value: v }))
 
       const onSubmitValueHorizontal = whenCSSNumber((v) =>
-        eventHandler(
-          { type: 'two-value', value: { type: 'H', value: v } },
-          aggregates,
-          useShorthand,
-        ),
+        eventHandler({ type: 'two-value', value: { type: 'H', value: v } }),
       )
 
       const onSubmitValueVertical = whenCSSNumber((v) =>
-        eventHandler(
-          { type: 'two-value', value: { type: 'V', value: v } },
-          aggregates,
-          useShorthand,
-        ),
+        eventHandler({ type: 'two-value', value: { type: 'V', value: v } }),
       )
 
       const onSubmitValueTop = whenCSSNumber((v) =>
-        eventHandler(
-          { type: 'four-value', value: { type: 'T', value: v } },
-          aggregates,
-          useShorthand && !allUnset,
-        ),
+        eventHandler({ type: 'four-value', value: { type: 'T', value: v } }),
       )
 
       const onSubmitValueRight = whenCSSNumber((v) =>
-        eventHandler(
-          { type: 'four-value', value: { type: 'R', value: v } },
-          aggregates,
-          useShorthand && !allUnset,
-        ),
+        eventHandler({ type: 'four-value', value: { type: 'R', value: v } }),
       )
 
       const onSubmitValueBottom = whenCSSNumber((v) =>
-        eventHandler(
-          { type: 'four-value', value: { type: 'B', value: v } },
-          aggregates,
-          useShorthand && !allUnset,
-        ),
+        eventHandler({ type: 'four-value', value: { type: 'B', value: v } }),
       )
 
       const onSubmitValueLeft = whenCSSNumber((v) =>
-        eventHandler(
-          { type: 'four-value', value: { type: 'L', value: v } },
-          aggregates,
-          useShorthand && !allUnset,
-        ),
+        eventHandler({ type: 'four-value', value: { type: 'L', value: v } }),
       )
 
-      switch (mode) {
+      switch (props.mode) {
         case 'one-value':
           return [
             {
               style: { width: '100%' },
-              value: oneValue,
+              value: values.oneValue?.value,
               DEPRECATED_labelBelow: labels?.oneValue ?? '↔',
               minimum: 0,
               onSubmitValue: onSubmitValueOne,
               onTransientSubmitValue: onSubmitValueOne,
               numberType: numberType,
               defaultUnitToHide: 'px',
-              controlStatus: allSides[0].controlStatus,
+              controlStatus: values.oneValue?.controlStatus,
               onMouseEnter: onMouseEnterForControls([
                 topCanvasControls?.onHover,
                 rightCanvasControls?.onHover,
@@ -631,13 +499,13 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-direction':
           return [
             {
-              value: horizontal,
+              value: values.twoValue[0]?.value,
               DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
               minimum: 0,
               onSubmitValue: onSubmitValueHorizontal,
               onTransientSubmitValue: onSubmitValueHorizontal,
               numberType: numberType,
-              controlStatus: sidesHorizontal[0].controlStatus,
+              controlStatus: values.twoValue[0]?.controlStatus,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([
                 rightCanvasControls?.onHover,
@@ -654,13 +522,13 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-H`,
             },
             {
-              value: vertical,
+              value: values.twoValue[1]?.value,
               DEPRECATED_labelBelow: labels?.vertical ?? 'V',
               minimum: 0,
               onSubmitValue: onSubmitValueVertical,
               onTransientSubmitValue: onSubmitValueVertical,
               numberType: numberType,
-              controlStatus: sidesVertical[0].controlStatus,
+              controlStatus: values.twoValue[1]?.controlStatus,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([
                 topCanvasControls?.onHover,
@@ -680,12 +548,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-side':
           return [
             {
-              value: top.value,
+              value: values.fourValue[0]?.value,
               DEPRECATED_labelBelow: labels?.top ?? 'T',
               minimum: 0,
               onSubmitValue: onSubmitValueTop,
               onTransientSubmitValue: onSubmitValueTop,
-              controlStatus: top.controlStatus,
+              controlStatus: values.fourValue[0]?.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([topCanvasControls?.onHover]),
@@ -697,12 +565,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-T`,
             },
             {
-              value: right.value,
+              value: values.fourValue[1]?.value,
               DEPRECATED_labelBelow: labels?.right ?? 'R',
               minimum: 0,
               onSubmitValue: onSubmitValueRight,
               onTransientSubmitValue: onSubmitValueRight,
-              controlStatus: right.controlStatus,
+              controlStatus: values.fourValue[1]?.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([rightCanvasControls?.onHover]),
@@ -714,12 +582,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-R`,
             },
             {
-              value: bottom.value,
+              value: values.fourValue[2]?.value,
               DEPRECATED_labelBelow: labels?.bottom ?? 'B',
               minimum: 0,
               onSubmitValue: onSubmitValueBottom,
               onTransientSubmitValue: onSubmitValueBottom,
-              controlStatus: bottom.controlStatus,
+              controlStatus: values.fourValue[2]?.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
@@ -731,12 +599,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-B`,
             },
             {
-              value: left.value,
+              value: values.fourValue[3]?.value,
               DEPRECATED_labelBelow: labels?.left ?? 'L',
               minimum: 0,
               onSubmitValue: onSubmitValueLeft,
               onTransientSubmitValue: onSubmitValueLeft,
-              controlStatus: left.controlStatus,
+              controlStatus: values.fourValue[3]?.controlStatus,
               numberType: numberType,
               defaultUnitToHide: 'px',
               onMouseEnter: onMouseEnterForControls([leftCanvasControls?.onHover]),
@@ -751,49 +619,37 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case null:
           return []
         default:
-          assertNever(mode)
+          assertNever(props.mode)
       }
     }, [
-      mode,
-      allSides,
-      oneValue,
-      horizontal,
-      vertical,
-      top,
-      bottom,
-      left,
-      right,
       name,
-      sidesHorizontal,
-      sidesVertical,
       labels,
       canvasControls,
       setHoveredCanvasControls,
       setFocusedCanvasControls,
       numberType,
       eventHandler,
-      useShorthand,
-      aggregates,
-      allUnset,
+      props.mode,
+      values,
     ])
 
   const tooltipTitle = React.useMemo(() => {
-    switch (mode) {
+    switch (props.mode) {
       case 'one-value':
-        return props.tooltips?.oneValue ?? mode
+        return props.tooltips?.oneValue ?? props.mode
       case 'per-direction':
-        return props.tooltips?.perDirection ?? mode
+        return props.tooltips?.perDirection ?? props.mode
       case 'per-side':
-        return props.tooltips?.perSide ?? mode
+        return props.tooltips?.perSide ?? props.mode
       case null:
         return ''
       default:
-        assertNever(mode)
+        assertNever(props.mode)
     }
-  }, [mode, props.tooltips])
+  }, [props.mode, props.tooltips])
 
   const modeIcon = React.useMemo(() => {
-    switch (mode) {
+    switch (props.mode) {
       case 'one-value':
         return <InspectorSectionIcons.SplitFull />
       case 'per-direction':
@@ -803,14 +659,14 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       case null:
         return null
       default:
-        assertNever(mode)
+        assertNever(props.mode)
     }
-  }, [mode])
+  }, [props.mode])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
       <Tooltip title={tooltipTitle}>
-        <SquareButton data-testid={`${name}-cycle-mode`} onClick={cycleToNextMode}>
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.overrideModeCallback}>
           {modeIcon}
         </SquareButton>
       </Tooltip>
@@ -822,3 +678,73 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     </div>
   )
 })
+
+export function isCurrentModeApplicable(
+  overriddenMode: ControlMode,
+  oneValue: ControlCSSNumber,
+  horizontal: ControlCSSNumber,
+  vertical: ControlCSSNumber,
+): boolean {
+  if (overriddenMode === 'one-value' && oneValue == null) {
+    return false
+  }
+  if (overriddenMode === 'per-direction' && horizontal == null && vertical == null) {
+    return false
+  }
+  return true
+}
+
+function updateAggregates(
+  allSides: ControlCSSNumber[],
+  sidesHorizontal: ControlCSSNumber[],
+  sidesVertical: ControlCSSNumber[],
+) {
+  const newOneValue = getSharedValueIfEqualSides(allSides)
+  const newHorizontal = getSharedValueIfEqualSides(sidesHorizontal)
+  const newVertical = getSharedValueIfEqualSides(sidesVertical)
+  return { oneValue: newOneValue, horizontal: newHorizontal, vertical: newVertical }
+}
+
+interface SplitControlAggregates {
+  allSides: Array<ControlCSSNumber>
+  horizontal: ControlCSSNumber | null
+  vertical: ControlCSSNumber | null
+  oneValue: ControlCSSNumber | null
+}
+
+export function aggregateGroups(sides: SidesAbstract<ControlCSSNumber>): SplitControlAggregates {
+  const { top, left, bottom, right } = sides
+
+  return {
+    allSides: [top, left, bottom, right],
+    horizontal: getSharedValueIfEqualSides([left, right]),
+    vertical: getSharedValueIfEqualSides([top, bottom]),
+    oneValue: getSharedValueIfEqualSides([top, left, bottom, right]),
+  }
+}
+
+export function getSplitChainedNumberInputValues(
+  aggregates: SplitControlAggregates,
+  sides: SidesAbstract<ControlCSSNumber>,
+): SplitChainedNumberInputValues {
+  return {
+    oneValue: aggregates.oneValue,
+    twoValue: [aggregates.horizontal, aggregates.vertical],
+    fourValue: [sides.top, sides.right, sides.bottom, sides.left],
+  }
+}
+
+export function getSplitControlValues(
+  aggregates: SplitControlAggregates,
+  sides: SidesAbstract<ControlCSSNumber>,
+): SplitControlValues {
+  return {
+    oneValue: aggregates.oneValue?.value ?? null,
+    horizontal: aggregates.horizontal?.value ?? null,
+    vertical: aggregates.vertical?.value ?? null,
+    top: sides.top.value,
+    right: sides.right.value,
+    bottom: sides.bottom.value,
+    left: sides.left.value,
+  }
+}
