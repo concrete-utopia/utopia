@@ -31,16 +31,16 @@ import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
-  `navigator-item-drag-${safeComponentId}`
-
-export const BottomDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
 
-export const DragTargetLineTestId = (safeComponentId: string): string =>
+export const BottomDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-after-${safeComponentId}`
 
+export const DragItemTestId = (safeComponentId: string): string =>
+  `navigator-item-drag-${safeComponentId}`
+
 export const NavigatorItemTestId = (safeComponentId: string): string =>
-  `navigator-item-drop-${safeComponentId}`
+  `navigator-item-${safeComponentId}`
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -481,7 +481,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   return (
     <div
-      data-testid={DragTargetLineTestId(safeComponentId)}
+      data-testid={DragItemTestId(safeComponentId)}
       ref={drag}
       style={{
         ...props.windowStyle,
@@ -496,29 +496,28 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           margin={margin}
         />,
       )}
-      <div ref={reparentDropRef} data-testid={NavigatorItemTestId(safeComponentId)}>
-        <div
-          key='navigatorItem'
-          id={`navigator-item-${safeComponentId}`}
-          data-testid={`navigator-item-${safeComponentId}`}
-        >
-          <NavigatorItem
-            elementPath={props.elementPath}
-            index={props.index}
-            getSelectedViewsInRange={props.getSelectedViewsInRange}
-            noOfChildren={props.noOfChildren}
-            label={props.label}
-            dispatch={props.editorDispatch}
-            isHighlighted={props.highlighted}
-            isElementVisible={props.isElementVisible}
-            renamingTarget={props.renamingTarget}
-            collapsed={props.collapsed}
-            selected={props.selected}
-            elementWarnings={props.elementWarnings}
-            shouldShowParentOutline={shouldShowParentOutline}
-            visibleNavigatorTargets={props.visibleNavigatorTargets}
-          />
-        </div>
+      <div
+        ref={reparentDropRef}
+        key='navigatorItem'
+        id={`navigator-item-${safeComponentId}`}
+        data-testid={`navigator-item-${safeComponentId}`}
+      >
+        <NavigatorItem
+          elementPath={props.elementPath}
+          index={props.index}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          noOfChildren={props.noOfChildren}
+          label={props.label}
+          dispatch={props.editorDispatch}
+          isHighlighted={props.highlighted}
+          isElementVisible={props.isElementVisible}
+          renamingTarget={props.renamingTarget}
+          collapsed={props.collapsed}
+          selected={props.selected}
+          elementWarnings={props.elementWarnings}
+          shouldShowParentOutline={shouldShowParentOutline}
+          visibleNavigatorTargets={props.visibleNavigatorTargets}
+        />
       </div>
       <NavigatorHintBottom
         testId={BottomDropTargetLineTestId(safeComponentId)}

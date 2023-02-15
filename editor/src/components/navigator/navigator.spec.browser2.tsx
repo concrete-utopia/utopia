@@ -12,6 +12,7 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
+import { wait } from '../../core/model/performance-scripts'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -1114,7 +1115,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -1196,7 +1197,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/parentsibling`,
+        `navigator-item-utopia_storyboard_uid/scene_aaa/parentsibling`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -1243,7 +1244,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/parentsibling`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/parentsibling`,
         windowPoint(notDragElementCenter),
         dragDelta,
         'do-not-apply-hover-events',
@@ -1295,7 +1296,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
