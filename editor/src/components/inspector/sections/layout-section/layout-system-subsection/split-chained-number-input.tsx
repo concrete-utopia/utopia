@@ -15,7 +15,12 @@ import {
 } from '../../../../../uuiui'
 import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
 import { setProp_UNSAFE, unsetProperty } from '../../../../editor/actions/action-creators'
-import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
@@ -421,12 +426,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    'PaddingControl selectedViews',
-  )
-
   const isCurrentModeApplicable = React.useCallback(() => {
     if (mode === 'one-value' && oneValue == null) {
       return false
@@ -447,35 +446,38 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return { oneValue: newOneValue, horizontal: newHorizontal, vertical: newVertical }
   }, [allSides, sidesHorizontal, sidesVertical])
 
-  const updateMode = React.useCallback(() => {
-    if (mode != null) {
-      return
-    }
+  const updateMode = React.useCallback(
+    (forced?: 'forced') => {
+      if (mode != null && forced !== 'forced') {
+        return
+      }
 
-    const aggregates = updateAggregates()
-    const newMode = getInitialMode(
-      aggregates.oneValue,
-      aggregates.horizontal,
-      aggregates.vertical,
-      areAllSidesSet(allSides),
-      props.defaultMode ?? 'per-side',
-    )
-    setMode(newMode)
-  }, [props.defaultMode, mode, allSides, updateAggregates])
+      const aggregates = updateAggregates()
+      const newMode = getInitialMode(
+        aggregates.oneValue,
+        aggregates.horizontal,
+        aggregates.vertical,
+        areAllSidesSet(allSides),
+        props.defaultMode ?? 'per-side',
+      )
+      setMode(newMode)
+    },
+    [props.defaultMode, mode, allSides, updateAggregates],
+  )
 
-  React.useEffect(() => {
-    updateMode()
-  }, [selectedViews, updateMode, props.shorthand])
+  useSelectorWithCallback(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    () => {
+      // console.log(`updateMode('forced')`)
+      updateMode('forced')
+    },
+    'SplitChainedNumberInput selected views update',
+  )
 
   React.useEffect(() => {
     updateAggregates()
   }, [updateAggregates])
-
-  React.useEffect(() => {
-    return function () {
-      setMode(null)
-    }
-  }, [selectedViews])
 
   React.useEffect(() => {
     if (!isCurrentModeApplicable()) {
