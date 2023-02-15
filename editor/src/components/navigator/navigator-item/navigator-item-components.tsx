@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
@@ -31,8 +28,6 @@ export const NavigatorHintTop: React.FunctionComponent<
         transform: 'translate(0, 50%)',
         opacity: props.shouldBeShown ? 1 : 0,
         marginLeft: props.margin,
-        backgroundColor: '#00abff',
-        position: 'absolute',
         top: -1,
         width: '100%',
         display: 'flex',
@@ -64,47 +59,55 @@ export const NavigatorHintTop: React.FunctionComponent<
   )
 })
 
-export const NavigatorHintBottom: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorHintProps>
-> = React.memo((props) => {
-  const colorTheme = useColorTheme()
-  return (
-    <div
-      style={{
-        opacity: props.shouldBeShown ? 1 : 0,
-        marginLeft: props.margin,
-        backgroundColor: '#00abff',
-        position: 'absolute',
-        bottom: -(NavigatorHintCircleDiameter / 2) + 2,
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        height: 'max-content',
-      }}
-    >
+export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
+  (props, ref) => {
+    const colorTheme = useColorTheme()
+    return (
       <div
+        ref={ref}
         style={{
-          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-          height: 2,
-          flexGrow: 1,
+          position: 'relative',
+          zIndex: 1,
         }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          backgroundColor: colorTheme.bg0.value,
-          width: NavigatorHintCircleDiameter,
-          height: NavigatorHintCircleDiameter,
-          contain: 'layout',
-          border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-          borderRadius: '50%',
-        }}
-      />
-    </div>
-  )
-})
+      >
+        <div
+          ref={ref}
+          style={{
+            opacity: props.shouldBeShown ? 1 : 0,
+            marginLeft: props.margin,
+            position: 'absolute',
+            bottom: -6,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            height: 12,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+              height: 2,
+              flexGrow: 1,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: colorTheme.bg0.value,
+              width: NavigatorHintCircleDiameter,
+              height: NavigatorHintCircleDiameter,
+              contain: 'layout',
+              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+              borderRadius: '50%',
+            }}
+          />
+        </div>
+      </div>
+    )
+  },
+)
 
 interface VisiblityIndicatorProps {
   shouldShow: boolean
