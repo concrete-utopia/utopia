@@ -1799,22 +1799,36 @@ export const UPDATE_FNS = {
       editorForAction,
       true,
       (editor) => {
-        const staticSelectedElements = editor.selectedViews.filter((selectedView) => {
-          const { components } = getJSXComponentsAndImportsForPathFromState(
-            selectedView,
-            editorForAction,
-            derived,
-          )
-          return !MetadataUtils.isElementGenerated(selectedView)
-        })
+        const staticSelectedElements = editor.selectedViews
+          .filter((selectedView) => {
+            const { components } = getJSXComponentsAndImportsForPathFromState(
+              selectedView,
+              editorForAction,
+              derived,
+            )
+            return !MetadataUtils.isElementGenerated(selectedView)
+          })
+          .map((path) => {
+            const parentPath = EP.parentPath(path)
+            const parentIsFragment = MetadataUtils.isFragmentFromMetadata(
+              editor.jsxMetadata[EP.toString(parentPath)],
+            )
+            const siblings = MetadataUtils.getChildren(editor.jsxMetadata, parentPath)
+            if (parentIsFragment && siblings.length === 1) {
+              return parentPath
+            }
+            return path
+          })
+
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
             return EP.isStoryboardPath(parentPath) ? null : parentPath
-          }, editor.selectedViews),
+          }, staticSelectedElements),
           EP.pathsEqual,
         )
+
         return {
           ...withElementDeleted,
           selectedViews: parentsToSelect,
