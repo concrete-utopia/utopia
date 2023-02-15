@@ -14,7 +14,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { EditorState } from '../../../editor/store/editor-state'
+import { AllElementProps, EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -66,6 +66,15 @@ const defaultMetadata: ElementInstanceMetadataMap = {
     globalFrame: canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
     localFrame: localRectangle({ x: 50, y: 50, width: 250, height: 300 }),
   } as ElementInstanceMetadata,
+}
+
+const defaultAllElementProps: AllElementProps = {
+  'scene-aaa/app-entity:aaa/bbb': {
+    style: { x: 50, y: 50, width: 250, height: 300 },
+  },
+  'scene-aaa/app-entity:aaa/ccc': {
+    style: { x: 50, y: 50, width: 250, height: 300 },
+  },
 }
 
 const metadataWithSnapTarget: ElementInstanceMetadataMap = {
@@ -139,6 +148,7 @@ function dragByPixels(
       editorState,
       createBuiltInDependenciesList(null),
       metadata ?? defaultMetadata,
+      defaultAllElementProps,
     ),
     interactionSession,
   )!.strategy.apply('end-interaction')
