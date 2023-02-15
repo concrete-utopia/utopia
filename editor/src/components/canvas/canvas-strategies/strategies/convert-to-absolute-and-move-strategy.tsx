@@ -123,6 +123,7 @@ export function convertToAbsoluteAndMoveStrategy(
           )
         }
         const absoluteMoveApplyResult = applyMoveCommon(
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO BEFORE MERGE also make it work for groups
           canvasState,
           interactionSession,
           getConversionAndMoveCommands,

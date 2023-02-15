@@ -44,6 +44,8 @@ export function relativeMoveStrategy(
     offsets != null &&
     (offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null)
 
+  const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO BEFORE MERGE also make it work for groups
+
   return {
     strategy: {
       id: 'RELATIVE_MOVE',
@@ -79,9 +81,10 @@ export function relativeMoveStrategy(
           interactionSession.activeControl.type === 'BOUNDING_AREA'
         ) {
           return applyMoveCommon(
+            targets,
             canvasState,
             interactionSession,
-            getAdjustMoveCommands(canvasState, interactionSession, {
+            getAdjustMoveCommands(targets, canvasState, interactionSession, {
               ignoreLocalFrame: true,
             }),
           )
