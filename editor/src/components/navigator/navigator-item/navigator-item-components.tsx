@@ -71,7 +71,6 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
         }}
       >
         <div
-          ref={ref}
           style={{
             opacity: props.shouldBeShown ? 1 : 0,
             marginLeft: props.margin,
