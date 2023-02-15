@@ -7,8 +7,8 @@ import {
   flatMapEither,
   right,
   left,
-} from '../core/shared/either'
-import { assertNever } from '../core/shared/utils'
+} from './either'
+import { assertNever } from './utils'
 
 export interface Iso<S, A> {
   type: 'ISO'
@@ -382,109 +382,4 @@ export function compose7Lenses<A, B, C, D, E, F, G, H>(
   seventh: GeneralLens<G, H>,
 ): GeneralLens<A, H> {
   return compose2Lenses(compose6Lenses(first, second, third, fourth, fifth, sixth), seventh)
-}
-
-export function fromTypeGuard<S, A extends S>(typeGuard: (s: S) => s is A): GeneralLens<S, A> {
-  return prism(
-    (s) => {
-      if (typeGuard(s)) {
-        return right(s)
-      } else {
-        return left('Failed typeguard.')
-      }
-    },
-    (a) => {
-      return a
-    },
-  )
-}
-
-export function fromField<S, K extends keyof S>(fieldName: K): GeneralLens<S, S[K]> {
-  return lens(
-    (s) => {
-      return s[fieldName]
-    },
-    (s, a) => {
-      return {
-        ...s,
-        [fieldName]: a,
-      }
-    },
-  )
-}
-
-export function fromObjectField<A, S extends { [key: string]: A }>(
-  fieldName: string,
-): GeneralLens<S, A> {
-  return traversal(
-    (s: S) => {
-      if (fieldName in s) {
-        return [s[fieldName]]
-      } else {
-        return []
-      }
-    },
-    (s: S, modify: (a: A) => A) => {
-      if (fieldName in s) {
-        return {
-          ...s,
-          [fieldName]: modify(s[fieldName]),
-        }
-      } else {
-        return s
-      }
-    },
-  )
-}
-
-export function traverseArray<A>(): GeneralLens<Array<A>, A> {
-  return traversal(
-    (a) => {
-      return a
-    },
-    (array: Array<A>, modify: (a: A) => A) => {
-      return array.map(modify)
-    },
-  )
-}
-
-export function toListOf<S, A>(withLens: GeneralLens<S, A>, s: S): Array<A> {
-  switch (withLens.type) {
-    case 'ISO':
-      return [withLens.from(s)]
-    case 'LENS':
-      return [withLens.from(s)]
-    case 'PRISM':
-      return foldEither(
-        () => {
-          return []
-        },
-        (a) => {
-          return [a]
-        },
-        withLens.from(s),
-      )
-    case 'TRAVERSAL':
-      return withLens.from(s)
-    default:
-      assertNever(withLens)
-  }
-}
-
-export function toFirst<S, A>(withLens: GeneralLens<S, A>, s: S): Either<string, A> {
-  const asList = toListOf(withLens, s)
-  if (asList.length > 0) {
-    return right(asList[0])
-  } else {
-    return left('No values present.')
-  }
-}
-
-export function toLast<S, A>(withLens: GeneralLens<S, A>, s: S): Either<string, A> {
-  const asList = toListOf(withLens, s)
-  if (asList.length > 0) {
-    return right(asList[asList.length - 1])
-  } else {
-    return left('No values present.')
-  }
 }
