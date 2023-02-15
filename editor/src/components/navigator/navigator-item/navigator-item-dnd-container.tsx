@@ -456,6 +456,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   return (
     <div
+      data-testid={`navigator-item-drag-${safeComponentId}`}
+      ref={drag}
       style={{
         ...props.windowStyle,
       }}
@@ -464,30 +466,28 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         props.index === 0,
         <NavigatorHintTop ref={topDropRef} shouldBeShown={isOverTopHint} margin={margin} />,
       )}
-      <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
-        <div ref={reparentDropRef} data-testid={`navigator-item-drop-${safeComponentId}`}>
-          <div
-            key='navigatorItem'
-            id={`navigator-item-${safeComponentId}`}
-            data-testid={`navigator-item-${safeComponentId}`}
-          >
-            <NavigatorItem
-              elementPath={props.elementPath}
-              index={props.index}
-              getSelectedViewsInRange={props.getSelectedViewsInRange}
-              noOfChildren={props.noOfChildren}
-              label={props.label}
-              dispatch={props.editorDispatch}
-              isHighlighted={props.highlighted}
-              isElementVisible={props.isElementVisible}
-              renamingTarget={props.renamingTarget}
-              collapsed={props.collapsed}
-              selected={props.selected}
-              elementWarnings={props.elementWarnings}
-              shouldShowParentOutline={shouldShowParentOutline}
-              visibleNavigatorTargets={props.visibleNavigatorTargets}
-            />
-          </div>
+      <div ref={reparentDropRef} data-testid={`navigator-item-drop-${safeComponentId}`}>
+        <div
+          key='navigatorItem'
+          id={`navigator-item-${safeComponentId}`}
+          data-testid={`navigator-item-${safeComponentId}`}
+        >
+          <NavigatorItem
+            elementPath={props.elementPath}
+            index={props.index}
+            getSelectedViewsInRange={props.getSelectedViewsInRange}
+            noOfChildren={props.noOfChildren}
+            label={props.label}
+            dispatch={props.editorDispatch}
+            isHighlighted={props.highlighted}
+            isElementVisible={props.isElementVisible}
+            renamingTarget={props.renamingTarget}
+            collapsed={props.collapsed}
+            selected={props.selected}
+            elementWarnings={props.elementWarnings}
+            shouldShowParentOutline={shouldShowParentOutline}
+            visibleNavigatorTargets={props.visibleNavigatorTargets}
+          />
         </div>
       </div>
       <NavigatorHintBottom
