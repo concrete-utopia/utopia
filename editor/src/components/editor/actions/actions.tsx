@@ -1800,22 +1800,44 @@ export const UPDATE_FNS = {
       editorForAction,
       true,
       (editor) => {
-        const staticSelectedElements = editor.selectedViews.filter((selectedView) => {
-          const { components } = getJSXComponentsAndImportsForPathFromState(
-            selectedView,
-            editorForAction,
-            derived,
-          )
-          return !MetadataUtils.isElementGenerated(selectedView)
-        })
+        const staticSelectedElements = editor.selectedViews
+          .filter((selectedView) => {
+            const { components } = getJSXComponentsAndImportsForPathFromState(
+              selectedView,
+              editorForAction,
+              derived,
+            )
+            return !MetadataUtils.isElementGenerated(selectedView)
+          })
+          .map((path, _, allSelectedPaths) => {
+            const siblings = MetadataUtils.getSiblings(editor.jsxMetadata, path)
+            const selectedSiblings = allSelectedPaths.filter((p) =>
+              siblings.includes(editor.jsxMetadata[EP.toString(p)]),
+            )
+
+            const parentPath = EP.parentPath(path)
+            const parentIsFragment = MetadataUtils.isFragmentFromMetadata(
+              editor.jsxMetadata[EP.toString(parentPath)],
+            )
+            const parentWillBeEmpty =
+              MetadataUtils.getChildren(editor.jsxMetadata, parentPath).length ===
+              selectedSiblings.length
+            if (parentIsFragment && parentWillBeEmpty) {
+              return parentPath
+            }
+
+            return path
+          })
+
         const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
             return EP.isStoryboardPath(parentPath) ? null : parentPath
-          }, editor.selectedViews),
+          }, staticSelectedElements),
           EP.pathsEqual,
         )
+
         return {
           ...withElementDeleted,
           selectedViews: parentsToSelect,
