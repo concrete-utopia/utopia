@@ -973,7 +973,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-drop-before-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',

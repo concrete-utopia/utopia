@@ -27,35 +27,43 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
         data-testid={props.testId}
         ref={ref}
         style={{
-          transform: 'translate(0, 100%)',
-          opacity: props.shouldBeShown ? 1 : 0,
-          marginLeft: props.margin,
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          height: 'max-content',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <div
           style={{
-            backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-            height: 2,
-            flexGrow: 1,
-          }}
-        />
-        <div
-          style={{
+            opacity: props.shouldBeShown ? 1 : 0,
+            marginLeft: props.margin,
             position: 'absolute',
-            backgroundColor: colorTheme.bg0.value,
-            width: NavigatorHintCircleDiameter,
-            height: NavigatorHintCircleDiameter,
-            contain: 'layout',
-            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-            borderRadius: '50%',
+            top: -6,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            height: 16,
           }}
-        />
+        >
+          <div
+            style={{
+              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+              height: 2,
+              flexGrow: 1,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: colorTheme.bg0.value,
+              width: NavigatorHintCircleDiameter,
+              height: NavigatorHintCircleDiameter,
+              contain: 'layout',
+              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+              borderRadius: '50%',
+            }}
+          />
+        </div>
       </div>
     )
   },

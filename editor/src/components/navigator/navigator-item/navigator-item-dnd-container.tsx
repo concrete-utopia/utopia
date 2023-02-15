@@ -28,6 +28,19 @@ import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/r
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
+import { metadataSelector } from '../../inspector/inpector-selectors'
+
+export const TopDropTargetLineTestId = (safeComponentId: string): string =>
+  `navigator-item-drag-${safeComponentId}`
+
+export const BottomDropTargetLineTestId = (safeComponentId: string): string =>
+  `navigator-item-drop-before-${safeComponentId}`
+
+export const DragTargetLineTestId = (safeComponentId: string): string =>
+  `navigator-item-drop-after-${safeComponentId}`
+
+export const NavigatorItemTestId = (safeComponentId: string): string =>
+  `navigator-item-drop-${safeComponentId}`
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -113,10 +126,11 @@ function getHintPaddingForDepth(depth: number): number {
   )
 }
 
-function onHoverBottomDropTarget(
+function onHoverDropTargetLine(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
+  position: 'before' | 'after',
 ): void {
   if (
     monitor == null ||
@@ -176,7 +190,7 @@ function onHoverBottomDropTarget(
   }
 
   if (
-    propsOfDraggedItem.appropriateDropTargetHint?.type !== 'after' ||
+    propsOfDraggedItem.appropriateDropTargetHint?.type !== position ||
     !EP.pathsEqual(
       propsOfDraggedItem.appropriateDropTargetHint?.displayAtElementPath,
       propsOfDropTargetItem.elementPath,
@@ -186,7 +200,7 @@ function onHoverBottomDropTarget(
       [
         ...targetAction,
         showNavigatorDropTargetHint(
-          'after',
+          position,
           targetPathWithReparentWiggle,
           propsOfDropTargetItem.elementPath,
         ),
@@ -303,7 +317,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverBottomDropTarget(item, props, monitor)
+        onHoverDropTargetLine(item, props, monitor, 'after')
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor)
@@ -339,9 +353,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        item.editorDispatch([
-          showNavigatorDropTargetHint('before', props.elementPath, props.elementPath),
-        ])
+        onHoverDropTargetLine(item, props, monitor, 'before')
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         onDrop(item, props, monitor)
@@ -425,9 +437,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       props.appropriateDropTargetHint?.type === 'reparent')
 
   const margin = (() => {
-    if (!isOverBottomHint) {
-      return 0
-    }
     if (
       props.appropriateDropTargetHint?.type === 'reparent' &&
       props.appropriateDropTargetHint.moveToElementPath != null
@@ -454,24 +463,40 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       : moveToElementPath != null &&
         EP.pathsEqual(props.elementPath, EP.parentPath(moveToElementPath))
 
+  const metadata = useEditorState(
+    Substores.metadata,
+    metadataSelector,
+    'NavigatorItemContainer metadata',
+  )
+
+  const isFirstSibling = React.useMemo(() => {
+    const siblings = MetadataUtils.getSiblings(metadata, props.elementPath)
+    const firstSibling = siblings.at(0)
+    if (firstSibling == null) {
+      return false
+    }
+
+    return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
+  }, [metadata, props.elementPath])
+
   return (
     <div
-      data-testid={`navigator-item-drag-${safeComponentId}`}
+      data-testid={DragTargetLineTestId(safeComponentId)}
       ref={drag}
       style={{
         ...props.windowStyle,
       }}
     >
       {when(
-        props.index === 0,
+        isFirstSibling,
         <NavigatorHintTop
-          testId={`navigator-item-drop-before-${safeComponentId}`}
+          testId={TopDropTargetLineTestId(safeComponentId)}
           ref={topDropRef}
           shouldBeShown={isOverTopHint}
           margin={margin}
         />,
       )}
-      <div ref={reparentDropRef} data-testid={`navigator-item-drop-${safeComponentId}`}>
+      <div ref={reparentDropRef} data-testid={NavigatorItemTestId(safeComponentId)}>
         <div
           key='navigatorItem'
           id={`navigator-item-${safeComponentId}`}
@@ -496,7 +521,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         </div>
       </div>
       <NavigatorHintBottom
-        testId={`navigator-item-drop-after-${safeComponentId}`}
+        testId={BottomDropTargetLineTestId(safeComponentId)}
         ref={bottomDropRef}
         shouldBeShown={shouldShowBottomHint}
         margin={margin}
