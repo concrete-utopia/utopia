@@ -493,9 +493,9 @@ function shouldSnapToParentEdge(
       return siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.height
         ? 'vertical'
         : 'vertical-no-snap'
+    } else if (parentJustifyContent === 'flex-end') {
+      return parentBounds.y > resizedBounds.y + SnappingThreshold ? 'vertical' : 'vertical-no-snap'
     }
-  } else if (parentJustifyContent === 'flex-end') {
-    return parentBounds.y > resizedBounds.y + SnappingThreshold ? 'vertical' : 'vertical-no-snap'
   }
 
   return null
