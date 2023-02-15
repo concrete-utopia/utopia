@@ -1808,10 +1808,10 @@ export const UPDATE_FNS = {
             )
             return !MetadataUtils.isElementGenerated(selectedView)
           })
-          .map((path, _, all) => {
+          .map((path, _, allSelectedPaths) => {
             const siblings = MetadataUtils.getSiblings(editor.jsxMetadata, path)
-            const selectedSiblings = all.filter((v) =>
-              siblings.includes(editor.jsxMetadata[EP.toString(v)]),
+            const selectedSiblings = allSelectedPaths.filter((p) =>
+              siblings.includes(editor.jsxMetadata[EP.toString(p)]),
             )
 
             const parentPath = EP.parentPath(path)
@@ -1824,6 +1824,7 @@ export const UPDATE_FNS = {
             if (parentIsFragment && parentWillBeEmpty) {
               return parentPath
             }
+
             return path
           })
 
