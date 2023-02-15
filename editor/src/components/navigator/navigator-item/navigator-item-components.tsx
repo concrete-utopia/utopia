@@ -18,46 +18,46 @@ interface NavigatorHintProps {
   margin: number
 }
 
-export const NavigatorHintTop: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorHintProps>
-> = React.memo((props) => {
-  const colorTheme = useColorTheme()
-  return (
-    <div
-      style={{
-        transform: 'translate(0, 50%)',
-        opacity: props.shouldBeShown ? 1 : 0,
-        marginLeft: props.margin,
-        top: -1,
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        height: 'max-content',
-      }}
-    >
+export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
+  (props, ref) => {
+    const colorTheme = useColorTheme()
+    return (
       <div
+        ref={ref}
         style={{
-          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-          height: 2,
-          flexGrow: 1,
+          transform: 'translate(0, 100%)',
+          opacity: props.shouldBeShown ? 1 : 0,
+          marginLeft: props.margin,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          height: 'max-content',
         }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          backgroundColor: colorTheme.bg0.value,
-          width: NavigatorHintCircleDiameter,
-          height: NavigatorHintCircleDiameter,
-          contain: 'layout',
-          border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-          borderRadius: '50%',
-        }}
-      />
-    </div>
-  )
-})
+      >
+        <div
+          style={{
+            backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+            height: 2,
+            flexGrow: 1,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            backgroundColor: colorTheme.bg0.value,
+            width: NavigatorHintCircleDiameter,
+            height: NavigatorHintCircleDiameter,
+            contain: 'layout',
+            border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+            borderRadius: '50%',
+          }}
+        />
+      </div>
+    )
+  },
+)
 
 export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
   (props, ref) => {
@@ -75,13 +75,13 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
             opacity: props.shouldBeShown ? 1 : 0,
             marginLeft: props.margin,
             position: 'absolute',
-            bottom: -6,
+            bottom: -8,
             width: '100%',
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-start',
-            height: 12,
+            height: 16,
           }}
         >
           <div

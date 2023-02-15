@@ -61,7 +61,7 @@ function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: Elemen
   return !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
 }
 
-function onDropBottomTarget(
+function onDrop(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor,
@@ -291,7 +291,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props],
   )
 
-  const [{ isOver: isOverBottomHint }, dropRef] = useDrop<
+  const [{ isOver: isOverBottomHint }, bottomDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
     DropCollectedProps
@@ -306,7 +306,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         onHoverBottomDropTarget(item, props, monitor)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onDropBottomTarget(item, props, monitor)
+        onDrop(item, props, monitor)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
@@ -327,7 +327,45 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props],
   )
 
-  const [, reparentDropRef] = useDrop<
+  const [{ isOver: isOverTopHint }, topDropRef] = useDrop<
+    NavigatorItemDragAndDropWrapperProps,
+    unknown,
+    DropCollectedProps
+  >(
+    () => ({
+      accept: 'NAVIGATOR_ITEM',
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+      hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        item.editorDispatch([
+          showNavigatorDropTargetHint('before', props.elementPath, props.elementPath),
+        ])
+      },
+      drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        onDrop(item, props, monitor)
+      },
+      canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
+        const editorState = editorStateRef.current
+        const isReparentTarget = item.appropriateDropTargetHint?.type === 'reparent'
+        const childrenSupportedIfRequired =
+          !isReparentTarget ||
+          MetadataUtils.targetSupportsChildren(
+            editorState.projectContents,
+            editorState.jsxMetadata,
+            props.elementPath,
+          )
+        const notSelectedItem = item.getDragSelections().every((selection) => {
+          return canDrop(props, selection.elementPath)
+        })
+        return childrenSupportedIfRequired && notSelectedItem
+      },
+    }),
+    [props],
+  )
+
+  const [{ isOver: isOverParentOutline }, reparentDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
     DropCollectedProps
@@ -342,7 +380,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         onHoverParentOutline(item, props, monitor)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onDropBottomTarget(item, props, monitor)
+        onDrop(item, props, monitor)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
@@ -412,7 +450,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   const shouldShowParentOutline =
     dropTargetHintType === 'reparent'
-      ? isOverBottomHint
+      ? isOverBottomHint || isOverParentOutline
       : moveToElementPath != null &&
         EP.pathsEqual(props.elementPath, EP.parentPath(moveToElementPath))
 
@@ -424,10 +462,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     >
       {when(
         props.index === 0,
-        <NavigatorHintTop
-          shouldBeShown={isOverBottomHint && props.appropriateDropTargetHint?.type === 'before'}
-          margin={margin}
-        />,
+        <NavigatorHintTop ref={topDropRef} shouldBeShown={isOverTopHint} margin={margin} />,
       )}
       <div ref={drag} data-testid={`navigator-item-drag-${safeComponentId}`}>
         <div ref={reparentDropRef} data-testid={`navigator-item-drop-${safeComponentId}`}>
@@ -455,7 +490,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           </div>
         </div>
       </div>
-      <NavigatorHintBottom ref={dropRef} shouldBeShown={shouldShowBottomHint} margin={margin} />
+      <NavigatorHintBottom
+        ref={bottomDropRef}
+        shouldBeShown={shouldShowBottomHint}
+        margin={margin}
+      />
     </div>
   )
 })
