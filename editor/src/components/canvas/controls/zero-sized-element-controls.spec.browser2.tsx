@@ -28,7 +28,7 @@ async function selectTargetAndDoubleClickOnZeroSizeControl(
     x: elementBounds.x,
     y: elementBounds.y,
   }
-  mouseDoubleClickAtPoint(zeroSizeControl, topLeftCorner)
+  await mouseDoubleClickAtPoint(zeroSizeControl, topLeftCorner)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }

@@ -14,7 +14,6 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
-import { TextRelatedProperties } from 'src/core/properties/css-properties'
 
 describe('Use the text editor', () => {
   it('Click to edit text', async () => {
@@ -309,7 +308,7 @@ describe('Use the text editor', () => {
       y: divBounds.y + 10,
     }
 
-    mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
     await editor.getDispatchFollowUpActionsFinished()
 
     await wait(50) // give it time to adjust the caret position
@@ -386,9 +385,9 @@ describe('Use the text editor', () => {
 
         const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-        pressKey('t')
+        await pressKey('t')
         await editor.getDispatchFollowUpActionsFinished()
-        mouseDragFromPointToPoint(canvasControlsLayer, { x: 500, y: 200 }, { x: 600, y: 300 })
+        await mouseDragFromPointToPoint(canvasControlsLayer, { x: 500, y: 200 }, { x: 600, y: 300 })
 
         typeText('I will go away')
 
@@ -425,7 +424,7 @@ describe('Use the text editor', () => {
           y: divBounds.y + 10,
         }
 
-        mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+        await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
         await editor.getDispatchFollowUpActionsFinished()
 
         await wait(50) // give it time to adjust the caret position
@@ -481,7 +480,7 @@ describe('Use the text editor', () => {
           y: divBounds.y + 10,
         }
 
-        mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+        await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
         await editor.getDispatchFollowUpActionsFinished()
 
         await wait(50) // give it time to adjust the caret position
@@ -908,12 +907,12 @@ async function prepareTestModifierEditor(editor: EditorRenderResult) {
 }
 
 async function pressShortcut(editor: EditorRenderResult, mod: Modifiers, key: string) {
-  await expectSingleUndoStep(editor, async () =>
-    pressKey(key, {
+  await expectSingleUndoStep(editor, async () => {
+    await pressKey(key, {
       modifiers: mod,
       targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
-    }),
-  )
+    })
+  })
   await closeTextEditor()
   await editor.getDispatchFollowUpActionsFinished()
 }
@@ -936,7 +935,7 @@ async function testModifier(
   return { before, after }
 }
 
-async function enterTextEditMode(editor: EditorRenderResult) {
+async function enterTextEditMode(editor: EditorRenderResult): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('div')
   const divBounds = div.getBoundingClientRect()
@@ -945,9 +944,9 @@ async function enterTextEditMode(editor: EditorRenderResult) {
     y: divBounds.y + 40,
   }
 
-  pressKey('t')
+  await pressKey('t')
   await editor.getDispatchFollowUpActionsFinished()
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -956,7 +955,7 @@ function typeText(text: string) {
 }
 
 async function closeTextEditor() {
-  pressKey('Escape')
+  await pressKey('Escape')
   await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 

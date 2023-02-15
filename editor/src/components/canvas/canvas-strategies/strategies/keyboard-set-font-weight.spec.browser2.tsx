@@ -157,7 +157,7 @@ async function doSelect(editor: EditorRenderResult) {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -166,11 +166,11 @@ async function doTestWithDelta(
   delta: { decreaseBy: number; increaseBy: number },
 ) {
   for (let i = 0; i < delta.increaseBy; i++) {
-    pressKey('.', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
+    await pressKey('.', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
   for (let i = 0; i < delta.decreaseBy; i++) {
-    pressKey(',', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
+    await pressKey(',', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
   await editor.getDispatchFollowUpActionsFinished()

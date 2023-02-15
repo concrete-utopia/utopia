@@ -19,7 +19,7 @@ describe('Text edit mode', () => {
   describe('Entering text edit mode', () => {
     it('Enters insert mode without selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('insert')
@@ -28,7 +28,7 @@ describe('Text edit mode', () => {
     it('Entering insert even if editable element is selected', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('t')
+      await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
       await editor.getDispatchFollowUpActionsFinished()
@@ -38,6 +38,20 @@ describe('Text edit mode', () => {
     })
     it('Entering text edit mode with double click on selected text editable element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+      await selectElement(editor, EP.fromString('sb/39e'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it('Entering text edit mode with double click on selected text editable element with only code inside', async () => {
+      const editor = await renderTestEditorWithCode(projectWithCodeText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
       await clickOnElement(editor, 'div', 'double-click')
       // wait for the next frame
@@ -81,7 +95,7 @@ describe('Text edit mode', () => {
     it('Entering text edit mode with pressing enter on a text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('enter')
+      await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -97,7 +111,7 @@ describe('Text edit mode', () => {
         'await-first-dom-report',
       )
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('enter')
+      await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -110,7 +124,7 @@ describe('Text edit mode', () => {
     it('Entering text edit mode with pressing enter on a text editable but empty selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithEmptyText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
-      pressKey('enter')
+      await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -126,7 +140,7 @@ describe('Text edit mode', () => {
     it('Click to select text editable target', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-      pressKey('t')
+      await pressKey('t')
       await clickOnElement(editor, 'div')
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -142,7 +156,7 @@ describe('Text edit mode', () => {
         'await-first-dom-report',
       )
 
-      pressKey('t')
+      await pressKey('t')
       await clickOnElement(editor, 'div')
 
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
@@ -173,12 +187,36 @@ async function clickOnElement(
   }
 
   if (singleOrDoubleClick === 'single-click') {
-    mouseClickAtPoint(canvasControlsLayer, divCorner)
+    await mouseClickAtPoint(canvasControlsLayer, divCorner)
   } else {
-    mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner)
   }
   await editor.getDispatchFollowUpActionsFinished()
 }
+
+const projectWithCodeText = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+const title = 'Hello'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      {title}
+    </div>
+  </Storyboard>
+)
+`)
 
 const projectWithText = formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'

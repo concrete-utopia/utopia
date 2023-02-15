@@ -24,8 +24,8 @@ const setupAndDrag = async (
   const startPoint = { x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 }
   const dragDelta = { x, y }
 
-  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, { modifiers })
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, { modifiers })
 
   await renderResult.getDispatchFollowUpActionsFinished()
   return renderResult

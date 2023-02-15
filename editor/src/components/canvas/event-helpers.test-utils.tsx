@@ -12,14 +12,14 @@ interface Point {
   y: number
 }
 
-export function mouseDownAtPoint(
+export async function mouseDownAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
   } = {},
-) {
+): Promise<void> {
   const modifiers = options.modifiers ?? emptyModifiers
   const passedEventOptions = options.eventOptions ?? {}
   const eventOptions = {
@@ -30,7 +30,7 @@ export function mouseDownAtPoint(
     ...passedEventOptions,
   }
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousedown', {
@@ -46,14 +46,14 @@ export function mouseDownAtPoint(
   })
 }
 
-export function mouseMoveToPoint(
+export async function mouseMoveToPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
   } = {},
-) {
+): Promise<void> {
   const modifiers = options.modifiers ?? emptyModifiers
   const passedEventOptions = options.eventOptions ?? {}
   const eventOptions = {
@@ -64,7 +64,7 @@ export function mouseMoveToPoint(
     ...passedEventOptions,
   }
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousemove', {
@@ -82,14 +82,14 @@ export function mouseMoveToPoint(
   resetMouseStatus()
 }
 
-export function mouseEnterAtPoint(
+export async function mouseEnterAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
   } = {},
-): void {
+): Promise<void> {
   const modifiers = options.modifiers ?? emptyModifiers
   const passedEventOptions = options.eventOptions ?? {}
   const eventOptions = {
@@ -100,7 +100,7 @@ export function mouseEnterAtPoint(
     ...passedEventOptions,
   }
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mouseover', {
@@ -113,7 +113,7 @@ export function mouseEnterAtPoint(
     )
   })
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mouseenter', {
@@ -127,14 +127,14 @@ export function mouseEnterAtPoint(
   })
 }
 
-export function mouseUpAtPoint(
+export async function mouseUpAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
   } = {},
-) {
+): Promise<void> {
   const modifiers = options.modifiers ?? emptyModifiers
   const passedEventOptions = options.eventOptions ?? {}
   const eventOptions = {
@@ -145,7 +145,7 @@ export function mouseUpAtPoint(
     ...passedEventOptions,
   }
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mouseup', {
@@ -160,7 +160,7 @@ export function mouseUpAtPoint(
   })
 }
 
-export function mouseDragFromPointWithDelta(
+export async function mouseDragFromPointWithDelta(
   eventSourceElement: HTMLElement,
   startPoint: Point,
   dragDelta: Point,
@@ -168,9 +168,9 @@ export function mouseDragFromPointWithDelta(
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
-    midDragCallback?: () => void
+    midDragCallback?: () => Promise<void>
   } = {},
-) {
+): Promise<void> {
   const endPoint: Point = {
     x: startPoint.x + dragDelta.x,
     y: startPoint.y + dragDelta.y,
@@ -178,7 +178,7 @@ export function mouseDragFromPointWithDelta(
   return mouseDragFromPointToPoint(eventSourceElement, startPoint, endPoint, options)
 }
 
-export function mouseDragFromPointToPoint(
+export async function mouseDragFromPointToPoint(
   eventSourceElement: HTMLElement,
   startPoint: Point,
   endPoint: Point,
@@ -186,19 +186,18 @@ export function mouseDragFromPointToPoint(
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
-    midDragCallback?: () => void
+    midDragCallback?: () => Promise<void>
   } = {},
-) {
+): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
   const staggerMoveEvents = options.staggerMoveEvents ?? true
-  const midDragCallback = options.midDragCallback ?? NO_OP
 
   const delta: Point = {
     x: endPoint.x - startPoint.x,
     y: endPoint.y - startPoint.y,
   }
 
-  mouseDownAtPoint(eventSourceElement, startPoint, options)
+  await mouseDownAtPoint(eventSourceElement, startPoint, options)
 
   if (staggerMoveEvents) {
     const numberOfSteps = 5
@@ -208,7 +207,7 @@ export function mouseDragFromPointToPoint(
         y: delta.y / numberOfSteps,
       }
 
-      mouseMoveToPoint(
+      await mouseMoveToPoint(
         eventSourceElement,
         {
           x: startPoint.x + step * stepSize.x,
@@ -226,7 +225,7 @@ export function mouseDragFromPointToPoint(
       )
     }
   } else {
-    mouseMoveToPoint(
+    await mouseMoveToPoint(
       eventSourceElement,
       {
         x: endPoint.x,
@@ -244,15 +243,17 @@ export function mouseDragFromPointToPoint(
     )
   }
 
-  midDragCallback()
+  if (options.midDragCallback != null) {
+    await options.midDragCallback()
+  }
 
-  mouseUpAtPoint(eventSourceElement, endPoint, {
+  await mouseUpAtPoint(eventSourceElement, endPoint, {
     ...options,
     eventOptions: mouseUpOptions,
   })
 }
 
-export function mouseDragFromPointToPointNoMouseDown(
+export async function mouseDragFromPointToPointNoMouseDown(
   eventSourceElement: HTMLElement,
   startPoint: Point,
   endPoint: Point,
@@ -260,12 +261,11 @@ export function mouseDragFromPointToPointNoMouseDown(
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
-    midDragCallback?: () => void
+    midDragCallback?: () => Promise<void>
   } = {},
-) {
+): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
   const staggerMoveEvents = options.staggerMoveEvents ?? true
-  const midDragCallback = options.midDragCallback ?? NO_OP
 
   const delta: Point = {
     x: endPoint.x - startPoint.x,
@@ -280,7 +280,7 @@ export function mouseDragFromPointToPointNoMouseDown(
         y: delta.y / numberOfSteps,
       }
 
-      mouseMoveToPoint(
+      await mouseMoveToPoint(
         eventSourceElement,
         {
           x: startPoint.x + step * stepSize.x,
@@ -298,7 +298,7 @@ export function mouseDragFromPointToPointNoMouseDown(
       )
     }
   } else {
-    mouseMoveToPoint(
+    await mouseMoveToPoint(
       eventSourceElement,
       {
         x: endPoint.x,
@@ -316,22 +316,24 @@ export function mouseDragFromPointToPointNoMouseDown(
     )
   }
 
-  midDragCallback()
+  if (options.midDragCallback != null) {
+    await options.midDragCallback()
+  }
 
-  mouseUpAtPoint(eventSourceElement, endPoint, {
+  await mouseUpAtPoint(eventSourceElement, endPoint, {
     ...options,
     eventOptions: mouseUpOptions,
   })
 }
 
-export function mouseClickAtPoint(
+export async function mouseClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
     modifiers?: Modifiers
     eventOptions?: MouseEventInit
   } = {},
-) {
+): Promise<void> {
   const modifiers = options.modifiers ?? emptyModifiers
   const passedEventOptions = options.eventOptions ?? {}
   const eventOptions = {
@@ -343,7 +345,7 @@ export function mouseClickAtPoint(
   }
   const { buttons, ...mouseUpOptions } = eventOptions ?? {}
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousedown', {
@@ -398,7 +400,7 @@ export function mouseClickAtPoint(
   })
 }
 
-export function mouseDoubleClickAtPoint(
+export async function mouseDoubleClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
   options: {
@@ -419,7 +421,7 @@ export function mouseDoubleClickAtPoint(
   const { buttons, ...mouseUpOptions } = eventOptions ?? {}
   const initialClickCount = options.initialClickCount ?? 0
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       eventSourceElement,
       new MouseEvent('mousedown', {
@@ -536,14 +538,14 @@ export function keyDown(
   })
 }
 
-export function pressKey(
+export async function pressKey(
   key: string,
   options: {
     modifiers?: Modifiers
     eventOptions?: KeyboardEventInit
     targetElement?: HTMLElement
   } = {},
-) {
+): Promise<void> {
   const modifiers = options.modifiers ?? emptyModifiers
   const passedEventOptions = options.eventOptions ?? {}
   const eventOptions = {
@@ -556,7 +558,7 @@ export function pressKey(
 
   const target = options?.targetElement ?? document.body
 
-  act(() => {
+  await act(async () => {
     fireEvent(
       target,
       new KeyboardEvent('keydown', {
@@ -638,59 +640,59 @@ export function makeDragEvent(
   return fileDropEvent
 }
 
-export function dragElementToPoint(
+export async function dragElementToPoint(
   eventSourceElement: HTMLElement | null,
   targetElement: HTMLElement,
   startPoint: Point,
   endPoint: Point,
   fileList: Array<File>,
-) {
+): Promise<void> {
   if (eventSourceElement != null) {
-    act(() => {
+    await act(async () => {
       fireEvent(
         eventSourceElement,
         makeDragEvent('dragstart', eventSourceElement, startPoint, fileList),
       )
     })
   }
-  act(() => {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
   })
-  act(() => {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
   })
-  act(() => {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
   })
 }
 
-export function dropElementAtPoint(
+export async function dropElementAtPoint(
   targetElement: HTMLElement,
   endPoint: Point,
   fileList: Array<File>,
-) {
-  act(() => {
+): Promise<void> {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('drop', targetElement, endPoint, fileList))
   })
 }
 
-export function switchDragAndDropElementTargets(
+export async function switchDragAndDropElementTargets(
   startingElement: HTMLElement,
   targetElement: HTMLElement,
   startPoint: Point,
   endPoint: Point,
   fileList: Array<File>,
-) {
-  act(() => {
+): Promise<void> {
+  await act(async () => {
     fireEvent(startingElement, makeDragEvent('dragleave', startingElement, startPoint, fileList))
   })
-  act(() => {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragenter', targetElement, { x: 0, y: 0 }, fileList))
   })
-  act(() => {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, { x: 0, y: 0 }, fileList))
   })
-  act(() => {
+  await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
   })
 }

@@ -28,7 +28,6 @@ export interface StyleSectionProps extends InspectorPartProps<React.CSSPropertie
 export const StyleSection = React.memo(() => {
   return (
     <React.Fragment>
-      {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
       <ContainerSubsection />
       <TextSubsection />
       <TransformSubsection />

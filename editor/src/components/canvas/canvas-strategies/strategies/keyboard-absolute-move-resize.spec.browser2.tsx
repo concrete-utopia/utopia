@@ -4,7 +4,6 @@ import { act, RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
 
 import * as EP from '../../../../core/shared/element-path'
-import { isFeatureEnabled, setFeatureEnabled } from '../../../../utils/feature-switches'
 import { cmdModifier, shiftCmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
@@ -43,7 +42,7 @@ describe('Keyboard Absolute Move E2E', () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode, getCanvasGuidelines } =
       await setupTest(defaultBBBProperties)
 
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
     expect(getCanvasGuidelines()).toEqual([])
 
@@ -61,11 +60,11 @@ describe('Keyboard Absolute Move E2E', () => {
     const { expectElementLeftOnScreen, expectElementPropertiesInPrintedCode, getCanvasGuidelines } =
       await setupTest(defaultBBBProperties)
 
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
     expect(getCanvasGuidelines()).toEqual([])
 
-    pressArrowLeftHoldingShift3x()
+    await pressArrowLeftHoldingShift3x()
     expectElementLeftOnScreen(0)
     expect(getCanvasGuidelines()).toEqual([
       {
@@ -90,10 +89,10 @@ describe('Keyboard Absolute Move E2E', () => {
       defaultBBBProperties,
     )
 
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
 
-    pressArrowRight3x()
+    await pressArrowRight3x()
     expectElementLeftOnScreen(33)
 
     // tick the clock so useClearKeyboardInteraction is fired
@@ -111,10 +110,10 @@ describe('Keyboard Absolute Move E2E', () => {
       defaultBBBProperties,
     )
 
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
 
-    pressArrowLeft3x()
+    await pressArrowLeft3x()
     expectElementLeftOnScreen(27)
 
     // tick the clock so useClearKeyboardInteraction is fired
@@ -134,7 +133,7 @@ describe('Keyboard Absolute Move E2E', () => {
       height: 101,
     })
 
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
 
     // tick the clock so useClearKeyboardInteraction is fired
@@ -163,11 +162,11 @@ describe('Keyboard Absolute Resize E2E', () => {
       height: 101,
     })
 
-    pressArrowRightHoldingCmd3x()
+    await pressArrowRightHoldingCmd3x()
     expectElementWidthOnScreen(3)
     expect(getCanvasGuidelines()).toEqual([])
 
-    pressArrorLeftHoldingCmd()
+    await pressArrowLeftHoldingCmd()
     expectElementWidthOnScreen(2)
     expect(getCanvasGuidelines()).toEqual([
       {
@@ -195,7 +194,7 @@ describe('Keyboard Strategies Escape Behavior', () => {
       defaultBBBProperties,
     )
 
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     // the element visually moved 30 pixels to the right on screen
     expectElementLeftOnScreen(30)
 
@@ -210,7 +209,7 @@ describe('Keyboard Strategies Escape Behavior', () => {
     })
 
     // move the element again
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     // the element visually moved 30 pixels to the right on screen
     expectElementLeftOnScreen(60)
     // but it's still printed as 30 in code
@@ -222,7 +221,7 @@ describe('Keyboard Strategies Escape Behavior', () => {
     })
 
     // press Escape does not cancel the keyboard-based strategy, instead commits it
-    pressEsc()
+    await pressEsc()
 
     expectElementLeftOnScreen(60)
     await expectElementPropertiesInPrintedCode({
@@ -246,28 +245,28 @@ describe('Keyboard Strategies Deletion Behavior', () => {
     } = await setupTest(defaultBBBProperties)
 
     // setting up the project
-    pressArrowRight3x()
+    await pressArrowRight3x()
     expectElementLeftOnScreen(3)
     clock.current.tick(KeyboardInteractionTimeout)
 
     // the test begins
-    pressArrowRight3x()
+    await pressArrowRight3x()
     expectElementLeftOnScreen(6)
 
     // delete the element
-    pressBackspace()
+    await pressBackspace()
 
     // the element is deleted
     expectElementDoesntExist()
 
     // undo the deletion
-    pressCmdZ()
+    await pressCmdZ()
 
     // the element is back to +3, jumping back from the dead
     expectElementLeftOnScreen(6)
 
     // undo the move
-    pressCmdZ()
+    await pressCmdZ()
 
     // the element is back to 0
     expectElementLeftOnScreen(3)
@@ -283,7 +282,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     )
 
     // Setup: first we move the element 30 pixels to the right
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
     clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
@@ -294,7 +293,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     })
 
     // then move the element again
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(60)
 
     // tick the clock so useClearKeyboardInteraction is fired
@@ -307,7 +306,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     })
 
     // Undo brings us back to the previous state with the 30 offset
-    pressCmdZ()
+    await pressCmdZ()
     expectElementLeftOnScreen(30)
     await expectElementPropertiesInPrintedCode({
       left: 30,
@@ -317,7 +316,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     })
 
     // Redo redoes the +60 offset:
-    pressCmdShiftZ()
+    await pressCmdShiftZ()
     expectElementLeftOnScreen(60)
     await expectElementPropertiesInPrintedCode({
       left: 60,
@@ -332,7 +331,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
       await setupTest(defaultBBBProperties)
 
     // Prepare the test, let's move the element by 30 and wait so we have a proper undo history entry
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(30)
     clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
@@ -343,7 +342,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     })
 
     // The actual test, move the element right 30
-    pressArrowRightHoldingShift3x()
+    await pressArrowRightHoldingShift3x()
     expectElementLeftOnScreen(60)
     await expectElementPropertiesInPrintedCode({
       left: 30,
@@ -353,7 +352,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     }) // the printed code didn't update yet, because we are mid-interaction
 
     // And IMMEDIATELY press undo, which should save the interaction and undo it
-    pressCmdZ()
+    await pressCmdZ()
     expect(renderResult.getEditorState().editor.canvas.interactionSession).toBeNull() // the interaction session is cleared
     expectElementLeftOnScreen(30)
 
@@ -365,7 +364,7 @@ describe('Keyboard Strategies Undo Behavior', () => {
     })
 
     // pressing Redo brings back the interaction
-    pressCmdShiftZ()
+    await pressCmdShiftZ()
     expectElementLeftOnScreen(60)
     await expectElementPropertiesInPrintedCode({
       left: 60,
@@ -433,54 +432,54 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
   }
 }
 
-function pressArrowRightHoldingCmd3x() {
-  pressKey('ArrowRight', { modifiers: cmdModifier })
-  pressKey('ArrowRight', { modifiers: cmdModifier })
-  pressKey('ArrowRight', { modifiers: cmdModifier })
+async function pressArrowRightHoldingCmd3x() {
+  await pressKey('ArrowRight', { modifiers: cmdModifier })
+  await pressKey('ArrowRight', { modifiers: cmdModifier })
+  await pressKey('ArrowRight', { modifiers: cmdModifier })
 }
 
-function pressArrorLeftHoldingCmd() {
-  pressKey('ArrowLeft', { modifiers: cmdModifier })
+async function pressArrowLeftHoldingCmd() {
+  await pressKey('ArrowLeft', { modifiers: cmdModifier })
 }
 
-function pressArrowLeftHoldingShift3x() {
-  pressKey('ArrowLeft', { modifiers: shiftModifier })
-  pressKey('ArrowLeft', { modifiers: shiftModifier })
-  pressKey('ArrowLeft', { modifiers: shiftModifier })
+async function pressArrowLeftHoldingShift3x() {
+  await pressKey('ArrowLeft', { modifiers: shiftModifier })
+  await pressKey('ArrowLeft', { modifiers: shiftModifier })
+  await pressKey('ArrowLeft', { modifiers: shiftModifier })
 }
 
-function pressArrowRightHoldingShift3x() {
-  pressKey('ArrowRight', { modifiers: shiftModifier })
-  pressKey('ArrowRight', { modifiers: shiftModifier })
-  pressKey('ArrowRight', { modifiers: shiftModifier })
+async function pressArrowRightHoldingShift3x() {
+  await pressKey('ArrowRight', { modifiers: shiftModifier })
+  await pressKey('ArrowRight', { modifiers: shiftModifier })
+  await pressKey('ArrowRight', { modifiers: shiftModifier })
 }
 
-function pressArrowRight3x() {
-  pressKey('ArrowRight')
-  pressKey('ArrowRight')
-  pressKey('ArrowRight')
+async function pressArrowRight3x() {
+  await pressKey('ArrowRight')
+  await pressKey('ArrowRight')
+  await pressKey('ArrowRight')
 }
 
-function pressArrowLeft3x() {
-  pressKey('ArrowLeft')
-  pressKey('ArrowLeft')
-  pressKey('ArrowLeft')
+async function pressArrowLeft3x() {
+  await pressKey('ArrowLeft')
+  await pressKey('ArrowLeft')
+  await pressKey('ArrowLeft')
 }
 
-function pressEsc() {
-  pressKey('Escape')
+async function pressEsc() {
+  await pressKey('Escape')
 }
 
-function pressBackspace() {
-  pressKey('Backspace')
+async function pressBackspace() {
+  await pressKey('Backspace')
 }
 
-function pressCmdZ() {
-  pressKey('z', { modifiers: cmdModifier })
+async function pressCmdZ() {
+  await pressKey('z', { modifiers: cmdModifier })
 }
 
-function pressCmdShiftZ() {
-  pressKey('z', { modifiers: shiftCmdModifier })
+async function pressCmdShiftZ() {
+  await pressKey('z', { modifiers: shiftCmdModifier })
 }
 
 const TestProjectDeluxeStallion = (bbbDimensions: { [key: string]: any }) => {

@@ -128,8 +128,10 @@ import {
   addPositionAbsoluteTopLeft,
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
+  isIntrinsicallyInlineElement,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
+import { setProperty } from '../canvas/commands/set-property-command'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -175,8 +177,11 @@ export function editorIsTarget(event: KeyboardEvent, editor: EditorState): boole
   return !isEventFromInput(event.target) && editor.modal == null
 }
 
-function jumpToParentActions(selectedViews: Array<ElementPath>): Array<EditorAction> {
-  const jumpResult = Canvas.jumpToParent(selectedViews)
+function jumpToParentActions(
+  selectedViews: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): Array<EditorAction> {
+  const jumpResult = Canvas.jumpToParent(selectedViews, metadata)
   switch (jumpResult) {
     case null:
       return []
@@ -428,7 +433,7 @@ export function handleKeyDown(
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews)
+          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
         } else {
           return []
         }
@@ -444,7 +449,7 @@ export function handleKeyDown(
         } else if (editor.canvas.interactionSession != null) {
           return [CanvasActions.clearInteractionSession(false)]
         } else if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews)
+          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
         }
 
         // TODO: Move this around.
@@ -852,12 +857,29 @@ export function handleKeyDown(
         return [
           EditorActions.applyCommandsAction(
             editor.selectedViews.flatMap((elementPath) => {
-              if (
-                MetadataUtils.isPositionAbsolute(
-                  MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath),
-                )
-              ) {
-                return nukeAllAbsolutePositioningPropsCommands(elementPath)
+              const element = MetadataUtils.findElementByElementPath(
+                editor.jsxMetadata,
+                elementPath,
+              )
+              if (element == null) {
+                return []
+              }
+
+              if (MetadataUtils.isPositionAbsolute(element)) {
+                return [
+                  ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+                  ...(isIntrinsicallyInlineElement(element)
+                    ? [
+                        ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                        setProperty(
+                          'always',
+                          elementPath,
+                          PP.create('style', 'display'),
+                          'inline-block',
+                        ),
+                      ]
+                    : []),
+                ]
               } else {
                 return [
                   ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),

@@ -67,9 +67,28 @@ export function flexResizeBasicStrategy(
     canvasState.startingMetadata,
     selectedElements[0],
   )
-  const elementDimensions = metadata != null ? getElementDimensions(metadata) : null
+  const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
   const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
+
+  const widthPropToUse =
+    (elementParentFlexDirection === 'row' || elementParentFlexDirection === 'row-reverse') &&
+    elementDimensionsProps?.flexBasis != null
+      ? 'flexBasis'
+      : 'width'
+  const heightPropToUse =
+    (elementParentFlexDirection === 'column' || elementParentFlexDirection === 'column-reverse') &&
+    elementDimensionsProps?.flexBasis != null
+      ? 'flexBasis'
+      : 'height'
+
+  const elementDimensions =
+    elementDimensionsProps == null
+      ? null
+      : {
+          width: elementDimensionsProps[widthPropToUse],
+          height: elementDimensionsProps[heightPropToUse],
+        }
 
   const hasDimensions =
     elementDimensions != null &&
@@ -157,7 +176,7 @@ export function flexResizeBasicStrategy(
           )
 
           const makeResizeCommand = (
-            name: 'width' | 'height',
+            name: 'width' | 'height' | 'flexBasis',
             elementDimension: number | null | undefined,
             original: number,
             resized: number,
@@ -182,16 +201,16 @@ export function flexResizeBasicStrategy(
 
           const resizeCommands: Array<AdjustCssLengthProperty> = [
             ...makeResizeCommand(
-              'width',
-              elementDimensions?.width,
+              widthPropToUse,
+              elementDimensionsProps?.[widthPropToUse],
               originalBounds.width,
               resizedBounds.width,
               elementParentBounds?.width,
               elementParentFlexDirection,
             ),
             ...makeResizeCommand(
-              'height',
-              elementDimensions?.height,
+              heightPropToUse,
+              elementDimensionsProps?.[heightPropToUse],
               originalBounds.height,
               resizedBounds.height,
               elementParentBounds?.height,
@@ -273,11 +292,12 @@ export function resizeWidthHeight(
 type ElementDimensions = {
   width: number | null
   height: number | null
+  flexBasis: number | null
 } | null
 
 const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
   const getOffsetPropValue = (
-    name: 'width' | 'height',
+    name: 'width' | 'height' | 'flexBasis',
     attrs: PropsOrJSXAttributes,
   ): number | null => {
     return foldEither(
@@ -300,5 +320,6 @@ const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensi
   return {
     width: getOffsetPropValue('width', attrs),
     height: getOffsetPropValue('height', attrs),
+    flexBasis: getOffsetPropValue('flexBasis', attrs),
   }
 }

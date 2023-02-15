@@ -16,10 +16,16 @@ import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { applyCommandsAction } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { detectFillHugFixedState, FixedHugFill, invert } from '../../../inspector/inspector-common'
+import {
+  detectFillHugFixedState,
+  FixedHugFill,
+  invert,
+  resizeToFitCommands,
+} from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from '../../../inspector/inspector-strategies/inspector-strategy'
 import CanvasActions from '../../canvas-actions'
@@ -141,6 +147,8 @@ interface ResizePointProps {
   position: EdgePosition
 }
 
+export const ResizePointTestId = (position: EdgePosition): string =>
+  `resize-control-${position.x}-${position.y}`
 const ResizePointMouseAreaSize = 12
 const ResizePointMouseAreaOffset = ResizePointMouseAreaSize / 2
 const ResizePointSize = 6
@@ -172,6 +180,15 @@ const ResizePoint = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
+    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+
+    const onEdgeDblClick = React.useCallback(() => {
+      dispatch([
+        applyCommandsAction(resizeToFitCommands(metadataRef.current, selectedElementsRef.current)),
+      ])
+    }, [dispatch, metadataRef, selectedElementsRef])
+
     return (
       <div
         ref={ref}
@@ -200,6 +217,7 @@ const ResizePoint = React.memo(
           }}
         />
         <div
+          onDoubleClick={onEdgeDblClick}
           style={{
             position: 'relative',
             width: ResizePointMouseAreaSize / scale,
@@ -212,7 +230,7 @@ const ResizePoint = React.memo(
           }}
           onMouseDown={onPointMouseDown}
           onMouseMove={onMouseMove}
-          data-testid={`resize-control-${props.position.x}-${props.position.y}`}
+          data-testid={ResizePointTestId(props.position)}
         />
       </div>
     )
@@ -254,21 +272,14 @@ const ResizeEdge = React.memo(
       [maybeClearHighlightsOnHoverEnd],
     )
 
-    const onEdgeDblClick = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        if (event.detail != 2) {
-          return
-        }
-
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedElementsRef.current,
-          setPropHugStrategies(invert(props.direction)),
-        )
-      },
-      [dispatch, metadataRef, props.direction, selectedElementsRef],
-    )
+    const onEdgeDblClick = React.useCallback(() => {
+      executeFirstApplicableStrategy(
+        dispatch,
+        metadataRef.current,
+        selectedElementsRef.current,
+        setPropHugStrategies(invert(props.direction)),
+      )
+    }, [dispatch, metadataRef, props.direction, selectedElementsRef])
 
     const lineSize = ResizeMouseAreaSize / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
@@ -277,7 +288,7 @@ const ResizeEdge = React.memo(
     const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
-        onClick={onEdgeDblClick}
+        onDoubleClick={onEdgeDblClick}
         ref={ref}
         style={{
           position: 'absolute',
@@ -345,6 +356,13 @@ interface SizeLabelProps {
   targets: Array<ElementPath>
 }
 
+const FontSize = 11
+const PaddingV = 0
+const PaddingH = 2
+const ExplicitHeightHacked = 20
+const BorderRadius = 2
+const SizeLabelMarginTop = 8
+
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
     const scale = useEditorState(
@@ -376,12 +394,15 @@ const SizeLabel = React.memo(
           label != null,
           <div
             style={{
-              marginTop: 8 / scale,
-              padding: `0px ${2 / scale}px`,
-              borderRadius: 2 / scale,
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: SizeLabelMarginTop / scale,
+              padding: `${PaddingV}px ${PaddingH / scale}px`,
+              borderRadius: BorderRadius / scale,
               color: colorTheme.white.value,
               backgroundColor: colorTheme.secondaryBlue.value,
-              fontSize: 11 / scale,
+              fontSize: FontSize / scale,
+              height: ExplicitHeightHacked / scale,
             }}
           >
             {`${label![0]} x ${label![1]}`}

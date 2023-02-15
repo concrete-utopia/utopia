@@ -31,11 +31,11 @@ async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
   return renderResult
 }
 
-function startDraggingFromInsertMenuDivButtonToPoint(
+async function startDraggingFromInsertMenuDivButtonToPoint(
   targetPoint: { x: number; y: number },
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
-) {
+): Promise<void> {
   const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
   const insertButtonBounds = insertButton.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -47,22 +47,22 @@ function startDraggingFromInsertMenuDivButtonToPoint(
 
   const endPoint = slightlyOffsetPointBecauseVeryWeirdIssue(targetPoint)
 
-  mouseMoveToPoint(insertButton, startPoint)
-  mouseDownAtPoint(insertButton, startPoint)
-  mouseMoveToPoint(canvasControlsLayer, endPoint, {
+  await mouseMoveToPoint(insertButton, startPoint)
+  await mouseDownAtPoint(insertButton, startPoint)
+  await mouseMoveToPoint(canvasControlsLayer, endPoint, {
     modifiers: modifiers,
     eventOptions: { buttons: 1 },
   })
 }
 
-function finishDraggingToPoint(
+async function finishDraggingToPoint(
   targetPoint: { x: number; y: number },
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
-) {
+): Promise<void> {
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
   const endPoint = slightlyOffsetPointBecauseVeryWeirdIssue(targetPoint)
-  mouseUpAtPoint(canvasControlsLayer, endPoint, { modifiers: modifiers })
+  await mouseUpAtPoint(canvasControlsLayer, endPoint, { modifiers: modifiers })
 }
 
 async function dragFromInsertMenuDivButtonToPoint(
@@ -70,10 +70,10 @@ async function dragFromInsertMenuDivButtonToPoint(
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
 ) {
-  startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
+  await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
   const dragOutlineControl = renderResult.renderedDOM.getByTestId(DragOutlineControlTestId)
   expect(dragOutlineControl).not.toBeNull()
-  finishDraggingToPoint(targetPoint, modifiers, renderResult)
+  await finishDraggingToPoint(targetPoint, modifiers, renderResult)
 
   await renderResult.getDispatchFollowUpActionsFinished()
 }
@@ -352,9 +352,9 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetSiblingBounds.y + targetSiblingBounds.height - 5,
     }
 
-    startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
     // Tab once to switch from flex insert to abs
-    pressKey('Tab', { modifiers: emptyModifiers })
+    await pressKey('Tab', { modifiers: emptyModifiers })
     await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -417,9 +417,9 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetParentBounds.y + targetParentBounds.height / 2,
     }
 
-    startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
     // Tab once to switch from flex insert to forced abs
-    pressKey('Tab', { modifiers: emptyModifiers })
+    await pressKey('Tab', { modifiers: emptyModifiers })
     await finishDraggingToPoint(targetPoint, emptyModifiers, renderResult)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

@@ -1,5 +1,4 @@
-import { setFeatureEnabled } from '../../utils/feature-switches'
-import { expectSingleUndoStep } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -11,13 +10,14 @@ import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
 
 describe('Resize to fit control', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
-    await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickResizeToFit(editor)
+    })
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')
@@ -34,9 +34,9 @@ describe('Resize to fit control', () => {
   it('resizes to fit, with shortcut', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
-    await expectSingleUndoStep(editor, async () =>
-      pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } }),
-    )
+    await expectSingleUndoStep(editor, async () => {
+      await pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } })
+    })
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')
@@ -54,7 +54,9 @@ describe('Resize to fit control', () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
     await clickResizeToFit(editor)
-    await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickResizeToFit(editor)
+    })
 
     expect(view.style.width).toEqual('221px')
     expect(view.style.minWidth).toEqual('')
@@ -72,9 +74,9 @@ describe('Resize to fit control', () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     const view = await selectView(editor)
     await clickResizeToFit(editor)
-    await expectSingleUndoStep(editor, async () =>
-      pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } }),
-    )
+    await expectSingleUndoStep(editor, async () => {
+      await pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } })
+    })
 
     expect(view.style.width).toEqual('221px')
     expect(view.style.minWidth).toEqual('')
@@ -91,7 +93,9 @@ describe('Resize to fit control', () => {
   it('when container is set to hug on one axis, it is resized to fit', async () => {
     const editor = await renderTestEditorWithCode(projectOneAxisOnHug, 'await-first-dom-report')
     const view = await selectView(editor)
-    await expectSingleUndoStep(editor, () => clickResizeToFit(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickResizeToFit(editor)
+    })
 
     expect(view.style.width).toEqual(MaxContent)
     expect(view.style.minWidth).toEqual('')
@@ -117,7 +121,7 @@ async function selectView(editor: EditorRenderResult): Promise<HTMLElement> {
     y: viewBounds.y + 40,
   }
 
-  mouseDoubleClickAtPoint(canvasControlsLayer, viewCorner)
+  await mouseDoubleClickAtPoint(canvasControlsLayer, viewCorner)
 
   return view
 }
@@ -125,7 +129,7 @@ async function selectView(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickResizeToFit(editor: EditorRenderResult) {
   const resizeToFitControl = editor.renderedDOM.getByTestId(ResizeToFitControlTestId)
 
-  mouseClickAtPoint(resizeToFitControl, { x: 2, y: 2 })
+  await mouseClickAtPoint(resizeToFitControl, { x: 2, y: 2 })
 }
 
 const project = `import * as React from 'react'

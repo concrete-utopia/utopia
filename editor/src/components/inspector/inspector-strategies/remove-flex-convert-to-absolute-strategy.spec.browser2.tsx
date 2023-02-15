@@ -1,24 +1,19 @@
-import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from '../add-remove-layout-system-control'
 
 describe('remove-flex-convert-to-absolute strategy', () => {
-  before(() => {
-    setFeatureEnabled('Nine block control', true)
-  })
-
-  after(() => {
-    setFeatureEnabled('Nine block control', false)
-  })
+  setFeatureForTests('Nine block control', true)
 
   it('remove flex layout', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const root = await selectDiv(editor)
 
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor)
+    })
 
     expect(root.style.display).toEqual('')
     expect(root.style.alignItems).toEqual('')
@@ -54,15 +49,15 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
 }
 
-async function clickOn(editor: EditorRenderResult) {
+async function clickOn(editor: EditorRenderResult): Promise<void> {
   const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
 
-  mouseClickAtPoint(plusButton, { x: 2, y: 2 })
+  await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
 }
 
 function project(): string {

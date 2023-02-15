@@ -29,9 +29,9 @@ async function dragElement(
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
-  midDragCallback?: () => void,
+  midDragCallback?: () => Promise<void>,
 ): Promise<void> {
-  const targetElement = await renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -40,8 +40,8 @@ async function dragElement(
     y: targetElementBounds.y + targetElementBounds.height / 2,
   })
 
-  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
     midDragCallback: midDragCallback,
   })
@@ -324,8 +324,8 @@ describe('Fallback Absolute Reparent Strategies', () => {
       'absolutechild',
       dragDelta,
       cmdModifier,
-      function midDragCallback() {
-        pressKey('2') // this should select the Reparent (Abs) strategy
+      async function midDragCallback() {
+        await pressKey('2') // this should select the Reparent (Abs) strategy
       },
     )
 

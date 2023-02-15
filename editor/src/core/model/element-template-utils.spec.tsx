@@ -18,12 +18,28 @@ import {
   componentUsesProperty,
   getUtopiaID,
   guaranteeUniqueUids,
+  rearrangeJsxChildren,
   removeJSXElementChild,
 } from './element-template-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
 import { getComponentFromCode } from './element-template.test-utils'
+import {
+  createTestProjectWithCode,
+  getParseSuccessForStoryboardCode,
+} from '../../sample-projects/sample-project-utils.test-utils'
+import {
+  makeTestProjectCodeWithSnippet,
+  testPrintCodeFromParseSuccess,
+} from '../../components/canvas/ui-jsx.test-utils'
+import {
+  modifyParseSuccessWithSimple,
+  StoryboardFilePath,
+} from '../../components/editor/store/editor-state'
+import { ProjectContentFile } from '../../components/assets'
+import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import { dynamicPathToStaticPath, fromString, fromStringStatic } from '../shared/element-path'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -558,3 +574,168 @@ export const TestComponent = ({style}) => {
     expect(result).toEqual(true)
   })
 })
+
+describe('rearrangeJsxChildren', () => {
+  it('rearranges three simple children', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-d' />
+          <div data-uid='child-c'>
+            <div data-uid='grandchild-c' />
+          </div>
+          <div data-uid='child-b' />
+          <div data-uid='child-a' />
+        </div>
+      </div>
+  `),
+    )
+
+    const target: StaticElementPath = dynamicPathToStaticPath(fromString('aaa/parent'))
+
+    const result = modifyParseSuccessWithSimple((s) => {
+      return {
+        ...s,
+        utopiaComponents: rearrangeJsxChildren(
+          target,
+          [
+            fromStringStatic('aaa/parent/child-a'),
+            fromStringStatic('aaa/parent/child-b'),
+            fromStringStatic('aaa/parent/child-c'),
+            fromStringStatic('aaa/parent/child-d'),
+          ],
+          s.utopiaComponents,
+        ),
+      }
+    }, projectFile)
+
+    expect(printCode(result)).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+          <div data-uid='child-c'>
+            <div data-uid='grandchild-c' />
+          </div>
+          <div data-uid='child-d' />
+        </div>
+      </div>
+  `),
+    )
+  })
+
+  it('not a problem if no need to rearrange', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+          <div data-uid='child-c'>
+            <div data-uid='grandchild-c' />
+          </div>
+          <div data-uid='child-d' />
+        </div>
+      </div>
+  `),
+    )
+
+    const target: StaticElementPath = dynamicPathToStaticPath(fromString('aaa/parent'))
+
+    const result = modifyParseSuccessWithSimple((s) => {
+      return {
+        ...s,
+        utopiaComponents: rearrangeJsxChildren(
+          target,
+          [
+            fromStringStatic('aaa/parent/child-a'),
+            fromStringStatic('aaa/parent/child-b'),
+            fromStringStatic('aaa/parent/child-c'),
+            fromStringStatic('aaa/parent/child-d'),
+          ],
+          s.utopiaComponents,
+        ),
+      }
+    }, projectFile)
+
+    expect(printCode(result)).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+          <div data-uid='child-c'>
+            <div data-uid='grandchild-c' />
+          </div>
+          <div data-uid='child-d' />
+        </div>
+      </div>
+  `),
+    )
+  })
+
+  it('throws error if child count doesnt match rearrangedChildPaths length', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-d' />
+          <div data-uid='child-c'>
+            <div data-uid='grandchild-c' />
+          </div>
+          <div data-uid='child-b' />
+          <div data-uid='child-a' />
+        </div>
+      </div>
+  `),
+    )
+
+    const target: StaticElementPath = dynamicPathToStaticPath(fromString('aaa/parent'))
+
+    expect(() => {
+      modifyParseSuccessWithSimple((s) => {
+        return {
+          ...s,
+          utopiaComponents: rearrangeJsxChildren(
+            target,
+            [fromStringStatic('aaa/parent/child-a')],
+            s.utopiaComponents,
+          ),
+        }
+      }, projectFile)
+    }).toThrow()
+  })
+
+  it('handles zero children all right', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' />
+      </div>
+  `),
+    )
+
+    const target: StaticElementPath = dynamicPathToStaticPath(fromString('aaa/parent'))
+
+    const result = modifyParseSuccessWithSimple((s) => {
+      return {
+        ...s,
+        utopiaComponents: rearrangeJsxChildren(target, [], s.utopiaComponents),
+      }
+    }, projectFile)
+
+    expect(printCode(result)).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' />
+      </div>
+  `),
+    )
+  })
+})
+
+function printCode(projectFile: ParseSuccess): string {
+  return testPrintCodeFromParseSuccess('storyboard.js', projectFile)
+}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
+import { mapArrayToDictionary, mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -54,6 +54,12 @@ import {
   useTextEditModeSelectAndHover,
 } from '../text-edit-mode/text-edit-mode-hooks'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
+import { useSetAtom } from 'jotai'
+import {
+  CanvasControlWithProps,
+  InspectorHoveredCanvasControls,
+} from '../../../inspector/common/inspector-atoms'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -194,8 +200,13 @@ function collectSelectableSiblings(
         fastForEach(ancestorChildren, (child) => {
           siblings.push(child)
 
+          const isLocked = lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))
+          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
+            componentMetadata,
+            child,
+          )
           // If this element is locked we want to recurse the children
-          if (lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))) {
+          if (isLocked || (!isFeatureEnabled('Fragment support') && isFragment)) {
             addChildrenAndUnfurledFocusedComponents([child])
           }
         })
@@ -256,7 +267,15 @@ export function getSelectableViews(
     ...hiddenInstances,
     ...getAllLockedElementPaths(componentMetadata, lockedElements),
   ]
-  return filterNonSelectableElements(nonSelectableElements, candidateViews)
+
+  const selectableElements = filterNonSelectableElements(nonSelectableElements, candidateViews)
+  if (isFeatureEnabled('Fragment support')) {
+    return selectableElements
+  }
+
+  return selectableElements.filter((p) => {
+    return !MetadataUtils.isElementPathFragmentFromMetadata(componentMetadata, p)
+  })
 }
 
 export function useFindValidTarget(): (
@@ -864,4 +883,25 @@ export function useClearKeyboardInteraction(editorStoreRef: {
 
     window.addEventListener('mousedown', clearKeyboardInteraction, { once: true, capture: true })
   }, [dispatch, editorStoreRef])
+}
+
+export function useSetHoveredControlsHandlers<T>(): {
+  onMouseEnter: (controls: Array<CanvasControlWithProps<T>>) => void
+  onMouseLeave: () => void
+} {
+  const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
+
+  const onMouseEnter = React.useCallback(
+    (controls: Array<CanvasControlWithProps<T>>) => {
+      setHoveredCanvasControls(controls)
+    },
+    [setHoveredCanvasControls],
+  )
+
+  const onMouseLeave = React.useCallback(
+    () => setHoveredCanvasControls([]),
+    [setHoveredCanvasControls],
+  )
+
+  return { onMouseEnter, onMouseLeave }
 }

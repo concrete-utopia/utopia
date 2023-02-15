@@ -1,5 +1,5 @@
 import { v4 as UUID } from 'uuid'
-import { Either, flatMapEither, isLeft, isRight, left, right } from './either'
+import { Either, flatMapEither, isLeft, left, right } from './either'
 import {
   JSXAttributes,
   jsxAttributeValue,
@@ -13,6 +13,7 @@ import {
   TopLevelElement,
   jsxElement,
   emptyComments,
+  JSXElementLike,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -22,10 +23,10 @@ import {
 } from './jsx-attributes'
 import * as PP from './property-path'
 import * as EP from './element-path'
-import { objectMap, objectValues } from './object-utils'
+import { objectMap } from './object-utils'
 import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../model/utopia-constants'
-import { addAllUniquely, mapDropNulls } from './array-utils'
+import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
+import { mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
 
 export const UtopiaIDPropertyPath = PP.create('data-uid')
@@ -124,13 +125,18 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   }
 }
 
-export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {
-  return jsxElement(
-    element.name,
-    uid,
-    setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
-    element.children,
-  )
+export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): JSXElementChild {
+  if (isJSXElement(element)) {
+    return jsxElement(
+      element.name,
+      uid,
+      setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+      element.children,
+    )
+  } else {
+    // TODO: Do other cases need this?
+    return element
+  }
 }
 
 export function parseUID(attributes: JSXAttributes): Either<string, string> {
@@ -145,7 +151,7 @@ export function parseUID(attributes: JSXAttributes): Either<string, string> {
   }, uidValue)
 }
 
-export function getUtopiaIDFromJSXElement(element: JSXElement): string {
+export function getUtopiaIDFromJSXElement(element: JSXElementLike): string {
   return element.uid
 }
 

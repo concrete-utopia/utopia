@@ -1527,7 +1527,7 @@ import { Scene, Storyboard, View } from 'utopia-api'
 
 export var Cat = (props) => {
   return (
-    <React.Fragment>
+    <React.Fragment data-uid={'fff'}>
       <div data-uid={'aaa'}>hello</div>
       <div data-uid={'bbb'}>bello</div>
     </React.Fragment>

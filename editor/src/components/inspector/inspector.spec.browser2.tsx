@@ -174,8 +174,8 @@ export var storyboard = (
         x: targetDivRect.x + targetDivRect.width / 2,
         y: targetDivRect.y + targetDivRect.height / 2,
       })
-      mouseMoveToPoint(canvasControlsLayer, targetDivCenter, { modifiers: cmdModifier })
-      mouseClickAtPoint(canvasControlsLayer, targetDivCenter, { modifiers: cmdModifier })
+      await mouseMoveToPoint(canvasControlsLayer, targetDivCenter, { modifiers: cmdModifier })
+      await mouseClickAtPoint(canvasControlsLayer, targetDivCenter, { modifiers: cmdModifier })
       await editor.getDispatchFollowUpActionsFinished()
 
       // Check that the inspector has been populated appropriately.
@@ -366,7 +366,7 @@ async function setupRemovalTest(buttonToPress: string): Promise<string> {
 
   const inspectorButton = editor.renderedDOM.getByTestId(buttonToPress)
   const inspectorButtonBounds = inspectorButton.getBoundingClientRect()
-  mouseClickAtPoint(inspectorButton, {
+  await mouseClickAtPoint(inspectorButton, {
     x: inspectorButtonBounds.x + 1,
     y: inspectorButtonBounds.y + 1,
   })
@@ -389,7 +389,7 @@ async function runToggleAspectRatioLockTest(
 
   const aspectRatioLockButton = editor.renderedDOM.getByTestId(AspectRatioLockButtonTestId)
   const aspectRatioLockButtonBounds = aspectRatioLockButton.getBoundingClientRect()
-  mouseClickAtPoint(aspectRatioLockButton, {
+  await mouseClickAtPoint(aspectRatioLockButton, {
     x: aspectRatioLockButtonBounds.x + 1,
     y: aspectRatioLockButtonBounds.y + 1,
   })

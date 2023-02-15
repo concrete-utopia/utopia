@@ -15,12 +15,12 @@ import {
 } from '../../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 
-function dragElement(
+async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
-) {
+): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -30,8 +30,8 @@ function dragElement(
     y: targetElementBounds.y + targetElementBounds.height / 2,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
   })
 }
@@ -176,7 +176,7 @@ describe('Flex Reparent To Flex Strategy', () => {
       x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 5,
       y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
     })
-    dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
+    await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -286,7 +286,7 @@ describe('Flex Reparent To Flex Strategy', () => {
       x: targetFlexChildCenter.x - flexChildToReparentCenter.x - 5,
       y: targetFlexChildCenter.y - flexChildToReparentCenter.y,
     })
-    dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
+    await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

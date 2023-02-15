@@ -24,6 +24,7 @@ import { LayoutIcon } from './layout-icon'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -32,8 +33,20 @@ interface ComputedLook {
 
 export const BasePaddingUnit = 20
 
-export function getElementPadding(elementPath: ElementPath): number {
-  return EP.navigatorDepth(elementPath) * BasePaddingUnit
+export function getElementPadding(
+  elementPath: ElementPath,
+  visibleNavigatorTargets: Array<ElementPath>, // TODO: we only need this to filter out fragments, can be delete after 'Fragment support' FS is deleted
+): number {
+  if (isFeatureEnabled('Fragment support')) {
+    return EP.navigatorDepth(elementPath) * BasePaddingUnit
+  }
+
+  const ancestors = EP.getAncestorsForLastPart(elementPath)
+  const ancestorsNotInNavigator = ancestors.filter(
+    (path) => !visibleNavigatorTargets.some((navigatorPath) => EP.pathsEqual(path, navigatorPath)),
+  )
+
+  return (EP.navigatorDepth(elementPath) - ancestorsNotInNavigator.length) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
@@ -49,6 +62,7 @@ export interface NavigatorItemInnerProps {
   renamingTarget: ElementPath | null
   selected: boolean
   elementWarnings: ElementWarnings
+  visibleNavigatorTargets: Array<ElementPath>
 }
 
 function selectItem(
@@ -285,6 +299,12 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isFocusable',
   )
 
+  const visibleNavigatorTargets = useEditorState(
+    Substores.derived,
+    (store) => store.derived.visibleNavigatorTargets,
+    'NavigatorItem visibleNavigatorTargets',
+  )
+
   const childComponentCount = props.noOfChildren
 
   const isDynamic = MetadataUtils.isElementGenerated(elementPath)
@@ -356,7 +376,7 @@ export const NavigatorItem: React.FunctionComponent<
   }, [isElementVisible])
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
-    paddingLeft: getElementPadding(elementPath),
+    paddingLeft: getElementPadding(elementPath, visibleNavigatorTargets),
     height: UtopiaTheme.layout.rowHeight.smaller,
     ...resultingStyle.style,
   })

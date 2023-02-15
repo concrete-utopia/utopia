@@ -1,6 +1,5 @@
 import { appendNewElementPath } from '../../../core/shared/element-path'
-import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, wait } from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests, wait } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -14,8 +13,14 @@ import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-la
 import { FlexDirection } from '../../inspector/common/css-utils'
 import { FlexAlignment, FlexJustifyContent, MaxContent } from '../../inspector/inspector-common'
 
-type LTWH = [left: number, top: number, width: number | string, height: number | string]
-type Size = [width: number, height: number]
+type LTWH = [
+  left: number,
+  top: number,
+  width: number | string,
+  height: number | string,
+  uid?: string,
+]
+type Size = [width: number, height: number, uid?: string]
 type FlexProps = {
   left: number
   top: number
@@ -30,15 +35,7 @@ type FlexProps = {
 }
 
 describe('Smart Convert To Flex', () => {
-  let originalFSValue: boolean = false
-  before(() => {
-    originalFSValue = isFeatureEnabled('Nine block control')
-    setFeatureEnabled('Nine block control', true)
-  })
-
-  after(() => {
-    setFeatureEnabled('Nine block control', originalFSValue)
-  })
+  setFeatureForTests('Nine block control', true)
 
   it('handles zero children well', async () => {
     const editor = await renderProjectWith({
@@ -378,6 +375,183 @@ describe('Smart Convert To Flex', () => {
   `),
     )
   })
+
+  it('single overflowing child does not make negative padding', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 100, 100],
+      children: [[0, 0, 150, 50]],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        data-uid='parent'
+      >
+        <div 
+          data-uid='child-0'
+          style={{
+            backgroundColor: '#aaaaaa33', 
+            width: 150, 
+            height: 50, 
+            contain: 'layout',
+          }} 
+        />
+      </div>
+    </div>
+  `),
+    )
+  })
+})
+
+describe('Smart Convert to Flex Reordering Children if Needed', () => {
+  setFeatureForTests('Nine block control', true)
+
+  it('converts a horizontal layout with children out of order', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [130, 0, 50, 50, 'c'],
+        [65, 0, 50, 50, 'b'],
+        [0, 0, 50, 50, 'a'],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 50, 'a'],
+          [50, 50, 'b'],
+          [50, 50, 'c'],
+        ],
+      }),
+    )
+  })
+})
+
+describe('Smart Convert to Flex alignItems', () => {
+  setFeatureForTests('Nine block control', true)
+
+  it('all elements aligned at the start become alignItems flex-start, but we omit that for simplicity', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 60],
+        [65, 0, 50, 30],
+        [130, 0, 50, 60],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 60],
+          [50, 30],
+          [50, 60],
+        ],
+      }),
+    )
+  })
+
+  it('elements aligned at their center become alignItems center', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 60],
+        [65, 15, 50, 30],
+        [130, 0, 50, 60],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+          alignItems: 'center',
+        },
+        children: [
+          [50, 60],
+          [50, 30],
+          [50, 60],
+        ],
+      }),
+    )
+  })
+
+  it('elements aligned at their bottom become alignItems flex-end', async () => {
+    const editor = await renderProjectWith({
+      parent: [50, 50, 500, 150],
+      children: [
+        [0, 0, 50, 60],
+        [65, 30, 50, 30],
+        [130, 0, 50, 60],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectWith({
+        parent: {
+          left: 50,
+          top: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+          alignItems: 'flex-end',
+        },
+        children: [
+          [50, 60],
+          [50, 30],
+          [50, 60],
+        ],
+      }),
+    )
+  })
 })
 
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
@@ -391,9 +565,10 @@ function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
       >
         ${input.children
           .map((child, i) => {
-            const [childL, childT, childW, childH] = child
+            const [childL, childT, childW, childH, maybeUid] = child
+            const uid = `child-${maybeUid ?? i}`
             return `<div 
-                data-uid='child-${i}' 
+                data-uid='${uid}' 
                 style={{ 
                   backgroundColor: '#aaaaaa33', 
                   position: 'absolute', 
@@ -426,9 +601,10 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
     >
       ${input.children
         .map((child, i) => {
-          const [childW, childH] = child
+          const [childW, childH, maybeUid] = child
+          const uid = `child-${maybeUid ?? i}`
           return `<div 
-                  data-uid='child-${i}'
+                  data-uid='${uid}'
                   style={{ 
                     backgroundColor: '#aaaaaa33',
                     width: ${JSON.stringify(childW)}, 
@@ -453,5 +629,5 @@ async function convertParentToFlex(editor: EditorRenderResult) {
 async function clickOnPlusButton(editor: EditorRenderResult) {
   const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
 
-  mouseClickAtPoint(plusButton, { x: 2, y: 2 })
+  await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
 }

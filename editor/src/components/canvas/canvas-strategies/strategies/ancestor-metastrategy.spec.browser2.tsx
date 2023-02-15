@@ -321,14 +321,14 @@ const TestProjectAbsoluteAndFlow = `
 </div>
 `
 
-function dragElement(
+async function dragElement(
   canvasControlsLayer: HTMLElement,
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
-  midDragCallback?: () => void,
-) {
-  mouseDownAtPoint(canvasControlsLayer, startPoint)
-  mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+  midDragCallback?: () => Promise<void>,
+): Promise<void> {
+  await mouseDownAtPoint(canvasControlsLayer, startPoint)
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     midDragCallback: midDragCallback,
   })
 }
@@ -354,9 +354,9 @@ async function runTest(
   const { x, y } = startPoint
 
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  await dragElement(canvasControlsLayer, startPoint, windowPoint({ x: 20, y: 0 }), () => {
-    mouseDownAtPoint(divToBeDragged, { x: x, y: y })
-    mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
+  await dragElement(canvasControlsLayer, startPoint, windowPoint({ x: 20, y: 0 }), async () => {
+    await mouseDownAtPoint(divToBeDragged, { x: x, y: y })
+    await mouseMoveToPoint(divToBeDragged, { x: x + 20, y: y }, { eventOptions: { buttons: 1 } })
 
     check(editor)
   })

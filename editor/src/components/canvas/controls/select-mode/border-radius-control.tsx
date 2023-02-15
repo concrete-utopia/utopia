@@ -200,10 +200,13 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
         <div
           style={{
             visibility: shouldShowHandle ? 'visible' : 'hidden',
-            width: size,
-            height: size,
+            width: 6,
+            height: 6,
             backgroundColor: 'white',
-            border: `${BorderRadiusHandleBorderWidth(scale)}px solid blue`,
+            transition: 'transform .1s ease-in-out',
+            zoom: 1 / scale,
+            transformOrigin: 'bottom left',
+            boxShadow: '0 1px 2px 0 rgba(52,52,52,0.35), 0px 0px 0px 0.5px rgba(166,166,166,0.82)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -213,9 +216,9 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
           <div
             style={{
               visibility: shouldShowHandle && showDot ? 'visible' : 'hidden',
-              width: BorderRadiusHandleDotSize(scale),
-              height: BorderRadiusHandleDotSize(scale),
-              backgroundColor: 'blue',
+              width: 2,
+              height: 2,
+              backgroundColor: 'rgba(166,166,166,0.82)',
               borderRadius: '50%',
             }}
           />

@@ -1,19 +1,12 @@
-import { setFeatureEnabled } from '../../utils/feature-switches'
 import { shiftModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
-  before(() => {
-    setFeatureEnabled('Nine block control', true)
-  })
-
-  after(() => {
-    setFeatureEnabled('Nine block control', false)
-  })
+  setFeatureForTests('Nine block control', true)
 
   it('add and remove layout system via keyboard shortcut', async () => {
     const editor = await renderTestEditorWithCode(
@@ -24,11 +17,15 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('')
 
-    await expectSingleUndoStep(editor, async () => pressKey('a', { modifiers: shiftModifier }))
+    await expectSingleUndoStep(editor, async () => {
+      await pressKey('a', { modifiers: shiftModifier })
+    })
 
     expect(div.style.display).toEqual('flex')
 
-    await expectSingleUndoStep(editor, async () => pressKey('a', { modifiers: shiftModifier }))
+    await expectSingleUndoStep(editor, async () => {
+      await pressKey('a', { modifiers: shiftModifier })
+    })
     expect(div.style.display).toEqual('')
   })
 
@@ -38,11 +35,15 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor)
+    })
 
     expect(div.style.display).toEqual('flex')
 
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor)
+    })
 
     expect(div.style.display).toEqual('')
   })
@@ -53,7 +54,9 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor)
+    })
 
     expect(div.style.display).toEqual('flex')
     expect(div.style.flexDirection).toEqual('column')
@@ -70,7 +73,9 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await expectSingleUndoStep(editor, () => clickOn(editor))
+    await expectSingleUndoStep(editor, async () => {
+      await clickOn(editor)
+    })
 
     expect(div.style.display).toEqual('flex')
 
@@ -196,7 +201,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
     y: divBounds.y + 40,
   }
 
-  mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
 }
@@ -204,7 +209,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 async function clickOn(editor: EditorRenderResult) {
   const flexDirectionToggle = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
 
-  mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
+  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
 function project({ width, height }: { width: string; height: string }): string {
