@@ -2,14 +2,18 @@ import React from 'react'
 
 import { useContextSelector } from 'use-context-selector'
 import { LayoutSystem } from 'utopia-api/core'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
 } from '../../../../../core/shared/element-template'
-import { wrapValue } from '../../../../../core/shared/math-utils'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { FunctionIcons, SquareButton } from '../../../../../uuiui'
+import {
+  getSizeUpdateCommandsForNewPadding,
+  pixelPaddingFromPadding,
+} from '../../../../canvas/padding-utils'
 import { useSetHoveredControlsHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
 import {
   SubduedPaddingControl,
@@ -17,7 +21,7 @@ import {
 } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
+import { applyCommandsAction, switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import {
   Substores,
@@ -56,7 +60,10 @@ import {
   getSplitChainedNumberInputValues,
   getSplitControlValues,
   longhandShorthandEventHandler,
+  SplitChainedEvent,
+  splitChainedEventValueForProp,
   SplitChainedNumberInput,
+  SplitControlValues,
 } from './split-chained-number-input'
 
 function useDefaultedLayoutSystemInfo(): {
@@ -307,6 +314,61 @@ export const PaddingControl = React.memo(() => {
     return shorthand.controlStatus === 'simple' || allUnset
   }, [allUnset, shorthand.controlStatus])
 
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const startingFrame = MetadataUtils.getFrameOrZeroRect(
+    selectedViewsRef.current[0],
+    metadataRef.current,
+  )
+
+  const onPaddingChange = React.useCallback(
+    (e: SplitChainedEvent, aggregates: SplitControlValues) => {
+      const selectedElement = selectedViewsRef.current[0]
+      const metadata = metadataRef.current
+
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, selectedElement)
+      const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
+      const parentWidth = elementParentBounds?.width ?? 0
+      const parentHeight = elementParentBounds?.height ?? 0
+
+      const pixelPaddingTop = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('T', e) ?? aggregates.top,
+        parentHeight,
+      )
+      const pixelPaddingBottom = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('B', e) ?? aggregates.bottom,
+        parentHeight,
+      )
+      const pixelPaddingRight = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('R', e) ?? aggregates.right,
+        parentWidth,
+      )
+      const pixelPaddingLeft = pixelPaddingFromPadding(
+        splitChainedEventValueForProp('L', e) ?? aggregates.left,
+        parentWidth,
+      )
+
+      const combinedXPadding =
+        pixelPaddingLeft == null || pixelPaddingRight == null
+          ? null
+          : pixelPaddingLeft + pixelPaddingRight
+      const combinedYPadding =
+        pixelPaddingTop == null || pixelPaddingBottom == null
+          ? null
+          : pixelPaddingTop + pixelPaddingBottom
+
+      const adjustSizeCommands = getSizeUpdateCommandsForNewPadding(
+        combinedXPadding,
+        combinedYPadding,
+        startingFrame,
+        selectedViewsRef.current,
+        metadataRef.current,
+      )
+
+      return adjustSizeCommands.length > 0 ? [applyCommandsAction(adjustSizeCommands)] : []
+    },
+    [metadataRef, selectedViewsRef, startingFrame],
+  )
+
   const splitContolGroups = React.useMemo(
     () =>
       aggregateGroups({
@@ -355,8 +417,9 @@ export const PaddingControl = React.memo(() => {
         aggregates,
         allUnset,
         dispatch,
+        onPaddingChange,
       ),
-    [aggregates, allUnset, dispatch, selectedViewsRef, useShorthand],
+    [aggregates, allUnset, dispatch, onPaddingChange, selectedViewsRef, useShorthand],
   )
 
   const initialMode = React.useMemo(

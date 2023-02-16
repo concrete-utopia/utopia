@@ -189,7 +189,7 @@ function collectSelectableSiblings(
     function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
       Utils.fastForEach(paths, (ancestor) => {
         const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponentsUnordered(
             ancestor,
             componentMetadata,
           )
@@ -249,7 +249,7 @@ export function getSelectableViews(
   if (allElementsDirectlySelectable) {
     candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
-    const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata)
+    const allRoots = MetadataUtils.getAllCanvasRootPathsUnordered(componentMetadata)
     const siblings = collectSelectableSiblings(
       componentMetadata,
       selectedViews,

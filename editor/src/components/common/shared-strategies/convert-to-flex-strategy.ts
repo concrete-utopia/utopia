@@ -26,7 +26,7 @@ export function convertLayoutToFlexCommands(
   elementPaths: Array<ElementPath>,
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
-    const childrenPaths = MetadataUtils.getChildrenPaths(metadata, path)
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
 
     const parentFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements

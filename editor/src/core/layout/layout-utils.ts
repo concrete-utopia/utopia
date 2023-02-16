@@ -73,7 +73,7 @@ export function maybeSwitchChildrenLayoutProps(
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
 ): LayoutPropChangeResult {
-  const children = MetadataUtils.getChildren(targetOriginalContextMetadata, target)
+  const children = MetadataUtils.getChildrenUnordered(targetOriginalContextMetadata, target)
   const result = children.reduce<LayoutPropChangeResult>(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
