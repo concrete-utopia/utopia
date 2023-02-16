@@ -32,7 +32,7 @@ function replaceGroupLikePathsWithTheirChildrenRecursive(
     const elementIsGroupLike = treatElementAsGroupLike(metadata, allElementProps, path)
 
     if (elementIsGroupLike) {
-      const children = MetadataUtils.getChildrenPaths(metadata, path)
+      const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path
