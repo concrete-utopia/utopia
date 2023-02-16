@@ -299,19 +299,19 @@ export const PaddingControl = React.memo(() => {
       const parentHeight = elementParentBounds?.height ?? 0
 
       const pixelPaddingTop = pixelPaddingFromPadding(
-        splitChainedEventValueForProp('T', e) ?? aggregates['top'],
+        splitChainedEventValueForProp('T', e) ?? aggregates.top,
         parentHeight,
       )
       const pixelPaddingBottom = pixelPaddingFromPadding(
-        splitChainedEventValueForProp('B', e) ?? aggregates['bottom'],
+        splitChainedEventValueForProp('B', e) ?? aggregates.bottom,
         parentHeight,
       )
       const pixelPaddingRight = pixelPaddingFromPadding(
-        splitChainedEventValueForProp('R', e) ?? aggregates['right'],
+        splitChainedEventValueForProp('R', e) ?? aggregates.right,
         parentWidth,
       )
       const pixelPaddingLeft = pixelPaddingFromPadding(
-        splitChainedEventValueForProp('L', e) ?? aggregates['left'],
+        splitChainedEventValueForProp('L', e) ?? aggregates.left,
         parentWidth,
       )
 
