@@ -37,8 +37,9 @@ export function generateMockNextGeneratedUID(): string | null {
     MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
     MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
   ) {
+    const nextID = MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current]
     MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
-    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
+    return nextID
   } else {
     return null
   }
