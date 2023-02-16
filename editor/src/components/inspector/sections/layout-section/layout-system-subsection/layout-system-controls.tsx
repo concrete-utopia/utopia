@@ -359,19 +359,19 @@ export const PaddingControl = React.memo(() => {
     [aggregates, allUnset, dispatch, selectedViewsRef, useShorthand],
   )
 
-  const mode = React.useMemo(() => {
-    const initialMode = getInitialMode(
-      aggregates.oneValue,
-      aggregates.horizontal,
-      aggregates.vertical,
-      areAllSidesSet(splitContolGroups.allSides),
-      PaddingControlDefaultMode,
-    )
+  const initialMode = React.useMemo(
+    () =>
+      getInitialMode(
+        aggregates.oneValue,
+        aggregates.horizontal,
+        aggregates.vertical,
+        areAllSidesSet(splitContolGroups.allSides),
+        PaddingControlDefaultMode,
+      ),
+    [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
+  )
 
-    return initialMode
-  }, [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides])
-
-  const [overriddenMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
+  const [controlMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
     PaddingControlDefaultMode,
     PaddingControlModeOrder,
   )
@@ -383,9 +383,12 @@ export const PaddingControl = React.memo(() => {
     'PaddingControl setOveriddenMode',
   )
 
-  const onCylceMode = React.useCallback(() => cycleToNextMode(mode), [cycleToNextMode, mode])
+  const onCylceMode = React.useCallback(
+    () => cycleToNextMode(initialMode),
+    [cycleToNextMode, initialMode],
+  )
 
-  const modeToUse = overriddenMode ?? mode
+  const modeToUse = controlMode ?? initialMode
 
   return (
     <SplitChainedNumberInput

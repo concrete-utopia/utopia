@@ -203,19 +203,19 @@ export function useControlModeWithCycle(
 ): [ControlMode | null, React.Dispatch<ControlMode | null>, React.DispatchWithoutAction] {
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
 
-  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>(initialValue)
+  const [controlMode, setControlMode] = React.useState<ControlMode | null>(initialValue)
 
   const cycleToNextMode = React.useCallback(
     (mode: ControlMode | null) => {
-      const modeToUse = overriddenMode ?? mode ?? initialValue
+      const modeToUse = controlMode ?? mode ?? initialValue
       const delta = isCmdPressedRef.current ? -1 : 1
       const index = modes.indexOf(modeToUse) + delta
-      setOveriddenMode(modes[wrapValue(index, 0, modes.length - 1)])
+      setControlMode(modes[wrapValue(index, 0, modes.length - 1)])
     },
-    [initialValue, isCmdPressedRef, modes, overriddenMode],
+    [initialValue, isCmdPressedRef, modes, controlMode],
   )
 
-  const resetMode = React.useCallback(() => setOveriddenMode(null), [])
+  const resetMode = React.useCallback(() => setControlMode(null), [])
 
-  return [overriddenMode, cycleToNextMode, resetMode]
+  return [controlMode, cycleToNextMode, resetMode]
 }

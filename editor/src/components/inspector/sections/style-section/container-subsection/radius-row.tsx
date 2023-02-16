@@ -198,7 +198,7 @@ export const BorderRadiusControl = React.memo(() => {
     [aggregates, allUnset, dispatch, selectedViewsRef, useShorthand],
   )
 
-  const mode = React.useMemo(
+  const initialMode = React.useMemo(
     () =>
       getInitialMode(
         aggregates.oneValue,
@@ -210,7 +210,7 @@ export const BorderRadiusControl = React.memo(() => {
     [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
   )
 
-  const [overriddenMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
+  const [controlMode, cycleToNextMode, resetControlMode] = useControlModeWithCycle(
     BorderRadiusControlDefaultMode,
     BorderRadiusControlModeOrder,
   )
@@ -218,13 +218,16 @@ export const BorderRadiusControl = React.memo(() => {
   useSelectorWithCallback(
     Substores.selectedViews,
     selectedViewsSelector,
-    () => resetOverridenMode(),
+    () => resetControlMode(),
     'PaddingControl setOveriddenMode',
   )
 
-  const onCylceMode = React.useCallback(() => cycleToNextMode(mode), [cycleToNextMode, mode])
+  const onCylceMode = React.useCallback(
+    () => cycleToNextMode(initialMode),
+    [cycleToNextMode, initialMode],
+  )
 
-  const modeToUse = overriddenMode ?? mode
+  const modeToUse = controlMode ?? initialMode
 
   return (
     <SplitChainedNumberInput
