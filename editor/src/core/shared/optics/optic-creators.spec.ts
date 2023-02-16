@@ -13,7 +13,7 @@ import {
   notUndefined,
   traverseArray,
 } from './optic-creators'
-import { isoLaws, lensLaws, prismLaws, traversalLaws } from './optic-laws'
+import { isoLaws, lensLaws, prismLaws, traversalLaws } from './optic-laws.test-utils'
 import fastDeepEquals from 'fast-deep-equal'
 import { exists, toArrayOf } from './optic-utilities'
 
