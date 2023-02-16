@@ -19,17 +19,17 @@ import {
   getDragTargets,
 } from './shared-move-strategies-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
+import { retargetStrategyToChildrenOfGroupLike } from './group-like-helpers'
 
 export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  if (selectedElements.length === 0) {
+  const targets = retargetStrategyToChildrenOfGroupLike(canvasState)
+  if (targets.length === 0) {
     return null
   }
-  const filteredSelectedElements = getDragTargets(selectedElements)
-  const last = filteredSelectedElements[filteredSelectedElements.length - 1]
+  const last = targets[targets.length - 1]
   const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
   if (
     metadata == null ||
@@ -44,8 +44,6 @@ export function relativeMoveStrategy(
     offsets != null &&
     (offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null)
 
-  const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO BEFORE MERGE also make it work for groups
-
   return {
     strategy: {
       id: 'RELATIVE_MOVE',
@@ -53,13 +51,13 @@ export function relativeMoveStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: filteredSelectedElements },
+          props: { targets: targets },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: filteredSelectedElements },
+          props: { targets: targets },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
