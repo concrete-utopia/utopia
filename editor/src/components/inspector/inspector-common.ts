@@ -221,7 +221,7 @@ export const hugContentsApplicableForContainer = (
   return (
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
-      MetadataUtils.getChildrenPaths(metadata, elementPath),
+      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
     ).filter(
       (element) =>
         !(

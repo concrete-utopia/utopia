@@ -23,7 +23,7 @@ function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
-  const children = MetadataUtils.getChildrenPaths(metadata, elementPath)
+  const children = MetadataUtils.getChildrenPathsUnordered(metadata, elementPath)
   return [
     ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) => addPositionAbsoluteTopLeft(metadata, c)), // all children are converted to absolute,

@@ -355,7 +355,10 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return true
   }
 
-  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildrenUnordered(
+    metadata,
+    path,
+  ).filter(
     (child) =>
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
