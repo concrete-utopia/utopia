@@ -168,7 +168,7 @@ export const MetadataUtils = {
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
   getViewZIndexFromMetadata(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
-    const siblings = MetadataUtils.getSiblings(metadata, target)
+    const siblings = MetadataUtils.getSiblingsUnordered(metadata, target)
     return siblings.findIndex((child) => {
       return getUtopiaID(child) === EP.toUid(target)
     })
@@ -183,7 +183,7 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     return MetadataUtils.findElementByElementPath(metadata, parentPath)
   },
-  getSiblingsProjectContentsOrdered(
+  getSiblingsOrdered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
@@ -193,12 +193,12 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsProjectContentsOrdered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsProjectContentsOrdered(metadata, parentPath)
+      ? MetadataUtils.getRootViewPathsOrdered(metadata, parentPath)
+      : MetadataUtils.getChildrenPathsOrdered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
-  getSiblings(
+  getSiblingsUnordered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
@@ -208,8 +208,8 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPaths(metadata, parentPath)
-      : MetadataUtils.getChildrenPaths(metadata, parentPath)
+      ? MetadataUtils.getRootViewPathsUnordered(metadata, parentPath)
+      : MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
@@ -287,11 +287,16 @@ export const MetadataUtils = {
       MetadataUtils.findElementByElementPath(elements, target),
     )
   },
-  getChildrenParticipatingInAutoLayout(
+  getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    return MetadataUtils.getChildren(elements, target).filter(
+    return MetadataUtils.getChildrenOrdered(elements, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
+  },
+  hasStaticChildren(elements: ElementInstanceMetadataMap, target: ElementPath): boolean {
+    return MetadataUtils.getChildrenUnordered(elements, target).some(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -496,7 +501,10 @@ export const MetadataUtils = {
       ...PP.getElements(property),
     ])
   },
-  getRootViewPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
+  getRootViewPathsUnordered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPathString) => {
       const elementPath = EP.fromString(elementPathString)
       if (EP.isRootElementOf(elementPath, target)) {
@@ -507,7 +515,7 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleRootElementsOfTarget
   },
-  getRootViewPathsProjectContentsOrdered(
+  getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
@@ -520,7 +528,7 @@ export const MetadataUtils = {
     }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
   },
-  getRootViews(
+  getRootViewsUnordered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
@@ -534,7 +542,10 @@ export const MetadataUtils = {
     }
     return result
   },
-  getChildrenPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
+  getChildrenPathsUnordered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPathString) => {
       const elementPath = EP.fromString(elementPathString)
       if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
@@ -545,7 +556,7 @@ export const MetadataUtils = {
     }, Object.keys(elements))
     return possibleChildren
   },
-  getChildrenPathsProjectContentsOrdered(
+  getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
@@ -558,7 +569,7 @@ export const MetadataUtils = {
     }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
     return possibleChildren
   },
-  getChildren(
+  getChildrenUnordered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
@@ -572,7 +583,19 @@ export const MetadataUtils = {
     }
     return result
   },
-  getDescendantPaths(
+  getChildrenOrdered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    return mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return MetadataUtils.findElementByElementPath(elements, elementPath)
+      } else {
+        return null
+      }
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+  },
+  getDescendantPathsUnordered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
@@ -582,7 +605,7 @@ export const MetadataUtils = {
       Object.values(elements),
     )
   },
-  getImmediateChildrenPaths(
+  getImmediateChildrenPathsUnordered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
@@ -590,17 +613,17 @@ export const MetadataUtils = {
     if (element == null) {
       return []
     } else {
-      const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
-      const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
+      const rootPaths = MetadataUtils.getRootViewPathsUnordered(elements, target)
+      const childrenPaths = MetadataUtils.getChildrenPathsUnordered(elements, target)
       return [...rootPaths, ...childrenPaths]
     }
   },
-  getImmediateChildren(
+  getImmediateChildrenUnordered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const roots = MetadataUtils.getRootViews(metadata, target)
-    const children = MetadataUtils.getChildren(metadata, target)
+    const roots = MetadataUtils.getRootViewsUnordered(metadata, target)
+    const children = MetadataUtils.getChildrenUnordered(metadata, target)
     return [...roots, ...children]
   },
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
@@ -612,22 +635,24 @@ export const MetadataUtils = {
     }
     return null
   },
-  getAllStoryboardChildren(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata[] {
+  getAllStoryboardChildrenUnordered(
+    metadata: ElementInstanceMetadataMap,
+  ): ElementInstanceMetadata[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
-      : MetadataUtils.getImmediateChildren(metadata, storyboardMetadata.elementPath)
+      : MetadataUtils.getImmediateChildrenUnordered(metadata, storyboardMetadata.elementPath)
   },
-  getAllStoryboardChildrenPaths(metadata: ElementInstanceMetadataMap): ElementPath[] {
+  getAllStoryboardChildrenPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
-      : MetadataUtils.getImmediateChildrenPaths(metadata, storyboardMetadata.elementPath)
+      : MetadataUtils.getImmediateChildrenPathsUnordered(metadata, storyboardMetadata.elementPath)
   },
-  getAllCanvasRootPaths(metadata: ElementInstanceMetadataMap): ElementPath[] {
-    const rootScenesAndElements = MetadataUtils.getAllStoryboardChildren(metadata)
+  getAllCanvasRootPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
+    const rootScenesAndElements = MetadataUtils.getAllStoryboardChildrenUnordered(metadata)
     return flatMapArray<ElementInstanceMetadata, ElementPath>((root) => {
-      const rootElements = MetadataUtils.getRootViewPaths(metadata, root.elementPath)
+      const rootElements = MetadataUtils.getRootViewPathsUnordered(metadata, root.elementPath)
       if (rootElements.length > 0) {
         return rootElements
       } else {
@@ -651,7 +676,7 @@ export const MetadataUtils = {
         })
       }
 
-      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
       fastForEach(storyboardChildren, (childPath) => {
         const subTree = getSubTree(projectTree, childPath)
         if (subTree != null) {
@@ -683,18 +708,18 @@ export const MetadataUtils = {
       }
     }
 
-    const rootInstances = this.getAllStoryboardChildrenPaths(metadata)
+    const rootInstances = this.getAllStoryboardChildrenPathsUnordered(metadata)
 
     fastForEach(rootInstances, (rootInstance) => {
       const element = MetadataUtils.findElementByElementPath(metadata, rootInstance)
       if (element != null) {
         result.push(rootInstance)
-        const rootElements = MetadataUtils.getRootViewPaths(metadata, element.elementPath)
+        const rootElements = MetadataUtils.getRootViewPathsUnordered(metadata, element.elementPath)
         fastForEach(rootElements, (rootPath) => {
           const subTree = getSubTree(projectTree, rootPath)
           recurseElement(subTree)
         })
-        const children = MetadataUtils.getChildrenPaths(metadata, element.elementPath)
+        const children = MetadataUtils.getChildrenPathsUnordered(metadata, element.elementPath)
         fastForEach(children, (child) => {
           const subTree = getSubTree(projectTree, child)
           recurseElement(subTree)
@@ -883,7 +908,7 @@ export const MetadataUtils = {
     if (target == null) {
       return false
     }
-    const children = MetadataUtils.getChildren(metadata, target)
+    const children = MetadataUtils.getChildrenUnordered(metadata, target)
     const hasNonEditableChildren = children
       .map((c) =>
         foldEither(
@@ -968,16 +993,16 @@ export const MetadataUtils = {
       return null
     }
   },
-  getAllChildrenIncludingUnfurledFocusedComponents(
+  getAllChildrenIncludingUnfurledFocusedComponentsUnordered(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
   ): { children: Array<ElementPath>; unfurledComponents: Array<ElementPath> } {
     return {
-      children: MetadataUtils.getChildrenPaths(metadata, path),
-      unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
+      children: MetadataUtils.getChildrenPathsUnordered(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViewPathsUnordered(metadata, path),
     }
   },
-  getAllChildrenElementsIncludingUnfurledFocusedComponents(
+  getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
   ): {
@@ -985,8 +1010,8 @@ export const MetadataUtils = {
     unfurledComponents: Array<ElementInstanceMetadata>
   } {
     return {
-      children: MetadataUtils.getChildren(metadata, path),
-      unfurledComponents: MetadataUtils.getRootViews(metadata, path),
+      children: MetadataUtils.getChildrenUnordered(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViewsUnordered(metadata, path),
     }
   },
   createOrderedElementPathsFromElements: memoize(
@@ -1043,7 +1068,7 @@ export const MetadataUtils = {
         }
       }
 
-      const canvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+      const canvasRoots = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
       fastForEach(canvasRoots, (childElement) => {
         const subTree = getSubTree(projectTree, childElement)
 
@@ -1640,7 +1665,7 @@ export const MetadataUtils = {
   },
   isFocusableLeafComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     return (
-      MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
+      MetadataUtils.getChildrenPathsUnordered(metadata, path).length === 0 &&
       MetadataUtils.isFocusableComponent(path, metadata)
     )
   },
@@ -1720,14 +1745,14 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     const spyElem = fromSpy[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
-      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
         fromSpy,
       )
     const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
 
     const { children: childrenFromDom, unfurledComponents: unfurledComponentsFromDom } =
-      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
         fromDOM,
       )

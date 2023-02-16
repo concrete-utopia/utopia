@@ -42,7 +42,10 @@ export function drawTargetRectanglesForChildrenOfElement(
   const widthOrHeight = simpleFlexDirection === 'horizontal' ? 'width' : 'height'
   const widthOrHeightComplement = simpleFlexDirection === 'horizontal' ? 'height' : 'width'
 
-  const children = MetadataUtils.getChildrenPaths(metadata, singleAxisAutolayoutContainerPath)
+  const children = MetadataUtils.getChildrenPathsUnordered(
+    metadata,
+    singleAxisAutolayoutContainerPath,
+  )
 
   interface ElemBounds {
     start: number

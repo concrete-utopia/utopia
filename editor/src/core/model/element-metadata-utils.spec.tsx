@@ -826,7 +826,7 @@ describe('getStoryboardMetadata', () => {
 
 describe('getting the root paths', () => {
   it('getAllStoryboardChildren returns instance metadata of all children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildren(testJsxMetadata)
+    const actualResult = MetadataUtils.getAllStoryboardChildrenUnordered(testJsxMetadata)
     const expectedResult: Array<ElementInstanceMetadata> = [
       testComponentSceneElement,
       testStoryboardChildElement,
@@ -835,7 +835,7 @@ describe('getting the root paths', () => {
   })
 
   it('getAllStoryboardChildrenPaths returns paths of all children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenPaths(testJsxMetadata)
+    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
       testComponentSceneElement.elementPath,
       testStoryboardChildElement.elementPath,
@@ -844,7 +844,7 @@ describe('getting the root paths', () => {
   })
 
   it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
-    const actualResult = MetadataUtils.getAllCanvasRootPaths(testJsxMetadata)
+    const actualResult = MetadataUtils.getAllCanvasRootPathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
       testComponentRoot1.elementPath,
       testStoryboardChildElement.elementPath,

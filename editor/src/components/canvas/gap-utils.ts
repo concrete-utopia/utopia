@@ -120,7 +120,7 @@ export function gapControlBoundsFromMetadata(
 
   const parentBounds = inset(elementPadding, parentFrame)
 
-  const children = MetadataUtils.getChildrenPaths(elementMetadata, selectedElement)
+  const children = MetadataUtils.getChildrenPathsUnordered(elementMetadata, selectedElement)
   const childCanvasBounds = stripNulls(
     children
       .map((childPath) => {
@@ -165,7 +165,7 @@ export function maybeFlexGapFromElement(
     return null
   }
 
-  const children = MetadataUtils.getChildren(metadata, elementPath)
+  const children = MetadataUtils.getChildrenUnordered(metadata, elementPath)
   if (children.length < 2) {
     return null
   }
