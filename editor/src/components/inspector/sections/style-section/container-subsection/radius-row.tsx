@@ -222,9 +222,11 @@ export const BorderRadiusControl = React.memo(() => {
     'PaddingControl setOveriddenMode',
   )
 
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
   const onCylceMode = React.useCallback(
-    () => cycleToNextMode(initialMode),
-    [cycleToNextMode, initialMode],
+    () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
+    [cycleToNextMode, initialMode, isCmdPressedRef],
   )
 
   const modeToUse = controlMode ?? initialMode
