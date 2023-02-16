@@ -66,6 +66,7 @@ import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import {
   getDeepestPathOnDomElement,
+  getPathStringsOnDomElement,
   getPathWithStringsOnDomElement,
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
@@ -162,10 +163,19 @@ function isScene(node: Node): node is HTMLElement {
 }
 
 function findParentScene(target: HTMLElement): string | null {
+  // First check if the node is a Scene element, which could be nested at any level
   const sceneID = getDOMAttribute(target, UTOPIA_SCENE_ID_KEY)
   if (sceneID != null) {
     return sceneID
   } else {
+    // Failing that, check if it is a child of the storyboard
+    const allPaths = getPathStringsOnDomElement(target)
+    allPaths.sort((a, b) => a.length - b.length)
+    const shallowestPath = allPaths[0]
+    if (shallowestPath != null) {
+      return shallowestPath
+    }
+
     if (target.parentElement != null) {
       return findParentScene(target.parentElement)
     } else {
