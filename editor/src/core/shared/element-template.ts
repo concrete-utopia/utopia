@@ -1057,23 +1057,24 @@ export type JSXElementLike = JSXElement | JSXFragment
 
 export interface JSXConditionalExpression {
   type: 'JSX_CONDITIONAL_EXPRESSION'
+  uniqueID: string
   condition: JSXAttribute
   whenTrue: ChildOrAttribute
   whenFalse: ChildOrAttribute
-  uniqueID: string
 }
 
 export function jsxConditionalExpression(
+  uid: string,
   condition: JSXAttribute,
   whenTrue: ChildOrAttribute,
   whenFalse: ChildOrAttribute,
 ): JSXConditionalExpression {
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
+    uniqueID: uid,
     condition: condition,
     whenTrue: whenTrue,
     whenFalse: whenFalse,
-    uniqueID: UUID(),
   }
 }
 

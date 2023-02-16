@@ -2039,6 +2039,7 @@ export function parseOutJSXElements(
     >(
       (condition, whenTrue, whenFalse) => {
         const conditionalExpression = jsxConditionalExpression(
+          generateUID(alreadyExistingUIDs), // TODO: keep the uid if possible
           condition.value,
           whenTrue.value,
           whenFalse.value,
