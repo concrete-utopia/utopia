@@ -23,7 +23,11 @@ import { EdgePieces } from '../../../../canvas/padding-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction, switchLayoutSystem } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
+import {
+  Substores,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
 import {
   ControlStatus,
@@ -32,6 +36,7 @@ import {
   getControlStyles,
 } from '../../../common/control-status'
 import { CanvasControlWithProps } from '../../../common/inspector-atoms'
+import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import {
   InspectorCallbackContext,
@@ -44,9 +49,16 @@ import {
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
 import { OptionChainControl } from '../../../controls/option-chain-control'
+import { selectedViewsSelector } from '../../../inpector-selectors'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
+  aggregateGroups,
+  areAllSidesSet,
+  ControlMode,
+  getInitialMode,
+  getSplitChainedNumberInputValues,
+  getSplitControlValues,
   longhandShorthandEventHandler,
   SplitChainedEvent,
   splitChainedEventValueForProp,
@@ -244,6 +256,8 @@ export const PaddingRow = React.memo(() => {
   )
 })
 
+const PaddingControlModeOrder: ControlMode[] = ['one-value', 'per-direction', 'per-side']
+const PaddingControlDefaultMode: ControlMode = 'per-direction'
 export const PaddingControl = React.memo(() => {
   const { paddingTop, paddingRight, paddingBottom, paddingLeft } =
     useInspectorInfoLonghandShorthand(
@@ -281,6 +295,24 @@ export const PaddingControl = React.memo(() => {
       }),
     )
   }, [])
+
+  const allUnset = React.useMemo(() => {
+    return (
+      paddingTop.controlStatus === 'trivial-default' &&
+      paddingBottom.controlStatus === 'trivial-default' &&
+      paddingLeft.controlStatus === 'trivial-default' &&
+      paddingRight.controlStatus === 'trivial-default'
+    )
+  }, [
+    paddingTop.controlStatus,
+    paddingBottom.controlStatus,
+    paddingLeft.controlStatus,
+    paddingRight.controlStatus,
+  ])
+
+  const useShorthand = React.useMemo(() => {
+    return shorthand.controlStatus === 'simple' || allUnset
+  }, [allUnset, shorthand.controlStatus])
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const startingFrame = MetadataUtils.getFrameOrZeroRect(
@@ -337,24 +369,42 @@ export const PaddingControl = React.memo(() => {
     [metadataRef, selectedViewsRef, startingFrame],
   )
 
-  return (
-    <SplitChainedNumberInput
-      controlModeOrder={['one-value', 'per-direction', 'per-side']}
-      tooltips={{
-        oneValue: 'Padding',
-        perDirection: 'Padding per direction',
-        perSide: 'Padding per side',
-      }}
-      name='padding'
-      defaultMode='per-direction'
-      top={paddingTop}
-      left={paddingLeft}
-      bottom={paddingBottom}
-      right={paddingRight}
-      shorthand={shorthand}
-      canvasControls={canvasControlsForSides}
-      numberType={'LengthPercent'}
-      eventHandler={longhandShorthandEventHandler(
+  const splitContolGroups = React.useMemo(
+    () =>
+      aggregateGroups({
+        top: paddingTop,
+        left: paddingLeft,
+        right: paddingRight,
+        bottom: paddingBottom,
+      }),
+    [paddingBottom, paddingLeft, paddingRight, paddingTop],
+  )
+
+  const aggregates = React.useMemo(
+    () =>
+      getSplitControlValues(splitContolGroups, {
+        top: paddingTop,
+        left: paddingLeft,
+        right: paddingRight,
+        bottom: paddingBottom,
+      }),
+    [paddingBottom, paddingLeft, paddingRight, paddingTop, splitContolGroups],
+  )
+
+  const values = React.useMemo(
+    () =>
+      getSplitChainedNumberInputValues(splitContolGroups, {
+        top: paddingTop,
+        left: paddingLeft,
+        right: paddingRight,
+        bottom: paddingBottom,
+      }),
+    [splitContolGroups, paddingBottom, paddingLeft, paddingRight, paddingTop],
+  )
+
+  const eventHandler = React.useMemo(
+    () =>
+      longhandShorthandEventHandler(
         'padding',
         {
           T: 'paddingTop',
@@ -363,9 +413,62 @@ export const PaddingControl = React.memo(() => {
           L: 'paddingLeft',
         },
         selectedViewsRef,
+        useShorthand,
+        aggregates,
+        allUnset,
         dispatch,
         onPaddingChange,
-      )}
+      ),
+    [aggregates, allUnset, dispatch, onPaddingChange, selectedViewsRef, useShorthand],
+  )
+
+  const initialMode = React.useMemo(
+    () =>
+      getInitialMode(
+        aggregates.oneValue,
+        aggregates.horizontal,
+        aggregates.vertical,
+        areAllSidesSet(splitContolGroups.allSides),
+        PaddingControlDefaultMode,
+      ),
+    [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
+  )
+
+  const [controlMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
+    PaddingControlDefaultMode,
+    PaddingControlModeOrder,
+  )
+
+  useSelectorWithCallback(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    () => resetOverridenMode(),
+    'PaddingControl setOveriddenMode',
+  )
+
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const onCylceMode = React.useCallback(
+    () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
+    [cycleToNextMode, initialMode, isCmdPressedRef],
+  )
+
+  const modeToUse = controlMode ?? initialMode
+
+  return (
+    <SplitChainedNumberInput
+      tooltips={{
+        oneValue: 'Padding',
+        perDirection: 'Padding per direction',
+        perSide: 'Padding per side',
+      }}
+      name='padding'
+      canvasControls={canvasControlsForSides}
+      numberType={'LengthPercent'}
+      eventHandler={eventHandler}
+      mode={modeToUse}
+      onCycleMode={onCylceMode}
+      values={values}
     />
   )
 })
