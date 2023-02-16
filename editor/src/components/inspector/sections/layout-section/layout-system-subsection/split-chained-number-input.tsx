@@ -1,9 +1,7 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { toString } from '../../../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
-import { wrapValue } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { assertNever } from '../../../../../core/shared/utils'
@@ -16,12 +14,6 @@ import {
 } from '../../../../../uuiui'
 import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
 import { setProp_UNSAFE, unsetProperty } from '../../../../editor/actions/action-creators'
-import {
-  Substores,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-} from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
@@ -36,8 +28,6 @@ import {
   InspectorFocusedCanvasControls,
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'
-import { InspectorInfo } from '../../../common/property-path-hooks'
-import { selectedViewsSelector } from '../../../inpector-selectors'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
