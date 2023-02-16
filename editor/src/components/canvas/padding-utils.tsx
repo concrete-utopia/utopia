@@ -3,7 +3,13 @@ import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
 import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import { CanvasVector } from '../../core/shared/math-utils'
+import {
+  CanvasVector,
+  numberIsZero,
+  roundTo,
+  Size,
+  zeroRectIfNullOrInfinity,
+} from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
@@ -17,6 +23,12 @@ import {
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
 import { Modifiers } from '../../utils/modifiers'
+import {
+  adjustCssLengthProperty,
+  AdjustCssLengthProperty,
+} from './commands/adjust-css-length-command'
+import { detectFillHugFixedState } from '../inspector/inspector-common'
+import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 
 export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
@@ -228,4 +240,103 @@ export function paddingAdjustMode(modifiers: Modifiers): PaddingAdjustMode {
     return 'cross-axis'
   }
   return 'individual'
+}
+
+export function pixelPaddingFromPadding(
+  padding: CSSNumber,
+  parentSizeInDimension: number,
+): number | null {
+  switch (padding.unit) {
+    case 'px':
+    case null:
+      return padding.value
+    case '%':
+      return (padding.value / 100) * parentSizeInDimension
+    default:
+      return null // TODO Should we support other units here?
+  }
+}
+
+export function getSizeUpdateCommandsForNewPadding(
+  combinedXPadding: number | null,
+  combinedYPadding: number | null,
+  startingSize: Size,
+  selectedElements: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): Array<AdjustCssLengthProperty> {
+  const selectedElement = selectedElements[0]
+  const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
+
+  const allChildPaths = MetadataUtils.getChildrenPathsUnordered(metadata, selectedElement)
+
+  const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
+    MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),
+  )
+
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, selectedElement)
+  const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
+  const elementParentFlexDirection = elementMetadata?.specialSizeMeasurements.parentFlexDirection
+
+  const adjustSizeCommandForDimension = (
+    dimension: 'horizontal' | 'vertical',
+  ): AdjustCssLengthProperty | null => {
+    const isHorizontal = dimension === 'horizontal'
+    const combinedPaddingInDimension = isHorizontal ? combinedXPadding : combinedYPadding
+
+    if (combinedPaddingInDimension == null) {
+      return null
+    }
+
+    const dimensionKey = isHorizontal ? 'width' : 'height'
+
+    const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
+      (childPath) => detectFillHugFixedState(dimension, metadata, childPath)?.type === 'fixed',
+    )
+    const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
+      fixedSizeChildrenPaths,
+      metadata,
+    )
+    const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
+
+    const combinedContentSizeInDimension =
+      combinedPaddingInDimension + childrenBoundingFrame[dimensionKey]
+
+    // TODO We need a way to call the correct resizing strategy here, but they are all assuming
+    // the drag originates from a given edge, whereas we want to pass in the desired delta to a
+    // dimension and receive the required commands to resize the element
+    const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
+
+    // clamp the delta so that the resultant frame will never be smaller than the starting frame
+    // when scrubbing
+    const clampedSizeDelta = Math.max(
+      roundTo(sizeDelta, 0),
+      startingSize[dimensionKey] - targetFrame[dimensionKey],
+    )
+
+    return numberIsZero(clampedSizeDelta)
+      ? null
+      : adjustCssLengthProperty(
+          'always',
+          selectedElement,
+          stylePropPathMappingFn(dimensionKey, styleStringInArray),
+          clampedSizeDelta,
+          elementParentBounds?.[dimensionKey],
+          elementParentFlexDirection ?? null,
+          'do-not-create-if-doesnt-exist',
+        )
+  }
+
+  const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
+  const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
+
+  let adjustLengthCommands: Array<AdjustCssLengthProperty> = []
+  if (horizontalSizeAdjustment != null) {
+    adjustLengthCommands.push(horizontalSizeAdjustment)
+  }
+
+  if (verticalSizeAdjustment != null) {
+    adjustLengthCommands.push(verticalSizeAdjustment)
+  }
+
+  return adjustLengthCommands
 }
