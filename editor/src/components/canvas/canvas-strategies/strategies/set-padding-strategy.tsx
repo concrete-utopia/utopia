@@ -170,25 +170,25 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       }
 
       const selectedElement = filteredSelectedElements[0]
+      const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
+
+      if (delta == null) {
+        return emptyStrategyApplicationResult
+      }
 
       const edgePiece = interactionSession.activeControl.edgePiece
       const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
-      const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
+      const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
       const maxedDelta = Math.max(-currentPadding, rawDelta)
       const precision = precisionFromModifiers(interactionSession.interactionData.modifiers)
       const newPaddingEdge = offsetMeasurementByDelta(
         padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(maxedDelta),
-        rawDelta,
+        delta,
         precision,
       )
-
-      const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
-      if (delta == null) {
-        return emptyStrategyApplicationResult
-      }
 
       const newPaddingMaxed = adjustPaddingsWithAdjustMode(
         paddingAdjustMode(interactionSession.interactionData.modifiers),
@@ -529,13 +529,22 @@ function calculateAdjustDelta(
     precision,
   )
 
-  const delta = newPaddingEdge.renderedValuePx < PaddingTearThreshold ? rawDelta : maxedDelta
-
   const isHug = isElementSetToHugAlongAffectedAxis(
     paddingPropInteractedWith,
     canvasState.startingMetadata,
     selectedElement,
   )
+
+  const isHugOppositeSide =
+    (paddingPropInteractedWith === 'paddingRight' ||
+      paddingPropInteractedWith === 'paddingBottom') &&
+    isHug
+
+  const isInDeadZone = isHugOppositeSide
+    ? newPaddingEdge.renderedValuePx < -PaddingTearThreshold
+    : newPaddingEdge.renderedValuePx < PaddingTearThreshold
+
+  const delta = isInDeadZone ? rawDelta : maxedDelta
 
   const deltaAdjusted =
     isHug &&
