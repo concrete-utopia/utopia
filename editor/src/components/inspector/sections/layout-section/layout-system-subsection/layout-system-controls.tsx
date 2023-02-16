@@ -288,18 +288,6 @@ export const PaddingControl = React.memo(() => {
     )
   }, [])
 
-  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
-
-  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>(null)
-  const cycleToNextMode = React.useCallback(() => {
-    const delta = isCmdPressedRef.current ? -1 : 1
-    const index =
-      PaddingControlModeOrder.indexOf(overriddenMode ?? PaddingControlDefaultMode) + delta
-    setOveriddenMode(
-      PaddingControlModeOrder[wrapValue(index, 0, PaddingControlModeOrder.length - 1)],
-    )
-  }, [isCmdPressedRef, overriddenMode])
-
   useSelectorWithCallback(
     Substores.selectedViews,
     selectedViewsSelector,
@@ -371,22 +359,37 @@ export const PaddingControl = React.memo(() => {
         selectedViewsRef,
         useShorthand,
         aggregates,
+        allUnset,
         dispatch,
       ),
-    [aggregates, dispatch, selectedViewsRef, useShorthand],
+    [aggregates, allUnset, dispatch, selectedViewsRef, useShorthand],
   )
 
-  const mode = React.useMemo(
-    () =>
-      getInitialMode(
-        aggregates.oneValue,
-        aggregates.horizontal,
-        aggregates.vertical,
-        areAllSidesSet(splitContolGroups.allSides),
-        PaddingControlDefaultMode,
-      ),
-    [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
-  )
+  const mode = React.useMemo(() => {
+    const initialMode = getInitialMode(
+      aggregates.oneValue,
+      aggregates.horizontal,
+      aggregates.vertical,
+      areAllSidesSet(splitContolGroups.allSides),
+      PaddingControlDefaultMode,
+    )
+
+    return initialMode
+  }, [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides])
+
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>('per-direction')
+
+  const modeToUse = overriddenMode ?? mode
+
+  const cycleToNextMode = React.useCallback(() => {
+    const delta = isCmdPressedRef.current ? -1 : 1
+    const index = PaddingControlModeOrder.indexOf(modeToUse) + delta
+    setOveriddenMode(
+      PaddingControlModeOrder[wrapValue(index, 0, PaddingControlModeOrder.length - 1)],
+    )
+  }, [isCmdPressedRef, modeToUse])
 
   return (
     <SplitChainedNumberInput

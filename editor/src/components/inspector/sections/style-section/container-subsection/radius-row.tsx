@@ -31,8 +31,6 @@ import {
   getSplitChainedNumberInputValues,
   getSplitControlValues,
   longhandShorthandEventHandler,
-  Sides,
-  SidesAbstract,
   SidesCSSNumber,
   SplitChainedNumberInput,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
@@ -77,18 +75,6 @@ export const BorderRadiusControl = React.memo(() => {
   const dispatch = useDispatch()
 
   const { selectedViewsRef } = useInspectorContext()
-
-  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
-
-  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>(null)
-  const cycleToNextMode = React.useCallback(() => {
-    const delta = isCmdPressedRef.current ? -1 : 1
-    const index =
-      BorderRadiusControlModeOrder.indexOf(overriddenMode ?? BorderRadiusControlDefaultMode) + delta
-    setOveriddenMode(
-      BorderRadiusControlModeOrder[wrapValue(index, 0, BorderRadiusControlModeOrder.length - 1)],
-    )
-  }, [isCmdPressedRef, overriddenMode])
 
   useSelectorWithCallback(
     Substores.selectedViews,
@@ -212,9 +198,10 @@ export const BorderRadiusControl = React.memo(() => {
         selectedViewsRef,
         useShorthand,
         aggregates,
+        allUnset,
         dispatch,
       ),
-    [aggregates, dispatch, selectedViewsRef, useShorthand],
+    [aggregates, allUnset, dispatch, selectedViewsRef, useShorthand],
   )
 
   const mode = React.useMemo(
@@ -228,6 +215,22 @@ export const BorderRadiusControl = React.memo(() => {
       ),
     [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
   )
+
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>(
+    BorderRadiusControlDefaultMode,
+  )
+
+  const modeToUse = overriddenMode ?? mode
+
+  const cycleToNextMode = React.useCallback(() => {
+    const delta = isCmdPressedRef.current ? -1 : 1
+    const index = BorderRadiusControlModeOrder.indexOf(modeToUse) + delta
+    setOveriddenMode(
+      BorderRadiusControlModeOrder[wrapValue(index, 0, BorderRadiusControlModeOrder.length - 1)],
+    )
+  }, [isCmdPressedRef, modeToUse])
 
   return (
     <SplitChainedNumberInput
@@ -244,7 +247,7 @@ export const BorderRadiusControl = React.memo(() => {
       overrideModeCallback={cycleToNextMode}
       numberType={'LengthPercent'}
       name='radius'
-      mode={overriddenMode ?? mode}
+      mode={modeToUse}
       values={values}
       canvasControls={canvasControlsForSides}
       eventHandler={eventHandler}

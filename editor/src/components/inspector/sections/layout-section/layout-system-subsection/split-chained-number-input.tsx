@@ -384,9 +384,12 @@ export const longhandShorthandEventHandler = (
   selectedViewsRef: { current: Array<ElementPath> },
   useShorthand: boolean,
   aggregates: SplitControlValues,
+  allUnset: boolean,
   dispatch: EditorDispatch,
 ): SplitChainedNumberInputEventHandler => {
   return (e: SplitChainedEvent) => {
+    const shouldUseShorthandWith4Value =
+      e.type === 'four-value' ? useShorthand && !allUnset : useShorthand
     handleSplitChainedEvent(
       e,
       dispatch,
@@ -398,7 +401,7 @@ export const longhandShorthandEventHandler = (
         B: PP.create('style', longhands.B),
         L: PP.create('style', longhands.L),
       },
-    )(useShorthand, aggregates)
+    )(shouldUseShorthandWith4Value, aggregates)
   }
 }
 
@@ -679,11 +682,11 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   )
 })
 
-export function isCurrentModeApplicable(
+export function isControlModeApplicable(
   overriddenMode: ControlMode,
-  oneValue: ControlCSSNumber,
-  horizontal: ControlCSSNumber,
-  vertical: ControlCSSNumber,
+  oneValue: CSSNumberOrNull,
+  horizontal: CSSNumberOrNull,
+  vertical: CSSNumberOrNull,
 ): boolean {
   if (overriddenMode === 'one-value' && oneValue == null) {
     return false
@@ -692,17 +695,6 @@ export function isCurrentModeApplicable(
     return false
   }
   return true
-}
-
-function updateAggregates(
-  allSides: ControlCSSNumber[],
-  sidesHorizontal: ControlCSSNumber[],
-  sidesVertical: ControlCSSNumber[],
-) {
-  const newOneValue = getSharedValueIfEqualSides(allSides)
-  const newHorizontal = getSharedValueIfEqualSides(sidesHorizontal)
-  const newVertical = getSharedValueIfEqualSides(sidesVertical)
-  return { oneValue: newOneValue, horizontal: newHorizontal, vertical: newVertical }
 }
 
 interface SplitControlAggregates {
