@@ -105,7 +105,7 @@ export interface SplitChainedNumberInputValues {
 export interface SplitChainedNumberInputProps<T> {
   name: string
   mode: ControlMode | null
-  overrideModeCallback: () => void
+  onCycleMode: () => void
   labels?: {
     top?: string
     bottom?: string
@@ -659,7 +659,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
       <Tooltip title={tooltipTitle}>
-        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.overrideModeCallback}>
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.onCycleMode}>
           {modeIcon}
         </SquareButton>
       </Tooltip>

@@ -403,7 +403,7 @@ export const PaddingControl = React.memo(() => {
       numberType={'LengthPercent'}
       eventHandler={eventHandler}
       mode={overriddenMode ?? mode}
-      overrideModeCallback={cycleToNextMode}
+      onCycleMode={cycleToNextMode}
       values={values}
     />
   )

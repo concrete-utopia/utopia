@@ -244,7 +244,7 @@ export const BorderRadiusControl = React.memo(() => {
         oneValue: 'Radius',
         perSide: 'Radius per corner',
       }}
-      overrideModeCallback={cycleToNextMode}
+      onCycleMode={cycleToNextMode}
       numberType={'LengthPercent'}
       name='radius'
       mode={modeToUse}
