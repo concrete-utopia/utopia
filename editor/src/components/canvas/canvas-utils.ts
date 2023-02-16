@@ -181,7 +181,9 @@ export function getOriginalFrames(
   function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
-      ...MetadataUtils.getChildren(componentMetadata, view).map((child) => child.elementPath),
+      ...MetadataUtils.getChildrenUnordered(componentMetadata, view).map(
+        (child) => child.elementPath,
+      ),
     ]
   }
   Utils.fastForEach(
@@ -230,7 +232,9 @@ export function getOriginalCanvasFrames(
   function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
-      ...MetadataUtils.getChildren(componentMetadata, view).map((child) => child.elementPath),
+      ...MetadataUtils.getChildrenUnordered(componentMetadata, view).map(
+        (child) => child.elementPath,
+      ),
     ]
   }
   Utils.fastForEach(selectedViews, (selectedView) => {

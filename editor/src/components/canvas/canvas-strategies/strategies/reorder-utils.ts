@@ -78,7 +78,7 @@ export function applyReorderCommon(
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     const target = selectedElements[0]
 
-    const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target).map(
+    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
 
