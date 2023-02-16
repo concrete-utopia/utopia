@@ -7,9 +7,13 @@ import {
   flatMapEither,
   right,
   left,
-} from './either'
-import { assertNever } from './utils'
+} from '../either'
+import { assertNever } from '../utils'
 
+// An optic that represents an isomorphism between two types.
+// Inspiration: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Iso.html#t:Iso
+// For each and every value in both types there is a single
+// value in the other type which it can be changed to.
 export interface Iso<S, A> {
   type: 'ISO'
   from: (s: S) => A
@@ -24,6 +28,10 @@ export function iso<S, A>(from: (s: S) => A, to: (a: A) => S): Iso<S, A> {
   }
 }
 
+// An optic which represents a view into a part of a type, often in relation to product types.
+// Inspiration: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Lens.html#t:Lens
+// The value can always be retrieved from the original, but as it will only be a part, the
+// original value is required to reconstruct it via the `update` function.
 export interface Lens<S, A> {
   type: 'LENS'
   from: (s: S) => A
@@ -38,6 +46,10 @@ export function lens<S, A>(from: (s: S) => A, update: (s: S, a: A) => S): Lens<S
   }
 }
 
+// An optic which represents a possible case of a value, often in relation to sum types.
+// Inspiration: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Prism.html#t:Prism
+// The value may not always be representable as the `A` case, but if we have a value of that type
+// we can always get back to the original.
 export interface Prism<S, A> {
   type: 'PRISM'
   from: (s: S) => Either<string, A>
@@ -52,6 +64,10 @@ export function prism<S, A>(from: (s: S) => Either<string, A>, to: (a: A) => S):
   }
 }
 
+// An optic which can represent any case, going from a value to possibly many others.
+// Inspiration: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Type.html#t:Traversal
+// This has the weakest set of guarantees as it may not produce any values and always
+// requires the original to do any updates.
 export interface Traversal<S, A> {
   type: 'TRAVERSAL'
   from: (s: S) => Array<A>
@@ -69,12 +85,9 @@ export function traversal<S, A>(
   }
 }
 
-export type GeneralLens<S, A> = Iso<S, A> | Lens<S, A> | Prism<S, A> | Traversal<S, A>
+export type Optic<S, A> = Iso<S, A> | Lens<S, A> | Prism<S, A> | Traversal<S, A>
 
-export function composeLensToIso<A, B, C>(
-  first: Iso<A, B>,
-  second: GeneralLens<B, C>,
-): GeneralLens<A, C> {
+function composeLensToIso<A, B, C>(first: Iso<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return iso(
@@ -117,10 +130,7 @@ export function composeLensToIso<A, B, C>(
   }
 }
 
-export function composeLensToLens<A, B, C>(
-  first: Lens<A, B>,
-  second: GeneralLens<B, C>,
-): GeneralLens<A, C> {
+function composeLensToLens<A, B, C>(first: Lens<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return lens(
@@ -179,10 +189,7 @@ export function composeLensToLens<A, B, C>(
   }
 }
 
-export function composeLensToPrism<A, B, C>(
-  first: Prism<A, B>,
-  second: GeneralLens<B, C>,
-): GeneralLens<A, C> {
+function composeLensToPrism<A, B, C>(first: Prism<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return prism(
@@ -257,10 +264,7 @@ export function composeLensToPrism<A, B, C>(
   }
 }
 
-export function composeLensToTraversal<A, B, C>(
-  first: Traversal<A, B>,
-  second: GeneralLens<B, C>,
-): GeneralLens<A, C> {
+function composeLensToTraversal<A, B, C>(first: Traversal<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return traversal(
@@ -316,10 +320,7 @@ export function composeLensToTraversal<A, B, C>(
   }
 }
 
-export function compose2Lenses<A, B, C>(
-  first: GeneralLens<A, B>,
-  second: GeneralLens<B, C>,
-): GeneralLens<A, C> {
+export function compose2Lenses<A, B, C>(first: Optic<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (first.type) {
     case 'ISO':
       return composeLensToIso(first, second)
@@ -335,51 +336,51 @@ export function compose2Lenses<A, B, C>(
 }
 
 export function compose3Lenses<A, B, C, D>(
-  first: GeneralLens<A, B>,
-  second: GeneralLens<B, C>,
-  third: GeneralLens<C, D>,
-): GeneralLens<A, D> {
+  first: Optic<A, B>,
+  second: Optic<B, C>,
+  third: Optic<C, D>,
+): Optic<A, D> {
   return compose2Lenses(compose2Lenses(first, second), third)
 }
 
 export function compose4Lenses<A, B, C, D, E>(
-  first: GeneralLens<A, B>,
-  second: GeneralLens<B, C>,
-  third: GeneralLens<C, D>,
-  fourth: GeneralLens<D, E>,
-): GeneralLens<A, E> {
+  first: Optic<A, B>,
+  second: Optic<B, C>,
+  third: Optic<C, D>,
+  fourth: Optic<D, E>,
+): Optic<A, E> {
   return compose2Lenses(compose3Lenses(first, second, third), fourth)
 }
 
 export function compose5Lenses<A, B, C, D, E, F>(
-  first: GeneralLens<A, B>,
-  second: GeneralLens<B, C>,
-  third: GeneralLens<C, D>,
-  fourth: GeneralLens<D, E>,
-  fifth: GeneralLens<E, F>,
-): GeneralLens<A, F> {
+  first: Optic<A, B>,
+  second: Optic<B, C>,
+  third: Optic<C, D>,
+  fourth: Optic<D, E>,
+  fifth: Optic<E, F>,
+): Optic<A, F> {
   return compose2Lenses(compose4Lenses(first, second, third, fourth), fifth)
 }
 
 export function compose6Lenses<A, B, C, D, E, F, G>(
-  first: GeneralLens<A, B>,
-  second: GeneralLens<B, C>,
-  third: GeneralLens<C, D>,
-  fourth: GeneralLens<D, E>,
-  fifth: GeneralLens<E, F>,
-  sixth: GeneralLens<F, G>,
-): GeneralLens<A, G> {
+  first: Optic<A, B>,
+  second: Optic<B, C>,
+  third: Optic<C, D>,
+  fourth: Optic<D, E>,
+  fifth: Optic<E, F>,
+  sixth: Optic<F, G>,
+): Optic<A, G> {
   return compose2Lenses(compose5Lenses(first, second, third, fourth, fifth), sixth)
 }
 
 export function compose7Lenses<A, B, C, D, E, F, G, H>(
-  first: GeneralLens<A, B>,
-  second: GeneralLens<B, C>,
-  third: GeneralLens<C, D>,
-  fourth: GeneralLens<D, E>,
-  fifth: GeneralLens<E, F>,
-  sixth: GeneralLens<F, G>,
-  seventh: GeneralLens<G, H>,
-): GeneralLens<A, H> {
+  first: Optic<A, B>,
+  second: Optic<B, C>,
+  third: Optic<C, D>,
+  fourth: Optic<D, E>,
+  fifth: Optic<E, F>,
+  sixth: Optic<F, G>,
+  seventh: Optic<G, H>,
+): Optic<A, H> {
   return compose2Lenses(compose6Lenses(first, second, third, fourth, fifth, sixth), seventh)
 }

@@ -1,17 +1,21 @@
 import * as FastCheck from 'fast-check'
-import { Either, left, right } from './either'
+import { Either, left, right } from '../either'
 import {
   eitherLeft,
   eitherRight,
   filtered,
   fromField,
   fromObjectField,
+  fromTypeGuard,
   not,
+  notNull,
+  notNullOrUndefined,
+  notUndefined,
   traverseArray,
-} from './lens-creators'
-import { isoLaws, lensLaws, prismLaws, traversalLaws } from './lens-laws'
-import { toArrayOf } from './lens-utilies'
+} from './optic-creators'
+import { isoLaws, lensLaws, prismLaws, traversalLaws } from './optic-laws'
 import fastDeepEquals from 'fast-deep-equal'
+import { exists, toArrayOf } from './optic-utilities'
 
 const eitherStringNumberArbitrary: FastCheck.Arbitrary<Either<string, number>> = FastCheck.tuple(
   FastCheck.integer(),
@@ -159,8 +163,114 @@ describe('fromField', () => {
       fromField('testField'),
       fromFieldTestArbitrary,
       FastCheck.string(),
-      (s) => s + 'func1 append',
-      (s) => s + 'func2 append',
+      (s) => s.concat('func1 append'),
+      (s) => s.concat('func2 append'),
+    )
+  })
+})
+
+interface FirstType {
+  type: 'FIRST'
+  aNumber: number
+}
+
+interface SecondType {
+  type: 'SECOND'
+  aString: string
+}
+
+type UnionType = FirstType | SecondType
+
+function isFirstType(unionType: UnionType): unionType is FirstType {
+  return unionType.type === 'FIRST'
+}
+
+function isSecondType(unionType: UnionType): unionType is SecondType {
+  return unionType.type === 'SECOND'
+}
+
+const firstTypeArbitrary: FastCheck.Arbitrary<FirstType> = FastCheck.integer().map((aNumber) => {
+  return {
+    type: 'FIRST',
+    aNumber: aNumber,
+  }
+})
+
+const secondTypeArbitrary: FastCheck.Arbitrary<SecondType> = FastCheck.string().map((aString) => {
+  return {
+    type: 'SECOND',
+    aString: aString,
+  }
+})
+
+const unionTypeArbitrary: FastCheck.Arbitrary<UnionType> = FastCheck.oneof<UnionType>(
+  firstTypeArbitrary,
+  secondTypeArbitrary,
+)
+
+describe('fromTypeGuard', () => {
+  it('obeys the laws', () => {
+    prismLaws<UnionType, SecondType>(
+      fromTypeGuard(isSecondType),
+      unionTypeArbitrary,
+      secondTypeArbitrary,
+      (a) => {
+        return {
+          ...a,
+          aString: a.aString.concat(' func1 append'),
+        }
+      },
+      (a) => {
+        return {
+          ...a,
+          aString: a.aString.concat(' func2 append'),
+        }
+      },
+    )
+  })
+  it('matches the guard behaviour', () => {
+    const property = FastCheck.property(unionTypeArbitrary, (unionType) => {
+      return (
+        exists(fromTypeGuard(isFirstType), unionType) === isFirstType(unionType) &&
+        exists(fromTypeGuard(isSecondType), unionType) === isSecondType(unionType)
+      )
+    })
+    FastCheck.assert(property, { verbose: true })
+  })
+})
+
+describe('notNull', () => {
+  it('obeys the laws', () => {
+    prismLaws<string | null, string>(
+      notNull(),
+      FastCheck.oneof(FastCheck.string(), FastCheck.constant(null)),
+      FastCheck.string(),
+      (s) => s.concat('func1 append'),
+      (s) => s.concat('func2 append'),
+    )
+  })
+})
+
+describe('notUndefined', () => {
+  it('obeys the laws', () => {
+    prismLaws<string | undefined, string>(
+      notUndefined(),
+      FastCheck.oneof(FastCheck.string(), FastCheck.constant(undefined)),
+      FastCheck.string(),
+      (s) => s.concat('func1 append'),
+      (s) => s.concat('func2 append'),
+    )
+  })
+})
+
+describe('notNullOrUndefined', () => {
+  it('obeys the laws', () => {
+    prismLaws<string | null | undefined, string>(
+      notNullOrUndefined(),
+      FastCheck.oneof(FastCheck.string(), FastCheck.constant(null), FastCheck.constant(undefined)),
+      FastCheck.string(),
+      (s) => s.concat('func1 append'),
+      (s) => s.concat('func2 append'),
     )
   })
 })

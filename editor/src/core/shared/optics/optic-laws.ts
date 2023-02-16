@@ -1,13 +1,10 @@
 import * as FastCheck from 'fast-check'
-import { GeneralLens } from './lens'
+import { Optic } from './optics'
 import fastDeepEquals from 'fast-deep-equal'
-import { flatMapEither, foldEither, right, traverseEither } from './either'
-import { toArrayOf, modify, unsafeGet, set, toFirst, inverseGet } from './lens-utilies'
+import { flatMapEither, foldEither, right, traverseEither } from '../either'
+import { toArrayOf, modify, unsafeGet, set, toFirst, inverseGet } from './optic-utilities'
 
-function traversalIdentityLaw<S, A>(
-  lens: GeneralLens<S, A>,
-  arbitraryS: FastCheck.Arbitrary<S>,
-): void {
+function traversalIdentityLaw<S, A>(lens: Optic<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
   // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Type.html#t:Traversal
   // Performing an update with the identity function should be the same as making no change at all.
   const property = FastCheck.property(arbitraryS, (s) => {
@@ -20,7 +17,7 @@ function traversalIdentityLaw<S, A>(
 }
 
 function traversalCompositionLaw<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   func1: (a: A) => A,
   func2: (a: A) => A,
@@ -38,7 +35,7 @@ function traversalCompositionLaw<S, A>(
 }
 
 export function traversalLaws<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   func1: (a: A) => A,
   func2: (a: A) => A,
@@ -48,7 +45,7 @@ export function traversalLaws<S, A>(
 }
 
 function lensSetGetLaw<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   arbitraryA: FastCheck.Arbitrary<A>,
 ): void {
@@ -60,7 +57,7 @@ function lensSetGetLaw<S, A>(
   FastCheck.assert(property, { verbose: true })
 }
 
-function lensGetSetLaw<S, A>(lens: GeneralLens<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
+function lensGetSetLaw<S, A>(lens: Optic<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
   // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Lens.html#t:Lens
   // Setting a value `a` that was taken from a `s` back into it should be the same as making no change at all.
   const property = FastCheck.property(arbitraryS, (s) => {
@@ -70,7 +67,7 @@ function lensGetSetLaw<S, A>(lens: GeneralLens<S, A>, arbitraryS: FastCheck.Arbi
 }
 
 function lensSetSetLaw<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   arbitraryA: FastCheck.Arbitrary<A>,
 ): void {
@@ -82,10 +79,7 @@ function lensSetSetLaw<S, A>(
   FastCheck.assert(property, { verbose: true })
 }
 
-function lensTraversalLengthLaw<S, A>(
-  lens: GeneralLens<S, A>,
-  arbitraryS: FastCheck.Arbitrary<S>,
-): void {
+function lensTraversalLengthLaw<S, A>(lens: Optic<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
   // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Lens.html#t:Lens
   // With a lens used to return the array, it should always return an array of length 1.
   const property = FastCheck.property(arbitraryS, (s) => {
@@ -96,7 +90,7 @@ function lensTraversalLengthLaw<S, A>(
 }
 
 export function lensLaws<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   arbitraryA: FastCheck.Arbitrary<A>,
   func1: (a: A) => A,
@@ -110,7 +104,7 @@ export function lensLaws<S, A>(
   traversalLaws(lens, arbitraryS, func1, func2)
 }
 
-function prismToFromLaw<S, A>(lens: GeneralLens<S, A>, arbitraryA: FastCheck.Arbitrary<A>): void {
+function prismToFromLaw<S, A>(lens: Optic<S, A>, arbitraryA: FastCheck.Arbitrary<A>): void {
   // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Prism.html#t:Prism
   // With a value `a`, converting it to a value `s` and then back again should return the original
   // value `a`.
@@ -123,10 +117,7 @@ function prismToFromLaw<S, A>(lens: GeneralLens<S, A>, arbitraryA: FastCheck.Arb
   FastCheck.assert(property, { verbose: true })
 }
 
-function prismValidFromLaw<S, A>(
-  lens: GeneralLens<S, A>,
-  arbitraryS: FastCheck.Arbitrary<S>,
-): void {
+function prismValidFromLaw<S, A>(lens: Optic<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
   // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Prism.html#t:Prism
   // If a value `s` is valid for this prism, then it should be possible to return back to the `s` from the
   // `a` we retrieve.
@@ -145,7 +136,7 @@ function prismValidFromLaw<S, A>(
 }
 
 function prismTraversalLengthLaw<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
 ): void {
   // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Prism.html#t:Prism
@@ -158,7 +149,7 @@ function prismTraversalLengthLaw<S, A>(
 }
 
 export function prismLaws<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   arbitraryA: FastCheck.Arbitrary<A>,
   func1: (a: A) => A,
@@ -171,7 +162,7 @@ export function prismLaws<S, A>(
   traversalLaws(lens, arbitraryS, func1, func2)
 }
 
-function isoFromToLaw<S, A>(lens: GeneralLens<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
+function isoFromToLaw<S, A>(lens: Optic<S, A>, arbitraryS: FastCheck.Arbitrary<S>): void {
   if (lens.type === 'ISO') {
     // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Iso.html#t:Iso
     // Convert S to A, convert that back to S should be the same value as the original S.
@@ -184,7 +175,7 @@ function isoFromToLaw<S, A>(lens: GeneralLens<S, A>, arbitraryS: FastCheck.Arbit
   }
 }
 
-function isoToFromLaw<S, A>(lens: GeneralLens<S, A>, arbitraryA: FastCheck.Arbitrary<A>): void {
+function isoToFromLaw<S, A>(lens: Optic<S, A>, arbitraryA: FastCheck.Arbitrary<A>): void {
   if (lens.type === 'ISO') {
     // Law taken from here: https://hackage.haskell.org/package/lens-5.2/docs/Control-Lens-Iso.html#t:Iso
     // Convert A to S, then convert that back to A should be the same value as the original A.
@@ -198,7 +189,7 @@ function isoToFromLaw<S, A>(lens: GeneralLens<S, A>, arbitraryA: FastCheck.Arbit
 }
 
 export function isoLaws<S, A>(
-  lens: GeneralLens<S, A>,
+  lens: Optic<S, A>,
   arbitraryS: FastCheck.Arbitrary<S>,
   arbitraryA: FastCheck.Arbitrary<A>,
   func1: (a: A) => A,
