@@ -1258,6 +1258,8 @@ export const MetadataUtils = {
               return '(code)'
             case 'JSX_FRAGMENT':
               return 'Fragment'
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              return 'Conditional'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)

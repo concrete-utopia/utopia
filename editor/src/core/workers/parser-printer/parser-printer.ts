@@ -66,6 +66,7 @@ import {
   emptyComments,
   ParsedComments,
   parsedComments,
+  childOrBlockIsChild,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -489,6 +490,19 @@ function jsxElementToExpression(
     }
     case 'JSX_TEXT_BLOCK': {
       return TS.createJsxText(element.text)
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const condition = jsxAttributeToExpression(element.condition)
+      const whenTrue = childOrBlockIsChild(element.whenTrue)
+        ? jsxElementToExpression(element.whenTrue, imports, stripUIDs)
+        : jsxAttributeToExpression(element.whenTrue)
+      const whenFalse = childOrBlockIsChild(element.whenFalse)
+        ? jsxElementToExpression(element.whenFalse, imports, stripUIDs)
+        : jsxAttributeToExpression(element.whenFalse)
+      return TS.createJsxExpression(
+        undefined,
+        TS.createConditional(condition, whenTrue as TS.Expression, whenFalse as TS.Expression),
+      )
     }
     default:
       const _exhaustiveCheck: never = element

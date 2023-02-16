@@ -14,6 +14,7 @@ import {
   jsxElement,
   emptyComments,
   JSXElementLike,
+  childOrBlockIsChild,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -284,6 +285,20 @@ export function findElementWithUID(
           const elementWithinResult = findForJSXElement(elementWithin)
           if (elementWithinResult != null) {
             return elementWithinResult
+          }
+        }
+        return null
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        if (childOrBlockIsChild(element.whenTrue)) {
+          const findResult = findForJSXElementChild(element.whenTrue)
+          if (findResult != null) {
+            return findResult
+          }
+        }
+        if (childOrBlockIsChild(element.whenFalse)) {
+          const findResult = findForJSXElementChild(element.whenFalse)
+          if (findResult != null) {
+            return findResult
           }
         }
         return null

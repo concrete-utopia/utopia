@@ -22,10 +22,12 @@ import {
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
+  childOrBlockIsChild,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
+  jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -85,16 +87,7 @@ export function createLookupRender(
       jsxAttributeValue(generatedUID, emptyComments),
     )
 
-    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      EP.parentPath,
-      elementPath,
-    )
-
-    const innerPath = optionalMap(
-      (path) => EP.appendToPath(path, generatedUID),
-      elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-    )
+    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
@@ -331,6 +324,49 @@ export function renderCoreElement(
         </>
       )
     }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const conditionValue: boolean = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element.condition,
+      )
+      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+
+      if (childOrBlockIsChild(actualElement)) {
+        const childPath = optionalMap(
+          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+          elementPath,
+        )
+
+        return renderCoreElement(
+          actualElement,
+          childPath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+        )
+      } else {
+        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+      }
+    }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -356,6 +392,7 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
         }
         break
       case 'JSX_FRAGMENT':
+      case 'JSX_CONDITIONAL_EXPRESSION':
         break
       default:
         assertNever(c)
