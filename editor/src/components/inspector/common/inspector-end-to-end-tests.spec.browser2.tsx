@@ -1684,7 +1684,7 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"trivial-default"`,
+      `"simple"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
@@ -1792,14 +1792,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"trivial-default"`,
+      `"simple"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
     matchInlineSnapshotBrowser(radiusControl.value, `""`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"trivial-default"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
