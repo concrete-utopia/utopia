@@ -7,6 +7,9 @@ import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
+import { ControlMode } from '../sections/layout-section/layout-system-subsection/split-chained-number-input'
+import { useRefEditorState } from '../../editor/store/store-hook'
+import { wrapValue } from '../../../core/shared/math-utils'
 
 const isControlledStyling = (colorTheme: any) => ({
   backgroundColor: colorTheme.inspectorControlledBackground.value,
@@ -192,4 +195,27 @@ export function getElementsToTarget(paths: Array<ElementPath>): Array<ElementPat
     }
   })
   return result
+}
+
+export function useControlModeWithCycle(
+  initialValue: ControlMode,
+  modes: Array<ControlMode>,
+): [ControlMode | null, React.Dispatch<ControlMode | null>, React.DispatchWithoutAction] {
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>(initialValue)
+
+  const cycleToNextMode = React.useCallback(
+    (mode: ControlMode | null) => {
+      const modeToUse = overriddenMode ?? mode ?? initialValue
+      const delta = isCmdPressedRef.current ? -1 : 1
+      const index = modes.indexOf(modeToUse) + delta
+      setOveriddenMode(modes[wrapValue(index, 0, modes.length - 1)])
+    },
+    [initialValue, isCmdPressedRef, modes, overriddenMode],
+  )
+
+  const resetMode = React.useCallback(() => setOveriddenMode(null), [])
+
+  return [overriddenMode, cycleToNextMode, resetMode]
 }

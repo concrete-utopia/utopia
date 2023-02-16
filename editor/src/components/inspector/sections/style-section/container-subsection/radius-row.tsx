@@ -15,6 +15,7 @@ import {
   useSelectorWithCallback,
 } from '../../../../editor/store/store-hook'
 import { CSSNumber } from '../../../common/css-utils'
+import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import {
   useInspectorContext,
   useInspectorLayoutInfo,
@@ -75,13 +76,6 @@ export const BorderRadiusControl = React.memo(() => {
   const dispatch = useDispatch()
 
   const { selectedViewsRef } = useInspectorContext()
-
-  useSelectorWithCallback(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    () => setOveriddenMode(null),
-    'BorderRadiusControl setOveriddenMode',
-  )
 
   const tl: CSSNumber = React.useMemo(
     () =>
@@ -216,21 +210,21 @@ export const BorderRadiusControl = React.memo(() => {
     [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
   )
 
-  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
-
-  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>(
+  const [overriddenMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
     BorderRadiusControlDefaultMode,
+    BorderRadiusControlModeOrder,
   )
 
-  const modeToUse = overriddenMode ?? mode
+  useSelectorWithCallback(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    () => resetOverridenMode(),
+    'PaddingControl setOveriddenMode',
+  )
 
-  const cycleToNextMode = React.useCallback(() => {
-    const delta = isCmdPressedRef.current ? -1 : 1
-    const index = BorderRadiusControlModeOrder.indexOf(modeToUse) + delta
-    setOveriddenMode(
-      BorderRadiusControlModeOrder[wrapValue(index, 0, BorderRadiusControlModeOrder.length - 1)],
-    )
-  }, [isCmdPressedRef, modeToUse])
+  const onCylceMode = React.useCallback(() => cycleToNextMode(mode), [cycleToNextMode, mode])
+
+  const modeToUse = overriddenMode ?? mode
 
   return (
     <SplitChainedNumberInput
@@ -244,7 +238,7 @@ export const BorderRadiusControl = React.memo(() => {
         oneValue: 'Radius',
         perSide: 'Radius per corner',
       }}
-      onCycleMode={cycleToNextMode}
+      onCycleMode={onCylceMode}
       numberType={'LengthPercent'}
       name='radius'
       mode={modeToUse}

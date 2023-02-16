@@ -32,6 +32,7 @@ import {
   getControlStyles,
 } from '../../../common/control-status'
 import { CanvasControlWithProps } from '../../../common/inspector-atoms'
+import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import {
   InspectorCallbackContext,
@@ -288,13 +289,6 @@ export const PaddingControl = React.memo(() => {
     )
   }, [])
 
-  useSelectorWithCallback(
-    Substores.selectedViews,
-    selectedViewsSelector,
-    () => setOveriddenMode(null),
-    'PaddingControl setOveriddenMode',
-  )
-
   const allUnset = React.useMemo(() => {
     return (
       paddingTop.controlStatus === 'trivial-default' &&
@@ -377,19 +371,21 @@ export const PaddingControl = React.memo(() => {
     return initialMode
   }, [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides])
 
-  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+  const [overriddenMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
+    PaddingControlDefaultMode,
+    PaddingControlModeOrder,
+  )
 
-  const [overriddenMode, setOveriddenMode] = React.useState<ControlMode | null>('per-direction')
+  useSelectorWithCallback(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    () => resetOverridenMode(),
+    'PaddingControl setOveriddenMode',
+  )
+
+  const onCylceMode = React.useCallback(() => cycleToNextMode(mode), [cycleToNextMode, mode])
 
   const modeToUse = overriddenMode ?? mode
-
-  const cycleToNextMode = React.useCallback(() => {
-    const delta = isCmdPressedRef.current ? -1 : 1
-    const index = PaddingControlModeOrder.indexOf(modeToUse) + delta
-    setOveriddenMode(
-      PaddingControlModeOrder[wrapValue(index, 0, PaddingControlModeOrder.length - 1)],
-    )
-  }, [isCmdPressedRef, modeToUse])
 
   return (
     <SplitChainedNumberInput
@@ -402,8 +398,8 @@ export const PaddingControl = React.memo(() => {
       canvasControls={canvasControlsForSides}
       numberType={'LengthPercent'}
       eventHandler={eventHandler}
-      mode={overriddenMode ?? mode}
-      onCycleMode={cycleToNextMode}
+      mode={modeToUse}
+      onCycleMode={onCylceMode}
       values={values}
     />
   )
