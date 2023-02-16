@@ -29,7 +29,7 @@ import {
   EdgePositionBottom,
   EdgePositionTop,
 } from '../../canvas-types'
-import { wait } from '../../../../utils/utils.test-utils'
+import { setFeatureForTests, wait } from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'
 import {
   BakedInStoryboardVariableName,
@@ -41,7 +41,6 @@ import {
   mouseDragFromPointWithDelta,
 } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
 import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
@@ -1220,8 +1219,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 })
 
 describe('Double click on resize edge', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
@@ -1316,8 +1314,7 @@ describe('Double click on resize edge', () => {
 })
 
 describe('double click on resize corner', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   it('resizes to fit when resize corner is double clicked', async () => {
     const editor = await renderTestEditorWithCode(

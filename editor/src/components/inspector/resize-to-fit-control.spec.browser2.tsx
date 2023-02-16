@@ -1,5 +1,4 @@
-import { setFeatureEnabled } from '../../utils/feature-switches'
-import { expectSingleUndoStep } from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForTests } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -11,8 +10,7 @@ import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
 
 describe('Resize to fit control', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')

@@ -198,6 +198,108 @@ describe('padding controls shorthand', () => {
         padding: '10px 20px 10px 10px',
       }),
     },
+    {
+      name: 'delete value (shorthand, one value)',
+      startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-one', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({}),
+    },
+    {
+      name: 'delete value (longhand, one value)',
+      startSnippet: makeCodeSnippetWithKeyValue({
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 10,
+        paddingBottom: 10,
+      }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-one', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({}),
+    },
+    {
+      name: 'delete value (shorthand, two value)',
+      startSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-H', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 0px' }),
+    },
+    {
+      name: 'delete value (longhand, two value)',
+      startSnippet: makeCodeSnippetWithKeyValue({
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 20,
+        paddingBottom: 20,
+      }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-H', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({
+        paddingTop: 20,
+        paddingBottom: 20,
+      }),
+    },
+    {
+      name: 'delete value (shorthand, two value, all empty)',
+      startSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 10px' }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-H', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({}),
+    },
+    {
+      name: 'delete value (shorthand, four value)',
+      startSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px 30px 40px' }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-R', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 0px 30px 40px' }),
+    },
+    {
+      name: 'delete value (shorthand, four value, all empty)',
+      startSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 20px 0px 0px' }),
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-R', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 0px 0px 0px' }),
+    },
+    {
+      name: 'delete value (longhand, four value)',
+      startSnippet: makeCodeSnippetWithKeyValue({
+        paddingLeft: 10,
+        paddingTop: 20,
+      }),
+      before: async (renderResult: EditorRenderResult) => {
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('padding-cycle-mode'))
+          await renderResult.getDispatchFollowUpActionsFinished()
+        })
+      },
+      control: async (renderResult: EditorRenderResult) => {
+        await expectSingleUndoStep(renderResult, async () => {
+          await setControlValue('padding-T', '', renderResult.renderedDOM)
+        })
+      },
+      endSnippet: makeCodeSnippetWithKeyValue({ paddingLeft: 10 }),
+    },
   ]
 
   tests.forEach((tt, idx) => {

@@ -247,55 +247,13 @@ export interface DomWalkerProps {
   additionalElementsToUpdate: Array<ElementPath>
 }
 
-// This function adds elementMetadata to the metadataToMutate map. If a metadata instance with the same element path
-// already existed in the map, it adds the metadata of a fragment which contains both the existing and the new element.
-// NOTE: For performance reasons this function mutates the first parameter and writes the result there. It only mutates the
-// map itself, it should never mutate the metadata instances inside the map!
-function addElementMetadataToMapWithFragments_MUTATE(
-  metadataToMutate: ElementInstanceMetadataMap,
-  elementMetadata: Readonly<ElementInstanceMetadata>,
-): void {
-  const pathString = EP.toString(elementMetadata.elementPath)
-  const existingMetadata = metadataToMutate[pathString]
-
-  if (existingMetadata == null) {
-    metadataToMutate[pathString] = elementMetadata
-  } else {
-    // We've hit a fragment, so remove the style etc., but keep the frames for selection
-    const merged = elementInstanceMetadata(
-      elementMetadata.elementPath,
-      left('fragment'),
-      boundingRectangle(
-        zeroRectIfNullOrInfinity(existingMetadata.globalFrame),
-        zeroRectIfNullOrInfinity(elementMetadata.globalFrame),
-      ),
-      boundingRectangle(
-        zeroRectIfNullOrInfinity(existingMetadata.localFrame),
-        zeroRectIfNullOrInfinity(elementMetadata.localFrame),
-      ),
-      false,
-      false,
-      emptySpecialSizeMeasurements,
-      {},
-      {},
-      null,
-      null,
-    )
-
-    metadataToMutate[pathString] = merged
-  }
-}
-
-// This function merges metadataToMutate and otherMetadata maps. If metadata instances with the same element path
-// exist in both maps, it adds the metadata of a fragment which contains both the elements.
-// NOTE: For performance reasons this function mutates the first parameter and writes the result there. It only mutates
-// the map itself, it should never mutate the metadata instances inside the map!
-function mergeMetadataMapsWithFragments_MUTATE(
+function mergeMetadataMaps_MUTATE(
   metadataToMutate: ElementInstanceMetadataMap,
   otherMetadata: Readonly<ElementInstanceMetadataMap>,
 ): void {
   fastForEach(Object.values(otherMetadata), (elementMetadata) => {
-    addElementMetadataToMapWithFragments_MUTATE(metadataToMutate, elementMetadata)
+    const pathString = EP.toString(elementMetadata.elementPath)
+    metadataToMutate[pathString] = elementMetadata
   })
 }
 
@@ -397,14 +355,14 @@ function runSelectiveDomWalker(
           domWalkerMutableState.invalidatedPaths,
         )
 
-        mergeMetadataMapsWithFragments_MUTATE(workingMetadata, collectedMetadata)
+        mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
       (path) => !Object.keys(workingMetadata).includes(path),
     )
     const rootMetadataForOtherElements = pick(otherElementPaths, rootMetadataInStateRef.current)
-    mergeMetadataMapsWithFragments_MUTATE(rootMetadataForOtherElements, workingMetadata)
+    mergeMetadataMaps_MUTATE(rootMetadataForOtherElements, workingMetadata)
 
     return {
       metadata: rootMetadataForOtherElements,
@@ -482,7 +440,7 @@ export function runDomWalker({
         ? walkCanvasRootFragment(
             canvasRootContainer,
             rootMetadataInStateRef,
-            domWalkerMutableState.invalidatedPaths, // TODO does walkCanvasRootFragment ever uses invalidatedPaths right now?
+            domWalkerMutableState.invalidatedPaths,
             domWalkerMutableState.invalidatedPathsForStylesheetCache,
             selectedViews,
             !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
@@ -1080,7 +1038,7 @@ function walkCanvasRootFragment(
       null, // this comes from the Spy Wrapper
     )
 
-    addElementMetadataToMapWithFragments_MUTATE(rootMetadata, metadata)
+    rootMetadata[EP.toString(canvasRootPath)] = metadata
 
     return { metadata: rootMetadata, cachedPaths: cachedPaths }
   }
@@ -1150,7 +1108,7 @@ function walkScene(
         additionalElementsToUpdate,
       )
 
-      mergeMetadataMapsWithFragments_MUTATE(rootMetadata, sceneMetadata)
+      mergeMetadataMaps_MUTATE(rootMetadata, sceneMetadata)
 
       return {
         metadata: rootMetadata,
@@ -1205,7 +1163,7 @@ function walkSceneInner(
     )
 
     childPaths.push(...childNodePaths)
-    mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadata)
+    mergeMetadataMaps_MUTATE(rootMetadataAccumulator, rootMetadata)
     cachedPathsAccumulator.push(...cachedPaths)
   })
 
@@ -1267,8 +1225,16 @@ function walkElements(
       }
     }
 
+    let invalidatedElement = false
+
     const pathsWithStrings = getPathWithStringsOnDomElement(element)
     for (const pathWithString of pathsWithStrings) {
+      invalidatedElement =
+        invalidated ||
+        (ObserversAvailable &&
+          invalidatedPaths.size > 0 &&
+          invalidatedPaths.has(pathWithString.asString))
+
       invalidatedPaths.delete(pathWithString.asString) // mutation!
     }
 
@@ -1307,13 +1273,13 @@ function walkElements(
           invalidatedPaths,
           invalidatedPathsForStylesheetCache,
           selectedViews,
-          invalidated,
+          invalidatedElement,
           scale,
           containerRectLazy,
           additionalElementsToUpdate,
         )
         childPaths.push(...childNodePaths)
-        mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, rootMetadataInner)
+        mergeMetadataMaps_MUTATE(rootMetadataAccumulator, rootMetadataInner)
         cachedPathsAccumulator.push(...cachedPaths)
       })
     }
@@ -1332,12 +1298,12 @@ function walkElements(
       invalidatedPaths,
       invalidatedPathsForStylesheetCache,
       rootMetadataInStateRef,
-      invalidated,
+      invalidatedElement,
       selectedViews,
       additionalElementsToUpdate,
     )
 
-    mergeMetadataMapsWithFragments_MUTATE(rootMetadataAccumulator, collectedMetadata)
+    mergeMetadataMaps_MUTATE(rootMetadataAccumulator, collectedMetadata)
     cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
     return {
       rootMetadata: rootMetadataAccumulator,

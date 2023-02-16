@@ -38,6 +38,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
+import { selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 
 async function getControl(
@@ -2054,6 +2055,23 @@ describe('inspector tests with real metadata', () => {
     )
   })
 
+  describe('border radius controls', () => {
+    it('applied border radius to the selected element', async () => {
+      const editor = await renderTestEditorWithCode(projectWithTwoDivs, 'await-first-dom-report')
+      const one = editor.renderedDOM.getByTestId('one')
+      const two = editor.renderedDOM.getByTestId('two')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/one')])
+      await selectComponentsForTest(editor, [EP.fromString('sb/two')])
+
+      await setControlValue('radius-one', '20', editor.renderedDOM)
+
+      expect(one.style.borderRadius).toEqual('')
+
+      expect(two.style.borderRadius).toEqual('20px')
+    })
+  })
+
   describe('border radius controls from the inspector', () => {
     function makeCodeSnippetWithKeyValue(props: { [key: string]: any }): string {
       const propsStr = Object.keys(props)
@@ -2312,3 +2330,54 @@ describe('Undo behavior in inspector', () => {
     )
   })
 })
+
+const projectWithTwoDivs = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-uid={"one"}
+      data-testid={"one"}
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 149,
+        top: 195,
+        width: 412,
+        height: 447,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+      />
+    </div>
+    <div
+      data-uid={"two"}
+      data-testid={"two"}
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 717,
+        top: 195,
+        width: 412,
+        height: 447,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: '100%',
+          height: '100%',
+          contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`

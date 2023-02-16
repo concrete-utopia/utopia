@@ -19,12 +19,13 @@ import {
   transientActions,
   unsetProperty,
 } from '../../../../editor/actions/action-creators'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, PropertyStatus } from '../../../common/control-status'
 import {
   CSSNumber,
   CSSNumberType,
   isCSSNumber,
+  isEmptyInputValue,
   printCSSNumber,
   UnknownOrEmptyInput,
 } from '../../../common/css-utils'
@@ -34,6 +35,7 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'
 import { InspectorInfo } from '../../../common/property-path-hooks'
+import { selectedViewsSelector } from '../../../inpector-selectors'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
@@ -102,7 +104,6 @@ export interface SplitChainedNumberInputProps<T> {
   bottom: ControlCSSNumber
   right: ControlCSSNumber
   shorthand: InspectorInfo<T>
-  selectedViews: ElementPath[]
   controlModeOrder: ControlMode[]
   labels?: {
     top?: string
@@ -128,7 +129,7 @@ export interface SplitChainedNumberInputProps<T> {
   eventHandler: SplitChainedNumberInputEventHandler
 }
 
-type SplitChainedNumberInputEventHandler = (
+export type SplitChainedNumberInputEventHandler = (
   e: SplitChainedEvent,
   aggregates: SplitControlValues,
   useShorthand: boolean,
@@ -157,16 +158,18 @@ function getInitialMode(
   return defaultMode
 }
 
-export type FourValue =
-  | { type: 'T'; value: CSSNumber }
-  | { type: 'R'; value: CSSNumber }
-  | { type: 'B'; value: CSSNumber }
-  | { type: 'L'; value: CSSNumber }
+type CSSNumberOrNull = CSSNumber | null
 
-export type TwoValue = { type: 'V'; value: CSSNumber } | { type: 'H'; value: CSSNumber }
+export type FourValue =
+  | { type: 'T'; value: CSSNumberOrNull }
+  | { type: 'R'; value: CSSNumberOrNull }
+  | { type: 'B'; value: CSSNumberOrNull }
+  | { type: 'L'; value: CSSNumberOrNull }
+
+export type TwoValue = { type: 'V'; value: CSSNumberOrNull } | { type: 'H'; value: CSSNumberOrNull }
 
 export type SplitChainedEvent =
-  | { type: 'one-value'; value: CSSNumber }
+  | { type: 'one-value'; value: CSSNumberOrNull }
   | { type: 'two-value'; value: TwoValue }
   | { type: 'four-value'; value: FourValue }
 
@@ -201,15 +204,16 @@ export function splitChainedEventValueForProp(
 }
 
 export type SplitControlValues = {
-  oneValue: CSSNumber | null
-  horizontal: CSSNumber | null
-  vertical: CSSNumber | null
+  oneValue: CSSNumberOrNull
+  horizontal: CSSNumberOrNull
+  vertical: CSSNumberOrNull
   top: CSSNumber
   right: CSSNumber
   bottom: CSSNumber
   left: CSSNumber
 }
 
+const emptyCSSNumber: CSSNumber = { value: 0, unit: 'px' }
 const actionsForSplitChainedEvent =
   (
     e: SplitChainedEvent,
@@ -223,14 +227,15 @@ const actionsForSplitChainedEvent =
     },
   ) =>
   (useShorthand: boolean, aggregates: SplitControlValues): Array<EditorAction> => {
-    const setProp = (path: PropertyPath, values: (CSSNumber | null)[]): EditorAction => {
+    function setProp(path: PropertyPath, values: (CSSNumber | null)[]): EditorAction {
+      const normalizedValues = values.map((v) => (useShorthand && v == null ? emptyCSSNumber : v))
       return setProp_UNSAFE(
         element,
         path,
         jsxAttributeValue(
-          values.length === 1 && values[0] != null
-            ? printCSSNumber(values[0], 'px')
-            : mapDropNulls((v) => v, values)
+          normalizedValues.length === 1 && normalizedValues[0] != null
+            ? printCSSNumber(normalizedValues[0], 'px')
+            : mapDropNulls((v) => v, normalizedValues)
                 .map((v) => printCSSNumber(v, null))
                 .join(' '),
           emptyComments,
@@ -238,8 +243,8 @@ const actionsForSplitChainedEvent =
       )
     }
 
-    const horizontal = aggregates.horizontal ?? { value: 0, unit: 'px' }
-    const vertical = aggregates.vertical ?? { value: 0, unit: 'px' }
+    const horizontal = aggregates.horizontal ?? emptyCSSNumber
+    const vertical = aggregates.vertical ?? emptyCSSNumber
 
     const unsetAllIndividual = [
       unsetProperty(element, longhand.T),
@@ -247,6 +252,94 @@ const actionsForSplitChainedEvent =
       unsetProperty(element, longhand.B),
       unsetProperty(element, longhand.L),
     ]
+
+    function actionsOrUnset(
+      actions: EditorAction[],
+      unset: boolean,
+      unsetPaths: PropertyPath[],
+    ): EditorAction[] {
+      if (unset) {
+        return unsetPaths.map((path) => unsetProperty(element, path))
+      }
+      return actions
+    }
+
+    function shouldUnset(): boolean {
+      switch (e.type) {
+        case 'one-value':
+          return e.value == null
+
+        case 'two-value':
+          if (e.value.value != null) {
+            return false
+          }
+
+          if (useShorthand) {
+            if (e.value.type === 'V') {
+              return aggregates.horizontal === null || aggregates.horizontal.value === 0
+            } else {
+              return aggregates.vertical === null || aggregates.vertical.value === 0
+            }
+          } else {
+            return true
+          }
+
+        case 'four-value':
+          if (e.value.value != null) {
+            return false
+          }
+
+          let otherSides: CSSNumber[] = []
+          if (e.value.type !== 'T') {
+            otherSides.push(aggregates.top)
+          }
+          if (e.value.type !== 'R') {
+            otherSides.push(aggregates.right)
+          }
+          if (e.value.type !== 'B') {
+            otherSides.push(aggregates.bottom)
+          }
+          if (e.value.type !== 'L') {
+            otherSides.push(aggregates.left)
+          }
+
+          return !useShorthand || otherSides.every((o) => o == null)
+
+        default:
+          assertNever(e)
+      }
+    }
+
+    function getUnsetPaths(): PropertyPath[] {
+      if (useShorthand) {
+        return [shorthand]
+      }
+
+      switch (e.type) {
+        case 'one-value':
+          return [longhand.T, longhand.R, longhand.B, longhand.L]
+
+        case 'two-value':
+          if (e.value.type === 'V') {
+            return [longhand.T, longhand.B]
+          }
+          return [longhand.R, longhand.L]
+
+        case 'four-value':
+          if (e.value.type === 'T') {
+            return [longhand.T]
+          } else if (e.value.type === 'R') {
+            return [longhand.R]
+          } else if (e.value.type === 'B') {
+            return [longhand.B]
+          } else {
+            return [longhand.L]
+          }
+
+        default:
+          assertNever(e)
+      }
+    }
 
     const getActions = (): Array<EditorAction> => {
       switch (e.type) {
@@ -298,7 +391,7 @@ const actionsForSplitChainedEvent =
       }
     }
 
-    return getActions()
+    return actionsOrUnset(getActions(), shouldUnset(), getUnsetPaths())
   }
 
 export const longhandShorthandEventHandler = (
@@ -309,7 +402,7 @@ export const longhandShorthandEventHandler = (
     B: string
     L: string
   },
-  elementPath: ElementPath,
+  selectedViewsRef: { current: Array<ElementPath> },
   dispatch: EditorDispatch,
   extraActionHandling?: (
     e: SplitChainedEvent,
@@ -322,12 +415,17 @@ export const longhandShorthandEventHandler = (
     useShorthand: boolean,
     isTransient: boolean,
   ) => {
-    let actions = actionsForSplitChainedEvent(e, elementPath, PP.create('style', shorthand), {
-      T: PP.create('style', longhands.T),
-      R: PP.create('style', longhands.R),
-      B: PP.create('style', longhands.B),
-      L: PP.create('style', longhands.L),
-    })(useShorthand, aggregates)
+    let actions = actionsForSplitChainedEvent(
+      e,
+      selectedViewsRef.current[0],
+      PP.create('style', shorthand),
+      {
+        T: PP.create('style', longhands.T),
+        R: PP.create('style', longhands.R),
+        B: PP.create('style', longhands.B),
+        L: PP.create('style', longhands.L),
+      },
+    )(useShorthand, aggregates)
 
     if (extraActionHandling != null) {
       actions.push(...extraActionHandling(e, aggregates))
@@ -341,11 +439,12 @@ export const longhandShorthandEventHandler = (
   }
 }
 
-const whenCSSNumber = (fn: (v: CSSNumber) => any) => (v: UnknownOrEmptyInput<CSSNumber>) => {
-  if (!isCSSNumber(v)) {
-    return
+const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyInput<CSSNumber>) => {
+  if (isEmptyInputValue(v)) {
+    fn(null)
+  } else if (isCSSNumber(v)) {
+    fn(v)
   }
-  fn(v)
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
@@ -372,6 +471,12 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const sidesVertical = React.useMemo(() => [top, bottom], [top, bottom])
 
   const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    'PaddingControl selectedViews',
+  )
 
   const isCurrentModeApplicable = React.useCallback(() => {
     if (mode === 'one-value' && oneValue == null) {
@@ -411,7 +516,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
 
   React.useEffect(() => {
     updateMode()
-  }, [props.selectedViews, updateMode, props.shorthand])
+  }, [selectedViews, updateMode, props.shorthand])
 
   React.useEffect(() => {
     updateAggregates()
@@ -421,7 +526,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     return function () {
       setMode(null)
     }
-  }, [props.selectedViews])
+  }, [selectedViews])
 
   React.useEffect(() => {
     if (!isCurrentModeApplicable()) {

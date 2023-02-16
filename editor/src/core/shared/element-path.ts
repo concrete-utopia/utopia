@@ -631,6 +631,18 @@ export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {
   return allPathsForLastPart(path).slice(0, -1)
 }
 
+export function getAncestors(path: ElementPath): ElementPath[] {
+  let workingPath = parentPath(path)
+  let ancestors = [workingPath]
+
+  while (!isEmptyPath(workingPath)) {
+    workingPath = parentPath(workingPath)
+    ancestors.push(workingPath)
+  }
+
+  return ancestors
+}
+
 function dropFromElementPaths(elementPathParts: ElementPathPart[], n: number): ElementPathPart[] {
   const prefix = dropLast(elementPathParts)
   const lastPart = last(elementPathParts)

@@ -345,7 +345,6 @@ export const PaddingControl = React.memo(() => {
         perDirection: 'Padding per direction',
         perSide: 'Padding per side',
       }}
-      selectedViews={selectedViewsRef.current}
       name='padding'
       defaultMode='per-direction'
       top={paddingTop}
@@ -363,7 +362,7 @@ export const PaddingControl = React.memo(() => {
           B: 'paddingBottom',
           L: 'paddingLeft',
         },
-        selectedViewsRef.current[0],
+        selectedViewsRef,
         dispatch,
         onPaddingChange,
       )}
