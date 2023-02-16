@@ -14,7 +14,7 @@ describe('intersection', () => {
 
   it('intersection is commutative', () => {
     fc.assert(
-      fc.property(fc.set(fc.nat()), fc.array(fc.nat()), (left, right) => {
+      fc.property(fc.set(fc.nat()), fc.set(fc.nat()), (left, right) => {
         const resultA = intersection([new Set(left), new Set(right)])
         const resultB = intersection([new Set(right), new Set(left)])
         expect([...resultA]).toEqual([...resultB])
