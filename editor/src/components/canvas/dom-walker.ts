@@ -168,20 +168,26 @@ function findParentScene(target: HTMLElement): string | null {
   if (sceneID != null) {
     return sceneID
   } else {
-    // Failing that, check if it is a child of the storyboard
-    const allPaths = getPathStringsOnDomElement(target)
-    allPaths.sort((a, b) => a.length - b.length)
-    const shallowestPath = allPaths[0]
-    if (shallowestPath != null) {
-      return shallowestPath
-    }
+    const parent = target.parentElement
 
-    if (target.parentElement != null) {
-      return findParentScene(target.parentElement)
-    } else {
-      return null
+    if (parent != null) {
+      const parentPath = getDeepestPathOnDomElement(parent)
+      const parentIsStoryboard = parentPath != null && EP.isStoryboardPath(parentPath)
+      if (parentIsStoryboard) {
+        // If the parent element is the storyboard, then we've reached the top and have to stop
+        const allPaths = getPathStringsOnDomElement(target)
+        allPaths.sort((a, b) => a.length - b.length)
+        const shallowestPath = allPaths[0]
+        if (shallowestPath != null) {
+          return shallowestPath
+        }
+      } else {
+        return findParentScene(parent)
+      }
     }
   }
+
+  return null
 }
 
 function lazyValue<T>(getter: () => T) {
