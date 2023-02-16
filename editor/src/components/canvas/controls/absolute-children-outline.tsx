@@ -9,10 +9,12 @@ export const AbsoluteChildrenOutline = React.memo(() => {
     Substores.metadata,
     (store) => {
       return store.editor.selectedViews.flatMap((view) => {
-        return MetadataUtils.getChildrenPaths(store.editor.jsxMetadata, view).filter((child) => {
-          const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, child)
-          return MetadataUtils.isPositionAbsolute(metadata)
-        })
+        return MetadataUtils.getChildrenPathsUnordered(store.editor.jsxMetadata, view).filter(
+          (child) => {
+            const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, child)
+            return MetadataUtils.isPositionAbsolute(metadata)
+          },
+        )
       })
     },
     'AbsoluteChildrenOutline absoluteChildrenBoundingBox',

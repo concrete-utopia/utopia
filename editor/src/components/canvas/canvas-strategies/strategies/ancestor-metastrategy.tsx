@@ -40,7 +40,7 @@ export function ancestorMetaStrategy(
     }
 
     // Is the selected element an only child?
-    const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target)
+    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target)
     if (siblings.length > 1) {
       return []
     }

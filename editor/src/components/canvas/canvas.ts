@@ -113,7 +113,7 @@ function getFramesInCanvasContextUncached(
     }
   }
 
-  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+  const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
   return storyboardChildren.flatMap((storyboardChild) => {
     const subTree = getSubTree(projectTree, storyboardChild)
     if (subTree == null) {
@@ -198,7 +198,7 @@ const Canvas = {
         return null
       case 1:
         const singleSelectedElement = selectedViews[0]
-        const siblings = MetadataUtils.getSiblings(components, singleSelectedElement)
+        const siblings = MetadataUtils.getSiblingsUnordered(components, singleSelectedElement)
         const pathsToStep = siblings.map((s) => s.elementPath)
         return Utils.stepInArray(
           EP.pathsEqual,
@@ -232,7 +232,7 @@ const Canvas = {
     if (selectedViews.length !== 1) {
       return null
     } else {
-      const children = MetadataUtils.getImmediateChildren(components, selectedViews[0])
+      const children = MetadataUtils.getImmediateChildrenUnordered(components, selectedViews[0])
       return children.length > 0 ? children[0].elementPath : null
     }
   },
