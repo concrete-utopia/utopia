@@ -38,6 +38,8 @@ import {
   jsxElementName,
   jsxElementNameEquals,
   isJSXElementLike,
+  isJSXConditionalExpression,
+  childOrBlockIsChild,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -3022,6 +3024,30 @@ export function getValidElementPathsFromElement(
         ),
       ),
     )
+    return paths
+  } else if (isJSXConditionalExpression(element)) {
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
+    fastForEach([element.whenTrue, element.whenFalse], (e) => {
+      if (childOrBlockIsChild(e)) {
+        paths.push(
+          ...getValidElementPathsFromElement(
+            focusedElementPath,
+            e,
+            path,
+            projectContents,
+            filePath,
+            false,
+            false,
+            transientFilesState,
+            resolve,
+          ),
+        )
+      }
+    })
     return paths
   } else {
     return []
