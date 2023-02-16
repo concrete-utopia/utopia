@@ -80,7 +80,7 @@ export const BorderRadiusControl = React.memo(() => {
     Substores.selectedViews,
     selectedViewsSelector,
     () => setOveriddenMode(null),
-    'aa aaaa',
+    'BorderRadiusControl setOveriddenMode',
   )
 
   const tl: CSSNumber = React.useMemo(
