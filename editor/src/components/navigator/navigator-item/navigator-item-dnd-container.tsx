@@ -470,7 +470,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
 
   const isFirstSibling = React.useMemo(() => {
-    const siblings = MetadataUtils.getSiblings(metadata, props.elementPath)
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.elementPath)
     const firstSibling = siblings.at(0)
     if (firstSibling == null) {
       return false
