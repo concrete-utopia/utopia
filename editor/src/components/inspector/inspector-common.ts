@@ -1,7 +1,7 @@
 import * as PP from '../../core/shared/property-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isStoryboardChild, parentPath } from '../../core/shared/element-path'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -31,10 +31,14 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
+import {
+  setPropFillStrategies,
+  setPropHugStrategies,
+} from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { isInfinityRectangle, Size } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
+import { intersection } from '../../core/shared/set-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -484,6 +488,8 @@ export type FixedHugFill =
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
 
+export type FixedHugFillMode = FixedHugFill['type']
+
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
@@ -586,6 +592,25 @@ export function resizeToFitCommands(
   return commands
 }
 
+export function resizeToFillCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = [
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropFillStrategies('horizontal', 'default', false),
+    ) ?? []),
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropFillStrategies('vertical', 'default', false),
+    ) ?? []),
+  ]
+  return commands
+}
+
 export function addPositionAbsoluteTopLeft(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
@@ -641,4 +666,44 @@ export function toggleResizeToFitSetToFixed(
   return notFixedSizeOnBothAxes(metadata, elementPaths)
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
     : resizeToFitCommands(metadata, elementPaths)
+}
+
+export function toggleResizeToFillSetToFixed(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): Array<CanvasCommand> {
+  if (elementPaths.length === 0) {
+    return []
+  }
+
+  return notFixedSizeOnBothAxes(metadata, elementPaths)
+    ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
+    : resizeToFillCommands(metadata, elementPaths)
+}
+
+export function getFixedFillHugOptionsForElement(
+  metadata: ElementInstanceMetadataMap,
+  selectedView: ElementPath,
+): Set<FixedHugFillMode> {
+  return new Set(
+    stripNulls([
+      'fixed',
+      hugContentsApplicableForText(metadata, selectedView) ||
+      hugContentsApplicableForContainer(metadata, selectedView)
+        ? 'hug'
+        : null,
+      fillContainerApplicable(selectedView) ? 'fill' : null,
+    ]),
+  )
+}
+
+export function getFillFixedHugOptions(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<FixedHugFillMode> {
+  return [
+    ...intersection(
+      selectedViews.map((selectedView) => getFixedFillHugOptionsForElement(metadata, selectedView)),
+    ),
+  ]
 }
