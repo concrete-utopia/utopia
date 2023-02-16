@@ -12,7 +12,6 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
-import { wait } from '../../core/model/performance-scripts'
 
 function dragElement(
   renderResult: EditorRenderResult,
