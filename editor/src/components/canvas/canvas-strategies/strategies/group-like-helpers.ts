@@ -33,6 +33,10 @@ function replaceGroupLikePathsWithTheirChildrenRecursive(
 
     if (elementIsGroupLike) {
       const children = MetadataUtils.getChildrenPaths(metadata, path)
+      if (children.length === 0) {
+        // with no children, actually let's just return the original element
+        return path
+      }
       return replaceGroupLikePathsWithTheirChildrenRecursive(metadata, allElementProps, children)
     }
 
