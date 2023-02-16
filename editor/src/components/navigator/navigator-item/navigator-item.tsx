@@ -2,11 +2,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  ElementInstanceMetadataMap,
-  isJSXElement,
-  JSXElementName,
-} from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -65,6 +60,7 @@ export interface NavigatorItemInnerProps {
   renamingTarget: ElementPath | null
   selected: boolean
   elementWarnings: ElementWarnings
+  shouldShowParentOutline: boolean
   visibleNavigatorTargets: Array<ElementPath>
 }
 
@@ -385,41 +381,49 @@ export const NavigatorItem: React.FunctionComponent<
   })
 
   return (
-    <FlexRow
-      style={rowStyle}
-      onMouseDown={select}
-      onMouseMove={highlight}
-      onDoubleClick={focusComponent}
+    <div
+      style={{
+        border: `1px solid ${
+          props.shouldShowParentOutline ? colorTheme.navigatorResizeHintBorder.value : 'transparent'
+        }`,
+      }}
     >
-      <FlexRow style={containerStyle}>
-        <ExpandableIndicator
-          key='expandable-indicator'
-          visible={childComponentCount > 0 || isFocusedComponent}
-          collapsed={collapsed}
-          selected={selected && !isInsideComponent}
-          onMouseDown={collapse}
-          style={{ transform: 'scale(0.8)', opacity: 0.5 }}
-        />
-        <NavigatorRowLabel
+      <FlexRow
+        style={rowStyle}
+        onMouseDown={select}
+        onMouseMove={highlight}
+        onDoubleClick={focusComponent}
+      >
+        <FlexRow style={containerStyle}>
+          <ExpandableIndicator
+            key='expandable-indicator'
+            visible={childComponentCount > 0 || isFocusedComponent}
+            collapsed={collapsed}
+            selected={selected && !isInsideComponent}
+            onMouseDown={collapse}
+            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
+          />
+          <NavigatorRowLabel
+            elementPath={elementPath}
+            label={props.label}
+            renamingTarget={props.renamingTarget}
+            selected={props.selected}
+            dispatch={props.dispatch}
+            isDynamic={isDynamic}
+            iconColor={resultingStyle.iconColor}
+            warningText={warningText}
+          />
+        </FlexRow>
+        <NavigatorItemActionSheet
           elementPath={elementPath}
-          label={props.label}
-          renamingTarget={props.renamingTarget}
-          selected={props.selected}
-          dispatch={props.dispatch}
-          isDynamic={isDynamic}
-          iconColor={resultingStyle.iconColor}
-          warningText={warningText}
+          selected={selected}
+          highlighted={isHighlighted}
+          isVisibleOnCanvas={isElementVisible}
+          instanceOriginalComponentName={null}
+          dispatch={dispatch}
         />
       </FlexRow>
-      <NavigatorItemActionSheet
-        elementPath={elementPath}
-        selected={selected}
-        highlighted={isHighlighted}
-        isVisibleOnCanvas={isElementVisible}
-        instanceOriginalComponentName={null}
-        dispatch={dispatch}
-      />
-    </FlexRow>
+    </div>
   )
 })
 NavigatorItem.displayName = 'NavigatorItem'
@@ -435,7 +439,7 @@ interface NavigatorRowLabelProps {
   dispatch: EditorDispatch
 }
 
-const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
+export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
       <LayoutIcon
