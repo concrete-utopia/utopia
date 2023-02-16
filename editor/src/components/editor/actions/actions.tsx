@@ -1809,7 +1809,7 @@ export const UPDATE_FNS = {
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
-            const siblings = MetadataUtils.getSiblings(editor.jsxMetadata, path)
+            const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, path)
             const selectedSiblings = allSelectedPaths.filter((p) =>
               siblings.includes(editor.jsxMetadata[EP.toString(p)]),
             )
@@ -1819,7 +1819,7 @@ export const UPDATE_FNS = {
               editor.jsxMetadata[EP.toString(parentPath)],
             )
             const parentWillBeEmpty =
-              MetadataUtils.getChildren(editor.jsxMetadata, parentPath).length ===
+              MetadataUtils.getChildrenUnordered(editor.jsxMetadata, parentPath).length ===
               selectedSiblings.length
             if (parentIsFragment && parentWillBeEmpty) {
               return parentPath
