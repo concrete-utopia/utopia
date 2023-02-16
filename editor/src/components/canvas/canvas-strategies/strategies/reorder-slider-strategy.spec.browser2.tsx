@@ -620,7 +620,7 @@ describe('Reorder Slider Strategy Control', () => {
     const targetControl = renderResult.renderedDOM.queryByTestId('reorder-slider-control')
     expect(targetControl).toBeNull()
   })
-  it('the reorder control is not visible on simple, 1d flow layouts for metadata with out of order children', async () => {
+  it('the reorder control is not visible on simple, 1d flow layouts for metadata where the key insertion order does not match the code order', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProjectSimpleBlocks),
       'await-first-dom-report',
