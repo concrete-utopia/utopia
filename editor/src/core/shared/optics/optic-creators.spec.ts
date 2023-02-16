@@ -59,13 +59,13 @@ describe('eitherRight', () => {
       (s) => s + 10,
     )
   })
-  it('returns nothing if it is a left', () => {
+  it('returns the value in the right if it is a right', () => {
     const property = FastCheck.property(FastCheck.string(), (s) => {
       return fastDeepEquals(toArrayOf(eitherRight(), right(s)), [s])
     })
     FastCheck.assert(property, { verbose: true })
   })
-  it('returns the value in the right if it is a right', () => {
+  it('returns nothing if it is a left', () => {
     const property = FastCheck.property(FastCheck.integer(), (s) => {
       return fastDeepEquals(toArrayOf(eitherRight(), left(s)), [])
     })

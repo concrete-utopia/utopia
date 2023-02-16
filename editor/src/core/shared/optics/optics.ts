@@ -7,6 +7,7 @@ import {
   flatMapEither,
   right,
   left,
+  forEachRight,
 } from '../either'
 import { assertNever } from '../utils'
 
@@ -87,7 +88,7 @@ export function traversal<S, A>(
 
 export type Optic<S, A> = Iso<S, A> | Lens<S, A> | Prism<S, A> | Traversal<S, A>
 
-function composeLensToIso<A, B, C>(first: Iso<A, B>, second: Optic<B, C>): Optic<A, C> {
+function composeOpticToIso<A, B, C>(first: Iso<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return iso(
@@ -130,7 +131,7 @@ function composeLensToIso<A, B, C>(first: Iso<A, B>, second: Optic<B, C>): Optic
   }
 }
 
-function composeLensToLens<A, B, C>(first: Lens<A, B>, second: Optic<B, C>): Optic<A, C> {
+function composeOpticToLens<A, B, C>(first: Lens<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return lens(
@@ -189,7 +190,7 @@ function composeLensToLens<A, B, C>(first: Lens<A, B>, second: Optic<B, C>): Opt
   }
 }
 
-function composeLensToPrism<A, B, C>(first: Prism<A, B>, second: Optic<B, C>): Optic<A, C> {
+function composeOpticToPrism<A, B, C>(first: Prism<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return prism(
@@ -264,7 +265,10 @@ function composeLensToPrism<A, B, C>(first: Prism<A, B>, second: Optic<B, C>): O
   }
 }
 
-function composeLensToTraversal<A, B, C>(first: Traversal<A, B>, second: Optic<B, C>): Optic<A, C> {
+function composeOpticToTraversal<A, B, C>(
+  first: Traversal<A, B>,
+  second: Optic<B, C>,
+): Optic<A, C> {
   switch (second.type) {
     case 'ISO':
       return traversal(
@@ -287,8 +291,14 @@ function composeLensToTraversal<A, B, C>(first: Traversal<A, B>, second: Optic<B
     case 'PRISM':
       return traversal(
         (a: A) => {
-          const traversed = traverseEither(second.from, first.from(a))
-          return defaultEither([], traversed)
+          let result: Array<C> = []
+          for (const entry of first.from(a)) {
+            const secondResult = second.from(entry)
+            forEachRight(secondResult, (c) => {
+              result.push(c)
+            })
+          }
+          return result
         },
         (a: A, modify: (c: C) => C) => {
           return first.update(a, (b) => {
@@ -320,49 +330,49 @@ function composeLensToTraversal<A, B, C>(first: Traversal<A, B>, second: Optic<B
   }
 }
 
-export function compose2Lenses<A, B, C>(first: Optic<A, B>, second: Optic<B, C>): Optic<A, C> {
+export function compose2Optics<A, B, C>(first: Optic<A, B>, second: Optic<B, C>): Optic<A, C> {
   switch (first.type) {
     case 'ISO':
-      return composeLensToIso(first, second)
+      return composeOpticToIso(first, second)
     case 'LENS':
-      return composeLensToLens(first, second)
+      return composeOpticToLens(first, second)
     case 'PRISM':
-      return composeLensToPrism(first, second)
+      return composeOpticToPrism(first, second)
     case 'TRAVERSAL':
-      return composeLensToTraversal(first, second)
+      return composeOpticToTraversal(first, second)
     default:
       assertNever(first)
   }
 }
 
-export function compose3Lenses<A, B, C, D>(
+export function compose3Optics<A, B, C, D>(
   first: Optic<A, B>,
   second: Optic<B, C>,
   third: Optic<C, D>,
 ): Optic<A, D> {
-  return compose2Lenses(compose2Lenses(first, second), third)
+  return compose2Optics(compose2Optics(first, second), third)
 }
 
-export function compose4Lenses<A, B, C, D, E>(
+export function compose4Optics<A, B, C, D, E>(
   first: Optic<A, B>,
   second: Optic<B, C>,
   third: Optic<C, D>,
   fourth: Optic<D, E>,
 ): Optic<A, E> {
-  return compose2Lenses(compose3Lenses(first, second, third), fourth)
+  return compose2Optics(compose3Optics(first, second, third), fourth)
 }
 
-export function compose5Lenses<A, B, C, D, E, F>(
+export function compose5Optics<A, B, C, D, E, F>(
   first: Optic<A, B>,
   second: Optic<B, C>,
   third: Optic<C, D>,
   fourth: Optic<D, E>,
   fifth: Optic<E, F>,
 ): Optic<A, F> {
-  return compose2Lenses(compose4Lenses(first, second, third, fourth), fifth)
+  return compose2Optics(compose4Optics(first, second, third, fourth), fifth)
 }
 
-export function compose6Lenses<A, B, C, D, E, F, G>(
+export function compose6Optics<A, B, C, D, E, F, G>(
   first: Optic<A, B>,
   second: Optic<B, C>,
   third: Optic<C, D>,
@@ -370,10 +380,10 @@ export function compose6Lenses<A, B, C, D, E, F, G>(
   fifth: Optic<E, F>,
   sixth: Optic<F, G>,
 ): Optic<A, G> {
-  return compose2Lenses(compose5Lenses(first, second, third, fourth, fifth), sixth)
+  return compose2Optics(compose5Optics(first, second, third, fourth, fifth), sixth)
 }
 
-export function compose7Lenses<A, B, C, D, E, F, G, H>(
+export function compose7Optics<A, B, C, D, E, F, G, H>(
   first: Optic<A, B>,
   second: Optic<B, C>,
   third: Optic<C, D>,
@@ -382,5 +392,18 @@ export function compose7Lenses<A, B, C, D, E, F, G, H>(
   sixth: Optic<F, G>,
   seventh: Optic<G, H>,
 ): Optic<A, H> {
-  return compose2Lenses(compose6Lenses(first, second, third, fourth, fifth, sixth), seventh)
+  return compose2Optics(compose6Optics(first, second, third, fourth, fifth, sixth), seventh)
+}
+
+export function compose8Optics<A, B, C, D, E, F, G, H, I>(
+  first: Optic<A, B>,
+  second: Optic<B, C>,
+  third: Optic<C, D>,
+  fourth: Optic<D, E>,
+  fifth: Optic<E, F>,
+  sixth: Optic<F, G>,
+  seventh: Optic<G, H>,
+  eighth: Optic<H, I>,
+): Optic<A, I> {
+  return compose2Optics(compose7Optics(first, second, third, fourth, fifth, sixth, seventh), eighth)
 }
