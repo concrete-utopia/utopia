@@ -55,7 +55,7 @@ function hugContentsSingleElement(
     ),
   ]
 
-  const chilren = MetadataUtils.getChildrenPaths(metadata, elementPath)
+  const chilren = MetadataUtils.getChildrenPathsUnordered(metadata, elementPath)
   const transformChildrenToFixedCommands = chilren.flatMap((child) => {
     const state = detectFillHugFixedState(axis, metadata, child)
     if (state?.type === 'fixed' || state?.type === 'hug') {

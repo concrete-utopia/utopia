@@ -9,14 +9,9 @@ import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-ut
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
-import { CSSCursor } from '../canvas/canvas-types'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
-
-interface CheckCursor {
-  cursor: CSSCursor | null
-}
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -822,6 +817,127 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
+function getProjectCodeReparentedUnderScene(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const unmoveableColour = 'orange'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 400,
+          height: 500,
+        }}
+        data-uid='sceneroot'
+        data-testid='sceneroot'
+        data-label='sceneroot'
+      >
+        <div
+          style={{
+            backgroundColor: 'teal',
+            position: 'absolute',
+            left: 255,
+            top: 35,
+            width: 109,
+            height: 123,
+          }}
+          data-uid='firstdiv'
+          data-testid='firstdiv'
+          data-label='firstdiv'
+        />
+        <div
+          style={{
+            backgroundColor: 'purple',
+            position: 'absolute',
+            left: 21,
+            top: 215.5,
+            width: 123,
+            height: 100,
+          }}
+          data-uid='seconddiv'
+          data-testid='seconddiv'
+          data-label='seconddiv'
+        />
+        <div
+          style={{
+            backgroundColor: 'green',
+            position: 'absolute',
+            left: 26,
+            top: 35,
+            width: 118,
+            height: 123,
+          }}
+          data-uid='thirddiv'
+          data-testid='thirddiv'
+          data-label='thirddiv'
+        />
+        <div
+          style={{
+            backgroundColor: unmoveableColour,
+            height: 65,
+            width: 66,
+            position: 'absolute',
+            left: 265,
+            top: 300,
+          }}
+          data-uid='notdrag'
+          data-testid='notdrag'
+          data-label='notdrag'
+        >
+          not drag
+        </div>
+      </div>
+      <div
+        style={{
+          backgroundColor: 'white',
+          position: 'absolute',
+          left: 0,
+          top: 500,
+          width: 400,
+          height: 200,
+        }}
+        data-uid='parentsibling'
+        data-testid='parentsibling'
+        data-label='parentsibling'
+      />
+    </Scene>
+    <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 65,
+          width: 66,
+          position: 'absolute',
+          left: 265,
+          top: 233,
+        }}
+        data-uid='dragme'
+        data-testid='dragme'
+        data-label='dragme'
+      >
+        drag me
+      </div>
+  </Storyboard>
+)
+`
+}
+
 describe('Navigator', () => {
   it('reorders to before the first sibling', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -857,7 +973,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-drop-before-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -885,7 +1001,7 @@ describe('Navigator', () => {
     const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
     const dragTo = {
       x: firstDivElementCenter.x,
-      y: firstDivElementRect.y + firstDivElementRect.height - 3,
+      y: firstDivElementRect.y + firstDivElementRect.height,
     }
 
     const dragDelta = windowPoint({
@@ -904,7 +1020,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -951,7 +1067,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -979,7 +1095,7 @@ describe('Navigator', () => {
     const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
     const dragTo = {
       x: firstDivElementCenter.x,
-      y: firstDivElementRect.y + 10,
+      y: firstDivElementRect.y + 15,
     }
 
     const dragDelta = windowPoint({
@@ -998,7 +1114,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -1006,8 +1122,43 @@ describe('Navigator', () => {
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
+
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(getProjectCodeReparentedUnderFirstSibling(), PrettierConfig),
+    )
+  })
+
+  it('reparents under grandparent', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    const dragMeElement = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+    )
+    const dragMeElementRect = dragMeElement.getBoundingClientRect()
+    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+
+    const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    act(() => {
+      dragElement(
+        renderResult,
+        `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
+        windowPoint(dragMeElementCenter),
+        windowPoint({ x: -65, y: 0 }),
+        'apply-hover-events',
+      )
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(getProjectCodeReparentedUnderScene(), PrettierConfig),
     )
   })
 
@@ -1026,7 +1177,7 @@ describe('Navigator', () => {
     const cousinDivElementCenter = getDomRectCenter(cousinDivElementRect)
     const dragTo = {
       x: cousinDivElementCenter.x,
-      y: cousinDivElementRect.y + 10,
+      y: cousinDivElementRect.y + 14,
     }
 
     const dragDelta = windowPoint({
@@ -1045,7 +1196,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/parentsibling`,
+        `navigator-item-utopia_storyboard_uid/scene_aaa/parentsibling`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
@@ -1092,7 +1243,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/parentsibling`,
+        `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/parentsibling`,
         windowPoint(notDragElementCenter),
         dragDelta,
         'do-not-apply-hover-events',
@@ -1100,7 +1251,9 @@ describe('Navigator', () => {
     )
 
     expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(null)
-    expect(renderResult.getEditorState().editor.navigator.dropTargetHint.target).toEqual(null)
+    expect(
+      renderResult.getEditorState().editor.navigator.dropTargetHint.displayAtElementPath,
+    ).toEqual(null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1142,7 +1295,7 @@ describe('Navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-        `navigator-item-drop-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',

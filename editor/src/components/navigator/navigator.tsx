@@ -41,14 +41,6 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       dragSelections: dragSelections,
     }
   })
-  const getDistanceFromAncestorWhereImTheLastLeaf = React.useCallback(
-    (componentId: string, distance: number): number => {
-      // TODO FIXME HOLY SHIT THIS IS STUCK IN OLDE WORLDE
-      console.error('FIX getDistanceFromAncestorWhereImTheLastLeaf')
-      return distance
-    },
-    [],
-  )
 
   const getDragSelections = React.useCallback((): Array<DragSelection> => {
     return editorSliceRef.current.dragSelections
@@ -98,7 +90,6 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       index={index}
       targetComponentKey={componentKey}
       elementPath={targetPath}
-      getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
       getDragSelections={getDragSelections}
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}

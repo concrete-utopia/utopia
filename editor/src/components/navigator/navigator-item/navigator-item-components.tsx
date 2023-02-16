@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
@@ -14,58 +11,113 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 import { SelectionLocked } from '../../canvas/canvas-types'
 
+export const NavigatorHintCircleDiameter = 8
+
 interface NavigatorHintProps {
+  testId: string
   shouldBeShown: boolean
-  getMarginForHint: () => number
+  margin: number
 }
 
-export const NavigatorHintTop: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorHintProps>
-> = React.memo((props) => {
-  const colorTheme = useColorTheme()
-  if (props.shouldBeShown) {
+export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
+  (props, ref) => {
+    const colorTheme = useColorTheme()
     return (
       <div
+        data-testid={props.testId}
+        ref={ref}
         style={{
-          marginLeft: props.getMarginForHint(),
-          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-          height: 2,
-          position: 'absolute',
-          top: 0,
-          width: '100%',
-          borderRadius: '2px',
-          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 1,
         }}
-      />
+      >
+        <div
+          style={{
+            opacity: props.shouldBeShown ? 1 : 0,
+            marginLeft: props.margin,
+            position: 'absolute',
+            top: -6,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            height: 16,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+              height: 2,
+              flexGrow: 1,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: colorTheme.bg0.value,
+              width: NavigatorHintCircleDiameter,
+              height: NavigatorHintCircleDiameter,
+              contain: 'layout',
+              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+              borderRadius: '50%',
+            }}
+          />
+        </div>
+      </div>
     )
-  } else {
-    return null
-  }
-})
+  },
+)
 
-export const NavigatorHintBottom: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorHintProps>
-> = React.memo((props) => {
-  const colorTheme = useColorTheme()
-  if (props.shouldBeShown) {
+export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
+  (props, ref) => {
+    const colorTheme = useColorTheme()
     return (
       <div
+        data-testid={props.testId}
+        ref={ref}
         style={{
-          marginLeft: props.getMarginForHint(),
-          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-          height: 2,
-          position: 'absolute',
-          bottom: 0,
-          width: '100%',
-          borderRadius: '2px',
-          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 1,
         }}
-      />
+      >
+        <div
+          style={{
+            opacity: props.shouldBeShown ? 1 : 0,
+            marginLeft: props.margin,
+            position: 'absolute',
+            bottom: -8,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            height: 16,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+              height: 2,
+              flexGrow: 1,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: colorTheme.bg0.value,
+              width: NavigatorHintCircleDiameter,
+              height: NavigatorHintCircleDiameter,
+              contain: 'layout',
+              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+              borderRadius: '50%',
+            }}
+          />
+        </div>
+      </div>
     )
-  } else {
-    return null
-  }
-})
+  },
+)
 
 interface VisiblityIndicatorProps {
   shouldShow: boolean

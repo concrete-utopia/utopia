@@ -388,15 +388,18 @@ describe('NameAndIconResultArrayKeepDeepEquality', () => {
 
 describe('DropTargetHintKeepDeepEquality', () => {
   const oldValue: DropTargetHint = {
-    target: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
     type: 'before',
   }
   const newSameValue: DropTargetHint = {
-    target: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
     type: 'before',
   }
   const newDifferentValue: DropTargetHint = {
-    target: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
     type: 'after',
   }
 
@@ -412,7 +415,7 @@ describe('DropTargetHintKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = DropTargetHintKeepDeepEquality(oldValue, newDifferentValue)
-    expect(result.value.target).toBe(oldValue.target)
+    expect(result.value.displayAtElementPath).toBe(oldValue.displayAtElementPath)
     expect(result.value.type).toBe(newDifferentValue.type)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
@@ -423,7 +426,8 @@ describe('NavigatorStateKeepDeepEquality', () => {
   const oldValue: NavigatorState = {
     minimised: false,
     dropTargetHint: {
-      target: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+      displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+      moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       type: 'before',
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -434,7 +438,8 @@ describe('NavigatorStateKeepDeepEquality', () => {
   const newSameValue: NavigatorState = {
     minimised: false,
     dropTargetHint: {
-      target: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+      displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+      moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       type: 'before',
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -445,7 +450,8 @@ describe('NavigatorStateKeepDeepEquality', () => {
   const newDifferentValue: NavigatorState = {
     minimised: true,
     dropTargetHint: {
-      target: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+      displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+      moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       type: 'before',
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
