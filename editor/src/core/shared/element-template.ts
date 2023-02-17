@@ -1819,6 +1819,17 @@ export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 
+export function walkChildOrAttribute(
+  element: ChildOrAttribute,
+  parentPath: StaticElementPathPart,
+  depth: number,
+  forEach: (e: JSXElementChild, path: StaticElementPathPart, depth: number) => void,
+): void {
+  if (childOrBlockIsChild(element)) {
+    walkElement(element, parentPath, depth, forEach)
+  }
+}
+
 export function walkElement(
   element: JSXElementChild,
   parentPath: StaticElementPathPart,
@@ -1848,7 +1859,10 @@ export function walkElement(
       )
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      break // TODO: walk !
+      forEach(element, parentPath, depth)
+      walkChildOrAttribute(element.whenTrue, parentPath, depth + 1, forEach)
+      walkChildOrAttribute(element.whenFalse, parentPath, depth + 1, forEach)
+      break
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)

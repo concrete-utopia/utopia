@@ -27,7 +27,7 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
-import { setFeatureForTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -613,7 +613,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
   })
 
   describe('Double click tests with fragments feature switch', () => {
-    setFeatureForTests('Fragment support', true)
+    setFeatureForBrowserTests('Fragment support', true)
     it('Six double clicks will focus a generated Card and select its root element', async () => {
       // prettier-ignore
       const desiredPath = EP.fromString(

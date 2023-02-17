@@ -19,7 +19,7 @@ import {
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { CSSCursor } from '../../canvas-types'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { setFeatureForTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -656,7 +656,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('with fragments support enabled', () => {
-    setFeatureForTests('Fragment support', true)
+    setFeatureForBrowserTests('Fragment support', true)
 
     it('reparents across from one fragment to within (not directly inside) another', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -775,7 +775,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('with fragments support disabled', () => {
-    setFeatureForTests('Fragment support', false)
+    setFeatureForBrowserTests('Fragment support', false)
 
     it('reparents across from one fragment to within (not directly inside) another', async () => {
       const renderResult = await renderTestEditorWithCode(

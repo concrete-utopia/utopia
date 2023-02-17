@@ -62,6 +62,7 @@ import {
   ParsedComments,
   parsedComments,
   childOrBlockIsChild,
+  isJSXConditionalExpression,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -930,6 +931,8 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
           innerElementResult += ` - ${getJSXElementNameAsString(innerElement.name)} - ${getUtopiaID(
             innerElement,
           )}`
+        } else if (isJSXConditionalExpression(innerElement)) {
+          innerElementResult += ` - ${getUtopiaID(innerElement)}`
         }
         structureResults.push(innerElementResult)
       })

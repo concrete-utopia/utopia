@@ -452,7 +452,7 @@ export async function hoverControlWithCheck(
   await check()
 }
 
-export function setFeatureForTests(featureName: FeatureName, newValue: boolean): void {
+export function setFeatureForBrowserTests(featureName: FeatureName, newValue: boolean): void {
   let originalFSValue: boolean = false
   before(() => {
     originalFSValue = isFeatureEnabled(featureName)
@@ -460,6 +460,18 @@ export function setFeatureForTests(featureName: FeatureName, newValue: boolean):
   })
 
   after(() => {
+    setFeatureEnabled(featureName, originalFSValue)
+  })
+}
+
+export function setFeatureForUnitTests(featureName: FeatureName, newValue: boolean): void {
+  let originalFSValue: boolean = false
+  beforeEach(() => {
+    originalFSValue = isFeatureEnabled(featureName)
+    setFeatureEnabled(featureName, newValue)
+  })
+
+  afterEach(() => {
     setFeatureEnabled(featureName, originalFSValue)
   })
 }

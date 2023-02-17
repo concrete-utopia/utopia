@@ -72,6 +72,8 @@ import {
   isJSXFragment,
   jsxConditionalExpression,
   isJSXConditionalExpression,
+  clearAttributeSourceMaps,
+  clearAttributeUniqueIDs,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1639,21 +1641,34 @@ interface UpdateUIDResult {
   attributes: WithParserMetadata<JSXAttributes>
 }
 
+function getUIDBasedOnElement(
+  sourceFile: TS.SourceFile,
+  elementName: JSXElementName | string | null,
+  props: JSXAttributes | JSXAttribute,
+  alreadyExistingUIDs: Set<string>,
+): string {
+  const cleansedProps = Array.isArray(props)
+    ? clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
+    : clearAttributeSourceMaps(clearAttributeUniqueIDs(props))
+  const hash = Hash({
+    fileName: sourceFile.fileName,
+    name: elementName,
+    props: cleansedProps,
+  })
+  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  alreadyExistingUIDs.add(uid)
+  return uid
+}
+
 function forciblyUpdateDataUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
-  name: JSXElementName | string | null,
+  elementName: JSXElementName | string | null,
   props: JSXAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): UpdateUIDResult {
-  const hash = Hash({
-    fileName: sourceFile.fileName,
-    name: name,
-    props: clearAttributesSourceMaps(clearAttributesUniqueIDs(props)),
-  })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
-  alreadyExistingUIDs.add(uid)
+  const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
   const updatedProps = setJSXAttributesAttribute(
     props,
     'data-uid',
@@ -2038,8 +2053,9 @@ export function parseOutJSXElements(
       WithParserMetadata<SuccessfullyParsedElement>
     >(
       (condition, whenTrue, whenFalse) => {
+        const uid = getUIDBasedOnElement(sourceFile, null, condition.value, alreadyExistingUIDs)
         const conditionalExpression = jsxConditionalExpression(
-          generateUID(alreadyExistingUIDs), // TODO: keep the uid if possible
+          uid,
           condition.value,
           whenTrue.value,
           whenFalse.value,

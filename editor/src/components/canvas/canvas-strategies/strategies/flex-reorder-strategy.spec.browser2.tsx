@@ -12,7 +12,7 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { canvasPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { setFeatureForTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 const TestProject = (direction: string) => `
 <div
@@ -420,7 +420,7 @@ describe('Flex Reorder Strategy', () => {
   })
 
   xdescribe('projects with fragments, with fragments support enabled', () => {
-    setFeatureForTests('Fragment support', true)
+    setFeatureForBrowserTests('Fragment support', true)
 
     it('does not activate when drag threshold is not reached', async () => {
       const renderResult = await renderTestEditorWithCode(
