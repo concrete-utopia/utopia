@@ -1,6 +1,11 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
+import {
+  importAlias,
+  importDetails,
+  ElementPath,
+  Imports,
+} from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import Keyboard, {
   KeyCharacter,
@@ -29,6 +34,8 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultSpanElement,
+  defaultTransparentViewElement,
+  defaultUnstyledDivElement,
   defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
@@ -109,6 +116,7 @@ import {
   emptyComments,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  JSXElement,
   jsxElement,
 } from '../../core/shared/element-template'
 import {
@@ -534,7 +542,7 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInView(
+              EditorActions.wrapInElement(
                 editor.selectedViews,
                 detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
                   generateUidWithExistingComponents(editor.projectContents),
@@ -1024,17 +1032,16 @@ function detectBestWrapperElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
   makeUid: () => string,
-): WrapInView['whatToWrapWith'] {
+): { element: JSXElement; importsToAdd: Imports } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  const uid = makeUid()
   if (
     element == null ||
     element.specialSizeMeasurements.parentFlexDirection == null ||
     element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
   ) {
-    return 'default-empty-div'
+    return { element: defaultUnstyledDivElement(uid), importsToAdd: {} }
   }
-
-  const uid = makeUid()
 
   const style: CSSProperties = {
     display: 'flex',

@@ -95,6 +95,17 @@ export function defaultTransparentViewElement(uid: string): JSXElement {
   )
 }
 
+export function defaultUnstyledDivElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('div', []),
+    uid,
+    jsxAttributesFromMap({
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
+    [],
+  )
+}
+
 export function defaultTextElementStyle(): JSXAttribute {
   return jsxAttributeValue(
     {
