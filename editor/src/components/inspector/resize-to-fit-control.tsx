@@ -46,7 +46,7 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
         style={{ cursor: 'pointer' }}
       >
         {notFixedSizeOnEitherAxisState ? (
-          <Icn type='growToParent' color='main' category='layout/commands' width={18} height={18} />
+          <Icn type='fixed' color='main' category='layout/commands' width={16} height={16} />
         ) : (
           <Icn
             type='fitToChildren'
