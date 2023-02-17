@@ -19,17 +19,17 @@ import {
   getDragTargets,
 } from './shared-move-strategies-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
-import { retargetStrategyToChildrenOfGroupLike } from './group-like-helpers'
 
 export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const targets = retargetStrategyToChildrenOfGroupLike(canvasState)
-  if (targets.length === 0) {
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO eventually make this handle contentAffecting elements
+  if (selectedElements.length === 0) {
     return null
   }
-  const last = targets[targets.length - 1]
+  const filteredSelectedElements = getDragTargets(selectedElements)
+  const last = filteredSelectedElements[filteredSelectedElements.length - 1]
   const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
   if (
     metadata == null ||
@@ -51,13 +51,13 @@ export function relativeMoveStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: targets },
+          props: { targets: filteredSelectedElements },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: targets },
+          props: { targets: filteredSelectedElements },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -79,10 +79,10 @@ export function relativeMoveStrategy(
           interactionSession.activeControl.type === 'BOUNDING_AREA'
         ) {
           return applyMoveCommon(
-            targets,
+            filteredSelectedElements,
             canvasState,
             interactionSession,
-            getAdjustMoveCommands(targets, canvasState, interactionSession, {
+            getAdjustMoveCommands(filteredSelectedElements, canvasState, interactionSession, {
               ignoreLocalFrame: true,
             }),
           )
