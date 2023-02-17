@@ -51,7 +51,7 @@ import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
-import { flowResizeBasicStrategy } from './strategies/flow-resize-basic-strategy'
+import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -93,7 +93,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
-      flowResizeBasicStrategy,
+      basicResizeStrategy,
     ],
   )
 }

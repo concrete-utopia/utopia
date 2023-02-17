@@ -46,19 +46,15 @@ import {
   resizeBoundingBox,
 } from './resize-helpers'
 
-export function flowResizeBasicStrategy(
+export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
+
+export function basicResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  if (
-    selectedElements.length !== 1 ||
-    !MetadataUtils.isPositionedByFlow(
-      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElements[0]),
-    ) ||
-    !honoursPropsSize(canvasState, selectedElements[0])
-  ) {
+  if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
     return null
   }
   const metadata = MetadataUtils.findElementByElementPath(
@@ -84,8 +80,8 @@ export function flowResizeBasicStrategy(
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
   return {
-    id: 'FLOW_RESIZE_BASIC',
-    name: 'Flow Resize (Basic)',
+    id: BASIC_RESIZE_STRATEGY_ID,
+    name: 'Resize (Basic)',
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
