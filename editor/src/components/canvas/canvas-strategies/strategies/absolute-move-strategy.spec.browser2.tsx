@@ -930,3 +930,83 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     })
   })
 })
+
+describe('Absolute Move Strategy Group-like behaviors', () => {
+  it('an unstyled div wrapping two absolute positioned divs', async () => {
+    function makeTestProject(dragDelta: { x: number; y: number }) {
+      return makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+      >
+        <div data-uid='bbb' data-testid='bbb'>
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              position: 'absolute',
+              width: 80,
+              height: 100,
+              left: ${40 + dragDelta.x},
+              top: ${50 + dragDelta.y},
+            }}
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              position: 'absolute',
+              width: 130,
+              height: 120,
+              left: ${170 + dragDelta.x},
+              top: ${70 + dragDelta.y},
+            }}
+            data-uid='ddd'
+          />
+        </div>
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            width: 40,
+            height: 40,
+            left: 30,
+            top: 330,
+          }}
+          data-uid='xxx'
+        />
+      </div>
+    `)
+    }
+
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProject({ x: 0, y: 0 }),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      true,
+    )
+
+    // we are dragging aaa/bbb, but we start the drag _over_ 'aaa/bbb/ccc', as aaa/bbb has no intrinsic size
+    const targetElement = renderResult.renderedDOM.getByTestId('ccc')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(makeTestProject(dragDelta))
+  })
+})

@@ -59,13 +59,14 @@ import {
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const filteredSelectedElements = getDragTargets(targets)
   if (
     filteredSelectedElements.length === 0 ||
     !filteredSelectedElements.every((element) => {
@@ -204,7 +205,7 @@ export function absoluteResizeBoundingBoxStrategy(
               ...commandsForSelectedElements,
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(selectedElements),
+              setElementsToRerenderCommand(targets),
             ])
           }
         } else {
