@@ -172,7 +172,7 @@ function findParentScene(target: HTMLElement): string | null {
 
     if (parent != null) {
       const parentPath = getDeepestPathOnDomElement(parent)
-      const parentIsStoryboard = parentPath != null && EP.isStoryboardPath(parentPath)
+      const parentIsStoryboard = parentPath == null || EP.isStoryboardPath(parentPath)
       if (parentIsStoryboard) {
         // If the parent element is the storyboard, then we've reached the top and have to stop
         const allPaths = getPathStringsOnDomElement(target)
