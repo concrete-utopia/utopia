@@ -8,6 +8,7 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../../../utils/util
 import { selectComponents } from '../../../editor/actions/action-creators'
 import {
   EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -547,10 +548,7 @@ async function resizeWithModifiers(
   const inputCode = makeTestProjectCodeWithSnippet(`
       <div
         data-uid='aaa'
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
+        style={{ width: '100%', height: '100%' }}
       >
         <div
           data-uid='ccc'
@@ -572,10 +570,7 @@ async function resizeWithModifiers(
     makeTestProjectCodeWithSnippet(`
       <div
         data-uid='aaa'
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
+        style={{ width: '100%', height: '100%' }}
       >
         <div
           data-uid='ccc'
