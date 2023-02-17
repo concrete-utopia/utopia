@@ -59,13 +59,13 @@ import {
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
-import { retargetStrategyToChildrenOfGroupLike } from './group-like-helpers'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const targets = retargetStrategyToChildrenOfGroupLike(canvasState)
+  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
   const filteredSelectedElements = getDragTargets(targets)
   if (
     filteredSelectedElements.length === 0 ||

@@ -15,7 +15,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition } from './absolute-utils'
-import { retargetStrategyToChildrenOfGroupLike } from './group-like-helpers'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
@@ -26,7 +26,7 @@ export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const targets = retargetStrategyToChildrenOfGroupLike(canvasState)
+  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   const isApplicable =
     targets.length > 0 &&

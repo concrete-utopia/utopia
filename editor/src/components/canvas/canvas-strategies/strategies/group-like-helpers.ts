@@ -9,35 +9,43 @@ import {
 } from '../canvas-strategy-types'
 import { getDragTargets } from './shared-move-strategies-helpers'
 
-export function retargetStrategyToChildrenOfGroupLike(
+export function retargetStrategyToChildrenOfContentAffectingElements(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
   const targetsWithoutDescedants = getDragTargets(targets)
 
-  return replaceGroupLikePathsWithTheirChildrenRecursive(
+  return replaceContentAffectingPathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     targetsWithoutDescedants,
   )
 }
 
-function replaceGroupLikePathsWithTheirChildrenRecursive(
+function replaceContentAffectingPathsWithTheirChildrenRecursive(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
   return paths.flatMap((path) => {
-    const elementIsGroupLike = treatElementAsGroupLike(metadata, allElementProps, path)
+    const elementIsContentAffecting = treatElementAsContentAffecting(
+      metadata,
+      allElementProps,
+      path,
+    )
 
-    if (elementIsGroupLike) {
+    if (elementIsContentAffecting) {
       const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path
       }
-      return replaceGroupLikePathsWithTheirChildrenRecursive(metadata, allElementProps, children)
+      return replaceContentAffectingPathsWithTheirChildrenRecursive(
+        metadata,
+        allElementProps,
+        children,
+      )
     }
 
     return path
@@ -45,7 +53,7 @@ function replaceGroupLikePathsWithTheirChildrenRecursive(
 }
 
 // TODO make it internal
-export function treatElementAsGroupLike(
+export function treatElementAsContentAffecting(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
