@@ -25,6 +25,7 @@ async function dragResizeControl(
   pos: EdgePosition,
   dragDelta: CanvasVector,
   modifiers?: Modifiers,
+  shouldStrategyBeActive: boolean = true,
 ) {
   await renderResult.dispatch([selectComponents([target], false)], true)
   const resizeControl = renderResult.renderedDOM.getByTestId(`resize-control-${pos.x}-${pos.y}`)
@@ -44,9 +45,11 @@ async function dragResizeControl(
   await mouseDownAtPoint(resizeControl, startPoint)
   await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 }, modifiers })
 
-  expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-    BASIC_RESIZE_STRATEGY_ID,
-  )
+  if (shouldStrategyBeActive === true) {
+    expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+      BASIC_RESIZE_STRATEGY_ID,
+    )
+  }
 
   await mouseUpAtPoint(canvasControlsLayer, endPoint)
 
@@ -158,19 +161,37 @@ describe('when the element has missing dimensions', () => {
   describe('both missing', () => {
     describe('horizontal movement', () => {
       it('does nothing', async () => {
-        await resizeWithoutDimensions(edgePosition(1, 0), canvasPoint({ x: 15, y: 0 }), {}, {})
+        await resizeWithoutDimensions(
+          edgePosition(1, 0),
+          canvasPoint({ x: 15, y: 0 }),
+          {},
+          {},
+          false,
+        )
       })
     })
 
     describe('vertical movement', () => {
       it('does nothing', async () => {
-        await resizeWithoutDimensions(edgePosition(0, 0), canvasPoint({ x: 0, y: 15 }), {}, {})
+        await resizeWithoutDimensions(
+          edgePosition(0, 0),
+          canvasPoint({ x: 0, y: 15 }),
+          {},
+          {},
+          false,
+        )
       })
     })
 
     describe('diagonal movement', () => {
       it('does nothing', async () => {
-        await resizeWithoutDimensions(edgePosition(0, 0), canvasPoint({ x: 10, y: 15 }), {}, {})
+        await resizeWithoutDimensions(
+          edgePosition(0, 0),
+          canvasPoint({ x: 10, y: 15 }),
+          {},
+          {},
+          false,
+        )
       })
     })
   })
@@ -178,7 +199,13 @@ describe('when the element has missing dimensions', () => {
   describe('width missing', () => {
     describe('horizontal movement', () => {
       it('does nothing', async () => {
-        await resizeWithoutDimensions(edgePosition(1, 0), canvasPoint({ x: 15, y: 0 }), {}, {})
+        await resizeWithoutDimensions(
+          edgePosition(1, 0),
+          canvasPoint({ x: 15, y: 0 }),
+          {},
+          {},
+          false,
+        )
       })
     })
 
@@ -224,6 +251,7 @@ describe('when the element has missing dimensions', () => {
           canvasPoint({ x: 0, y: 15 }),
           { width: 15 },
           { width: 15 },
+          false,
         )
       })
     })
@@ -327,6 +355,7 @@ async function resizeTest(
   dragVector: CanvasVector,
   expectedWidth: number,
   expextedHeight: number,
+  shouldStrategyBeActive: boolean = true,
 ) {
   const inputCode = makeTestProjectCodeWithSnippet(`
       <div
@@ -371,7 +400,7 @@ async function resizeTest(
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
   const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
 
-  await dragResizeControl(renderResult, target, pos, dragVector)
+  await dragResizeControl(renderResult, target, pos, dragVector, undefined, shouldStrategyBeActive)
 
   expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
     makeTestProjectCodeWithSnippet(`
@@ -421,6 +450,7 @@ const resizeWithoutDimensions = async (
   dragVector: CanvasVector,
   initialDimensions: { width?: number; height?: number },
   expectDimensions: { width?: number; height?: number },
+  shouldStrategyBeActive: boolean = true,
 ) => {
   const inputCode = makeTestProjectCodeWithSnippet(`
       <div
@@ -463,7 +493,7 @@ const resizeWithoutDimensions = async (
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
   const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
 
-  await dragResizeControl(renderResult, target, pos, dragVector)
+  await dragResizeControl(renderResult, target, pos, dragVector, undefined, shouldStrategyBeActive)
 
   expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
     makeTestProjectCodeWithSnippet(`
@@ -512,6 +542,7 @@ async function resizeWithModifiers(
   initial: { width: number; height: number },
   expected: { width: number; height: number },
   modifiers: Modifiers,
+  shouldStrategyBeActive: boolean = true,
 ) {
   const inputCode = makeTestProjectCodeWithSnippet(`
       <div
@@ -535,7 +566,7 @@ async function resizeWithModifiers(
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
   const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
 
-  await dragResizeControl(renderResult, target, pos, dragVector, modifiers)
+  await dragResizeControl(renderResult, target, pos, dragVector, modifiers, shouldStrategyBeActive)
 
   expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
     makeTestProjectCodeWithSnippet(`

@@ -47,6 +47,8 @@ import {
 } from './resize-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
 
+export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE_BASIC'
+
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -98,7 +100,7 @@ export function flexResizeBasicStrategy(
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
   return {
-    id: 'FLEX_RESIZE_BASIC',
+    id: FLEX_RESIZE_STRATEGY_ID,
     name: 'Flex Resize (Basic)',
     controlsToRender: [
       controlWithProps({
