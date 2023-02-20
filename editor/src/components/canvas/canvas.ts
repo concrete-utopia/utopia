@@ -151,12 +151,19 @@ const Canvas = {
           if (parentPath == null) {
             return null
           }
-          if (isFeatureEnabled('Fragment support')) {
-            return parentPath
-          }
           if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, parentPath)) {
+            if (isFeatureEnabled('Fragment support')) {
+              return parentPath
+            }
             return getFirstValidParent(parentPath)
           }
+          if (MetadataUtils.isElementPathConditionalFromMetadata(metadata, parentPath)) {
+            if (isFeatureEnabled('Conditional support')) {
+              return parentPath
+            }
+            return getFirstValidParent(parentPath)
+          }
+          // not a fragment or conditional
           return parentPath
         }
 
