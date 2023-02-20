@@ -67,6 +67,11 @@ export function treatElementAsContentAffecting(
     return false
   }
 
+  if (EP.isStoryboardPath(path)) {
+    // the Storyboard is not children-affecting
+    return false
+  }
+
   const hasNoWidthAndHeightProps =
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
