@@ -422,7 +422,7 @@ function shouldSnapToParentEdge(
   const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
   const parentGap = element.specialSizeMeasurements.parentFlexGap
 
-  const flexSiblingsWithoutSelected = MetadataUtils.getSiblings(
+  const flexSiblingsWithoutSelected = MetadataUtils.getSiblingsUnordered(
     startingMetadata,
     element.elementPath,
   )
