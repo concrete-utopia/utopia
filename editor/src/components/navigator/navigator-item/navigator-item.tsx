@@ -22,7 +22,7 @@ import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 interface ComputedLook {
-  style: React.CSSProperties
+  style: React.CSSProperties & { '--iconOpacity'?: number }
   iconColor: IcnProps['color']
 }
 
