@@ -54,7 +54,13 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         {props.warningText != null ? (
           <WarningIcon tooltipText={props.warningText} />
         ) : (
-          <Icn {...iconProps} color={props.color} />
+          <Icn
+            {...iconProps}
+            color={props.color}
+            style={{
+              opacity: 'var(--iconOpacity)',
+            }}
+          />
         )}
       </div>
     )
