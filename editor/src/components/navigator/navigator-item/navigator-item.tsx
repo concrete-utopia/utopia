@@ -193,7 +193,7 @@ const computeResultingStyle = (
   result.style = {
     ...result.style,
     fontWeight: isProbablyScene || fullyVisible ? 600 : 'inherit',
-    '--iconOpacity': fullyVisible ? 1 : 0.5,
+    '--iconOpacity': fullyVisible ? 1 : 0.4,
   }
 
   return result
