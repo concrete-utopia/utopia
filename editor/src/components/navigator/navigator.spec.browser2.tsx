@@ -973,7 +973,7 @@ describe('Navigator', () => {
       expect(selectedViewPaths).toEqual([dragMePathString])
     })
 
-    it('by clicking the bottom of the item', async () => {
+    it('by clicking the top of the item', async () => {
       const renderResult = await renderTestEditorWithCode(
         getProjectCode(),
         'await-first-dom-report',
@@ -998,7 +998,7 @@ describe('Navigator', () => {
       expect(selectedViewPaths).toEqual([dragMePathString])
     })
 
-    it('by clicking the top of the item', async () => {
+    it('by clicking the bottom of the item', async () => {
       const renderResult = await renderTestEditorWithCode(
         getProjectCode(),
         'await-first-dom-report',
