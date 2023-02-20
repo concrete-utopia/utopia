@@ -81,7 +81,7 @@ export function flowReorderStrategy(
               interactionSession,
               customStrategyState,
               getElementDirection(elementMetadata),
-              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
+              isValidFlowReorderTarget,
             )
       },
     },
