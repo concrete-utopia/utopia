@@ -189,19 +189,11 @@ const computeResultingStyle = (
     }
   }
 
-  let boxShadow: string | undefined = undefined
-  if (isProbablyScene) {
-    boxShadow = `inset 0 -1px ${colorTheme.subduedBorder.value}`
-  } else if (isFocusedComponent) {
-    boxShadow = `inset 0 1px ${colorTheme.subduedBorder.value}`
-  }
-
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene || fullyVisible ? 500 : 'inherit',
-    opacity: fullyVisible ? 1 : 0.5,
-    boxShadow: boxShadow,
+    fontWeight: isProbablyScene || fullyVisible ? 600 : 'inherit',
+    '--iconOpacity': fullyVisible ? 1 : 0.5,
   }
 
   return result
@@ -344,7 +336,10 @@ export const NavigatorItem: React.FunctionComponent<
   }
 
   const collapse = React.useCallback(
-    (event: any) => collapseItem(dispatch, elementPath, event),
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      collapseItem(dispatch, elementPath, event)
+      event.stopPropagation()
+    },
     [dispatch, elementPath],
   )
   const select = React.useCallback(
@@ -401,7 +396,7 @@ export const NavigatorItem: React.FunctionComponent<
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
-            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
+            style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
           />
           <NavigatorRowLabel
             elementPath={elementPath}
@@ -442,12 +437,14 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
-      <LayoutIcon
-        key={`layout-type-${props.label}`}
-        path={props.elementPath}
-        color={props.iconColor}
-        warningText={props.warningText}
-      />
+      <div style={{ opacity: 'var(--iconOpacity)' }}>
+        <LayoutIcon
+          key={`layout-type-${props.label}`}
+          path={props.elementPath}
+          color={props.iconColor}
+          warningText={props.warningText}
+        />
+      </div>
       <ItemLabel
         key={`label-${props.label}`}
         testId={`navigator-item-label-${props.label}`}
@@ -458,6 +455,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
       />
+
       <ComponentPreview
         key={`preview-${props.label}`}
         path={props.elementPath}
