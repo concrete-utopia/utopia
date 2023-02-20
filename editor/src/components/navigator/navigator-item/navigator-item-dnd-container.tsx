@@ -39,9 +39,6 @@ export const BottomDropTargetLineTestId = (safeComponentId: string): string =>
 export const DragItemTestId = (safeComponentId: string): string =>
   `navigator-item-drag-${safeComponentId}`
 
-export const NavigatorItemTestId = (safeComponentId: string): string =>
-  `navigator-item-${safeComponentId}`
-
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
 
