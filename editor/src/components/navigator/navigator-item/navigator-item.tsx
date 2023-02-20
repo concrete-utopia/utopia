@@ -437,14 +437,13 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
-      <div style={{ opacity: 'var(--iconOpacity)' }}>
-        <LayoutIcon
-          key={`layout-type-${props.label}`}
-          path={props.elementPath}
-          color={props.iconColor}
-          warningText={props.warningText}
-        />
-      </div>
+      <LayoutIcon
+        key={`layout-type-${props.label}`}
+        path={props.elementPath}
+        color={props.iconColor}
+        warningText={props.warningText}
+      />
+
       <ItemLabel
         key={`label-${props.label}`}
         testId={`navigator-item-label-${props.label}`}
