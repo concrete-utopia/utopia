@@ -23,7 +23,7 @@ import {
   HugContentsLabel,
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
-import { MaxContent } from '../inspector-common'
+import { Axis, MaxContent } from '../inspector-common'
 
 describe('Fixed / Fill / Hug control', () => {
   setFeatureForBrowserTests('Nine block control', true)
@@ -528,6 +528,120 @@ describe('Fixed / Fill / Hug control', () => {
     await openDropdownViaLabel(editor, 'fixed')
     await expectOptionsToBePresent(editor, ['fixed', 'hug'])
   })
+
+  describe('converts parent element to fixed size when child is set to fill container', () => {
+    describe('in a flex container', () => {
+      describe('with flex-direction: row set', () => {
+        it('along the horizontal axis', async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithFlexParentSetToFitContents('row'),
+            'await-first-dom-report',
+          )
+
+          const parent = editor.renderedDOM.getByTestId('parent')
+          const child = editor.renderedDOM.getByTestId('child')
+
+          await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
+
+          await setSelectedElementsToFill(editor, 'horizontal')
+
+          expect(child.style.width).toEqual('')
+          expect(child.style.flexGrow).toEqual('1')
+          expect(parent.style.width).toEqual('417.5px')
+        })
+
+        it('along the vertical axis', async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithFlexParentSetToFitContents('row'),
+            'await-first-dom-report',
+          )
+
+          const parent = editor.renderedDOM.getByTestId('parent')
+          const child = editor.renderedDOM.getByTestId('child')
+
+          await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
+
+          await setSelectedElementsToFill(editor, 'vertical')
+
+          expect(child.style.height).toEqual('100%')
+          expect(parent.style.height).toEqual('386px')
+        })
+      })
+
+      describe('with flex-direction: column set', () => {
+        it('along the horizontal axis', async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithFlexParentSetToFitContents('column'),
+            'await-first-dom-report',
+          )
+
+          const parent = editor.renderedDOM.getByTestId('parent')
+          const child = editor.renderedDOM.getByTestId('child')
+
+          await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
+
+          await setSelectedElementsToFill(editor, 'horizontal')
+
+          expect(child.style.width).toEqual('100%')
+          expect(parent.style.width).toEqual('417.5px')
+        })
+
+        it('along the vertical axis', async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithFlexParentSetToFitContents('column'),
+            'await-first-dom-report',
+          )
+
+          const parent = editor.renderedDOM.getByTestId('parent')
+          const child = editor.renderedDOM.getByTestId('child')
+
+          await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
+
+          await setSelectedElementsToFill(editor, 'vertical')
+
+          expect(child.style.height).toEqual('')
+          expect(child.style.flexGrow).toEqual('1')
+          expect(parent.style.height).toEqual('386px')
+        })
+      })
+    })
+
+    describe('in a flow container', () => {
+      it('along the horizontal axis', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithParentSetToFitContents,
+          'await-first-dom-report',
+        )
+
+        const parent = editor.renderedDOM.getByTestId('parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
+
+        await setSelectedElementsToFill(editor, 'horizontal')
+
+        expect(child.style.width).toEqual('100%')
+        expect(parent.style.width).toEqual('417.5px')
+      })
+
+      it('along the vertical axis', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithParentSetToFitContents,
+          'await-first-dom-report',
+        )
+
+        const parent = editor.renderedDOM.getByTestId('parent')
+        const child = editor.renderedDOM.getByTestId('child')
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
+
+        await setSelectedElementsToFill(editor, 'vertical')
+
+        expect(child.style.height).toEqual('100%')
+        expect(parent.style.height).toEqual('386px')
+      })
+    })
+  })
 })
 
 async function expectOptionsToBePresent(
@@ -565,6 +679,18 @@ async function select(
   }
 
   return div
+}
+
+async function setSelectedElementsToFill(editor: EditorRenderResult, axis: Axis) {
+  const idx = axis === 'horizontal' ? 0 : axis === 'vertical' ? 1 : assertNever(axis)
+  const control = (await editor.renderedDOM.findAllByText(FixedLabel))[idx]
+
+  await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+  const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
+  await expectSingleUndoStep(editor, async () => {
+    await mouseClickAtPoint(button, { x: 5, y: 5 })
+  })
 }
 
 const projectWithWidth = (flexDirection: FlexDirection) => `import * as React from 'react'
@@ -967,6 +1093,78 @@ export var storyboard = (
           width: 100,
           height: 100,
         }}
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithFlexParentSetToFitContents = (
+  flexDirection: FlexDirection,
+) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 219,
+        top: 101,
+        padding: '80px 80px 80px 80px',
+        display: 'flex',
+        flexDirection: '${flexDirection}',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 'max-content',
+        height: 'max-content',
+      }}
+      data-testid='parent'
+      data-uid='parent'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 226,
+          contain: 'layout',
+          width: 257.5,
+        }}
+        data-testid='child'
+        data-uid='child'
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithParentSetToFitContents = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 219,
+        top: 101,
+        padding: '80px 80px 80px 80px',
+        width: 'max-content',
+        height: 'max-content',
+      }}
+      data-testid='parent'
+      data-uid='parent'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          height: 226,
+          contain: 'layout',
+          width: 257.5,
+        }}
+        data-testid='child'
+        data-uid='child'
       />
     </div>
   </Storyboard>

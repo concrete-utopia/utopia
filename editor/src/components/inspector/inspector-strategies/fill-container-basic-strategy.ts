@@ -13,6 +13,7 @@ import {
   nukeSizingPropsForAxisCommand,
   Axis,
   nullOrNonEmpty,
+  setParentToFixedIfHugCommands,
 } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 import {
@@ -42,6 +43,7 @@ export const fillContainerStrategyFlow = (
         : [nukePositioningPropsForAxisCommand(axis, path)]
       return [
         ...nukePositioningCommands,
+        ...setParentToFixedIfHugCommands(axis, metadata, path),
         setCssLengthProperty(
           'always',
           path,
@@ -88,6 +90,7 @@ export const fillContainerStrategyFlexParent = (
         const checkedValue =
           value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
         return [
+          ...setParentToFixedIfHugCommands(axis, metadata, path),
           setCssLengthProperty(
             'always',
             path,
@@ -103,6 +106,7 @@ export const fillContainerStrategyFlexParent = (
 
       return [
         ...nukeAllAbsolutePositioningPropsCommands(path),
+        ...setParentToFixedIfHugCommands(axis, metadata, path),
         nukeSizingPropsForAxisCommand(axis, path),
         setProperty(
           'always',

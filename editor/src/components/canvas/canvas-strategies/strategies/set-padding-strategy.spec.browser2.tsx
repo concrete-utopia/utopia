@@ -731,6 +731,17 @@ describe('Padding resize strategy', () => {
     it('right', async () => {
       await testAdjustIndividualPaddingValueWithHuggingContainer('right', 'coarse', 12, -12)
     })
+
+    describe('no dead zone when dragging the right or bottom edge with a hugging container', () => {
+      // eslint-disable-next-line jest/expect-expect
+      it('right', async () => {
+        await testAdjustIndividualPaddingValueWithHuggingContainer('right', 'coarse', 57, -57)
+      })
+      // eslint-disable-next-line jest/expect-expect
+      it('bottom', async () => {
+        await testAdjustIndividualPaddingValueWithHuggingContainer('bottom', 'coarse', 35, -35)
+      })
+    })
   })
 })
 

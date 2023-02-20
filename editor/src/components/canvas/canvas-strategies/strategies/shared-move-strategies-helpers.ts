@@ -66,6 +66,7 @@ export interface MoveCommandsOptions {
 
 export const getAdjustMoveCommands =
   (
+    targets: Array<ElementPath>,
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession,
     options?: MoveCommandsOptions,
@@ -76,8 +77,7 @@ export const getAdjustMoveCommands =
     commands: Array<AdjustCssLengthProperty>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    const filteredSelectedElements = getDragTargets(selectedElements)
+    const filteredSelectedElements = getDragTargets(targets)
     let commands: Array<AdjustCssLengthProperty> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
@@ -95,6 +95,7 @@ export const getAdjustMoveCommands =
   }
 
 export function applyMoveCommon(
+  targets: Array<ElementPath>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   getMoveCommands: (snappedDragVector: CanvasPoint) => {
@@ -109,7 +110,6 @@ export function applyMoveCommon(
     const drag = interactionSession.interactionData.drag
     const shiftKeyPressed = interactionSession.interactionData.modifiers.shift
     const cmdKeyPressed = interactionSession.interactionData.modifiers.cmd
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
@@ -117,14 +117,14 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         pushIntendedBounds(commandsForSelectedElements.intendedBounds),
         updateHighlightedViews('mid-interaction', []),
-        setElementsToRerenderCommand(selectedElements),
+        setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
       ])
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
 
-      const targetsForSnapping = selectedElements.map(
+      const targetsForSnapping = targets.map(
         (path) => interactionSession.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
@@ -136,7 +136,7 @@ export function applyMoveCommon(
         drag,
         constrainedDragAxis,
         canvasState.startingMetadata,
-        selectedElements,
+        targets,
         moveGuidelines,
         canvasState.scale,
       )
@@ -146,7 +146,7 @@ export function applyMoveCommon(
         updateHighlightedViews('mid-interaction', []),
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
         pushIntendedBounds(commandsForSelectedElements.intendedBounds),
-        setElementsToRerenderCommand([...selectedElements, ...targetsForSnapping]),
+        setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
       ])
     }

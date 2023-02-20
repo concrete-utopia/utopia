@@ -578,7 +578,7 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   parentPath: ElementPath,
   value: DetectedLayoutSystem,
 ): ElementInstanceMetadataMap {
-  const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
+  const allChildren = MetadataUtils.getImmediateChildrenUnordered(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.elementPath, value, undefined, undefined)
   }, scenes)
@@ -766,7 +766,7 @@ function switchAndUpdateFrames(
     framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
   }
 
-  const children = MetadataUtils.getChildrenPaths(editor.jsxMetadata, target)
+  const children = MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, target)
   Utils.fastForEach(children, (childPath) => {
     const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null && isFiniteRectangle(child.globalFrame)) {
@@ -970,7 +970,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     navigator: {
       minimised: currentEditor.navigator.minimised,
       dropTargetHint: {
-        target: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: poppedEditor.navigator.collapsedViews,
@@ -1809,7 +1810,7 @@ export const UPDATE_FNS = {
             return !MetadataUtils.isElementGenerated(selectedView)
           })
           .map((path, _, allSelectedPaths) => {
-            const siblings = MetadataUtils.getSiblings(editor.jsxMetadata, path)
+            const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, path)
             const selectedSiblings = allSelectedPaths.filter((p) =>
               siblings.includes(editor.jsxMetadata[EP.toString(p)]),
             )
@@ -1819,7 +1820,7 @@ export const UPDATE_FNS = {
               editor.jsxMetadata[EP.toString(parentPath)],
             )
             const parentWillBeEmpty =
-              MetadataUtils.getChildren(editor.jsxMetadata, parentPath).length ===
+              MetadataUtils.getChildrenUnordered(editor.jsxMetadata, parentPath).length ===
               selectedSiblings.length
             if (parentIsFragment && parentWillBeEmpty) {
               return parentPath
@@ -1972,7 +1973,7 @@ export const UPDATE_FNS = {
       EP.pathsEqual,
     )
     const additionalTargets = Utils.flatMapArray((uniqueParent) => {
-      const children = MetadataUtils.getImmediateChildren(editor.jsxMetadata, uniqueParent)
+      const children = MetadataUtils.getImmediateChildrenUnordered(editor.jsxMetadata, uniqueParent)
       return children
         .map((child) => child.elementPath)
         .filter((childPath) => {
@@ -2591,7 +2592,7 @@ export const UPDATE_FNS = {
         }
 
         const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
-        const children = MetadataUtils.getChildren(editor.jsxMetadata, action.target)
+        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
         if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
           return editor
         }

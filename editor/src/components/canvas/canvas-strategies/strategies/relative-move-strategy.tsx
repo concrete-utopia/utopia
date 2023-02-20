@@ -24,7 +24,7 @@ export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO eventually make this handle contentAffecting elements
   if (selectedElements.length === 0) {
     return null
   }
@@ -79,9 +79,10 @@ export function relativeMoveStrategy(
           interactionSession.activeControl.type === 'BOUNDING_AREA'
         ) {
           return applyMoveCommon(
+            filteredSelectedElements,
             canvasState,
             interactionSession,
-            getAdjustMoveCommands(canvasState, interactionSession, {
+            getAdjustMoveCommands(filteredSelectedElements, canvasState, interactionSession, {
               ignoreLocalFrame: true,
             }),
           )

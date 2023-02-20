@@ -91,7 +91,7 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
           })
         } else {
           return selectedElements.flatMap((view) => {
-            const children = MetadataUtils.getChildren(store.editor.jsxMetadata, view)
+            const children = MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, view)
             return children.filter((child) => {
               if (child.globalFrame == null) {
                 return false

@@ -1336,3 +1336,82 @@ describe('double click on resize corner', () => {
     expect(view.style.flexBasis).toEqual('')
   })
 })
+
+describe('Absolute Resize Group-like behaviors', () => {
+  async function makeResizeInGrupProject(targets: Array<ElementPath>): Promise<string> {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='aaa'
+        >
+          <div data-uid='bbb' data-testid='bbb'>
+            <View
+              style={{
+                backgroundColor: '#aaaaaa33',
+                contain: 'layout',
+                position: 'absolute',
+                width: 80,
+                height: 100,
+                left: 40,
+                top: 50,
+              }}
+              data-uid='ccc'
+              data-testid='ccc'
+            />
+            <View
+              style={{
+                backgroundColor: '#aaaaaa33',
+                contain: 'layout',
+                position: 'absolute',
+                width: 130,
+                height: 120,
+                left: 170,
+                top: 70,
+              }}
+              data-uid='ddd'
+            />
+          </div>
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              width: 40,
+              height: 40,
+              left: 30,
+              top: 330,
+            }}
+            data-uid='xxx'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: -30, y: -30 })
+
+    await renderResult.dispatch([selectComponents(targets, false)], true)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const result = getPrintedUiJsCode(renderResult.getEditorState())
+    renderResult.renderedDOM.unmount()
+    return result
+  }
+
+  it('resizing a group is the same as multiselect resizing the children', async () => {
+    const groupResizeResult = await makeResizeInGrupProject([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+    ])
+    const multiselectResult = await makeResizeInGrupProject([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
+    ])
+
+    expect(groupResizeResult).toEqual(multiselectResult)
+  })
+})

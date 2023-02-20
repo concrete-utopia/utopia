@@ -73,16 +73,19 @@ export type LocalNavigatorAction = ShowNavigatorDropTargetHint
 export interface ShowNavigatorDropTargetHint {
   action: 'DROP_TARGET_HINT'
   type: DropTargetType
-  target: ElementPath | null
+  moveToElementPath: ElementPath | null
+  displayAtElementPath: ElementPath | null
 }
 
 export function showNavigatorDropTargetHint(
   type: DropTargetType,
+  moveToElementPath: ElementPath | null,
   target: ElementPath | null,
 ): ShowNavigatorDropTargetHint {
   return {
     action: 'DROP_TARGET_HINT',
     type: type,
-    target: target,
+    moveToElementPath: moveToElementPath,
+    displayAtElementPath: target,
   }
 }

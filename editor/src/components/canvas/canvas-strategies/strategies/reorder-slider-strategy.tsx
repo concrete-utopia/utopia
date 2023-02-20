@@ -37,7 +37,7 @@ export function reorderSliderStategy(
     canvasState.startingMetadata,
     target,
   )
-  const siblings = MetadataUtils.getSiblings(canvasState.startingMetadata, target)
+  const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target)
   const isAutoLayouted =
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,

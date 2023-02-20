@@ -75,7 +75,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
 
     const { direction, forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(parentElement)
 
-    const children = MetadataUtils.getChildren(jsxMetadata, parentPath)
+    const children = MetadataUtils.getChildrenUnordered(jsxMetadata, parentPath)
     let controlProps: ButtonControlProps[] = []
 
     const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(

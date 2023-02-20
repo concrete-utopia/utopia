@@ -4,20 +4,10 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { Either, foldEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  isJSXElement,
-  JSXElementChild,
-  jsxElementName,
-} from '../../../core/shared/element-template'
-import { forceNotNull } from '../../../core/shared/optional-utils'
+import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { nullableDeepEquality } from '../../../utils/deep-equality'
-import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { getValueFromComplexMap } from '../../../utils/map'
-import { useKeepDeepEqualityCall } from '../../../utils/react-performance'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   defaultElementWarnings,
@@ -37,7 +27,6 @@ interface NavigatorItemWrapperProps {
   targetComponentKey: string
   elementPath: ElementPath
   getDragSelections: () => Array<DragSelection>
-  getMaximumDistance: (componentId: string, initialDistance: number) => number
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
 }
@@ -47,13 +36,6 @@ const targetElementMetadataSelector = createSelector(
   (store: MetadataSubstate, targetPath: ElementPath) => targetPath,
   (metadata, targetPath): ElementInstanceMetadata | null => {
     return MetadataUtils.findElementByElementPath(metadata, targetPath)
-  },
-)
-
-const targetJsxElementSelector = createSelector(
-  targetElementMetadataSelector,
-  (metadata): Either<string, JSXElementChild> | undefined => {
-    return metadata?.element
   },
 )
 
@@ -76,17 +58,6 @@ const targetSupportsChildrenSelector = createSelector(
     return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
   },
 )
-
-const staticNameSelector = createSelector(targetJsxElementSelector, (targetElement) => {
-  if (targetElement == null) {
-    return null
-  }
-  return foldEither(
-    (intrinsic) => jsxElementName(intrinsic, []),
-    (element) => (isJSXElement(element) ? element.name : null),
-    targetElement,
-  )
-})
 
 const labelSelector = createSelector(
   targetElementMetadataSelector,
@@ -121,10 +92,6 @@ const noOfChildrenSelector = createSelector(
     }
     return result
   },
-)
-
-const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
-  JSXElementNameKeepDeepEqualityCall,
 )
 
 export const NavigatorItemWrapper: React.FunctionComponent<
@@ -181,7 +148,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         // Only capture this if it relates to the current navigator item, as it may change while
         // dragging around the navigator but we don't want the entire navigator to re-render each time.
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
-        if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
+        if (
+          EP.pathsEqual(
+            store.editor.navigator.dropTargetHint.displayAtElementPath,
+            props.elementPath,
+          )
+        ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
         const elementIsCollapsed = EP.containsPath(
@@ -206,7 +178,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     highlighted: isHighlighted,
     collapsed: isCollapsed,
     getDragSelections: props.getDragSelections,
-    getMaximumDistance: props.getMaximumDistance,
     getSelectedViewsInRange: props.getSelectedViewsInRange,
     appropriateDropTargetHint: appropriateDropTargetHint,
     supportsChildren: supportsChildren,

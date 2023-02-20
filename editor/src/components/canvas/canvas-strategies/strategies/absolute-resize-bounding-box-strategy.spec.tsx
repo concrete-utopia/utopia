@@ -14,7 +14,7 @@ import {
   Modifiers,
   shiftModifier,
 } from '../../../../utils/modifiers'
-import { EditorState } from '../../../editor/store/editor-state'
+import { AllElementProps, EditorState } from '../../../editor/store/editor-state'
 import { EdgePosition } from '../../canvas-types'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
@@ -39,6 +39,7 @@ function multiselectResizeElements(
   drag: CanvasPoint,
   modifiers: Modifiers,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): EditorState {
   const initialEditor = getEditorStateWithSelectedViews(
     makeTestProjectCodeWithSnippet(snippet),
@@ -57,6 +58,7 @@ function multiselectResizeElements(
       initialEditor,
       createBuiltInDependenciesList(null),
       metadata,
+      allElementProps,
     ),
     {
       ...interactionSessionWithoutMetadata,
@@ -98,6 +100,15 @@ const testMetadata: ElementInstanceMetadataMap = {
     } as SpecialSizeMeasurements,
     globalFrame: { height: 110, width: 100, x: 90, y: 40 },
   } as ElementInstanceMetadata,
+}
+
+const testAllElementProps: AllElementProps = {
+  'scene-aaa/app-entity:aaa/bbb': {
+    style: { width: 100, height: 80 },
+  },
+  'scene-aaa/app-entity:aaa/ccc': {
+    style: { width: 100, height: 80 },
+  },
 }
 
 describe('Absolute Resize Bounding Box Strategy single select', () => {
@@ -597,6 +608,16 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
             },
           } as ElementInstanceMetadata,
         },
+        {
+          'scene-aaa/app-entity:aaa/bbb': {
+            style: {
+              height: bounding.height,
+              width: bounding.width,
+              x: bounding.left,
+              y: bounding.top,
+            },
+          },
+        },
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -659,6 +680,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         emptyModifiers,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -737,6 +759,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         shiftModifier,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -815,6 +838,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         emptyModifiers,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -893,6 +917,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         shiftModifier,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -971,6 +996,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         emptyModifiers,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1049,6 +1075,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         shiftModifier,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1127,6 +1154,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         emptyModifiers,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1205,6 +1233,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         shiftModifier,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1292,6 +1321,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         modifiers,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1376,6 +1406,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         }),
         modifiers,
         testMetadata,
+        testAllElementProps,
       )
       expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -1465,6 +1496,14 @@ describe('Absolute Resize Strategy with missing props', () => {
           globalFrame: { x: 30, y: 50, width: 100, height: 80 },
         } as ElementInstanceMetadata,
       },
+      {
+        'scene-aaa/app-entity:aaa/bbb': {
+          style: { width: 100, height: 80 },
+        },
+        'scene-aaa/app-entity:aaa/bbb/ccc': {
+          style: { width: 100, height: 80 },
+        },
+      },
     )
     expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -1540,6 +1579,14 @@ describe('Absolute Resize Strategy with missing props', () => {
           globalFrame: { x: 30, y: 50, width: 100, height: 80 },
         } as ElementInstanceMetadata,
       },
+      {
+        'scene-aaa/app-entity:aaa/bbb': {
+          style: { width: 100, height: 80 },
+        },
+        'scene-aaa/app-entity:aaa/bbb/ccc': {
+          style: { width: 100, height: 80 },
+        },
+      },
     )
     expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
       makeTestProjectCodeWithSnippet(
@@ -1613,6 +1660,14 @@ describe('Absolute Resize Strategy with missing props', () => {
           } as SpecialSizeMeasurements,
           globalFrame: { x: 0, y: 0, width: 100, height: 80 },
         } as ElementInstanceMetadata,
+      },
+      {
+        'scene-aaa/app-entity:aaa/bbb': {
+          style: { width: 100, height: 80 },
+        },
+        'scene-aaa/app-entity:aaa/bbb/ccc': {
+          style: { width: 100, height: 80 },
+        },
       },
     )
     expect(testPrintCodeFromEditorState(editorAfterStrategy)).toEqual(
