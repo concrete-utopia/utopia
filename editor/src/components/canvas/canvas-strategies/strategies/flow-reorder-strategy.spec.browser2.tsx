@@ -274,8 +274,6 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
       'await-first-dom-report',
     )
 
-    await wait(1000)
-
     // drag element 'CCC' up a little to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: 0, y: -45 })
     await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
