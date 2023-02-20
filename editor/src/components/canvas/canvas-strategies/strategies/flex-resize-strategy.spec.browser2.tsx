@@ -155,7 +155,7 @@ describe('Flex Resize with flex grow', () => {
     it('resizing in a centered flex row from bottom-right edge', async () => {
       await resizeTestRemovesFlexGrow(
         EdgePositionBottomRight,
-        canvasPoint({ x: -50, y: -25 }),
+        canvasPoint({ x: -70, y: -25 }),
         'row',
         'center',
         'height: 60',
@@ -165,7 +165,7 @@ describe('Flex Resize with flex grow', () => {
     it('resizing in a centered flex row from the right edge', async () => {
       await resizeTestRemovesFlexGrow(
         EdgePositionRight,
-        canvasPoint({ x: -50, y: -25 }),
+        canvasPoint({ x: -70, y: -25 }),
         'row',
         'center',
         'height: 60',
