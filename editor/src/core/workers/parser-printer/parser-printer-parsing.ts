@@ -2061,6 +2061,10 @@ export function parseOutJSXElements(
           whenTrue.value,
           whenFalse.value,
         )
+        highlightBounds = {
+          ...highlightBounds,
+          [uid]: buildHighlightBounds(sourceFile, expression, uid),
+        }
         return withParserMetadata(
           successfullyParsedElement(sourceFile, expression, conditionalExpression),
           highlightBounds,
