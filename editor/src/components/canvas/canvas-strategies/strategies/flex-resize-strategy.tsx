@@ -68,6 +68,7 @@ import { setProperty } from '../../commands/set-property-command'
 import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
+import { getElementDimensions } from './flex-resize-helpers'
 
 export function flexResizeStrategy(
   canvasState: InteractionCanvasState,
@@ -377,41 +378,6 @@ export function resizeWidthHeight(
         height: boundingBox.height,
       })
     }
-  }
-}
-
-type ElementDimensions = {
-  width: number | null
-  height: number | null
-  flexBasis: number | null
-} | null
-
-const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
-  const getOffsetPropValue = (
-    name: 'width' | 'height' | 'flexBasis',
-    attrs: PropsOrJSXAttributes,
-  ): number | null => {
-    return foldEither(
-      (_) => null,
-      (v) => v?.value ?? null,
-      getLayoutProperty(name, attrs, styleStringInArray),
-    )
-  }
-
-  if (isLeft(metadata.element)) {
-    return null
-  }
-  const { value } = metadata.element
-  if (!isJSXElement(value)) {
-    return null
-  }
-
-  const attrs = right(value.props)
-
-  return {
-    width: getOffsetPropValue('width', attrs),
-    height: getOffsetPropValue('height', attrs),
-    flexBasis: getOffsetPropValue('flexBasis', attrs),
   }
 }
 
