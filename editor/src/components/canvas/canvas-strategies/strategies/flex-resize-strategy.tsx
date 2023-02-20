@@ -238,7 +238,11 @@ export function flexResizeStrategy(
 
           let resizeCommands: Array<CanvasCommand> = []
           if (dimensionToUpdate.width) {
-            if (snapToParentEdge === 'horizontal') {
+            if (
+              snapToParentEdge != null &&
+              snapToParentEdge.snapDirection === 'horizontal' &&
+              snapToParentEdge.snap
+            ) {
               resizeCommands.push(
                 setProperty(
                   'always',
@@ -266,7 +270,11 @@ export function flexResizeStrategy(
             }
           }
           if (dimensionToUpdate.height) {
-            if (snapToParentEdge === 'vertical') {
+            if (
+              snapToParentEdge != null &&
+              snapToParentEdge.snapDirection === 'vertical' &&
+              snapToParentEdge.snap
+            ) {
               resizeCommands.push(
                 setProperty(
                   'always',
@@ -293,10 +301,7 @@ export function flexResizeStrategy(
               )
             }
           }
-          if (
-            snapToParentEdge === 'horizontal-no-snap' ||
-            snapToParentEdge === 'vertical-no-snap'
-          ) {
+          if (snapToParentEdge != null && !snapToParentEdge.snap) {
             resizeCommands.push(
               deleteProperties('always', selectedElement, [
                 stylePropPathMappingFn('flexGrow', styleStringInArray),
@@ -417,7 +422,10 @@ function shouldSnapToParentEdge(
   parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
-): 'horizontal' | 'horizontal-no-snap' | 'vertical' | 'vertical-no-snap' | null {
+): {
+  snapDirection: 'horizontal' | 'vertical'
+  snap: boolean
+} | null {
   const parentPadding = element.specialSizeMeasurements.parentPadding
   const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
   const parentGap = element.specialSizeMeasurements.parentFlexGap
@@ -463,42 +471,51 @@ function shouldSnapToParentEdge(
 
   if (parentFlexDirection === 'row' && edgePosition.x !== 0.5) {
     if (parentJustifyContent == null || parentJustifyContent === 'flex-start') {
-      return resizedBounds.x + resizedBounds.width + SnappingThreshold >
-        parentInnerBounds.x + parentInnerBounds.width
-        ? 'horizontal'
-        : 'horizontal-no-snap'
+      return {
+        snapDirection: 'horizontal',
+        snap:
+          resizedBounds.x + resizedBounds.width + SnappingThreshold >
+          parentInnerBounds.x + parentInnerBounds.width,
+      }
     } else if (parentJustifyContent === 'center') {
       const siblingsWidth = siblingFrames.reduce((working, frame) => {
         return frame != null && isFiniteRectangle(frame) ? frame.width + working : working
       }, 0)
       const siblingsAndDraggedFrame =
         siblingsWidth + resizedBounds.width + siblingFrames.length * parentGap
-      return siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.width
-        ? 'horizontal'
-        : 'horizontal-no-snap'
+      return {
+        snapDirection: 'horizontal',
+        snap: siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.width,
+      }
     } else if (parentJustifyContent === 'flex-end') {
-      return parentInnerBounds.x > resizedBounds.x + SnappingThreshold
-        ? 'horizontal'
-        : 'horizontal-no-snap'
+      return {
+        snapDirection: 'horizontal',
+        snap: parentInnerBounds.x > resizedBounds.x + SnappingThreshold,
+      }
     }
   } else if (parentFlexDirection === 'column' && edgePosition.y !== 0.5) {
     if (parentJustifyContent == null || parentJustifyContent === 'flex-start') {
       const parentBottomEdge = parentInnerBounds.y + parentInnerBounds.height
       const elementBottomEdge = resizedBounds.y + resizedBounds.height
-      return elementBottomEdge + SnappingThreshold > parentBottomEdge
-        ? 'vertical'
-        : 'vertical-no-snap'
+      return {
+        snapDirection: 'vertical',
+        snap: elementBottomEdge + SnappingThreshold > parentBottomEdge,
+      }
     } else if (parentJustifyContent === 'center') {
       const siblingsHeight = siblingFrames.reduce((working, frame) => {
         return frame != null && isFiniteRectangle(frame) ? frame.height + working : working
       }, 0)
       const siblingsAndDraggedFrame =
         siblingsHeight + resizedBounds.height + siblingFrames.length * parentGap
-      return siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.height
-        ? 'vertical'
-        : 'vertical-no-snap'
+      return {
+        snapDirection: 'vertical',
+        snap: siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.height,
+      }
     } else if (parentJustifyContent === 'flex-end') {
-      return parentBounds.y > resizedBounds.y + SnappingThreshold ? 'vertical' : 'vertical-no-snap'
+      return {
+        snapDirection: 'vertical',
+        snap: parentBounds.y > resizedBounds.y + SnappingThreshold,
+      }
     }
   }
 
