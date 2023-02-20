@@ -72,6 +72,12 @@ export function treatElementAsContentAffecting(
     return false
   }
 
+  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
+  if (childrenCount === 0) {
+    // do not treat elements with zero children as content-affecting
+    return false
+  }
+
   const hasNoWidthAndHeightProps =
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
