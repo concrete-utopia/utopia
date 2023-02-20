@@ -414,6 +414,33 @@ export function findJSXElementChildAtPath(
           return withinResult
         }
       }
+    } else if (isJSXConditionalExpression(element)) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        if (
+          childOrBlockIsChild(element.whenTrue) &&
+          tailPath[0] === getUtopiaID(element.whenTrue)
+        ) {
+          const elementWithin = element.whenTrue
+          const withinResult = findAtPathInner(elementWithin, workingPath)
+          if (withinResult != null) {
+            return withinResult
+          }
+        }
+        if (
+          childOrBlockIsChild(element.whenFalse) &&
+          tailPath[0] === getUtopiaID(element.whenFalse)
+        ) {
+          const elementWithin = element.whenFalse
+          const withinResult = findAtPathInner(elementWithin, workingPath)
+          if (withinResult != null) {
+            return withinResult
+          }
+        }
+      }
     }
     return null
   }
