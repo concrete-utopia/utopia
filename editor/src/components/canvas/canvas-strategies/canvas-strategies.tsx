@@ -89,13 +89,15 @@ const resizeStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession),
-    [
-      keyboardAbsoluteResizeStrategy,
-      absoluteResizeBoundingBoxStrategy,
-      flexResizeBasicStrategy,
-      flexResizeStrategy,
-    ],
+    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
   )
+}
+const flexResizeMetaStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls((factory) => factory(canvasState, interactionSession), [flexResizeStrategy])
 }
 
 const propertyControlStrategies: MetaCanvasStrategy = (
@@ -149,6 +151,18 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
 }
 
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  ...AncestorCompatibleStrategies,
+  preventOnRootElements(resizeStrategies),
+  preventOnRootElements(flexResizeMetaStrategy),
+  propertyControlStrategies,
+  drawToInsertMetaStrategy,
+  dragToInsertMetaStrategy,
+  ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
+  keyboardShortcutStrategies,
+  drawToInsertTextStrategy,
+]
+
+export const RegisteredCanvasStrategiesWithoutFlexResize: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
