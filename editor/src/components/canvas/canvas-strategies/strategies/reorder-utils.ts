@@ -137,10 +137,6 @@ export function applyReorderCommon(
   }
 }
 
-function fromMaybeInfinityRect(rect: MaybeInfinityCanvasRectangle | null): CanvasRectangle | null {
-  return rect == null || isInfinityRectangle(rect) ? null : rect
-}
-
 export function isElementJsxFragment(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
@@ -156,18 +152,6 @@ export function isElementJsxFragment(
   )
 }
 
-// TODO: is there a helper for this already?
-function getNearestNonFragmentParentPath(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): ElementPath {
-  const parentPath = EP.parentPath(path)
-  if (!isElementJsxFragment(metadata, parentPath)) {
-    return parentPath
-  }
-  return getNearestNonFragmentParentPath(metadata, parentPath)
-}
-
 function findSiblingIndexUnderPoint(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
@@ -178,14 +162,7 @@ function findSiblingIndexUnderPoint(
   return siblings.findIndex((sibling) => {
     const element = MetadataUtils.findElementByElementPath(metadata, sibling)
 
-    const parentFrame = isElementJsxFragment(metadata, sibling)
-      ? fromMaybeInfinityRect(
-          MetadataUtils.getFrameInCanvasCoords(
-            getNearestNonFragmentParentPath(metadata, sibling),
-            metadata,
-          ),
-        )
-      : element?.specialSizeMeasurements.immediateParentBounds
+    const parentFrame = element?.specialSizeMeasurements.immediateParentBounds
 
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
 

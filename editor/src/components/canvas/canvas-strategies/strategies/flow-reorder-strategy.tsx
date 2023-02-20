@@ -15,7 +15,7 @@ import {
   isValidFlowReorderTarget,
 } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
-import { applyReorderCommon, isElementJsxFragment } from './reorder-utils'
+import { applyReorderCommon } from './reorder-utils'
 import {
   DragOutlineControl,
   dragTargetsElementPaths,
@@ -82,7 +82,6 @@ export function flowReorderStrategy(
               customStrategyState,
               getElementDirection(elementMetadata),
               (path, metadata) =>
-                isElementJsxFragment(metadata, path) ||
                 MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
                   path,
                   metadata,

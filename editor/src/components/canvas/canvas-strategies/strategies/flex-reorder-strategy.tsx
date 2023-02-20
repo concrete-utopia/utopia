@@ -13,7 +13,7 @@ import {
 } from '../../controls/select-mode/drag-outline-control'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
-import { applyReorderCommon, isElementJsxFragment } from './reorder-utils'
+import { applyReorderCommon } from './reorder-utils'
 import { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 
@@ -84,7 +84,6 @@ export function flexReorderStrategy(
               customStrategyState,
               reorderDirection,
               (path, metadata) =>
-                isElementJsxFragment(metadata, path) ||
                 MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
                   path,
                   metadata,
