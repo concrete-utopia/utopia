@@ -205,8 +205,17 @@ function collectSelectableSiblings(
             componentMetadata,
             child,
           )
+          const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
+            componentMetadata,
+            child,
+          )
+
           // If this element is locked we want to recurse the children
-          if (isLocked || (!isFeatureEnabled('Fragment support') && isFragment)) {
+          if (
+            isLocked ||
+            (!isFeatureEnabled('Fragment support') && isFragment) ||
+            (!isFeatureEnabled('Conditional support') && isConditional)
+          ) {
             addChildrenAndUnfurledFocusedComponents([child])
           }
         })
