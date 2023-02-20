@@ -29,7 +29,7 @@ export const UtopiaTheme = {
     rowHorizontalPadding: 8,
     rowButtonSpacing: 4,
     rowHeight: {
-      smaller: 27,
+      smaller: 29,
       normal: 34,
       large: 42,
       max: 47,
