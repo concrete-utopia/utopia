@@ -949,10 +949,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     ])
   })
 })
-
-describe.each(['div', 'fragment'] as const)(
-  'Absolute reparent with children-affecting element %s in the mix',
-  (divOrFragment: 'div' | 'fragment') => {
+;(['div', 'fragment'] as const).forEach((divOrFragment) => {
+  describe(`Absolute reparent with children-affecting element ${divOrFragment} in the mix`, () => {
     it('cannot reparent into a children-affecting div', async () => {
       const renderResult = await renderTestEditorWithCode(
         testProjectWithUnstyledDivOrFragment(divOrFragment),
@@ -979,11 +977,11 @@ describe.each(['div', 'fragment'] as const)(
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div/child-1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of unstyled-div
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of children-affecting
       ])
     })
 
@@ -1024,8 +1022,8 @@ describe.each(['div', 'fragment'] as const)(
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-2', // <- child-2 is now a child of aaa
@@ -1050,15 +1048,15 @@ describe.each(['div', 'fragment'] as const)(
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/unstyled-div/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <- child-1 is now a direct children of bbb
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
       ])
     })
-  },
-)
+  })
+})
 
 function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment'): string {
   return makeTestProjectCodeWithSnippet(`
@@ -1081,7 +1079,11 @@ function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment')
           }}
           data-uid='bbb'
         >
-          ${divOrFragment === 'div' ? `<div data-uid='unstyled-div'>` : `<>`}
+          ${
+            divOrFragment === 'div'
+              ? `<div data-uid='children-affecting'>`
+              : `<React.Fragment data-uid='children-affecting'>`
+          }
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1106,7 +1108,7 @@ function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment')
               data-uid='child-2'
               data-testid='child-2'
             />
-          ${divOrFragment === 'div' ? `</div>` : `</>`}
+          ${divOrFragment === 'div' ? `</div>` : `</React.Fragment>`}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
