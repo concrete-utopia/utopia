@@ -1865,12 +1865,16 @@ function fillSpyOnlyMetadata(
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        parentLayoutSystem: parent?.specialSizeMeasurements.layoutSystemForChildren ?? 'none',
-        parentFlexDirection: parent?.specialSizeMeasurements.flexDirection ?? null,
+        parentLayoutSystem:
+          parent?.specialSizeMeasurements.layoutSystemForChildren ??
+          spyElem.specialSizeMeasurements.parentLayoutSystem,
+        parentFlexDirection:
+          parent?.specialSizeMeasurements.flexDirection ??
+          spyElem.specialSizeMeasurements.parentFlexDirection,
         immediateParentBounds:
           parent?.globalFrame != null && !isInfinityRectangle(parent.globalFrame)
             ? parent.globalFrame
-            : null,
+            : spyElem.specialSizeMeasurements.immediateParentBounds,
       },
     }
   })
