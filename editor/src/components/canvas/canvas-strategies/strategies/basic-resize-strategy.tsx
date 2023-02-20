@@ -222,7 +222,7 @@ export function resizeWidthHeight(
   edgePosition: EdgePosition,
 ): CanvasRectangle {
   if (isEdgePositionACorner(edgePosition)) {
-    const startingCornerPosition = {
+    const oppositeCornerPosition = {
       x: 1 - edgePosition.x,
       y: 1 - edgePosition.y,
     } as EdgePosition
