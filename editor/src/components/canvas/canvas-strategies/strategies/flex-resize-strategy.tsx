@@ -116,7 +116,8 @@ export function flexResizeStrategy(
     (elementDimensions.width != null || elementDimensions.height != null)
   const hasSizedParent =
     elementParentBounds != null &&
-    (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
+    elementParentBounds.width !== 0 &&
+    elementParentBounds.height !== 0
 
   return {
     id: 'FLEX_RESIZE',
