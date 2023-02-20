@@ -19,8 +19,7 @@ import {
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { CSSCursor } from '../../canvas-types'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { isFeatureEnabled, setFeatureEnabled } from '../../../../utils/feature-switches'
-import { DragOutlineControlTestId } from '../../controls/select-mode/drag-outline-control'
+import { setFeatureForTests } from '../../../../utils/utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -657,14 +656,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('with fragments support enabled', () => {
-    let originalFragmentsSupported: boolean = false
-    before(() => {
-      originalFragmentsSupported = isFeatureEnabled('Fragment support')
-      setFeatureEnabled('Fragment support', true)
-    })
-    after(() => {
-      setFeatureEnabled('Fragment support', originalFragmentsSupported)
-    })
+    setFeatureForTests('Fragment support', true)
+
     it('reparents across from one fragment to within (not directly inside) another', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
@@ -782,14 +775,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('with fragments support disabled', () => {
-    let originalFragmentsSupported: boolean = false
-    before(() => {
-      originalFragmentsSupported = isFeatureEnabled('Fragment support')
-      setFeatureEnabled('Fragment support', false)
-    })
-    after(() => {
-      setFeatureEnabled('Fragment support', originalFragmentsSupported)
-    })
+    setFeatureForTests('Fragment support', false)
+
     it('reparents across from one fragment to within (not directly inside) another', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`

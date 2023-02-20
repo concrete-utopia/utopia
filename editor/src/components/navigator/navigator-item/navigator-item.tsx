@@ -2,11 +2,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  ElementInstanceMetadataMap,
-  isJSXElement,
-  JSXElementName,
-} from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -41,12 +36,15 @@ export function getElementPadding(
     return EP.navigatorDepth(elementPath) * BasePaddingUnit
   }
 
-  const ancestors = EP.getAncestorsForLastPart(elementPath)
+  const ancestors = EP.getAncestors(elementPath)
   const ancestorsNotInNavigator = ancestors.filter(
     (path) => !visibleNavigatorTargets.some((navigatorPath) => EP.pathsEqual(path, navigatorPath)),
   )
+  // an empty path and the storyboard is always part of the ancestorsNotInNavigator list and that doesn't matter,
+  // so we can add 2 to the offset. NOTE: this 2 is also a constant in EP.navigatorDepth for the same reason
+  const paddingOffset = 2 - ancestorsNotInNavigator.length
 
-  return (EP.navigatorDepth(elementPath) - ancestorsNotInNavigator.length) * BasePaddingUnit
+  return (EP.navigatorDepth(elementPath) + paddingOffset) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
@@ -62,6 +60,7 @@ export interface NavigatorItemInnerProps {
   renamingTarget: ElementPath | null
   selected: boolean
   elementWarnings: ElementWarnings
+  shouldShowParentOutline: boolean
   visibleNavigatorTargets: Array<ElementPath>
 }
 
@@ -382,41 +381,49 @@ export const NavigatorItem: React.FunctionComponent<
   })
 
   return (
-    <FlexRow
-      style={rowStyle}
-      onMouseDown={select}
-      onMouseMove={highlight}
-      onDoubleClick={focusComponent}
+    <div
+      style={{
+        border: `1px solid ${
+          props.shouldShowParentOutline ? colorTheme.navigatorResizeHintBorder.value : 'transparent'
+        }`,
+      }}
     >
-      <FlexRow style={containerStyle}>
-        <ExpandableIndicator
-          key='expandable-indicator'
-          visible={childComponentCount > 0 || isFocusedComponent}
-          collapsed={collapsed}
-          selected={selected && !isInsideComponent}
-          onMouseDown={collapse}
-          style={{ transform: 'scale(0.8)', opacity: 0.5 }}
-        />
-        <NavigatorRowLabel
+      <FlexRow
+        style={rowStyle}
+        onMouseDown={select}
+        onMouseMove={highlight}
+        onDoubleClick={focusComponent}
+      >
+        <FlexRow style={containerStyle}>
+          <ExpandableIndicator
+            key='expandable-indicator'
+            visible={childComponentCount > 0 || isFocusedComponent}
+            collapsed={collapsed}
+            selected={selected && !isInsideComponent}
+            onMouseDown={collapse}
+            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
+          />
+          <NavigatorRowLabel
+            elementPath={elementPath}
+            label={props.label}
+            renamingTarget={props.renamingTarget}
+            selected={props.selected}
+            dispatch={props.dispatch}
+            isDynamic={isDynamic}
+            iconColor={resultingStyle.iconColor}
+            warningText={warningText}
+          />
+        </FlexRow>
+        <NavigatorItemActionSheet
           elementPath={elementPath}
-          label={props.label}
-          renamingTarget={props.renamingTarget}
-          selected={props.selected}
-          dispatch={props.dispatch}
-          isDynamic={isDynamic}
-          iconColor={resultingStyle.iconColor}
-          warningText={warningText}
+          selected={selected}
+          highlighted={isHighlighted}
+          isVisibleOnCanvas={isElementVisible}
+          instanceOriginalComponentName={null}
+          dispatch={dispatch}
         />
       </FlexRow>
-      <NavigatorItemActionSheet
-        elementPath={elementPath}
-        selected={selected}
-        highlighted={isHighlighted}
-        isVisibleOnCanvas={isElementVisible}
-        instanceOriginalComponentName={null}
-        dispatch={dispatch}
-      />
-    </FlexRow>
+    </div>
   )
 })
 NavigatorItem.displayName = 'NavigatorItem'
@@ -432,7 +439,7 @@ interface NavigatorRowLabelProps {
   dispatch: EditorDispatch
 }
 
-const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
+export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
       <LayoutIcon

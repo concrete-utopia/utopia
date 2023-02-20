@@ -29,7 +29,7 @@ import {
   EdgePositionBottom,
   EdgePositionTop,
 } from '../../canvas-types'
-import { wait } from '../../../../utils/utils.test-utils'
+import { setFeatureForTests, wait } from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'
 import {
   BakedInStoryboardVariableName,
@@ -41,7 +41,6 @@ import {
   mouseDragFromPointWithDelta,
 } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
 import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
@@ -1220,8 +1219,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 })
 
 describe('Double click on resize edge', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
@@ -1316,8 +1314,7 @@ describe('Double click on resize edge', () => {
 })
 
 describe('double click on resize corner', () => {
-  before(() => setFeatureEnabled('Nine block control', true))
-  after(() => setFeatureEnabled('Nine block control', false))
+  setFeatureForTests('Nine block control', true)
 
   it('resizes to fit when resize corner is double clicked', async () => {
     const editor = await renderTestEditorWithCode(
@@ -1337,5 +1334,84 @@ describe('double click on resize corner', () => {
     expect(view.style.flexShrink).toEqual('')
     expect(view.style.flexGrow).toEqual('')
     expect(view.style.flexBasis).toEqual('')
+  })
+})
+
+describe('Absolute Resize Group-like behaviors', () => {
+  async function makeResizeInGrupProject(targets: Array<ElementPath>): Promise<string> {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='aaa'
+        >
+          <div data-uid='bbb' data-testid='bbb'>
+            <View
+              style={{
+                backgroundColor: '#aaaaaa33',
+                contain: 'layout',
+                position: 'absolute',
+                width: 80,
+                height: 100,
+                left: 40,
+                top: 50,
+              }}
+              data-uid='ccc'
+              data-testid='ccc'
+            />
+            <View
+              style={{
+                backgroundColor: '#aaaaaa33',
+                contain: 'layout',
+                position: 'absolute',
+                width: 130,
+                height: 120,
+                left: 170,
+                top: 70,
+              }}
+              data-uid='ddd'
+            />
+          </div>
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              width: 40,
+              height: 40,
+              left: 30,
+              top: 330,
+            }}
+            data-uid='xxx'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: -30, y: -30 })
+
+    await renderResult.dispatch([selectComponents(targets, false)], true)
+    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const result = getPrintedUiJsCode(renderResult.getEditorState())
+    renderResult.renderedDOM.unmount()
+    return result
+  }
+
+  it('resizing a group is the same as multiselect resizing the children', async () => {
+    const groupResizeResult = await makeResizeInGrupProject([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+    ])
+    const multiselectResult = await makeResizeInGrupProject([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
+    ])
+
+    expect(groupResizeResult).toEqual(multiselectResult)
   })
 })

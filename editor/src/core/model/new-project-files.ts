@@ -44,11 +44,12 @@ import Utopia, {
 } from 'utopia-api'
 import { App } from '/src/app.js'
 export var storyboard = (
-  <Storyboard>
+  <Storyboard data-uid='sample-storyboard'>
     <Scene
+      data-uid='sample-scene'
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     >
-      <App />
+      <App data-uid='sample-app' />
     </Scene>
   </Storyboard>
 )
@@ -65,7 +66,7 @@ import { App } from "../src/app";
 
 const root = document.getElementById("root");
 if (root != null) {
-  ReactDOM.render(<App />, root);
+  ReactDOM.render(<App data-uid='preview-app' />, root);
 }`
 
 export function getSamplePreviewHTMLFile(): TextFile {

@@ -4,7 +4,6 @@ import { act, RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
 
 import * as EP from '../../../../core/shared/element-path'
-import { isFeatureEnabled, setFeatureEnabled } from '../../../../utils/feature-switches'
 import { cmdModifier, shiftCmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'

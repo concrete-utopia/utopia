@@ -1,12 +1,15 @@
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
-import { fastForEach } from '../../../core/shared/utils'
+import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { useColorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
+import { ControlMode } from '../sections/layout-section/layout-system-subsection/split-chained-number-input'
+import { useRefEditorState } from '../../editor/store/store-hook'
+import { wrapValue } from '../../../core/shared/math-utils'
 
 const isControlledStyling = (colorTheme: any) => ({
   backgroundColor: colorTheme.inspectorControlledBackground.value,
@@ -192,4 +195,42 @@ export function getElementsToTarget(paths: Array<ElementPath>): Array<ElementPat
     }
   })
   return result
+}
+
+export type CycleDirection = 'forward' | 'backward'
+
+function deltaFromDirection(direction: CycleDirection): number {
+  switch (direction) {
+    case 'backward':
+      return -1
+    case 'forward':
+      return 1
+    default:
+      assertNever(direction)
+  }
+}
+
+export function useControlModeWithCycle(
+  initialValue: ControlMode,
+  modes: Array<ControlMode>,
+): [
+  ControlMode | null,
+  (mode: ControlMode | null, dir: CycleDirection) => void,
+  React.DispatchWithoutAction,
+] {
+  const [controlMode, setControlMode] = React.useState<ControlMode | null>(initialValue)
+
+  const cycleToNextMode = React.useCallback(
+    (mode: ControlMode | null, direction: CycleDirection) => {
+      const modeToUse = controlMode ?? mode ?? initialValue
+      const delta = deltaFromDirection(direction)
+      const index = modes.indexOf(modeToUse) + delta
+      setControlMode(modes[wrapValue(index, 0, modes.length - 1)])
+    },
+    [initialValue, modes, controlMode],
+  )
+
+  const resetMode = React.useCallback(() => setControlMode(null), [])
+
+  return [controlMode, cycleToNextMode, resetMode]
 }

@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEquals, assertNever } from '../../../core/shared/utils'
-import { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
+import { AllElementProps, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import {
   CanvasStrategy,
@@ -194,6 +194,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
   metadata: ElementInstanceMetadataMap,
+  allElementProps?: AllElementProps,
 ): InteractionCanvasState {
   return {
     builtInDependencies: builtInDependencies,
@@ -204,7 +205,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: metadata,
-    startingAllElementProps: editorState.allElementProps,
+    startingAllElementProps: allElementProps ?? editorState.allElementProps,
   }
 }
 

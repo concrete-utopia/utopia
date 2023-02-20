@@ -164,5 +164,9 @@ export type CanvasAndMetadataSubstate = {
   editor: Pick<EditorState, 'jsxMetadata'>
 } & CanvasSubstate
 
+export type NavigatorSubstate = {
+  editor: Pick<EditorState, 'navigator'>
+}
+
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
   ['storeName', 'strategyState', 'history', 'workers', 'persistence', 'alreadySaved']

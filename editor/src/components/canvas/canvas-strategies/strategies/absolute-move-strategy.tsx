@@ -1,37 +1,36 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { toString } from '../../../../core/shared/element-path'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
-import { honoursPropsPosition } from './absolute-utils'
 import {
-  CanvasStrategy,
+  DragOutlineControl,
+  dragTargetsElementPathsLive,
+} from '../../controls/select-mode/drag-outline-control'
+import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
+import {
   controlWithProps,
   emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   MoveStrategy,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { honoursPropsPosition } from './absolute-utils'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
   getDragTargets,
 } from './shared-move-strategies-helpers'
-import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-  dragTargetsElementPathsLive,
-} from '../../controls/select-mode/drag-outline-control'
 
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+
   const isApplicable =
-    selectedElements.length > 0 &&
-    getDragTargets(selectedElements).every((element) => {
+    targets.length > 0 &&
+    getDragTargets(targets).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,
@@ -52,13 +51,13 @@ export function absoluteMoveStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: selectedElements },
+          props: { targets: targets },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: selectedElements },
+          props: { targets: targets },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -70,7 +69,7 @@ export function absoluteMoveStrategy(
         }),
         {
           control: DragOutlineControl,
-          props: dragTargetsElementPathsLive(selectedElements),
+          props: dragTargetsElementPathsLive(targets),
           key: 'ghost-outline-control',
           show: 'visible-only-while-active',
         },
@@ -86,9 +85,10 @@ export function absoluteMoveStrategy(
           interactionSession?.interactionData.drag != null
         ) {
           return applyMoveCommon(
+            targets,
             canvasState,
             interactionSession,
-            getAdjustMoveCommands(canvasState, interactionSession),
+            getAdjustMoveCommands(targets, canvasState, interactionSession),
           )
         }
         // Fallback for when the checks above are not satisfied.

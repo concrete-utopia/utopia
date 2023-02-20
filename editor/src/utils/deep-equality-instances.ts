@@ -141,14 +141,17 @@ export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<
 > = arrayDeepEquality(NameAndIconResultKeepDeepEquality)
 
 export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
-  combine2EqualityCalls(
-    (hint) => hint.target,
+  combine3EqualityCalls(
+    (hint) => hint.displayAtElementPath,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (hint) => hint.moveToElementPath,
     nullableDeepEquality(ElementPathKeepDeepEquality),
     (hint) => hint.type,
     createCallWithTripleEquals(),
-    (target, type) => {
+    (displayAtElementPath, moveToElementPath, type) => {
       return {
-        target: target,
+        displayAtElementPath: displayAtElementPath,
+        moveToElementPath: moveToElementPath,
         type: type,
       }
     },

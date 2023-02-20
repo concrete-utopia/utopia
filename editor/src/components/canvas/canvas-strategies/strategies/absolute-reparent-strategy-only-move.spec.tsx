@@ -12,7 +12,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import { EditorState } from '../../../editor/store/editor-state'
+import { AllElementProps, EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -76,6 +76,20 @@ function dragByPixels(
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }
+  const startingAllElementProps: AllElementProps = {
+    'scene-aaa/app-entity:aaa/bbb': {
+      style: {
+        width: 400,
+        height: 400,
+      },
+    },
+    'scene-aaa/app-entity:aaa/ccc': {
+      style: {
+        width: 400,
+        height: 400,
+      },
+    },
+  }
   const interactionSession: InteractionSession = {
     ...createMouseInteractionForTests(
       canvasPoint({ x: 0, y: 0 }),
@@ -92,6 +106,7 @@ function dragByPixels(
       editorState,
       createBuiltInDependenciesList(null),
       startingMetadata,
+      startingAllElementProps,
     ),
     interactionSession,
   )!.strategy.apply('end-interaction')

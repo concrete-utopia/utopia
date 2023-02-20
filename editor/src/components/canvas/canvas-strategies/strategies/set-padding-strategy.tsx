@@ -26,6 +26,7 @@ import {
   CSSPaddingKey,
   CSSPaddingMappedValues,
   deltaFromEdge,
+  getSizeUpdateCommandsForNewPadding,
   maybeFullPadding,
   offsetPaddingByEdge,
   paddingAdjustMode,
@@ -169,25 +170,25 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       }
 
       const selectedElement = filteredSelectedElements[0]
+      const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
+
+      if (delta == null) {
+        return emptyStrategyApplicationResult
+      }
 
       const edgePiece = interactionSession.activeControl.edgePiece
       const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
       const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
-      const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
+      const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
       const maxedDelta = Math.max(-currentPadding, rawDelta)
       const precision = precisionFromModifiers(interactionSession.interactionData.modifiers)
       const newPaddingEdge = offsetMeasurementByDelta(
         padding[paddingPropInteractedWith] ?? unitlessCSSNumberWithRenderedValue(maxedDelta),
-        rawDelta,
+        delta,
         precision,
       )
-
-      const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
-      if (delta == null) {
-        return emptyStrategyApplicationResult
-      }
 
       const newPaddingMaxed = adjustPaddingsWithAdjustMode(
         paddingAdjustMode(interactionSession.interactionData.modifiers),
@@ -213,79 +214,28 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         },
       )
 
+      const combinedXPadding =
+        paddingForEdgeSimplePadding('left', newPaddingMaxed) +
+        paddingForEdgeSimplePadding('right', newPaddingMaxed)
+
+      const combinedYPadding =
+        paddingForEdgeSimplePadding('top', newPaddingMaxed) +
+        paddingForEdgeSimplePadding('bottom', newPaddingMaxed)
+
       const targetFrame = MetadataUtils.getFrameOrZeroRect(
         selectedElement,
         canvasState.startingMetadata,
       )
 
-      const allChildPaths = MetadataUtils.getChildrenPaths(
+      const adjustSizeCommands = getSizeUpdateCommandsForNewPadding(
+        combinedXPadding,
+        combinedYPadding,
+        targetFrame,
+        filteredSelectedElements,
         canvasState.startingMetadata,
-        selectedElement,
       )
 
-      const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
-        MetadataUtils.targetParticipatesInAutoLayout(canvasState.startingMetadata, childPath),
-      )
-
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        selectedElement,
-      )
-      const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
-      const elementParentFlexDirection =
-        elementMetadata?.specialSizeMeasurements.parentFlexDirection
-
-      const adjustSizeCommandForDimension = (
-        dimension: 'horizontal' | 'vertical',
-      ): AdjustCssLengthProperty | null => {
-        const edgePieceToUse = dimension === 'horizontal' ? 'left' : 'top'
-        const combinedPaddingInDimension =
-          paddingForEdgeSimplePadding(edgePieceToUse, newPaddingMaxed) +
-          paddingForEdgeSimplePadding(oppositeEdgePiece(edgePieceToUse), newPaddingMaxed)
-
-        const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
-          (childPath) =>
-            detectFillHugFixedState(dimension, canvasState.startingMetadata, childPath)?.type ===
-            'fixed',
-        )
-        const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
-          fixedSizeChildrenPaths,
-          canvasState.startingMetadata,
-        )
-        const childrenBoundingFrame = zeroRectIfNullOrInfinity(childrenBoundingFrameMaybeInfinite)
-
-        const dimensionKey = dimension === 'horizontal' ? 'width' : 'height'
-        const combinedContentSizeInDimension =
-          combinedPaddingInDimension + childrenBoundingFrame[dimensionKey]
-
-        // TODO We need a way to call the correct resizing strategy here, but they are all assuming
-        // the drag originates from a given edge, whereas we want to pass in the desired delta to a
-        // dimension and receive the required commands to resize the element
-        const sizeDelta = combinedContentSizeInDimension - targetFrame[dimensionKey]
-        return sizeDelta <= 0
-          ? null
-          : adjustCssLengthProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(dimensionKey, styleStringInArray),
-              roundTo(sizeDelta, 0),
-              elementParentBounds?.[dimensionKey],
-              elementParentFlexDirection ?? null,
-              'do-not-create-if-doesnt-exist',
-            )
-      }
-
-      const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
-      const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
-
-      // Check if child content size + padding exceeds parent size in each dimension
-      if (horizontalSizeAdjustment != null) {
-        basicCommands.push(horizontalSizeAdjustment)
-      }
-
-      if (verticalSizeAdjustment != null) {
-        basicCommands.push(verticalSizeAdjustment)
-      }
+      basicCommands.push(...adjustSizeCommands)
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
@@ -405,7 +355,10 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return true
   }
 
-  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildren(metadata, path).filter(
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildrenUnordered(
+    metadata,
+    path,
+  ).filter(
     (child) =>
       child.specialSizeMeasurements.position !== 'absolute' &&
       child.specialSizeMeasurements.position !== 'sticky',
@@ -576,13 +529,22 @@ function calculateAdjustDelta(
     precision,
   )
 
-  const delta = newPaddingEdge.renderedValuePx < PaddingTearThreshold ? rawDelta : maxedDelta
-
   const isHug = isElementSetToHugAlongAffectedAxis(
     paddingPropInteractedWith,
     canvasState.startingMetadata,
     selectedElement,
   )
+
+  const isHugOppositeSide =
+    (paddingPropInteractedWith === 'paddingRight' ||
+      paddingPropInteractedWith === 'paddingBottom') &&
+    isHug
+
+  const isInDeadZone = isHugOppositeSide
+    ? newPaddingEdge.renderedValuePx < -PaddingTearThreshold
+    : newPaddingEdge.renderedValuePx < PaddingTearThreshold
+
+  const delta = isInDeadZone ? rawDelta : maxedDelta
 
   const deltaAdjusted =
     isHug &&

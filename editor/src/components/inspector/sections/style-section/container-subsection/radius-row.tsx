@@ -4,20 +4,35 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import { foldEither } from '../../../../../core/shared/either'
+import { wrapValue } from '../../../../../core/shared/math-utils'
 import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
 import { SubduedBorderRadiusControl } from '../../../../canvas/controls/select-mode/subdued-border-radius-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
+import {
+  Substores,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../../../editor/store/store-hook'
 import { CSSNumber } from '../../../common/css-utils'
+import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import {
   useInspectorContext,
   useInspectorLayoutInfo,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
+import { selectedViewsSelector } from '../../../inpector-selectors'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
+  aggregateGroups,
+  areAllSidesSet,
+  ControlMode,
+  getInitialMode,
+  getSplitChainedNumberInputValues,
+  getSplitControlValues,
   longhandShorthandEventHandler,
+  SidesCSSNumber,
   SplitChainedNumberInput,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
 
@@ -51,6 +66,8 @@ export const RadiusRow = React.memo(() => {
   )
 })
 
+const BorderRadiusControlModeOrder: ControlMode[] = ['one-value', 'per-side']
+const BorderRadiusControlDefaultMode: ControlMode = 'one-value'
 export const BorderRadiusControl = React.memo(() => {
   const borderRadius = useInspectorStyleInfo('borderRadius')
 
@@ -97,6 +114,40 @@ export const BorderRadiusControl = React.memo(() => {
     [borderRadius],
   )
 
+  const sides: SidesCSSNumber = React.useMemo(
+    () => ({
+      top: {
+        ...borderRadius,
+        value: tl,
+      },
+      left: {
+        ...borderRadius,
+        value: bl,
+      },
+      bottom: {
+        ...borderRadius,
+        value: br,
+      },
+      right: {
+        ...borderRadius,
+        value: tr,
+      },
+    }),
+    [bl, borderRadius, br, tl, tr],
+  )
+
+  const splitContolGroups = React.useMemo(() => aggregateGroups(sides), [sides])
+
+  const aggregates = React.useMemo(
+    () => getSplitControlValues(splitContolGroups, sides),
+    [sides, splitContolGroups],
+  )
+
+  const values = React.useMemo(
+    () => getSplitChainedNumberInputValues(splitContolGroups, sides),
+    [splitContolGroups, sides],
+  )
+
   const canvasControlsForSides = React.useMemo(() => {
     return mapArrayToDictionary(
       ['top'],
@@ -120,6 +171,66 @@ export const BorderRadiusControl = React.memo(() => {
     )
   }, [])
 
+  const allUnset = React.useMemo(() => {
+    return borderRadius.controlStatus === 'trivial-default'
+  }, [borderRadius.controlStatus])
+
+  const useShorthand = React.useMemo(() => {
+    return shorthand.controlStatus === 'simple' || allUnset
+  }, [allUnset, shorthand.controlStatus])
+
+  const eventHandler = React.useMemo(
+    () =>
+      longhandShorthandEventHandler(
+        'borderRadius',
+        {
+          T: 'borderTopLeftRadius',
+          R: 'borderTopRightRadius',
+          B: 'borderBottomRightRadius',
+          L: 'borderBottomLeftRadius',
+        },
+        selectedViewsRef,
+        useShorthand,
+        aggregates,
+        allUnset,
+        dispatch,
+      ),
+    [aggregates, allUnset, dispatch, selectedViewsRef, useShorthand],
+  )
+
+  const initialMode = React.useMemo(
+    () =>
+      getInitialMode(
+        aggregates.oneValue,
+        aggregates.horizontal,
+        aggregates.vertical,
+        areAllSidesSet(splitContolGroups.allSides),
+        BorderRadiusControlDefaultMode,
+      ),
+    [aggregates.horizontal, aggregates.oneValue, aggregates.vertical, splitContolGroups.allSides],
+  )
+
+  const [controlMode, cycleToNextMode, resetControlMode] = useControlModeWithCycle(
+    BorderRadiusControlDefaultMode,
+    BorderRadiusControlModeOrder,
+  )
+
+  useSelectorWithCallback(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    () => resetControlMode(),
+    'PaddingControl setOveriddenMode',
+  )
+
+  const isCmdPressedRef = useRefEditorState((store) => store.editor.keysPressed.cmd === true)
+
+  const onCylceMode = React.useCallback(
+    () => cycleToNextMode(initialMode, isCmdPressedRef.current === true ? 'backward' : 'forward'),
+    [cycleToNextMode, initialMode, isCmdPressedRef],
+  )
+
+  const modeToUse = controlMode ?? initialMode
+
   return (
     <SplitChainedNumberInput
       labels={{
@@ -132,40 +243,13 @@ export const BorderRadiusControl = React.memo(() => {
         oneValue: 'Radius',
         perSide: 'Radius per corner',
       }}
-      controlModeOrder={['one-value', 'per-side']}
+      onCycleMode={onCylceMode}
       numberType={'LengthPercent'}
-      selectedViews={selectedViewsRef.current}
       name='radius'
-      defaultMode='one-value'
-      top={{
-        ...borderRadius,
-        value: tl,
-      }}
-      left={{
-        ...borderRadius,
-        value: bl,
-      }}
-      bottom={{
-        ...borderRadius,
-        value: br,
-      }}
-      right={{
-        ...borderRadius,
-        value: tr,
-      }}
-      shorthand={shorthand}
+      mode={modeToUse}
+      values={values}
       canvasControls={canvasControlsForSides}
-      eventHandler={longhandShorthandEventHandler(
-        'borderRadius',
-        {
-          T: 'borderTopLeftRadius',
-          R: 'borderTopRightRadius',
-          B: 'borderBottomRightRadius',
-          L: 'borderBottomLeftRadius',
-        },
-        selectedViewsRef.current[0],
-        dispatch,
-      )}
+      eventHandler={eventHandler}
     />
   )
 })

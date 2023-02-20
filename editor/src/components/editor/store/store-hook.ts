@@ -4,6 +4,7 @@ import create, { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustan
 import { subscribeWithSelector } from 'zustand/middleware'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
+import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { DerivedState, EditorStorePatched } from './editor-state'
 import {
   logAfterStoreUpdate,
@@ -26,6 +27,7 @@ import {
   highlightedHoveredViewsSubstateKeys,
   MetadataSubstate,
   metadataSubstateKeys,
+  NavigatorSubstate,
   projectContentsKeys,
   ProjectContentSubstate,
   RestOfEditorState,
@@ -277,6 +279,9 @@ export const Substores = {
       a.editor.jsxMetadata === b.editor.jsxMetadata &&
       keysEquality(canvasSubstateKeys, a.editor.canvas, b.editor.canvas)
     )
+  },
+  navigator: (a: NavigatorSubstate, b: NavigatorSubstate) => {
+    return NavigatorStateKeepDeepEquality(a.editor.navigator, b.editor.navigator).areEqual
   },
 } as const
 

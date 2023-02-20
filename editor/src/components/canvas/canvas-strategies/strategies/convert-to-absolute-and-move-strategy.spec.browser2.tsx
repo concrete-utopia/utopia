@@ -407,7 +407,7 @@ describe('Convert to Absolute', () => {
           left: 0,
           width: 375,
           top: 0,
-          height: 0,
+          height: 300,
         }}
       >`
 

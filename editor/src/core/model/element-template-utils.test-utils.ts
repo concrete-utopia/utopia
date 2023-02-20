@@ -1,4 +1,4 @@
-import { MOCK_NEXT_GENERATED_UIDS, MOCK_NEXT_GENERATED_UIDS_IDX } from './element-template-utils'
+import { MOCK_NEXT_GENERATED_UIDS, MOCK_NEXT_GENERATED_UIDS_IDX } from '../shared/uid-utils'
 
 export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
   MOCK_NEXT_GENERATED_UIDS.current = [nextUid]
