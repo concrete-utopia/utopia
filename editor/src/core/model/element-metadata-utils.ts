@@ -1426,7 +1426,7 @@ export const MetadataUtils = {
       }
     })
 
-    const spyOnlyElements = fillSpyOnlyMetadataWithFramesFromChildren(fromSpy, fromDOM)
+    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM)
 
     return {
       ...workingElements,
@@ -1727,9 +1727,7 @@ export const MetadataUtils = {
   },
 }
 
-// Those elements which are not in the dom have empty globalFrame and localFrame
-// This function calculates the frames from their children (or deeper descendants), which appear in the dom
-function fillSpyOnlyMetadataWithFramesFromChildren(
+function fillSpyOnlyMetadata(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
 ) {
@@ -1779,6 +1777,18 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     childrenInDomCache[pathStr] = childrenAndUnfurledComponents
 
     return childrenAndUnfurledComponents
+  }
+
+  const getNearestNonFragmentParent = (path: ElementPath): ElementInstanceMetadata | null => {
+    const parentPath = EP.parentPath(path)
+    if (EP.pathsEqual(parentPath, EP.emptyElementPath)) {
+      return null
+    }
+    const parentElement = MetadataUtils.findElementByElementPath(fromDOM, parentPath)
+    if (parentElement != null && !MetadataUtils.isFragmentFromMetadata(parentElement)) {
+      return parentElement
+    }
+    return getNearestNonFragmentParent(parentPath)
   }
 
   const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
@@ -1836,6 +1846,32 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
+    }
+  })
+
+  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
+    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
+    return parentLayoutSystem == null
+  })
+
+  fastForEach(elementsWithoutParentData, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
+    const sameThingFromWorkingElems = workingElements[pathStr]
+
+    const parent = getNearestNonFragmentParent(EP.fromString(pathStr))
+
+    workingElements[pathStr] = {
+      ...spyElem,
+      ...sameThingFromWorkingElems,
+      specialSizeMeasurements: {
+        ...spyElem.specialSizeMeasurements,
+        parentLayoutSystem: parent?.specialSizeMeasurements.layoutSystemForChildren ?? 'none',
+        parentFlexDirection: parent?.specialSizeMeasurements.flexDirection ?? null,
+        immediateParentBounds:
+          parent?.globalFrame != null && !isInfinityRectangle(parent.globalFrame)
+            ? parent.globalFrame
+            : null,
+      },
     }
   })
 
