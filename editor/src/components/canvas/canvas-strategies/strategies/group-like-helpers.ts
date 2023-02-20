@@ -62,6 +62,11 @@ export function treatElementAsContentAffecting(
 
   const elementProps = allElementProps[EP.toString(path)]
 
+  if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
+    // for now, do not treat flex parents ever as content-affecting / group-like
+    return false
+  }
+
   const hasNoWidthAndHeightProps =
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
