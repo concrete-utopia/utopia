@@ -227,7 +227,7 @@ export function resizeWidthHeight(
       y: 1 - edgePosition.y,
     } as EdgePosition
 
-    let oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
+    let oppositeCorner = pickPointOnRect(boundingBox, oppositeCornerPosition)
     const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
     const newCorner = offsetPoint(draggedCorner, drag)
 
