@@ -6,7 +6,6 @@ import {
   CanvasRectangle,
   CanvasVector,
   isInfinityRectangle,
-  MaybeInfinityCanvasRectangle,
   offsetPoint,
   rectContainsPoint,
 } from '../../../../core/shared/math-utils'
@@ -25,9 +24,8 @@ import {
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { getElementDirection } from './flow-reorder-helpers'
-import { foldEither } from '../../../../core/shared/either'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -137,21 +135,6 @@ export function applyReorderCommon(
   }
 }
 
-export function isElementJsxFragment(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): boolean {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  return (
-    element?.element != null &&
-    foldEither(
-      () => false,
-      (e) => isJSXFragment(e),
-      element.element,
-    )
-  )
-}
-
 function findSiblingIndexUnderPoint(
   metadata: ElementInstanceMetadataMap,
   siblings: Array<ElementPath>,
@@ -161,33 +144,30 @@ function findSiblingIndexUnderPoint(
 ): number {
   return siblings.findIndex((sibling) => {
     const element = MetadataUtils.findElementByElementPath(metadata, sibling)
-
     const parentFrame = element?.specialSizeMeasurements.immediateParentBounds
-
     const frame = MetadataUtils.getFrameInCanvasCoords(sibling, metadata)
+    if (frame != null && parentFrame != null) {
+      const siblingArea = (() => {
+        if (direction === 'horizontal') {
+          return canvasRectangle({
+            x: isInfinityRectangle(frame) ? -Infinity : frame.x,
+            y: parentFrame.y,
+            width: isInfinityRectangle(frame) ? Infinity : frame.width,
+            height: parentFrame.height,
+          })
+        } else {
+          return canvasRectangle({
+            x: parentFrame.x,
+            y: isInfinityRectangle(frame) ? -Infinity : frame.y,
+            width: parentFrame.width,
+            height: isInfinityRectangle(frame) ? Infinity : frame.height,
+          })
+        }
+      })()
 
-    if (frame == null || parentFrame == null) {
+      return rectContainsPoint(siblingArea, point) && isValidTarget(sibling, metadata)
+    } else {
       return false
     }
-
-    const siblingArea = (() => {
-      if (direction === 'horizontal') {
-        return canvasRectangle({
-          x: isInfinityRectangle(frame) ? -Infinity : frame.x,
-          y: parentFrame.y,
-          width: isInfinityRectangle(frame) ? Infinity : frame.width,
-          height: parentFrame.height,
-        })
-      } else {
-        return canvasRectangle({
-          x: parentFrame.x,
-          y: isInfinityRectangle(frame) ? -Infinity : frame.y,
-          width: parentFrame.width,
-          height: isInfinityRectangle(frame) ? Infinity : frame.height,
-        })
-      }
-    })()
-
-    return rectContainsPoint(siblingArea, point) && isValidTarget(sibling, metadata)
   })
 }
