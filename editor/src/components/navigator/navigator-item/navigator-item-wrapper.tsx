@@ -7,6 +7,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
@@ -64,7 +65,10 @@ const labelSelector = createSelector(
   (store: MetadataSubstate) => store.editor.allElementProps,
   (elementMetadata, allElementProps) => {
     if (elementMetadata == null) {
-      return 'Element 👻'
+      if (!isFeatureEnabled('Conditional support')) {
+        return 'Element 👻'
+      }
+      return 'Conditional'
     }
     return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
   },

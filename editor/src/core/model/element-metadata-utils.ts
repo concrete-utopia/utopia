@@ -1040,11 +1040,13 @@ export const MetadataUtils = {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
+          const isNullElement = MetadataUtils.findElementByElementPath(metadata, path) == null // TODO replace this with detection of conditional via metadata
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
             (isFeatureEnabled('Fragment support') || !isFragment) &&
+            (isFeatureEnabled('Conditional support') || !isNullElement) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
