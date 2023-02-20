@@ -419,7 +419,237 @@ describe('Flex Reorder Strategy', () => {
     )
   })
 
-  xdescribe('projects with fragments, with fragments support enabled', () => {
+  describe('flex reorder, with a fragment as a sibling', () => {
+    setFeatureForTests('Fragment support', true)
+
+    it('works with normal direction', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row')),
+        'await-first-dom-report',
+      )
+
+      const targetElement = renderResult.renderedDOM.getByTestId('child-3')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        startPoint,
+        canvasPoint({ x: -100, y: 0 }),
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'FLEX_REORDER',
+            )
+            expect(
+              renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+            ).toEqual(2)
+          },
+        },
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`<div
+        data-uid='aaa'
+        style={{ display: 'flex', gap: 10, flexDirection: 'row' }}
+      >
+        <div
+          data-uid='child-0'
+          data-testid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-3'
+          data-testid='child-3'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'yellow',
+          }}
+        />
+        <>
+          <div
+            data-uid='child-1'
+            data-testid='child-1'
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: 'blue',
+            }}
+          />
+          <div
+            data-uid='child-2'
+            data-testid='child-2'
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: 'purple',
+            }}
+          />
+        </>
+      </div>`),
+      )
+    })
+    it('excludes absolute siblings', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
+        'await-first-dom-report',
+      )
+
+      const targetElement = renderResult.renderedDOM.getByTestId('child-3')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+      await pressKey('Escape')
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        startPoint,
+        canvasPoint({ x: -100, y: 0 }),
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'FLEX_REORDER',
+            )
+            expect(
+              renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+            ).toEqual(3)
+          },
+        },
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div
+        data-uid='aaa'
+        style={{ display: 'flex', gap: 10 }}
+      >
+        <div
+          data-uid='absolute-child'
+          style={{
+            position: 'absolute',
+            top: 100,
+            left: 50,
+            width: 50,
+            height: 50,
+            backgroundColor: 'yellow',
+          }}
+        />
+        <div
+          data-uid='child-3'
+            data-testid='child-3'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+        <>
+          <div
+            data-uid='child-1'
+            data-testid='child-1'
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: 'blue',
+            }}
+          />
+          <div
+            data-uid='child-2'
+            data-testid='child-2'
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: 'purple',
+            }}
+          />
+        </>`),
+      )
+    })
+    it('works with reverse direction', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row-reverse')),
+        'await-first-dom-report',
+      )
+
+      const targetElement = renderResult.renderedDOM.getByTestId('child-3')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+      await pressKey('Escape')
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        startPoint,
+        canvasPoint({ x: 100, y: 0 }),
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'FLEX_REORDER',
+            )
+            expect(
+              renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+            ).toEqual(0)
+          },
+        },
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          display: 'flex',
+          gap: 10,
+          flexDirection: 'row-reverse',
+        }}
+      >
+        <div
+          data-uid='child-1'
+          data-testid='child-1'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'blue',
+          }}
+        />
+        <div
+          data-uid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-2'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+      </div>`),
+      )
+    })
+  })
+
+  describe('projects with fragments, with fragments support enabled', () => {
     setFeatureForTests('Fragment support', true)
 
     it('does not activate when drag threshold is not reached', async () => {
