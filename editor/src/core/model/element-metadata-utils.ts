@@ -626,6 +626,15 @@ export const MetadataUtils = {
     const children = MetadataUtils.getChildrenUnordered(metadata, target)
     return [...roots, ...children]
   },
+  getAbsoluteChildrenPathsUnordered(
+    elements: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): Array<ElementPath> {
+    return MetadataUtils.getChildrenPathsUnordered(elements, target).filter((child) => {
+      const metadata = MetadataUtils.findElementByElementPath(elements, child)
+      return MetadataUtils.isPositionAbsolute(metadata)
+    })
+  },
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
     for (const metadataKey in metadata) {
       const metadataEntry = metadata[metadataKey]

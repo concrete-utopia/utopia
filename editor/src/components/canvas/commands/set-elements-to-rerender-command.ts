@@ -1,3 +1,4 @@
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { EditorState, EditorStatePatch, ElementsToRerender } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction } from './commands'
@@ -18,19 +19,43 @@ export function setElementsToRerenderCommand(
   }
 }
 
+function addAbsoluteChildrenPaths(
+  e: EditorState,
+  elementsToRerender: ElementsToRerender,
+): ElementsToRerender {
+  if (elementsToRerender === 'rerender-all-elements') {
+    return 'rerender-all-elements'
+  } else {
+    const absolutePositionedChildren = elementsToRerender.flatMap((view) => {
+      return MetadataUtils.getAbsoluteChildrenPathsUnordered(e.jsxMetadata, view)
+    })
+
+    const uniquePaths = EP.uniqueElementPaths([
+      ...elementsToRerender,
+      ...absolutePositionedChildren,
+    ])
+
+    return uniquePaths
+  }
+}
+
 export const runSetElementsToRerender: CommandFunction<SetElementsToRerenderCommand> = (
   e: EditorState,
   command: SetElementsToRerenderCommand,
 ) => {
+  const withAbsoluteChildrenPaths = addAbsoluteChildrenPaths(e, command.value)
+
   const editorStatePatch: EditorStatePatch = {
     canvas: {
-      elementsToRerender: { $set: command.value },
+      elementsToRerender: { $set: withAbsoluteChildrenPaths },
     },
   }
   return {
     editorStatePatches: [editorStatePatch],
     commandDescription: `Set Elements To Rerender: [${
-      typeof command.value === 'string' ? command.value : command.value.map(EP.toString).join(', ')
+      typeof withAbsoluteChildrenPaths === 'string'
+        ? withAbsoluteChildrenPaths
+        : withAbsoluteChildrenPaths.map(EP.toString).join(', ')
     }]`,
   }
 }
