@@ -33,7 +33,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
           justifyItems: 'center',
           position: 'relative',
           marginLeft: 8,
-          transform: 'scale(.9)',
+          transform: 'scale(.8)',
         }}
       >
         {isPositionAbsolute ? (
