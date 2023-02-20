@@ -27,7 +27,7 @@ export const ComponentPreview: React.FunctionComponent<
           alignItems: 'center',
           position: 'relative',
           paddingTop: 1,
-          marginLeft: 4,
+          marginLeft: 2,
         }}
       >
         <Icn {...iconProps} color={props.color} />
