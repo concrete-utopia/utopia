@@ -1,39 +1,18 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { foldEither, isLeft, right } from '../../../../core/shared/either'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXElement,
 } from '../../../../core/shared/element-template'
 import {
-  CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
-  offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import {
-  EdgePosition,
-  EdgePositionRight,
-  oppositeEdgePosition,
-  EdgePositionBottom,
-  EdgePositionLeft,
-  EdgePositionTop,
-  EdgePositionTopRight,
-  EdgePositionBottomRight,
-  EdgePositionTopLeft,
-  EdgePositionBottomLeft,
-} from '../../canvas-types'
-import {
-  isEdgePositionACorner,
-  isEdgePositionAHorizontalEdge,
-  pickPointOnRect,
-  SnappingThreshold,
-} from '../../canvas-utils'
+import { EdgePosition } from '../../canvas-types'
+import { SnappingThreshold } from '../../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -326,58 +305,6 @@ export function flexResizeStrategy(
       // Fallback for when the checks above are not satisfied.
       return emptyStrategyApplicationResult
     },
-  }
-}
-
-export function resizeWidthHeight(
-  boundingBox: CanvasRectangle,
-  drag: CanvasPoint,
-  edgePosition: EdgePosition,
-): CanvasRectangle {
-  if (isEdgePositionACorner(edgePosition)) {
-    const startingCornerPosition = {
-      x: 1 - edgePosition.x,
-      y: 1 - edgePosition.y,
-    } as EdgePosition
-
-    let oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
-    const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
-    const newCorner = offsetPoint(draggedCorner, drag)
-
-    const newWidth = Math.abs(oppositeCorner.x - newCorner.x)
-    const newHeight = Math.abs(oppositeCorner.y - newCorner.y)
-
-    return canvasRectangle({
-      x: boundingBox.x,
-      y: boundingBox.y,
-      width: newWidth,
-      height: newHeight,
-    })
-  } else {
-    const isEdgeHorizontalSide = isEdgePositionAHorizontalEdge(edgePosition)
-
-    const oppositeSideCenterPosition = oppositeEdgePosition(edgePosition)
-
-    const oppositeSideCenter = pickPointOnRect(boundingBox, oppositeSideCenterPosition)
-    const draggedSideCenter = pickPointOnRect(boundingBox, edgePosition)
-
-    if (isEdgeHorizontalSide) {
-      const newHeight = Math.abs(oppositeSideCenter.y - (draggedSideCenter.y + drag.y))
-      return canvasRectangle({
-        x: boundingBox.x,
-        y: boundingBox.y,
-        width: boundingBox.width,
-        height: newHeight,
-      })
-    } else {
-      const newWidth = Math.abs(oppositeSideCenter.x - (draggedSideCenter.x + drag.x))
-      return canvasRectangle({
-        x: boundingBox.x,
-        y: boundingBox.y,
-        width: newWidth,
-        height: boundingBox.height,
-      })
-    }
   }
 }
 
