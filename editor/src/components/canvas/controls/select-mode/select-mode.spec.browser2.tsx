@@ -28,6 +28,7 @@ import {
 } from '../../event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
 import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -394,14 +395,13 @@ describe('Select Mode Double Clicking', () => {
       'sb' +                 // Skipped as it's the storyboard
       '/scene-CardList' +    // Skipped because we skip over Scenes
       '/CardList-instance' + // <- First double click
-      ":38e" +               // <- Third double click skips fragment 
+      ':CardList-Root' +     // <- Second double click, as the instance is automatically focused by the scene
       '/CardList-Col' +      // <- Third double click
-      '/CardList-Card~~~1' + // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
-      ':Card-Root',          // <- Sixth double click
+      '/CardList-Card~~~1'   // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
     )
 
     const renderResult = await renderTestEditorWithCode(
-      TestProjectAlpineClimbWithFragments,
+      TestProjectAlpineClimb,
       'await-first-dom-report',
     )
 
@@ -517,7 +517,14 @@ describe('Select Mode Double Clicking With Fragments', () => {
   // elements. These are special cases because these fragments and their components
   // do not appear in the dom.
 
+  setFeatureForBrowserTests('Fragment support', true)
   it('One double clicks to select Card Instance', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'cardlistfragment',
+      'manuallistfragment',
+      'cardlistfragment',
+      'manuallistfragment',
+    ])
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +            // Skipped as it's the storyboard
@@ -526,7 +533,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
     )
 
     const renderResult = await renderTestEditorWithCode(
-      TestProjectAlpineClimb,
+      TestProjectAlpineClimbWithFragments,
       'await-first-dom-report',
     )
 
@@ -547,6 +554,12 @@ describe('Select Mode Double Clicking With Fragments', () => {
   })
 
   it('Two double clicks to select Card Scene Root', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'cardlistfragment',
+      'manuallistfragment',
+      'cardlistfragment',
+      'manuallistfragment',
+    ])
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +             // Skipped as it's the storyboard
@@ -578,6 +591,12 @@ describe('Select Mode Double Clicking With Fragments', () => {
   })
 
   it('Four double clicks to select Button on a Card Scene Root', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'cardlistfragment',
+      'manuallistfragment',
+      'cardlistfragment',
+      'manuallistfragment',
+    ])
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +                // Skipped as it's the storyboard
@@ -612,92 +631,100 @@ describe('Select Mode Double Clicking With Fragments', () => {
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 
-  describe('Double click tests with fragments feature switch', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    it('Six double clicks will focus a generated Card and select its root element', async () => {
-      // prettier-ignore
-      const desiredPath = EP.fromString(
-      'sb' +                 // Skipped as it's the storyboard
-      '/scene-CardList' +    // Skipped because we skip over Scenes
-      '/CardList-instance' + // <- First double click
-      ':38e' +               // <- Second double click, which leads to a fragment, with a generated data-uid.
-      '/CardList-Col' +      // <- Third double click
-      '/CardList-Card~~~1' + // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
-      ':Card-Root',          // <- Sixth double click
+  it('Six double clicks will focus a generated Card and select its root element', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'cardlistfragment',
+      'manuallistfragment',
+      'cardlistfragment',
+      'manuallistfragment',
+    ])
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                  // Skipped as it's the storyboard
+      '/scene-CardList' +     // Skipped because we skip over Scenes
+      '/CardList-instance' +  // <- First double click
+      ':manuallistfragment' + // <- Second double click, which leads to a fragment, with a generated data-uid.
+      '/CardList-Col' +       // <- Third double click
+      '/CardList-Card~~~1' +  // <- Fourth *and* Fifth double click, as the Fifth is required to focus it
+      ':Card-Root',           // <- Sixth double click
     )
 
-      const renderResult = await renderTestEditorWithCode(
-        TestProjectAlpineClimbWithFragments,
-        'await-first-dom-report',
-      )
-
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
-      const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
-
-      const doubleClick = createDoubleClicker(
-        canvasControlsLayer,
-        cardSceneRootBounds.left + 50,
-        cardSceneRootBounds.top + 50,
-      )
-
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-
-      expect(renderResult.getEditorState().editor.focusedElementPath).toEqual(
-        EP.parentPath(desiredPath),
-      )
-
-      await doubleClick()
-
-      expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
-    })
-
-    it('Eight double clicks will focus a generated Card and select the Button inside', async () => {
-      // prettier-ignore
-      const desiredPath = EP.fromString(
-      'sb' +                 // Skipped as it's the storyboard
-      '/scene-CardList' +    // Skipped because we skip over Scenes
-      '/CardList-instance' + // <- First double click
-      ':38e' +               // <- Second double click, which leads to a fragment, with a generated data-uid.
-      '/CardList-Col' +      // <- Third double click
-      '/CardList-Card~~~1' + // <- Fourth *and* Fifth double click, as the Sixth is required to focus it
-      ':Card-Root' +         // <- Sixth double click
-      '/Card-Row-Buttons' +  // <- Seventh double click
-      '/Card-Button-3',      // <- Eighth double click
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithFragments,
+      'await-first-dom-report',
     )
 
-      const renderResult = await renderTestEditorWithCode(
-        TestProjectAlpineClimbWithFragments,
-        'await-first-dom-report',
-      )
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
-      const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
-      const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 50,
+      cardSceneRootBounds.top + 50,
+    )
 
-      const doubleClick = createDoubleClicker(
-        canvasControlsLayer,
-        cardSceneRootBounds.left + 130,
-        cardSceneRootBounds.top + 220,
-      )
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
 
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
-      await doubleClick()
+    expect(renderResult.getEditorState().editor.focusedElementPath).toEqual(
+      EP.parentPath(desiredPath),
+    )
 
-      expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
-    })
+    await doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
+  })
+  it('Eight double clicks will focus a generated Card and select the Button inside', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'cardlistfragment',
+      'manuallistfragment',
+      'cardlistfragment',
+      'manuallistfragment',
+    ])
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +                  // Skipped as it's the storyboard
+      '/scene-CardList' +     // Skipped because we skip over Scenes
+      '/CardList-instance' +  // <- First double click
+      ':manuallistfragment' + // <- Second double click, which leads to a fragment, with a generated data-uid.
+      '/CardList-Col' +       // <- Third double click
+      '/CardList-Card~~~1' +  // <- Fourth *and* Fifth double click, as the Sixth is required to focus it
+      ':Card-Root' +          // <- Sixth double click
+      '/Card-Row-Buttons' +   // <- Seventh double click
+      '/Card-Button-3',       // <- Eighth double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithFragments,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+    await doubleClick()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([desiredPath])
   })
 })
 

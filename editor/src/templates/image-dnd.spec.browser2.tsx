@@ -336,7 +336,7 @@ describe('image drag and drop', () => {
               top: -159,
               left: -708,
             }}
-            data-uid='1'
+            data-uid='3'
           />
         </Storyboard>
       )
@@ -542,7 +542,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='1'
+        data-uid='3'
       />
     </Scene>
   </Storyboard>
@@ -618,7 +618,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='1'
+        data-uid='3'
       />
     </Scene>
   </Storyboard>
@@ -690,7 +690,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='1'
+        data-uid='3'
       />
     </Scene>
   </Storyboard>
@@ -756,7 +756,7 @@ export var storyboard = (
           top: 379.75,
           left: 90.75,
         }}
-        data-uid='1'
+        data-uid='3'
       />
     </Scene>
   </Storyboard>
@@ -826,31 +826,31 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='1'
-      />
-      <img
-        data-aspect-ratio-locked
-        src='${imgBase641x1}'
-        style={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          top: 379.5,
-          left: 350,
-        }}
-        data-uid='2'
-      />
-      <img
-        data-aspect-ratio-locked
-        src='${imgBase641x1}'
-        style={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          top: 379.5,
-          left: 350,
-        }}
         data-uid='3'
+      />
+      <img
+        data-aspect-ratio-locked
+        src='${imgBase641x1}'
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
+        }}
+        data-uid='4'
+      />
+      <img
+        data-aspect-ratio-locked
+        src='${imgBase641x1}'
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          top: 379.5,
+          left: 350,
+        }}
+        data-uid='5'
       />
     </Scene>
   </Storyboard>
@@ -926,7 +926,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='1'
+        data-uid='3'
       />
       <img
         data-aspect-ratio-locked
@@ -938,7 +938,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='2'
+        data-uid='4'
       />
       <img
         data-aspect-ratio-locked
@@ -950,7 +950,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='3'
+        data-uid='5'
       />
     </Scene>
   </Storyboard>

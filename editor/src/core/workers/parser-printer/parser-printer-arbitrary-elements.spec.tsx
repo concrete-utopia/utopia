@@ -1154,8 +1154,8 @@ export var storyboard = (
       expect(results.combined).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "833",
-            "65e",
+            "d1b",
+            "064",
           ],
           "js": "function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = babelHelpers.getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
 
@@ -1198,7 +1198,7 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"833\\", {
+                return utopiaCanvasJSXLookup(\\"d1b\\", {
                   locale: locale,
                   React: React,
                   utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
@@ -1208,7 +1208,7 @@ export var storyboard = (
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"65e\\", {
+                return utopiaCanvasJSXLookup(\\"064\\", {
                   callerThis: this
                 });
               }

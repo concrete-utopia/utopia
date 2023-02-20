@@ -1195,13 +1195,18 @@ export function parseCode(
     // existing further ahead.
     let highlightBounds: HighlightBoundsForUids = {}
 
-    let allArbitraryNodes: Array<TS.Node> = []
+    interface NodeAndUIDs {
+      node: TS.Node
+      uidsBeforeParse: Set<string>
+    }
+    let allArbitraryNodes: Array<NodeAndUIDs> = []
 
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
 
     function pushArbitraryNode(node: TS.Node) {
       if (node.kind !== TS.SyntaxKind.EndOfFileToken) {
+        const uidsBeforeParse: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
@@ -1222,7 +1227,13 @@ export function parseCode(
             return parsed.value
           }, nodeParseResult),
         )
-        allArbitraryNodes = [...allArbitraryNodes, node]
+        allArbitraryNodes = [
+          ...allArbitraryNodes,
+          {
+            node: node,
+            uidsBeforeParse: uidsBeforeParse,
+          },
+        ]
       }
     }
 
@@ -1600,12 +1611,15 @@ export function parseCode(
         sourceFile,
         sourceText,
         filename,
-        allArbitraryNodes,
+        allArbitraryNodes.map((entry) => entry.node),
         imports,
         topLevelNames,
         null,
         highlightBounds,
-        alreadyExistingUIDs_MUTABLE,
+        // FIXME: This is using the first `uidsBeforeParse` value so that
+        // this parse should not find duplicate UIDs which will potentially
+        // attempt to pull mocked UIDs to replace those fake duplicates.
+        new Set(allArbitraryNodes[0].uidsBeforeParse),
         true,
         '',
         true,
@@ -1615,7 +1629,7 @@ export function parseCode(
       })
 
       const componentsRenderedByReactDOM = flatMapArray(
-        (node) => getComponentsRenderedWithReactDOM(sourceFile, node),
+        (entry) => getComponentsRenderedWithReactDOM(sourceFile, entry.node),
         allArbitraryNodes,
       )
       topLevelElementsWithFixedUIDs = topLevelElementsWithFixedUIDs.map((topLevelElement) => {
