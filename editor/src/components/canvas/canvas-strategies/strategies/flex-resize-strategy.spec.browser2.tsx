@@ -61,6 +61,7 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionBottomRight,
         canvasPoint({ x: 70, y: 25 }),
         'row',
+        'flex-start',
         'height: 85',
       )
     })
@@ -69,6 +70,7 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionRight,
         canvasPoint({ x: 70, y: 25 }),
         'row',
+        'flex-start',
         'height: 60',
       )
     })
@@ -77,6 +79,7 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionBottomRight,
         canvasPoint({ x: 10, y: 60 }),
         'column',
+        'flex-start',
         'width: 60',
       )
     })
@@ -85,7 +88,26 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionBottom,
         canvasPoint({ x: 10, y: 60 }),
         'column',
+        'flex-start',
         'width: 50',
+      )
+    })
+    it('resizing in a centered flex row from bottom-right edge', async () => {
+      await resizeTestAddsFlexGrow(
+        EdgePositionBottomRight,
+        canvasPoint({ x: 70, y: 25 }),
+        'row',
+        'center',
+        'height: 85',
+      )
+    })
+    it('resizing in a centered flex row from the right edge', async () => {
+      await resizeTestAddsFlexGrow(
+        EdgePositionRight,
+        canvasPoint({ x: 70, y: 25 }),
+        'row',
+        'center',
+        'height: 60',
       )
     })
   })
@@ -95,6 +117,7 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionBottomRight,
         canvasPoint({ x: -70, y: -25 }),
         'row',
+        'flex-start',
         'height: 60',
         'height: 35, width: 50',
       )
@@ -104,6 +127,7 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionRight,
         canvasPoint({ x: -70, y: -25 }),
         'row',
+        'flex-start',
         'height: 60',
         'height: 60, width: 50',
       )
@@ -113,6 +137,7 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionBottomRight,
         canvasPoint({ x: -10, y: -60 }),
         'column',
+        'flex-start',
         'width: 50',
         'width: 40, height: 60',
       )
@@ -122,8 +147,29 @@ describe('Flex Resize with flex grow', () => {
         EdgePositionBottom,
         canvasPoint({ x: -10, y: -60 }),
         'column',
+        'flex-start',
         'width: 50',
         'width: 50, height: 60',
+      )
+    })
+    it('resizing in a centered flex row from bottom-right edge', async () => {
+      await resizeTestRemovesFlexGrow(
+        EdgePositionBottomRight,
+        canvasPoint({ x: -50, y: -25 }),
+        'row',
+        'center',
+        'height: 60',
+        'height: 35, width: 50',
+      )
+    })
+    it('resizing in a centered flex row from the right edge', async () => {
+      await resizeTestRemovesFlexGrow(
+        EdgePositionRight,
+        canvasPoint({ x: -50, y: -25 }),
+        'row',
+        'center',
+        'height: 60',
+        'height: 60, width: 50',
       )
     })
   })
@@ -133,6 +179,7 @@ async function resizeTestAddsFlexGrow(
   pos: EdgePosition,
   dragVector: CanvasVector,
   flexDirection: 'row' | 'column',
+  justifyContent: 'flex-start' | 'center',
   widthOrHeight: string,
 ) {
   const inputCode = makeTestProjectCodeWithSnippet(`
@@ -145,6 +192,7 @@ async function resizeTestAddsFlexGrow(
           position: 'relative',
           display: 'flex',
           flexDirection: '${flexDirection}',
+          justifyContent: '${justifyContent}',
           gap: 10,
         }}
       >
@@ -191,6 +239,7 @@ async function resizeTestAddsFlexGrow(
           position: 'relative',
           display: 'flex',
           flexDirection: '${flexDirection}',
+          justifyContent: '${justifyContent}',
           gap: 10,
         }}
       >
@@ -227,6 +276,7 @@ async function resizeTestRemovesFlexGrow(
   pos: EdgePosition,
   dragVector: CanvasVector,
   flexDirection: 'row' | 'column',
+  justifyContent: 'flex-start' | 'center',
   widthOrHeight: string,
   resultWidthHeight: string,
 ) {
@@ -240,6 +290,7 @@ async function resizeTestRemovesFlexGrow(
         position: 'relative',
         display: 'flex',
         flexDirection: '${flexDirection}',
+        justifyContent: '${justifyContent}',
         gap: 10,
       }}
     >
@@ -286,6 +337,7 @@ async function resizeTestRemovesFlexGrow(
           position: 'relative',
           display: 'flex',
           flexDirection: '${flexDirection}',
+          justifyContent: '${justifyContent}',
           gap: 10,
         }}
       >
