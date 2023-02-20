@@ -353,30 +353,37 @@ function runSelectiveDomWalker(
       ) as HTMLElement | null
 
       if (foundElement != null) {
-        const elementsToWalk = [foundElement, ...foundElement.childNodes]
-        elementsToWalk.forEach((element) => {
+        const collectForElement = (element: Node) => {
           if (element instanceof HTMLElement) {
             const pathsWithStrings = getPathWithStringsOnDomElement(element)
-            const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-              const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-              return validPaths.has(staticPath)
-            })
+            if (pathsWithStrings.length == 0) {
+              // Keep walking until we find an element with a path
+              element.childNodes.forEach(collectForElement)
+            } else {
+              const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+                const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
+                return validPaths.has(staticPath)
+              })
 
-            const { collectedMetadata } = collectAndCreateMetadataForElement(
-              element,
-              parentPoint,
-              path,
-              scale,
-              containerRectLazy,
-              foundValidPaths.map((p) => p.path),
-              domWalkerMutableState.invalidatedPathsForStylesheetCache,
-              selectedViews,
-              domWalkerMutableState.invalidatedPaths,
-            )
+              const { collectedMetadata } = collectAndCreateMetadataForElement(
+                element,
+                parentPoint,
+                path,
+                scale,
+                containerRectLazy,
+                foundValidPaths.map((p) => p.path),
+                domWalkerMutableState.invalidatedPathsForStylesheetCache,
+                selectedViews,
+                domWalkerMutableState.invalidatedPaths,
+              )
 
-            mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
+              mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
+            }
           }
-        })
+        }
+
+        collectForElement(foundElement)
+        foundElement.childNodes.forEach(collectForElement)
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
