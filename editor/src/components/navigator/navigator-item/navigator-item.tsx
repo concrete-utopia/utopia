@@ -21,6 +21,9 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
+export const NavigatorItemTestId = (pathString: string): string =>
+  `NavigatorItemTestId-${pathString}`
+
 interface ComputedLook {
   style: React.CSSProperties
   iconColor: IcnProps['color']
@@ -389,6 +392,7 @@ export const NavigatorItem: React.FunctionComponent<
       }}
     >
       <FlexRow
+        data-testid={NavigatorItemTestId(EP.toString(props.elementPath))}
         style={rowStyle}
         onMouseDown={select}
         onMouseMove={highlight}
