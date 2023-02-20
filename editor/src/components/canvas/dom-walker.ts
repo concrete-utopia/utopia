@@ -66,6 +66,7 @@ import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import {
   getDeepestPathOnDomElement,
+  getPathStringsOnDomElement,
   getPathWithStringsOnDomElement,
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
@@ -162,16 +163,31 @@ function isScene(node: Node): node is HTMLElement {
 }
 
 function findParentScene(target: HTMLElement): string | null {
+  // First check if the node is a Scene element, which could be nested at any level
   const sceneID = getDOMAttribute(target, UTOPIA_SCENE_ID_KEY)
   if (sceneID != null) {
     return sceneID
   } else {
-    if (target.parentElement != null) {
-      return findParentScene(target.parentElement)
-    } else {
-      return null
+    const parent = target.parentElement
+
+    if (parent != null) {
+      const parentPath = getDeepestPathOnDomElement(parent)
+      const parentIsStoryboard = parentPath == null || EP.isStoryboardPath(parentPath)
+      if (parentIsStoryboard) {
+        // If the parent element is the storyboard, then we've reached the top and have to stop
+        const allPaths = getPathStringsOnDomElement(target)
+        allPaths.sort((a, b) => a.length - b.length)
+        const shallowestPath = allPaths[0]
+        if (shallowestPath != null) {
+          return shallowestPath
+        }
+      } else {
+        return findParentScene(parent)
+      }
     }
   }
+
+  return null
 }
 
 function lazyValue<T>(getter: () => T) {
