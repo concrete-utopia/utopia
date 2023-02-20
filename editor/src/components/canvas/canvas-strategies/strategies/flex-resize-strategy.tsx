@@ -420,6 +420,7 @@ function shouldSnapToParentEdge(
 ): 'horizontal' | 'horizontal-no-snap' | 'vertical' | 'vertical-no-snap' | null {
   const parentPadding = element.specialSizeMeasurements.parentPadding
   const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
+  const parentGap = element.specialSizeMeasurements.parentFlexGap
 
   const flexSiblingsWithoutSelected = MetadataUtils.getSiblings(
     startingMetadata,
@@ -470,7 +471,8 @@ function shouldSnapToParentEdge(
       const siblingsWidth = siblingFrames.reduce((working, frame) => {
         return frame != null && isFiniteRectangle(frame) ? frame.width + working : working
       }, 0)
-      const siblingsAndDraggedFrame = siblingsWidth + resizedBounds.width
+      const siblingsAndDraggedFrame =
+        siblingsWidth + resizedBounds.width + siblingFrames.length * parentGap
       return siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.width
         ? 'horizontal'
         : 'horizontal-no-snap'
@@ -490,7 +492,8 @@ function shouldSnapToParentEdge(
       const siblingsHeight = siblingFrames.reduce((working, frame) => {
         return frame != null && isFiniteRectangle(frame) ? frame.height + working : working
       }, 0)
-      const siblingsAndDraggedFrame = siblingsHeight + resizedBounds.height
+      const siblingsAndDraggedFrame =
+        siblingsHeight + resizedBounds.height + siblingFrames.length * parentGap
       return siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.height
         ? 'vertical'
         : 'vertical-no-snap'
