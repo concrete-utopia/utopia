@@ -2,7 +2,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
-  CanvasStrategy,
   controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
@@ -16,7 +15,7 @@ import {
   isValidFlowReorderTarget,
 } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
-import { applyReorderCommon } from './reorder-utils'
+import { applyReorderCommon, isElementJsxFragment } from './reorder-utils'
 import {
   DragOutlineControl,
   dragTargetsElementPaths,
@@ -82,7 +81,12 @@ export function flowReorderStrategy(
               interactionSession,
               customStrategyState,
               getElementDirection(elementMetadata),
-              isValidFlowReorderTarget,
+              (path, metadata) =>
+                isElementJsxFragment(metadata, path) ||
+                MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+                  path,
+                  metadata,
+                ),
             )
       },
     },
