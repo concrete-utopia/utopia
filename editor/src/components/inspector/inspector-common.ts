@@ -1,6 +1,6 @@
 import * as PP from '../../core/shared/property-path'
+import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isStoryboardChild, parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
@@ -35,6 +35,7 @@ import { setPropHugStrategies } from './inspector-strategies/inspector-strategie
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { isInfinityRectangle, Size } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
+import { showToastCommand } from '../canvas/commands/show-toast-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -242,7 +243,7 @@ export const hugContentsApplicableForText = (
 }
 
 export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
-  !isStoryboardChild(elementPath)
+  !EP.isStoryboardChild(elementPath)
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
@@ -425,6 +426,37 @@ export function sizeToVisualDimensions(
   ]
 }
 
+export function sizeToVisualDimensionsAlongAxis(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const globalFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    return []
+  }
+
+  const dimension = widthHeightFromAxis(axis)
+
+  const value = globalFrame[dimension]
+
+  return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP(dimension),
+      setExplicitCssValue(cssPixelLength(value)),
+      element.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
+  ]
+}
+
 export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): CanvasCommand => {
   switch (axis) {
     case 'horizontal':
@@ -502,7 +534,7 @@ export function detectFillHugFixedState(
 
   if (flexGrow != null) {
     const flexDirection = optionalMap(
-      (e) => detectFlexDirectionOne(metadata, parentPath(e)),
+      (e) => detectFlexDirectionOne(metadata, EP.parentPath(e)),
       elementPath,
     )
 
@@ -641,4 +673,43 @@ export function toggleResizeToFitSetToFixed(
   return notFixedSizeOnBothAxes(metadata, elementPaths)
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
     : resizeToFitCommands(metadata, elementPaths)
+}
+
+export function setParentToFixedIfHugCommands(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const parentPath = EP.parentPath(elementPath)
+  const parentInstance = MetadataUtils.findElementByElementPath(metadata, parentPath)
+  if (parentInstance == null) {
+    return []
+  }
+
+  const isHug = detectFillHugFixedState(axis, metadata, parentPath)?.type === 'hug'
+  if (!isHug) {
+    return []
+  }
+
+  const globalFrame = MetadataUtils.getFrame(parentPath, metadata)
+  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    return []
+  }
+  const prop = widthHeightFromAxis(axis)
+  const dimension = globalFrame[prop]
+
+  return [
+    showToastCommand(
+      `Parent set to fixed size along the ${axis} axis`,
+      'INFO',
+      `setParentToFixedIfHugCommands-${EP.toString(parentPath)}-${axis}`,
+    ),
+    setCssLengthProperty(
+      'always',
+      parentPath,
+      styleP(prop),
+      setExplicitCssValue(cssPixelLength(dimension)),
+      parentInstance.specialSizeMeasurements.parentFlexDirection ?? null,
+    ),
+  ]
 }
