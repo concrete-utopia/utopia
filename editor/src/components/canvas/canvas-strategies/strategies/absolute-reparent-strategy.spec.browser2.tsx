@@ -1102,14 +1102,13 @@ describe('children-affecting reparent tests', () => {
       const targetElement = EP.fromString(
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
       )
-      // selecting the fragment parent manually, so that dragElement drags _it_ instead of child-2!
+      // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
       await renderResult.dispatch(selectComponents([targetElement], false), true)
       const dragDelta = windowPoint({ x: 0, y: 140 })
       await dragAlreadySelectedElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      // no reparent have happened
       expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
         'utopia-storyboard-uid',
         'utopia-storyboard-uid/scene-aaa',
@@ -1119,10 +1118,17 @@ describe('children-affecting reparent tests', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting', // <- the fragment-like children-affecting element has been reparented to otherparent, yay!
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-1',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-2',
       ])
+
+      const propsOfFragment =
+        renderResult.getEditorState().editor.allElementProps[
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+        ]
+      // the fragment-like element continues to have no style prop
+      expect(propsOfFragment.style).not.toBeDefined()
     })
   })
 })
