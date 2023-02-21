@@ -561,7 +561,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity:container',
           'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment',
           'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/ccc',
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/ccc', // <- ccc moves to above bbb, within the fragment
           'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
         ])
       })
