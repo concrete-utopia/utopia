@@ -1099,6 +1099,19 @@ describe('children-affecting reparent tests', () => {
         'await-first-dom-report',
       )
 
+      const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+        EP.fromString(
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+        ),
+        renderResult.getEditorState().editor.jsxMetadata,
+      )
+      const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+        EP.fromString(
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+        ),
+        renderResult.getEditorState().editor.jsxMetadata,
+      )
+
       const targetElement = EP.fromString(
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
       )
@@ -1129,6 +1142,26 @@ describe('children-affecting reparent tests', () => {
         ]
       // the fragment-like element continues to have no style prop
       expect(propsOfFragment.style).not.toBeDefined()
+
+      const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+        EP.fromString(
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-1',
+        ),
+        renderResult.getEditorState().editor.jsxMetadata,
+      )
+      const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+        EP.fromString(
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-2',
+        ),
+        renderResult.getEditorState().editor.jsxMetadata,
+      )
+
+      expect(child1GlobalFrameAfter).toEqual(
+        offsetRect(child1GlobalFrameBefore, canvasVector(dragDelta)),
+      )
+      expect(child2GlobalFrameAfter).toEqual(
+        offsetRect(child2GlobalFrameBefore, canvasVector(dragDelta)),
+      )
     })
   })
 })
