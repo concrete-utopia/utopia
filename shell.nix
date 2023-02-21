@@ -490,12 +490,12 @@ let
       set -e
       if [ -z $GITHUB_TOKEN ]
       then
-      echo "A GITHUB_TOKEN is required when running the full Utopia build. Please see the readme for instructions."
-      exit 1
+        echo "A GITHUB_TOKEN is required when running the full Utopia build. Please see the readme for instructions."
+        exit 1
       else
-      build-vscode-with-extension
-      install-editor
-      start-minimal
+        build-vscode-with-extension
+        install-editor
+        start-minimal
       fi
     '')
     (pkgs.writeScriptBin "start-minimal-webpack" ''
