@@ -655,7 +655,7 @@ export interface UpdateGithubSettings {
 
 export interface UpdateConditionals {
   action: 'UPDATE_CONDITIONALS'
-  path: ElementPath
+  uid: string
   condition: boolean
 }
 

@@ -339,8 +339,8 @@ export function renderCoreElement(
       )
       const override =
         elementPath == null ||
-        conditionals[EP.toString(elementPath)] == null ||
-        conditionals[EP.toString(elementPath)]
+        conditionals[element.uniqueID] == null ||
+        conditionals[element.uniqueID]
       const actualElement = conditionValue && override ? element.whenTrue : element.whenFalse
 
       if (childOrBlockIsChild(actualElement)) {

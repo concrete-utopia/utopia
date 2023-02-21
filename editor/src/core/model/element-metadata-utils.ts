@@ -53,6 +53,7 @@ import {
   emptyComputedStyle,
   emptyAttributeMetadatada,
   JSXConditionalExpression,
+  ChildOrAttribute,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1050,58 +1051,12 @@ export const MetadataUtils = {
       function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
         if (subTree != null) {
           const path = subTree.path
-          const pathString = EP.toString(path)
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
-          const isHiddenConditionalBranch = Object.keys(conditionals).some((conditionalPath) => {
-            if (!isFeatureEnabled('Conditional support')) {
-              return false
-            }
-            if (isConditional) {
-              return false
-            }
-            if (!pathString.startsWith(conditionalPath)) {
-              return false
-            }
-            let conditionalAncestorPath = EP.parentPath(path)
-            let ancestorConditional: JSXConditionalExpression | null = null
-            while (conditionalAncestorPath.parts.length > 0 || ancestorConditional == null) {
-              const element = MetadataUtils.findElementByElementPath(
-                metadata,
-                conditionalAncestorPath,
-              )
-              if (element != null) {
-                if (isRight(element.element) && isJSXConditionalExpression(element.element.value)) {
-                  ancestorConditional = element.element.value
-                  break
-                }
-              }
-              conditionalAncestorPath = EP.parentPath(conditionalAncestorPath)
-            }
-            if (ancestorConditional == null) {
-              return false
-            }
-            if (conditionals[conditionalPath] === true) {
-              switch (ancestorConditional.whenTrue.type) {
-                case 'JSX_ELEMENT':
-                  return !pathString.startsWith(
-                    EP.toString(conditionalAncestorPath) + '/' + ancestorConditional.whenTrue.uid,
-                  )
-                default:
-                  return false
-              }
-            } else {
-              switch (ancestorConditional.whenFalse.type) {
-                case 'JSX_ELEMENT':
-                  return !pathString.startsWith(
-                    EP.toString(conditionalAncestorPath) + '/' + ancestorConditional.whenFalse.uid,
-                  )
-                default:
-                  return false
-              }
-            }
-          })
+          const isHiddenConditionalBranch = Object.keys(conditionals).some(
+            filterHiddenConditionalBranch(path, conditionals, metadata, isConditional),
+          )
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
@@ -2102,3 +2057,53 @@ export function createFakeMetadataForElement(
     null,
   )
 }
+
+const filterHiddenConditionalBranch =
+  (
+    path: ElementPath,
+    conditionals: Conditionals,
+    metadata: ElementInstanceMetadataMap,
+    isConditional: boolean,
+  ) =>
+  (uid: string) => {
+    const pathString = EP.toString(path)
+
+    if (!isFeatureEnabled('Conditional support')) {
+      return false
+    }
+    if (isConditional) {
+      return false
+    }
+    if (!pathString.includes(EP.ElementSeparator + uid + EP.ElementSeparator)) {
+      return false
+    }
+
+    let conditionalAncestorPath = EP.parentPath(path)
+    let ancestorConditional: JSXConditionalExpression | null = null
+    while (conditionalAncestorPath.parts.length > 0) {
+      const element = MetadataUtils.findElementByElementPath(metadata, conditionalAncestorPath)
+      if (element != null) {
+        if (isRight(element.element) && isJSXConditionalExpression(element.element.value)) {
+          ancestorConditional = element.element.value
+          break
+        }
+      }
+      conditionalAncestorPath = EP.parentPath(conditionalAncestorPath)
+    }
+    if (ancestorConditional == null) {
+      return false
+    }
+
+    const condition =
+      conditionals[uid] === true ? ancestorConditional.whenTrue : ancestorConditional.whenFalse
+
+    switch (condition.type) {
+      case 'JSX_ELEMENT':
+      case 'JSX_FRAGMENT':
+        return !pathString.startsWith(
+          EP.toString(conditionalAncestorPath) + EP.ElementSeparator + condition.uid,
+        )
+      default:
+        return false
+    }
+  }

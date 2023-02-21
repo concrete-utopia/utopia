@@ -2,7 +2,9 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isRight } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
+import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   Button,
@@ -11,7 +13,8 @@ import {
   InspectorSectionIcons,
   useColorTheme,
 } from '../../../../uuiui'
-import { updateConditionals } from '../../../editor/actions/action-creators'
+import { EditorAction } from '../../../editor/action-types'
+import { setElementsToRerender, updateConditionals } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -19,38 +22,69 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
+
   const jsxMetadata = useEditorState(
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
     'Metadata',
   )
+
   const conditionals = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.conditionals,
     'Conditionals',
   )
-  const condition = React.useMemo(() => {
+
+  const path = React.useMemo(() => {
     if (paths.length !== 1) {
+      return null
+    }
+    return paths[0]
+  }, [paths])
+
+  const element = React.useMemo(() => {
+    if (path == null) {
+      return
+    }
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    if (
+      elementMetadata == null ||
+      !isRight(elementMetadata.element) ||
+      !isJSXConditionalExpression(elementMetadata.element.value)
+    ) {
+      return null
+    }
+    return elementMetadata.element.value
+  }, [jsxMetadata, path])
+
+  const condition = React.useMemo(() => {
+    if (element == null) {
       return true
     }
-    return conditionals[EP.toString(paths[0])] === false ? false : true
-  }, [conditionals, paths])
+    return conditionals[element.uniqueID] !== false
+  }, [conditionals, element])
 
   const setCondition = React.useCallback(
     (value: boolean) => () => {
-      if (paths.length !== 1) {
+      if (path == null || element == null) {
         return
       }
-      dispatch([updateConditionals(paths[0], value)], 'everyone')
+
+      let actions: EditorAction[] = [updateConditionals(element.uniqueID, value)]
+
+      const branch = value ? element.whenTrue : element.whenFalse
+      switch (branch.type) {
+        case 'JSX_ELEMENT':
+        case 'JSX_FRAGMENT':
+          const branchElements = EP.appendToPath(path, branch.uid)
+          setTimeout(() => dispatch([setElementsToRerender([branchElements])], 'everyone'), 1000)
+      }
+      dispatch(actions, 'everyone')
     },
-    [dispatch, paths],
+    [dispatch, path, element],
   )
 
-  if (paths.length !== 1) {
-    return null
-  }
-  const path = paths[0]
-  if (!MetadataUtils.isElementPathConditionalFromMetadata(jsxMetadata, path)) {
+  if (element == null) {
     return null
   }
 

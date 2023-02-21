@@ -228,6 +228,7 @@ import type {
   CopyProperties,
   MergeWithPrevUndo,
   UpdateConditionals,
+  SetElementsToRerender,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1061,11 +1062,18 @@ export function updateGithubSettings(
   }
 }
 
-export function updateConditionals(path: ElementPath, condition: boolean): UpdateConditionals {
+export function updateConditionals(uid: string, condition: boolean): UpdateConditionals {
   return {
     action: 'UPDATE_CONDITIONALS',
-    path: path,
+    uid: uid,
     condition: condition,
+  }
+}
+
+export function setElementsToRerender(paths: ElementPath[]): SetElementsToRerender {
+  return {
+    action: 'SET_ELEMENTS_TO_RERENDER',
+    value: paths,
   }
 }
 

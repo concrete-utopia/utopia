@@ -3879,7 +3879,8 @@ export const UPDATE_FNS = {
   },
   UPDATE_CONDITIONALS: (action: UpdateConditionals, editor: EditorModel): EditorModel => {
     const conditionals = { ...(editor.conditionals ?? {}) }
-    conditionals[EP.toString(action.path)] = action.condition
+    conditionals[action.uid] = action.condition
+    // TODO clean up deleted uids
     return {
       ...editor,
       conditionals: conditionals,
@@ -5158,7 +5159,9 @@ export const UPDATE_FNS = {
     }
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+    const command = setElementsToRerenderCommand(action.value)
+    command.whenToRun = 'on-complete'
+    return foldAndApplyCommandsSimple(editor, [command])
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
     const targets = action.targets
