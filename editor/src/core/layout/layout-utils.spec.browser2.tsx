@@ -16,6 +16,7 @@ import { isLeft } from '../shared/either'
 import { emptyImports } from '../workers/common/project-file-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { ElementPath } from '../shared/project-file-types'
+import { AllElementProps } from '../../components/editor/store/editor-state'
 
 describe('pasteJSXElements', () => {
   it('removes pin related layout props when pasting to flex element', async () => {
@@ -28,6 +29,7 @@ describe('pasteJSXElements', () => {
 
     const pasteElements = createPasteElementAction(
       renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.allElementProps,
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
     )
 
@@ -67,6 +69,7 @@ describe('pasteJSXElements', () => {
 
     const pasteElements = createPasteElementAction(
       renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.allElementProps,
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
     )
 
@@ -119,7 +122,11 @@ async function createStarterEditor() {
   return renderResult
 }
 
-function createPasteElementAction(metadata: ElementInstanceMetadataMap, elementPath: ElementPath) {
+function createPasteElementAction(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+) {
   const elementToPasteMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
 
   if (elementToPasteMetadata == null || isLeft(elementToPasteMetadata.element)) {
@@ -132,6 +139,7 @@ function createPasteElementAction(metadata: ElementInstanceMetadataMap, elementP
     EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target']),
     [elementPaste(elementToPaste, emptyImports(), elementPath)],
     metadata,
+    allElementProps,
   )
 
   return pasteElements

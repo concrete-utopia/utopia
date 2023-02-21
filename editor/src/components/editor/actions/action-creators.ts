@@ -247,6 +247,7 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  AllElementProps,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -451,12 +452,14 @@ export function pasteJSXElements(
   pasteInto: ElementPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  targetOriginalContextAllElementProps: AllElementProps,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
     pasteInto: pasteInto,
     elements: elements,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
+    targetOriginalContextAllElementProps: targetOriginalContextAllElementProps,
   }
 }
 

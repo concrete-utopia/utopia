@@ -19,7 +19,10 @@ import {
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
-import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import {
+  AllElementProps,
+  getElementFromProjectContents,
+} from '../../../../editor/store/editor-state'
 import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
@@ -38,6 +41,7 @@ import {
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
 import { ReparentStrategy } from './reparent-strategy-helpers'
+import { treatElementAsContentAffecting } from '../group-like-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -50,6 +54,7 @@ export function getAbsoluteReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,
+  targetStartingAllElementProps: AllElementProps,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
@@ -61,6 +66,13 @@ export function getAbsoluteReparentPropertyChanges(
   )
 
   if (element == null) {
+    return []
+  }
+
+  if (
+    treatElementAsContentAffecting(targetStartingMetadata, targetStartingAllElementProps, target)
+  ) {
+    // for content-affecting elements, the absolute reparent should have no property changes whatsoever
     return []
   }
 
@@ -200,6 +212,7 @@ export function getReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,
+  targetStartingAllElementProps: AllElementProps,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
@@ -212,6 +225,7 @@ export function getReparentPropertyChanges(
         target,
         newParent,
         targetStartingMetadata,
+        targetStartingAllElementProps,
         newParentStartingMetadata,
         projectContents,
         openFile,

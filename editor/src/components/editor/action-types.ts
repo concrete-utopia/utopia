@@ -60,6 +60,7 @@ import {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  AllElementProps,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -351,6 +352,7 @@ export interface PasteJSXElements {
   pasteInto: ElementPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalContextAllElementProps: AllElementProps
 }
 
 export interface CopySelectionToClipboard {

@@ -123,6 +123,7 @@ export function baseAbsoluteReparentStrategy(
                     selectedElement,
                     newParent,
                     canvasState.startingMetadata,
+                    canvasState.startingAllElementProps,
                     canvasState.startingMetadata,
                     canvasState.projectContents,
                     canvasState.openFile,
