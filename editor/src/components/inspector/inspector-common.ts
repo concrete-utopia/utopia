@@ -1,7 +1,7 @@
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import { allElemsEqual, mapDropNulls } from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -26,14 +26,13 @@ import { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
-import { shallowEqual } from '../../core/shared/equality-utils'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { isInfinityRectangle, Size } from '../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 
@@ -254,14 +253,6 @@ export function justifyContentAlignItemsEquals(
   return isFlexColumn(flexDirection)
     ? alignItems === other.justifyContent && justifyContent === other.alignItems
     : alignItems === other.alignItems && justifyContent === other.justifyContent
-}
-
-function allElemsEqual<T>(objects: T[], areEqual: (a: T, b: T) => boolean = shallowEqual): boolean {
-  if (objects.length === 0) {
-    return false
-  }
-
-  return objects.slice(1).every((obj) => areEqual(objects[0], obj))
 }
 
 export type Axis = 'horizontal' | 'vertical'
