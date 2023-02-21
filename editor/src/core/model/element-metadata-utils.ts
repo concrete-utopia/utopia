@@ -11,6 +11,7 @@ import {
   flatMapArray,
   uniqBy,
   mapAndFilter,
+  allElemsEqual,
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
@@ -1779,18 +1780,6 @@ function fillSpyOnlyMetadata(
     return childrenAndUnfurledComponents
   }
 
-  const getNearestNonFragmentParent = (path: ElementPath): ElementInstanceMetadata | null => {
-    const parentPath = EP.parentPath(path)
-    if (EP.pathsEqual(parentPath, EP.emptyElementPath)) {
-      return null
-    }
-    const parentElement = MetadataUtils.findElementByElementPath(fromDOM, parentPath)
-    if (parentElement != null && !MetadataUtils.isFragmentFromMetadata(parentElement)) {
-      return parentElement
-    }
-    return getNearestNonFragmentParent(parentPath)
-  }
-
   const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
     const globalFrame = fromDOM[p]?.globalFrame
     if (globalFrame == null) {
@@ -1857,24 +1846,45 @@ function fillSpyOnlyMetadata(
   fastForEach(elementsWithoutParentData, (pathStr) => {
     const spyElem = fromSpy[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
+    const children = findChildrenInDomRecursively(pathStr)
+    if (children.length === 0) {
+      return
+    }
 
-    const parent = getNearestNonFragmentParent(EP.fromString(pathStr))
+    const childrenFromWorking = children.map((child) => {
+      const childPathStr = EP.toString(child.elementPath)
+      const fromWorkingElements = workingElements[childPathStr]
+      if (fromWorkingElements == null) {
+        return child
+      } else {
+        return fromWorkingElements
+      }
+    })
+
+    const parentLayoutSystemFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.parentLayoutSystem,
+    )
+    const parentFlexDirectionFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.parentFlexDirection,
+    )
+    const immediateParentBoundsFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.immediateParentBounds,
+    )
 
     workingElements[pathStr] = {
       ...spyElem,
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        parentLayoutSystem:
-          parent?.specialSizeMeasurements.layoutSystemForChildren ??
-          spyElem.specialSizeMeasurements.parentLayoutSystem,
-        parentFlexDirection:
-          parent?.specialSizeMeasurements.flexDirection ??
-          spyElem.specialSizeMeasurements.parentFlexDirection,
-        immediateParentBounds:
-          parent?.globalFrame != null && !isInfinityRectangle(parent.globalFrame)
-            ? parent.globalFrame
-            : spyElem.specialSizeMeasurements.immediateParentBounds,
+        parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
+          ? parentLayoutSystemFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentLayoutSystem,
+        parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
+          ? parentFlexDirectionFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentFlexDirection,
+        immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
+          ? immediateParentBoundsFromChildren[0]
+          : spyElem.specialSizeMeasurements.immediateParentBounds,
       },
     }
   })

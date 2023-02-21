@@ -202,7 +202,7 @@ describe('Keyboard Reorder Strategy', () => {
     await renderResult.dispatch(
       [
         selectComponents(
-          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/child1')],
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/aaa')],
           false,
         ),
       ],
