@@ -11,6 +11,7 @@ import {
   flatMapArray,
   uniqBy,
   mapAndFilter,
+  allElemsEqual,
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
@@ -1426,7 +1427,7 @@ export const MetadataUtils = {
       }
     })
 
-    const spyOnlyElements = fillSpyOnlyMetadataWithFramesFromChildren(fromSpy, fromDOM)
+    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM)
 
     return {
       ...workingElements,
@@ -1727,9 +1728,7 @@ export const MetadataUtils = {
   },
 }
 
-// Those elements which are not in the dom have empty globalFrame and localFrame
-// This function calculates the frames from their children (or deeper descendants), which appear in the dom
-function fillSpyOnlyMetadataWithFramesFromChildren(
+function fillSpyOnlyMetadata(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
 ) {
@@ -1836,6 +1835,57 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
+    }
+  })
+
+  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
+    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
+    return parentLayoutSystem == null
+  })
+
+  fastForEach(elementsWithoutParentData, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
+    const sameThingFromWorkingElems = workingElements[pathStr]
+    const children = findChildrenInDomRecursively(pathStr)
+    if (children.length === 0) {
+      return
+    }
+
+    const childrenFromWorking = children.map((child) => {
+      const childPathStr = EP.toString(child.elementPath)
+      const fromWorkingElements = workingElements[childPathStr]
+      if (fromWorkingElements == null) {
+        return child
+      } else {
+        return fromWorkingElements
+      }
+    })
+
+    const parentLayoutSystemFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.parentLayoutSystem,
+    )
+    const parentFlexDirectionFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.parentFlexDirection,
+    )
+    const immediateParentBoundsFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.immediateParentBounds,
+    )
+
+    workingElements[pathStr] = {
+      ...spyElem,
+      ...sameThingFromWorkingElems,
+      specialSizeMeasurements: {
+        ...spyElem.specialSizeMeasurements,
+        parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
+          ? parentLayoutSystemFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentLayoutSystem,
+        parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
+          ? parentFlexDirectionFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentFlexDirection,
+        immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
+          ? immediateParentBoundsFromChildren[0]
+          : spyElem.specialSizeMeasurements.immediateParentBounds,
+      },
     }
   })
 
