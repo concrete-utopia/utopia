@@ -18,10 +18,6 @@ import {
   useColorTheme,
 } from '../../../../../uuiui'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
-import { isFeatureEnabled } from '../../../../../utils/feature-switches'
-
-const LayoutSystemSectionTitle = () =>
-  isFeatureEnabled('Nine block control') ? 'Layout System Props' : 'Layout System'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -66,7 +62,7 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
             gap: 8,
           }}
         >
-          <span>{LayoutSystemSectionTitle()}</span>
+          <span>Layout System</span>
         </FlexRow>
         {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
         {!layoutSectionOpen && (
