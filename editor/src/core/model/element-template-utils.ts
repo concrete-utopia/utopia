@@ -49,6 +49,7 @@ import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import {
   fixUtopiaElement,
+  generateMockNextGeneratedUID,
   generateUID,
   getUtopiaIDFromJSXElement,
   setUtopiaIDOnJSXElement,
@@ -107,36 +108,27 @@ function getAllUniqueUidsInner(
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
-export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
-export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
-
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
-  if (
-    MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
-    MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
-  ) {
-    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
-    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
+  const mockUID = generateMockNextGeneratedUID()
+  if (mockUID == null) {
+    const existingUIDS = getAllUniqueUids(projectContents)
+    return generateUID(existingUIDS)
+  } else {
+    return mockUID
   }
-
-  const existingUIDS = getAllUniqueUids(projectContents)
-  return generateUID(existingUIDS)
 }
 
 export function generateUidWithExistingComponentsAndExtraUids(
   projectContents: ProjectContentTreeRoot,
   additionalUids: Array<string>,
 ): string {
-  if (
-    MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
-    MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
-  ) {
-    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
-    return MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current - 1]
+  const mockUID = generateMockNextGeneratedUID()
+  if (mockUID == null) {
+    const existingUIDSFromProject = getAllUniqueUids(projectContents)
+    return generateUID([...existingUIDSFromProject, ...additionalUids])
+  } else {
+    return mockUID
   }
-
-  const existingUIDSFromProject = getAllUniqueUids(projectContents)
-  return generateUID([...existingUIDSFromProject, ...additionalUids])
 }
 
 export function guaranteeUniqueUids(

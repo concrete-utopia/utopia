@@ -45,24 +45,16 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
 
-export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE_BASIC'
+export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
-export function flexResizeBasicStrategy(
+export function basicResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  if (
-    selectedElements.length !== 1 ||
-    !MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      selectedElements[0],
-      canvasState.startingMetadata,
-    ) ||
-    !honoursPropsSize(canvasState, selectedElements[0])
-  ) {
+  if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
     return null
   }
   const metadata = MetadataUtils.findElementByElementPath(
@@ -71,25 +63,13 @@ export function flexResizeBasicStrategy(
   )
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
-  const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
-
-  const widthPropToUse =
-    (elementParentFlexDirection === 'row' || elementParentFlexDirection === 'row-reverse') &&
-    elementDimensionsProps?.flexBasis != null
-      ? 'flexBasis'
-      : 'width'
-  const heightPropToUse =
-    (elementParentFlexDirection === 'column' || elementParentFlexDirection === 'column-reverse') &&
-    elementDimensionsProps?.flexBasis != null
-      ? 'flexBasis'
-      : 'height'
 
   const elementDimensions =
     elementDimensionsProps == null
       ? null
       : {
-          width: elementDimensionsProps[widthPropToUse],
-          height: elementDimensionsProps[heightPropToUse],
+          width: elementDimensionsProps.width,
+          height: elementDimensionsProps.height,
         }
 
   const hasDimensions =
@@ -100,8 +80,8 @@ export function flexResizeBasicStrategy(
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
   return {
-    id: FLEX_RESIZE_STRATEGY_ID,
-    name: 'Flex Resize (Basic)',
+    id: BASIC_RESIZE_STRATEGY_ID,
+    name: 'Resize (Basic)',
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
@@ -178,12 +158,11 @@ export function flexResizeBasicStrategy(
           )
 
           const makeResizeCommand = (
-            name: 'width' | 'height' | 'flexBasis',
+            name: 'width' | 'height',
             elementDimension: number | null | undefined,
             original: number,
             resized: number,
             parent: number | undefined,
-            parentFlexDirection: FlexDirection | null,
           ): AdjustCssLengthProperty[] => {
             if (elementDimension == null && (original === resized || hasSizedParent)) {
               return []
@@ -195,7 +174,7 @@ export function flexResizeBasicStrategy(
                 stylePropPathMappingFn(name, styleStringInArray),
                 elementDimension != null ? resized - original : resized,
                 parent,
-                parentFlexDirection,
+                null,
                 'create-if-not-existing',
               ),
             ]
@@ -203,20 +182,18 @@ export function flexResizeBasicStrategy(
 
           const resizeCommands: Array<AdjustCssLengthProperty> = [
             ...makeResizeCommand(
-              widthPropToUse,
-              elementDimensionsProps?.[widthPropToUse],
+              'width',
+              elementDimensionsProps?.width,
               originalBounds.width,
               resizedBounds.width,
               elementParentBounds?.width,
-              elementParentFlexDirection,
             ),
             ...makeResizeCommand(
-              heightPropToUse,
-              elementDimensionsProps?.[heightPropToUse],
+              'height',
+              elementDimensionsProps?.height,
               originalBounds.height,
               resizedBounds.height,
               elementParentBounds?.height,
-              elementParentFlexDirection,
             ),
           ]
 
@@ -245,12 +222,12 @@ export function resizeWidthHeight(
   edgePosition: EdgePosition,
 ): CanvasRectangle {
   if (isEdgePositionACorner(edgePosition)) {
-    const startingCornerPosition = {
+    const oppositeCornerPosition = {
       x: 1 - edgePosition.x,
       y: 1 - edgePosition.y,
     } as EdgePosition
 
-    let oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
+    let oppositeCorner = pickPointOnRect(boundingBox, oppositeCornerPosition)
     const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
     const newCorner = offsetPoint(draggedCorner, drag)
 
@@ -291,24 +268,23 @@ export function resizeWidthHeight(
   }
 }
 
+const getOffsetPropValue = (
+  name: 'width' | 'height',
+  attrs: PropsOrJSXAttributes,
+): number | null => {
+  return foldEither(
+    (_) => null,
+    (v) => v?.value ?? null,
+    getLayoutProperty(name, attrs, styleStringInArray),
+  )
+}
+
 type ElementDimensions = {
   width: number | null
   height: number | null
-  flexBasis: number | null
 } | null
 
 const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
-  const getOffsetPropValue = (
-    name: 'width' | 'height' | 'flexBasis',
-    attrs: PropsOrJSXAttributes,
-  ): number | null => {
-    return foldEither(
-      (_) => null,
-      (v) => v?.value ?? null,
-      getLayoutProperty(name, attrs, styleStringInArray),
-    )
-  }
-
   if (isLeft(metadata.element)) {
     return null
   }
@@ -322,6 +298,5 @@ const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensi
   return {
     width: getOffsetPropValue('width', attrs),
     height: getOffsetPropValue('height', attrs),
-    flexBasis: getOffsetPropValue('flexBasis', attrs),
   }
 }

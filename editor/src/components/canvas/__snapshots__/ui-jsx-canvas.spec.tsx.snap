@@ -36922,7 +36922,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       \\"
       data-uid=\\"scene\\"
     >
-      <div data-uid=\\"1a9~~~1\\" data-path=\\"1a9~~~1\\">great</div>
+      <div data-uid=\\"4cf~~~1\\" data-path=\\"4cf~~~1\\">great</div>
     </div>
   </div>
 </div>
