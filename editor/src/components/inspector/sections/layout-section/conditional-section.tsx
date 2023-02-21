@@ -76,12 +76,13 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
       let actions: EditorAction[] = [updateConditionals(element.uniqueID, value)]
 
-      const branch = value ? element.whenTrue : element.whenFalse
-      if (!childOrBlockIsChild(branch)) {
-        return
-      }
-      const branchElements = EP.appendToPath(path, getUtopiaID(branch))
-      actions.push(setElementsToRerender([branchElements]))
+      //// Note: this is currently not really working, and actually breaks things
+      // const branch = value ? element.whenTrue : element.whenFalse
+      // if (!childOrBlockIsChild(branch)) {
+      //   return
+      // }
+      // const branchElements = EP.appendToPath(path, getUtopiaID(branch))
+      // actions.push(setElementsToRerender([branchElements]))
 
       dispatch(actions, 'everyone')
     },

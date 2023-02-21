@@ -66,6 +66,7 @@ import {
   MaybeInfinityLocalRectangle,
   Size,
   zeroCanvasRect,
+  zeroLocalRect,
   zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -2089,12 +2090,12 @@ const filterHiddenConditionalBranch =
     }
 
     const branch =
-      conditionals[uid] === true ? ancestorConditional.whenTrue : ancestorConditional.whenFalse
+      conditionals[uid] === false ? ancestorConditional.whenFalse : ancestorConditional.whenTrue
 
     if (!childOrBlockIsChild(branch)) {
       return false
     }
 
-    const conditionalPath = EP.appendToPath(conditionalAncestorPath, getUtopiaID(branch))
-    return !EP.isDescendantOf(path, conditionalPath)
+    const branchPath = EP.appendToPath(conditionalAncestorPath, getUtopiaID(branch))
+    return !EP.isDescendantOfOrEqualTo(path, branchPath)
   }
