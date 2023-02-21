@@ -1,4 +1,8 @@
-import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import {
+  EditorRenderResult,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+} from '../../ui-jsx.test-utils'
 import { pressKey } from '../../event-helpers.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { KeyboardInteractionTimeout } from '../interaction-state'
@@ -6,6 +10,7 @@ import sinon, { SinonFakeTimers } from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { wait } from '../../../../utils/utils.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 
 const TestProject = (
   display: 'block' | 'inline-block',
@@ -175,7 +180,7 @@ function configureClock() {
 
 async function pressKeysRepeat(
   clock: { current: SinonFakeTimers },
-  renderResult: any,
+  renderResult: EditorRenderResult,
   direction: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown',
   repeat: number,
 ) {
@@ -805,7 +810,7 @@ describe('Keyboard Reorder Strategy', () => {
       ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
     })
 
-    xit('pressing the arrow keys reorders in a flex layout, with a fragment selected', async () => {
+    it('pressing the arrow keys reorders in a flex layout, with a fragment selected', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(TestProjectWithFragment),
         'await-first-dom-report',
@@ -821,6 +826,53 @@ describe('Keyboard Reorder Strategy', () => {
         true,
       )
 
+      await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+
+      const expectedNavigatorTargetsAfterArrowLeft = [
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+      ]
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+      ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
+
+      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
+
+      const expectedNavigatorTargetsAfterArrowRight = [
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+      ]
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+      ).toEqual(expectedNavigatorTargetsAfterArrowRight)
+
+      await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+      const expectedNavigatorTargetsAfterArrowUp = [
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+      ]
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+      ).toEqual(expectedNavigatorTargetsAfterArrowUp)
+
       // pressing keyboard up and down reorders elements
       await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
@@ -829,64 +881,14 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
       ).toEqual(expectedNavigatorTargetsAfterArrowDown)
-
-      await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
-
-      const expectedNavigatorTargetsAfterArrowUp = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
-      ).toEqual(expectedNavigatorTargetsAfterArrowUp)
-
-      // pressing keyboard left and right reorders elements
-
-      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
-
-      const expectedNavigatorTargetsAfterArrowRight = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
-      ).toEqual(expectedNavigatorTargetsAfterArrowRight)
-
-      await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
-
-      const expectedNavigatorTargetsAfterArrowLeft = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/22c/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
-      ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
     })
   })
 })
