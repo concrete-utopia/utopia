@@ -8,7 +8,12 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import {
+  canvasVector,
+  offsetRect,
+  windowPoint,
+  WindowPoint,
+} from '../../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
@@ -22,6 +27,7 @@ import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-help
 import { setFeatureForTests, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import * as EP from '../../../../core/shared/element-path'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null

@@ -41,7 +41,10 @@ import {
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
 import { ReparentStrategy } from './reparent-strategy-helpers'
-import { treatElementAsContentAffecting } from '../group-like-helpers'
+import {
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  treatElementAsContentAffecting,
+} from '../group-like-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -66,13 +69,6 @@ export function getAbsoluteReparentPropertyChanges(
   )
 
   if (element == null) {
-    return []
-  }
-
-  if (
-    treatElementAsContentAffecting(targetStartingMetadata, targetStartingAllElementProps, target)
-  ) {
-    // for content-affecting elements, the absolute reparent should have no property changes whatsoever
     return []
   }
 
