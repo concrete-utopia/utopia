@@ -52,6 +52,7 @@ import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-we
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
+import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -89,7 +90,12 @@ const resizeStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession),
-    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
+    [
+      keyboardAbsoluteResizeStrategy,
+      absoluteResizeBoundingBoxStrategy,
+      flexResizeBasicStrategy,
+      basicResizeStrategy,
+    ],
   )
 }
 const flexResizeMetaStrategy: MetaCanvasStrategy = (
@@ -488,6 +494,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'KEYBOARD_ABSOLUTE_RESIZE':
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
+    case 'FLOW_RESIZE_BASIC':
       return true
     default:
       return false

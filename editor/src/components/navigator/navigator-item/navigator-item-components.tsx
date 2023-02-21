@@ -16,6 +16,7 @@ export const NavigatorHintCircleDiameter = 8
 interface NavigatorHintProps {
   testId: string
   shouldBeShown: boolean
+  shouldAcceptMouseEvents: boolean
   margin: number
 }
 
@@ -29,6 +30,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
         style={{
           position: 'relative',
           zIndex: 1,
+          pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
         }}
       >
         <div
@@ -79,6 +81,7 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
         style={{
           position: 'relative',
           zIndex: 1,
+          pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
         }}
       >
         <div
