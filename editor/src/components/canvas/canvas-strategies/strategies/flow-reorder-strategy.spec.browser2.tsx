@@ -98,7 +98,7 @@ const TestProjectBlockElementsWithFragment = (additionalContainerStyle: string =
     data-uid='aaa'
     data-testid='aaa'
   />
-  <>
+  <React.Fragment data-uid='fragment'>
     <div
       style={{
         width: 50,
@@ -108,7 +108,7 @@ const TestProjectBlockElementsWithFragment = (additionalContainerStyle: string =
       data-uid='bbb'
       data-testid='bbb'
     />
-  </>
+  </React.Fragment>
   <div
     style={{
       width: 50,
@@ -118,40 +118,6 @@ const TestProjectBlockElementsWithFragment = (additionalContainerStyle: string =
     data-uid='ccc'
     data-testid='ccc'
   />
-</div>
-`
-
-const TestProjectWithFragmentCCCDraggedToSecond = `
-<div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
-  <div
-    style={{
-      width: 50,
-      height: 50,
-      backgroundColor: '#CA1E4C80',
-    }}
-    data-uid='aaa'
-    data-testid='aaa'
-  />
-  <div
-    style={{
-      width: 50,
-      height: 50,
-      backgroundColor: '#292E74',
-    }}
-    data-uid='ccc'
-    data-testid='ccc'
-  />
-  <>
-    <div
-      style={{
-        width: 50,
-        height: 50,
-        backgroundColor: '#297374',
-      }}
-      data-uid='bbb'
-      data-testid='bbb'
-    />
-  </>
 </div>
 `
 
@@ -513,15 +479,22 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:container',
         'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/38e/bbb',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
         'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       ])
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragmentCCCDraggedToSecond),
-      )
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc', // <- ccc moves to above the fragment
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
+      ])
     })
   })
 })

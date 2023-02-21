@@ -753,7 +753,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
@@ -766,7 +766,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
@@ -786,7 +786,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
@@ -799,7 +799,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
@@ -832,7 +832,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
@@ -849,7 +849,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
@@ -863,7 +863,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
@@ -881,7 +881,7 @@ describe('Keyboard Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
         'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',

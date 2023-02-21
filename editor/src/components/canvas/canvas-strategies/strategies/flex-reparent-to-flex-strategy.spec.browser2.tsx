@@ -409,7 +409,7 @@ describe('Flex Reparent To Flex Strategy', () => {
         'utopia-storyboard-uid/parent2',
         'utopia-storyboard-uid/parent2/0b5',
         'utopia-storyboard-uid/parent2/aaa',
-        'utopia-storyboard-uid/parent2/fragment',
+        'utopia-storyboard-uid/parent2/fragment', // <- fragment and its contents are reparented to parent2 from parent1
         'utopia-storyboard-uid/parent2/fragment/b71',
         'utopia-storyboard-uid/parent2/fragment/050',
         'utopia-storyboard-uid/parent1',

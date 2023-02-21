@@ -455,7 +455,7 @@ describe('Flex Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
@@ -495,7 +495,7 @@ describe('Flex Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
@@ -536,7 +536,7 @@ describe('Flex Reorder Strategy', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment, despite the drag delta pointing to the right
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
