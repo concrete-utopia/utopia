@@ -2802,9 +2802,13 @@ export function reorderComponent(
 
   const jsxElement = findElementAtPath(target, workingComponents)
   const parentPath = EP.parentPath(target)
-  const parentElement = findJSXElementAtPath(parentPath, workingComponents)
+  const parentElement = findElementAtPath(parentPath, workingComponents)
 
-  if (jsxElement != null && parentElement != null) {
+  if (
+    jsxElement != null &&
+    parentElement != null &&
+    (isJSXElement(parentElement) || isJSXFragment(parentElement))
+  ) {
     const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)
     if (indexOfRemovedElement < 0) {
       throw new Error(`Unable to determine old element index.`)
