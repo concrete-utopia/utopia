@@ -97,7 +97,7 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { objectValues, omit, objectFilter } from '../shared/object-utils'
+import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
