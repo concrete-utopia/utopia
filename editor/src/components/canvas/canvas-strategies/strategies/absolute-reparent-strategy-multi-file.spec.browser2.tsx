@@ -309,7 +309,7 @@ export var App = () => {
       <FlexParent data-uid='flexparentinapp' />
       <AbsoluteChild
         data-uid='absolutechildinparent'
-        style={{ left: 284, top: -40 }}
+        style={{ left: 294, top: -40 }}
       />
     </div>
   )
