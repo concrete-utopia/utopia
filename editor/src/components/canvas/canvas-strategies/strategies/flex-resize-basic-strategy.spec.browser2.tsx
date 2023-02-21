@@ -17,6 +17,7 @@ import {
 import { EdgePosition, edgePosition, EdgePositionTopRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
+import { FLEX_RESIZE_STRATEGY_ID } from './flex-resize-basic-strategy'
 
 async function dragResizeControl(
   renderResult: EditorRenderResult,
@@ -24,6 +25,7 @@ async function dragResizeControl(
   pos: EdgePosition,
   dragDelta: CanvasVector,
   modifiers?: Modifiers,
+  shouldStrategyBeActive: boolean = true,
 ) {
   await renderResult.dispatch([selectComponents([target], false)], true)
   const resizeControl = renderResult.renderedDOM.getByTestId(`resize-control-${pos.x}-${pos.y}`)
@@ -42,6 +44,13 @@ async function dragResizeControl(
   await mouseMoveToPoint(resizeControl, startPoint)
   await mouseDownAtPoint(resizeControl, startPoint)
   await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 }, modifiers })
+
+  if (shouldStrategyBeActive === true) {
+    expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+      FLEX_RESIZE_STRATEGY_ID,
+    )
+  }
+
   await mouseUpAtPoint(canvasControlsLayer, endPoint)
 
   await renderResult.getDispatchFollowUpActionsFinished()
@@ -254,19 +263,37 @@ describe('Flex Resize', () => {
     describe('both missing', () => {
       describe('horizontal movement', () => {
         it('does nothing', async () => {
-          await resizeWithoutDimensions(edgePosition(1, 0), canvasPoint({ x: 15, y: 0 }), {}, {})
+          await resizeWithoutDimensions(
+            edgePosition(1, 0),
+            canvasPoint({ x: 15, y: 0 }),
+            {},
+            {},
+            false,
+          )
         })
       })
 
       describe('vertical movement', () => {
         it('does nothing', async () => {
-          await resizeWithoutDimensions(edgePosition(0, 0), canvasPoint({ x: 0, y: 15 }), {}, {})
+          await resizeWithoutDimensions(
+            edgePosition(0, 0),
+            canvasPoint({ x: 0, y: 15 }),
+            {},
+            {},
+            false,
+          )
         })
       })
 
       describe('diagonal movement', () => {
         it('does nothing', async () => {
-          await resizeWithoutDimensions(edgePosition(0, 0), canvasPoint({ x: 10, y: 15 }), {}, {})
+          await resizeWithoutDimensions(
+            edgePosition(0, 0),
+            canvasPoint({ x: 10, y: 15 }),
+            {},
+            {},
+            false,
+          )
         })
       })
     })
@@ -274,7 +301,13 @@ describe('Flex Resize', () => {
     describe('width missing', () => {
       describe('horizontal movement', () => {
         it('does nothing', async () => {
-          await resizeWithoutDimensions(edgePosition(1, 0), canvasPoint({ x: 15, y: 0 }), {}, {})
+          await resizeWithoutDimensions(
+            edgePosition(1, 0),
+            canvasPoint({ x: 15, y: 0 }),
+            {},
+            {},
+            false,
+          )
         })
       })
 
@@ -729,6 +762,7 @@ const resizeWithoutDimensions = async (
   dragVector: CanvasVector,
   initialDimensions: { width?: number; height?: number },
   expectDimensions: { width?: number; height?: number },
+  shouldStrategyBeActive: boolean = true,
 ) => {
   const inputCode = makeTestProjectCodeWithSnippet(`
       <div
@@ -772,7 +806,7 @@ const resizeWithoutDimensions = async (
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
   const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`)
 
-  await dragResizeControl(renderResult, target, pos, dragVector)
+  await dragResizeControl(renderResult, target, pos, dragVector, undefined, shouldStrategyBeActive)
 
   expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
     makeTestProjectCodeWithSnippet(`
