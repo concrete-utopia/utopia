@@ -663,6 +663,7 @@ describe('Flex Reorder Strategy', () => {
 
       const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
       await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+      await pressKey('Escape')
       await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
       await mouseDragFromPointWithDelta(
         canvasControlsLayer,
