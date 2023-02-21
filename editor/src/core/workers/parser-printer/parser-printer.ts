@@ -499,6 +499,9 @@ function jsxElementToExpression(
       const whenFalse = childOrBlockIsChild(element.whenFalse)
         ? jsxElementToExpression(element.whenFalse, imports, stripUIDs)
         : jsxAttributeToExpression(element.whenFalse)
+      // Trailing comments of the entire expression appear to be attached to the
+      // closing brace of the expression.
+      addCommentsToNode(whenFalse, element.comments)
       return TS.createJsxExpression(
         undefined,
         TS.createConditional(condition, whenTrue as TS.Expression, whenFalse as TS.Expression),
