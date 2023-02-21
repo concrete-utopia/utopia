@@ -98,7 +98,7 @@ import {
 import * as PP from '../../shared/property-path'
 import { prependToSourceString, ElementsWithinInPosition } from './parser-printer-utils'
 import Hash from 'object-hash'
-import { getComments, getTrailingComments } from './parser-printer-comments'
+import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
@@ -1816,7 +1816,17 @@ export function parseOutJSXElements(
               left('Expression fallback.')
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
-              const possibleConditional = produceConditionalFromExpression(elem.expression)
+              const childrenOfExpression = elem.getChildren(sourceFile)
+              // Trailing comments of the entire expression appear to be attached to the
+              // closing brace of the expression.
+              const leadingCommentsForBrace = getLeadingComments(
+                sourceText,
+                childrenOfExpression[childrenOfExpression.length - 1],
+              )
+              const possibleConditional = produceConditionalFromExpression(
+                elem.expression,
+                leadingCommentsForBrace,
+              )
               parseResult = bimapEither(
                 (failure) => failure,
                 (success) => {
@@ -1826,6 +1836,7 @@ export function parseOutJSXElements(
                   }
                   propsUsed.push(...success.propsUsed)
                   definedElsewhere.push(...success.definedElsewhere)
+
                   return success.value
                 },
                 possibleConditional,
@@ -1924,12 +1935,12 @@ export function parseOutJSXElements(
           const nonEmptyTextBlockChildren = children.value.filter(
             (c) => !(isJSXTextBlock(c) && c.text.trim().length === 0),
           )
-          const onlyFragments =
+          const shouldRemoveEmptyTextBlocks =
             nonEmptyTextBlockChildren.length > 0 &&
             nonEmptyTextBlockChildren.every(
               (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
             )
-          if (onlyFragments) {
+          if (shouldRemoveEmptyTextBlocks) {
             children = right(nonEmptyTextBlockChildren)
           }
         }
@@ -2008,6 +2019,7 @@ export function parseOutJSXElements(
 
   function produceConditionalFromExpression(
     expression: TS.ConditionalExpression,
+    trailingComments: Array<Comment>,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
     function parseAttribute(
       attributeExpression: TS.Expression,
@@ -2060,6 +2072,7 @@ export function parseOutJSXElements(
           condition.value,
           whenTrue.value,
           whenFalse.value,
+          parsedComments([], trailingComments),
         )
         highlightBounds = {
           ...highlightBounds,

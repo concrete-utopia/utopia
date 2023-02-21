@@ -32,6 +32,7 @@ import {
   SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
+import { treatElementAsContentAffecting } from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 
@@ -134,7 +135,15 @@ function findValidTargetsUnderPoint(
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
     // TODO: later we should allow reparenting into fragments
-    if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, target)) {
+    if (
+      MetadataUtils.isElementPathFragmentFromMetadata(metadata, target) ||
+      MetadataUtils.isElementPathConditionalFromMetadata(metadata, target)
+    ) {
+      return false
+    }
+
+    if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
+      // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false
     }
 

@@ -51,6 +51,8 @@ import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
+import { flexResizeStrategy } from './strategies/flex-resize-strategy'
+import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -88,8 +90,22 @@ const resizeStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession),
-    [keyboardAbsoluteResizeStrategy, absoluteResizeBoundingBoxStrategy, flexResizeBasicStrategy],
+    [
+      keyboardAbsoluteResizeStrategy,
+      absoluteResizeBoundingBoxStrategy,
+      flexResizeBasicStrategy,
+      basicResizeStrategy,
+    ],
   )
+}
+
+// TODO move this to resizeStrategies after insertion is fixed
+const flexResizeMetaStrategy: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return mapDropNulls((factory) => factory(canvasState, interactionSession), [flexResizeStrategy])
 }
 
 const propertyControlStrategies: MetaCanvasStrategy = (
@@ -142,7 +158,7 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
-export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+export const RegisteredCanvasStrategiesWithoutFlexResize: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
@@ -151,6 +167,11 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
+]
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  ...RegisteredCanvasStrategiesWithoutFlexResize,
+  preventOnRootElements(flexResizeMetaStrategy),
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -469,6 +490,8 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'ABSOLUTE_RESIZE_BOUNDING_BOX':
     case 'KEYBOARD_ABSOLUTE_RESIZE':
     case 'FLEX_RESIZE_BASIC':
+    case 'FLEX_RESIZE':
+    case 'FLOW_RESIZE_BASIC':
       return true
     default:
       return false
