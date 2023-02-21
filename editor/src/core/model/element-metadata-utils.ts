@@ -1871,20 +1871,23 @@ function fillSpyOnlyMetadata(
       (c) => c.specialSizeMeasurements.immediateParentBounds,
     )
 
+    const parentLayoutSystem = allElemsEqual(parentLayoutSystemFromChildren)
+      ? parentLayoutSystemFromChildren[0]
+      : spyElem.specialSizeMeasurements.parentLayoutSystem
+
+    const parentFlexDirection = allElemsEqual(parentFlexDirectionFromChildren)
+      ? parentFlexDirectionFromChildren[0]
+      : spyElem.specialSizeMeasurements.parentFlexDirection
+
     workingElements[pathStr] = {
       ...spyElem,
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        layoutSystemForChildren: allElemsEqual(parentLayoutSystemFromChildren)
-          ? parentLayoutSystemFromChildren[0]
-          : spyElem.specialSizeMeasurements.parentLayoutSystem,
-        parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
-          ? parentLayoutSystemFromChildren[0]
-          : spyElem.specialSizeMeasurements.parentLayoutSystem,
-        parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
-          ? parentFlexDirectionFromChildren[0]
-          : spyElem.specialSizeMeasurements.parentFlexDirection,
+        layoutSystemForChildren: parentLayoutSystem,
+        parentLayoutSystem: parentLayoutSystem,
+        parentFlexDirection: parentFlexDirection,
+        flexDirection: parentFlexDirection,
         immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
           ? immediateParentBoundsFromChildren[0]
           : spyElem.specialSizeMeasurements.immediateParentBounds,
