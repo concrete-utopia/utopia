@@ -2,9 +2,13 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { getUtopiaID } from '../../../../core/model/element-template-utils'
 import { isRight } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
+import {
+  childOrBlockIsChild,
+  isJSXConditionalExpression,
+} from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   Button,
@@ -73,12 +77,12 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       let actions: EditorAction[] = [updateConditionals(element.uniqueID, value)]
 
       const branch = value ? element.whenTrue : element.whenFalse
-      switch (branch.type) {
-        case 'JSX_ELEMENT':
-        case 'JSX_FRAGMENT':
-          const branchElements = EP.appendToPath(path, branch.uid)
-          setTimeout(() => dispatch([setElementsToRerender([branchElements])], 'everyone'), 1000)
+      if (!childOrBlockIsChild(branch)) {
+        return
       }
+      const branchElements = EP.appendToPath(path, getUtopiaID(branch))
+      actions.push(setElementsToRerender([branchElements]))
+
       dispatch(actions, 'everyone')
     },
     [dispatch, path, element],

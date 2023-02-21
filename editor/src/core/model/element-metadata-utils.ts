@@ -4,14 +4,7 @@ import { getReorderDirection } from '../../components/canvas/controls/select-mod
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import {
-  mapDropNulls,
-  pluck,
-  stripNulls,
-  flatMapArray,
-  uniqBy,
-  mapAndFilter,
-} from '../shared/array-utils'
+import { mapDropNulls, stripNulls, flatMapArray, uniqBy, mapAndFilter } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
   TextElements,
@@ -27,7 +20,6 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
-  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -53,7 +45,7 @@ import {
   emptyComputedStyle,
   emptyAttributeMetadatada,
   JSXConditionalExpression,
-  ChildOrAttribute,
+  childOrBlockIsChild,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -74,7 +66,6 @@ import {
   MaybeInfinityLocalRectangle,
   Size,
   zeroCanvasRect,
-  zeroLocalRect,
   zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -2094,16 +2085,13 @@ const filterHiddenConditionalBranch =
       return false
     }
 
-    const condition =
+    const branch =
       conditionals[uid] === true ? ancestorConditional.whenTrue : ancestorConditional.whenFalse
 
-    switch (condition.type) {
-      case 'JSX_ELEMENT':
-      case 'JSX_FRAGMENT':
-        return !pathString.startsWith(
-          EP.toString(conditionalAncestorPath) + EP.ElementSeparator + condition.uid,
-        )
-      default:
-        return false
+    if (!childOrBlockIsChild(branch)) {
+      return false
     }
+
+    const conditionalPath = EP.appendToPath(conditionalAncestorPath, getUtopiaID(branch))
+    return !EP.isDescendantOf(path, conditionalPath)
   }

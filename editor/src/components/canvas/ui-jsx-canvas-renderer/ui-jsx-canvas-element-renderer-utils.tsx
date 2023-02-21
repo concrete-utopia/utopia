@@ -337,10 +337,9 @@ export function renderCoreElement(
         requireResult,
         element.condition,
       )
+      const elementUID = getUtopiaID(element)
       const override =
-        elementPath == null ||
-        conditionals[element.uniqueID] == null ||
-        conditionals[element.uniqueID]
+        elementPath == null || conditionals[elementUID] == null || conditionals[elementUID]
       const actualElement = conditionValue && override ? element.whenTrue : element.whenFalse
 
       if (childOrBlockIsChild(actualElement)) {
