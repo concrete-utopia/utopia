@@ -961,7 +961,7 @@ describe('inspector tests with real metadata', () => {
       `"simple-unknown-css"`,
     )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"70"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"88"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple-unknown-css"`,
