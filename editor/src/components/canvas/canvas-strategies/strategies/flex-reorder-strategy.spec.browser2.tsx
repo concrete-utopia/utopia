@@ -420,7 +420,7 @@ describe('Flex Reorder Strategy', () => {
   })
 
   describe('flex reorder, with a fragment as a sibling', () => {
-    setFeatureForTests('Fragment support', true)
+    setFeatureForBrowserTests('Fragment support', true)
 
     it('works with normal direction', async () => {
       const renderResult = await renderTestEditorWithCode(
