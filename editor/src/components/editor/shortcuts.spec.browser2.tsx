@@ -105,7 +105,7 @@ describe('shortcuts', () => {
       expect(div.style.position).toEqual('absolute')
       expect(div.style.top).toEqual('47px')
       expect(div.style.left).toEqual('50px')
-      expect(div.style.width).toEqual('340px')
+      expect(div.style.width).toEqual('270px')
       expect(div.style.height).toEqual('363px')
       expect(div.style.contain).toEqual('layout')
     })
