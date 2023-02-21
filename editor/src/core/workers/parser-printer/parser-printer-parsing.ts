@@ -1935,12 +1935,12 @@ export function parseOutJSXElements(
           const nonEmptyTextBlockChildren = children.value.filter(
             (c) => !(isJSXTextBlock(c) && c.text.trim().length === 0),
           )
-          const onlyFragments =
+          const shouldRemoveEmptyTextBlocks =
             nonEmptyTextBlockChildren.length > 0 &&
             nonEmptyTextBlockChildren.every(
               (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
             )
-          if (onlyFragments) {
+          if (shouldRemoveEmptyTextBlocks) {
             children = right(nonEmptyTextBlockChildren)
           }
         }
