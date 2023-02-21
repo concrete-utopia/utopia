@@ -52,6 +52,7 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -97,10 +98,11 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { objectValues, omit, objectFilter } from '../shared/object-utils'
+import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
+  Conditionals,
   LockedElements,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
@@ -190,6 +192,7 @@ export const MetadataUtils = {
   getSiblingsOrdered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,
+    conditionals: Conditionals,
   ): ElementInstanceMetadata[] {
     if (target == null) {
       return []
@@ -197,8 +200,8 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsOrdered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsOrdered(metadata, parentPath)
+      ? MetadataUtils.getRootViewPathsOrdered(metadata, parentPath, conditionals)
+      : MetadataUtils.getChildrenPathsOrdered(metadata, parentPath, conditionals)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
@@ -294,8 +297,9 @@ export const MetadataUtils = {
   getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
+    conditionals: Conditionals,
   ): Array<ElementInstanceMetadata> {
-    return MetadataUtils.getChildrenOrdered(elements, target).filter(
+    return MetadataUtils.getChildrenOrdered(elements, target, conditionals).filter(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -522,6 +526,7 @@ export const MetadataUtils = {
   getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
+    conditionals: Conditionals,
   ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
       if (EP.isRootElementOf(elementPath, target)) {
@@ -529,7 +534,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], [], conditionals).navigatorTargets)
     return possibleRootElementsOfTarget
   },
   getRootViewsUnordered(
@@ -563,6 +568,7 @@ export const MetadataUtils = {
   getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
+    conditionals: Conditionals,
   ): Array<ElementPath> {
     const possibleChildren = mapDropNulls((elementPath) => {
       if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
@@ -570,7 +576,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], [], conditionals).navigatorTargets)
     return possibleChildren
   },
   getChildrenUnordered(
@@ -590,6 +596,7 @@ export const MetadataUtils = {
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
+    conditionals: Conditionals,
   ): Array<ElementInstanceMetadata> {
     return mapDropNulls((elementPath) => {
       if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
@@ -597,7 +604,7 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], [], conditionals).navigatorTargets)
   },
   getDescendantPathsUnordered(
     elements: ElementInstanceMetadataMap,
@@ -1023,6 +1030,7 @@ export const MetadataUtils = {
       metadata: ElementInstanceMetadataMap,
       collapsedViews: Array<ElementPath>,
       hiddenInNavigator: Array<ElementPath>,
+      conditionals: Conditionals,
     ): {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
@@ -1042,15 +1050,65 @@ export const MetadataUtils = {
       function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
         if (subTree != null) {
           const path = subTree.path
+          const pathString = EP.toString(path)
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
+          const isHiddenConditionalBranch = Object.keys(conditionals).some((conditionalPath) => {
+            if (!isFeatureEnabled('Conditional support')) {
+              return false
+            }
+            if (isConditional) {
+              return false
+            }
+            if (!pathString.startsWith(conditionalPath)) {
+              return false
+            }
+            let conditionalAncestorPath = EP.parentPath(path)
+            let ancestorConditional: JSXConditionalExpression | null = null
+            while (conditionalAncestorPath.parts.length > 0 || ancestorConditional == null) {
+              const element = MetadataUtils.findElementByElementPath(
+                metadata,
+                conditionalAncestorPath,
+              )
+              if (element != null) {
+                if (isRight(element.element) && isJSXConditionalExpression(element.element.value)) {
+                  ancestorConditional = element.element.value
+                  break
+                }
+              }
+              conditionalAncestorPath = EP.parentPath(conditionalAncestorPath)
+            }
+            if (ancestorConditional == null) {
+              return false
+            }
+            if (conditionals[conditionalPath] === true) {
+              switch (ancestorConditional.whenTrue.type) {
+                case 'JSX_ELEMENT':
+                  return !pathString.startsWith(
+                    EP.toString(conditionalAncestorPath) + '/' + ancestorConditional.whenTrue.uid,
+                  )
+                default:
+                  return false
+              }
+            } else {
+              switch (ancestorConditional.whenFalse.type) {
+                case 'JSX_ELEMENT':
+                  return !pathString.startsWith(
+                    EP.toString(conditionalAncestorPath) + '/' + ancestorConditional.whenFalse.uid,
+                  )
+                default:
+                  return false
+              }
+            }
+          })
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
             (isFeatureEnabled('Fragment support') || !isFragment) &&
             (isFeatureEnabled('Conditional support') || !isConditional) &&
+            !isHiddenConditionalBranch &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)

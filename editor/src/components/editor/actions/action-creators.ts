@@ -227,6 +227,7 @@ import type {
   PasteProperties,
   CopyProperties,
   MergeWithPrevUndo,
+  UpdateConditionals,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1059,6 +1060,15 @@ export function updateGithubSettings(
     settings: settings,
   }
 }
+
+export function updateConditionals(path: ElementPath, condition: boolean): UpdateConditionals {
+  return {
+    action: 'UPDATE_CONDITIONALS',
+    path: path,
+    condition: condition,
+  }
+}
+
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',

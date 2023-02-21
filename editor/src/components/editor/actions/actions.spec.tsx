@@ -969,6 +969,7 @@ describe('LOAD', () => {
       branchContents: null,
       assetChecksums: {},
       colorSwatches: [],
+      conditionals: {},
     }
 
     const action = {

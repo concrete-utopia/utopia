@@ -653,6 +653,12 @@ export interface UpdateGithubSettings {
   settings: Partial<ProjectGithubSettings>
 }
 
+export interface UpdateConditionals {
+  action: 'UPDATE_CONDITIONALS'
+  path: ElementPath
+  condition: boolean
+}
+
 export interface UpdateGithubData {
   action: 'UPDATE_GITHUB_DATA'
   data: Partial<GithubData>
@@ -1196,6 +1202,7 @@ export type EditorAction =
   | UpdateFile
   | UpdateProjectContents
   | UpdateGithubSettings
+  | UpdateConditionals
   | UpdateGithubData
   | RemoveFileConflict
   | UpdateFromWorker

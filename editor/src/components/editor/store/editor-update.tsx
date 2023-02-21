@@ -217,6 +217,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_BRANCH_CONTENTS(action, state)
     case 'UPDATE_GITHUB_SETTINGS':
       return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
+    case 'UPDATE_CONDITIONALS':
+      return UPDATE_FNS.UPDATE_CONDITIONALS(action, state)
     case 'UPDATE_GITHUB_DATA':
       return UPDATE_FNS.UPDATE_GITHUB_DATA(action, state)
     case 'REMOVE_FILE_CONFLICT':

@@ -62,7 +62,6 @@ import {
   isImportStatement,
   isJSXAttributeValue,
   isJSXElement,
-  isJSXFragment,
   isPartOfJSXAttributeValue,
   JSXAttributes,
   jsxAttributesFromMap,
@@ -91,8 +90,8 @@ import {
   CanvasPoint,
   CanvasRectangle,
   canvasRectangle,
-  isInfinityRectangle,
   isFiniteRectangle,
+  isInfinityRectangle,
   LocalRectangle,
   rectangleIntersection,
   Size,
@@ -176,13 +175,16 @@ import {
   AddToast,
   Alignment,
   AlignSelectedViews,
+  ApplyCommandsAction,
   ClearHighlightedViews,
+  ClearHoveredViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
   ClearTransientProps,
   CloseFloatingInsertMenu,
   ClosePopup,
   CloseTextEditor,
+  CopyProperties,
   CopySelectionToClipboard,
   DeleteFile,
   DeleteSelected,
@@ -212,7 +214,9 @@ import {
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
+  PasteProperties,
   RegenerateThumbnail,
+  RemoveFileConflict,
   RemoveFromNodeModulesContents,
   RemoveToast,
   RenameComponent,
@@ -231,6 +235,7 @@ import {
   SendCodeEditorInitialisation,
   SendPreviewModel,
   SetAspectRatioLock,
+  SetAssetChecksum,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
@@ -245,6 +250,7 @@ import {
   SetForkedFromProjectID,
   SetGithubState,
   SetHighlightedView,
+  SetHoveredView,
   SetImageDragSessionState,
   SetIndexedDBFailed,
   SetInspectorLayoutSectionHovered,
@@ -262,6 +268,7 @@ import {
   SetProperty,
   SetPropTransient,
   SetPropWithElementPath,
+  SetRefreshingDependencies,
   SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
   SetRightMenuTab,
@@ -270,6 +277,7 @@ import {
   SetScrollAnimation,
   SetShortcut,
   SetStoredFontSettings,
+  SetUserConfiguration,
   SetZIndex,
   ShowContextMenu,
   ShowModal,
@@ -285,8 +293,12 @@ import {
   ToggleSelectionLock,
   UnsetProperty,
   UnwrapGroupOrView,
+  UpdateAgainstGithub,
+  UpdateBranchContents,
   UpdateChildText,
   UpdateCodeResultCache,
+  UpdateColorSwatches,
+  UpdateConditionals,
   UpdateConfigFromVSCode,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -296,6 +308,9 @@ import {
   UpdateFrameDimensions,
   UpdateFromCodeEditor,
   UpdateFromWorker,
+  UpdateGithubChecksums,
+  UpdateGithubData,
+  UpdateGithubOperations,
   UpdateGithubSettings,
   UpdateJSXElementName,
   UpdateKeysPressed,
@@ -308,21 +323,6 @@ import {
   UpdateThumbnailGenerated,
   WrapInElement,
   WrapInView,
-  UpdateGithubOperations,
-  UpdateGithubChecksums,
-  UpdateBranchContents,
-  UpdateAgainstGithub,
-  UpdateGithubData,
-  RemoveFileConflict,
-  SetRefreshingDependencies,
-  SetUserConfiguration,
-  SetHoveredView,
-  ClearHoveredViews,
-  SetAssetChecksum,
-  ApplyCommandsAction,
-  UpdateColorSwatches,
-  PasteProperties,
-  CopyProperties,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -352,6 +352,8 @@ import {
   DerivedState,
   editorModelFromPersistentModel,
   EditorState,
+  EditorStoreUnpatched,
+  FileChecksums,
   getAllBuildErrors,
   getAllLintErrors,
   getCurrentTheme,
@@ -363,7 +365,6 @@ import {
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
-  FileChecksums,
   insertElementAtPath,
   LeftMenuTab,
   LeftPaneDefaultWidth,
@@ -378,7 +379,6 @@ import {
   modifyUnderlyingTargetElement,
   packageJsonFileFromProjectContents,
   PersistentModel,
-  persistentModelFromEditorModel,
   removeElementAtPath,
   RightMenuTab,
   SimpleParseSuccess,
@@ -390,19 +390,23 @@ import {
   UserState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
-  EditorStoreUnpatched,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
 import { defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
+import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
+import {
+  refreshDependencies,
+  removeModulesFromNodeModules,
+} from '../../../core/shared/dependencies'
 import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement } from '../../../core/shared/uid-utils'
@@ -421,13 +425,17 @@ import {
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { styleStringInArray } from '../../../utils/common-constants'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
+import { AspectRatioLockedProp } from '../../aspect-ratio'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { isAllowedToReparent } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { reparentStrategyForPaste } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
   elementToReparent,
@@ -439,6 +447,7 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
+import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
@@ -462,16 +471,6 @@ import {
   updateThumbnailGenerated,
 } from './action-creators'
 import { uniqToasts } from './toast-helpers'
-import { AspectRatioLockedProp } from '../../aspect-ratio'
-import {
-  refreshDependencies,
-  removeModulesFromNodeModules,
-} from '../../../core/shared/dependencies'
-import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
-import { styleStringInArray } from '../../../utils/common-constants'
-import { collapseTextElements } from '../../../components/text-editor/text-handling'
-import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1021,6 +1020,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     assetChecksums: currentEditor.assetChecksums,
     colorSwatches: currentEditor.colorSwatches,
     styleClipboard: currentEditor.styleClipboard,
+    conditionals: currentEditor.conditionals,
   }
 }
 
@@ -3876,6 +3876,14 @@ export const UPDATE_FNS = {
         ...action.settings,
       },
     })
+  },
+  UPDATE_CONDITIONALS: (action: UpdateConditionals, editor: EditorModel): EditorModel => {
+    const conditionals = { ...(editor.conditionals ?? {}) }
+    conditionals[EP.toString(action.path)] = action.condition
+    return {
+      ...editor,
+      conditionals: conditionals,
+    }
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
     return {

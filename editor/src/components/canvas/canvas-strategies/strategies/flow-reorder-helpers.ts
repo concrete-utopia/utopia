@@ -22,6 +22,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { DeleteProperties, deleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
+import { Conditionals } from '../../../editor/store/editor-state'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -42,6 +43,7 @@ export function isValidFlowReorderTarget(
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  conditionals: Conditionals,
 ): boolean {
   const siblings = MetadataUtils.getSiblingsUnordered(metadata, target) // including target
   if (siblings.length === 1) {
@@ -49,7 +51,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   }
 
   return (
-    singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
+    singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata, conditionals) !==
     'non-single-axis-autolayout'
   )
 }
@@ -63,9 +65,14 @@ export type SingleAxisAutolayoutContainerDirections = {
 export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  conditionals: Conditionals,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
-  const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
+  const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(
+    metadata,
+    container,
+    conditionals,
+  )
   if (containerElement == null) {
     return 'non-single-axis-autolayout'
   }
@@ -174,6 +181,7 @@ export function getOptionalDisplayPropCommandsForFlow(
   lastReorderIdx: number | null | undefined,
   interactionTarget: InteractionTarget,
   startingMetadata: ElementInstanceMetadataMap,
+  conditionals: Conditionals,
 ): Array<SetProperty | DeleteProperties> {
   const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
   const target = selectedElements[0]
@@ -182,9 +190,11 @@ export function getOptionalDisplayPropCommandsForFlow(
     return []
   }
 
-  const siblingsOfTarget = MetadataUtils.getSiblingsOrdered(startingMetadata, target).map(
-    (element) => element.elementPath,
-  )
+  const siblingsOfTarget = MetadataUtils.getSiblingsOrdered(
+    startingMetadata,
+    target,
+    conditionals,
+  ).map((element) => element.elementPath)
   const element = MetadataUtils.findElementByElementPath(startingMetadata, target)
   if (
     element != null &&

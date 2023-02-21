@@ -81,6 +81,7 @@ import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
+import { ConditionalSection } from './sections/layout-section/conditional-section'
 
 export interface ElementPathElement {
   name?: string
@@ -343,6 +344,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
+          {when(
+            isFeatureEnabled('Conditional support'),
+            <ConditionalSection paths={selectedViews} />,
+          )}
           <TargetSelectorSection
             targets={props.targets}
             selectedTargetPath={props.selectedTargetPath}

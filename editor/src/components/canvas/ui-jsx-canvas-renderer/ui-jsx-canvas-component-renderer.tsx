@@ -37,6 +37,7 @@ import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -181,6 +182,12 @@ export function createComponentRendererComponent(params: {
       })
     }
 
+    const conditionals = useEditorState(
+      Substores.restOfEditor,
+      (store) => store.editor.conditionals,
+      'Conditionals',
+    )
+
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
@@ -201,6 +208,7 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
+        conditionals,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -246,6 +254,7 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
+        conditionals,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {

@@ -469,15 +469,21 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemContainer metadata',
   )
 
+  const conditionals = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.conditionals,
+    'Conditionals',
+  )
+
   const isFirstSibling = React.useMemo(() => {
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.elementPath)
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.elementPath, conditionals)
     const firstSibling = siblings.at(0)
     if (firstSibling == null) {
       return false
     }
 
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
-  }, [metadata, props.elementPath])
+  }, [metadata, props.elementPath, conditionals])
 
   return (
     <div

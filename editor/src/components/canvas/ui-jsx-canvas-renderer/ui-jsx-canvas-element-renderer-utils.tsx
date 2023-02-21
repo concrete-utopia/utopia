@@ -2,58 +2,57 @@ import React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
+  UTOPIA_INSTANCE_PATH,
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
-  UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
-import { flatMapEither, forEachRight } from '../../../core/shared/either'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { forEachRight } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
 import {
-  JSXElementChild,
-  isJSXElement,
-  JSXElement,
-  jsxAttributeValue,
+  childOrBlockIsChild,
   ElementsWithin,
+  emptyComments,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
-  JSXArbitraryBlock,
-  emptyComments,
-  jsxTextBlock,
+  isJSXElement,
   isJSXFragment,
+  JSXArbitraryBlock,
+  jsxAttributeValue,
+  JSXElement,
+  JSXElementChild,
   JSXElementLike,
-  childOrBlockIsChild,
+  jsxTextBlock,
 } from '../../../core/shared/element-template'
+import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
   jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
+import { objectMap } from '../../../core/shared/object-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import {
   ElementPath,
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
-import { Utils } from '../../../uuiui-deps'
-import { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
-import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
-import { objectMap } from '../../../core/shared/object-utils'
+import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { assertNever } from '../../../core/shared/utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
-import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import { canvasMissingJSXElementError } from './canvas-render-errors'
+import { Utils } from '../../../uuiui-deps'
 import { importedFromWhere } from '../../editor/import-utils'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { Conditionals, UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { canvasMissingJSXElementError } from './canvas-render-errors'
+import { SceneComponent } from './scene-component'
+import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -74,6 +73,7 @@ export function createLookupRender(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  conditionals: Conditionals,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
@@ -119,6 +119,7 @@ export function createLookupRender(
       code,
       highlightBounds,
       editedText,
+      conditionals,
     )
   }
 }
@@ -164,6 +165,7 @@ export function renderCoreElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  conditionals: Conditionals,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -195,6 +197,7 @@ export function renderCoreElement(
             code,
             highlightBounds,
             editedText,
+            conditionals,
           )
         : NoOpLookupRender
 
@@ -243,6 +246,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        conditionals,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -265,6 +269,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        conditionals,
       )
 
       const blockScope = {
@@ -303,6 +308,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        conditionals,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -331,7 +337,11 @@ export function renderCoreElement(
         requireResult,
         element.condition,
       )
-      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+      const override =
+        elementPath == null ||
+        conditionals[EP.toString(elementPath)] == null ||
+        conditionals[EP.toString(elementPath)]
+      const actualElement = conditionValue && override ? element.whenTrue : element.whenFalse
 
       if (childOrBlockIsChild(actualElement)) {
         const childPath = optionalMap(
@@ -362,6 +372,7 @@ export function renderCoreElement(
           code,
           highlightBounds,
           editedText,
+          conditionals,
         )
       } else {
         return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
@@ -461,6 +472,7 @@ function renderJSXElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  conditionals: Conditionals,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, elementPath)) {
@@ -496,6 +508,7 @@ function renderJSXElement(
       code,
       highlightBounds,
       editedText,
+      conditionals,
     )
   }
 

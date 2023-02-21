@@ -170,6 +170,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PROJECT_CONTENTS':
     case 'UPDATE_BRANCH_CONTENTS':
     case 'UPDATE_GITHUB_SETTINGS':
+    case 'UPDATE_CONDITIONALS':
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
