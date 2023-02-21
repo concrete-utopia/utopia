@@ -287,7 +287,6 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    await wait(10000)
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
@@ -520,7 +519,6 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      await wait(10000)
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(TestProjectWithFragmentCCCDraggedToSecond),
       )
