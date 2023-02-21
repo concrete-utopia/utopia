@@ -449,51 +449,17 @@ describe('Flex Reorder Strategy', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`<div
-        data-uid='aaa'
-        style={{ display: 'flex', gap: 10, flexDirection: 'row' }}
-      >
-        <div
-          data-uid='child-0'
-          data-testid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-3'
-          data-testid='child-3'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'yellow',
-          }}
-        />
-        <>
-          <div
-            data-uid='child-1'
-            data-testid='child-1'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'blue',
-            }}
-          />
-          <div
-            data-uid='child-2'
-            data-testid='child-2'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'purple',
-            }}
-          />
-        </>
-      </div>`),
-      )
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+      ])
     })
     it('excludes absolute siblings', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -523,55 +489,19 @@ describe('Flex Reorder Strategy', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
-        <div
-        data-uid='aaa'
-        style={{ display: 'flex', gap: 10 }}
-      >
-        <div
-          data-uid='absolute-child'
-          style={{
-            position: 'absolute',
-            top: 100,
-            left: 50,
-            width: 50,
-            height: 50,
-            backgroundColor: 'yellow',
-          }}
-        />
-        <div
-          data-uid='child-3'
-            data-testid='child-3'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'purple',
-          }}
-        />
-        <>
-          <div
-            data-uid='child-1'
-            data-testid='child-1'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'blue',
-            }}
-          />
-          <div
-            data-uid='child-2'
-            data-testid='child-2'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'purple',
-            }}
-          />
-        </>
-    </div>`),
-      )
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+      ])
     })
+
     it('works with reverse direction', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(TestProjectWithFragment('row-reverse')),
@@ -600,51 +530,17 @@ describe('Flex Reorder Strategy', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`<div
-        data-uid='aaa'
-        style={{ display: 'flex', gap: 10, flexDirection: 'row-reverse' }}
-      >
-        <div
-          data-uid='child-0'
-            data-testid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-3'
-          data-testid='child-3'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'yellow',
-          }}
-        />
-        <>
-          <div
-            data-uid='child-1'
-            data-testid='child-1'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'blue',
-            }}
-          />
-          <div
-            data-uid='child-2'
-            data-testid='child-2'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'purple',
-            }}
-          />
-        </>
-      </div>`),
-      )
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+      ])
     })
   })
 
