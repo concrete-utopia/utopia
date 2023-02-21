@@ -98,6 +98,8 @@ const resizeStrategies: MetaCanvasStrategy = (
     ],
   )
 }
+
+// TODO move this to resizeStrategies after insertion is fixed
 const flexResizeMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -156,18 +158,6 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
-export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
-  ...AncestorCompatibleStrategies,
-  preventOnRootElements(resizeStrategies),
-  preventOnRootElements(flexResizeMetaStrategy),
-  propertyControlStrategies,
-  drawToInsertMetaStrategy,
-  dragToInsertMetaStrategy,
-  ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
-  keyboardShortcutStrategies,
-  drawToInsertTextStrategy,
-]
-
 export const RegisteredCanvasStrategiesWithoutFlexResize: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
@@ -177,6 +167,11 @@ export const RegisteredCanvasStrategiesWithoutFlexResize: Array<MetaCanvasStrate
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
+]
+
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
+  ...RegisteredCanvasStrategiesWithoutFlexResize,
+  preventOnRootElements(flexResizeMetaStrategy),
 ]
 
 export function pickCanvasStateFromEditorState(
