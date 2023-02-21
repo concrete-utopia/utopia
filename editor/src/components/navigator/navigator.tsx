@@ -19,6 +19,7 @@ import { last } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { css } from '@emotion/react'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -177,7 +178,7 @@ export const NavigatorComponent = React.memo(() => {
       id={NavigatorContainerId}
       data-testid={NavigatorContainerId}
       tabIndex={-1}
-      style={{
+      css={{
         zIndex: 1,
         flexGrow: 1,
         height: '100%',
@@ -186,6 +187,10 @@ export const NavigatorComponent = React.memo(() => {
         alignItems: 'stretch',
         justifyContent: 'stretch',
         overscrollBehavior: 'contain',
+        '--paneHoverOpacity': 0,
+        '&:hover': {
+          '--paneHoverOpacity': 1,
+        },
       }}
     >
       <SectionBodyArea

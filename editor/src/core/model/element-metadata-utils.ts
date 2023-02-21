@@ -2030,6 +2030,8 @@ export function createFakeMetadataForElement(
   const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
   specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
   specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
+  specialSizeMeasurements.parentFlexDirection =
+    parentElement?.specialSizeMeasurements.flexDirection ?? 'row'
 
   return elementInstanceMetadata(
     path,

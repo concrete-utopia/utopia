@@ -1,12 +1,10 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasVector,
+  isInfinityRectangle,
   nullIfInfinity,
   windowPoint,
 } from '../../../../core/shared/math-utils'
@@ -327,8 +325,11 @@ function sizeLabelContents(
   }
 
   if (selectedElements.length === 1) {
-    const element = MetadataUtils.findElementByElementPath(metadata, selectedElements[0])
-    if (element == null) {
+    const globalFrame = MetadataUtils.findElementByElementPath(
+      metadata,
+      selectedElements[0],
+    )?.globalFrame
+    if (globalFrame == null || isInfinityRectangle(globalFrame)) {
       return null
     }
 
@@ -336,10 +337,7 @@ function sizeLabelContents(
       detectFillHugFixedState('horizontal', metadata, selectedElements[0])?.type ?? 'fixed'
     const vertical =
       detectFillHugFixedState('vertical', metadata, selectedElements[0])?.type ?? 'fixed'
-    return [
-      sizeLabel(horizontal, element.specialSizeMeasurements.clientWidth),
-      sizeLabel(vertical, element.specialSizeMeasurements.clientHeight),
-    ]
+    return [sizeLabel(horizontal, globalFrame.width), sizeLabel(vertical, globalFrame.height)]
   }
 
   const boundingBox = boundingRectangleArray(

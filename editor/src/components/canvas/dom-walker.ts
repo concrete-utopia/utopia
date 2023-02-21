@@ -348,30 +348,42 @@ function runSelectiveDomWalker(
        * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
        * which is the same as the "rootest" element we are looking for
        */
-      const element = document.querySelector(
+      const foundElement = document.querySelector(
         `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
       ) as HTMLElement | null
 
-      if (element != null) {
-        const pathsWithStrings = getPathWithStringsOnDomElement(element)
-        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-          const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-          return validPaths.has(staticPath)
-        })
+      if (foundElement != null) {
+        const collectForElement = (element: Node) => {
+          if (element instanceof HTMLElement) {
+            const pathsWithStrings = getPathWithStringsOnDomElement(element)
+            if (pathsWithStrings.length == 0) {
+              // Keep walking until we find an element with a path
+              element.childNodes.forEach(collectForElement)
+            } else {
+              const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+                const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
+                return validPaths.has(staticPath)
+              })
 
-        const { collectedMetadata } = collectAndCreateMetadataForElement(
-          element,
-          parentPoint,
-          path, // TODO is this good enough?
-          scale,
-          containerRectLazy,
-          foundValidPaths.map((p) => p.path),
-          domWalkerMutableState.invalidatedPathsForStylesheetCache,
-          selectedViews,
-          domWalkerMutableState.invalidatedPaths,
-        )
+              const { collectedMetadata } = collectAndCreateMetadataForElement(
+                element,
+                parentPoint,
+                path,
+                scale,
+                containerRectLazy,
+                foundValidPaths.map((p) => p.path),
+                domWalkerMutableState.invalidatedPathsForStylesheetCache,
+                selectedViews,
+                domWalkerMutableState.invalidatedPaths,
+              )
 
-        mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
+              mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
+            }
+          }
+        }
+
+        collectForElement(foundElement)
+        foundElement.childNodes.forEach(collectForElement)
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
@@ -840,6 +852,8 @@ function getSpecialMeasurements(
   const parentFlexDirection = eitherToMaybe(
     parseFlexDirection(parentElementStyle?.flexDirection, null),
   )
+  const parentJustifyContent = getFlexJustifyContent(parentElementStyle?.justifyContent ?? null)
+
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
@@ -860,6 +874,14 @@ function getSpecialMeasurements(
     parseCSSLength(elementStyle.paddingRight),
     parseCSSLength(elementStyle.paddingBottom),
     parseCSSLength(elementStyle.paddingLeft),
+  )
+
+  const parentPadding = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(parentElementStyle?.paddingTop),
+    parseCSSLength(parentElementStyle?.paddingRight),
+    parseCSSLength(parentElementStyle?.paddingBottom),
+    parseCSSLength(parentElementStyle?.paddingLeft),
   )
 
   let naturalWidth: number | null = null
@@ -951,7 +973,11 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parentJustifyContent,
     parsedFlexGapValue,
+    isRight(parentPadding)
+      ? parentPadding.value
+      : sides(undefined, undefined, undefined, undefined),
     gap,
     flexDirection,
     justifyContent,

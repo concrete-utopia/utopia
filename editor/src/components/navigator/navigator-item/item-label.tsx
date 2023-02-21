@@ -84,7 +84,7 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           backgroundColor: 'transparent',
           paddingTop: 3,
           paddingBottom: 3,
-          marginLeft: 4,
+          marginLeft: 6,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
