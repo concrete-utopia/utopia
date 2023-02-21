@@ -17,7 +17,7 @@ import {
 import { EdgePosition, edgePosition, EdgePositionTopRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
-import { FLEX_RESIZE_STRATEGY_ID } from './flex-resize-basic-strategy'
+import { FLEX_RESIZE_STRATEGY_ID } from './flex-resize-strategy'
 
 async function dragResizeControl(
   renderResult: EditorRenderResult,
@@ -256,117 +256,6 @@ describe('Flex Resize', () => {
     })
     it('resizes a flex element from edgePosition 0.5, 1 with drag vector (-15, -25)', async () => {
       await resizeTestColumn(edgePosition(0.5, 1), canvasPoint({ x: -15, y: -25 }), 80, 165)
-    })
-  })
-
-  describe('when the element has missing dimensions', () => {
-    describe('both missing', () => {
-      describe('horizontal movement', () => {
-        it('does nothing', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(1, 0),
-            canvasPoint({ x: 15, y: 0 }),
-            {},
-            {},
-            false,
-          )
-        })
-      })
-
-      describe('vertical movement', () => {
-        it('does nothing', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 0, y: 15 }),
-            {},
-            {},
-            false,
-          )
-        })
-      })
-
-      describe('diagonal movement', () => {
-        it('does nothing', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 10, y: 15 }),
-            {},
-            {},
-            false,
-          )
-        })
-      })
-    })
-
-    describe('width missing', () => {
-      describe('horizontal movement', () => {
-        it('does nothing', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(1, 0),
-            canvasPoint({ x: 15, y: 0 }),
-            {},
-            {},
-            false,
-          )
-        })
-      })
-
-      describe('vertical movement', () => {
-        it('adds the height, does not add the width', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 0, y: 15 }),
-            { height: 20 },
-            { height: 5 },
-          )
-        })
-      })
-
-      describe('diagonal movement', () => {
-        it('updates the height, does not add the width', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 10, y: 15 }),
-            { height: 20 },
-            { height: 5 },
-          )
-        })
-      })
-    })
-
-    describe('height missing', () => {
-      describe('horizontal movement', () => {
-        it('updates only the width', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(1, 0),
-            canvasPoint({ x: 15, y: 0 }),
-            { width: 15 },
-            { width: 30 },
-          )
-        })
-      })
-
-      describe('vertical movement', () => {
-        it('does nothing', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 0, y: 15 }),
-            { width: 15 },
-            { width: 15 },
-          )
-        })
-      })
-
-      describe('diagonal movement', () => {
-        it('does not add the height and updates width', async () => {
-          await resizeWithoutDimensions(
-            edgePosition(0, 0),
-            canvasPoint({ x: 10, y: 15 }),
-            { width: 15 },
-            { width: 5 },
-          )
-        })
-      })
     })
   })
 

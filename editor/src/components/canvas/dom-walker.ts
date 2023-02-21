@@ -852,6 +852,8 @@ function getSpecialMeasurements(
   const parentFlexDirection = eitherToMaybe(
     parseFlexDirection(parentElementStyle?.flexDirection, null),
   )
+  const parentJustifyContent = getFlexJustifyContent(parentElementStyle?.justifyContent ?? null)
+
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
@@ -872,6 +874,14 @@ function getSpecialMeasurements(
     parseCSSLength(elementStyle.paddingRight),
     parseCSSLength(elementStyle.paddingBottom),
     parseCSSLength(elementStyle.paddingLeft),
+  )
+
+  const parentPadding = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(parentElementStyle?.paddingTop),
+    parseCSSLength(parentElementStyle?.paddingRight),
+    parseCSSLength(parentElementStyle?.paddingBottom),
+    parseCSSLength(parentElementStyle?.paddingLeft),
   )
 
   let naturalWidth: number | null = null
@@ -963,7 +973,11 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parentJustifyContent,
     parsedFlexGapValue,
+    isRight(parentPadding)
+      ? parentPadding.value
+      : sides(undefined, undefined, undefined, undefined),
     gap,
     flexDirection,
     justifyContent,
