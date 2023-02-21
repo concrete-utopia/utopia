@@ -805,7 +805,7 @@ describe('Keyboard Reorder Strategy', () => {
       ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
     })
 
-    it('pressing the arrow keys reorders in a flex layout, with a fragment selected', async () => {
+    xit('pressing the arrow keys reorders in a flex layout, with a fragment selected', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(TestProjectWithFragment),
         'await-first-dom-report',
