@@ -15,6 +15,14 @@
       href="<%- UTOPIA_DOMAIN %>/vscode/vscode/vs/workbench/workbench.web.api.css?hash=<%- UTOPIA_SHA %>"
     />
     <script src="<%- UTOPIA_DOMAIN %>/vscode/extensions.js?hash=<%- UTOPIA_SHA %>"></script>
+     <style>
+
+      .monaco-workbench .part.editor>.content .editor-group-container>.title .tabs-container { align-items: center;}
+      .monaco-workbench .part.editor>.content .editor-group-container>.title .tabs-container>.tab .tab-label a, .monaco-workbench .part.editor>.content .editor-group-container>.title .title-label a { font-size: 11px;}
+      .monaco-workbench .part.editor>.content .editor-group-container.active>.title .tabs-container>.tab>.tab-actions .action-label.codicon { font-size: 11px;}
+      .monaco-workbench .part.editor > .content .editor-group-container > .title .tabs-container > .tab { height: 27px; borderRadius: 5px;} 
+
+    </style> 
   </head>
 
   <body aria-label=""></body>
