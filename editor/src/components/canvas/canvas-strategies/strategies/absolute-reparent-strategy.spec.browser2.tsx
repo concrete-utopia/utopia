@@ -999,7 +999,7 @@ describe('children-affecting reparent tests', () => {
         const dragDelta = windowPoint({ x: -75, y: 110 })
         await dragElement(
           renderResult,
-          'child-2',
+          'ccc',
           dragDelta,
           cmdModifier,
           {
@@ -1082,19 +1082,18 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        // no reparent have happened
         expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
           'utopia-storyboard-uid',
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <child-1 is not the direct child of bbb
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-2',
         ])
       })
     })
