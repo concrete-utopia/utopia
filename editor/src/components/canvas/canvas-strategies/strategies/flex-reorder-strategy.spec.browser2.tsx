@@ -544,6 +544,91 @@ describe('Flex Reorder Strategy', () => {
     })
   })
 
+  describe('reordering elements within a fragment, in a flex context', () => {
+    setFeatureForTests('Fragment support', true)
+
+    it('works with normal direction', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row')),
+        'await-first-dom-report',
+      )
+
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        startPoint,
+        canvasPoint({ x: 100, y: 0 }),
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'FLEX_REORDER',
+            )
+          },
+        },
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1', // <- child-1 is reordered within the parent fragment
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+      ])
+    })
+
+    it('works with reverse direction', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row-reverse')),
+        'await-first-dom-report',
+      )
+
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        startPoint,
+        canvasPoint({ x: -20, y: 0 }),
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'FLEX_REORDER',
+            )
+          },
+        },
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1', // <- child-1 is reordered within the parent fragment, despite the drag direction
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+      ])
+    })
+  })
+
   xdescribe('projects with fragments, with fragments support enabled', () => {
     setFeatureForTests('Fragment support', true)
 
