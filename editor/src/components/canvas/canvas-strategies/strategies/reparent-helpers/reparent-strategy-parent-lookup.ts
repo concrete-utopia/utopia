@@ -134,7 +134,10 @@ function findValidTargetsUnderPoint(
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
     // TODO: later we should allow reparenting into fragments
-    if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, target)) {
+    if (
+      MetadataUtils.isElementPathFragmentFromMetadata(metadata, target) ||
+      MetadataUtils.isElementPathConditionalFromMetadata(metadata, target)
+    ) {
       return false
     }
 
