@@ -14,6 +14,9 @@ import {
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import * as EP from '../../../../core/shared/element-path'
+import { setFeatureEnabled } from '../../../../utils/feature-switches'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -113,6 +116,104 @@ const defaultTestCode = `
       />
     </div>
   </div>
+`
+
+const TestProjectWithFragment = `
+import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 52,
+        top: 480,
+        width: 669,
+        height: 338,
+        display: 'flex',
+        gap: 33,
+      }}
+      data-uid='parent2'
+      data-testid='parent2'
+    >
+      <div
+        style={{
+          backgroundColor: '#ff0000',
+          width: 156,
+          height: 184,
+          contain: 'layout',
+        }}
+        data-uid='0b5'
+      />
+
+      <div
+        style={{
+          backgroundColor: '#00abff',
+          width: 123,
+          height: 215,
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+      />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 47,
+        top: 89,
+        width: 669,
+        height: 338,
+        display: 'flex',
+        gap: 33,
+      }}
+      data-uid='parent1'
+      data-testid='parent1'
+    >
+      <div
+        style={{
+          backgroundColor: '#ff0000',
+          width: 156,
+          height: 184,
+          contain: 'layout',
+        }}
+        data-uid='aac'
+      />
+      <React.Fragment data-uid='fragment'>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 94,
+            height: 171,
+            contain: 'layout',
+          }}
+          data-uid='b71'
+          data-testid='fragment-child1'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 156,
+            height: 184,
+            contain: 'layout',
+          }}
+          data-uid='050'
+        />
+      </React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#00abff',
+          width: 123,
+          height: 215,
+          contain: 'layout',
+        }}
+        data-uid='aad'
+      />
+    </div>
+  </Storyboard>
+)
 `
 
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
@@ -260,6 +361,62 @@ describe('Flex Reparent To Flex Strategy', () => {
     </div>
   `),
     )
+  })
+
+  describe('with fragments', () => {
+    before(() => setFeatureEnabled('Fragment support', true))
+    after(() => setFeatureEnabled('Fragment support', false))
+
+    it('reparents fragment to other flex parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectWithFragment,
+        'await-first-dom-report',
+      )
+
+      const targetFlexParent = await renderResult.renderedDOM.findByTestId('parent2')
+      const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
+      const targetFlexParentEnd = {
+        x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
+        y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
+      }
+
+      const flexChildToReparent = await renderResult.renderedDOM.findByTestId('fragment-child1')
+      const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
+      const flexChildToReparentCenter = {
+        x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
+        y: flexChildToReparentRect.y + flexChildToReparentRect.height / 2,
+      }
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/parent1/fragment`),
+      ])
+
+      const dragDelta = windowPoint({
+        x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 5,
+        y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
+      })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, flexChildToReparentCenter, dragDelta)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      const navigatorTargets = renderResult
+        .getEditorState()
+        .derived.visibleNavigatorTargets.map(EP.toString)
+      expect(navigatorTargets).toEqual([
+        'utopia-storyboard-uid/parent2',
+        'utopia-storyboard-uid/parent2/0b5',
+        'utopia-storyboard-uid/parent2/aaa',
+        'utopia-storyboard-uid/parent2/fragment',
+        'utopia-storyboard-uid/parent2/fragment/b71',
+        'utopia-storyboard-uid/parent2/fragment/050',
+        'utopia-storyboard-uid/parent1',
+        'utopia-storyboard-uid/parent1/aac',
+        'utopia-storyboard-uid/parent1/aad',
+      ])
+    })
   })
 
   it('reparents flex as first child when moving the mouse to the left edge of the first child', async () => {
