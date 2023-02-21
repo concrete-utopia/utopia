@@ -17,7 +17,7 @@ import {
 import { EdgePosition, edgePosition, EdgePositionTopRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
-import { FLEX_RESIZE_STRATEGY_ID } from './flex-resize-basic-strategy'
+import { FLEX_RESIZE_STRATEGY_ID } from './flex-resize-strategy'
 
 async function dragResizeControl(
   renderResult: EditorRenderResult,
