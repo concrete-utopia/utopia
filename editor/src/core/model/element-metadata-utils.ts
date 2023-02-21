@@ -1876,6 +1876,9 @@ function fillSpyOnlyMetadata(
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
+        layoutSystemForChildren: allElemsEqual(parentLayoutSystemFromChildren)
+          ? parentLayoutSystemFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentLayoutSystem,
         parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
           ? parentLayoutSystemFromChildren[0]
           : spyElem.specialSizeMeasurements.parentLayoutSystem,
