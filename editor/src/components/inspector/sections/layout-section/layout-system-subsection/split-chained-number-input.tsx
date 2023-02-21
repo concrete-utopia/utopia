@@ -240,7 +240,15 @@ const actionsForSplitChainedEvent =
         jsxAttributeValue(
           normalizedValues.length === 1 && normalizedValues[0] != null
             ? printCSSNumber(normalizedValues[0], 'px')
-            : mapDropNulls((v) => v, normalizedValues)
+            : mapDropNulls((v) => {
+                if (v == null) {
+                  return null
+                }
+                return {
+                  ...v,
+                  unit: useShorthand && v.unit == null ? 'px' : v.unit,
+                }
+              }, normalizedValues)
                 .map((v) => printCSSNumber(v, null))
                 .join(' '),
           emptyComments,

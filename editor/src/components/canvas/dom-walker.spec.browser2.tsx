@@ -4,18 +4,25 @@ import { objectMap } from '../../core/shared/object-utils'
 import { renderTestEditorWithCode, TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import * as EP from '../../core/shared/element-path'
+import * as PP from '../../core/shared/property-path'
 import { selectComponents } from '../editor/actions/meta-actions'
 import {
+  canvasPoint,
   canvasRectangle,
   infinityCanvasRectangle,
   infinityLocalRectangle,
   localRectangle,
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
+  offsetPoint,
   zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
 import { MapLike } from 'typescript'
-import { duplicateSelected } from '../editor/actions/action-creators'
+import { duplicateSelected, setProp_UNSAFE } from '../editor/actions/action-creators'
+import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../utils/utils.test-utils'
+import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-helpers.test-utils'
 
 disableStoredStateforTests()
 
@@ -198,6 +205,104 @@ describe('DOM Walker tests', () => {
     expect(
       globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].width,
     ).toBeLessThan(globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].width)
+  })
+
+  it('Handles path invalidation caused by the observers when no scene is present', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectWithoutScene,
+      'await-first-dom-report',
+    )
+    const metadataBeforeUpdate = renderResult.getEditorState().editor.jsxMetadata
+    const globalFramesBeforeUpdate = objectMap(
+      (element) => zeroRectIfNullOrInfinity(element.globalFrame),
+      metadataBeforeUpdate,
+    )
+
+    const targetString = `${BakedInStoryboardUID}/flex-container`
+    const targetElement = EP.fromString(targetString)
+    await renderResult.dispatch(selectComponents([targetElement], false), true)
+    await renderResult.dispatch(
+      [
+        setProp_UNSAFE(
+          targetElement,
+          PP.create('style', 'left'),
+          jsxAttributeValue(5, emptyComments),
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const metadataAfterUpdate = renderResult.getEditorState().editor.jsxMetadata
+    const globalFramesAfterUpdate = objectMap(
+      (element) => zeroRectIfNullOrInfinity(element.globalFrame),
+      metadataAfterUpdate,
+    )
+
+    // Adjusting the left value of the parent should have shifted all of the children to the left
+
+    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x).toBeLessThan(
+      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x,
+    )
+    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x).toBeLessThan(
+      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x,
+    )
+    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x).toBeLessThan(
+      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x,
+    )
+  })
+
+  it('Selective dom walking includes children', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectWithoutScene,
+      'await-first-dom-report',
+    )
+    const metadataBeforeUpdate = renderResult.getEditorState().editor.jsxMetadata
+    const globalFramesBeforeUpdate = objectMap(
+      (element) => zeroRectIfNullOrInfinity(element.globalFrame),
+      metadataBeforeUpdate,
+    )
+
+    const targetString = `${BakedInStoryboardUID}/flex-container`
+    const targetElement = EP.fromString(targetString)
+    await renderResult.dispatch(selectComponents([targetElement], false), true)
+
+    // Drag to resize, which will trigger the selective dom walker on the target only during the drag
+    const resizeControl = renderResult.renderedDOM.getByTestId(`resize-control-0-0.5`)
+    const resizeControlBounds = resizeControl.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const startPoint = canvasPoint(
+      slightlyOffsetPointBecauseVeryWeirdIssue({
+        x: resizeControlBounds.x + resizeControlBounds.width / 2,
+        y: resizeControlBounds.y + resizeControlBounds.height / 2,
+      }),
+    )
+
+    const endPoint = offsetPoint(startPoint, canvasPoint({ x: -10, y: 0 }))
+
+    await mouseMoveToPoint(resizeControl, startPoint)
+    await mouseDownAtPoint(resizeControl, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const metadataAfterUpdate = renderResult.getEditorState().editor.jsxMetadata
+    const globalFramesAfterUpdate = objectMap(
+      (element) => zeroRectIfNullOrInfinity(element.globalFrame),
+      metadataAfterUpdate,
+    )
+
+    // Adjusting the left value of the parent should have shifted all of the children to the left
+
+    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x).toBeLessThan(
+      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/aaa`].x,
+    )
+    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x).toBeLessThan(
+      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/bbb`].x,
+    )
+    expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x).toBeLessThan(
+      globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x,
+    )
   })
 })
 

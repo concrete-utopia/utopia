@@ -39,9 +39,6 @@ export const BottomDropTargetLineTestId = (safeComponentId: string): string =>
 export const DragItemTestId = (safeComponentId: string): string =>
   `navigator-item-drag-${safeComponentId}`
 
-export const NavigatorItemTestId = (safeComponentId: string): string =>
-  `navigator-item-${safeComponentId}`
-
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
 
@@ -479,6 +476,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
   }, [metadata, props.elementPath])
 
+  const shouldDropLinesInterceptMouseEvents = dropTargetHintType != null
+
   return (
     <div
       data-testid={DragItemTestId(safeComponentId)}
@@ -493,6 +492,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           testId={TopDropTargetLineTestId(safeComponentId)}
           ref={topDropRef}
           shouldBeShown={isOverTopHint}
+          shouldAcceptMouseEvents={shouldDropLinesInterceptMouseEvents}
           margin={margin}
         />,
       )}
@@ -523,6 +523,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         testId={BottomDropTargetLineTestId(safeComponentId)}
         ref={bottomDropRef}
         shouldBeShown={shouldShowBottomHint}
+        shouldAcceptMouseEvents={shouldDropLinesInterceptMouseEvents}
         margin={margin}
       />
     </div>

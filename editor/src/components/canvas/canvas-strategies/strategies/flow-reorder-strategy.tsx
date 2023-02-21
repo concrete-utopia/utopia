@@ -2,7 +2,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
-  CanvasStrategy,
   controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,

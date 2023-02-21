@@ -1,22 +1,7 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
-import { foldEither, isLeft, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
-import {
-  CanvasPoint,
-  canvasRectangle,
-  CanvasRectangle,
-  isInfinityRectangle,
-  offsetPoint,
-} from '../../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { EdgePosition, oppositeEdgePosition } from '../../canvas-types'
-import {
-  isEdgePositionACorner,
-  isEdgePositionAHorizontalEdge,
-  pickPointOnRect,
-} from '../../canvas-utils'
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
@@ -46,6 +31,7 @@ import {
   resizeBoundingBox,
 } from './resize-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
+import { getElementDimensions } from './flex-resize-helpers'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -234,92 +220,5 @@ export function flexResizeBasicStrategy(
       // Fallback for when the checks above are not satisfied.
       return emptyStrategyApplicationResult
     },
-  }
-}
-
-export function resizeWidthHeight(
-  boundingBox: CanvasRectangle,
-  drag: CanvasPoint,
-  edgePosition: EdgePosition,
-): CanvasRectangle {
-  if (isEdgePositionACorner(edgePosition)) {
-    const startingCornerPosition = {
-      x: 1 - edgePosition.x,
-      y: 1 - edgePosition.y,
-    } as EdgePosition
-
-    let oppositeCorner = pickPointOnRect(boundingBox, startingCornerPosition)
-    const draggedCorner = pickPointOnRect(boundingBox, edgePosition)
-    const newCorner = offsetPoint(draggedCorner, drag)
-
-    const newWidth = Math.abs(oppositeCorner.x - newCorner.x)
-    const newHeight = Math.abs(oppositeCorner.y - newCorner.y)
-
-    return canvasRectangle({
-      x: boundingBox.x,
-      y: boundingBox.y,
-      width: newWidth,
-      height: newHeight,
-    })
-  } else {
-    const isEdgeHorizontalSide = isEdgePositionAHorizontalEdge(edgePosition)
-
-    const oppositeSideCenterPosition = oppositeEdgePosition(edgePosition)
-
-    const oppositeSideCenter = pickPointOnRect(boundingBox, oppositeSideCenterPosition)
-    const draggedSideCenter = pickPointOnRect(boundingBox, edgePosition)
-
-    if (isEdgeHorizontalSide) {
-      const newHeight = Math.abs(oppositeSideCenter.y - (draggedSideCenter.y + drag.y))
-      return canvasRectangle({
-        x: boundingBox.x,
-        y: boundingBox.y,
-        width: boundingBox.width,
-        height: newHeight,
-      })
-    } else {
-      const newWidth = Math.abs(oppositeSideCenter.x - (draggedSideCenter.x + drag.x))
-      return canvasRectangle({
-        x: boundingBox.x,
-        y: boundingBox.y,
-        width: newWidth,
-        height: boundingBox.height,
-      })
-    }
-  }
-}
-
-type ElementDimensions = {
-  width: number | null
-  height: number | null
-  flexBasis: number | null
-} | null
-
-const getElementDimensions = (metadata: ElementInstanceMetadata): ElementDimensions => {
-  const getOffsetPropValue = (
-    name: 'width' | 'height' | 'flexBasis',
-    attrs: PropsOrJSXAttributes,
-  ): number | null => {
-    return foldEither(
-      (_) => null,
-      (v) => v?.value ?? null,
-      getLayoutProperty(name, attrs, styleStringInArray),
-    )
-  }
-
-  if (isLeft(metadata.element)) {
-    return null
-  }
-  const { value } = metadata.element
-  if (!isJSXElement(value)) {
-    return null
-  }
-
-  const attrs = right(value.props)
-
-  return {
-    width: getOffsetPropValue('width', attrs),
-    height: getOffsetPropValue('height', attrs),
-    flexBasis: getOffsetPropValue('flexBasis', attrs),
   }
 }

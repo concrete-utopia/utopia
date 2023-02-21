@@ -66,6 +66,7 @@ import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import {
   getDeepestPathOnDomElement,
+  getPathStringsOnDomElement,
   getPathWithStringsOnDomElement,
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
@@ -162,16 +163,31 @@ function isScene(node: Node): node is HTMLElement {
 }
 
 function findParentScene(target: HTMLElement): string | null {
+  // First check if the node is a Scene element, which could be nested at any level
   const sceneID = getDOMAttribute(target, UTOPIA_SCENE_ID_KEY)
   if (sceneID != null) {
     return sceneID
   } else {
-    if (target.parentElement != null) {
-      return findParentScene(target.parentElement)
-    } else {
-      return null
+    const parent = target.parentElement
+
+    if (parent != null) {
+      const parentPath = getDeepestPathOnDomElement(parent)
+      const parentIsStoryboard = parentPath == null || EP.isStoryboardPath(parentPath)
+      if (parentIsStoryboard) {
+        // If the parent element is the storyboard, then we've reached the top and have to stop
+        const allPaths = getPathStringsOnDomElement(target)
+        allPaths.sort((a, b) => a.length - b.length)
+        const shallowestPath = allPaths[0]
+        if (shallowestPath != null) {
+          return shallowestPath
+        }
+      } else {
+        return findParentScene(parent)
+      }
     }
   }
+
+  return null
 }
 
 function lazyValue<T>(getter: () => T) {
@@ -332,30 +348,42 @@ function runSelectiveDomWalker(
        * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
        * which is the same as the "rootest" element we are looking for
        */
-      const element = document.querySelector(
+      const foundElement = document.querySelector(
         `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
       ) as HTMLElement | null
 
-      if (element != null) {
-        const pathsWithStrings = getPathWithStringsOnDomElement(element)
-        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-          const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-          return validPaths.has(staticPath)
-        })
+      if (foundElement != null) {
+        const collectForElement = (element: Node) => {
+          if (element instanceof HTMLElement) {
+            const pathsWithStrings = getPathWithStringsOnDomElement(element)
+            if (pathsWithStrings.length == 0) {
+              // Keep walking until we find an element with a path
+              element.childNodes.forEach(collectForElement)
+            } else {
+              const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+                const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
+                return validPaths.has(staticPath)
+              })
 
-        const { collectedMetadata } = collectAndCreateMetadataForElement(
-          element,
-          parentPoint,
-          path, // TODO is this good enough?
-          scale,
-          containerRectLazy,
-          foundValidPaths.map((p) => p.path),
-          domWalkerMutableState.invalidatedPathsForStylesheetCache,
-          selectedViews,
-          domWalkerMutableState.invalidatedPaths,
-        )
+              const { collectedMetadata } = collectAndCreateMetadataForElement(
+                element,
+                parentPoint,
+                path,
+                scale,
+                containerRectLazy,
+                foundValidPaths.map((p) => p.path),
+                domWalkerMutableState.invalidatedPathsForStylesheetCache,
+                selectedViews,
+                domWalkerMutableState.invalidatedPaths,
+              )
 
-        mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
+              mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
+            }
+          }
+        }
+
+        collectForElement(foundElement)
+        foundElement.childNodes.forEach(collectForElement)
       }
     })
     const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
@@ -824,6 +852,8 @@ function getSpecialMeasurements(
   const parentFlexDirection = eitherToMaybe(
     parseFlexDirection(parentElementStyle?.flexDirection, null),
   )
+  const parentJustifyContent = getFlexJustifyContent(parentElementStyle?.justifyContent ?? null)
+
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
@@ -844,6 +874,14 @@ function getSpecialMeasurements(
     parseCSSLength(elementStyle.paddingRight),
     parseCSSLength(elementStyle.paddingBottom),
     parseCSSLength(elementStyle.paddingLeft),
+  )
+
+  const parentPadding = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(parentElementStyle?.paddingTop),
+    parseCSSLength(parentElementStyle?.paddingRight),
+    parseCSSLength(parentElementStyle?.paddingBottom),
+    parseCSSLength(parentElementStyle?.paddingLeft),
   )
 
   let naturalWidth: number | null = null
@@ -935,7 +973,11 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    parentJustifyContent,
     parsedFlexGapValue,
+    isRight(parentPadding)
+      ? parentPadding.value
+      : sides(undefined, undefined, undefined, undefined),
     gap,
     flexDirection,
     justifyContent,

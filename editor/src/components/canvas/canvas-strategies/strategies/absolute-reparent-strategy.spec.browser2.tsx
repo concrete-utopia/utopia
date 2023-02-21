@@ -19,7 +19,7 @@ import {
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { CSSCursor } from '../../canvas-types'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { setFeatureForTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForTests, wait } from '../../../../utils/utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -949,3 +949,191 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     ])
   })
 })
+;(['div', 'fragment'] as const).forEach((divOrFragment) => {
+  describe(`Absolute reparent with children-affecting element ${divOrFragment} in the mix`, () => {
+    it('cannot reparent into a children-affecting div', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        testProjectWithUnstyledDivOrFragment(divOrFragment),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -50, y: 250 })
+      await dragElement(
+        renderResult,
+        'ccc',
+        dragDelta,
+        cmdModifier,
+        {
+          cursor: CSSCursor.Move,
+        },
+        null,
+      )
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of children-affecting
+      ])
+    })
+
+    it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        testProjectWithUnstyledDivOrFragment(divOrFragment),
+        'await-first-dom-report',
+      )
+
+      const startingElementOrder = Object.keys(renderResult.getEditorState().editor.spyMetadata)
+
+      const dragDelta = windowPoint({ x: 0, y: -50 })
+      await dragElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // no reparent have happened
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual(
+        startingElementOrder,
+      )
+    })
+
+    it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        testProjectWithUnstyledDivOrFragment(divOrFragment),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: 100, y: -250 })
+      await dragElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // no reparent have happened
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-2', // <- child-2 is now a child of aaa
+      ])
+    })
+
+    it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        testProjectWithUnstyledDivOrFragment(divOrFragment),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: 50, y: 0 })
+      await dragElement(renderResult, 'child-1', dragDelta, cmdModifier, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // no reparent have happened
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <- child-1 is now a direct children of bbb
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
+      ])
+    })
+  })
+})
+
+function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment'): string {
+  return makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 70,
+            top: 148,
+            width: 450,
+            height: 250,
+          }}
+          data-uid='bbb'
+        >
+          ${
+            divOrFragment === 'div'
+              ? `<div data-uid='children-affecting'>`
+              : `<React.Fragment data-uid='children-affecting'>`
+          }
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: -30,
+                top: 120,
+                width: 70,
+                height: 50,
+              }}
+              data-uid='child-1'
+              data-testid='child-1'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 150,
+                top: 190,
+                width: 100,
+                height: 60,
+              }}
+              data-uid='child-2'
+              data-testid='child-2'
+            />
+          ${divOrFragment === 'div' ? `</div>` : `</React.Fragment>`}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 90,
+              height: 62,
+              contain: 'layout',
+              position: 'absolute',
+              left: 210,
+              top: 0,
+            }}
+            data-uid='child-3'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#0041B3A1',
+            position: 'absolute',
+            left: 170,
+            top: 40,
+            width: 100,
+            height: 60,
+          }}
+          data-uid='ccc'
+          data-testid='ccc'
+        />
+      </div>
+  `)
+}

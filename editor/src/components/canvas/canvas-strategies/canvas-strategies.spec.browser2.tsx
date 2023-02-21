@@ -50,6 +50,10 @@ async function getGuidelineRenderResult(scale: number) {
   const renderResult = await renderTestEditorWithCode(
     makeTestProjectCodeWithSnippet(`
       <div
+        style={{
+          width: 300,
+          height: 300,
+        }}
         data-uid='div-parent'
         data-testid='div-parent'>
         <div

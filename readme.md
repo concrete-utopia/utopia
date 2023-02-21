@@ -24,14 +24,20 @@ To contribute to Utopia, you'll need to clone the repo, install the prerequisite
 - [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If using Windows follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
 - [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 
-NB: If you're on  Windows, you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
+NB: If you're on Windows, you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
+
+## You need to generate a `GITHUB_TOKEN`
+
+A Github token is required to build VS Code, as there are some dependencies downloaded via the Github API which will be rate limited without one, causing the build to sporadically fail with a 403 error. To prevent that, generate a new Github token [here](https://github.com/settings/tokens) (if you have access to fine-grained tokens, use one of those, but if not then a "classic" token will be fine).
+
+Give it the longest expiration time possible, readonly public access, and don't give it any permissions for anything else. Then copy that token somewhere so that you can use it in the next step.
 
 ## Run the Editor for the first time
 
 The first time running the editor, run the following script:
 
 ```
-start-full
+GITHUB_TOKEN=<token from above> start-full
 ```
 
 (You'll only need to do this once, and it will take quite some time to download and build various dependencies. After that, you can usually use `start-minimal`.)
@@ -325,7 +331,8 @@ Behind the scenes, Karma runs a webpack dev server in watch mode, which means if
 
 ### Browser tests failing to run with `Error: spawn Unknown system error -86`
 
-This is most likely because the browser tests are trying to run a headless version of Chrome built for Intel chips on an Mac with an ARM chip. If that's the case, [Rosetta 2](https://support.apple.com/en-gb/HT211861) should solve your problem: 
+This is most likely because the browser tests are trying to run a headless version of Chrome built for Intel chips on an Mac with an ARM chip. If that's the case, [Rosetta 2](https://support.apple.com/en-gb/HT211861) should solve your problem:
+
 ```
 softwareupdate --install-rosetta
 ```
