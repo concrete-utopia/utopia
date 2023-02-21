@@ -3,7 +3,6 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import {
-  InspectorSectionIcons,
   Icons,
   FlexRow,
   SquareButton,
@@ -81,7 +80,6 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
           gap: 8,
         }}
       >
-        <InspectorSectionIcons.LayoutSystem />
         <span>AutoLayout: Flex</span>
       </FlexRow>
       {isFlexLayoutedContainer ? (

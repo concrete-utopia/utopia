@@ -10,8 +10,6 @@ import { fastForEach } from '../../../../../core/shared/utils'
 import {
   FunctionIcons,
   Icn,
-  Icons,
-  InspectorSectionIcons,
   InspectorSubsectionHeader,
   SquareButton,
   Tooltip,
@@ -216,7 +214,6 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   return (
     <InspectorSubsectionHeader>
       <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
-        <InspectorSectionIcons.Layout />
         <span
           style={{
             textTransform: 'uppercase',

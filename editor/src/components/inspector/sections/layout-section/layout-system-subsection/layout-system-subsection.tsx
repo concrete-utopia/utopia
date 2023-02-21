@@ -14,7 +14,6 @@ import {
   FlexRow,
   Icons,
   InspectorSectionHeader,
-  InspectorSectionIcons,
   SquareButton,
   useColorTheme,
 } from '../../../../../uuiui'
@@ -67,7 +66,6 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
             gap: 8,
           }}
         >
-          <InspectorSectionIcons.LayoutSystem />
           <span>{LayoutSystemSectionTitle()}</span>
         </FlexRow>
         {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}

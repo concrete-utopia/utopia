@@ -16,7 +16,6 @@ import {
   InspectorSubsectionHeader,
   Icons,
   NumberInput,
-  InspectorSectionIcons,
   SquareButton,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -213,7 +212,6 @@ export const TextSubsection = React.memo(() => {
               gap: 8,
             }}
           >
-            <InspectorSectionIcons.Typography />
             <span>Type</span>
           </FlexRow>
           <SquareButton
