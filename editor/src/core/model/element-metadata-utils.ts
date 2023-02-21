@@ -1914,6 +1914,7 @@ function findConditionalsAndCreateMetadata(
       null,
       (_, element) => {
         if (isJSXConditionalExpression(element)) {
+          // create a default metadata, we can finetune this if necessary
           workingConditionals[ancestor] = elementInstanceMetadata(
             path,
             right(element),
