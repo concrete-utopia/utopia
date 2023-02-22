@@ -61,6 +61,7 @@ import {
   getJSXAttribute,
   isImportStatement,
   isJSXAttributeValue,
+  isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
   isPartOfJSXAttributeValue,
@@ -323,6 +324,7 @@ import {
   UpdateColorSwatches,
   PasteProperties,
   CopyProperties,
+  SetConditionalOverriddenCondition,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -391,6 +393,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   EditorStoreUnpatched,
+  modifyOpenJsxElementOrConditionalAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4328,6 +4331,24 @@ export const UPDATE_FNS = {
         }
       },
       updatedEditor,
+    )
+  },
+  SET_CONDITIONAL_OVERRIDDEN_CONDITION: (
+    action: SetConditionalOverriddenCondition,
+    editor: EditorModel,
+  ): EditorModel => {
+    return modifyOpenJsxElementOrConditionalAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+        return {
+          ...element,
+          overriddenCondition: action.condition,
+        }
+      },
+      editor,
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {

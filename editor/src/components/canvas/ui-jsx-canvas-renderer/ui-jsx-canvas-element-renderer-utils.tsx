@@ -334,12 +334,9 @@ export function renderCoreElement(
       )
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const conditionValue: boolean = jsxAttributeToValue(
-        filePath,
-        inScope,
-        requireResult,
-        element.condition,
-      )
+      const conditionValue: boolean =
+        element.overriddenCondition ??
+        jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (childOrBlockIsChild(actualElement)) {
