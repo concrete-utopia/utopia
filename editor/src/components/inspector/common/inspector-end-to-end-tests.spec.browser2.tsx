@@ -38,7 +38,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 
 async function getControl(
@@ -52,6 +52,18 @@ async function getControlValue(controlTestId: string, renderedDOM: RenderResult)
   const control = await getControl(controlTestId, renderedDOM)
 
   return control.value
+}
+
+function elementDoesNotExist(renderResult: EditorRenderResult, testId: string) {
+  try {
+    const trueBranch = renderResult.renderedDOM.getByTestId(testId)
+    if (trueBranch != null) {
+      return false
+    }
+  } catch {
+    // nothing to do
+  }
+  return true
 }
 
 async function setControlValue(
@@ -2139,6 +2151,48 @@ describe('inspector tests with real metadata', () => {
         )
         expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
       })
+    })
+  })
+
+  describe('conditionals', () => {
+    setFeatureForBrowserTests('Conditional support', true)
+    it('toggles conditional branch', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {true ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'ca0'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('conditionals-control-false'))
+        await renderResult.getDispatchFollowUpActionsFinished()
+      })
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], true)
+        await dispatchDone
+      })
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
+      expect(elementDoesNotExist(renderResult, 'bbb')).toBe(true)
     })
   })
 })

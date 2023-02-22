@@ -88,7 +88,8 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
             style={{ flex: 1 }}
             spotlight={condition}
             highlight
-            onMouseDown={setCondition(true)}
+            onClick={setCondition(true)}
+            data-testid='conditionals-control-true'
           >
             True
           </Button>
@@ -96,7 +97,8 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
             style={{ flex: 1 }}
             spotlight={!condition}
             highlight
-            onMouseDown={setCondition(false)}
+            onClick={setCondition(false)}
+            data-testid='conditionals-control-false'
           >
             False
           </Button>
