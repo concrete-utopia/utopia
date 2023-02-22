@@ -43,17 +43,20 @@ import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 
-export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
+export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky' | 'fixed' | 'relative'
 
 function useActiveLayoutTab(
   position: CSSPosition | null,
   parentLayoutSystem: DetectedLayoutSystem,
 ) {
   let value: SelfLayoutTab
-  if (position === 'absolute' || position === 'sticky') {
+  if (
+    position === 'absolute' ||
+    position === 'sticky' ||
+    position === 'fixed' ||
+    position === 'relative'
+  ) {
     value = position
-  } else if (parentLayoutSystem === 'flex') {
-    value = 'flex'
   } else if (parentLayoutSystem === 'grid') {
     // TODO GRID
     // value = 'grid'
@@ -127,9 +130,8 @@ export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionPr
   })
   return (
     <>
-      {when(activeTab === 'flex', <FlexInfoBox />)}
       {unless(
-        activeTab === 'flex',
+        activeTab === 'flow',
         <GiganticSizePinsSubsection
           key={selectedViews.map(EP.toString).join(',')}
           layoutType={activeTab}
