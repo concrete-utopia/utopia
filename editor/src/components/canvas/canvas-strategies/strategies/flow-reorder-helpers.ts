@@ -4,6 +4,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
+  DetectedLayoutSystem,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
@@ -17,9 +18,13 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
-import { Direction, ForwardOrReverse } from '../../../inspector/common/css-utils'
+import {
+  Direction,
+  ForwardOrReverse,
+  SimpleFlexDirection,
+} from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { DeleteProperties, deleteProperties } from '../../commands/delete-properties-command'
+import { DeleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
 
@@ -48,10 +53,11 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return false
   }
 
-  return (
-    singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
-    'non-single-axis-autolayout'
-  )
+  // return (
+  //   singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
+  //   'non-single-axis-autolayout'
+  // )
+  return singleAxisAutoLayoutChildrenDirections(siblings, metadata) !== 'non-single-axis-autolayout'
 }
 
 export type SingleAxisAutolayoutContainerDirections = {
@@ -71,9 +77,34 @@ export function singleAxisAutoLayoutContainerDirections(
   }
 
   const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
+  const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
 
+  return singleAxisAutoLayoutDirections(children, metadata, layoutSystem, flexDirection)
+}
+
+export function singleAxisAutoLayoutChildrenDirections(
+  children: ElementInstanceMetadata[],
+  metadata: ElementInstanceMetadataMap,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
+  if (children.length < 1) {
+    return 'non-single-axis-autolayout'
+  }
+
+  const layoutSystem = children[0].specialSizeMeasurements.parentLayoutSystem
+  const flexDirection = MetadataUtils.flexDirectionToSimpleFlexDirection(
+    children[0].specialSizeMeasurements.parentFlexDirection ?? 'row',
+  )
+
+  return singleAxisAutoLayoutDirections(children, metadata, layoutSystem, flexDirection)
+}
+
+export function singleAxisAutoLayoutDirections(
+  children: ElementInstanceMetadata[],
+  metadata: ElementInstanceMetadataMap,
+  layoutSystem: DetectedLayoutSystem,
+  flexDirection: SimpleFlexDirection,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   if (layoutSystem === 'flex') {
-    const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
     const targetDirection = flexDirection.direction
 
     const shouldReverse = flexDirection.forwardOrReverse === 'reverse'
