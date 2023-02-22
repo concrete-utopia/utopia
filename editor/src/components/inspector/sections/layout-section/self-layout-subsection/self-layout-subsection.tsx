@@ -219,10 +219,10 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
             textTransform: 'capitalize',
             fontWeight: 600,
             paddingRight: 8,
-            fontSize: 10,
+            fontSize: 11,
           }}
         >
-          {layoutType}
+          Position ({layoutType})
         </span>
       </div>
       {when(
