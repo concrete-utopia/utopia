@@ -57,10 +57,7 @@ import { WarningSubsection } from './sections/layout-section/warning-subsection/
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
-import {
-  TargetSelectorSection,
-  TargetSelectorSectionProps,
-} from './sections/target-selector-section'
+import { TargetSelectorSectionProps } from './sections/target-selector-section'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import {
   useKeepReferenceEqualityIfPossible,
@@ -342,14 +339,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <TargetSelectorSection
-            targets={props.targets}
-            selectedTargetPath={props.selectedTargetPath}
-            onSelectTarget={props.onSelectTarget}
-            onStyleSelectorRename={props.onStyleSelectorRename}
-            onStyleSelectorDelete={props.onStyleSelectorDelete}
-            onStyleSelectorInsert={props.onStyleSelectorInsert}
-          />
           <FlexSection />
           {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
           <StyleSection />
