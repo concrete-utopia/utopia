@@ -53,10 +53,6 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
     return false
   }
 
-  // return (
-  //   singleAxisAutoLayoutContainerDirections(EP.parentPath(target), metadata) !==
-  //   'non-single-axis-autolayout'
-  // )
   return singleAxisAutoLayoutChildrenDirections(siblings, metadata) !== 'non-single-axis-autolayout'
 }
 
