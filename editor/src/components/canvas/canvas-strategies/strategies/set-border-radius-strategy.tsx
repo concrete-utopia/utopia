@@ -231,7 +231,7 @@ export function borderRadiusFromElement(
         )
 
         const defaultBorderRadiusSides = borderRadiusSidesFromValue(
-          unitlessCSSNumberWithRenderedValue(0),
+          cssNumberWithRenderedValue(cssNumber(0, 'px'), 0),
         )
 
         if (borderRadius == null && isElementIntrinsic) {
