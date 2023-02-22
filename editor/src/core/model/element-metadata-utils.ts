@@ -4,7 +4,14 @@ import { getReorderDirection } from '../../components/canvas/controls/select-mod
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import { mapDropNulls, stripNulls, flatMapArray, uniqBy, mapAndFilter } from '../shared/array-utils'
+import {
+  mapDropNulls,
+  pluck,
+  stripNulls,
+  flatMapArray,
+  uniqBy,
+  mapAndFilter,
+} from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
   TextElements,
@@ -20,6 +27,7 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,

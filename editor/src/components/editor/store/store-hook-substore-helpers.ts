@@ -176,5 +176,4 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   assetChecksums: {},
   colorSwatches: [],
   styleClipboard: [],
-  conditionals: {},
 }

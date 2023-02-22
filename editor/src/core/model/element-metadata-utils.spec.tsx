@@ -891,7 +891,6 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
       testJsxMetadata,
       [],
       [],
-      {},
     )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
@@ -903,7 +902,6 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
       testJsxMetadata,
       [testComponentSceneElement.elementPath],
       [],
-      {},
     )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
@@ -919,7 +917,6 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
       testJsxMetadata,
       [testComponentRoot1.elementPath, testComponentSceneChildElement.elementPath],
       [],
-      {},
     )
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)

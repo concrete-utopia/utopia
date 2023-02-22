@@ -2,57 +2,58 @@ import React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
-  UTOPIA_INSTANCE_PATH,
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
+  UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
+  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { forEachRight } from '../../../core/shared/either'
-import * as EP from '../../../core/shared/element-path'
+import { flatMapEither, forEachRight } from '../../../core/shared/either'
 import {
-  childOrBlockIsChild,
+  JSXElementChild,
+  isJSXElement,
+  JSXElement,
+  jsxAttributeValue,
   ElementsWithin,
-  emptyComments,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
-  isJSXElement,
-  isJSXFragment,
   JSXArbitraryBlock,
-  jsxAttributeValue,
-  JSXElement,
-  JSXElementChild,
-  JSXElementLike,
+  emptyComments,
   jsxTextBlock,
+  isJSXFragment,
+  JSXElementLike,
+  childOrBlockIsChild,
 } from '../../../core/shared/element-template'
-import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
   jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { objectMap } from '../../../core/shared/object-utils'
-import { optionalMap } from '../../../core/shared/optional-utils'
 import {
   ElementPath,
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
+import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
+import { Utils } from '../../../uuiui-deps'
+import { UIFileBase64Blobs } from '../../editor/store/editor-state'
+import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
-import { assertNever } from '../../../core/shared/utils'
+import * as EP from '../../../core/shared/element-path'
+import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
+import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import { Utils } from '../../../uuiui-deps'
-import { importedFromWhere } from '../../editor/import-utils'
-import { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
-import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { canvasMissingJSXElementError } from './canvas-render-errors'
-import { SceneComponent } from './scene-component'
-import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
+import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import { optionalMap } from '../../../core/shared/optional-utils'
+import { canvasMissingJSXElementError } from './canvas-render-errors'
+import { importedFromWhere } from '../../editor/import-utils'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 
 export function createLookupRender(
   elementPath: ElementPath | null,

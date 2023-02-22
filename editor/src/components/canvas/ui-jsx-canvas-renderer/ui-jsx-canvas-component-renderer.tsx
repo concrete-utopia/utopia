@@ -37,7 +37,6 @@ import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
