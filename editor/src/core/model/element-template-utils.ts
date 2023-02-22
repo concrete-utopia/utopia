@@ -425,7 +425,7 @@ export function findJSXElementChildAtPath(
           tailPath[0] === getUtopiaID(element.whenTrue)
         ) {
           const elementWithin = element.whenTrue
-          const withinResult = findAtPathInner(elementWithin, workingPath)
+          const withinResult = findAtPathInner(elementWithin, tailPath)
           if (withinResult != null) {
             return withinResult
           }
@@ -435,7 +435,7 @@ export function findJSXElementChildAtPath(
           tailPath[0] === getUtopiaID(element.whenFalse)
         ) {
           const elementWithin = element.whenFalse
-          const withinResult = findAtPathInner(elementWithin, workingPath)
+          const withinResult = findAtPathInner(elementWithin, tailPath)
           if (withinResult != null) {
             return withinResult
           }
