@@ -80,7 +80,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
           gap: 8,
         }}
       >
-        <span>AutoLayout: Flex</span>
+        <span style={{ textTransform: 'capitalize' }}>Layout System</span>
       </FlexRow>
       {isFlexLayoutedContainer ? (
         <SquareButton
