@@ -36,7 +36,6 @@ interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   targetOriginalContextMetadata: ElementInstanceMetadataMap
-  targetOriginalContextAllElementProps: AllElementProps
 }
 
 type JSXElementsJson = string
@@ -98,8 +97,7 @@ export function getActionsForClipboardItems(
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      const allElementProps = data.targetOriginalContextAllElementProps
-      return [EditorActions.pasteJSXElements(target, elements, metadata, allElementProps)]
+      return [EditorActions.pasteJSXElements(target, elements, metadata)]
     }, clipboardData)
 
     // Handle adding files into the project like pasted images.
@@ -224,10 +222,6 @@ export function createClipboardDataFromSelection(
           editor.selectedViews,
           editor.jsxMetadata,
         ),
-        targetOriginalContextAllElementProps: filterAllElementPropsForCopy(
-          editor.selectedViews,
-          editor.allElementProps,
-        ),
       },
     ],
     imageFilenames: [],
@@ -252,35 +246,6 @@ function filterMetadataForCopy(
   })
   const filteredMetadata = pick(necessaryPaths, jsxMetadata)
   return filteredMetadata
-}
-
-function filterAllElementPropsForCopy(
-  selectedViews: Array<ElementPath>,
-  allElementProps: AllElementProps,
-): AllElementProps {
-  const paths = selectedViews.map(EP.toString)
-  const sanitizedFilteredProps = mapValues((props) => {
-    try {
-      const stringified = JSON.stringify(props, (key, value) => {
-        const valueType = typeof value
-        // only keep values which are of these type
-        if (['string', 'number', 'boolean', 'undefined', 'object'].includes(valueType)) {
-          return value
-        } else {
-          return null
-        }
-      })
-      return JSON.parse(stringified)
-    } catch (e) {
-      // The static props are problematic for copy paste, as they are huge, deep objects
-      // Embedding the props can cause two different kinds of exceptions when json stringified:
-      // 1. props can contain circular references
-      // 2. props can contain the Window object, which throws a DOMException when stringified
-      return {}
-    }
-  }, pick(paths, allElementProps))
-
-  return sanitizedFilteredProps
 }
 
 export function getTargetParentForPaste(

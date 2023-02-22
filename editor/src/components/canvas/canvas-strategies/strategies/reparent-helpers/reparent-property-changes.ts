@@ -19,10 +19,7 @@ import {
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
-import {
-  AllElementProps,
-  getElementFromProjectContents,
-} from '../../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
 import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
@@ -41,10 +38,6 @@ import {
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
 import { ReparentStrategy } from './reparent-strategy-helpers'
-import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  treatElementAsContentAffecting,
-} from '../group-like-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -57,7 +50,6 @@ export function getAbsoluteReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,
-  targetStartingAllElementProps: AllElementProps,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
@@ -208,7 +200,6 @@ export function getReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,
-  targetStartingAllElementProps: AllElementProps,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
@@ -221,7 +212,6 @@ export function getReparentPropertyChanges(
         target,
         newParent,
         targetStartingMetadata,
-        targetStartingAllElementProps,
         newParentStartingMetadata,
         projectContents,
         openFile,

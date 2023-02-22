@@ -2955,7 +2955,6 @@ export const UPDATE_FNS = {
               newPath,
               action.pasteInto,
               action.targetOriginalContextMetadata,
-              action.targetOriginalContextAllElementProps,
               workingEditorState.jsxMetadata,
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename,

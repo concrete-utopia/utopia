@@ -352,7 +352,6 @@ export interface PasteJSXElements {
   pasteInto: ElementPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
-  targetOriginalContextAllElementProps: AllElementProps
 }
 
 export interface CopySelectionToClipboard {
