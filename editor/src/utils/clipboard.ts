@@ -1,11 +1,7 @@
 import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import {
-  AllElementProps,
-  EditorState,
-  getOpenUIJSFileKey,
-} from '../components/editor/store/editor-state'
+import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
@@ -245,7 +241,18 @@ function filterMetadataForCopy(
     )
   })
   const filteredMetadata = pick(necessaryPaths, jsxMetadata)
-  return filteredMetadata
+  // The static props in metadata are not necessary for copy paste, and they are huge, deep objects
+  // Embedding the props can cause two different kinds of exceptions when json stringified:
+  // 1. props can contain circular references
+  // 2. props can contain the Window object, which throws a DOMException when stringified
+  const filteredMetadataWithoutProps = mapValues(
+    (meta) => ({
+      ...meta,
+      props: {},
+    }),
+    filteredMetadata,
+  )
+  return filteredMetadataWithoutProps
 }
 
 export function getTargetParentForPaste(

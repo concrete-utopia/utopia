@@ -60,7 +60,6 @@ import {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
-  AllElementProps,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'

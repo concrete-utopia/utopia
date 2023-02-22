@@ -247,7 +247,6 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
-  AllElementProps,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
