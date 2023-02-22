@@ -15,6 +15,7 @@ import {
   JSXElementChild,
   jsxTextBlock,
   isJSXAttributesEntry,
+  isJSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { jsxSimpleAttributeToValue } from '../../core/shared/jsx-attributes'
 import { getUtopiaID } from '../../core/model/element-template-utils'
@@ -215,7 +216,10 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
           targetParent,
           openFile,
           editor,
-          (element: JSXElement) => {
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              return element
+            }
             // Create the new collection of children by skipping those found in the target run.
             let updatedChildren: Array<JSXElementChild> = []
             for (const child of element.children) {
