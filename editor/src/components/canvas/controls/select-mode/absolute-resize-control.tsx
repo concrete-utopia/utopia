@@ -389,7 +389,7 @@ const SizeLabel = React.memo(
         data-testid='parent-resize-label'
       >
         {when(
-          label != null && label.length > 1,
+          label != null,
           <div
             style={{
               display: 'flex',
@@ -403,7 +403,7 @@ const SizeLabel = React.memo(
               height: ExplicitHeightHacked / scale,
             }}
           >
-            {/* {`${label![0]} x ${label![1]}`} */}
+            {`${label![0]} x ${label![1]}`}
           </div>,
         )}
       </div>
