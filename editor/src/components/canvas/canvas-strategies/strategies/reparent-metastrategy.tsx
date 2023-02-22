@@ -21,6 +21,7 @@ import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { baseFlexReparentToAbsoluteStrategy } from './flex-reparent-to-absolute-strategy'
+import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
   findReparentStrategies,
@@ -196,7 +197,11 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   }
 
   // TODO delete me as soon as Balint's PR is merged
-  const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
+  const allDraggedElementsAbsolute = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    reparentSubjects,
+  ).every((element) =>
     MetadataUtils.isPositionAbsolute(
       MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
     ),
