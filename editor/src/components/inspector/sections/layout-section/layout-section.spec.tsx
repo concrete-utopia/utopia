@@ -11,7 +11,7 @@ import {
   getStoreHook,
   TestInspectorContextProvider,
 } from '../../common/inspector.test-utils'
-import { LayoutSection } from './layout-section'
+import { LayoutSection } from './position-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../common/property-path-hooks'
