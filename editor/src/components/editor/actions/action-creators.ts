@@ -227,7 +227,7 @@ import type {
   PasteProperties,
   CopyProperties,
   MergeWithPrevUndo,
-  SetCoditionalOverriddenCondition,
+  SetConditionalOverriddenCondition,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1312,7 +1312,7 @@ export function updateJSXElementName(
 export function setConditionalOverriddenCondition(
   target: ElementPath,
   condition: boolean,
-): SetCoditionalOverriddenCondition {
+): SetConditionalOverriddenCondition {
   return {
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,

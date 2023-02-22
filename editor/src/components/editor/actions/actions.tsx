@@ -324,7 +324,7 @@ import {
   UpdateColorSwatches,
   PasteProperties,
   CopyProperties,
-  SetCoditionalOverriddenCondition,
+  SetConditionalOverriddenCondition,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -4337,7 +4337,7 @@ export const UPDATE_FNS = {
     )
   },
   SET_CONDITIONAL_OVERRIDDEN_CONDITION: (
-    action: SetCoditionalOverriddenCondition,
+    action: SetConditionalOverriddenCondition,
     editor: EditorModel,
   ): EditorModel => {
     return modifyOpenJsxElementOrConditionalAtPath(

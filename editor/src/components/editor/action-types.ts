@@ -807,7 +807,7 @@ export interface UpdateJSXElementName {
   importsToAdd: Imports
 }
 
-export interface SetCoditionalOverriddenCondition {
+export interface SetConditionalOverriddenCondition {
   action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION'
   target: ElementPath
   condition: boolean
@@ -1227,7 +1227,7 @@ export type EditorAction =
   | ResizeLeftPane
   | SetAspectRatioLock
   | UpdateJSXElementName
-  | SetCoditionalOverriddenCondition
+  | SetConditionalOverriddenCondition
   | AddImports
   | ToggleCanvasIsLive
   | RenameStyleSelector
