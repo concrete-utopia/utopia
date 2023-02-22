@@ -87,13 +87,23 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     }
   })
 
+  const borderRadius = useEditorState(
+    Substores.metadata,
+    (store) => borderRadiusSelector(store, selectedElement),
+    'BorderRadiusControl borderRadius',
+  )
+
+  if (borderRadius == null) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
         {BorderRadiusCorners.map((corner) => (
           <CircularHandle
             key={CircularHandleTestId(corner)}
-            borderRadius={borderRadius[corner]}
+            borderRadius={borderRadius.borderRadius[corner]}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}

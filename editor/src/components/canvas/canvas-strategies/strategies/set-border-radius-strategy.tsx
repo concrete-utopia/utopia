@@ -106,7 +106,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
   const elementSize = sizeFromElement(element)
   const borderRadiusAdjustData = borderRadiusAdjustDataFromInteractionSession(interactionSession)
 
-  const { commands, updatedBorderRadius } = setBorderRadiusStrategyRunResult(
+  const { commands } = setBorderRadiusStrategyRunResult(
     borderRadius,
     borderRadiusAdjustData,
     elementSize,
@@ -129,7 +129,6 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
           mode: mode,
           selectedElement: selectedElement,
           elementSize: elementSize,
-          borderRadius: updatedBorderRadius,
           showIndicatorOnCorner: borderRadiusAdjustData?.corner ?? null,
         },
         key: 'border-radius-handle',
@@ -190,7 +189,7 @@ interface BorderRadiusData<T> {
   borderRadius: BorderRadiusSides<T>
 }
 
-function borderRadiusFromElement(
+export function borderRadiusFromElement(
   element: ElementInstanceMetadata,
 ): BorderRadiusData<CSSNumberWithRenderedValue> | null {
   return foldEither(
