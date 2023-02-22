@@ -14,7 +14,6 @@ import {
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import {
   CanvasBase64Blobs,
-  Conditionals,
   TransientFilesState,
   TransientFileState,
   UIFileBase64Blobs,
@@ -65,7 +64,6 @@ export function createExecutionScope(
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
-  conditionals: Conditionals,
 ): {
   scope: MapLike<any>
   topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
@@ -151,7 +149,6 @@ export function createExecutionScope(
       code,
       highlightBounds,
       editedText,
-      conditionals,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

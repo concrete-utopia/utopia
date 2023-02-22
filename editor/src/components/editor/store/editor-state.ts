@@ -14,6 +14,8 @@ import {
   JSXAttribute,
   walkElements,
   JSXAttributes,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -1254,8 +1256,6 @@ export function newColorSwatch(id: string, hex: string): ColorSwatch {
 
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
 
-export type Conditionals = { [key: string]: boolean } // key = uid, value = branch to render
-
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1333,7 +1333,6 @@ export interface EditorState {
   assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
   styleClipboard: Array<ValueAtPath>
-  conditionals: Conditionals
 }
 
 export function editorState(
@@ -1412,7 +1411,6 @@ export function editorState(
   assetChecksums: FileChecksums,
   colorSwatches: Array<ColorSwatch>,
   styleClipboard: Array<ValueAtPath>,
-  conditionals: Conditionals,
 ): EditorState {
   return {
     id: id,
@@ -1490,7 +1488,6 @@ export function editorState(
     assetChecksums: assetChecksums,
     colorSwatches: colorSwatches,
     styleClipboard: styleClipboard,
-    conditionals: conditionals,
   }
 }
 
@@ -1750,6 +1747,22 @@ export function modifyOpenJsxElementAtPath(
   model: EditorState,
   revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
+  return modifyOpenJsxElementOrConditionalAtPath(
+    path,
+    (element) => (isJSXElement(element) ? transform(element) : element),
+    model,
+    revisionsState,
+  )
+}
+
+export function modifyOpenJsxElementOrConditionalAtPath(
+  path: ElementPath,
+  transform: (
+    element: JSXElement | JSXConditionalExpression,
+  ) => JSXElement | JSXConditionalExpression,
+  model: EditorState,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
+): EditorState {
   return modifyUnderlyingTargetElement(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
@@ -1769,7 +1782,7 @@ export function modifyOpenJsxElementAtStaticPath(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    transform,
+    (element) => (isJSXElement(element) ? transform(element) : element),
   )
 }
 
@@ -2111,7 +2124,6 @@ export interface PersistentModel {
   branchContents: ProjectContentTreeRoot | null
   assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
-  conditionals: Conditionals
 }
 
 export function isPersistentModel(data: any): data is PersistentModel {
@@ -2156,7 +2168,6 @@ export function mergePersistentModel(
     branchContents: second.branchContents,
     assetChecksums: second.assetChecksums,
     colorSwatches: second.colorSwatches,
-    conditionals: second.conditionals,
   }
 }
 
@@ -2352,7 +2363,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     assetChecksums: {},
     colorSwatches: [],
     styleClipboard: [],
-    conditionals: {},
   }
 }
 
@@ -2414,14 +2424,12 @@ function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
-  conditionals: Conditionals,
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } =
     MetadataUtils.createOrderedElementPathsFromElements(
       jsxMetadata,
       collapsedViews,
       hiddenInNavigator,
-      conditionals,
     )
 
   const warnings = getElementWarnings(jsxMetadata)
@@ -2454,7 +2462,6 @@ export function deriveState(
     editor.jsxMetadata,
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
-    editor.conditionals,
   )
 
   const derived: DerivedState = {
@@ -2674,7 +2681,6 @@ export function editorModelFromPersistentModel(
     assetChecksums: {},
     colorSwatches: persistentModel.colorSwatches,
     styleClipboard: [],
-    conditionals: persistentModel.conditionals,
   }
   return editor
 }
@@ -2715,7 +2721,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     branchContents: editor.branchContents,
     assetChecksums: editor.assetChecksums,
     colorSwatches: editor.colorSwatches,
-    conditionals: editor.conditionals,
   }
 }
 
@@ -2752,7 +2757,6 @@ export function persistentModelForProjectContents(
     branchContents: null,
     assetChecksums: {},
     colorSwatches: [],
-    conditionals: {},
   }
 }
 
@@ -3210,10 +3214,10 @@ export function modifyUnderlyingTargetElement(
   currentFilePath: string,
   editor: EditorState,
   modifyElement: (
-    element: JSXElement,
+    element: JSXElement | JSXConditionalExpression,
     underlying: ElementPath,
     underlyingFilePath: string,
-  ) => JSXElement = (element) => element,
+  ) => JSXElement | JSXConditionalExpression = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
@@ -3246,7 +3250,7 @@ export function modifyUnderlyingTargetElement(
     } else {
       const nonNullNormalisedPath = targetSuccess.normalisedPath
       function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        if (isJSXElement(element)) {
+        if (isJSXElement(element) || isJSXConditionalExpression(element)) {
           const updatedElement = modifyElement(
             element,
             nonNullNormalisedPath,
@@ -3319,7 +3323,8 @@ export function modifyUnderlyingElementForOpenFile(
     target,
     forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
     editor,
-    modifyElement,
+    (element, underlying, underlyingFilePath) =>
+      isJSXElement(element) ? modifyElement(element, underlying, underlyingFilePath) : element,
     modifyParseSuccess,
   )
 }

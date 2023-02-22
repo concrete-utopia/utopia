@@ -46,7 +46,7 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { Utils } from '../../../uuiui-deps'
 import { importedFromWhere } from '../../editor/import-utils'
-import { Conditionals, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -73,7 +73,6 @@ export function createLookupRender(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-  conditionals: Conditionals,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
@@ -128,7 +127,6 @@ export function createLookupRender(
       code,
       highlightBounds,
       editedText,
-      conditionals,
     )
   }
 }
@@ -174,7 +172,6 @@ export function renderCoreElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-  conditionals: Conditionals,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -206,7 +203,6 @@ export function renderCoreElement(
             code,
             highlightBounds,
             editedText,
-            conditionals,
           )
         : NoOpLookupRender
 
@@ -255,7 +251,6 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
-        conditionals,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -278,7 +273,6 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
-        conditionals,
       )
 
       const blockScope = {
@@ -317,7 +311,6 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
-        conditionals,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -340,16 +333,10 @@ export function renderCoreElement(
       )
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const conditionValue: boolean = jsxAttributeToValue(
-        filePath,
-        inScope,
-        requireResult,
-        element.condition,
-      )
-      const elementUID = getUtopiaID(element)
-      const override =
-        elementPath == null || conditionals[elementUID] == null || conditionals[elementUID]
-      const actualElement = conditionValue && override ? element.whenTrue : element.whenFalse
+      const conditionValue: boolean =
+        element.overriddenCondition ??
+        jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
+      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (childOrBlockIsChild(actualElement)) {
         const childPath = optionalMap(
@@ -380,7 +367,6 @@ export function renderCoreElement(
           code,
           highlightBounds,
           editedText,
-          conditionals,
         )
       } else {
         return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
@@ -480,7 +466,6 @@ function renderJSXElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-  conditionals: Conditionals,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, elementPath)) {
@@ -516,7 +501,6 @@ function renderJSXElement(
       code,
       highlightBounds,
       editedText,
-      conditionals,
     )
   }
 

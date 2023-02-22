@@ -94,7 +94,6 @@ export function keyboardReorderStrategy(
                 newIndex,
                 canvasState.interactionTarget,
                 canvasState.startingMetadata,
-                canvasState.conditionals,
               ),
             ],
             {

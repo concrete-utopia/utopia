@@ -182,12 +182,6 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    const conditionals = useEditorState(
-      Substores.restOfEditor,
-      (store) => store.editor.conditionals,
-      'Conditionals',
-    )
-
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
@@ -208,7 +202,6 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
-        conditionals,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -254,7 +247,6 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
-        conditionals,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {

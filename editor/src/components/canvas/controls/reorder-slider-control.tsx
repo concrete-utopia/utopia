@@ -62,12 +62,6 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       'ReorderSliderControl isTargetElementHovered',
     )
 
-    const conditionals = useEditorState(
-      Substores.restOfEditor,
-      (store) => store.editor.conditionals,
-      'Conditionals',
-    )
-
     const { siblings, latestIndex, startingIndex, startingFrame } = useEditorState(
       Substores.fullStore,
       (store) => {
@@ -75,7 +69,6 @@ export const ReorderSliderControl = controlForStrategyMemoized(
           const siblingPaths = MetadataUtils.getSiblingsOrdered(
             store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
             target,
-            conditionals,
           ).map((sibling) => sibling.elementPath)
           const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))
           const latestFrame =

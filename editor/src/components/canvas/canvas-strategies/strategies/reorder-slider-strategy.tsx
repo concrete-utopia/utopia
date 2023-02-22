@@ -43,11 +43,7 @@ export function reorderSliderStategy(
       target,
       canvasState.startingMetadata,
     ) || MetadataUtils.isPositionedByFlow(elementMetadata)
-  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(
-    target,
-    canvasState.startingMetadata,
-    canvasState.conditionals,
-  )
+  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
 
   if (siblings.length <= 1 || !isAutoLayouted || is1dLayout) {
     return null
@@ -103,7 +99,6 @@ export function reorderSliderStategy(
                 newIndex,
                 canvasState.interactionTarget,
                 canvasState.startingMetadata,
-                canvasState.conditionals,
               ),
               setCursorCommand(CSSCursor.ResizeEW),
             ],

@@ -6,9 +6,6 @@ import { StateHistory } from '../history'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { assertNever } from '../../../core/shared/utils'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -217,10 +214,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_BRANCH_CONTENTS(action, state)
     case 'UPDATE_GITHUB_SETTINGS':
       return UPDATE_FNS.UPDATE_GITHUB_SETTINGS(action, state)
-    case 'UPDATE_CONDITIONALS':
-      return UPDATE_FNS.UPDATE_CONDITIONALS(action, state)
-    case 'SET_ELEMENTS_TO_RERENDER':
-      return UPDATE_FNS.SET_ELEMENTS_TO_RERENDER(action, state)
     case 'UPDATE_GITHUB_DATA':
       return UPDATE_FNS.UPDATE_GITHUB_DATA(action, state)
     case 'REMOVE_FILE_CONFLICT':
@@ -275,6 +268,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
+    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
+      return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
     case 'ADD_IMPORTS':
       return UPDATE_FNS.ADD_IMPORTS(action, state)
     case 'SET_ASPECT_RATIO_LOCK':

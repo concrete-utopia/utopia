@@ -3718,10 +3718,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.styleClipboard,
     newValue.styleClipboard,
   )
-  const conditionalsResults = objectDeepEquality(BooleanKeepDeepEquality)(
-    oldValue.conditionals,
-    newValue.conditionals,
-  )
 
   const areEqual =
     idResult.areEqual &&
@@ -3798,8 +3794,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     refreshingDependenciesResults.areEqual &&
     assetChecksumsResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    styleClipboardResults.areEqual &&
-    conditionalsResults.areEqual
+    styleClipboardResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -3880,7 +3875,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       assetChecksumsResults.value,
       colorSwatchesResults.value,
       styleClipboardResults.value,
-      conditionalsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

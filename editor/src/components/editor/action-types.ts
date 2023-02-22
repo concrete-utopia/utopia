@@ -653,12 +653,6 @@ export interface UpdateGithubSettings {
   settings: Partial<ProjectGithubSettings>
 }
 
-export interface UpdateConditionals {
-  action: 'UPDATE_CONDITIONALS'
-  uid: string
-  condition: boolean
-}
-
 export interface UpdateGithubData {
   action: 'UPDATE_GITHUB_DATA'
   data: Partial<GithubData>
@@ -811,6 +805,12 @@ export interface UpdateJSXElementName {
   target: ElementPath
   elementName: JSXElementName
   importsToAdd: Imports
+}
+
+export interface SetCoditionalOverriddenCondition {
+  action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION'
+  target: ElementPath
+  condition: boolean
 }
 
 export interface AddImports {
@@ -1202,7 +1202,6 @@ export type EditorAction =
   | UpdateFile
   | UpdateProjectContents
   | UpdateGithubSettings
-  | UpdateConditionals
   | UpdateGithubData
   | RemoveFileConflict
   | UpdateFromWorker
@@ -1228,6 +1227,7 @@ export type EditorAction =
   | ResizeLeftPane
   | SetAspectRatioLock
   | UpdateJSXElementName
+  | SetCoditionalOverriddenCondition
   | AddImports
   | ToggleCanvasIsLive
   | RenameStyleSelector

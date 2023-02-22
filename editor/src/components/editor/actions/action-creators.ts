@@ -227,8 +227,7 @@ import type {
   PasteProperties,
   CopyProperties,
   MergeWithPrevUndo,
-  UpdateConditionals,
-  SetElementsToRerender,
+  SetCoditionalOverriddenCondition,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1062,21 +1061,6 @@ export function updateGithubSettings(
   }
 }
 
-export function updateConditionals(uid: string, condition: boolean): UpdateConditionals {
-  return {
-    action: 'UPDATE_CONDITIONALS',
-    uid: uid,
-    condition: condition,
-  }
-}
-
-export function setElementsToRerender(paths: ElementPath[]): SetElementsToRerender {
-  return {
-    action: 'SET_ELEMENTS_TO_RERENDER',
-    value: paths,
-  }
-}
-
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',
@@ -1322,6 +1306,17 @@ export function updateJSXElementName(
     target: target,
     elementName: elementName,
     importsToAdd: importsToAdd,
+  }
+}
+
+export function setConditionalOverriddenCondition(
+  target: ElementPath,
+  condition: boolean,
+): SetCoditionalOverriddenCondition {
+  return {
+    action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
+    target: target,
+    condition: condition,
   }
 }
 

@@ -63,13 +63,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  if (
-    !areAllSiblingsInOneDimensionFlexOrFlow(
-      children[0],
-      canvasState.startingMetadata,
-      canvasState.conditionals,
-    )
-  ) {
+  if (!areAllSiblingsInOneDimensionFlexOrFlow(children[0], canvasState.startingMetadata)) {
     return null
   }
 

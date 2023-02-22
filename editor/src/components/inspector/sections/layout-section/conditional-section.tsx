@@ -18,7 +18,7 @@ import {
   useColorTheme,
 } from '../../../../uuiui'
 import { EditorAction } from '../../../editor/action-types'
-import { setElementsToRerender, updateConditionals } from '../../../editor/actions/action-creators'
+import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -31,12 +31,6 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
     'Metadata',
-  )
-
-  const conditionals = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.conditionals,
-    'Conditionals',
   )
 
   const path = React.useMemo(() => {
@@ -65,26 +59,15 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     if (element == null) {
       return true
     }
-    return conditionals[element.uniqueID] !== false
-  }, [conditionals, element])
+    return element.overriddenCondition ?? true
+  }, [element])
 
   const setCondition = React.useCallback(
     (value: boolean) => () => {
       if (path == null || element == null) {
         return
       }
-
-      let actions: EditorAction[] = [updateConditionals(element.uniqueID, value)]
-
-      //// Note: this is currently not really working, and actually breaks things
-      // const branch = value ? element.whenTrue : element.whenFalse
-      // if (!childOrBlockIsChild(branch)) {
-      //   return
-      // }
-      // const branchElements = EP.appendToPath(path, getUtopiaID(branch))
-      // actions.push(setElementsToRerender([branchElements]))
-
-      dispatch(actions, 'everyone')
+      dispatch([setConditionalOverriddenCondition(path, value)])
     },
     [dispatch, path, element],
   )

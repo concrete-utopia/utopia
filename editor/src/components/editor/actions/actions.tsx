@@ -61,6 +61,7 @@ import {
   getJSXAttribute,
   isImportStatement,
   isJSXAttributeValue,
+  isJSXConditionalExpression,
   isJSXElement,
   isPartOfJSXAttributeValue,
   JSXAttributes,
@@ -240,6 +241,7 @@ import {
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
   SetCodeEditorVisibility,
+  SetCoditionalOverriddenCondition,
   SetCurrentTheme,
   SetCursorOverlay,
   SetElementsToRerender,
@@ -298,7 +300,6 @@ import {
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateColorSwatches,
-  UpdateConditionals,
   UpdateConfigFromVSCode,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -371,6 +372,7 @@ import {
   LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
+  modifyOpenJsxElementOrConditionalAtPath,
   modifyOpenJSXElements,
   modifyOpenJSXElementsAndMetadata,
   modifyParseSuccessAtPath,
@@ -1020,7 +1022,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     assetChecksums: currentEditor.assetChecksums,
     colorSwatches: currentEditor.colorSwatches,
     styleClipboard: currentEditor.styleClipboard,
-    conditionals: currentEditor.conditionals,
   }
 }
 
@@ -2137,6 +2138,9 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       target,
       (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const updatedElementProps = propsTransform(element.props)
         return foldEither(
           () => element,
@@ -3234,7 +3238,7 @@ export const UPDATE_FNS = {
 
     const updatedEditor = modifyOpenJsxElementAtPath(
       target,
-      (element: JSXElement) => {
+      (element) => {
         const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
           element.props,
           newLayout,
@@ -3877,15 +3881,6 @@ export const UPDATE_FNS = {
       },
     })
   },
-  UPDATE_CONDITIONALS: (action: UpdateConditionals, editor: EditorModel): EditorModel => {
-    const conditionals = { ...(editor.conditionals ?? {}) }
-    conditionals[action.uid] = action.condition
-    // TODO clean up deleted uids
-    return {
-      ...editor,
-      conditionals: conditionals,
-    }
-  },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -4339,6 +4334,27 @@ export const UPDATE_FNS = {
       updatedEditor,
     )
   },
+  SET_CONDITIONAL_OVERRIDDEN_CONDITION: (
+    action: SetCoditionalOverriddenCondition,
+    editor: EditorModel,
+  ): EditorModel => {
+    return modifyOpenJsxElementOrConditionalAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          console.warn(
+            `Trying to set conditional override on non-conditional element ${element.uid}`,
+          )
+          return element
+        }
+        return {
+          ...element,
+          overriddenCondition: action.condition,
+        }
+      },
+      editor,
+    )
+  },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
     return modifyUnderlyingTargetElement(
       action.target,
@@ -4357,6 +4373,9 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const path = PP.create(AspectRatioLockedProp)
         const updatedProps = action.locked
           ? eitherToMaybe(
