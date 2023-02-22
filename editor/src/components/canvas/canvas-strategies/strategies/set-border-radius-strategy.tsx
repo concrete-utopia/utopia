@@ -66,6 +66,8 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { deleteProperties } from '../../commands/delete-properties-command'
+import { allElemsEqual } from '../../../../core/shared/array-utils'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
@@ -139,7 +141,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     apply: () =>
       strategyApplicationResult([
         setCursorCommand(CSSCursor.Radius),
-        commands(selectedElement),
+        ...commands(selectedElement),
         setElementsToRerenderCommand(selectedElements),
       ]),
   }
@@ -387,7 +389,7 @@ function adjustBorderRadius(
 }
 
 interface SetBorderRadiusStrategyRunResult {
-  commands: (target: ElementPath) => CanvasCommand
+  commands: (target: ElementPath) => Array<CanvasCommand>
   updatedBorderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
 }
 
@@ -430,22 +432,19 @@ function borderRadiusFromData(
   }
 }
 
-function longhandFromEdgePosition(mode: BorderRadiusAdjustMode, corner: BorderRadiusCorner) {
-  if (mode === 'individual') {
-    switch (corner) {
-      case 'tl':
-        return 'borderTopLeftRadius'
-      case 'tr':
-        return 'borderTopRightRadius'
-      case 'bl':
-        return 'borderBottomLeftRadius'
-      case 'br':
-        return 'borderBottomRightRadius'
-      default:
-        assertNever(corner)
-    }
+function longhandFromEdgePosition(corner: BorderRadiusCorner) {
+  switch (corner) {
+    case 'tl':
+      return 'borderTopLeftRadius'
+    case 'tr':
+      return 'borderTopRightRadius'
+    case 'bl':
+      return 'borderBottomLeftRadius'
+    case 'br':
+      return 'borderBottomRightRadius'
+    default:
+      assertNever(corner)
   }
-  return 'borderRadius'
 }
 
 function updateBorderRadiusFn(
@@ -483,6 +482,12 @@ function updateBorderRadiusFn(
   }
 }
 
+function borderRadiusSidesAllEqual(sides: BorderRadiusSides<CSSNumberWithRenderedValue>): boolean {
+  return allElemsEqual([sides.bl, sides.br, sides.tl, sides.tr], (l, r) =>
+    cssNumberEqual(l.value, r.value),
+  )
+}
+
 function setBorderRadiusStrategyRunResult(
   data: BorderRadiusData<CSSNumberWithRenderedValue>,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
@@ -504,15 +509,16 @@ function setBorderRadiusStrategyRunResult(
       borderRadiusAdjustData,
     )(borderRadius)
 
+    const updatedBorderRadiusSides = {
+      ...data.borderRadius,
+      [key]: updatedBorderRadius,
+    }
+
     return {
-      commands: setStylePropertyCommand(
-        longhandFromEdgePosition(mode, edgePosition),
-        printCSSNumber(updatedBorderRadius.value, null),
+      commands: setLonghandStylePropertyCommand(
+        mapBorderRadiusSides((v) => v.value, updatedBorderRadiusSides),
       ),
-      updatedBorderRadius: {
-        ...data.borderRadius,
-        [key]: updatedBorderRadius,
-      },
+      updatedBorderRadius: updatedBorderRadiusSides,
     }
   }
 
@@ -522,23 +528,54 @@ function setBorderRadiusStrategyRunResult(
   )
 
   return {
-    commands: setStylePropertyCommand('borderRadius', printCSSNumber(allUpdated.tl.value, null)),
+    commands: setShorthandStylePropertyCommand(printCSSNumber(allUpdated.tl.value, null)),
     updatedBorderRadius: allUpdated,
   }
 }
 
-const StylePaddingProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
+const StyleProp = <P extends ParsedCSSPropertiesKeys>(p: P) =>
   stylePropPathMappingFn(p, styleStringInArray)
 
-const setStylePropertyCommand =
-  (
-    prop:
-      | 'borderRadius'
-      | 'borderTopLeftRadius'
-      | 'borderTopRightRadius'
-      | 'borderBottomLeftRadius'
-      | 'borderBottomRightRadius',
-    value: string | number,
-  ) =>
-  (target: ElementPath): CanvasCommand =>
-    setProperty('always', target, StylePaddingProp(prop), value)
+const setLonghandStylePropertyCommand =
+  (sides: BorderRadiusSides<CSSNumber>) =>
+  (target: ElementPath): Array<CanvasCommand> =>
+    [
+      deleteProperties('always', target, [StyleProp('borderRadius')]),
+      setProperty(
+        'always',
+        target,
+        StyleProp('borderTopLeftRadius'),
+        printCSSNumber(sides.tl, null),
+      ),
+      setProperty(
+        'always',
+        target,
+        StyleProp('borderTopRightRadius'),
+        printCSSNumber(sides.tr, null),
+      ),
+      setProperty(
+        'always',
+        target,
+        StyleProp('borderBottomRightRadius'),
+        printCSSNumber(sides.br, null),
+      ),
+      setProperty(
+        'always',
+        target,
+        StyleProp('borderBottomLeftRadius'),
+        printCSSNumber(sides.bl, null),
+      ),
+    ]
+
+const setShorthandStylePropertyCommand =
+  (value: string | number) =>
+  (target: ElementPath): Array<CanvasCommand> =>
+    [
+      deleteProperties('always', target, [
+        StyleProp('borderTopLeftRadius'),
+        StyleProp('borderTopRightRadius'),
+        StyleProp('borderBottomLeftRadius'),
+        StyleProp('borderBottomRightRadius'),
+      ]),
+      setProperty('always', target, StyleProp('borderRadius'), value),
+    ]
