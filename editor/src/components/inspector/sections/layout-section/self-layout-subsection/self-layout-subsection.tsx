@@ -216,17 +216,14 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
       <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
         <span
           style={{
-            textTransform: 'uppercase',
+            textTransform: 'capitalize',
             fontWeight: 600,
             paddingRight: 8,
-            color: colorTheme.primary.value,
             fontSize: 10,
           }}
         >
           {layoutType}
         </span>
-        <ParentIndicatorAndLink />
-        <ChildrenOrContentIndicator />
       </div>
       {when(
         selfLayoutSectionOpen && layoutType !== 'absolute',
