@@ -23,7 +23,7 @@ export function retargetStrategyToChildrenOfContentAffectingElements(
   )
 }
 
-function replaceContentAffectingPathsWithTheirChildrenRecursive(
+export function replaceContentAffectingPathsWithTheirChildrenRecursive(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   paths: Array<ElementPath>,
