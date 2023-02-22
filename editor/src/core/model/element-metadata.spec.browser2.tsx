@@ -72,10 +72,10 @@ describe('Frame calculation for fragments', () => {
     )
   })
   it('Conditionals have metadata and their frame is the frame of the active branch', async () => {
-    FOR_TESTS_setNextGeneratedUids(['cond', 'truebranch']) // TODO: why is this ignored
+    FOR_TESTS_setNextGeneratedUids(['foo1', 'foo2', 'foo3', 'foo4', 'cond']) // ugly, but the conditional is the 5th uid which is generated
 
-    const condComponentPath = 'story/scene/app:root/902'
-    const trueBranchComponentPath = 'story/scene/app:root/902/755'
+    const condComponentPath = 'story/scene/app:root/cond'
+    const trueBranchComponentPath = 'story/scene/app:root/cond/truebranch'
 
     const renderResult = await renderTestEditorWithCode(
       TestProjectWithConditional,
@@ -279,6 +279,7 @@ export var App = (props) => {
             backgroundColor: '#FFFFFF',
             border: '0px solid rgb(0, 0, 0, 1)',
           }}
+          data-uid='truebranch'
         />
       ) : null}
     </div>
