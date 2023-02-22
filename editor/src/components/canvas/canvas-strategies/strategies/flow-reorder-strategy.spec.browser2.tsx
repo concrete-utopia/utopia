@@ -21,6 +21,7 @@ import {
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
+import { wait } from '../../../../core/model/performance-scripts'
 
 const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
@@ -82,6 +83,40 @@ const TestProjectCCCDraggedToSecond = `
     }}
     data-uid='bbb'
     data-testid='bbb'
+  />
+</div>
+`
+
+const TestProjectBlockElementsWithFragment = (additionalContainerStyle: string = '') => `
+<div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#CA1E4C80',
+    }}
+    data-uid='aaa'
+    data-testid='aaa'
+  />
+  <React.Fragment data-uid='fragment'>
+    <div
+      style={{
+        width: 50,
+        height: 50,
+        backgroundColor: '#297374',
+      }}
+      data-uid='bbb'
+      data-testid='bbb'
+    />
+  </React.Fragment>
+  <div
+    style={{
+      width: 50,
+      height: 50,
+      backgroundColor: '#292E74',
+    }}
+    data-uid='ccc'
+    data-testid='ccc'
   />
 </div>
 `
@@ -217,6 +252,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
+
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(TestProjectCCCDraggedToSecond),
     )
@@ -427,5 +463,38 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 </div>
 `),
     )
+  })
+
+  describe('with fragments as siblings', () => {
+    it('simple dragging the element in a block reorders it', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(TestProjectBlockElementsWithFragment()),
+        'await-first-dom-report',
+      )
+
+      // drag element 'CCC' up a little to replace it with it's direct sibling
+      const dragDelta = windowPoint({ x: 0, y: -45 })
+      await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      ])
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+        'utopia-storyboard-uid',
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc', // <- ccc moves to above the fragment
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
+      ])
+    })
   })
 })
