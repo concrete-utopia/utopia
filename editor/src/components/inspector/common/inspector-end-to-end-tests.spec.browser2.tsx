@@ -40,7 +40,8 @@ import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
 import { selectComponentsForTest, setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
-
+import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { setFeatureEnabled } from '../../../utils/feature-switches'
 async function getControl(
   controlTestId: string,
   renderedDOM: RenderResult,
@@ -2155,8 +2156,18 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('conditionals', () => {
-    setFeatureForBrowserTests('Conditional support', true)
+    before(() => setFeatureEnabled('Conditional support', true))
+    after(() => setFeatureEnabled('Conditional support', false))
     it('toggles conditional branch', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'conditional',
+      ])
       const startSnippet = `
         <div data-uid='aaa'>
         {true ? (
@@ -2173,7 +2184,7 @@ describe('inspector tests with real metadata', () => {
 
       expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
 
-      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'ca0'])
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
       await act(async () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
