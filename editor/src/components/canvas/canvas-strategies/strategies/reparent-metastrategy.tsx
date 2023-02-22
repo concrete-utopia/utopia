@@ -195,7 +195,6 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  // TODO delete me as soon as Balint's PR is merged
   const allDraggedElementsAbsolute = reparentSubjects.every((element) =>
     MetadataUtils.isPositionAbsolute(
       MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
