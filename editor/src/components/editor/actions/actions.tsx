@@ -2140,9 +2140,6 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       target,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
-          return element
-        }
         const updatedElementProps = propsTransform(element.props)
         return foldEither(
           () => element,
@@ -3240,7 +3237,7 @@ export const UPDATE_FNS = {
 
     const updatedEditor = modifyOpenJsxElementAtPath(
       target,
-      (element) => {
+      (element: JSXElement) => {
         const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
           element.props,
           newLayout,
@@ -4344,9 +4341,6 @@ export const UPDATE_FNS = {
       action.target,
       (element) => {
         if (!isJSXConditionalExpression(element)) {
-          console.warn(
-            `Trying to set conditional override on non-conditional element ${element.uid}`,
-          )
           return element
         }
         return {
@@ -4375,9 +4369,6 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
-          return element
-        }
         const path = PP.create(AspectRatioLockedProp)
         const updatedProps = action.locked
           ? eitherToMaybe(

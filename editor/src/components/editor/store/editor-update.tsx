@@ -271,8 +271,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
-    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
-      return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
     case 'ADD_IMPORTS':
       return UPDATE_FNS.ADD_IMPORTS(action, state)
     case 'SET_ASPECT_RATIO_LOCK':
@@ -378,6 +376,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.APPLY_COMMANDS(action, state)
     case 'UPDATE_COLOR_SWATCHES':
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
+    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
+      return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
     default:
       return state
   }

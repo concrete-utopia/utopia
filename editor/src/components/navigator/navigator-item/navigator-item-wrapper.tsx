@@ -68,10 +68,7 @@ const labelSelector = createSelector(
   (store: MetadataSubstate) => store.editor.allElementProps,
   (elementMetadata, allElementProps) => {
     if (elementMetadata == null) {
-      if (!isFeatureEnabled('Conditional support')) {
-        return 'Element 👻'
-      }
-      return 'Conditional'
+      return 'Element 👻'
     }
     return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
   },

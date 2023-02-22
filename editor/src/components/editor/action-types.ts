@@ -1227,7 +1227,6 @@ export type EditorAction =
   | ResizeLeftPane
   | SetAspectRatioLock
   | UpdateJSXElementName
-  | SetConditionalOverriddenCondition
   | AddImports
   | ToggleCanvasIsLive
   | RenameStyleSelector
@@ -1285,6 +1284,7 @@ export type EditorAction =
   | SetAssetChecksum
   | ApplyCommandsAction
   | UpdateColorSwatches
+  | SetConditionalOverriddenCondition
 
 export type DispatchPriority =
   | 'everyone'

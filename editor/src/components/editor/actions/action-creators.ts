@@ -1309,17 +1309,6 @@ export function updateJSXElementName(
   }
 }
 
-export function setConditionalOverriddenCondition(
-  target: ElementPath,
-  condition: boolean,
-): SetConditionalOverriddenCondition {
-  return {
-    action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
-    target: target,
-    condition: condition,
-  }
-}
-
 export function addImports(importsToAdd: Imports, target: ElementPath): AddImports {
   return {
     action: 'ADD_IMPORTS',
@@ -1754,5 +1743,16 @@ export function updateColorSwatches(colorSwatches: Array<ColorSwatch>): UpdateCo
   return {
     action: 'UPDATE_COLOR_SWATCHES',
     colorSwatches: colorSwatches,
+  }
+}
+
+export function setConditionalOverriddenCondition(
+  target: ElementPath,
+  condition: boolean,
+): SetConditionalOverriddenCondition {
+  return {
+    action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
+    target: target,
+    condition: condition,
   }
 }

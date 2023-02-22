@@ -177,7 +177,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
     case 'UPDATE_JSX_ELEMENT_NAME':
-    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
     case 'ADD_IMPORTS':
     case 'SET_ASPECT_RATIO_LOCK':
     case 'INSERT_DROPPED_IMAGE':
@@ -193,6 +192,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_AGAINST_GITHUB':
     case 'APPLY_COMMANDS':
     case 'UPDATE_COLOR_SWATCHES':
+    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
       return false
     case 'SAVE_ASSET':
       return (
