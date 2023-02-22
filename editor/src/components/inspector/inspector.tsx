@@ -350,7 +350,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
+          <FlexSection />
           {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
           <StyleSection />
           <WarningSubsection />
