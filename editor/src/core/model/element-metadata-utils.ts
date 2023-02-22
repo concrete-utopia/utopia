@@ -52,8 +52,6 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
-  JSXConditionalExpression,
-  childOrBlockIsChild,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1047,14 +1045,12 @@ export const MetadataUtils = {
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
-          const isHiddenConditionalBranch = false // todo
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
             (isFeatureEnabled('Fragment support') || !isFragment) &&
             (isFeatureEnabled('Conditional support') || !isConditional) &&
-            !isHiddenConditionalBranch &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
@@ -2051,45 +2047,3 @@ export function createFakeMetadataForElement(
     null,
   )
 }
-
-const filterHiddenConditionalBranch =
-  (path: ElementPath, metadata: ElementInstanceMetadataMap, isConditional: boolean) =>
-  (uid: string) => {
-    const pathString = EP.toString(path)
-
-    if (!isFeatureEnabled('Conditional support')) {
-      return false
-    }
-    if (isConditional) {
-      return false
-    }
-    if (!pathString.includes(EP.ElementSeparator + uid + EP.ElementSeparator)) {
-      return false
-    }
-
-    let conditionalAncestorPath = EP.parentPath(path)
-    let ancestorConditional: JSXConditionalExpression | null = null
-    while (conditionalAncestorPath.parts.length > 0) {
-      const element = MetadataUtils.findElementByElementPath(metadata, conditionalAncestorPath)
-      if (element != null) {
-        if (isRight(element.element) && isJSXConditionalExpression(element.element.value)) {
-          ancestorConditional = element.element.value
-          break
-        }
-      }
-      conditionalAncestorPath = EP.parentPath(conditionalAncestorPath)
-    }
-    if (ancestorConditional == null) {
-      return false
-    }
-
-    const condition = true
-    const branch = condition ? ancestorConditional.whenFalse : ancestorConditional.whenTrue
-
-    if (!childOrBlockIsChild(branch)) {
-      return false
-    }
-
-    const branchPath = EP.appendToPath(conditionalAncestorPath, getUtopiaID(branch))
-    return !EP.isDescendantOfOrEqualTo(path, branchPath)
-  }

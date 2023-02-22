@@ -2,13 +2,8 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { getUtopiaID } from '../../../../core/model/element-template-utils'
 import { isRight } from '../../../../core/shared/either'
-import * as EP from '../../../../core/shared/element-path'
-import {
-  childOrBlockIsChild,
-  isJSXConditionalExpression,
-} from '../../../../core/shared/element-template'
+import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   Button,
@@ -17,7 +12,6 @@ import {
   InspectorSectionIcons,
   useColorTheme,
 } from '../../../../uuiui'
-import { EditorAction } from '../../../editor/action-types'
 import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
