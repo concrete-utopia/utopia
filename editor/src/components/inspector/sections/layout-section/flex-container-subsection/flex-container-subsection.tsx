@@ -64,7 +64,11 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
 
   return (
     <>
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow
+        padded={true}
+        variant='<-auto-><----------1fr--------->'
+        style={{ padding: '0 16px' }}
+      >
         <FlexWrapControl
           value={flexWrap.value}
           onSubmitValue={flexWrap.onSubmitValue}
