@@ -62,7 +62,7 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
             gap: 8,
           }}
         >
-          <span style={{ textTransform: 'capitalize' }}>Layout System</span>
+          <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Layout System</span>
         </FlexRow>
         {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
         {!layoutSectionOpen && (
