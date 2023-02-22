@@ -21,6 +21,10 @@ import {
 import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
+import {
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  retargetStrategyToChildrenOfContentAffectingElements,
+} from './group-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -46,7 +50,11 @@ export function baseAbsoluteReparentStrategy(
 
     const dragInteractionData = interactionSession.interactionData // Why TypeScript?!
     const filteredSelectedElements = getDragTargets(selectedElements)
-    const isApplicable = filteredSelectedElements.every((element) => {
+    const isApplicable = replaceContentAffectingPathsWithTheirChildrenRecursive(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      filteredSelectedElements,
+    ).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,
@@ -119,14 +127,20 @@ export function baseAbsoluteReparentStrategy(
                 if (reparentResult == null) {
                   return null
                 } else {
-                  const offsetCommands = getAbsoluteReparentPropertyChanges(
-                    selectedElement,
-                    newParent,
+                  const offsetCommands = replaceContentAffectingPathsWithTheirChildrenRecursive(
                     canvasState.startingMetadata,
-                    canvasState.startingMetadata,
-                    canvasState.projectContents,
-                    canvasState.openFile,
-                  )
+                    canvasState.startingAllElementProps,
+                    [selectedElement],
+                  ).flatMap((target) => {
+                    return getAbsoluteReparentPropertyChanges(
+                      target,
+                      newParent,
+                      canvasState.startingMetadata,
+                      canvasState.startingMetadata,
+                      canvasState.projectContents,
+                      canvasState.openFile,
+                    )
+                  })
 
                   const { commands: reparentCommands, newPath } = reparentResult
                   return {
@@ -163,7 +177,6 @@ export function baseAbsoluteReparentStrategy(
                 absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(
                   strategyLifecycle,
                 ).commands ?? []
-
               return strategyApplicationResult(moveCommands)
             }
           },
