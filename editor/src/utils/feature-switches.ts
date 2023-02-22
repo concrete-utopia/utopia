@@ -14,6 +14,7 @@ export type FeatureName =
   | 'Nine block control'
   | 'Project Thumbnail Generation'
   | 'Fragment support'
+  | 'Conditional support'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -28,6 +29,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Nine block control',
   'Project Thumbnail Generation',
   'Fragment support',
+  'Conditional support',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -42,6 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Nine block control': false,
   'Project Thumbnail Generation': false,
   'Fragment support': false,
+  'Conditional support': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

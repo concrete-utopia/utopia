@@ -1930,11 +1930,19 @@ export const UPDATE_FNS = {
     )
 
     const filteredNewlySelectedPaths = newlySelectedPaths.filter((path) => {
-      if (isFeatureEnabled('Fragment support')) {
-        return true
+      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(editor.jsxMetadata, path)
+      const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
+        editor.jsxMetadata,
+        path,
+      )
+      if (isFragment) {
+        return isFeatureEnabled('Fragment support')
+      }
+      if (isConditional) {
+        return isFeatureEnabled('Conditional support')
       }
 
-      return !MetadataUtils.isElementPathFragmentFromMetadata(editor.jsxMetadata, path)
+      return true
     })
 
     const updatedEditor: EditorModel = {
