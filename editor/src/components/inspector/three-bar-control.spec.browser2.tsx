@@ -2,7 +2,7 @@ import * as EP from '../../core/shared/element-path'
 import {
   expectSingleUndoStep,
   selectComponentsForTest,
-  setFeatureForTests,
+  setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
@@ -15,7 +15,7 @@ const SceneId = 'sc'
 const ParentId = 'p'
 
 describe('three bar control', () => {
-  setFeatureForTests('Nine block control', true)
+  setFeatureForBrowserTests('Nine block control', true)
 
   describe('set align-items in flex-direcion: column', () => {
     it('align-items: start', async () => {

@@ -10,6 +10,7 @@ import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
+import * as EP from '../../core/shared/element-path'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -304,10 +305,21 @@ export function depth(path: ElementPath): number {
   return 1 + path.parts.length
 }
 
-export function navigatorDepth(path: ElementPath): number {
+export function navigatorDepth(
+  path: ElementPath,
+  visibleNavigatorTargets: Array<ElementPath> | null = null,
+): number {
   let result: number = -2
   for (const pathPart of path.parts) {
     result += pathPart.length
+    if (visibleNavigatorTargets != null) {
+      const ancestorsNotInNavigator = EP.getAncestors(path).filter(
+        (p) =>
+          p.parts.length > 0 &&
+          !visibleNavigatorTargets.some((navigatorPath) => EP.pathsEqual(p, navigatorPath)),
+      )
+      result -= ancestorsNotInNavigator.length - 1
+    }
   }
   return result
 }

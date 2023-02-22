@@ -27,8 +27,7 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
-import { setFeatureForTests } from '../../../../utils/utils.test-utils'
-import { isFeatureEnabled, setFeatureEnabled } from '../../../../utils/feature-switches'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 
 async function fireSingleClickEvents(
@@ -518,7 +517,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
   // elements. These are special cases because these fragments and their components
   // do not appear in the dom.
 
-  setFeatureForTests('Fragment support', true)
+  setFeatureForBrowserTests('Fragment support', true)
   it('One double clicks to select Card Instance', async () => {
     FOR_TESTS_setNextGeneratedUids([
       'cardlistfragment',

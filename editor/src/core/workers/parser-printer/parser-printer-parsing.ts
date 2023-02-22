@@ -8,7 +8,9 @@ import {
   traverseArray,
 } from '../../shared/array-utils'
 import {
+  alternativeEither,
   applicative2Either,
+  applicative3Either,
   bimapEither,
   Either,
   flatMapEither,
@@ -68,6 +70,10 @@ import {
   ParsedComments,
   parsedComments,
   isJSXFragment,
+  jsxConditionalExpression,
+  isJSXConditionalExpression,
+  clearAttributeSourceMaps,
+  clearAttributeUniqueIDs,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -92,7 +98,7 @@ import {
 import * as PP from '../../shared/property-path'
 import { prependToSourceString, ElementsWithinInPosition } from './parser-printer-utils'
 import Hash from 'object-hash'
-import { getComments, getTrailingComments } from './parser-printer-comments'
+import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
@@ -1014,18 +1020,27 @@ function parseJSXArbitraryBlock(
   imports: Imports,
   topLevelNames: Array<string>,
   propsObjectName: string | null,
-  jsxExpression: TS.JsxExpression,
+  jsxExpression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
   // Remove the braces around the expression
-  const expressionFullText = jsxExpression.getFullText(sourceFile).slice(1, -1)
-  const expressionAndText = createExpressionAndText(
-    jsxExpression.expression,
-    expressionFullText,
-    jsxExpression.getFullStart() + 1,
-    jsxExpression.getEnd() + 2,
-  )
+  const expressionFullText = TS.isJsxExpression(jsxExpression)
+    ? jsxExpression.getFullText(sourceFile).slice(1, -1)
+    : jsxExpression.getFullText(sourceFile)
+  const expressionAndText = TS.isJsxExpression(jsxExpression)
+    ? createExpressionAndText(
+        jsxExpression.expression,
+        expressionFullText,
+        jsxExpression.getFullStart() + 1,
+        jsxExpression.getEnd() + 2,
+      )
+    : createExpressionAndText(
+        jsxExpression,
+        expressionFullText,
+        jsxExpression.getFullStart(),
+        jsxExpression.getEnd(),
+      )
 
   return parseOtherJavaScript(
     sourceFile,
@@ -1455,6 +1470,25 @@ type TSTextOrExpression = TS.JsxText | TS.JsxExpression
 type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxFragment
 type ElementsToParse = Array<TSJSXElement | TSTextOrExpression>
 
+type LiteralLikeTypes =
+  | TS.StringLiteral
+  | TS.NumericLiteral
+  | TS.BigIntLiteral
+  | TS.BooleanLiteral
+  | TS.NullLiteral
+
+export function isTrueLiteral(node: TS.Node): node is TS.TrueLiteral {
+  return node.kind === TS.SyntaxKind.TrueKeyword
+}
+
+export function isFalseLiteral(node: TS.Node): node is TS.FalseLiteral {
+  return node.kind === TS.SyntaxKind.FalseKeyword
+}
+
+export function isNullLiteral(node: TS.Node): node is TS.NullLiteral {
+  return node.kind === TS.SyntaxKind.NullKeyword
+}
+
 function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsToParse> {
   let result: ElementsToParse = []
   for (let index = 0; index < nodes.length; index++) {
@@ -1607,21 +1641,34 @@ interface UpdateUIDResult {
   attributes: WithParserMetadata<JSXAttributes>
 }
 
+function getUIDBasedOnElement(
+  sourceFile: TS.SourceFile,
+  elementName: JSXElementName | string | null,
+  props: JSXAttributes | JSXAttribute,
+  alreadyExistingUIDs: Set<string>,
+): string {
+  const cleansedProps = Array.isArray(props)
+    ? clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
+    : clearAttributeSourceMaps(clearAttributeUniqueIDs(props))
+  const hash = Hash({
+    fileName: sourceFile.fileName,
+    name: elementName,
+    props: cleansedProps,
+  })
+  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  alreadyExistingUIDs.add(uid)
+  return uid
+}
+
 function forciblyUpdateDataUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
-  name: JSXElementName | string | null,
+  elementName: JSXElementName | string | null,
   props: JSXAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): UpdateUIDResult {
-  const hash = Hash({
-    fileName: sourceFile.fileName,
-    name: name,
-    props: clearAttributesSourceMaps(clearAttributesUniqueIDs(props)),
-  })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
-  alreadyExistingUIDs.add(uid)
+  const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
   const updatedProps = setJSXAttributesAttribute(
     props,
     'data-uid',
@@ -1731,6 +1778,7 @@ export function parseOutJSXElements(
   function innerParse(nodes: Array<TS.Node>): Either<string, Array<SuccessfullyParsedElement>> {
     // First parse to extract the nodes we really want into a sensible form
     // and fail if there's anything unexpected.
+    const validNodes = pullOutElementsToParse(nodes)
     return flatMapEither((toParse) => {
       // Handle the two different cases of either an element or a bunch of JSX inner content.
       let parsedNodes: Array<SuccessfullyParsedElement> = []
@@ -1764,11 +1812,45 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.JsxExpression: {
-            const possibleExpression = produceArbitraryBlockFromJsxExpression(elem)
-            if (isLeft(possibleExpression)) {
-              return possibleExpression
+            let parseResult: Either<string, SuccessfullyParsedElement> =
+              left('Expression fallback.')
+            // Handle ternaries.
+            if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
+              const childrenOfExpression = elem.getChildren(sourceFile)
+              // Trailing comments of the entire expression appear to be attached to the
+              // closing brace of the expression.
+              const leadingCommentsForBrace = getLeadingComments(
+                sourceText,
+                childrenOfExpression[childrenOfExpression.length - 1],
+              )
+              const possibleConditional = produceConditionalFromExpression(
+                elem.expression,
+                leadingCommentsForBrace,
+              )
+              parseResult = bimapEither(
+                (failure) => failure,
+                (success) => {
+                  highlightBounds = {
+                    ...highlightBounds,
+                    ...success.highlightBounds,
+                  }
+                  propsUsed.push(...success.propsUsed)
+                  definedElsewhere.push(...success.definedElsewhere)
+
+                  return success.value
+                },
+                possibleConditional,
+              )
+            }
+            // Fallback to arbitrary block parsing.
+            if (isLeft(parseResult)) {
+              parseResult = produceArbitraryBlockFromJsxExpression(elem)
+            }
+
+            if (isRight(parseResult)) {
+              addParsedElement(parseResult.value)
             } else {
-              addParsedElement(possibleExpression.value)
+              return parseResult
             }
             break
           }
@@ -1792,7 +1874,7 @@ export function parseOutJSXElements(
       } else {
         return left('Not enough closed fragments.')
       }
-    }, pullOutElementsToParse(nodes))
+    }, validNodes)
   }
 
   function produceTextFromJsxText(tsText: TS.JsxText): Either<string, SuccessfullyParsedElement> {
@@ -1800,7 +1882,7 @@ export function parseOutJSXElements(
   }
 
   function produceArbitraryBlockFromJsxExpression(
-    tsExpression: TS.JsxExpression,
+    tsExpression: TS.JsxExpression | LiteralLikeTypes,
   ): Either<string, SuccessfullyParsedElement> {
     const result = parseJSXArbitraryBlock(
       sourceFile,
@@ -1847,16 +1929,18 @@ export function parseOutJSXElements(
           }
         })
 
-        // empty element fix: if the element contains only fragments, remove any empty text blocks
+        // empty element fix: if the element contains only fragments or conditionals, remove any empty text blocks
         // that may have been introduced in between due to the code formatting
         if (isRight(children)) {
           const nonEmptyTextBlockChildren = children.value.filter(
             (c) => !(isJSXTextBlock(c) && c.text.trim().length === 0),
           )
-          const onlyFragments =
+          const shouldRemoveEmptyTextBlocks =
             nonEmptyTextBlockChildren.length > 0 &&
-            nonEmptyTextBlockChildren.every((e) => isJSXFragment(e))
-          if (onlyFragments) {
+            nonEmptyTextBlockChildren.every(
+              (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
+            )
+          if (shouldRemoveEmptyTextBlocks) {
             children = right(nonEmptyTextBlockChildren)
           }
         }
@@ -1931,6 +2015,80 @@ export function parseOutJSXElements(
         }, parseJSXElementName(sourceFile, tagName))
       }, parsedAttributes)
     }, children)
+  }
+
+  function produceConditionalFromExpression(
+    expression: TS.ConditionalExpression,
+    trailingComments: Array<Comment>,
+  ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
+    function parseAttribute(
+      attributeExpression: TS.Expression,
+    ): Either<string, WithParserMetadata<JSXAttribute>> {
+      return parseAttributeExpression(
+        sourceFile,
+        sourceText,
+        filename,
+        imports,
+        topLevelNames,
+        propsObjectName,
+        attributeExpression,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        [],
+      )
+    }
+
+    function parseClause(
+      clauseExpression: TS.Expression,
+    ): Either<string, SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>> {
+      const elementParseResult = mapEither((arr) => arr[0], innerParse([clauseExpression]))
+      const attributeParseResult = parseAttribute(clauseExpression)
+      return alternativeEither<
+        string,
+        SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>
+      >(elementParseResult, attributeParseResult)
+    }
+
+    const innerWhenTrue = TS.isParenthesizedExpression(expression.whenTrue)
+      ? expression.whenTrue.expression
+      : expression.whenTrue
+    const whenTrueBlock = parseClause(innerWhenTrue)
+    const innerWhenFalse = TS.isParenthesizedExpression(expression.whenFalse)
+      ? expression.whenFalse.expression
+      : expression.whenFalse
+    const whenFalseBlock = parseClause(innerWhenFalse)
+
+    return applicative3Either<
+      string,
+      WithParserMetadata<JSXAttribute>,
+      SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>,
+      SuccessfullyParsedElement | WithParserMetadata<JSXAttribute>,
+      WithParserMetadata<SuccessfullyParsedElement>
+    >(
+      (condition, whenTrue, whenFalse) => {
+        const uid = getUIDBasedOnElement(sourceFile, null, condition.value, alreadyExistingUIDs)
+        const conditionalExpression = jsxConditionalExpression(
+          uid,
+          condition.value,
+          whenTrue.value,
+          whenFalse.value,
+          parsedComments([], trailingComments),
+        )
+        highlightBounds = {
+          ...highlightBounds,
+          [uid]: buildHighlightBounds(sourceFile, expression, uid),
+        }
+        return withParserMetadata(
+          successfullyParsedElement(sourceFile, expression, conditionalExpression),
+          highlightBounds,
+          propsUsed,
+          definedElsewhere,
+        )
+      },
+      parseAttribute(expression.condition),
+      whenTrueBlock,
+      whenFalseBlock,
+    )
   }
 
   const flattened = flatMapArray(

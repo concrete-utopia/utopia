@@ -36,7 +36,7 @@ export function getElementPadding(
   visibleNavigatorTargets: Array<ElementPath>, // TODO: we only need this to filter out fragments, can be delete after 'Fragment support' FS is deleted
 ): number {
   if (isFeatureEnabled('Fragment support')) {
-    return EP.navigatorDepth(elementPath) * BasePaddingUnit
+    return EP.navigatorDepth(elementPath, visibleNavigatorTargets) * BasePaddingUnit
   }
 
   const ancestors = EP.getAncestors(elementPath)

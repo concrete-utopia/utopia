@@ -22,10 +22,12 @@ import {
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
+  childOrBlockIsChild,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
+  jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import {
@@ -331,6 +333,49 @@ export function renderCoreElement(
         </>
       )
     }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const conditionValue: boolean = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element.condition,
+      )
+      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+
+      if (childOrBlockIsChild(actualElement)) {
+        const childPath = optionalMap(
+          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+          elementPath,
+        )
+
+        return renderCoreElement(
+          actualElement,
+          childPath,
+          rootScope,
+          inScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+        )
+      } else {
+        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+      }
+    }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -356,6 +401,7 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
         }
         break
       case 'JSX_FRAGMENT':
+      case 'JSX_CONDITIONAL_EXPRESSION':
         break
       default:
         assertNever(c)
