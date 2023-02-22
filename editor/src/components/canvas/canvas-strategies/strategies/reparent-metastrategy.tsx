@@ -196,7 +196,6 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
-  // TODO delete me as soon as Balint's PR is merged
   const allDraggedElementsAbsolute = replaceContentAffectingPathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
