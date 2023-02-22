@@ -8,9 +8,8 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import {
   Button,
   FlexRow,
-  InspectorSectionHeader,
   InspectorSectionIcons,
-  useColorTheme,
+  InspectorSubsectionHeader,
 } from '../../../../uuiui'
 import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -19,7 +18,6 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
-  const colorTheme = useColorTheme()
 
   const jsxMetadata = useEditorState(
     Substores.metadata,
@@ -71,58 +69,39 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   }
 
   return (
-    <div
-      style={{
-        marginTop: 10,
-        paddingBottom: 10,
-        borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-      }}
-    >
-      <InspectorSectionHeader
-        css={{
-          marginTop: 8,
-          transition: 'color .1s ease-in-out',
-          '--buttonContentOpacity': 0.3,
-          '&:hover': {
-            color: colorTheme.fg1.value,
-            '--buttonContentOpacity': 1,
-          },
-        }}
-      >
+    <React.Fragment>
+      <InspectorSubsectionHeader>
         <FlexRow
           style={{
             flexGrow: 1,
-            alignSelf: 'stretch',
             gap: 8,
           }}
         >
-          <InspectorSectionIcons.Conditionals />
+          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
           <span>Conditional</span>
         </FlexRow>
-      </InspectorSectionHeader>
-      <React.Fragment>
-        <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-          Branch
-          <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-            <Button
-              style={{ flex: 1 }}
-              spotlight={condition}
-              highlight
-              onMouseDown={setCondition(true)}
-            >
-              True
-            </Button>
-            <Button
-              style={{ flex: 1 }}
-              spotlight={!condition}
-              highlight
-              onMouseDown={setCondition(false)}
-            >
-              False
-            </Button>
-          </FlexRow>
-        </UIGridRow>
-      </React.Fragment>
-    </div>
+      </InspectorSubsectionHeader>
+      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+        Branch
+        <FlexRow style={{ flexGrow: 1, gap: 4 }}>
+          <Button
+            style={{ flex: 1 }}
+            spotlight={condition}
+            highlight
+            onMouseDown={setCondition(true)}
+          >
+            True
+          </Button>
+          <Button
+            style={{ flex: 1 }}
+            spotlight={!condition}
+            highlight
+            onMouseDown={setCondition(false)}
+          >
+            False
+          </Button>
+        </FlexRow>
+      </UIGridRow>
+    </React.Fragment>
   )
 })
