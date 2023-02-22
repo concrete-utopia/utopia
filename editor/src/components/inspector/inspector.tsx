@@ -77,6 +77,7 @@ import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
+import { PositionSection } from './sections/layout-section/layout-section'
 
 export interface ElementPathElement {
   name?: string
@@ -341,6 +342,11 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <FlexSection />
           <SizingSection />
+          <PositionSection
+            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+            aspectRatioLocked={aspectRatioLocked}
+            toggleAspectRatioLock={toggleAspectRatioLock}
+          />
           <StyleSection />
           <WarningSubsection />
           <ImgSection />
