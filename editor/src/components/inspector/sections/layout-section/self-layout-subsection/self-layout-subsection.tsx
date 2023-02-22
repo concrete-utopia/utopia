@@ -138,10 +138,6 @@ export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionPr
           toggleAspectRatioLock={props.toggleAspectRatioLock}
         />,
       )}
-      {when(
-        activeTab === 'flex',
-        <FlexElementSubsectionExperiment parentFlexDirection={props.parentFlexDirection} />,
-      )}
     </>
   )
 })
