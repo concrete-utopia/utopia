@@ -11,6 +11,7 @@ import {
   flatMapArray,
   uniqBy,
   mapAndFilter,
+  allElemsEqual,
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
@@ -27,6 +28,7 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -48,6 +50,9 @@ import {
   elementInstanceMetadata,
   isImportedOrigin,
   isJSXFragment,
+  isJSXConditionalExpression,
+  emptyComputedStyle,
+  emptyAttributeMetadatada,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -72,7 +77,7 @@ import {
   zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
+import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import {
@@ -1040,11 +1045,13 @@ export const MetadataUtils = {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
+          const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
             (isFeatureEnabled('Fragment support') || !isFragment) &&
+            (isFeatureEnabled('Conditional support') || !isConditional) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
@@ -1283,6 +1290,8 @@ export const MetadataUtils = {
               return '(code)'
             case 'JSX_FRAGMENT':
               return 'Fragment'
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              return 'Conditional'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)
@@ -1385,6 +1394,9 @@ export const MetadataUtils = {
     elementsByUID: ElementsByUID,
     fromSpy: ElementInstanceMetadataMap,
     fromDOM: ElementInstanceMetadataMap,
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    openFile: string | null | undefined,
   ): ElementInstanceMetadataMap {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
@@ -1426,7 +1438,13 @@ export const MetadataUtils = {
       }
     })
 
-    const spyOnlyElements = fillSpyOnlyMetadataWithFramesFromChildren(fromSpy, fromDOM)
+    const spyOnlyElements = fillSpyOnlyMetadata(
+      fromSpy,
+      fromDOM,
+      projectContents,
+      nodeModules,
+      openFile,
+    )
 
     return {
       ...workingElements,
@@ -1720,20 +1738,43 @@ export const MetadataUtils = {
 
     return MetadataUtils.isFragmentFromMetadata(element)
   },
+  isElementPathConditionalFromMetadata(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath | null,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(componentMetadata, elementPath)
+
+    return MetadataUtils.isConditionalFromMetadata(element)
+  },
   isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
       element?.element != null && isRight(element.element) && isJSXFragment(element.element.value)
     )
   },
+  isConditionalFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null &&
+      isRight(element.element) &&
+      isJSXConditionalExpression(element.element.value)
+    )
+  },
 }
 
-// Those elements which are not in the dom have empty globalFrame and localFrame
-// This function calculates the frames from their children (or deeper descendants), which appear in the dom
-function fillSpyOnlyMetadataWithFramesFromChildren(
+function fillSpyOnlyMetadata(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
 ) {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
+
+  const conditionalsWithDefaultMetadata = findConditionalsAndCreateMetadata(
+    Array.from(new Set([...Object.keys(fromDOM), ...Object.keys(fromSpy)])),
+    projectContents,
+    nodeModules,
+    openFile,
+  )
 
   const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
     const existing = childrenInDomCache[pathStr]
@@ -1742,7 +1783,7 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
       return existing
     }
 
-    const spyElem = fromSpy[pathStr]
+    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
       MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
@@ -1781,6 +1822,8 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     return childrenAndUnfurledComponents
   }
 
+  const spyElementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+
   const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
     const globalFrame = fromDOM[p]?.globalFrame
     if (globalFrame == null) {
@@ -1792,7 +1835,10 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     return globalFrame.width === 0 || globalFrame.height === 0
   })
 
-  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
+  const elementsWithoutDomMetadata = Array.from([
+    ...spyElementsWithoutDomMetadata,
+    ...Object.keys(conditionalsWithDefaultMetadata),
+  ])
   // Sort and then reverse these, so that lower level elements are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
@@ -1802,7 +1848,8 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
   const workingElements: ElementInstanceMetadataMap = {}
 
   fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
-    const spyElem = fromSpy[pathStr]
+    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
       return
@@ -1839,7 +1886,104 @@ function fillSpyOnlyMetadataWithFramesFromChildren(
     }
   })
 
+  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
+    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
+    return parentLayoutSystem == null
+  })
+
+  fastForEach(elementsWithoutParentData, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
+    const sameThingFromWorkingElems = workingElements[pathStr]
+    const children = findChildrenInDomRecursively(pathStr)
+    if (children.length === 0) {
+      return
+    }
+
+    const childrenFromWorking = children.map((child) => {
+      const childPathStr = EP.toString(child.elementPath)
+      const fromWorkingElements = workingElements[childPathStr]
+      if (fromWorkingElements == null) {
+        return child
+      } else {
+        return fromWorkingElements
+      }
+    })
+
+    const parentLayoutSystemFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.parentLayoutSystem,
+    )
+    const parentFlexDirectionFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.parentFlexDirection,
+    )
+    const immediateParentBoundsFromChildren = childrenFromWorking.map(
+      (c) => c.specialSizeMeasurements.immediateParentBounds,
+    )
+
+    workingElements[pathStr] = {
+      ...spyElem,
+      ...sameThingFromWorkingElems,
+      specialSizeMeasurements: {
+        ...spyElem.specialSizeMeasurements,
+        parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
+          ? parentLayoutSystemFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentLayoutSystem,
+        parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
+          ? parentFlexDirectionFromChildren[0]
+          : spyElem.specialSizeMeasurements.parentFlexDirection,
+        immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
+          ? immediateParentBoundsFromChildren[0]
+          : spyElem.specialSizeMeasurements.immediateParentBounds,
+      },
+    }
+  })
+
   return workingElements
+}
+
+function findConditionalsAndCreateMetadata(
+  paths: Array<string>,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+): ElementInstanceMetadataMap {
+  const allAncestors = paths
+    .flatMap((p) => EP.getAncestors(EP.fromString(p)))
+    .filter((p) => p.parts.length > 0)
+    .map(EP.toString)
+
+  const missingAncestors = allAncestors.filter((a) => paths.indexOf(a) == -1)
+
+  let workingConditionals: ElementInstanceMetadataMap = {}
+  missingAncestors.forEach((ancestor: string) => {
+    const path = EP.fromString(ancestor)
+    return withUnderlyingTarget(
+      path,
+      projectContents,
+      nodeModules,
+      openFile,
+      null,
+      (_, element) => {
+        if (isJSXConditionalExpression(element)) {
+          // create a default metadata, we can finetune this if necessary
+          workingConditionals[ancestor] = elementInstanceMetadata(
+            path,
+            right(element),
+            null,
+            null,
+            false,
+            false,
+            emptySpecialSizeMeasurements,
+            emptyComputedStyle,
+            emptyAttributeMetadatada,
+            'Conditional',
+            null,
+          )
+        }
+      },
+    )
+  })
+
+  return workingConditionals
 }
 
 export function findElementAtPath(

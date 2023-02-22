@@ -29,7 +29,7 @@ import {
   EdgePositionBottom,
   EdgePositionTop,
 } from '../../canvas-types'
-import { setFeatureForTests, wait } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'
 import {
   BakedInStoryboardVariableName,
@@ -1219,7 +1219,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 })
 
 describe('Double click on resize edge', () => {
-  setFeatureForTests('Nine block control', true)
+  setFeatureForBrowserTests('Nine block control', true)
 
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
@@ -1314,7 +1314,7 @@ describe('Double click on resize edge', () => {
 })
 
 describe('double click on resize corner', () => {
-  setFeatureForTests('Nine block control', true)
+  setFeatureForBrowserTests('Nine block control', true)
 
   it('resizes to fit when resize corner is double clicked', async () => {
     const editor = await renderTestEditorWithCode(

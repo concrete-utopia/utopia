@@ -1,6 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
-  CanvasStrategy,
   controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,

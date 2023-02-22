@@ -61,6 +61,8 @@ import {
   emptyComments,
   ParsedComments,
   parsedComments,
+  childOrBlockIsChild,
+  isJSXConditionalExpression,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -704,6 +706,14 @@ function walkElements(
         walkElements(child, walkWith)
       })
       break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      if (childOrBlockIsChild(jsxElementChild.whenTrue)) {
+        walkElements(jsxElementChild.whenTrue, walkWith)
+      }
+      if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
+        walkElements(jsxElementChild.whenFalse, walkWith)
+      }
+      break
     default:
       const _exhaustiveCheck: never = jsxElementChild
       throw new Error(`Unhandled type ${JSON.stringify(jsxElementChild)}`)
@@ -733,6 +743,14 @@ function walkAllJSXElementChilds(
       fastForEach(jsxElementChild.children, (child) => {
         walkAllJSXElementChilds(child, walkWith)
       })
+      break
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      if (childOrBlockIsChild(jsxElementChild.whenTrue)) {
+        walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
+      }
+      if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
+        walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
+      }
       break
     default:
       const _exhaustiveCheck: never = jsxElementChild
@@ -913,6 +931,8 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
           innerElementResult += ` - ${getJSXElementNameAsString(innerElement.name)} - ${getUtopiaID(
             innerElement,
           )}`
+        } else if (isJSXConditionalExpression(innerElement)) {
+          innerElementResult += ` - ${getUtopiaID(innerElement)}`
         }
         structureResults.push(innerElementResult)
       })

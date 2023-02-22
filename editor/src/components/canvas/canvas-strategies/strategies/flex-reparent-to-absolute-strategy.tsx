@@ -22,6 +22,7 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
+import { treatElementAsContentAffecting } from './group-like-helpers'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { placeholderCloneCommands } from './reparent-utils'
@@ -94,7 +95,13 @@ export function baseFlexReparentToAbsoluteStrategy(
             )
 
             const escapeHatchCommands = getEscapeHatchCommands(
-              filteredSelectedElements,
+              filteredSelectedElements.filter((path) => {
+                return !treatElementAsContentAffecting(
+                  canvasState.startingMetadata,
+                  canvasState.startingAllElementProps,
+                  path,
+                )
+              }),
               canvasState.startingMetadata,
               canvasState,
               canvasPoint({ x: 0, y: 0 }),

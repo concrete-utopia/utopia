@@ -1,5 +1,5 @@
 import { MapLike } from 'typescript'
-import { is } from './equality-utils'
+import { is, shallowEqual } from './equality-utils'
 import { clamp } from './math-utils'
 import { fastForEach } from './utils'
 
@@ -414,4 +414,15 @@ export function aperture<T>(n: number, array: Array<T>): Array<Array<T>> {
 
 export function cartesianProduct<T, U>(one: T[], other: U[]): [T, U][] {
   return one.flatMap((x) => other.map((y): [T, U] => [x, y]))
+}
+
+export function allElemsEqual<T>(
+  ts: T[],
+  areEqual: (a: T, b: T) => boolean = shallowEqual,
+): boolean {
+  if (ts.length === 0) {
+    return false
+  }
+
+  return ts.slice(1).every((obj) => areEqual(ts[0], obj))
 }
