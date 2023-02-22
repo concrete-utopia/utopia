@@ -221,7 +221,7 @@ export const TextSubsection = React.memo(() => {
           >
             <Icons.Cross color={'secondary'} />
           </SquareButton>
-          <Icons.Gear color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
+          <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />

@@ -21,7 +21,7 @@ export const ContainerSubsection = React.memo(() => {
         >
           <span>Container</span>
         </FlexRow>
-        <Icons.Gear
+        <Icons.Threedots
           color={seeMoreVisible ? 'secondary' : 'subdued'}
           onClick={toggleSeeMoreVisible}
         />
