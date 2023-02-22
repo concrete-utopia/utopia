@@ -340,7 +340,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <FlexSection />
-          {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
+          <SizingSection />
           <StyleSection />
           <WarningSubsection />
           <ImgSection />
