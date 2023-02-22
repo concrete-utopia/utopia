@@ -53,7 +53,6 @@ import {
   TargetSelectorLength,
 } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
-import { LayoutSection } from './sections/layout-section/layout-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
@@ -353,11 +352,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           />
           {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
           {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
           <StyleSection />
           <WarningSubsection />
           <ImgSection />
