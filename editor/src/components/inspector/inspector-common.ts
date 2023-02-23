@@ -688,7 +688,11 @@ export function toggleResizeToFitSetToFixed(
     return []
   }
 
-  return notFixedSizeOnBothAxes(metadata, elementPaths)
+  const isSetToHug =
+    detectFillHugFixedState('horizontal', metadata, elementPaths[0])?.type === 'hug' &&
+    detectFillHugFixedState('vertical', metadata, elementPaths[0])?.type === 'hug'
+
+  return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
     : resizeToFitCommands(metadata, elementPaths)
 }
