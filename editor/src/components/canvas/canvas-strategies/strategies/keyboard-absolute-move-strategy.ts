@@ -70,18 +70,16 @@ export function keyboardAbsoluteMoveStrategy(
             keyboardMovement = offsetPoint(keyboardMovement, keyPressMovement)
           })
         })
-        if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
-          selectedElements.forEach((selectedElement) => {
-            const elementResult = getMoveCommandsForSelectedElement(
-              selectedElement,
-              keyboardMovement,
-              canvasState,
-              interactionSession,
-            )
-            commands.push(...elementResult.commands)
-            intendedBounds.push(...elementResult.intendedBounds)
-          })
-        }
+        selectedElements.forEach((selectedElement) => {
+          const elementResult = getMoveCommandsForSelectedElement(
+            selectedElement,
+            keyboardMovement,
+            canvasState,
+            interactionSession,
+          )
+          commands.push(...elementResult.commands)
+          intendedBounds.push(...elementResult.intendedBounds)
+        })
         const multiselectBounds = getMultiselectBounds(
           canvasState.startingMetadata,
           selectedElements,
