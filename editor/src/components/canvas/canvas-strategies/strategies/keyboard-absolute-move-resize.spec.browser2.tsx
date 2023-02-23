@@ -170,7 +170,7 @@ describe('Keyboard Absolute Resize E2E', () => {
     expectElementWidthOnScreen(2)
     expect(getCanvasGuidelines()).toEqual([
       {
-        guideline: { type: 'XAxisGuideline', x: 40, yBottom: 396, yTop: 300 },
+        guideline: { type: 'XAxisGuideline', x: 40, yBottom: 396, yTop: 100 },
         pointsOfRelevance: [],
         snappingVector: { x: 0, y: 0 },
       },
