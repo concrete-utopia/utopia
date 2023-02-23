@@ -180,8 +180,10 @@ describe('set border radius strategy', () => {
 
     await doDragTest(editor, 'tl', 10, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '14px 15px 16px 17px',
-                       borderTopLeftRadius: '24px',`),
+      codeForDragTest(`borderTopLeftRadius: '24px',
+                       borderTopRightRadius: '15px',
+                       borderBottomRightRadius: '16px',
+                       borderBottomLeftRadius: '17px'`),
     )
   })
 
@@ -332,8 +334,10 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'tl', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px',
-                         borderTopLeftRadius: '24px',`),
+        codeForDragTest(`borderTopLeftRadius: '24px',
+                          borderTopRightRadius: '14px',
+                          borderBottomRightRadius: '14px',
+                          borderBottomLeftRadius: '14px',`),
       )
     })
 
@@ -344,8 +348,10 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'tr', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px',
-                         borderTopRightRadius: '24px',`),
+        codeForDragTest(`borderTopLeftRadius: '14px',
+                          borderTopRightRadius: '24px',
+                          borderBottomRightRadius: '14px',
+                          borderBottomLeftRadius: '14px',`),
       )
     })
 
@@ -356,8 +362,10 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'bl', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px',
-                         borderBottomLeftRadius: '24px',`),
+        codeForDragTest(`borderTopLeftRadius: '14px',
+                          borderTopRightRadius: '14px',
+                          borderBottomRightRadius: '14px',
+                          borderBottomLeftRadius: '24px',`),
       )
     })
 
@@ -368,8 +376,10 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'br', 10, cmdModifier)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '14px',
-                         borderBottomRightRadius: '24px',`),
+        codeForDragTest(`borderTopLeftRadius: '14px',
+                          borderTopRightRadius: '14px',
+                          borderBottomRightRadius: '24px',
+                          borderBottomLeftRadius: '14px',`),
       )
     })
   })

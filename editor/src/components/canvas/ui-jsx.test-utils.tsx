@@ -362,6 +362,15 @@ export async function renderTestEditorWithModel(
     >
       <div id={CanvasContextMenuPortalTargetID}></div>
       <FailJestOnCanvasError />
+      <style>{`
+div,
+span,
+img,
+ul,
+li,
+label {
+  box-sizing: border-box !important;
+}`}</style>
       <EditorRoot
         dispatch={asyncTestDispatch as EditorDispatch}
         mainStore={storeHook}

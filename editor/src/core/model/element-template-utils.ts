@@ -37,6 +37,8 @@ import {
   isJSXElementLike,
   JSXFragment,
   jsxFragment,
+  isJSXConditionalExpression,
+  childOrBlockIsChild,
 } from '../shared/element-template'
 import {
   Imports,
@@ -203,6 +205,8 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
     return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {
     return element.uid
+  } else if (isJSXConditionalExpression(element)) {
+    return element.uniqueID
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
@@ -266,6 +270,29 @@ function transformAtPathOptionally(
         }
       }
     } else if (isJSXArbitraryBlock(element)) {
+      if (getUtopiaID(element) === firstUIDOrIndex) {
+        let childrenUpdated: boolean = false
+        const updatedChildren = Object.values(element.elementsWithin).reduce(
+          (acc, child): ElementsWithin => {
+            const updated = findAndTransformAtPathInner(child, tailPath)
+            if (updated != null && isJSXElement(updated)) {
+              childrenUpdated = true
+              return {
+                ...acc,
+                [child.uid]: updated,
+              }
+            }
+            return acc
+          },
+          element.elementsWithin,
+        )
+        if (childrenUpdated) {
+          return {
+            ...element,
+            elementsWithin: updatedChildren,
+          }
+        }
+      }
       if (firstUIDOrIndex in element.elementsWithin) {
         const updated = findAndTransformAtPathInner(
           element.elementsWithin[firstUIDOrIndex],
@@ -279,6 +306,51 @@ function transformAtPathOptionally(
           return {
             ...element,
             elementsWithin: newElementsWithin,
+          }
+        }
+      }
+    } else if (isJSXConditionalExpression(element)) {
+      if (getUtopiaID(element) === firstUIDOrIndex) {
+        const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
+          ? findAndTransformAtPathInner(element.whenTrue, tailPath)
+          : null
+        const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
+          ? findAndTransformAtPathInner(element.whenFalse, tailPath)
+          : null
+        if (updatedWhenTrue != null) {
+          return {
+            ...element,
+            whenTrue: updatedWhenTrue,
+          }
+        }
+        if (updatedWhenFalse != null) {
+          return {
+            ...element,
+            whenFalse: updatedWhenFalse,
+          }
+        }
+      }
+      if (
+        childOrBlockIsChild(element.whenTrue) &&
+        getUtopiaID(element.whenTrue) === firstUIDOrIndex
+      ) {
+        const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
+        if (updated != null && isJSXElement(updated)) {
+          return {
+            ...element,
+            whenTrue: updated,
+          }
+        }
+      }
+      if (
+        childOrBlockIsChild(element.whenFalse) &&
+        getUtopiaID(element.whenFalse) === firstUIDOrIndex
+      ) {
+        const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
+        if (updated != null && isJSXElement(updated)) {
+          return {
+            ...element,
+            whenFalse: updated,
           }
         }
       }
@@ -340,6 +412,33 @@ export function findJSXElementChildAtPath(
         const withinResult = findAtPathInner(elementWithin, workingPath)
         if (withinResult != null) {
           return withinResult
+        }
+      }
+    } else if (isJSXConditionalExpression(element)) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        if (
+          childOrBlockIsChild(element.whenTrue) &&
+          tailPath[0] === getUtopiaID(element.whenTrue)
+        ) {
+          const elementWithin = element.whenTrue
+          const withinResult = findAtPathInner(elementWithin, tailPath)
+          if (withinResult != null) {
+            return withinResult
+          }
+        }
+        if (
+          childOrBlockIsChild(element.whenFalse) &&
+          tailPath[0] === getUtopiaID(element.whenFalse)
+        ) {
+          const elementWithin = element.whenFalse
+          const withinResult = findAtPathInner(elementWithin, tailPath)
+          if (withinResult != null) {
+            return withinResult
+          }
         }
       }
     }
@@ -532,6 +631,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.every((element) => {
       switch (element.type) {
         case 'JSX_ARBITRARY_BLOCK':
+        case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
           return jsxElementNameEquals(element.name, jsxElementName('br', []))
@@ -549,6 +649,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
     case 'JSX_ARBITRARY_BLOCK':
+    case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe we the current branch only includes text children???
       return false // We can't possibly know at this point
     case 'JSX_ELEMENT':
       return (
@@ -808,6 +909,14 @@ export function elementUsesProperty(
       return element.children.some((child) => {
         return elementUsesProperty(child, propsParam, property)
       })
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return (
+        attributeUsesProperty(element.condition, propsParam, property) ||
+        (childOrBlockIsChild(element.whenTrue) &&
+          elementUsesProperty(element.whenTrue, propsParam, property)) ||
+        (childOrBlockIsChild(element.whenFalse) &&
+          elementUsesProperty(element.whenFalse, propsParam, property))
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
