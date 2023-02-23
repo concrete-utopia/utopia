@@ -16,6 +16,8 @@ import {
 } from './inspector-common'
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
+export const ResizeToFillControlTestId = 'ResizeToFillControlTestId'
+export const ResizeToFixedControlTestId = 'ResizeToFixedControlTestId'
 
 const isApplicableSelector = createSelector(
   metadataSelector,
@@ -106,6 +108,7 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
       </Tooltip>
       <Tooltip title={'Resize to Fill'}>
         <div
+          data-testid={ResizeToFillControlTestId}
           onClick={onResizeToFill}
           style={{ cursor: 'pointer', ...disabledStyles(isFillApplicable) }}
         >
@@ -113,7 +116,11 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
         </div>
       </Tooltip>
       <Tooltip title={'Fixed size'}>
-        <div onClick={onSetToFixedSize} style={{ cursor: 'pointer' }}>
+        <div
+          data-testid={ResizeToFixedControlTestId}
+          onClick={onSetToFixedSize}
+          style={{ cursor: 'pointer' }}
+        >
           <Icn type='fixed' color='main' category='layout/commands' width={16} height={16} />
         </div>
       </Tooltip>
