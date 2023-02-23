@@ -29,7 +29,11 @@ import {
   EdgePositionBottom,
   EdgePositionTop,
 } from '../../canvas-types'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'
 import {
   BakedInStoryboardVariableName,
@@ -43,7 +47,10 @@ import {
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
-import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
+import {
+  AbsoluteResizeControlTestId,
+  ResizePointTestId,
+} from '../../controls/select-mode/absolute-resize-control'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -181,6 +188,19 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )`
+
+const projectWithFragment = `import * as React from 'react'
+
+const foo = true
+
+export var storyboard = (
+  <div data-uid='root'>
+    <React.Fragment data-uid='fragment'>
+      Fragment
+    </React.Fragment>
+  </div>
+)
+`
 
 const projectDoesNotHonourSizeProperties = `
 import * as React from 'react'
@@ -448,6 +468,12 @@ export var storyboard = (
 `
 
 describe('Absolute Resize Strategy', () => {
+  it('control is not shown when a fragment is selected', async () => {
+    const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('root/fragment')])
+    const absoluteResizeControl = editor.renderedDOM.queryAllByTestId(AbsoluteResizeControlTestId)
+    expect(absoluteResizeControl).toEqual([])
+  })
   it('resizes component instances that honour the size properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectDoesHonourSizeProperties(300, 300),

@@ -40,6 +40,8 @@ interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
 }
 
+export const AbsoluteResizeControlTestId = 'AbsoluteResizeControlTestId'
+
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
     const controlRef = useBoundingBox(targets, (ref, boundingBox) => {
@@ -91,6 +93,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     return (
       <CanvasOffsetWrapper>
         <div
+          data-testid={AbsoluteResizeControlTestId}
           ref={controlRef}
           style={{
             position: 'absolute',
