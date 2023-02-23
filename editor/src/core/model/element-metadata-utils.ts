@@ -877,16 +877,6 @@ export const MetadataUtils = {
   ): boolean {
     if (metadata == null) {
       return false
-    }
-
-    const isElementFragmentOrConditional = foldEither(
-      () => false,
-      (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
-      metadata.element,
-    )
-
-    if (isElementFragmentOrConditional) {
-      return false
     } else {
       const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
