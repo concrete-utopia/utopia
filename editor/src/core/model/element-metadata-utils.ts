@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, Sides } from 'utopia-api/core'
+import { FlexLength, sides, Sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
@@ -2080,6 +2080,11 @@ export function createFakeMetadataForElement(
   specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
   specialSizeMeasurements.parentFlexDirection =
     parentElement?.specialSizeMeasurements.flexDirection ?? 'row'
+  specialSizeMeasurements.immediateParentBounds =
+    parentBounds == null || isInfinityRectangle(parentBounds) ? null : parentBounds
+  specialSizeMeasurements.parentPadding =
+    parentElement?.specialSizeMeasurements.padding ??
+    sides(undefined, undefined, undefined, undefined)
 
   return elementInstanceMetadata(
     path,
