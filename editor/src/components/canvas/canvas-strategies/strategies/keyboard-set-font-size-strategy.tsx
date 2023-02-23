@@ -30,7 +30,7 @@ import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strat
 export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-): CanvasStrategy | null {
+): CanvasStrategy<'SET_FONT_SIZE'> | null {
   const validTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget).filter(
     (path) => isValidTarget(canvasState.startingMetadata, path),
   )
@@ -40,7 +40,7 @@ export function keyboardSetFontSizeStrategy(
   }
 
   return {
-    id: 'set-font-size',
+    id: 'SET_FONT_SIZE',
     name: 'Set font size',
     controlsToRender: [],
     fitness: fitness(interactionSession),

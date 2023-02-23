@@ -20,7 +20,7 @@ import { InteractionSession } from '../interaction-state'
 import { drawToInsertFitness, drawToInsertStrategyFactory } from './draw-to-insert-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 
-export const DRAW_TO_INSERT_TEXT_STRATEGY_ID = 'draw-to-insert-text'
+export const DRAW_TO_INSERT_TEXT_STRATEGY_ID = 'DRAW_TO_INSERT_TEXT'
 
 export const drawToInsertTextStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,

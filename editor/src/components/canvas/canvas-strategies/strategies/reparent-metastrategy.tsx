@@ -16,6 +16,7 @@ import {
   InteractionCanvasState,
   isInsertionSubjects,
   isTargetPaths,
+  ReparentStrategy,
 } from '../canvas-strategy-types'
 import { AllowSmallerParent, InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
@@ -25,7 +26,6 @@ import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-
 import { baseReparentAsStaticStrategy } from './reparent-as-static-strategy'
 import {
   findReparentStrategies,
-  ReparentStrategy,
   reparentSubjectsForInteractionTarget,
   ReparentTarget,
 } from './reparent-helpers/reparent-strategy-helpers'

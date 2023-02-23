@@ -24,7 +24,7 @@ export function keyboardSetOpacityStrategy(
   }
 
   return {
-    id: 'set-opacity',
+    id: 'SET_OPACITY',
     name: 'Set opacity',
     controlsToRender: [],
     fitness: fitness(interactionSession),

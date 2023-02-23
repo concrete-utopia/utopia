@@ -142,12 +142,60 @@ export function getInsertionSubjectsFromInteractionTarget(
   return []
 }
 
-export type CanvasStrategyId = string
+export type TestStrategyId =
+  | 'WORST_STRATEGY'
+  | 'UNFIT_STRATEGY'
+  | 'TEST_STRATEGY'
+  | 'EMPTY_TEST_STRATEGY'
+  | 'AVERAGE_STRATEGY'
+  | 'BEST_STRATEGY'
+
+export type MoveOrReorderStrategyId =
+  | 'ABSOLUTE_DUPLICATE'
+  | 'KEYBOARD_ABSOLUTE_MOVE'
+  | 'KEYBOARD_REORDER'
+  | 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
+  | 'REORDER_SLIDER'
+
+export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
+
+export type LeafStrategyId =
+  | 'FLEX_RESIZE'
+  | 'ABSOLUTE_RESIZE_BOUNDING_BOX'
+  | 'KEYBOARD_ABSOLUTE_RESIZE'
+  | 'FLEX_RESIZE_BASIC'
+  | 'FLEX_RESIZE'
+  | 'BASIC_RESIZE'
+  | 'DO_NOTHING'
+  | 'SET_PADDING_STRATEGY'
+  | 'SET_FLEX_GAP_STRATEGY'
+  | 'SET_BORDER_RADIUS_STRATEGY'
+  | 'ABSOLUTE_MOVE'
+  | 'RELATIVE_MOVE'
+  | 'SET_FONT_WEIGHT'
+  | 'SET_FONT_SIZE'
+  | 'SET_OPACITY'
+  | 'FLOW_REORDER'
+  | 'FLEX_REORDER'
+  | 'FLEX_REPARENT_TO_ABSOLUTE'
+  | 'ABSOLUTE_REPARENT'
+  | 'REPARENT_TO_FLEX'
+  | 'REPARENT_TO_FLOW'
+  | 'DRAW_TO_INSERT_TEXT'
+  | 'DRAG_TO_INSERT_ABSOLUTE'
+  | 'DRAG_TO_INSERT_FLOW'
+  | 'DRAG_TO_INSERT_FLEX'
+
+export type SimpleStrategyId = MoveOrReorderStrategyId | LeafStrategyId | TestStrategyId
+
+export type AncestorMetaStrategyID = `${SimpleStrategyId}_ANCESTOR_${number}`
+
+export type CanvasStrategyId = SimpleStrategyId // | AncestorMetaStrategyID
 
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
-export interface CanvasStrategy {
-  id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
+export interface CanvasStrategy<Id extends CanvasStrategyId> {
+  id: Id // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
   name: string
 
   // The controls to render when this strategy is applicable, regardless of if it is currently active

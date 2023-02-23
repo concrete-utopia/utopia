@@ -9,6 +9,7 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   InteractionTarget,
+  ReparentStrategy,
 } from '../../canvas-strategy-types'
 import { AllowSmallerParent } from '../../interaction-state'
 import {
@@ -17,8 +18,6 @@ import {
 } from './reparent-strategy-parent-lookup'
 import { getDragTargets } from '../shared-move-strategies-helpers'
 import { Direction } from '../../../../inspector/common/css-utils'
-
-export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy

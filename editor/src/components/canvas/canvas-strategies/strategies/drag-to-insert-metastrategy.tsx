@@ -43,6 +43,7 @@ import {
 } from '../canvas-strategies'
 import {
   CanvasStrategy,
+  CanvasStrategyId,
   controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
@@ -93,7 +94,10 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
-    const name = getDragToInsertStrategyName(result.strategyType, result.targetParentDisplayType)
+    const { name, id } = getDragToInsertStrategyName(
+      result.strategyType,
+      result.targetParentDisplayType,
+    )
 
     return dragToInsertStrategyFactory(
       canvasState,
@@ -102,6 +106,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
       insertionSubjects,
       result.factory,
       name,
+      id,
       result.fitness,
       result.targetParent,
     )
@@ -111,15 +116,15 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
   parentDisplayType: 'flex' | 'flow',
-): string {
+): { name: string; id: CanvasStrategyId } {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
-      return 'Drag to Insert (Abs)'
+      return { name: 'Drag to Insert (Abs)', id: 'DRAG_TO_INSERT_ABSOLUTE' }
     case 'REPARENT_AS_STATIC':
       if (parentDisplayType === 'flex') {
-        return 'Drag to Insert (Flex)'
+        return { name: 'Drag to Insert (Flex)', id: 'DRAG_TO_INSERT_FLEX' }
       } else {
-        return 'Drag to Insert (Flow)'
+        return { name: 'Drag to Insert (Flow)', id: 'DRAG_TO_INSERT_FLOW' }
       }
   }
 }
@@ -131,6 +136,7 @@ function dragToInsertStrategyFactory(
   insertionSubjects: Array<InsertionSubject>,
   reparentStrategyToUse: CanvasStrategyFactory,
   name: string,
+  startegyId: CanvasStrategyId,
   fitness: number,
   targetParent: ElementPath,
 ): CanvasStrategy | null {
@@ -165,7 +171,7 @@ function dragToInsertStrategyFactory(
   )
 
   return {
-    id: name,
+    id: startegyId,
     name: name,
     controlsToRender: [
       controlWithProps({

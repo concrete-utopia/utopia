@@ -24,6 +24,7 @@ import { ZeroSizedElementControls } from '../../controls/zero-sized-element-cont
 import { CanvasStrategyFactory } from '../canvas-strategies'
 import {
   CanvasStrategy,
+  CanvasStrategyId,
   controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
@@ -112,7 +113,7 @@ export function baseReparentAsStaticStrategy(
 }
 
 function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): {
-  id: string
+  id: CanvasStrategyId
   name: string
 } {
   switch (targetLayout) {
