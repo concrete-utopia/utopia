@@ -54,6 +54,10 @@ import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import {
+  findUtopiaCommentFlag,
+  isUtopiaCommentFlagConditional,
+} from '../../../core/shared/comment-flags'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -334,9 +338,10 @@ export function renderCoreElement(
       )
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
+      const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
+      const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const conditionValue: boolean =
-        element.overriddenCondition ??
-        jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
+        override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (childOrBlockIsChild(actualElement)) {

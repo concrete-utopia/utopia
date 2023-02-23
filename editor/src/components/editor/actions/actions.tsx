@@ -76,6 +76,7 @@ import {
   jsxElementName,
   jsxTextBlock,
   SettableLayoutSystem,
+  singleLineComment,
   UtopiaJSXComponent,
   walkElements,
 } from '../../../core/shared/element-template'
@@ -475,6 +476,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { isUtopiaCommentFlag, utopiaCommentFlag } from '../../../core/shared/comment-flags'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4343,9 +4345,18 @@ export const UPDATE_FNS = {
         if (!isJSXConditionalExpression(element)) {
           return element
         }
+        const comment = utopiaCommentFlag({ type: 'conditional', value: action.condition })
         return {
           ...element,
-          overriddenCondition: action.condition,
+          comments: {
+            leadingComments: element.comments.leadingComments,
+            trailingComments: [
+              singleLineComment(comment, comment, true, 0),
+              ...element.comments.trailingComments.filter(
+                (c) => !isUtopiaCommentFlag(c, 'conditional'),
+              ),
+            ],
+          },
         }
       },
       editor,

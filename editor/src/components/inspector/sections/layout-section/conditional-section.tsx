@@ -2,6 +2,7 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { isRight } from '../../../../core/shared/either'
 import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -10,6 +11,7 @@ import {
   FlexRow,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
+  useColorTheme,
 } from '../../../../uuiui'
 import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -18,6 +20,7 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
 
   const jsxMetadata = useEditorState(
     Substores.metadata,
@@ -49,9 +52,9 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   const condition = React.useMemo(() => {
     if (element == null) {
-      return true
+      return null
     }
-    return element.overriddenCondition ?? true
+    return findUtopiaCommentFlag(element.comments, 'conditional')?.value ?? null
   }, [element])
 
   const setCondition = React.useCallback(
@@ -81,12 +84,16 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <span>Conditional</span>
         </FlexRow>
       </InspectorSubsectionHeader>
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow
+        padded={true}
+        variant='<---1fr--->|------172px-------|'
+        style={{ color: condition != null ? colorTheme.primary.value : 'inherit' }}
+      >
         Branch
         <FlexRow style={{ flexGrow: 1, gap: 4 }}>
           <Button
             style={{ flex: 1 }}
-            spotlight={condition}
+            spotlight={condition !== false}
             highlight
             onClick={setCondition(true)}
             data-testid='conditionals-control-true'
@@ -95,7 +102,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           </Button>
           <Button
             style={{ flex: 1 }}
-            spotlight={!condition}
+            spotlight={condition === false}
             highlight
             onClick={setCondition(false)}
             data-testid='conditionals-control-false'
