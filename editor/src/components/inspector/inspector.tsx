@@ -78,6 +78,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
+import { ConditionalSection } from './sections/layout-section/conditional-section'
 
 export interface ElementPathElement {
   name?: string
@@ -347,6 +348,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             aspectRatioLocked={aspectRatioLocked}
             toggleAspectRatioLock={toggleAspectRatioLock}
           />
+          {when(
+            isFeatureEnabled('Conditional support'),
+            <ConditionalSection paths={selectedViews} />,
+          )}
           <StyleSection />
           <WarningSubsection />
           <ImgSection />

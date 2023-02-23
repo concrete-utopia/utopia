@@ -4923,7 +4923,9 @@ describe('Getting highlight bounds', () => {
 
     const Thing = (props) => {
       return <div data-uid='root' style={props.style}>
-        {props.inner}
+        {parseInt('2') === 2 ? (
+          props.inner
+        ) : <div data-uid='message'>Message.</div>}
       </div>
     }
 

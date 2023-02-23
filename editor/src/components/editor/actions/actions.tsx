@@ -61,6 +61,7 @@ import {
   getJSXAttribute,
   isImportStatement,
   isJSXAttributeValue,
+  isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
   isPartOfJSXAttributeValue,
@@ -75,6 +76,7 @@ import {
   jsxElementName,
   jsxTextBlock,
   SettableLayoutSystem,
+  singleLineComment,
   UtopiaJSXComponent,
   walkElements,
 } from '../../../core/shared/element-template'
@@ -323,6 +325,7 @@ import {
   UpdateColorSwatches,
   PasteProperties,
   CopyProperties,
+  SetConditionalOverriddenCondition,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -391,6 +394,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   EditorStoreUnpatched,
+  modifyOpenJsxElementOrConditionalAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -472,6 +476,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1930,11 +1935,19 @@ export const UPDATE_FNS = {
     )
 
     const filteredNewlySelectedPaths = newlySelectedPaths.filter((path) => {
-      if (isFeatureEnabled('Fragment support')) {
-        return true
+      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(editor.jsxMetadata, path)
+      const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
+        editor.jsxMetadata,
+        path,
+      )
+      if (isFragment) {
+        return isFeatureEnabled('Fragment support')
+      }
+      if (isConditional) {
+        return isFeatureEnabled('Conditional support')
       }
 
-      return !MetadataUtils.isElementPathFragmentFromMetadata(editor.jsxMetadata, path)
+      return true
     })
 
     const updatedEditor: EditorModel = {
@@ -4320,6 +4333,32 @@ export const UPDATE_FNS = {
         }
       },
       updatedEditor,
+    )
+  },
+  SET_CONDITIONAL_OVERRIDDEN_CONDITION: (
+    action: SetConditionalOverriddenCondition,
+    editor: EditorModel,
+  ): EditorModel => {
+    return modifyOpenJsxElementOrConditionalAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+        return {
+          ...element,
+          comments: {
+            leadingComments: element.comments.leadingComments,
+            trailingComments: [
+              makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
+              ...element.comments.trailingComments.filter(
+                (c) => !isUtopiaCommentFlag(c, 'conditional'),
+              ),
+            ],
+          },
+        }
+      },
+      editor,
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {

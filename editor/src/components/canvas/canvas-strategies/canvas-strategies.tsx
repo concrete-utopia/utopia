@@ -489,7 +489,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'KEYBOARD_ABSOLUTE_RESIZE':
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
-    case 'FLOW_RESIZE_BASIC':
+    case 'BASIC_RESIZE':
       return true
     default:
       return false

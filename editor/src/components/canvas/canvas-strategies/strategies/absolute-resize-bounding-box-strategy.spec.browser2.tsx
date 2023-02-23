@@ -29,7 +29,11 @@ import {
   EdgePositionBottom,
   EdgePositionTop,
 } from '../../canvas-types'
-import { setFeatureForTests, wait } from '../../../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../../../utils/utils.test-utils'
 import { ControlDelay } from '../canvas-strategy-types'
 import {
   BakedInStoryboardVariableName,
@@ -43,7 +47,10 @@ import {
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
-import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
+import {
+  SizeLabelTestId,
+  ResizePointTestId,
+} from '../../controls/select-mode/absolute-resize-control'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -181,6 +188,19 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )`
+
+const projectWithFragment = `import * as React from 'react'
+
+const foo = true
+
+export var storyboard = (
+  <div data-uid='root'>
+    <React.Fragment data-uid='fragment'>
+
+    </React.Fragment>
+  </div>
+)
+`
 
 const projectDoesNotHonourSizeProperties = `
 import * as React from 'react'
@@ -448,6 +468,12 @@ export var storyboard = (
 `
 
 describe('Absolute Resize Strategy', () => {
+  it('the size label is not shown when an empty fragment is selected', async () => {
+    const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
+    await selectComponentsForTest(editor, [EP.fromString('root/fragment')])
+    const absoluteResizeControl = editor.renderedDOM.queryAllByTestId(SizeLabelTestId)
+    expect(absoluteResizeControl).toEqual([])
+  })
   it('resizes component instances that honour the size properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectDoesHonourSizeProperties(300, 300),
@@ -1219,7 +1245,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 })
 
 describe('Double click on resize edge', () => {
-  setFeatureForTests('Nine block control', true)
+  setFeatureForBrowserTests('Nine block control', true)
 
   const edgeResizeControlTestId = (position: EdgePosition) =>
     `resize-control-${position.x}-${position.y}`
@@ -1314,7 +1340,7 @@ describe('Double click on resize edge', () => {
 })
 
 describe('double click on resize corner', () => {
-  setFeatureForTests('Nine block control', true)
+  setFeatureForBrowserTests('Nine block control', true)
 
   it('resizes to fit when resize corner is double clicked', async () => {
     const editor = await renderTestEditorWithCode(

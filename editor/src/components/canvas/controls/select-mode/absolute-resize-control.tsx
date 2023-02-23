@@ -40,6 +40,8 @@ interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
 }
 
+export const SizeLabelTestId = 'SizeLabelTestId'
+
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
     const controlRef = useBoundingBox(targets, (ref, boundingBox) => {
@@ -319,7 +321,7 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
-): [string, string] | null {
+): { h: string; v: string } | null {
   if (selectedElements.length === 0) {
     return null
   }
@@ -337,14 +339,17 @@ function sizeLabelContents(
       detectFillHugFixedState('horizontal', metadata, selectedElements[0])?.type ?? 'fixed'
     const vertical =
       detectFillHugFixedState('vertical', metadata, selectedElements[0])?.type ?? 'fixed'
-    return [sizeLabel(horizontal, globalFrame.width), sizeLabel(vertical, globalFrame.height)]
+    return {
+      h: sizeLabel(horizontal, globalFrame.width),
+      v: sizeLabel(vertical, globalFrame.height),
+    }
   }
 
   const boundingBox = boundingRectangleArray(
     selectedElements.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
   )
   if (boundingBox != null) {
-    return [`${boundingBox.width}`, `${boundingBox.height}`]
+    return { h: `${boundingBox.width}`, v: `${boundingBox.height}` }
   }
 
   return null
@@ -377,6 +382,8 @@ const SizeLabel = React.memo(
 
     const label = sizeLabelContents(metadata, targets)
 
+    const labelText = label == null ? null : `${label.h} x ${label.v}`
+
     return (
       <div
         ref={ref}
@@ -389,8 +396,9 @@ const SizeLabel = React.memo(
         data-testid='parent-resize-label'
       >
         {when(
-          label != null,
+          labelText != null,
           <div
+            data-testid={SizeLabelTestId}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -403,7 +411,7 @@ const SizeLabel = React.memo(
               height: ExplicitHeightHacked / scale,
             }}
           >
-            {`${label![0]} x ${label![1]}`}
+            {labelText}
           </div>,
         )}
       </div>

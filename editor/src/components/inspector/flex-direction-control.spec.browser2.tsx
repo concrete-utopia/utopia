@@ -3,7 +3,7 @@ import {
   expectSingleUndoStep,
   hoverControlWithCheck,
   selectComponentsForTest,
-  setFeatureForTests,
+  setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
@@ -13,7 +13,7 @@ import { FlexDirection } from './common/css-utils'
 import { FlexDirectionControlTestId, FlexDirectionToggleTestId } from './flex-direction-control'
 
 describe('set flex direction', () => {
-  setFeatureForTests('Nine block control', true)
+  setFeatureForBrowserTests('Nine block control', true)
 
   it('set flex direction to row from not set', async () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')

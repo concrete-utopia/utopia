@@ -88,6 +88,13 @@ export const InspectorSectionIcons = {
     width: 16,
     height: 16,
   }),
+  Conditionals: makeIcon({
+    category: 'element',
+    type: 'arc',
+    color: 'main',
+    width: 18,
+    height: 18,
+  }),
   Layer: makeIcon({
     category: 'inspector',
     type: 'layer',

@@ -164,6 +164,9 @@ export function getEscapeHatchCommands(
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
+  if (selectedElements.length === 0) {
+    return { commands: [], intendedBounds: [] }
+  }
   let commands: Array<CanvasCommand> = []
   let intendedBounds: Array<CanvasFrameAndTarget> = []
 

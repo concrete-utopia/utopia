@@ -38,9 +38,10 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
-
+import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { setFeatureEnabled } from '../../../utils/feature-switches'
 async function getControl(
   controlTestId: string,
   renderedDOM: RenderResult,
@@ -2139,6 +2140,108 @@ describe('inspector tests with real metadata', () => {
         )
         expect(focusedControls.length).toEqual(t.focusedCanvasControls.length)
       })
+    })
+  })
+
+  describe('conditionals', () => {
+    before(() => setFeatureEnabled('Conditional support', true))
+    after(() => setFeatureEnabled('Conditional support', false))
+    it('toggles conditional branch', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'conditional',
+      ])
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {true ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      // toggle to false
+      {
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('conditionals-control-false'))
+          await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], true)
+          await dispatchDone
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              true ? (
+                <div data-uid='bbb' data-testid='bbb'>foo</div>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>bar</div>
+              ) // @utopia/conditional=false
+            }
+          </div>
+        `),
+        )
+      }
+
+      // toggle to true
+      {
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('conditionals-control-true'))
+          await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], true)
+          await dispatchDone
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              true ? (
+                <div data-uid='bbb' data-testid='bbb'>foo</div>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>bar</div>
+              ) // @utopia/conditional=true
+            }
+          </div>
+        `),
+        )
+      }
     })
   })
 })

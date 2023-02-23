@@ -192,6 +192,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_AGAINST_GITHUB':
     case 'APPLY_COMMANDS':
     case 'UPDATE_COLOR_SWATCHES':
+    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
       return false
     case 'SAVE_ASSET':
       return (

@@ -11,6 +11,7 @@ import {
 } from '../../custom-code/code-file.test-utils'
 import {
   emptyComments,
+  isJSXConditionalExpression,
   jsxAttributeValue,
   jsxElement,
   JSXElement,
@@ -57,7 +58,10 @@ describe('modifyUnderlyingTarget', () => {
       pathToElement,
       '/src/app.js',
       startingEditorModel,
-      (element: JSXElement) => {
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
@@ -102,7 +106,7 @@ describe('modifyUnderlyingTarget', () => {
       pathToElement,
       '/src/card.js',
       startingEditorModel,
-      (element: JSXElement) => element,
+      (element) => element,
       (success: ParseSuccess) => {
         return parseSuccess(
           omit<string, Imports>(['utopia-api'], success.imports),
@@ -139,7 +143,10 @@ describe('modifyUnderlyingTarget', () => {
       pathToElement,
       StoryboardFilePath,
       startingEditorModel,
-      (element: JSXElement) => {
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
@@ -190,7 +197,10 @@ describe('modifyUnderlyingTarget', () => {
         pathToElement,
         '/src/app.js',
         startingEditorModel,
-        (element: JSXElement) => {
+        (element) => {
+          if (isJSXConditionalExpression(element)) {
+            return element
+          }
           const updatedAttributes = setJSXAttributesAttribute(
             element.props,
             'data-thing',
@@ -208,7 +218,10 @@ describe('modifyUnderlyingTarget', () => {
         pathToElement,
         '/src/kitchen.js',
         startingEditorModel,
-        (element: JSXElement) => {
+        (element) => {
+          if (isJSXConditionalExpression(element)) {
+            return element
+          }
           const updatedAttributes = setJSXAttributesAttribute(
             element.props,
             'data-thing',
@@ -232,7 +245,10 @@ describe('Revision state management', () => {
       pathToElement,
       '/src/app.js',
       startingEditorModel,
-      (element: JSXElement) => {
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
@@ -252,7 +268,10 @@ describe('Revision state management', () => {
       pathToElement,
       '/src/app.js',
       startingEditorModel,
-      (element: JSXElement) => {
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
@@ -271,7 +290,10 @@ describe('Revision state management', () => {
       pathToElement,
       '/src/app.js',
       actualResult,
-      (element: JSXElement) => {
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return element
+        }
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
