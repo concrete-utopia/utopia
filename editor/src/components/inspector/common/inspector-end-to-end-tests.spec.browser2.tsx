@@ -2189,21 +2189,71 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      await act(async () => {
-        fireEvent.click(screen.getByTestId('conditionals-control-false'))
+      // toggle to false
+      {
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('conditionals-control-false'))
+          await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], true)
+          await dispatchDone
+        })
+
         await renderResult.getDispatchFollowUpActionsFinished()
-      })
 
-      await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        await renderResult.dispatch([selectComponents([targetPath], false)], true)
-        await dispatchDone
-      })
+        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
+        expect(elementDoesNotExist(renderResult, 'bbb')).toBe(true)
 
-      await renderResult.getDispatchFollowUpActionsFinished()
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              true ? (
+                <div data-uid='bbb' data-testid='bbb'>foo</div>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>bar</div>
+              ) // @utopia/conditional=false
+            }
+          </div>
+        `),
+        )
+      }
 
-      expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
-      expect(elementDoesNotExist(renderResult, 'bbb')).toBe(true)
+      // toggle to true
+      {
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('conditionals-control-true'))
+          await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], true)
+          await dispatchDone
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(elementDoesNotExist(renderResult, 'ccc')).toBe(true)
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              true ? (
+                <div data-uid='bbb' data-testid='bbb'>foo</div>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>bar</div>
+              ) // @utopia/conditional=true
+            }
+          </div>
+        `),
+        )
+      }
     })
   })
 })
