@@ -14,6 +14,8 @@ import {
   JSXAttribute,
   walkElements,
   JSXAttributes,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -1745,6 +1747,22 @@ export function modifyOpenJsxElementAtPath(
   model: EditorState,
   revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
+  return modifyOpenJsxElementOrConditionalAtPath(
+    path,
+    (element) => (isJSXElement(element) ? transform(element) : element),
+    model,
+    revisionsState,
+  )
+}
+
+export function modifyOpenJsxElementOrConditionalAtPath(
+  path: ElementPath,
+  transform: (
+    element: JSXElement | JSXConditionalExpression,
+  ) => JSXElement | JSXConditionalExpression,
+  model: EditorState,
+  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
+): EditorState {
   return modifyUnderlyingTargetElement(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
@@ -1764,7 +1782,7 @@ export function modifyOpenJsxElementAtStaticPath(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    transform,
+    (element) => (isJSXElement(element) ? transform(element) : element),
   )
 }
 
@@ -3196,10 +3214,10 @@ export function modifyUnderlyingTargetElement(
   currentFilePath: string,
   editor: EditorState,
   modifyElement: (
-    element: JSXElement,
+    element: JSXElement | JSXConditionalExpression,
     underlying: ElementPath,
     underlyingFilePath: string,
-  ) => JSXElement = (element) => element,
+  ) => JSXElement | JSXConditionalExpression = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
@@ -3232,7 +3250,7 @@ export function modifyUnderlyingTargetElement(
     } else {
       const nonNullNormalisedPath = targetSuccess.normalisedPath
       function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        if (isJSXElement(element)) {
+        if (isJSXElement(element) || isJSXConditionalExpression(element)) {
           const updatedElement = modifyElement(
             element,
             nonNullNormalisedPath,
@@ -3305,7 +3323,8 @@ export function modifyUnderlyingElementForOpenFile(
     target,
     forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
     editor,
-    modifyElement,
+    (element, underlying, underlyingFilePath) =>
+      isJSXElement(element) ? modifyElement(element, underlying, underlyingFilePath) : element,
     modifyParseSuccess,
   )
 }

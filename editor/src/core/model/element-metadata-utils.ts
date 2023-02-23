@@ -113,6 +113,7 @@ import {
   Direction,
   FlexDirection,
   ForwardOrReverse,
+  SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
@@ -421,10 +422,7 @@ export const MetadataUtils = {
   getFlexDirection: function (instance: ElementInstanceMetadata | null): FlexDirection {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
-  getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): {
-    direction: Direction
-    forwardOrReverse: ForwardOrReverse
-  } {
+  getSimpleFlexDirection: function (instance: ElementInstanceMetadata | null): SimpleFlexDirection {
     return MetadataUtils.flexDirectionToSimpleFlexDirection(
       MetadataUtils.getFlexDirection(instance),
     )
