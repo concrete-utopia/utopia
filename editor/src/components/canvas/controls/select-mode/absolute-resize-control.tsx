@@ -40,7 +40,7 @@ interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
 }
 
-export const AbsoluteResizeControlTestId = 'AbsoluteResizeControlTestId'
+export const SizeLabelTestId = 'SizeLabelTestId'
 
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
@@ -93,7 +93,6 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     return (
       <CanvasOffsetWrapper>
         <div
-          data-testid={AbsoluteResizeControlTestId}
           ref={controlRef}
           style={{
             position: 'absolute',
@@ -399,6 +398,7 @@ const SizeLabel = React.memo(
         {when(
           labelText != null,
           <div
+            data-testid={SizeLabelTestId}
             style={{
               display: 'flex',
               alignItems: 'center',

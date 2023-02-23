@@ -48,7 +48,7 @@ import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
 import {
-  AbsoluteResizeControlTestId,
+  SizeLabelTestId,
   ResizePointTestId,
 } from '../../controls/select-mode/absolute-resize-control'
 
@@ -196,7 +196,7 @@ const foo = true
 export var storyboard = (
   <div data-uid='root'>
     <React.Fragment data-uid='fragment'>
-      Fragment
+
     </React.Fragment>
   </div>
 )
@@ -468,10 +468,10 @@ export var storyboard = (
 `
 
 describe('Absolute Resize Strategy', () => {
-  it('control is not shown when a fragment is selected', async () => {
+  it('the size label is not shown when an empty fragment is selected', async () => {
     const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('root/fragment')])
-    const absoluteResizeControl = editor.renderedDOM.queryAllByTestId(AbsoluteResizeControlTestId)
+    const absoluteResizeControl = editor.renderedDOM.queryAllByTestId(SizeLabelTestId)
     expect(absoluteResizeControl).toEqual([])
   })
   it('resizes component instances that honour the size properties', async () => {
