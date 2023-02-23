@@ -310,14 +310,25 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
   const controlMetadata = transformItemControlMetadatas[props.value.type]
 
   return (
-    <FlexRow
+    <PropertyRow
       key={props.index}
       style={{
-        gap: 8,
-        padding: '0 8px',
+        gridTemplateColumns: '12px 1fr 46px 20px',
+        gridColumnGap: 8,
       }}
     >
-      <FlexRow onMouseDown={stopPropagation}>
+      <BooleanControl
+        style={{ gridColumn: '1 / span 1' }}
+        id={`transform-${props.index}-${props.value.type}-enable-disable`}
+        key={`transform-${props.index}-${props.value.type}-enable-disable`}
+        testId={`transform-${props.index}-${props.value.type}-enable-disable`}
+        value={props.value.enabled}
+        onSubmitValue={enabledSubmitValue}
+        controlStatus={props.controlStatus}
+        controlStyles={props.controlStyles}
+        onMouseDown={stopPropagation}
+      />
+      <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
         <LightSelectControl
           id={`transform-${props.index}-transform-type`}
           key={`transform-${props.index}-transform-type`}
@@ -347,26 +358,10 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
-      <FlexRow>
-        <BooleanControl
-          style={{ gridColumn: '1 / span 1' }}
-          id={`transform-${props.index}-${props.value.type}-enable-disable`}
-          key={`transform-${props.index}-${props.value.type}-enable-disable`}
-          testId={`transform-${props.index}-${props.value.type}-enable-disable`}
-          value={props.value.enabled}
-          onSubmitValue={enabledSubmitValue}
-          controlStatus={props.controlStatus}
-          controlStyles={props.controlStyles}
-          onMouseDown={stopPropagation}
-        ></BooleanControl>
-        {/* <SquareButton highlight onMouseDown={stopPropagation}>
-          <Icn category='semantic' type='eyeopen' color='secondary' width={16} height={16} />
-        </SquareButton> */}
-        <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-          <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
-        </SquareButton>
-      </FlexRow>
-    </FlexRow>
+      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
+        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
+      </SquareButton>
+    </PropertyRow>
   )
 })
 
@@ -574,6 +569,13 @@ export const TransformSubsection = React.memo(() => {
           </FlexRow>
           {propertyStatus.overwritable ? (
             <>
+              <SquareButton
+                highlight
+                onMouseDown={removeAllTransformProperties}
+                data-testid={'inspector-transform-remove-all'}
+              >
+                <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+              </SquareButton>
               <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>
                 <Icn
                   style={{ paddingTop: 1 }}
