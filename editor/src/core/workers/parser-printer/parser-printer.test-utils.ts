@@ -407,7 +407,7 @@ export function propertyPathArbitrary(): Arbitrary<PropertyPath> {
 export function jsxElementNameArbitrary(): Arbitrary<JSXElementName> {
   return FastCheck.tuple(
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
-    FastCheck.array(lowercaseStringArbitrary()),
+    FastCheck.array(lowercaseStringArbitrary(), 3),
     FastCheck.boolean(),
   ).map(([baseVariable, propertyPathParts, uppercaseFirstLetter]) => {
     let adjustedName: string
@@ -431,8 +431,23 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> {
-  return FastCheck.tuple(FastCheck.jsonObject(), arbitraryMultiLineComments()).map(
-    ([value, comments]) => jsxAttributeValue(value, comments),
+  function validKey(key: string): boolean {
+    // Exclude these characters from object keys.
+    return !key.includes('"') && !key.includes("'")
+  }
+  function checkValue(value: unknown): boolean {
+    if (typeof value === 'object' && value != null) {
+      return Object.keys(value).every(validKey) && Object.values(value).every(checkValue)
+    } else if (typeof value === 'string') {
+      // Looks like these are being inserted directly and can end up escaping the closing mark for a string.
+      return !value.includes('\\')
+    } else {
+      return true
+    }
+  }
+  const valueArbitrary = FastCheck.jsonObject(2).filter(checkValue)
+  return FastCheck.tuple(valueArbitrary, arbitraryMultiLineComments()).map(([value, comments]) =>
+    jsxAttributeValue(value, comments),
   )
 }
 
@@ -585,15 +600,16 @@ export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {
-  return FastCheck.tuple(FastCheck.array(commentArbitrary), FastCheck.array(commentArbitrary)).map(
-    ([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments),
-  )
+  return FastCheck.tuple(
+    FastCheck.array(commentArbitrary, 3),
+    FastCheck.array(commentArbitrary, 3),
+  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 
 export function arbitraryMultiLineComments(): Arbitrary<ParsedComments> {
   return FastCheck.tuple(
-    FastCheck.array(multiLineCommentArbitrary),
-    FastCheck.array(multiLineCommentArbitrary),
+    FastCheck.array(multiLineCommentArbitrary, 3),
+    FastCheck.array(multiLineCommentArbitrary, 3),
   ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 
@@ -833,14 +849,15 @@ export interface PrintableProjectContent {
   exportsDetail: ExportsDetail
 }
 
-function getTopLevelElementVariableName(topLevelElement: TopLevelElement): string | null {
+function getTopLevelElementVariableNames(topLevelElement: TopLevelElement): Array<string> {
   switch (topLevelElement.type) {
     case 'UTOPIA_JSX_COMPONENT':
-      return topLevelElement.name
-    case 'ARBITRARY_JS_BLOCK':
+      return topLevelElement.name == null ? [] : [topLevelElement.name]
     case 'IMPORT_STATEMENT':
+      return topLevelElement.imports
+    case 'ARBITRARY_JS_BLOCK':
     case 'UNPARSED_CODE':
-      return null
+      return []
     default:
       const _exhaustiveCheck: never = topLevelElement
       throw new Error(`Unhandled type ${JSON.stringify(topLevelElement)}`)
@@ -848,18 +865,11 @@ function getTopLevelElementVariableName(topLevelElement: TopLevelElement): strin
 }
 
 function areTopLevelElementsValid(topLevelElements: Array<TopLevelElement>): boolean {
-  let componentNames: Array<string> = []
+  let variableNames: Array<string> = []
   for (const topLevelElement of topLevelElements) {
-    const name = getTopLevelElementVariableName(topLevelElement)
-    if (name != null) {
-      if (componentNames.includes(name)) {
-        return false
-      } else {
-        componentNames.push(name)
-      }
-    }
+    variableNames.push(...getTopLevelElementVariableNames(topLevelElement))
   }
-  return true
+  return variableNames.length === new Set(variableNames).size
 }
 
 export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectContent> {
@@ -898,7 +908,19 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
+        const componentExistsInFile = topLevelElements.some((element) => {
+          if (isUtopiaJSXComponent(element)) {
+            return element.name === baseVariable
+          } else {
+            return false
+          }
+        })
+        // Don't create an import for something where there's a component with the same name in this file.
+        if (componentExistsInFile) {
+          return workingImports
+        } else {
+          return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
+        }
       }, JustImportViewAndReact)
       return {
         imports: imports,
