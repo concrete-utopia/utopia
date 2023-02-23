@@ -11,6 +11,7 @@ import {
 } from '../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import {
+  cssNumber,
   CSSNumber,
   cssPixelLength,
   FlexDirection,
@@ -32,7 +33,7 @@ import {
 } from '../canvas/commands/set-css-length-command'
 import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { isInfinityRectangle } from '../../core/shared/math-utils'
+import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 
@@ -559,6 +560,12 @@ export function detectFillHugFixedState(
 
   if (parsed != null) {
     return { type: 'fixed', value: parsed }
+  }
+
+  const frame = element.globalFrame
+  if (frame != null && isFiniteRectangle(frame)) {
+    const dimension = widthHeightFromAxis(axis)
+    return { type: 'fixed', value: cssNumber(frame[dimension], 'px') }
   }
 
   return null
