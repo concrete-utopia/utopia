@@ -91,7 +91,6 @@ export function keyboardAbsoluteMoveStrategy(
 
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
-        commands.push(updateHighlightedViews('mid-interaction', []))
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBounds(intendedBounds))
         commands.push(setElementsToRerenderCommand(selectedElements))
