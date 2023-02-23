@@ -4015,6 +4015,11 @@ const flexWrapParser: Parser<FlexWrap> = isOneOfTheseParser([
 export type Direction = 'horizontal' | 'vertical'
 export type ForwardOrReverse = 'forward' | 'reverse'
 
+export interface SimpleFlexDirection {
+  direction: Direction
+  forwardOrReverse: ForwardOrReverse
+}
+
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse'
 export const AllFlexDirections: Array<FlexDirection> = [
   'row',
