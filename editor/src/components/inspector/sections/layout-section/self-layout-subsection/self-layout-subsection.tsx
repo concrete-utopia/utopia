@@ -206,14 +206,6 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
         </span>
       </div>
       {when(
-        layoutType === 'absolute',
-        <Tooltip title='Use Absolute Positioning' placement='bottom'>
-          <SquareButton highlight onClick={onAbsoluteButtonClick}>
-            <div style={{ color: colorTheme.brandNeonPink.value }}>*</div>
-          </SquareButton>
-        </Tooltip>,
-      )}
-      {when(
         layoutType !== 'flow',
         <SquareButton highlight onClick={onDeleteAllConfig}>
           <FunctionIcons.Delete />
