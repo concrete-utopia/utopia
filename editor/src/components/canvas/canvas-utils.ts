@@ -3070,7 +3070,10 @@ function createCanvasTransientStateFromProperties(
           currentProp.elementPath,
           Utils.forceNotNull('No open file found', getOpenUIJSFileKey(editor)),
           working,
-          (element: JSXElement) => {
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              return element
+            }
             const valuesAtPath = Object.keys(currentProp.attributesToUpdate).map((key) => {
               return {
                 path: PP.fromString(key),

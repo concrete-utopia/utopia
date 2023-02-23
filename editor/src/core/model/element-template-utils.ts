@@ -329,6 +329,7 @@ function transformAtPathOptionally(
             whenFalse: updatedWhenFalse,
           }
         }
+        return transform(element) // if no branch matches, transform the conditional itself
       }
       if (
         childOrBlockIsChild(element.whenTrue) &&
