@@ -27,7 +27,6 @@ export const LayoutTypePicker = React.memo(({ value, setActiveTab }: LayoutTypeP
           break
         }
         default: {
-          const _exhaustiveCheck: never = newValue
           throw new Error(`SelfLayoutTab type ${newValue} not found`)
         }
       }

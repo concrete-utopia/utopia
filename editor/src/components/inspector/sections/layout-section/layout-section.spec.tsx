@@ -11,17 +11,17 @@ import {
   getStoreHook,
   TestInspectorContextProvider,
 } from '../../common/inspector.test-utils'
-import { LayoutSection } from './position-section'
+import { PositionSection } from './position-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../common/property-path-hooks'
 import { styleStringInArray } from '../../../../utils/common-constants'
 
-describe('Layout Section', () => {
-  enableWhyDidYouRenderOnComponent(LayoutSection)
+describe('Position Section', () => {
+  enableWhyDidYouRenderOnComponent(PositionSection)
 
   it('make sure whyDidYouRender is enabled', () => {
-    expect((LayoutSection as any).whyDidYouRender).toBeTruthy()
+    expect((PositionSection as any).whyDidYouRender).toBeTruthy()
   })
   it('doesnt rerender on irrelevant changes', () => {
     const storeHookForTest = getStoreHook()
@@ -37,7 +37,7 @@ describe('Layout Section', () => {
         selectedViews={storeHookForTest.getState().editor.selectedViews}
         editorStoreData={storeHookForTest}
       >
-        <LayoutSection
+        <PositionSection
           hasNonDefaultPositionAttributes={true}
           aspectRatioLocked={false}
           toggleAspectRatioLock={NO_OP}
