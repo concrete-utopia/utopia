@@ -55,18 +55,6 @@ async function getControlValue(controlTestId: string, renderedDOM: RenderResult)
   return control.value
 }
 
-function elementDoesNotExist(renderResult: EditorRenderResult, testId: string) {
-  try {
-    const trueBranch = renderResult.renderedDOM.getByTestId(testId)
-    if (trueBranch != null) {
-      return false
-    }
-  } catch {
-    // nothing to do
-  }
-  return true
-}
-
 async function setControlValue(
   controlTestId: string,
   newValue: string,
@@ -2205,7 +2193,7 @@ describe('inspector tests with real metadata', () => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
-        expect(elementDoesNotExist(renderResult, 'bbb')).toBe(true)
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -2237,7 +2225,7 @@ describe('inspector tests with real metadata', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(elementDoesNotExist(renderResult, 'ccc')).toBe(true)
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
         expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
