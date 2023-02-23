@@ -246,8 +246,14 @@ export const hugContentsApplicableForText = (
   return optionalMap(elementOnlyHasTextChildren, element) === true
 }
 
-export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
-  !EP.isStoryboardChild(elementPath)
+export const fillContainerApplicable = (
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean =>
+  !(
+    EP.isStoryboardChild(elementPath) ||
+    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, elementPath))
+  )
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
@@ -722,7 +728,7 @@ export function getFixedFillHugOptionsForElement(
       hugContentsApplicableForContainer(metadata, selectedView)
         ? 'hug'
         : null,
-      fillContainerApplicable(selectedView) ? 'fill' : null,
+      fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
     ]),
   )
 }

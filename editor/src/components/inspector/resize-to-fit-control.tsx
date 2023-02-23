@@ -9,6 +9,7 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   detectFillHugFixedState,
   FixedHugFillMode,
+  getFixedFillHugOptionsForElement,
   resizeToFillCommands,
   resizeToFitCommands,
   sizeToVisualDimensions,
@@ -16,19 +17,21 @@ import {
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 
-const isHugApplicableSelector = createSelector(
+const isApplicableSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (_: MetadataSubstate, mode: FixedHugFillMode) => mode,
-  (metadata, selectedViews, mode): boolean => {
-    // TODO: multiselection
-    if (selectedViews.length !== 1) {
+  (metadata, selectedViews, mode) => {
+    if (selectedViews.length < 1) {
       return false
     }
-    return (
-      detectFillHugFixedState('horizontal', metadata, selectedViews[0])?.type === mode ||
+    const isApplicable =
+      selectedViews.length > 0 &&
+      getFixedFillHugOptionsForElement(metadata, selectedViews[0]).has(mode)
+    const isAlreadyApplied =
+      detectFillHugFixedState('horizontal', metadata, selectedViews[0])?.type === mode &&
       detectFillHugFixedState('vertical', metadata, selectedViews[0])?.type === mode
-    )
+    return isApplicable && !isAlreadyApplied
   },
 )
 
@@ -42,13 +45,13 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
 
   const isHugApplicable = useEditorState(
     Substores.metadata,
-    (store) => isHugApplicableSelector(store, 'hug'),
+    (store) => isApplicableSelector(store, 'hug'),
     'ResizeToFitControl isHugApplicable',
   )
 
   const isFillApplicable = useEditorState(
     Substores.metadata,
-    (store) => isHugApplicableSelector(store, 'fill'),
+    (store) => isApplicableSelector(store, 'fill'),
     'ResizeToFitControl isHugApplicable',
   )
 
@@ -77,19 +80,19 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
 
   const disabledStyles = (enabled: boolean): CSSProperties =>
     enabled
-      ? {
+      ? { cursor: 'pointer' }
+      : {
           cursor: 'pointer',
           opacity: 0.5,
           pointerEvents: 'none',
         }
-      : { cursor: 'pointer' }
 
   return (
     <FlexRow style={{ gap: 12 }}>
       <Tooltip title={'Resize to Fit'}>
         <div
           data-testid={ResizeToFitControlTestId}
-          onMouseDown={onResizeToFit}
+          onClick={onResizeToFit}
           style={{ cursor: 'pointer', ...disabledStyles(isHugApplicable) }}
         >
           <Icn
@@ -103,14 +106,14 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
       </Tooltip>
       <Tooltip title={'Resize to Fill'}>
         <div
-          onMouseDown={onResizeToFill}
+          onClick={onResizeToFill}
           style={{ cursor: 'pointer', ...disabledStyles(isFillApplicable) }}
         >
           <Icn type='growToParent' color='main' category='layout/commands' width={18} height={18} />
         </div>
       </Tooltip>
       <Tooltip title={'Fixed size'}>
-        <div onMouseDown={onSetToFixedSize} style={{ cursor: 'pointer' }}>
+        <div onClick={onSetToFixedSize} style={{ cursor: 'pointer' }}>
           <Icn type='fixed' color='main' category='layout/commands' width={16} height={16} />
         </div>
       </Tooltip>
