@@ -134,51 +134,49 @@ export function keyboardAbsoluteResizeStrategy(
         let intendedBounds: Array<CanvasFrameAndTarget> = []
 
         movementsWithEdges.forEach((movementWithEdge) => {
-          if (movementWithEdge.movement.x !== 0 || movementWithEdge.movement.y !== 0) {
-            newFrame = resizeBoundingBox(
-              newFrame,
-              movementWithEdge.movement,
-              movementWithEdge.edge,
+          newFrame = resizeBoundingBox(
+            newFrame,
+            movementWithEdge.movement,
+            movementWithEdge.edge,
+            null,
+            'non-center-based',
+          )
+          selectedElements.forEach((selectedElement) => {
+            const element = withUnderlyingTarget(
+              selectedElement,
+              canvasState.projectContents,
+              {},
+              canvasState.openFile,
               null,
-              'non-center-based',
+              (_, e) => e,
             )
-            selectedElements.forEach((selectedElement) => {
-              const element = withUnderlyingTarget(
-                selectedElement,
-                canvasState.projectContents,
-                {},
-                canvasState.openFile,
-                null,
-                (_, e) => e,
-              )
 
-              const elementMetadata = MetadataUtils.findElementByElementPath(
-                canvasState.startingMetadata,
-                selectedElement,
-              )
-              const elementParentBounds =
-                elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
-              const elementParentFlexDirection =
-                elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
-              const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
+            const elementMetadata = MetadataUtils.findElementByElementPath(
+              canvasState.startingMetadata,
+              selectedElement,
+            )
+            const elementParentBounds =
+              elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
+            const elementParentFlexDirection =
+              elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
+            const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
 
-              if (element != null && isJSXElement(element)) {
-                const elementResult = createResizeCommands(
-                  element,
-                  selectedElement,
-                  movementWithEdge.edge,
-                  movementWithEdge.movement,
-                  elementGlobalFrame,
-                  elementParentBounds,
-                  elementParentFlexDirection,
-                )
-                commands.push(...elementResult.commands)
-                if (elementResult.intendedBounds != null) {
-                  intendedBounds.push(elementResult.intendedBounds)
-                }
+            if (element != null && isJSXElement(element)) {
+              const elementResult = createResizeCommands(
+                element,
+                selectedElement,
+                movementWithEdge.edge,
+                movementWithEdge.movement,
+                elementGlobalFrame,
+                elementParentBounds,
+                elementParentFlexDirection,
+              )
+              commands.push(...elementResult.commands)
+              if (elementResult.intendedBounds != null) {
+                intendedBounds.push(elementResult.intendedBounds)
               }
-            })
-          }
+            }
+          })
         })
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
