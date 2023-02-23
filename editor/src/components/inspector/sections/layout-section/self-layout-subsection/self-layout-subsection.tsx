@@ -43,19 +43,14 @@ import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 
-export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky' | 'fixed' | 'relative'
+export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
 function useActiveLayoutTab(
   position: CSSPosition | null,
   parentLayoutSystem: DetectedLayoutSystem,
 ) {
   let value: SelfLayoutTab
-  if (
-    position === 'absolute' ||
-    position === 'sticky' ||
-    position === 'fixed' ||
-    position === 'relative'
-  ) {
+  if (position === 'absolute' || position === 'sticky') {
     value = position
   } else if (parentLayoutSystem === 'grid') {
     // TODO GRID
