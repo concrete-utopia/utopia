@@ -5,6 +5,7 @@ import { Either, isRight } from '../shared/either'
 import { elementPath, toString } from '../shared/element-path'
 import { canvasRectangle, localRectangle } from '../shared/math-utils'
 import { elementOnlyHasTextChildren } from './element-template-utils'
+import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -68,6 +69,24 @@ describe('Frame calculation for fragments', () => {
         height: 90,
         width: 10,
       }),
+    )
+  })
+  it('Conditionals have metadata and their frame is the frame of the active branch', async () => {
+    FOR_TESTS_setNextGeneratedUids(['foo1', 'foo2', 'foo3', 'foo4', 'cond']) // ugly, but the conditional is the 5th uid which is generated
+
+    const condComponentPath = 'story/scene/app:root/cond'
+    const trueBranchComponentPath = 'story/scene/app:root/cond/truebranch'
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectWithConditional,
+      'await-first-dom-report',
+    )
+
+    expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].globalFrame).toEqual(
+      renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].globalFrame,
+    )
+    expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].localFrame).toEqual(
+      renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].localFrame,
     )
   })
 })
@@ -230,6 +249,59 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 );
+`
+
+const TestProjectWithConditional = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        left: 64,
+        top: 114,
+        width: 210,
+        height: 199,
+        position: 'absolute',
+        backgroundColor: '#d3d3d3',
+      }}
+      data-uid='root'
+    >
+      {[].length === 0 ? (
+        <div
+          style={{
+            left: 33,
+            top: 91,
+            width: 97,
+            height: 94,
+            position: 'absolute',
+            backgroundColor: '#FFFFFF',
+            border: '0px solid rgb(0, 0, 0, 1)',
+          }}
+          data-uid='truebranch'
+        />
+      ) : null}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='story'>
+    <Scene
+      style={{
+        position: 'absolute',
+        left: 37,
+        top: 65,
+        width: 375,
+        height: 812,
+      }}
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
 `
 
 const projectWithText = `import * as React from 'react'

@@ -538,6 +538,37 @@ export function keyDown(
   })
 }
 
+export function keyUp(
+  key: string,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: KeyboardEventInit
+  } = {},
+) {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+
+  act(() => {
+    fireEvent(
+      document.body,
+      new KeyboardEvent('keyup', {
+        bubbles: true,
+        cancelable: true,
+        key: key,
+        keyCode: keycode(key),
+        ...eventOptions,
+      }),
+    )
+  })
+}
+
 export async function pressKey(
   key: string,
   options: {
