@@ -1783,12 +1783,16 @@ function fillSpyOnlyMetadata(
       return existing
     }
 
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+    const fromSpyAndConditionals = {
+      ...conditionalsWithDefaultMetadata,
+      ...fromSpy,
+    }
+    const spyElem = fromSpyAndConditionals[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
       MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
-        fromSpy,
+        fromSpyAndConditionals,
       )
     const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
 

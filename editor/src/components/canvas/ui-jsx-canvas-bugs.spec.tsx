@@ -25,8 +25,7 @@ const DefaultComments = [
 
 const Comment = () => <div data-uid='comment-root'>hat</div>
 
-export var App = () =>
-  true ? DefaultComments.map((comment) => <Comment comment={comment} />) : null
+export var App = () => DefaultComments.map((comment) => <Comment comment={comment} />)
 
 export var storyboard = (
   <Storyboard data-uid='sb'>

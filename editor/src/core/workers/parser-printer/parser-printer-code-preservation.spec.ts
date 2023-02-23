@@ -82,8 +82,8 @@ import { GithubPicker } from "react-color";
 function Picker() {
   const [color, setColor] = useThemeContext();
   const [visible, setVisible] = usePickerVisibilityContext();
-  return visible ? (
-    <GithubPicker
+  if (visible) {
+    return <GithubPicker
       style={{ position: "absolute" }}
       triangle="hide"
       color={color}
@@ -92,7 +92,9 @@ function Picker() {
         setVisible(false);
       }}
     />
-  ) : null;
+  } else {
+    return null
+  }
 }
 `,
       false,
