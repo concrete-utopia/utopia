@@ -98,26 +98,10 @@ const useLayoutSectionInitialToggleState = (
 export const LayoutSubsection = React.memo((props: SelfLayoutSubsectionProps) => {
   const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
 
-  const initialLayoutSectionOpen = useLayoutSectionInitialToggleState(
-    activeTab,
-    props.parentFlexDirection,
-  )
-
-  const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] =
-    usePropControlledStateV2(initialLayoutSectionOpen)
-
-  const toggleSection = React.useCallback(
-    () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
-    [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
-  )
   return (
     <>
-      <LayoutSectionHeader
-        layoutType={activeTab}
-        toggleSection={toggleSection}
-        selfLayoutSectionOpen={selfLayoutSectionOpen}
-      />
-      {when(selfLayoutSectionOpen, <LayoutSubsectionContent {...props} />)}
+      <LayoutSectionHeader layoutType={activeTab} />
+      <LayoutSubsectionContent {...props} />
     </>
   )
 })
@@ -146,8 +130,6 @@ export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionPr
 
 interface LayoutSectionHeaderProps {
   layoutType: SelfLayoutTab | 'grid'
-  selfLayoutSectionOpen: boolean
-  toggleSection: () => void
 }
 
 const selfLayoutProperties: Array<StyleLayoutProp> = [
@@ -198,7 +180,7 @@ function useDeleteAllSelfLayoutConfig() {
 
 const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   const colorTheme = useColorTheme()
-  const { layoutType, selfLayoutSectionOpen, toggleSection } = props
+  const { layoutType } = props
   const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
 
   const dispatch = useDispatch()
@@ -224,7 +206,7 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
         </span>
       </div>
       {when(
-        selfLayoutSectionOpen && layoutType !== 'absolute',
+        layoutType === 'absolute',
         <Tooltip title='Use Absolute Positioning' placement='bottom'>
           <SquareButton highlight onClick={onAbsoluteButtonClick}>
             <div style={{ color: colorTheme.brandNeonPink.value }}>*</div>
@@ -232,19 +214,11 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
         </Tooltip>,
       )}
       {when(
-        selfLayoutSectionOpen,
+        layoutType !== 'flow',
         <SquareButton highlight onClick={onDeleteAllConfig}>
           <FunctionIcons.Delete />
         </SquareButton>,
       )}
-      <SquareButton highlight onClick={toggleSection}>
-        <ExpandableIndicator
-          testId='layout-system-expand'
-          visible
-          collapsed={!selfLayoutSectionOpen}
-          selected={false}
-        />
-      </SquareButton>
     </InspectorSubsectionHeader>
   )
 })
