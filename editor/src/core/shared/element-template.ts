@@ -1138,6 +1138,21 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       uniqueID: '',
       children: updatedChildren,
     }
+  } else if (isJSXConditionalExpression(element)) {
+    const updatedCondition = clearAttributeUniqueIDs(element.condition)
+    const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
+      ? clearJSXElementUniqueIDs(element.whenTrue)
+      : clearAttributeUniqueIDs(element.whenTrue)
+    const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
+      ? clearJSXElementUniqueIDs(element.whenFalse)
+      : clearAttributeUniqueIDs(element.whenFalse)
+    return {
+      ...element,
+      uniqueID: '',
+      condition: updatedCondition,
+      whenTrue: updatedWhenTrue,
+      whenFalse: updatedWhenFalse,
+    }
   } else {
     return {
       ...element,

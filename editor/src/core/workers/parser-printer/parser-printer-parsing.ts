@@ -1466,7 +1466,7 @@ function parseElementProps(
   return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
 
-type TSTextOrExpression = TS.JsxText | TS.JsxExpression
+type TSTextOrExpression = TS.JsxText | TS.JsxExpression | TS.ConditionalExpression
 type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxFragment
 type ElementsToParse = Array<TSJSXElement | TSTextOrExpression>
 
@@ -1498,7 +1498,8 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxSelfClosingElement(node) ||
       TS.isJsxText(node) ||
       TS.isJsxExpression(node) ||
-      TS.isJsxFragment(node)
+      TS.isJsxFragment(node) ||
+      TS.isConditionalExpression(node)
     ) {
       result.push(node)
     } else {
@@ -1798,6 +1799,27 @@ export function parseOutJSXElements(
           }
         }
       }
+
+      function handleConditionalExpression(
+        expression: TS.ConditionalExpression,
+        leadingCommentsForBrace: Array<Comment>,
+      ): Either<string, SuccessfullyParsedElement> {
+        const possibleConditional = produceConditionalFromExpression(
+          expression,
+          leadingCommentsForBrace,
+        )
+        return mapEither((success) => {
+          highlightBounds = {
+            ...highlightBounds,
+            ...success.highlightBounds,
+          }
+          propsUsed.push(...success.propsUsed)
+          definedElsewhere.push(...success.definedElsewhere)
+
+          return success.value
+        }, possibleConditional)
+      }
+
       for (const elem of toParse) {
         switch (elem.kind) {
           case TS.SyntaxKind.JsxFragment:
@@ -1808,6 +1830,15 @@ export function parseOutJSXElements(
               return possibleElement
             } else {
               addParsedElement(possibleElement.value)
+            }
+            break
+          }
+          case TS.SyntaxKind.ConditionalExpression: {
+            const possibleCondition = handleConditionalExpression(elem, [])
+            if (isLeft(possibleCondition)) {
+              return possibleCondition
+            } else {
+              addParsedElement(possibleCondition.value)
             }
             break
           }
@@ -1823,24 +1854,7 @@ export function parseOutJSXElements(
                 sourceText,
                 childrenOfExpression[childrenOfExpression.length - 1],
               )
-              const possibleConditional = produceConditionalFromExpression(
-                elem.expression,
-                leadingCommentsForBrace,
-              )
-              parseResult = bimapEither(
-                (failure) => failure,
-                (success) => {
-                  highlightBounds = {
-                    ...highlightBounds,
-                    ...success.highlightBounds,
-                  }
-                  propsUsed.push(...success.propsUsed)
-                  definedElsewhere.push(...success.definedElsewhere)
-
-                  return success.value
-                },
-                possibleConditional,
-              )
+              parseResult = handleConditionalExpression(elem.expression, leadingCommentsForBrace)
             }
             // Fallback to arbitrary block parsing.
             if (isLeft(parseResult)) {
