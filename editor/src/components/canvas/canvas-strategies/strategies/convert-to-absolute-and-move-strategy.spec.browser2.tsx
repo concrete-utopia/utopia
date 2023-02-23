@@ -174,7 +174,7 @@ const complexProject = () => {
               }}
               data-uid='plum-static-div-2'
             />
-            <React.Fragment data-path="fragment-1">
+            <React.Fragment data-uid="fragment-1">
               <div
                 style={{
                   backgroundColor: 'plum',

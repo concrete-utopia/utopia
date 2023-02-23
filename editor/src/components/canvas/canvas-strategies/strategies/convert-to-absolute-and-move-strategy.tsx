@@ -55,6 +55,10 @@ import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { styleStringInArray } from '../../../../utils/common-constants'
+import {
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  retargetStrategyToChildrenOfContentAffectingElements,
+} from './group-like-helpers'
 
 export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -178,18 +182,24 @@ export function getEscapeHatchCommands(
   const commonAncestor = EP.getCommonParent(selectedElements, false)
   const sortedElements = EP.getOrderedPathsByDepth(selectedElements)
 
+  const elementsToConvertToAbsolute = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    metadata,
+    canvasState.startingAllElementProps,
+    sortedElements,
+  )
+
   /**
    * It's possible to have descendants where the layout is defined by an ancestor
    * these are offset here as the new layout parents will be the selected elements
    */
   const descendantsInNewContainingBlock = moveDescendantsToNewContainingBlock(
     metadata,
-    selectedElements,
+    elementsToConvertToAbsolute,
     canvasState,
   )
   commands.push(...descendantsInNewContainingBlock)
 
-  sortedElements.forEach((path) => {
+  elementsToConvertToAbsolute.forEach((path) => {
     const elementResult = collectSetLayoutPropCommands(
       path,
       metadata,
@@ -197,8 +207,13 @@ export function getEscapeHatchCommands(
       dragDelta,
       commonAncestor,
     )
+
     intendedBounds.push(...elementResult.intendedBounds)
     commands.push(...elementResult.commands)
+  })
+  sortedElements.forEach((path) => {
+    const reparentResult = collectReparentCommands(path, canvasState, commonAncestor)
+    commands.push(...reparentResult)
   })
   commands.push(
     updateSelectedViews(
@@ -221,12 +236,10 @@ function collectSetLayoutPropCommands(
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const currentParentPath = EP.parentPath(path)
-  const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
   if (globalFrame != null && isFiniteRectangle(globalFrame)) {
     const newLocalFrame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-      shouldReparent ? targetParent : currentParentPath,
+      targetParent ?? EP.parentPath(path),
       metadata,
       globalFrame,
     )
@@ -248,24 +261,37 @@ function collectSetLayoutPropCommands(
       newLocalFrame,
     )
     commands.push(...updatePinsCommands)
-    if (shouldReparent) {
-      const outcomeResult = getReparentOutcome(
-        canvasState.builtInDependencies,
-        canvasState.projectContents,
-        canvasState.nodeModules,
-        canvasState.openFile,
-        pathToReparent(path),
-        targetParent,
-        'always',
-      )
-      if (outcomeResult != null) {
-        commands.push(...outcomeResult.commands)
-      }
-    }
+
     return { commands: commands, intendedBounds: intendedBounds }
   } else {
     return { commands: [], intendedBounds: [] }
   }
+}
+
+function collectReparentCommands(
+  path: ElementPath,
+  canvasState: InteractionCanvasState,
+  targetParent: ElementPath | null,
+): Array<CanvasCommand> {
+  const currentParentPath = EP.parentPath(path)
+  const shouldReparent = targetParent != null && !EP.pathsEqual(targetParent, currentParentPath)
+
+  if (!shouldReparent) {
+    return []
+  }
+  const outcomeResult = getReparentOutcome(
+    canvasState.builtInDependencies,
+    canvasState.projectContents,
+    canvasState.nodeModules,
+    canvasState.openFile,
+    pathToReparent(path),
+    targetParent,
+    'always',
+  )
+  if (outcomeResult == null) {
+    return []
+  }
+  return outcomeResult.commands
 }
 
 function filterPinsToSet(
