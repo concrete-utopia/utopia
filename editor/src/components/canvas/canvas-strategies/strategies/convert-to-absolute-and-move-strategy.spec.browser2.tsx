@@ -257,27 +257,18 @@ const escapeHatchTestCases: Array<EscapeHatchTestCases> = [
     globalFrameUnchangedForElements: [
       {
         path: AbsoluteDivInFlex,
-        pathAfter: EP.appendToPath(
-          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
-          EP.toUid(AbsoluteDivInFlex),
-        ),
       },
       {
         path: RelativeContainer,
-        pathAfter: EP.appendToPath(
-          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
-          EP.toUid(RelativeContainer),
-        ),
       },
       {
         path: AbsoluteDivInRelative,
-        pathAfter: EP.appendToPath(
-          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
-          EP.toUid(AbsoluteDivInRelative),
-        ),
+      },
+      {
+        path: FlexRow,
       },
     ],
-    expectedAbsoluteElements: [FlexContainer, EP.appendToPath(AppRoot, EP.toUid(FlexRow))],
+    expectedAbsoluteElements: [FlexContainer],
   },
   {
     targetsToConvert: [CardInner],

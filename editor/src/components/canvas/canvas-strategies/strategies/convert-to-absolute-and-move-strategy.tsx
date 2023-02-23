@@ -156,7 +156,7 @@ export function convertToAbsoluteAndMoveStrategy(
 }
 
 export function getEscapeHatchCommands(
-  selectedElements: Array<ElementPath>,
+  _selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
@@ -164,6 +164,7 @@ export function getEscapeHatchCommands(
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
+  const selectedElements = getDragTargets(_selectedElements)
   if (selectedElements.length === 0) {
     return { commands: [], intendedBounds: [] }
   }
