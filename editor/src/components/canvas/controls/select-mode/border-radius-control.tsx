@@ -1,4 +1,6 @@
 import React from 'react'
+import { createSelector } from 'reselect'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasVector, Size, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -8,14 +10,14 @@ import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { CanvasSubstate, MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
+import { metadataSelector } from '../../../inspector/inpector-selectors'
 import {
   BorderRadiusAdjustMode,
   BorderRadiusControlMinimumForDisplay,
   BorderRadiusCorner,
   BorderRadiusCorners,
-  BorderRadiusHandleBorderWidth,
-  BorderRadiusHandleDotSize,
   BorderRadiusHandleHitArea,
   BorderRadiusHandleSize,
   BorderRadiusSides,
@@ -27,6 +29,7 @@ import {
   borderRadiusResizeHandle,
   createInteractionViaMouse,
 } from '../../canvas-strategies/interaction-state'
+import { borderRadiusFromElement } from '../../canvas-strategies/strategies/set-border-radius-strategy'
 import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
@@ -37,34 +40,52 @@ import { CanvasLabel, CSSNumberWithRenderedValue } from './controls-common'
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
 
+const isDraggingSelector = (store: CanvasSubstate): boolean => {
+  if (store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG') {
+    return false
+  }
+  const borderRadiusHandleIsDragged =
+    store.editor.canvas.interactionSession.activeControl.type === 'BORDER_RADIUS_RESIZE_HANDLE'
+  const { drag } = store.editor.canvas.interactionSession.interactionData
+  const dragIsNotNull = drag != null && (drag?.x !== 0 || drag?.y !== 0)
+
+  return borderRadiusHandleIsDragged && dragIsNotNull
+}
+
+const borderRadiusSelector = createSelector(
+  metadataSelector,
+  (_: MetadataSubstate, x: ElementPath) => x,
+  (metadata, selectedElement) => {
+    const element = MetadataUtils.findElementByElementPath(metadata, selectedElement)
+    if (element == null) {
+      return null
+    }
+    return borderRadiusFromElement(element)
+  },
+)
+
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath
   elementSize: Size
-  borderRadius: BorderRadiusSides<CSSNumberWithRenderedValue>
   showIndicatorOnCorner: BorderRadiusCorner | null
   mode: BorderRadiusAdjustMode
 }
 
 export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusControlProps>((props) => {
-  const {
-    selectedElement,
-    borderRadius,
-    elementSize,
-    showIndicatorOnCorner: showIndicatorOnEdge,
-    mode,
-  } = props
+  const { selectedElement, elementSize, showIndicatorOnCorner: showIndicatorOnEdge, mode } = props
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const dispatch = useDispatch()
-  const { scale, isDragging } = useEditorState(
+  const scale = useEditorState(
     Substores.canvas,
-    (store) => ({
-      scale: store.editor.canvas.scale,
-      isDragging:
-        store.editor.canvas.interactionSession?.activeControl.type ===
-        'BORDER_RADIUS_RESIZE_HANDLE',
-    }),
-    'BorderRadiusControl isDragging scale',
+    (store) => store.editor.canvas.scale,
+    'BorderRadiusControl scale',
+  )
+
+  const isDragging = useEditorState(
+    Substores.canvas,
+    isDraggingSelector,
+    'BorderRadiusControl isDragging',
   )
 
   const hoveredViews = useEditorState(
@@ -87,13 +108,23 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
     }
   })
 
+  const borderRadius = useEditorState(
+    Substores.metadata,
+    (store) => borderRadiusSelector(store, selectedElement),
+    'BorderRadiusControl borderRadius',
+  )
+
+  if (borderRadius == null) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <div ref={controlRef} style={{ position: 'absolute', pointerEvents: 'none' }}>
         {BorderRadiusCorners.map((corner) => (
           <CircularHandle
             key={CircularHandleTestId(corner)}
-            borderRadius={borderRadius[corner]}
+            borderRadius={borderRadius.borderRadius[corner]}
             isDragging={isDragging}
             backgroundShown={backgroundShown}
             scale={scale}
@@ -153,7 +184,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
   const shouldShowIndicator = (!isDragging && hovered) || showIndicatorFromParent
   const shouldShowHandle = isDragging || backgroundShown
 
-  const { padding, size } = BorderRadiusHandleSize(scale)
+  const { padding } = BorderRadiusHandleSize(scale)
   const position = handlePosition(
     isDragging
       ? borderRadius.renderedValuePx

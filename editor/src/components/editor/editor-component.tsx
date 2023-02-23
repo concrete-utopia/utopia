@@ -148,10 +148,24 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
         // TODO: maybe we should not whitelist keys, just check if Keyboard.keyIsModifer(key) is false
         const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
+
+        const cmdPressedThisFrame = event.key === 'Meta'
+
+        if (
+          existingInteractionSession != null &&
+          existingInteractionSession.interactionData.type === 'KEYBOARD' &&
+          cmdPressedThisFrame
+        ) {
+          // If cmd has been pressed this frame, we need to clear this session and start a new one
+          actions.push(CanvasActions.clearInteractionSession(true))
+        }
+
         if (
           (Keyboard.keyIsModifier(key) || key === 'space') &&
-          existingInteractionSession != null
+          existingInteractionSession != null &&
+          !cmdPressedThisFrame
         ) {
+          // Never update an existing interaction if cmd was just pressed
           actions.push(
             CanvasActions.createInteractionSession(
               updateInteractionViaKeyboard(existingInteractionSession, [key], [], modifiers, {
@@ -192,16 +206,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       let actions: Array<EditorAction> = []
       const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
       if (existingInteractionSession != null) {
-        const action = CanvasActions.createInteractionSession(
-          updateInteractionViaKeyboard(
-            existingInteractionSession,
-            [],
-            [Keyboard.keyCharacterForCode(event.keyCode)],
-            Modifier.modifiersForKeyboardEvent(event),
-            { type: 'KEYBOARD_CATCHER_CONTROL' },
-          ),
-        )
-        actions.push(action)
+        if (event.key === 'Meta') {
+          actions.push(CanvasActions.clearInteractionSession(true))
+        } else {
+          const action = CanvasActions.createInteractionSession(
+            updateInteractionViaKeyboard(
+              existingInteractionSession,
+              [],
+              [Keyboard.keyCharacterForCode(event.keyCode)],
+              Modifier.modifiersForKeyboardEvent(event),
+              { type: 'KEYBOARD_CATCHER_CONTROL' },
+            ),
+          )
+          actions.push(action)
+        }
       }
       actions.push(...handleKeyUp(event, editorStoreRef.current.editor, namesByKey))
       return actions

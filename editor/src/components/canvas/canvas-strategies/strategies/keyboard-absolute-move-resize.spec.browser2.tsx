@@ -1,13 +1,12 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable jest/expect-expect */
-import { act, RenderResult } from '@testing-library/react'
+import { RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
 
 import * as EP from '../../../../core/shared/element-path'
 import { cmdModifier, shiftCmdModifier, shiftModifier } from '../../../../utils/modifiers'
-import { wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { pressKey } from '../../event-helpers.test-utils'
+import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
@@ -162,11 +161,12 @@ describe('Keyboard Absolute Resize E2E', () => {
       height: 101,
     })
 
-    await pressArrowRightHoldingCmd3x()
+    await cmdKeyDown()
+    await keyDownArrowRightHoldingCmd3x()
     expectElementWidthOnScreen(3)
     expect(getCanvasGuidelines()).toEqual([])
 
-    await pressArrowLeftHoldingCmd()
+    await keyDownArrowLeftHoldingCmd()
     expectElementWidthOnScreen(2)
     expect(getCanvasGuidelines()).toEqual([
       {
@@ -175,11 +175,44 @@ describe('Keyboard Absolute Resize E2E', () => {
         snappingVector: { x: 0, y: 0 },
       },
     ])
+    await cmdKeyUp()
 
     // tick the clock so useClearKeyboardInteraction is fired
     clock.current.tick(KeyboardInteractionTimeout)
     await expectElementPropertiesInPrintedCode({
       left: 10,
+      top: 100,
+      width: 30,
+      height: 101,
+    })
+  })
+})
+
+describe('Keyboard switching back and forth between absolute move and absolute resize', () => {
+  const { clock } = configureSetupTeardown()
+
+  it('Pressing ArrowRight 3 times, then Cmd + ArrowRight 3 times, then ArrowLeft once, then Cmd + ArrowLeft once', async () => {
+    // This should result in 4 separate interactions - move right, increase size, move left, decrease size
+    const { expectElementPropertiesInPrintedCode } = await setupTest({
+      left: 10,
+      top: 100,
+      width: 28,
+      height: 101,
+    })
+
+    await pressArrowRight3x()
+    await cmdKeyDown()
+    await keyDownArrowRightHoldingCmd3x()
+    await cmdKeyUp()
+    await pressArrowLeft()
+    await cmdKeyDown()
+    await keyDownArrowLeftHoldingCmd()
+    await cmdKeyUp()
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 12,
       top: 100,
       width: 30,
       height: 101,
@@ -432,14 +465,23 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
   }
 }
 
-async function pressArrowRightHoldingCmd3x() {
-  await pressKey('ArrowRight', { modifiers: cmdModifier })
-  await pressKey('ArrowRight', { modifiers: cmdModifier })
-  await pressKey('ArrowRight', { modifiers: cmdModifier })
+// MacOS doesn't trigger keyup events for any keys whilst cmd is held down
+async function cmdKeyDown() {
+  await keyDown('Meta', { modifiers: cmdModifier })
 }
 
-async function pressArrowLeftHoldingCmd() {
-  await pressKey('ArrowLeft', { modifiers: cmdModifier })
+async function cmdKeyUp() {
+  await keyUp('Meta')
+}
+
+async function keyDownArrowRightHoldingCmd3x() {
+  await keyDown('ArrowRight', { modifiers: cmdModifier })
+  await keyDown('ArrowRight', { modifiers: cmdModifier })
+  await keyDown('ArrowRight', { modifiers: cmdModifier })
+}
+
+async function keyDownArrowLeftHoldingCmd() {
+  await keyDown('ArrowLeft', { modifiers: cmdModifier })
 }
 
 async function pressArrowLeftHoldingShift3x() {
@@ -460,6 +502,10 @@ async function pressArrowRight3x() {
   await pressKey('ArrowRight')
 }
 
+async function pressArrowLeft() {
+  await pressKey('ArrowLeft')
+}
+
 async function pressArrowLeft3x() {
   await pressKey('ArrowLeft')
   await pressKey('ArrowLeft')
@@ -475,11 +521,15 @@ async function pressBackspace() {
 }
 
 async function pressCmdZ() {
+  await cmdKeyDown()
   await pressKey('z', { modifiers: cmdModifier })
+  await cmdKeyUp()
 }
 
 async function pressCmdShiftZ() {
+  await cmdKeyDown()
   await pressKey('z', { modifiers: shiftCmdModifier })
+  await cmdKeyUp()
 }
 
 const TestProjectDeluxeStallion = (bbbDimensions: { [key: string]: any }) => {
