@@ -1,5 +1,5 @@
 import { mapDropNulls } from './array-utils'
-import { Comment, ParsedComments } from './element-template'
+import { Comment, ParsedComments, singleLineComment } from './element-template'
 
 const UtopiaCommentFlagPrefix = '@utopia/'
 
@@ -20,16 +20,17 @@ export function isUtopiaCommentFlagConditional(
   return flag?.type === 'conditional'
 }
 
-function utopiaFlagKey(type: UtopiaCommentFlagType): string {
+function utopiaCommentFlagKey(type: UtopiaCommentFlagType): string {
   return `${UtopiaCommentFlagPrefix}${type}`
 }
 
-export function utopiaCommentFlag(flag: UtopiaCommentFlag): string {
-  return `${utopiaFlagKey(flag.type)}=${flag.value}`
+export function makeUtopiaFlagComment(flag: UtopiaCommentFlag): Comment {
+  const comment = ` ${utopiaCommentFlagKey(flag.type)}=${flag.value}`
+  return singleLineComment(comment, comment, true, 0)
 }
 
 export function isUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): boolean {
-  return commentString(c).startsWith(utopiaFlagKey(type) + '=')
+  return commentString(c).startsWith(utopiaCommentFlagKey(type) + '=')
 }
 
 function commentString(c: Comment): string {
@@ -48,13 +49,10 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
   }
 
   const comment = commentString(c)
-  const prefix = utopiaFlagKey(type) + '='
+  const prefix = utopiaCommentFlagKey(type) + '='
 
   if (comment.startsWith(prefix)) {
-    const value = comment
-      .replace(new RegExp(`^${prefix}`), '')
-      .trim()
-      .toLowerCase()
+    const value = comment.slice(prefix.length)
     switch (type) {
       case 'conditional':
         return {

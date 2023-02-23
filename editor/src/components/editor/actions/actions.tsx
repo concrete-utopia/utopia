@@ -476,7 +476,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { isUtopiaCommentFlag, utopiaCommentFlag } from '../../../core/shared/comment-flags'
+import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4345,13 +4345,12 @@ export const UPDATE_FNS = {
         if (!isJSXConditionalExpression(element)) {
           return element
         }
-        const comment = utopiaCommentFlag({ type: 'conditional', value: action.condition })
         return {
           ...element,
           comments: {
             leadingComments: element.comments.leadingComments,
             trailingComments: [
-              singleLineComment(comment, comment, true, 0),
+              makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
               ...element.comments.trailingComments.filter(
                 (c) => !isUtopiaCommentFlag(c, 'conditional'),
               ),
