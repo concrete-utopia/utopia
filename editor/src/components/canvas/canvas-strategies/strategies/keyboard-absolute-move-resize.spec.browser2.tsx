@@ -4,8 +4,13 @@ import { RenderResult } from '@testing-library/react'
 import sinon, { SinonFakeTimers } from 'sinon'
 
 import * as EP from '../../../../core/shared/element-path'
-import { cmdModifier, shiftCmdModifier, shiftModifier } from '../../../../utils/modifiers'
-import { selectComponents } from '../../../editor/actions/action-creators'
+import {
+  altModifier,
+  cmdModifier,
+  shiftCmdModifier,
+  shiftModifier,
+} from '../../../../utils/modifiers'
+import { selectComponents, setHighlightedView } from '../../../editor/actions/action-creators'
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
@@ -217,6 +222,101 @@ describe('Keyboard switching back and forth between absolute move and absolute r
       width: 30,
       height: 101,
     })
+  })
+})
+
+describe('Keyboard move shows correct distance controls', () => {
+  configureSetupTeardown()
+
+  it('Pressing ArrowRight 3 times whilst holding the option key and hovering an element shows distance controls to that element', async () => {
+    const { renderResult } = await setupTest({
+      left: 10,
+      top: 10,
+      width: 10,
+      height: 10,
+    })
+
+    const targetToHighlight = 'sb/scene/app-instance:aaa/ccc'
+
+    await renderResult.dispatch([setHighlightedView(EP.fromString(targetToHighlight))], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await keyDown('Alt', { modifiers: altModifier })
+    const distanceLabelRight = await renderResult.renderedDOM.getByTestId(`distance-0-label`)
+    const distanceLabelBottom = await renderResult.renderedDOM.getByTestId(`distance-1-label`)
+    expect(distanceLabelRight.innerHTML).toEqual(`20`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`280`)
+
+    // After each move we should still see the distance controls to the hovered element
+    await pressKey('ArrowRight', { modifiers: altModifier })
+    expect(distanceLabelRight.innerHTML).toEqual(`19`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`280`)
+
+    await pressKey('ArrowRight', { modifiers: altModifier })
+    expect(distanceLabelRight.innerHTML).toEqual(`18`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`280`)
+
+    await pressKey('ArrowRight', { modifiers: altModifier })
+    expect(distanceLabelRight.innerHTML).toEqual(`17`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`280`)
+    await keyUp('Alt')
+
+    const noDistanceLabelRight = await renderResult.renderedDOM.queryByTestId(`distance-0-label`)
+    const noDistanceLabelBottom = await renderResult.renderedDOM.queryByTestId(`distance-1-label`)
+    expect(noDistanceLabelRight).toBeNull()
+    expect(noDistanceLabelBottom).toBeNull()
+  })
+
+  it('Pressing ArrowRight 3 times whilst holding the option key and not hovering an element shows distance controls to the parent', async () => {
+    const { renderResult } = await setupTest({
+      left: 10,
+      top: 10,
+      width: 10,
+      height: 10,
+    })
+
+    await keyDown('Alt', { modifiers: altModifier })
+    const distanceLabelLeft = await renderResult.renderedDOM.getByTestId(`distance-left-label`)
+    const distanceLabelRight = await renderResult.renderedDOM.getByTestId(`distance-right-label`)
+    const distanceLabelTop = await renderResult.renderedDOM.getByTestId(`distance-top-label`)
+    const distanceLabelBottom = await renderResult.renderedDOM.getByTestId(`distance-bottom-label`)
+    expect(distanceLabelLeft.innerHTML).toEqual(`10`)
+    expect(distanceLabelRight.innerHTML).toEqual(`355`)
+    expect(distanceLabelTop.innerHTML).toEqual(`10`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`792`)
+
+    // After each move we should still see the distance controls to the parent
+    await pressKey('ArrowRight', { modifiers: altModifier })
+    expect(distanceLabelLeft.innerHTML).toEqual(`11`)
+    expect(distanceLabelRight.innerHTML).toEqual(`354`)
+    expect(distanceLabelTop.innerHTML).toEqual(`10`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`792`)
+
+    await pressKey('ArrowRight', { modifiers: altModifier })
+    expect(distanceLabelLeft.innerHTML).toEqual(`12`)
+    expect(distanceLabelRight.innerHTML).toEqual(`353`)
+    expect(distanceLabelTop.innerHTML).toEqual(`10`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`792`)
+
+    await pressKey('ArrowRight', { modifiers: altModifier })
+    expect(distanceLabelLeft.innerHTML).toEqual(`13`)
+    expect(distanceLabelRight.innerHTML).toEqual(`352`)
+    expect(distanceLabelTop.innerHTML).toEqual(`10`)
+    expect(distanceLabelBottom.innerHTML).toEqual(`792`)
+    await keyUp('Alt')
+
+    const noDistanceLabelLeft = await renderResult.renderedDOM.queryByTestId(`distance-left-label`)
+    const noDistanceLabelRight = await renderResult.renderedDOM.queryByTestId(
+      `distance-right-label`,
+    )
+    const noDistanceLabelTop = await renderResult.renderedDOM.queryByTestId(`distance-top-label`)
+    const noDistanceLabelBottom = await renderResult.renderedDOM.queryByTestId(
+      `distance-bottom-label`,
+    )
+    expect(noDistanceLabelLeft).toBeNull()
+    expect(noDistanceLabelRight).toBeNull()
+    expect(noDistanceLabelTop).toBeNull()
+    expect(noDistanceLabelBottom).toBeNull()
   })
 })
 
