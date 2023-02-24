@@ -53,6 +53,7 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
+  DetectedLayoutSystem,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1755,6 +1756,25 @@ export const MetadataUtils = {
       isRight(element.element) &&
       isJSXConditionalExpression(element.element.value)
     )
+  },
+  findLayoutSystemForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): DetectedLayoutSystem {
+    const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, parentPath)
+    const parentLayouts = children.map((c) => c.specialSizeMeasurements.parentLayoutSystem)
+    if (parentLayouts.length === 0) {
+      // fallback to parent instance
+      return (
+        MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+          .layoutSystemForChildren ?? 'none'
+      )
+    }
+    const allEqual = parentLayouts.slice(1).every((x) => x === parentLayouts[0])
+    if (!allEqual) {
+      throw new Error('All children should have the same `parentLayoutSystem`')
+    }
+    return parentLayouts[0]
   },
 }
 
