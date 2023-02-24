@@ -1,5 +1,10 @@
 import React from 'react'
-import { FlexRow, Icons, InspectorSubsectionHeader } from '../../../../../uuiui'
+import {
+  FlexRow,
+  Icons,
+  InspectorSectionIcons,
+  InspectorSubsectionHeader,
+} from '../../../../../uuiui'
 import { SeeMoreHOC, useToggle } from '../../../widgets/see-more'
 import { PaddingRow } from '../../layout-section/layout-system-subsection/layout-system-controls'
 import { BlendModeRow } from './blendmode-row'
@@ -19,9 +24,10 @@ export const ContainerSubsection = React.memo(() => {
             gap: 8,
           }}
         >
+          <InspectorSectionIcons.Layer />
           <span>Container</span>
         </FlexRow>
-        <Icons.Threedots
+        <Icons.Gear
           color={seeMoreVisible ? 'secondary' : 'subdued'}
           onClick={toggleSeeMoreVisible}
         />
