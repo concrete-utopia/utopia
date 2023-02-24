@@ -603,6 +603,8 @@ export const PopupList = React.memo<PopupListProps>(
               width: '100%',
               padding: `${menuVerticalPadding}px 2px`,
               backgroundColor: colorTheme.contextMenuBackground.value,
+              position: 'absolute',
+              top: 0,
             }),
             menuList: (_, menuListProps) => {
               return {
