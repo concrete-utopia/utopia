@@ -4355,6 +4355,7 @@ export const UPDATE_FNS = {
               makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
             ],
             trailingComments: element.comments.trailingComments.filter(isNotConditionalFlag),
+            questionTokenComments: element.comments.questionTokenComments,
           },
         }
       },

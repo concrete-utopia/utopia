@@ -2262,7 +2262,7 @@ describe('inspector tests with real metadata', () => {
         <div data-uid='aaa'>
         {
           // hello
-          [].length === 0 ? (
+          [].length === 0 /*inside*/ ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2294,7 +2294,7 @@ describe('inspector tests with real metadata', () => {
               {
                 // hello
                 // @utopia/conditional=false
-                [].length === 0 ? (
+                [].length === 0 /*inside*/ ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
                   <div data-uid='ccc' data-testid='ccc'>bar</div>

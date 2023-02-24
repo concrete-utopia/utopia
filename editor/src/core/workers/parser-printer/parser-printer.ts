@@ -512,6 +512,7 @@ function jsxElementToExpression(
         whenFalse as TS.Expression,
       )
       addCommentsToNode(node, element.comments)
+      addCommentsToNode(node.questionToken, element.comments.questionTokenComments ?? emptyComments)
 
       return node
     }

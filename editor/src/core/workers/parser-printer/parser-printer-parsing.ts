@@ -1802,14 +1802,9 @@ export function parseOutJSXElements(
 
       function handleConditionalExpression(
         expression: TS.ConditionalExpression,
-        leadingComments: Array<Comment>,
-        trailingComments: Array<Comment>,
+        comments: ParsedComments,
       ): Either<string, SuccessfullyParsedElement> {
-        const possibleConditional = produceConditionalFromExpression(
-          expression,
-          leadingComments,
-          trailingComments,
-        )
+        const possibleConditional = produceConditionalFromExpression(expression, comments)
         return mapEither((success) => {
           highlightBounds = {
             ...highlightBounds,
@@ -1836,7 +1831,7 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.ConditionalExpression: {
-            const possibleCondition = handleConditionalExpression(elem, [], [])
+            const possibleCondition = handleConditionalExpression(elem, emptyComments)
             if (isLeft(possibleCondition)) {
               return possibleCondition
             } else {
@@ -1849,10 +1844,12 @@ export function parseOutJSXElements(
               left('Expression fallback.')
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
-              const leadingComments = [
-                ...getLeadingComments(sourceText, elem.expression),
-                ...getTrailingComments(sourceText, elem.expression.condition),
-              ]
+              const leadingComments = [...getLeadingComments(sourceText, elem.expression.condition)]
+
+              const questionTokenComments = {
+                leadingComments: [...getTrailingComments(sourceText, elem.expression.condition)],
+                trailingComments: [],
+              }
 
               const childrenOfExpression = elem.getChildren(sourceFile)
               const lastChild = childrenOfExpression[childrenOfExpression.length - 1]
@@ -1861,11 +1858,11 @@ export function parseOutJSXElements(
                 ...getLeadingComments(sourceText, lastChild),
               ]
 
-              parseResult = handleConditionalExpression(
-                elem.expression,
-                leadingComments,
-                trailingComments,
-              )
+              parseResult = handleConditionalExpression(elem.expression, {
+                leadingComments: leadingComments,
+                trailingComments: trailingComments,
+                questionTokenComments: questionTokenComments,
+              })
             }
             // Fallback to arbitrary block parsing.
             if (isLeft(parseResult)) {
@@ -2044,8 +2041,7 @@ export function parseOutJSXElements(
 
   function produceConditionalFromExpression(
     expression: TS.ConditionalExpression,
-    leadingComments: Array<Comment>,
-    trailingComments: Array<Comment>,
+    comments: ParsedComments,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
     function parseAttribute(
       attributeExpression: TS.Expression,
@@ -2098,7 +2094,7 @@ export function parseOutJSXElements(
           condition.value,
           whenTrue.value,
           whenFalse.value,
-          parsedComments(leadingComments, trailingComments),
+          comments,
         )
         highlightBounds = {
           ...highlightBounds,
