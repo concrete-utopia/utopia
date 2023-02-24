@@ -209,6 +209,7 @@ export function flexResizeStrategy(
                   elementParentFlexDirection,
                   metadata,
                   canvasState.startingMetadata,
+                  interactionSession.latestMetadata,
                 )
               : null
 
@@ -316,6 +317,7 @@ function shouldSnapToParentEdge(
   parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
+  latestMetadata: ElementInstanceMetadataMap,
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean
@@ -355,8 +357,10 @@ function shouldSnapToParentEdge(
   const siblingFrames = flexSiblingsWithoutSelected.map((sibling) =>
     MetadataUtils.getFrameInCanvasCoords(sibling.elementPath, startingMetadata),
   )
+
+  // only this fn uses latestMetadata because on insertion the siblings are not ordered correctly based on the startingmetadata
   const siblingIndex = MetadataUtils.getSiblingsOrdered(
-    startingMetadata,
+    latestMetadata,
     element.elementPath,
   ).findIndex((sibling) => EP.pathsEqual(element.elementPath, sibling.elementPath))
   const isFirstSibling = siblingIndex === 0
