@@ -1,8 +1,9 @@
-import { appendNewElementPath } from '../../../core/shared/element-path'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import * as EP from '../../../core/shared/element-path'
 import {
   expectSingleUndoStep,
+  selectComponentsForTest,
   setFeatureForBrowserTests,
-  wait,
 } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import {
@@ -10,7 +11,9 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
@@ -454,6 +457,24 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
       }),
     )
   })
+
+  it('reordering is disabled if non-jsx elements are among the children', async () => {
+    const editor = await renderTestEditorWithCode(projectWithTextChild, 'await-first-dom-report')
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/parent')])
+
+    const originalElementOrder = ['sb/parent', 'sb/parent/first', 'sb/parent/second']
+
+    expect(editor.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual(
+      originalElementOrder,
+    )
+
+    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+
+    expect(editor.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual(
+      originalElementOrder,
+    )
+  })
 })
 
 describe('Smart Convert to Flex alignItems', () => {
@@ -623,8 +644,51 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
   `)
 }
 
+const projectWithTextChild = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -562,
+        top: 159,
+        width: 330,
+        height: 530,
+      }}
+      data-uid='parent'
+    >
+      <div
+        style={{
+          backgroundColor: '#61ffe9',
+          width: 144,
+          height: 174,
+          contain: 'layout',
+        }}
+        data-uid='first'
+      >
+        first
+      </div>
+      hello
+      <div
+        style={{
+          backgroundColor: '#d089cc',
+          width: 150,
+          height: 186,
+          contain: 'layout',
+        }}
+        data-uid='second'
+      >
+        second
+      </div>
+    </div>
+  </Storyboard>
+)`
+
 async function convertParentToFlex(editor: EditorRenderResult) {
-  const targetPath = appendNewElementPath(TestScenePath, ['a', 'parent'])
+  const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent'])
   await editor.dispatch([selectComponents([targetPath], false)], true)
 
   await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
