@@ -1,7 +1,6 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
+import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
   DetectedLayoutSystem,
@@ -66,16 +65,20 @@ export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
-  const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
   const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
-  if (containerElement == null) {
+  if (children.length === 0) {
     return 'non-single-axis-autolayout'
   }
 
-  const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
-  const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
+  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
+  const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'
 
-  return singleAxisAutoLayoutDirections(children, metadata, layoutSystem, flexDirection)
+  return singleAxisAutoLayoutDirections(
+    children,
+    metadata,
+    layoutSystem,
+    MetadataUtils.flexDirectionToSimpleFlexDirection(flexDirection),
+  )
 }
 
 export function singleAxisAutoLayoutChildrenDirections(

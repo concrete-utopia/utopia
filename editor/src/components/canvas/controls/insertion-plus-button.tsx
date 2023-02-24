@@ -69,7 +69,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       return null
     }
 
-    if (parentElement.specialSizeMeasurements.layoutSystemForChildren !== 'flex') {
+    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, parentPath) !== 'flex') {
       return null
     }
 
