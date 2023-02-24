@@ -385,36 +385,25 @@ function shouldSnapToParentEdge(
     const shouldSnap =
       siblingsFrame < parentInnerBounds.width && // there is open space in the layout
       siblingsFrame + resizedBounds.width + SnappingThreshold > parentInnerBounds.width
-    if (
-      // in a row layout with left aligned elements dragging on the right edge/corner snaps to parent edge
-      (parentJustifyContent == null || parentJustifyContent === 'flex-start') &&
+
+    const isLastEdge =
       (isDraggingEdge(EdgePositionRight) ||
         isDraggingEdge(EdgePositionTopRight) ||
         isDraggingEdge(EdgePositionBottomRight)) &&
       isLastSibling
-    ) {
-      return {
-        snapDirection: 'horizontal',
-        snap: shouldSnap,
-      }
-    } else if (
-      parentJustifyContent === 'center' &&
-      edgePosition.x !== 0.5 &&
-      (isLastSibling || isFirstSibling)
-    ) {
-      // in a row layout with center aligned elements dragging on the left or right edge/corner snaps to parent edge
-      return {
-        snapDirection: 'horizontal',
-        snap: shouldSnap,
-      }
-    } else if (
-      // in a row layout with right aligned elements dragging on the left edge/corner snaps to parent edge
-      parentJustifyContent === 'flex-end' &&
+
+    const isFirstEdge =
       (isDraggingEdge(EdgePositionLeft) ||
         isDraggingEdge(EdgePositionTopLeft) ||
         isDraggingEdge(EdgePositionBottomLeft)) &&
       isFirstSibling
-    ) {
+
+    const isElementDraggedOnOuterEdgeOrCorner =
+      ((parentJustifyContent == null || parentJustifyContent === 'flex-start') && isLastEdge) ||
+      (parentJustifyContent === 'center' && (isLastEdge || isFirstEdge)) ||
+      (parentJustifyContent === 'flex-end' && isFirstEdge)
+
+    if (isElementDraggedOnOuterEdgeOrCorner) {
       return {
         snapDirection: 'horizontal',
         snap: shouldSnap,
@@ -429,36 +418,25 @@ function shouldSnapToParentEdge(
     const shouldSnap =
       siblingsFrame < parentInnerBounds.height && // there is open space in the layout
       siblingsFrame + resizedBounds.height + SnappingThreshold > parentInnerBounds.height
-    // in a column layout with top aligned elements dragging on the bottom edge/corner snaps to parent edge
-    if (
-      (parentJustifyContent == null || parentJustifyContent === 'flex-start') &&
+
+    const isLastEdge =
       (isDraggingEdge(EdgePositionBottom) ||
         isDraggingEdge(EdgePositionBottomLeft) ||
         isDraggingEdge(EdgePositionBottomRight)) &&
       isLastSibling
-    ) {
-      return {
-        snapDirection: 'vertical',
-        snap: shouldSnap,
-      }
-    } else if (
-      parentJustifyContent === 'center' &&
-      edgePosition.y !== 0.5 &&
-      (isLastSibling || isFirstSibling)
-    ) {
-      // in a column layout with center aligned elements dragging on the top or bottom edge/corner snaps to parent edge
-      return {
-        snapDirection: 'vertical',
-        snap: shouldSnap,
-      }
-    } else if (
-      // in a column layout with bottom aligned elements dragging on the bottom edge/corner snaps to parent edge
-      parentJustifyContent === 'flex-end' &&
+
+    const isFirstEdge =
       (isDraggingEdge(EdgePositionTop) ||
         isDraggingEdge(EdgePositionTopLeft) ||
         isDraggingEdge(EdgePositionTopRight)) &&
       isFirstSibling
-    ) {
+
+    const isElementDraggedOnOuterEdgeOrCorner =
+      ((parentJustifyContent == null || parentJustifyContent === 'flex-start') && isLastEdge) ||
+      (parentJustifyContent === 'center' && (isLastEdge || isFirstEdge)) ||
+      (parentJustifyContent === 'flex-end' && isFirstEdge)
+
+    if (isElementDraggedOnOuterEdgeOrCorner) {
       return {
         snapDirection: 'vertical',
         snap: shouldSnap,
