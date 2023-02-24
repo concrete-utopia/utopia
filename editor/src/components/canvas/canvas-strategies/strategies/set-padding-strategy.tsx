@@ -336,16 +336,8 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return false
   }
 
-  const elementIsIntrinsicElement = foldEither(
-    () => false,
-    (e) =>
-      isJSXElement(e) &&
-      (isIntrinsicElement(e.name) || jsxElementNameEquals(e.name, jsxElementName('Scene', []))),
-    element.element,
-  )
-
   if (
-    !elementIsIntrinsicElement &&
+    elementHasNonzeroPaddingFromProps &&
     shouldShowControls(elementHasNonzeroPaddingFromProps, elementHasNonzeroPaddingFromMeasurements)
   ) {
     return true
