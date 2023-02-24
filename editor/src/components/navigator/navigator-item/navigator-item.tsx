@@ -453,23 +453,18 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     'element',
   )
 
-  const isConditional = React.useMemo(
-    () => MetadataUtils.isConditionalFromMetadata(element),
-    [element],
-  )
-
   const conditionalOverride = React.useMemo(() => {
-    if (!isConditional) {
-      return null
-    }
-    if (element == null) {
-      return null
-    }
-    if (!isRight(element.element) || !isJSXConditionalExpression(element.element.value)) {
+    const isConditional = MetadataUtils.isConditionalFromMetadata(element)
+    if (
+      !isConditional ||
+      element == null ||
+      !isRight(element.element) ||
+      !isJSXConditionalExpression(element.element.value)
+    ) {
       return null
     }
     return findUtopiaCommentFlag(element.element.value.comments, 'conditional')?.value ?? null
-  }, [element, isConditional])
+  }, [element])
 
   return (
     <React.Fragment>
