@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { background, FlexRow, PopupList } from '../../../uuiui'
+import { FlexRow, PopupList } from '../../../uuiui'
 import { DEPRECATEDControlProps } from './control'
 import { SelectOption } from './select-control'
 
