@@ -249,11 +249,7 @@ export const hugContentsApplicableForText = (
 export const fillContainerApplicable = (
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): boolean =>
-  !(
-    EP.isStoryboardChild(elementPath) ||
-    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, elementPath))
-  )
+): boolean => !EP.isStoryboardChild(elementPath)
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
