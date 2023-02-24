@@ -147,6 +147,7 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
               backgroundColor: StrokeColor,
               fontSize: 11 / this.props.scale,
             }}
+            data-testid={id}
           >
             {`${distance.toFixed(0)}`}
           </div>
@@ -279,7 +280,7 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
           Math.abs(frame.y + frame.height - bottomGuidelineY),
           bottomStart,
           bottomEnd,
-          'distance',
+          'distance-bottom',
         ),
       ]
     } else {
