@@ -53,11 +53,15 @@ import {
   TargetSelectorLength,
 } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
+import { LayoutSection } from './sections/layout-section/layout-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
-import { TargetSelectorSectionProps } from './sections/target-selector-section'
+import {
+  TargetSelectorSection,
+  TargetSelectorSectionProps,
+} from './sections/target-selector-section'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import {
   useKeepReferenceEqualityIfPossible,
@@ -77,7 +81,6 @@ import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
-import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
 
 export interface ElementPathElement {
@@ -341,9 +344,17 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <FlexSection />
-          <SizingSection />
-          <PositionSection
+          <TargetSelectorSection
+            targets={props.targets}
+            selectedTargetPath={props.selectedTargetPath}
+            onSelectTarget={props.onSelectTarget}
+            onStyleSelectorRename={props.onStyleSelectorRename}
+            onStyleSelectorDelete={props.onStyleSelectorDelete}
+            onStyleSelectorInsert={props.onStyleSelectorInsert}
+          />
+          {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
+          {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
+          <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
             toggleAspectRatioLock={toggleAspectRatioLock}

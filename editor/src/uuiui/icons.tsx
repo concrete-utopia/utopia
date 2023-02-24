@@ -222,7 +222,6 @@ export const Icons = {
 
   Downloaded: makeIcon({ type: 'downloaded', color: 'main', width: 18, height: 18 }),
   Gear: makeIcon({ type: 'gear', color: 'main' }),
-  Threedots: makeIcon({ type: 'threedots', color: 'main' }),
   LinkClosed: makeIcon({ type: 'link-closed', color: 'main' }),
   LinkStrikethrough: makeIcon({ type: 'link-strikethrough', color: 'main' }),
   LockClosed: makeIcon({ type: 'lockclosed', color: 'main' }),
