@@ -32,6 +32,7 @@ import type { FlexAlignment, FlexJustifyContent } from '../../components/inspect
 export interface ParsedComments {
   leadingComments: Array<Comment>
   trailingComments: Array<Comment>
+  questionTokenComments?: ParsedComments
 }
 
 export const emptyComments: ParsedComments = {

@@ -15,7 +15,7 @@ import {
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
-import { useColorTheme, InspectorSectionHeader, InspectorSectionIcons } from '../../../../uuiui'
+import { useColorTheme, InspectorSectionHeader } from '../../../../uuiui'
 import { ImageSourceControl } from './image-source-control'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 
@@ -69,7 +69,6 @@ export const ImgSection = React.memo(() => {
   return (
     <>
       <InspectorSectionHeader style={{ gap: 8, display: 'flex', alignItems: 'center' }}>
-        <InspectorSectionIcons.Image />
         <span>Image {naturalDimensionsNode}</span>
       </InspectorSectionHeader>
       <InspectorContextMenuWrapper

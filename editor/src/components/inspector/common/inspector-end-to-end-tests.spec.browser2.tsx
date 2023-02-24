@@ -38,7 +38,11 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { selectComponentsForTest, setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
@@ -89,6 +93,27 @@ function actionsForUpdatedCode(updatedCodeSnippet: string) {
   const updateAction = updateFromCodeEditor(StoryboardFilePath, fullCode, null)
   const requestLintAction = sendLinterRequestMessage(StoryboardFilePath, fullCode)
   return [updateAction, requestLintAction]
+}
+
+async function toggleConditional(
+  renderResult: EditorRenderResult,
+  buttonTestId: string,
+  targetPath: ElementPath,
+): Promise<void> {
+  await expectSingleUndoStep(renderResult, async () => {
+    await act(async () => {
+      fireEvent.click(screen.getByTestId(buttonTestId))
+      await renderResult.getDispatchFollowUpActionsFinished()
+    })
+  })
+
+  await act(async () => {
+    const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+    await renderResult.dispatch([selectComponents([targetPath], false)], true)
+    await dispatchDone
+  })
+
+  await renderResult.getDispatchFollowUpActionsFinished()
 }
 
 describe('inspector tests with real metadata', () => {
@@ -2158,7 +2183,7 @@ describe('inspector tests with real metadata', () => {
       ])
       const startSnippet = `
         <div data-uid='aaa'>
-        {true ? (
+        {[].length === 0 ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2179,69 +2204,106 @@ describe('inspector tests with real metadata', () => {
 
       // toggle to false
       {
-        await act(async () => {
-          fireEvent.click(screen.getByTestId('conditionals-control-false'))
-          await renderResult.getDispatchFollowUpActionsFinished()
-        })
-
-        await act(async () => {
-          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-          await renderResult.dispatch([selectComponents([targetPath], false)], true)
-          await dispatchDone
-        })
-
-        await renderResult.getDispatchFollowUpActionsFinished()
+        await toggleConditional(renderResult, 'conditionals-control-false', targetPath)
 
         expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
         expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
-          <div data-uid='aaa'>
-            {
-              true ? (
-                <div data-uid='bbb' data-testid='bbb'>foo</div>
-              ) : (
-                <div data-uid='ccc' data-testid='ccc'>bar</div>
-              ) // @utopia/conditional=false
-            }
-          </div>
-        `),
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=false
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
         )
       }
 
       // toggle to true
       {
-        await act(async () => {
-          fireEvent.click(screen.getByTestId('conditionals-control-true'))
-          await renderResult.getDispatchFollowUpActionsFinished()
-        })
-
-        await act(async () => {
-          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-          await renderResult.dispatch([selectComponents([targetPath], false)], true)
-          await dispatchDone
-        })
-
-        await renderResult.getDispatchFollowUpActionsFinished()
+        await toggleConditional(renderResult, 'conditionals-control-true', targetPath)
 
         expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
         expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
-          <div data-uid='aaa'>
-            {
-              true ? (
-                <div data-uid='bbb' data-testid='bbb'>foo</div>
-              ) : (
-                <div data-uid='ccc' data-testid='ccc'>bar</div>
-              ) // @utopia/conditional=true
-            }
-          </div>
-        `),
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=true
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
         )
       }
+    })
+    it('rearranges comments so that the conditional flag is at the top', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'conditional',
+      ])
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // hello
+          [].length === 0 /*inside*/ ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )
+          /* this is a test */
+          // @utopia/conditional=false
+          // and another comment
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await toggleConditional(renderResult, 'conditionals-control-false', targetPath)
+
+      expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // hello
+                // @utopia/conditional=false
+                [].length === 0 /*inside*/ ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                ) /* this is a test */
+                // and another comment
+              }
+            </div>
+         `),
+      )
     })
   })
 })
