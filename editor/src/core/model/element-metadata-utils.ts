@@ -2085,6 +2085,7 @@ export function createFakeMetadataForElement(
   specialSizeMeasurements.parentPadding =
     parentElement?.specialSizeMeasurements.padding ??
     sides(undefined, undefined, undefined, undefined)
+  specialSizeMeasurements.parentFlexGap = parentElement?.specialSizeMeasurements.gap ?? 0
 
   return elementInstanceMetadata(
     path,
