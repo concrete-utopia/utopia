@@ -100,6 +100,7 @@ import { prependToSourceString, ElementsWithinInPosition } from './parser-printe
 import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import { isEmptyString } from '../../shared/string-utils'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -2011,12 +2012,15 @@ export function parseOutJSXElements(
               elementName != null &&
               isJsxNameKnown(elementName, topLevelNames, imports))
           ) {
+            const childrenMinusEmptyStrings = childElems.filter(
+              (c) => !(isJSXTextBlock(c) && isEmptyString(c.text)),
+            )
             const parsedElement = createJSXElementOrFragmentAllocatingUID(
               sourceFile,
               tsElement,
               elementName,
               attrs.value,
-              childElems,
+              childrenMinusEmptyStrings,
               highlightBounds,
               alreadyExistingUIDs,
               imports,
