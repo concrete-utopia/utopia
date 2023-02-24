@@ -1,5 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { last, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { last, sortBy } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, isJSXElementLike } from '../../../core/shared/element-template'
@@ -27,6 +27,11 @@ export function convertLayoutToFlexCommands(
   elementPaths: Array<ElementPath>,
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
+    const parentInstance = MetadataUtils.findElementByElementPath(metadata, path)
+    if (parentInstance == null) {
+      return []
+    }
+
     const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
 
     const parentFlexDirection =
@@ -68,16 +73,12 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const allChildrenJSXElementLike = mapDropNulls(
-      (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
-      childrenPaths,
-    ).every((child) =>
-      foldEither(
-        () => false,
-        (e) => isJSXElementLike(e),
-        child.element,
-      ),
+    const allChildrenJSXElementLike = foldEither(
+      () => false,
+      (e) => isJSXElementLike(e) && e.children.every(isJSXElementLike),
+      parentInstance.element,
     )
+
     const rearrangeCommands = allChildrenJSXElementLike
       ? [rearrangeChildren('always', path, sortedChildrenPaths)]
       : []
