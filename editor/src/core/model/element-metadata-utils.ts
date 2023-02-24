@@ -1776,6 +1776,25 @@ export const MetadataUtils = {
     }
     return parentLayouts[0]
   },
+  findFlexDirectionForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): FlexDirection | null {
+    const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, parentPath)
+    const flexDirections = children.map((c) => c.specialSizeMeasurements.parentFlexDirection)
+    if (flexDirections.length === 0) {
+      // fallback to parent instance
+      return (
+        MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+          .flexDirection ?? null
+      )
+    }
+    const allEqual = flexDirections.slice(1).every((x) => x === flexDirections[0])
+    if (!allEqual) {
+      throw new Error('All children should have the same `flexDirections`')
+    }
+    return flexDirections[0]
+  },
 }
 
 function fillSpyOnlyMetadata(
