@@ -6,11 +6,15 @@ import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { isRight } from '../../../../core/shared/either'
 import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { when } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexRow,
+  FunctionIcons,
+  Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
+  SquareButton,
   useColorTheme,
 } from '../../../../uuiui'
 import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
@@ -58,7 +62,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   }, [element])
 
   const setCondition = React.useCallback(
-    (value: boolean) => () => {
+    (value: boolean | null) => () => {
       if (path == null || element == null) {
         return
       }
@@ -73,7 +77,17 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   return (
     <React.Fragment>
-      <InspectorSubsectionHeader>
+      <InspectorSubsectionHeader
+        css={{
+          transition: 'color .1s ease-in-out',
+          color: colorTheme.fg1.value,
+          '--buttonContentOpacity': 0.3,
+          '&:hover': {
+            color: colorTheme.fg1.value,
+            '--buttonContentOpacity': 1,
+          },
+        }}
+      >
         <FlexRow
           style={{
             flexGrow: 1,
@@ -83,34 +97,46 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
           <span>Conditional</span>
         </FlexRow>
+        {condition != null ? (
+          <SquareButton highlight onClick={setCondition(null)}>
+            <FunctionIcons.Delete />
+          </SquareButton>
+        ) : (
+          <SquareButton highlight onClick={setCondition(true)}>
+            <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
+          </SquareButton>
+        )}
       </InspectorSubsectionHeader>
-      <UIGridRow
-        padded={true}
-        variant='<---1fr--->|------172px-------|'
-        style={{ color: condition != null ? colorTheme.primary.value : 'inherit' }}
-      >
-        Branch
-        <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-          <Button
-            style={{ flex: 1 }}
-            spotlight={condition !== false}
-            highlight
-            onClick={setCondition(true)}
-            data-testid='conditionals-control-true'
-          >
-            True
-          </Button>
-          <Button
-            style={{ flex: 1 }}
-            spotlight={condition === false}
-            highlight
-            onClick={setCondition(false)}
-            data-testid='conditionals-control-false'
-          >
-            False
-          </Button>
-        </FlexRow>
-      </UIGridRow>
+      {when(
+        condition != null,
+        <UIGridRow
+          padded={true}
+          variant='<---1fr--->|------172px-------|'
+          style={{ color: condition != null ? colorTheme.primary.value : 'inherit' }}
+        >
+          Branch
+          <FlexRow style={{ flexGrow: 1, gap: 4 }}>
+            <Button
+              style={{ flex: 1 }}
+              spotlight={condition !== false}
+              highlight
+              onClick={setCondition(true)}
+              data-testid='conditionals-control-true'
+            >
+              True
+            </Button>
+            <Button
+              style={{ flex: 1 }}
+              spotlight={condition === false}
+              highlight
+              onClick={setCondition(false)}
+              data-testid='conditionals-control-false'
+            >
+              False
+            </Button>
+          </FlexRow>
+        </UIGridRow>,
+      )}
     </React.Fragment>
   )
 })

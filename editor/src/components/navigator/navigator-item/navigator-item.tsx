@@ -20,6 +20,10 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { when } from '../../../utils/react-conditionals'
+import { isRight } from '../../../core/shared/either'
+import { isJSXConditionalExpression } from '../../../core/shared/element-template'
+import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -439,6 +443,34 @@ interface NavigatorRowLabelProps {
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
+  const colorTheme = useColorTheme()
+
+  const element = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, props.elementPath)
+    },
+    'element',
+  )
+
+  const isConditional = React.useMemo(
+    () => MetadataUtils.isConditionalFromMetadata(element),
+    [element],
+  )
+
+  const conditionalOverride = React.useMemo(() => {
+    if (!isConditional) {
+      return null
+    }
+    if (element == null) {
+      return null
+    }
+    if (!isRight(element.element) || !isJSXConditionalExpression(element.element.value)) {
+      return null
+    }
+    return findUtopiaCommentFlag(element.element.value.comments, 'conditional')?.value ?? null
+  }, [element, isConditional])
+
   return (
     <React.Fragment>
       <LayoutIcon
@@ -458,6 +490,24 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
       />
+
+      {when(
+        conditionalOverride != null,
+        <div
+          style={{
+            marginLeft: 10,
+            color: colorTheme.bg0.value,
+            background: colorTheme.brandNeonPink.value,
+            borderRadius: 10,
+            padding: '0px 6px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            fontSize: 9,
+          }}
+        >
+          {conditionalOverride ? 'True' : 'False'}
+        </div>,
+      )}
 
       <ComponentPreview
         key={`preview-${props.label}`}

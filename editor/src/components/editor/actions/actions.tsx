@@ -4346,14 +4346,22 @@ export const UPDATE_FNS = {
         if (!isJSXConditionalExpression(element)) {
           return element
         }
-        const isNotConditionalFlag = (c: Comment) => !isUtopiaCommentFlag(c, 'conditional')
+
+        function isNotConditionalFlag(c: Comment): boolean {
+          return !isUtopiaCommentFlag(c, 'conditional')
+        }
+
+        const leadingComments = [...element.comments.leadingComments.filter(isNotConditionalFlag)]
+        if (action.condition != null) {
+          leadingComments.push(
+            makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
+          )
+        }
+
         return {
           ...element,
           comments: {
-            leadingComments: [
-              ...element.comments.leadingComments.filter(isNotConditionalFlag),
-              makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
-            ],
+            leadingComments: leadingComments,
             trailingComments: element.comments.trailingComments.filter(isNotConditionalFlag),
             questionTokenComments: element.comments.questionTokenComments,
           },
