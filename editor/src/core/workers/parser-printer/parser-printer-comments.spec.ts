@@ -92,7 +92,7 @@ describe('Parsing and printing code with comments', () => {
           >
           {
             ${comments.commentAtStartOfJSXExpression}
-            true ${comments.commentInsideJSXExpression}
+            [].length === 0 ${comments.commentInsideJSXExpression}
             ? <div/>
             : <div/>
             ${comments.commentAtEndOfJSXExpression}
@@ -172,7 +172,7 @@ describe('Parsing and printing code with comments', () => {
           >
             {
               /* Comment at start of JSX expression */
-              true /* Comment inside JSX expression */ ? (
+              [].length === 0 /* Comment inside JSX expression */ ? (
                 <div data-uid='4cf' />
               ) : (
                 <div data-uid='1a9' />
