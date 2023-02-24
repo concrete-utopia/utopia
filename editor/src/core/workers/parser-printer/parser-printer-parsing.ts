@@ -2012,7 +2012,7 @@ export function parseOutJSXElements(
               elementName != null &&
               isJsxNameKnown(elementName, topLevelNames, imports))
           ) {
-            const childrenMinusEmptyTexts = childElems.filter(
+            const childrenMinusWhitespaceOnlyTexts = childElems.filter(
               (c) => !(isJSXTextBlock(c) && isEmptyString(c.text)),
             )
             const parsedElement = createJSXElementOrFragmentAllocatingUID(
@@ -2020,7 +2020,7 @@ export function parseOutJSXElements(
               tsElement,
               elementName,
               attrs.value,
-              childrenMinusEmptyTexts,
+              childrenMinusWhitespaceOnlyTexts,
               highlightBounds,
               alreadyExistingUIDs,
               imports,
