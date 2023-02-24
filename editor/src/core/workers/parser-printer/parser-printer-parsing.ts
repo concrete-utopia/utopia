@@ -1849,7 +1849,10 @@ export function parseOutJSXElements(
               left('Expression fallback.')
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
-              const leadingComments = getLeadingComments(sourceText, elem.expression)
+              const leadingComments = [
+                ...getLeadingComments(sourceText, elem.expression),
+                ...getTrailingComments(sourceText, elem.expression.condition),
+              ]
 
               const childrenOfExpression = elem.getChildren(sourceFile)
               const lastChild = childrenOfExpression[childrenOfExpression.length - 1]
