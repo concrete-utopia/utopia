@@ -8,6 +8,7 @@ import {
   Icn,
   UtopiaTheme,
   InspectorSubsectionHeader,
+  InspectorSectionIcons,
   Icons,
 } from '../../../../../uuiui'
 import {
@@ -565,6 +566,7 @@ export const TransformSubsection = React.memo(() => {
       >
         <InspectorSubsectionHeader style={headerStyle}>
           <FlexRow style={{ flexGrow: 1, gap: 8 }}>
+            <InspectorSectionIcons.Transforms />
             <span>Transforms</span>
           </FlexRow>
           {propertyStatus.overwritable ? (

@@ -29,6 +29,7 @@ import {
   InspectorSubsectionHeader,
   FlexRow,
   Icons,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 
 function getIndexedToggleTextShadowEnabled(index: number) {
@@ -292,6 +293,7 @@ export const TextShadowSubsection = React.memo(() => {
               gap: 8,
             }}
           >
+            <InspectorSectionIcons.TextShadow />
             <span>Text Shadow</span>
           </FlexRow>
           {propertyStatus.overwritable ? (

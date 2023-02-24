@@ -16,6 +16,7 @@ import {
   InspectorSubsectionHeader,
   Icons,
   NumberInput,
+  InspectorSectionIcons,
   SquareButton,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -212,6 +213,7 @@ export const TextSubsection = React.memo(() => {
               gap: 8,
             }}
           >
+            <InspectorSectionIcons.Typography />
             <span>Type</span>
           </FlexRow>
           <SquareButton
@@ -221,7 +223,7 @@ export const TextSubsection = React.memo(() => {
           >
             <Icons.Cross color={'secondary'} />
           </SquareButton>
-          <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
+          <Icons.Gear color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
