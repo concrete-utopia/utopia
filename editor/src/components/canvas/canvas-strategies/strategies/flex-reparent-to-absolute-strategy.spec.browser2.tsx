@@ -25,6 +25,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   click: boolean,
+  midDragCallback?: () => Promise<void>,
 ): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -38,9 +39,9 @@ async function dragElement(
   if (click) {
     await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   }
-
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
+    midDragCallback: midDragCallback,
   })
 }
 
@@ -341,7 +342,13 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
           ),
           true,
         )
-        await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, false)
+        await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, false, async () => {
+          // mid drag: make sure that flexchild1 is _not_ visible at the original location, even if it's a fragment's child
+          const flexChildOnes = await renderResult.renderedDOM.getAllByTestId('flexchild1')
+          expect(flexChildOnes.length).toBe(2)
+          expect(flexChildOnes[0].style.visibility).not.toEqual('hidden')
+          expect(flexChildOnes[1].style.visibility).toEqual('hidden')
+        })
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
