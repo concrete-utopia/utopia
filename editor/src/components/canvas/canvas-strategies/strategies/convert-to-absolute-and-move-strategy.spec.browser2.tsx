@@ -519,7 +519,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
 
 describe('Convert to Absolute', () => {
   it('Correctly uses the captured closestOffsetParentPath to determine which elements to update', async () => {
-    function getCodeForTestProject(appOpeningTag: string): string {
+    function getCodeForTestProject(childTag: string): string {
       return formatTestProjectCode(`
         import * as React from 'react'
         import { Scene, Storyboard } from 'utopia-api'
@@ -549,16 +549,8 @@ describe('Convert to Absolute', () => {
                 height: 812,
               }}
             >
-              ${appOpeningTag}
-                <div
-                  data-uid='child'
-                  style={{
-                    position: 'absolute',
-                    width: 200,
-                    height: 200,
-                    backgroundColor: '#d3d3d3',
-                  }}
-                />
+              <App data-uid='app'>
+                ${childTag}
               </App>
             </Scene>
           </Storyboard>
@@ -566,30 +558,43 @@ describe('Convert to Absolute', () => {
       `)
     }
 
-    const appOpeningTagBefore = `<App data-uid='app'>`
-    const appOpeningTagAfter = `
-      <App
-        data-uid='app'
-        style={{
-          position: 'absolute',
-          left: 0,
-          width: 375,
-          top: 0,
-          height: 300,
-        }}
-      >`
+    const childTagBefore = `
+    <div
+      data-uid='child'
+      style={{
+        width: 200,
+        height: 200,
+        backgroundColor: '#d3d3d3',
+      }}
+    />
+    `
+    const childTagAfter = `
+    <div
+      data-uid='child'
+      style={{
+        width: 200,
+        height: 200,
+        backgroundColor: '#d3d3d3',
+        position: 'absolute',
+        left: 0,
+        top: 100,
+      }}
+    />
+    `
 
     const renderResult = await renderTestEditorWithCode(
-      getCodeForTestProject(appOpeningTagBefore),
+      getCodeForTestProject(childTagBefore),
       'await-first-dom-report',
     )
 
     const targetToConvert = EP.fromString('sb/scene/app')
-    // Converting App should not result in any changes to `sb/scene/app/child`
+    // Update after the children affecting work:
+    // Converting App recognizes app as children-affecting, and converts sb/scene/app/child instead!
+    // (previously it used to update App and leave child unaffected)
     await renderResult.dispatch([runEscapeHatch([targetToConvert])], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      getCodeForTestProject(appOpeningTagAfter),
+      getCodeForTestProject(childTagAfter),
     )
   })
 })
