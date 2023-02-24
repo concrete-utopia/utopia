@@ -653,7 +653,6 @@ export const PopupList = React.memo<PopupListProps>(
               display: 'flex',
               alignItems: 'center',
               flexGrow: containerMode === 'noBorder' ? 0 : 1,
-              backgroundColor: colorTheme.contextMenuBackground.value,
             }),
             indicatorSeparator: displayNone,
             clearIndicator: displayNone,
