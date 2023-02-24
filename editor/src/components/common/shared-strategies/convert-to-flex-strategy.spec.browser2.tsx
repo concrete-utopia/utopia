@@ -666,6 +666,9 @@ export var storyboard = (
           width: 144,
           height: 174,
           contain: 'layout',
+          left: 6,
+          top: 246,
+          position: 'absolute',
         }}
         data-uid='first'
       >
@@ -678,6 +681,9 @@ export var storyboard = (
           width: 150,
           height: 186,
           contain: 'layout',
+          left: 0,
+          top: 44,
+          position: 'absolute',
         }}
         data-uid='second'
       >
@@ -685,7 +691,8 @@ export var storyboard = (
       </div>
     </div>
   </Storyboard>
-)`
+)
+`
 
 async function convertParentToFlex(editor: EditorRenderResult) {
   const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent'])
