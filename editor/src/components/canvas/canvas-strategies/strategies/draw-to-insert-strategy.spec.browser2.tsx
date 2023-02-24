@@ -21,7 +21,13 @@ import { RightMenuTab } from '../../../editor/store/editor-state'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { CanvasRectangle, isInfinityRectangle } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  CanvasPoint,
+  CanvasRectangle,
+  isInfinityRectangle,
+  offsetPoint,
+} from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
 
@@ -1895,6 +1901,40 @@ describe('Inserting into flex row', () => {
     `),
     )
   })
+  describe('insertion adds flex grow on reaching edge if possible', () => {
+    it('inserting into the end of flex row adds flexGrow when reaching parent`s edge', async () => {
+      const expectedStyle = {
+        backgroundColor: '#aaaaaa33',
+        height: 25,
+        contain: 'layout',
+        flexGrow: 1,
+      }
+      await drawToInsertTestMaybeAddsFlexGrow(canvasPoint({ x: 60, y: 25 }), expectedStyle, 'row')
+    })
+    it('inserting into the end of flex row adds width when not reaching parent`s edge', async () => {
+      const expectedStyle = {
+        backgroundColor: '#aaaaaa33',
+        width: 50,
+        height: 25,
+        contain: 'layout',
+      }
+      await drawToInsertTestMaybeAddsFlexGrow(canvasPoint({ x: 50, y: 25 }), expectedStyle, 'row')
+    })
+    it('inserting into the end of flex row only adds width when siblings are shrinked already (no open space for insertion)', async () => {
+      const expectedStyle = {
+        backgroundColor: '#aaaaaa33',
+        width: 60,
+        height: 25,
+        contain: 'layout',
+      }
+      await drawToInsertTestMaybeAddsFlexGrow(
+        canvasPoint({ x: 60, y: 25 }),
+        expectedStyle,
+        'row',
+        100,
+      )
+    })
+  })
 })
 
 describe('Inserting into flex column', () => {
@@ -2349,6 +2389,48 @@ describe('Inserting into flex column', () => {
       `),
     )
   })
+  describe('insertion adds flex grow on reaching edge if possible', () => {
+    it('inserting into the end of flex column adds flexGrow when reaching parent`s edge', async () => {
+      const expectedStyle = {
+        backgroundColor: '#aaaaaa33',
+        width: 60,
+        contain: 'layout',
+        flexGrow: 1,
+      }
+      await drawToInsertTestMaybeAddsFlexGrow(
+        canvasPoint({ x: 60, y: 136 }),
+        expectedStyle,
+        'column',
+      )
+    })
+    it('inserting into the end of flex column adds width when not reaching parent`s edge', async () => {
+      const expectedStyle = {
+        backgroundColor: '#aaaaaa33',
+        width: 50,
+        height: 130,
+        contain: 'layout',
+      }
+      await drawToInsertTestMaybeAddsFlexGrow(
+        canvasPoint({ x: 50, y: 130 }),
+        expectedStyle,
+        'column',
+      )
+    })
+    it('inserting into the end of flex column only adds width when siblings are shrinked already (no open space for insertion)', async () => {
+      const expectedStyle = {
+        backgroundColor: '#aaaaaa33',
+        width: 60,
+        height: 136,
+        contain: 'layout',
+      }
+      await drawToInsertTestMaybeAddsFlexGrow(
+        canvasPoint({ x: 60, y: 136 }),
+        expectedStyle,
+        'column',
+        100,
+      )
+    })
+  })
 })
 
 describe('Inserting an image', () => {
@@ -2521,5 +2603,93 @@ const testDragToInsertImageAspectRatio = async (inputCode: string, expectedCode:
   // Check that the inserted element is a child of bbb
   expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
     makeTestProjectCodeWithSnippet(expectedCode),
+  )
+}
+
+async function drawToInsertTestMaybeAddsFlexGrow(
+  dragDelta: CanvasPoint,
+  expectedStyle: React.CSSProperties,
+  flexDirection: 'row' | 'column',
+  parentSize: number | null = null,
+) {
+  const flexElementWithChildren = (insertedSibling: string = '') =>
+    makeTestProjectCodeWithSnippet(`
+    <div
+      data-uid='aaa'
+      style={{
+        width: ${parentSize == null ? "'100%'" : parentSize},
+        height: ${parentSize == null ? "'100%'" : parentSize},
+        backgroundColor: '#FFFFFF',
+        position: 'relative',
+        display: 'flex',
+        gap: 10,
+        flexDirection: '${flexDirection}',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        padding: 10,
+      }}
+    >
+      <div
+        data-uid='bb1'
+        style={{
+          width: 160,
+          height: 74,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+      <div
+        data-uid='bb2'
+        style={{
+          backgroundColor: '#FF0000',
+          width: 80,
+          height: 80,
+        }}
+      />
+      <div
+        data-uid='bb3'
+        data-testid='bb3'
+        style={{
+          backgroundColor: '#FF0000',
+          height: 60,
+          width: 50,
+        }}
+      />
+      ${insertedSibling}
+    </div>
+  `)
+
+  const renderResult = await setupInsertTest(flexElementWithChildren())
+  await enterInsertModeFromInsertMenu(renderResult)
+
+  const targetElement = renderResult.renderedDOM.getByTestId('bb3')
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+    x: targetElementBounds.x + targetElementBounds.width + 5,
+    y: targetElementBounds.y + targetElementBounds.height + 5,
+  }) as CanvasPoint
+  const endPoint = offsetPoint(startPoint, dragDelta)
+
+  // Move before starting dragging
+  await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+  // Highlight should show the candidate parent
+  expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+
+  // Drag horizontally close to the first position
+  await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+  await renderResult.getDispatchFollowUpActionsFinished()
+
+  const insertedSiblingCode = `<div
+    style={${JSON.stringify(expectedStyle)}}
+    data-uid='ddd'
+  />
+  `
+
+  // Check that the inserted element contains the correct style property
+  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+    flexElementWithChildren(insertedSiblingCode),
   )
 }
