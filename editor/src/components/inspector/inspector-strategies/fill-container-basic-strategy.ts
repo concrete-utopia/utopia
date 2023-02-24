@@ -28,7 +28,9 @@ export const fillContainerStrategyFlow = (
 ): InspectorStrategy => ({
   name: 'Set tp Fill Container',
   strategy: (metadata, elementPaths) => {
-    const elements = elementPaths.filter(fillContainerApplicable)
+    const elements = elementPaths.filter((elementPath) =>
+      fillContainerApplicable(metadata, elementPath),
+    )
 
     if (elements.length === 0) {
       return null
@@ -69,7 +71,7 @@ export const fillContainerStrategyFlexParent = (
   strategy: (metadata, elementPaths) => {
     const elements = elementPaths.filter(
       (path) =>
-        fillContainerApplicable(path) &&
+        fillContainerApplicable(metadata, path) &&
         MetadataUtils.isParentFlexLayoutedContainerForElement(
           MetadataUtils.findElementByElementPath(metadata, path),
         ),
