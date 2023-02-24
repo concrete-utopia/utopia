@@ -38,7 +38,11 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import { selectComponentsForTest, setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
@@ -96,9 +100,11 @@ async function toggleConditional(
   buttonTestId: string,
   targetPath: ElementPath,
 ): Promise<void> {
-  await act(async () => {
-    fireEvent.click(screen.getByTestId(buttonTestId))
-    await renderResult.getDispatchFollowUpActionsFinished()
+  await expectSingleUndoStep(renderResult, async () => {
+    await act(async () => {
+      fireEvent.click(screen.getByTestId(buttonTestId))
+      await renderResult.getDispatchFollowUpActionsFinished()
+    })
   })
 
   await act(async () => {
