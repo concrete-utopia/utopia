@@ -112,7 +112,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
         <UIGridRow
           padded={true}
           variant='<---1fr--->|------172px-------|'
-          style={{ color: condition != null ? colorTheme.primary.value : 'inherit' }}
+          style={{ color: condition != null ? colorTheme.brandNeonPink.value : 'inherit' }}
         >
           Branch
           <FlexRow style={{ flexGrow: 1, gap: 4 }}>
