@@ -53,6 +53,7 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -107,7 +108,13 @@ import {
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
+import {
+  buildTree,
+  ElementPathTree,
+  ElementPathTreeRoot,
+  getSubTree,
+  reorderTree,
+} from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
   Direction,
@@ -116,6 +123,7 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { reorderConditionalChildPathTrees } from './conditionals'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1059,7 +1067,31 @@ export const MetadataUtils = {
           const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
           let unfurledComponents: Array<ElementPathTree> = []
-          fastForEach(subTree.children, (child) => {
+
+          let subTreeChildren: ElementPathTreeRoot = subTree.children
+          // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
+          // case for consistent ordering.
+          if (isFeatureEnabled('Conditional support') && isConditional) {
+            const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+            if (
+              elementMetadata != null &&
+              isRight(elementMetadata.element) &&
+              isJSXConditionalExpression(elementMetadata.element.value)
+            ) {
+              const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
+              subTreeChildren = reorderConditionalChildPathTrees(
+                jsxConditionalElement,
+                path,
+                subTreeChildren,
+              )
+            } else {
+              throw new Error(
+                `Unexpected non-conditional expression retrieved at ${EP.toString(path)}`,
+              )
+            }
+          }
+
+          fastForEach(subTreeChildren, (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
@@ -1764,7 +1796,7 @@ function fillSpyOnlyMetadata(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
-) {
+): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 
   const conditionalsWithDefaultMetadata = findConditionalsAndCreateMetadata(
@@ -1816,6 +1848,7 @@ function fillSpyOnlyMetadata(
 
     const childrenAndUnfurledComponents = [
       ...childrenAndUnfurledComponentsFromDom,
+      ...childrenAndUnfurledComponentsNotInDom,
       ...recursiveChildrenAndUnfurledComponents,
     ]
 
