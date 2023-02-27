@@ -344,8 +344,11 @@ export function renderCoreElement(
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
-      const conditionValue =
+      const conditionValueAsAny =
         override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
+      // Coerce `conditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      const conditionValue: boolean = !!conditionValueAsAny
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
