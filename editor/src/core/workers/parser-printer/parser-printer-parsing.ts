@@ -74,7 +74,6 @@ import {
   isJSXConditionalExpression,
   clearAttributeSourceMaps,
   clearAttributeUniqueIDs,
-  childOrAttributeWithBranch,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -2097,8 +2096,8 @@ export function parseOutJSXElements(
         const conditionalExpression = jsxConditionalExpression(
           uid,
           condition.value,
-          childOrAttributeWithBranch(whenTrue.value, true),
-          childOrAttributeWithBranch(whenFalse.value, false),
+          whenTrue.value,
+          whenFalse.value,
           comments,
         )
         highlightBounds = {

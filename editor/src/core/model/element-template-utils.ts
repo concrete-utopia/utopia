@@ -40,8 +40,6 @@ import {
   isJSXConditionalExpression,
   childOrBlockIsChild,
   emptyComments,
-  childOrAttributeWithBranch,
-  getBranchFromChildOrAttribute,
 } from '../shared/element-template'
 import {
   Imports,
@@ -69,6 +67,7 @@ import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { styleStringInArray } from '../../utils/common-constants'
 import { forceNotNull } from '../shared/optional-utils'
+import { getConditionalClausePath } from './conditionals'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -323,13 +322,13 @@ function transformAtPathOptionally(
         if (updatedWhenTrue != null) {
           return {
             ...element,
-            whenTrue: childOrAttributeWithBranch(updatedWhenTrue, true),
+            whenTrue: updatedWhenTrue,
           }
         }
         if (updatedWhenFalse != null) {
           return {
             ...element,
-            whenFalse: childOrAttributeWithBranch(updatedWhenFalse, false),
+            whenFalse: updatedWhenFalse,
           }
         }
         return transform(element) // if no branch matches, transform the conditional itself
@@ -342,7 +341,7 @@ function transformAtPathOptionally(
         if (updated != null && isJSXElement(updated)) {
           return {
             ...element,
-            whenTrue: childOrAttributeWithBranch(updated, true),
+            whenTrue: updated,
           }
         }
       }
@@ -354,7 +353,7 @@ function transformAtPathOptionally(
         if (updated != null && isJSXElement(updated)) {
           return {
             ...element,
-            whenFalse: childOrAttributeWithBranch(updated, false),
+            whenFalse: updated,
           }
         }
       }
@@ -541,25 +540,19 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const element = findJSXElementAtStaticPath(rootElements, target)
-      if (element == null) {
-        return parentElement
-      }
+      const truePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
+      const falsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
 
-      const branch = getBranchFromChildOrAttribute(element)
-      if (branch == null) {
-        return parentElement
+      const nullAttribute: JSXAttribute = {
+        type: 'ATTRIBUTE_VALUE',
+        value: null,
+        comments: emptyComments,
       }
-
-      const nullAttribute = childOrAttributeWithBranch(
-        { type: 'ATTRIBUTE_VALUE', value: null, comments: emptyComments },
-        branch,
-      )
 
       return {
         ...parentElement,
-        whenTrue: branch ? nullAttribute : parentElement.whenTrue,
-        whenFalse: !branch ? nullAttribute : parentElement.whenFalse,
+        whenTrue: EP.pathsEqual(truePath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(falsePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement

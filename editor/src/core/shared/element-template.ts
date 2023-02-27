@@ -1929,29 +1929,6 @@ export function getElementsByUIDFromTopLevelElements(
 
 export type ChildOrAttribute = JSXElementChild | JSXAttribute
 
-export type ChildOrAttributeWithBranch = ChildOrAttribute & { branch: boolean }
-
-export function childOrAttributeWithBranch(
-  element: ChildOrAttribute,
-  branch: boolean,
-): ChildOrAttributeWithBranch {
-  return {
-    ...element,
-    branch: branch,
-  }
-}
-
-export function isChildOrAttributeWithBranch(c: ChildOrAttribute): c is ChildOrAttributeWithBranch {
-  return (c as ChildOrAttributeWithBranch).branch != null
-}
-
-export function getBranchFromChildOrAttribute(c: JSXElement | null): boolean | null {
-  if (c == null || !isChildOrAttributeWithBranch(c)) {
-    return null
-  }
-  return c.branch
-}
-
 export function childOrBlockIsChild(
   childOrBlock: ChildOrAttribute,
 ): childOrBlock is JSXElementChild {
