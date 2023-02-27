@@ -1748,7 +1748,7 @@ export function updateColorSwatches(colorSwatches: Array<ColorSwatch>): UpdateCo
 
 export function setConditionalOverriddenCondition(
   target: ElementPath,
-  condition: boolean,
+  condition: boolean | null,
 ): SetConditionalOverriddenCondition {
   return {
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',

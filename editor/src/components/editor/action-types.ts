@@ -810,7 +810,7 @@ export interface UpdateJSXElementName {
 export interface SetConditionalOverriddenCondition {
   action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION'
   target: ElementPath
-  condition: boolean
+  condition: boolean | null
 }
 
 export interface AddImports {
