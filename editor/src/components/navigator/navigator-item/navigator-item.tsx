@@ -21,7 +21,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
-import { isRight } from '../../../core/shared/either'
+import { isLeft } from '../../../core/shared/either'
 import { isJSXConditionalExpression } from '../../../core/shared/element-template'
 import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 
@@ -458,7 +458,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     if (
       !isConditional ||
       element == null ||
-      !isRight(element.element) ||
+      isLeft(element.element) ||
       !isJSXConditionalExpression(element.element.value)
     ) {
       return null
