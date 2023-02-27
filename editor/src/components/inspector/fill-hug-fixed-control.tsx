@@ -288,7 +288,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         options={options}
         onSubmitValue={onSubmitWidth}
         controlStyles={simpleControlStyles}
-        containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
         id={FillFixedHugControlId('width')}
@@ -312,7 +311,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         options={options}
         onSubmitValue={onSubmitHeight}
         controlStyles={simpleControlStyles}
-        containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
         id={FillFixedHugControlId('height')}
