@@ -48,7 +48,7 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const siblings = MetadataUtils.getSiblingsOrdered(metadata, target) // including target
+  const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(metadata, target) // including target
   if (siblings.length === 1) {
     return false
   }
