@@ -1060,15 +1060,15 @@ export interface JSXConditionalExpression extends WithComments {
   type: 'JSX_CONDITIONAL_EXPRESSION'
   uniqueID: string
   condition: JSXAttribute
-  whenTrue: ChildOrAttributeWithBranch
-  whenFalse: ChildOrAttributeWithBranch
+  whenTrue: ChildOrAttribute
+  whenFalse: ChildOrAttribute
 }
 
 export function jsxConditionalExpression(
   uid: string,
   condition: JSXAttribute,
-  whenTrue: ChildOrAttributeWithBranch,
-  whenFalse: ChildOrAttributeWithBranch,
+  whenTrue: ChildOrAttribute,
+  whenFalse: ChildOrAttribute,
   comments: ParsedComments,
 ): JSXConditionalExpression {
   return {
