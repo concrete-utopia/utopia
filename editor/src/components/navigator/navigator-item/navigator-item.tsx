@@ -499,13 +499,13 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     const thenPath = getConditionalClausePath(parentPath, parent.element.value.whenTrue, 'then')
     const elsePath = getConditionalClausePath(parentPath, parent.element.value.whenFalse, 'else')
 
-    let branch: boolean | null = null
     if (EP.pathsEqual(props.elementPath, thenPath)) {
-      branch = true
+      return parentOverride
     } else if (EP.pathsEqual(props.elementPath, elsePath)) {
-      branch = false
+      return !parentOverride
+    } else {
+      return false
     }
-    return branch === parentOverride
   }, [props.elementPath, parent, parentPath])
 
   return (
