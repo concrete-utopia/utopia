@@ -22,8 +22,12 @@ import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { isLeft } from '../../../core/shared/either'
-import { isJSXConditionalExpression } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  isJSXConditionalExpression,
+} from '../../../core/shared/element-template'
 import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
+import { getConditionalClausePath } from '../../../core/model/conditionals'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -445,6 +449,8 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
+  const parentPath = React.useMemo(() => EP.parentPath(props.elementPath), [props.elementPath])
+
   const element = useEditorState(
     Substores.metadata,
     (store) => {
@@ -453,18 +459,58 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     'element',
   )
 
-  const conditionalOverride = React.useMemo(() => {
-    const isConditional = MetadataUtils.isConditionalFromMetadata(element)
+  const parent = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath)
+    },
+    'parent',
+  )
+
+  function getConditionalFlag(target: ElementInstanceMetadata | null) {
+    const isConditional = MetadataUtils.isConditionalFromMetadata(target)
     if (
       !isConditional ||
-      element == null ||
-      isLeft(element.element) ||
-      !isJSXConditionalExpression(element.element.value)
+      target == null ||
+      isLeft(target.element) ||
+      !isJSXConditionalExpression(target.element.value)
     ) {
       return null
     }
-    return findUtopiaCommentFlag(element.element.value.comments, 'conditional')?.value ?? null
+
+    return findUtopiaCommentFlag(target.element.value.comments, 'conditional')?.value ?? null
+  }
+
+  const conditionalOverride = React.useMemo(() => {
+    return getConditionalFlag(element)
   }, [element])
+
+  const branchConditionalOverride = React.useMemo(() => {
+    const parentOverride = getConditionalFlag(parent)
+    if (
+      parentOverride == null ||
+      parent == null ||
+      isLeft(parent.element) ||
+      !isJSXConditionalExpression(parent.element.value)
+    ) {
+      return null
+    }
+
+    const thenPath = getConditionalClausePath(parentPath, parent.element.value.whenTrue, 'then')
+    const elsePath = getConditionalClausePath(parentPath, parent.element.value.whenFalse, 'else')
+
+    let branch: boolean | null = null
+    if (EP.pathsEqual(props.elementPath, thenPath)) {
+      branch = true
+    } else if (EP.pathsEqual(props.elementPath, elsePath)) {
+      branch = false
+    }
+
+    if (branch !== parentOverride) {
+      return null
+    }
+    return branch
+  }, [props.elementPath, parent, parentPath])
 
   return (
     <React.Fragment>
@@ -484,6 +530,12 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         selected={props.selected}
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
+        style={{
+          color:
+            !props.selected && branchConditionalOverride != null
+              ? colorTheme.brandNeonPink.value
+              : 'inherit',
+        }}
       />
 
       {when(
