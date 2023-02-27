@@ -721,7 +721,6 @@ const b = (n) => n > 0 ? n : a(10)
         "type": "JSX_CONDITIONAL_EXPRESSION",
         "uniqueID": "",
         "whenFalse": Object {
-          "branch": false,
           "definedElsewhere": Array [
             "b",
           ],
@@ -755,7 +754,6 @@ const b = (n) => n > 0 ? n : a(10)
           "uniqueID": "",
         },
         "whenTrue": Object {
-          "branch": true,
           "definedElsewhere": Array [
             "n",
           ],
@@ -914,7 +912,6 @@ const b = (n) => n > 0 ? n : a(10)
         "type": "JSX_CONDITIONAL_EXPRESSION",
         "uniqueID": "",
         "whenFalse": Object {
-          "branch": false,
           "definedElsewhere": Array [
             "a",
           ],
@@ -948,7 +945,6 @@ const b = (n) => n > 0 ? n : a(10)
           "uniqueID": "",
         },
         "whenTrue": Object {
-          "branch": true,
           "definedElsewhere": Array [
             "n",
           ],
