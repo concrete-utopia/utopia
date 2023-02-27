@@ -39,6 +39,9 @@ import {
   jsxFragment,
   isJSXConditionalExpression,
   childOrBlockIsChild,
+  emptyComments,
+  childOrAttributeWithBranch,
+  getBranchFromChildOrAttribute,
 } from '../shared/element-template'
 import {
   Imports,
@@ -320,13 +323,13 @@ function transformAtPathOptionally(
         if (updatedWhenTrue != null) {
           return {
             ...element,
-            whenTrue: updatedWhenTrue,
+            whenTrue: childOrAttributeWithBranch(updatedWhenTrue, true),
           }
         }
         if (updatedWhenFalse != null) {
           return {
             ...element,
-            whenFalse: updatedWhenFalse,
+            whenFalse: childOrAttributeWithBranch(updatedWhenFalse, false),
           }
         }
         return transform(element) // if no branch matches, transform the conditional itself
@@ -339,7 +342,7 @@ function transformAtPathOptionally(
         if (updated != null && isJSXElement(updated)) {
           return {
             ...element,
-            whenTrue: updated,
+            whenTrue: childOrAttributeWithBranch(updated, true),
           }
         }
       }
@@ -351,7 +354,7 @@ function transformAtPathOptionally(
         if (updated != null && isJSXElement(updated)) {
           return {
             ...element,
-            whenFalse: updated,
+            whenFalse: childOrAttributeWithBranch(updated, false),
           }
         }
       }
@@ -536,6 +539,27 @@ export function removeJSXElementChild(
       return {
         ...parentElement,
         children: updatedChildren,
+      }
+    } else if (isJSXConditionalExpression(parentElement)) {
+      const element = findJSXElementAtStaticPath(rootElements, target)
+      if (element == null) {
+        return parentElement
+      }
+
+      const branch = getBranchFromChildOrAttribute(element)
+      if (branch == null) {
+        return parentElement
+      }
+
+      const nullAttribute = childOrAttributeWithBranch(
+        { type: 'ATTRIBUTE_VALUE', value: null, comments: emptyComments },
+        branch,
+      )
+
+      return {
+        ...parentElement,
+        whenTrue: branch ? nullAttribute : parentElement.whenTrue,
+        whenFalse: !branch ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement

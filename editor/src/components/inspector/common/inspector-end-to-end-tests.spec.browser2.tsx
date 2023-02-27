@@ -17,6 +17,7 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import {
+  deleteSelected,
   selectComponents,
   sendLinterRequestMessage,
   updateFromCodeEditor,
@@ -38,11 +39,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { EditorAction } from '../../editor/action-types'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
@@ -2368,6 +2365,53 @@ describe('inspector tests with real metadata', () => {
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 ) /* this is a test */
                 // and another comment
+              }
+            </div>
+         `),
+      )
+    })
+    it('deleting a conditional branch replaces it with null', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'conditional',
+      ])
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          [].length === 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await act(async () => {
+        await renderResult.dispatch([deleteSelected()], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                [].length === 0 ? null : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
               }
             </div>
          `),
