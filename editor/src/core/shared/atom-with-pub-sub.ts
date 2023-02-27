@@ -1,7 +1,7 @@
 import * as PubSub from 'pubsub-js'
 import React from 'react'
 import { unstable_batchedUpdates } from 'react-dom'
-import { HMR, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { HMR, IS_JEST_ENVIRONMENT } from '../../common/env-vars'
 import { useForceUpdate } from '../../components/editor/hook-utils'
 
 // From https://github.com/dai-shi/use-context-selector/blob/2dd334d727fc3b4cbadf7876b6ce64e0c633fd25/src/index.ts#L25
@@ -9,7 +9,7 @@ const isSSR =
   typeof window === 'undefined' ||
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   /ServerSideRendering/.test(window.navigator && window.navigator.userAgent) ||
-  IS_TEST_ENVIRONMENT
+  IS_JEST_ENVIRONMENT
 
 export const useIsomorphicLayoutEffect = isSSR ? React.useEffect : React.useLayoutEffect
 
