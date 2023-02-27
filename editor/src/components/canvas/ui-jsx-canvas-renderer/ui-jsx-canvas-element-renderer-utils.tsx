@@ -46,7 +46,11 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
+import {
+  addConditionalAlternative,
+  addFakeSpyEntry,
+  buildSpyWrappedElement,
+} from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -340,17 +344,22 @@ export function renderCoreElement(
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
-      const conditionValue: boolean =
+      const conditionValue =
         override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
+      if (elementPath != null) {
+        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports)
+      }
+
+      let result: any
       if (childOrBlockIsChild(actualElement)) {
         const childPath = optionalMap(
           (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
           elementPath,
         )
 
-        return renderCoreElement(
+        result = renderCoreElement(
           actualElement,
           childPath,
           rootScope,
@@ -375,8 +384,33 @@ export function renderCoreElement(
           editedText,
         )
       } else {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+        result = jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+        if (elementPath != null) {
+          addConditionalAlternative(
+            metadataContext,
+            elementPath,
+            filePath,
+            imports,
+            actualElement,
+            conditionValue ? 'then' : 'else',
+          )
+        }
       }
+
+      // Include the alternative case.
+      if (elementPath != null) {
+        const alternativeCase = conditionValue ? element.whenFalse : element.whenTrue
+        addConditionalAlternative(
+          metadataContext,
+          elementPath,
+          filePath,
+          imports,
+          alternativeCase,
+          conditionValue ? 'else' : 'then',
+        )
+      }
+
+      return result
     }
     default:
       const _exhaustiveCheck: never = element
