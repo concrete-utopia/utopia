@@ -1,0 +1,64 @@
+/* eslint-disable jest/expect-expect */
+import { act } from '@testing-library/react'
+import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
+import * as EP from '../../core/shared/element-path'
+import { setFeatureEnabled } from '../../utils/feature-switches'
+import {
+  getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  TestScenePath,
+} from '../canvas/ui-jsx.test-utils'
+import { deleteSelected, selectComponents } from '../editor/actions/action-creators'
+
+describe('conditionals', () => {
+  before(() => setFeatureEnabled('Conditional support', true))
+  after(() => setFeatureEnabled('Conditional support', false))
+  it('deleting a conditional branch replaces it with null', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'conditional',
+    ])
+    const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          [].length === 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )
+        }
+        </div>
+      `
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(startSnippet),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
+    await act(async () => {
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    })
+
+    await act(async () => {
+      await renderResult.dispatch([deleteSelected()], true)
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                [].length === 0 ? null : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+         `),
+    )
+  })
+})
