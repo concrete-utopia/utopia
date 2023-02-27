@@ -48,7 +48,6 @@ describe('Component Section', () => {
       >
         <ComponentSection isScene={false} />
       </TestInspectorContextProvider>,
-      { legacyRoot: true },
     )
 
     // Component 'Test' is picked by the scene selector

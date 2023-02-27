@@ -380,7 +380,6 @@ label {
         domWalkerMutableState={domWalkerMutableState}
       />
     </React.Profiler>,
-    { legacyRoot: true },
   )
 
   await act(async () => {
