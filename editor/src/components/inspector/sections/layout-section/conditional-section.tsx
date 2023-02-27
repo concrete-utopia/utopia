@@ -22,6 +22,11 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
+export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
+export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
+export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
+export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
+
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
@@ -98,11 +103,19 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <span>Conditional</span>
         </FlexRow>
         {condition != null ? (
-          <SquareButton highlight onClick={setCondition(null)}>
+          <SquareButton
+            highlight
+            onClick={setCondition(null)}
+            data-testid={ConditionalsControlSectionCloseTestId}
+          >
             <FunctionIcons.Delete />
           </SquareButton>
         ) : (
-          <SquareButton highlight onClick={setCondition(true)}>
+          <SquareButton
+            highlight
+            onClick={setCondition(true)}
+            data-testid={ConditionalsControlSectionOpenTestId}
+          >
             <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
           </SquareButton>
         )}
@@ -121,7 +134,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               spotlight={condition !== false}
               highlight
               onClick={setCondition(true)}
-              data-testid='conditionals-control-true'
+              data-testid={ConditionalsControlToggleTrueTestId}
             >
               True
             </Button>
@@ -130,7 +143,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               spotlight={condition === false}
               highlight
               onClick={setCondition(false)}
-              data-testid='conditionals-control-false'
+              data-testid={ConditionalsControlToggleFalseTestId}
             >
               False
             </Button>

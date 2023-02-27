@@ -46,6 +46,12 @@ import {
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
+import {
+  ConditionalsControlSectionCloseTestId,
+  ConditionalsControlSectionOpenTestId,
+  ConditionalsControlToggleFalseTestId,
+  ConditionalsControlToggleTrueTestId,
+} from '../sections/layout-section/conditional-section'
 async function getControl(
   controlTestId: string,
   renderedDOM: RenderResult,
@@ -95,7 +101,7 @@ function actionsForUpdatedCode(updatedCodeSnippet: string) {
   return [updateAction, requestLintAction]
 }
 
-async function toggleConditional(
+async function clickButtonAndSelectTarget(
   renderResult: EditorRenderResult,
   buttonTestId: string,
   targetPath: ElementPath,
@@ -2202,9 +2208,39 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
+      // open the section in the inspector
+      {
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlSectionOpenTestId,
+          targetPath,
+        )
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=true
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      }
+
       // toggle to false
       {
-        await toggleConditional(renderResult, 'conditionals-control-false', targetPath)
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlToggleFalseTestId,
+          targetPath,
+        )
 
         expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
         expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
@@ -2227,7 +2263,11 @@ describe('inspector tests with real metadata', () => {
 
       // toggle to true
       {
-        await toggleConditional(renderResult, 'conditionals-control-true', targetPath)
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlToggleTrueTestId,
+          targetPath,
+        )
 
         expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
         expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
@@ -2237,6 +2277,30 @@ describe('inspector tests with real metadata', () => {
             <div data-uid='aaa'>
               {
                 // @utopia/conditional=true
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      }
+
+      // close the inspector section
+      {
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlSectionCloseTestId,
+          targetPath,
+        )
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
@@ -2283,7 +2347,11 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      await toggleConditional(renderResult, 'conditionals-control-false', targetPath)
+      await clickButtonAndSelectTarget(
+        renderResult,
+        ConditionalsControlToggleFalseTestId,
+        targetPath,
+      )
 
       expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
       expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
