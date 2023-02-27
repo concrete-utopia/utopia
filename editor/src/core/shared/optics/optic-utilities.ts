@@ -1,5 +1,5 @@
 import { prism, lens, traversal, iso, Optic } from './optics'
-import { right, left, foldEither, Either } from '../either'
+import { right, left, foldEither, Either, forEachRight } from '../either'
 import { assertNever } from '../utils'
 
 export function toArrayOf<S, A>(withOptic: Optic<S, A>, s: S): Array<A> {
@@ -176,4 +176,23 @@ export function unsafeGet<S, A>(withOptic: Optic<S, A>, s: S): A {
     },
     toFirst(withOptic, s),
   )
+}
+
+export function forEachOf<S, A>(withOptic: Optic<S, A>, s: S, withEach: (a: A) => void): void {
+  switch (withOptic.type) {
+    case 'ISO':
+      withEach(withOptic.from(s))
+      break
+    case 'LENS':
+      withEach(withOptic.from(s))
+      break
+    case 'PRISM':
+      forEachRight(withOptic.from(s), withEach)
+      break
+    case 'TRAVERSAL':
+      withOptic.from(s).forEach(withEach)
+      break
+    default:
+      assertNever(withOptic)
+  }
 }
