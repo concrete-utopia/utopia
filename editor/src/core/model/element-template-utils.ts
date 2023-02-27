@@ -540,8 +540,8 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const truePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
-      const falsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
+      const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
+      const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
 
       const nullAttribute: JSXAttribute = {
         type: 'ATTRIBUTE_VALUE',
@@ -551,8 +551,8 @@ export function removeJSXElementChild(
 
       return {
         ...parentElement,
-        whenTrue: EP.pathsEqual(truePath, target) ? nullAttribute : parentElement.whenTrue,
-        whenFalse: EP.pathsEqual(falsePath, target) ? nullAttribute : parentElement.whenFalse,
+        whenTrue: EP.pathsEqual(thenPath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(elsePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement
