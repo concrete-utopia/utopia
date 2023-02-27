@@ -23,11 +23,12 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { isLeft } from '../../../core/shared/either'
 import {
+  ChildOrAttribute,
   ElementInstanceMetadata,
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
-import { getConditionalClausePath } from '../../../core/model/conditionals'
+import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -496,16 +497,21 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       return false
     }
 
-    const thenPath = getConditionalClausePath(parentPath, parent.element.value.whenTrue, 'then')
-    const elsePath = getConditionalClausePath(parentPath, parent.element.value.whenFalse, 'else')
-
-    if (EP.pathsEqual(props.elementPath, thenPath)) {
-      return parentOverride
-    } else if (EP.pathsEqual(props.elementPath, elsePath)) {
-      return !parentOverride
-    } else {
-      return false
+    function matchesOverriddenBranch(
+      clause: ChildOrAttribute,
+      thenOrElse: ThenOrElse,
+      wantOverride: boolean,
+    ): boolean {
+      return (
+        wantOverride === parentOverride &&
+        EP.pathsEqual(props.elementPath, getConditionalClausePath(parentPath, clause, thenOrElse))
+      )
     }
+
+    return (
+      matchesOverriddenBranch(parent.element.value.whenTrue, 'then', true) ||
+      matchesOverriddenBranch(parent.element.value.whenFalse, 'else', false)
+    )
   }, [props.elementPath, parent, parentPath])
 
   return (
