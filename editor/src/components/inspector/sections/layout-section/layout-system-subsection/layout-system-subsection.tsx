@@ -14,10 +14,15 @@ import {
   FlexRow,
   Icons,
   InspectorSectionHeader,
+  InspectorSectionIcons,
   SquareButton,
   useColorTheme,
 } from '../../../../../uuiui'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
+
+const LayoutSystemSectionTitle = () =>
+  isFeatureEnabled('Nine block control') ? 'Layout System Props' : 'Layout System'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -44,6 +49,7 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
     <React.Fragment>
       <InspectorSectionHeader
         css={{
+          marginTop: 8,
           transition: 'color .1s ease-in-out',
           color: layoutSectionOpen ? colorTheme.fg1.value : colorTheme.fg7.value,
           '--buttonContentOpacity': 0.3,
@@ -61,7 +67,8 @@ export const LayoutSystemSubsection = React.memo<LayoutSystemSubsectionProps>((p
             gap: 8,
           }}
         >
-          <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Layout System hi</span>
+          <InspectorSectionIcons.LayoutSystem />
+          <span>{LayoutSystemSectionTitle()}</span>
         </FlexRow>
         {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
         {!layoutSectionOpen && (

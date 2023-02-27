@@ -8,6 +8,7 @@ import {
   SquareButton,
   Icn,
   CheckboxInput,
+  InspectorSectionIcons,
   Icons,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -173,6 +174,7 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
               gap: 8,
             }}
           >
+            <InspectorSectionIcons.Border />
             <span>Border</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
