@@ -485,7 +485,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     return getConditionalFlag(element)
   }, [element])
 
-  const branchConditionalOverride = React.useMemo(() => {
+  const isActiveBranchOfOverriddenConditional = React.useMemo(() => {
     const parentOverride = getConditionalFlag(parent)
     if (
       parentOverride == null ||
@@ -493,7 +493,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       isLeft(parent.element) ||
       !isJSXConditionalExpression(parent.element.value)
     ) {
-      return null
+      return false
     }
 
     const thenPath = getConditionalClausePath(parentPath, parent.element.value.whenTrue, 'then')
@@ -505,11 +505,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     } else if (EP.pathsEqual(props.elementPath, elsePath)) {
       branch = false
     }
-
-    if (branch !== parentOverride) {
-      return null
-    }
-    return branch
+    return branch === parentOverride
   }, [props.elementPath, parent, parentPath])
 
   return (
@@ -532,7 +528,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
         style={{
           color:
-            !props.selected && branchConditionalOverride != null
+            !props.selected && isActiveBranchOfOverriddenConditional
               ? colorTheme.brandNeonPink.value
               : 'inherit',
         }}
