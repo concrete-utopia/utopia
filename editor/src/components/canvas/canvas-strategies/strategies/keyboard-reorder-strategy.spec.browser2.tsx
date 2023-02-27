@@ -1,16 +1,14 @@
+import sinon, { SinonFakeTimers } from 'sinon'
+import * as EP from '../../../../core/shared/element-path'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/action-creators'
+import { pressKey } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { pressKey } from '../../event-helpers.test-utils'
-import * as EP from '../../../../core/shared/element-path'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import sinon, { SinonFakeTimers } from 'sinon'
-import { selectComponents } from '../../../editor/actions/action-creators'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 
 const TestProject = (
   display: 'block' | 'inline-block',
