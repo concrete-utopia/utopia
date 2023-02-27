@@ -133,7 +133,6 @@ describe('actions', () => {
 				data-uid='bbb'
 				data-testid='bbb'
 			/>
-
 			<View
 				style={{ background: '#f09', width: 50, height: 50 }}
 				data-uid='ddd'

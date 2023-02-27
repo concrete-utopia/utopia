@@ -617,14 +617,18 @@ function renderJSXElement(
 }
 
 function isHidden(hiddenInstances: ElementPath[], elementPath: ElementPath | null): boolean {
-  return elementPath != null && hiddenInstances.some((path) => EP.pathsEqual(path, elementPath))
+  return (
+    elementPath != null &&
+    hiddenInstances.some((path) => EP.isDescendantOfOrEqualTo(elementPath, path))
+  )
 }
 function elementIsDisplayNone(
   displayNoneInstances: ElementPath[],
   elementPath: ElementPath | null,
 ): boolean {
   return (
-    elementPath != null && displayNoneInstances.some((path) => EP.pathsEqual(path, elementPath))
+    elementPath != null &&
+    displayNoneInstances.some((path) => EP.isDescendantOfOrEqualTo(elementPath, path))
   )
 }
 

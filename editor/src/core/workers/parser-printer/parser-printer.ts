@@ -505,10 +505,16 @@ function jsxElementToExpression(
       const whenFalse = childOrBlockIsChild(element.whenFalse)
         ? jsxElementToExpression(element.whenFalse, imports, stripUIDs)
         : jsxAttributeToExpression(element.whenFalse)
-      // Trailing comments of the entire expression appear to be attached to the
-      // closing brace of the expression.
-      addCommentsToNode(whenFalse, element.comments)
-      return TS.createConditional(condition, whenTrue as TS.Expression, whenFalse as TS.Expression)
+
+      const node = TS.createConditional(
+        condition,
+        whenTrue as TS.Expression,
+        whenFalse as TS.Expression,
+      )
+      addCommentsToNode(node, element.comments)
+      addCommentsToNode(node.questionToken, element.comments.questionTokenComments ?? emptyComments)
+
+      return node
     }
     default:
       const _exhaustiveCheck: never = element

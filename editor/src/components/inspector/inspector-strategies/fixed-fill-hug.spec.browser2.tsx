@@ -18,12 +18,11 @@ import { FlexDirection } from '../common/css-utils'
 import {
   FillContainerLabel,
   FillFixedHugControlId,
-  FixedHugFillMode,
   FixedLabel,
   HugContentsLabel,
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
-import { Axis, MaxContent } from '../inspector-common'
+import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
 
 describe('Fixed / Fill / Hug control', () => {
   setFeatureForBrowserTests('Nine block control', true)

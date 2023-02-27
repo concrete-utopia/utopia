@@ -53,6 +53,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  Comment,
   deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
@@ -4345,16 +4346,24 @@ export const UPDATE_FNS = {
         if (!isJSXConditionalExpression(element)) {
           return element
         }
+
+        function isNotConditionalFlag(c: Comment): boolean {
+          return !isUtopiaCommentFlag(c, 'conditional')
+        }
+
+        const leadingComments = [...element.comments.leadingComments.filter(isNotConditionalFlag)]
+        if (action.condition != null) {
+          leadingComments.push(
+            makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
+          )
+        }
+
         return {
           ...element,
           comments: {
-            leadingComments: element.comments.leadingComments,
-            trailingComments: [
-              makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
-              ...element.comments.trailingComments.filter(
-                (c) => !isUtopiaCommentFlag(c, 'conditional'),
-              ),
-            ],
+            leadingComments: leadingComments,
+            trailingComments: element.comments.trailingComments.filter(isNotConditionalFlag),
+            questionTokenComments: element.comments.questionTokenComments,
           },
         }
       },

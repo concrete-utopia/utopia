@@ -18,6 +18,7 @@ import {
 } from '../../../../core/model/scene-utils'
 import { SceneLabelTestID } from '../../controls/select-mode/scene-label'
 import {
+  keyUp,
   mouseDownAtPoint,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
@@ -172,6 +173,33 @@ describe('Absolute Move Strategy', () => {
     const endPoint = windowPoint({ x: targetElementBounds.x + 45, y: targetElementBounds.y - 20 })
 
     await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
+    await mouseUpAtPoint(canvasControlsLayer, endPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      projectDoesHonourPositionProperties(60, -5),
+    )
+  })
+  it('releasing cmd mid drag does not break the interaction', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectDoesHonourPositionProperties(20, 20),
+      'await-first-dom-report',
+    )
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const midPoint = windowPoint({ x: targetElementBounds.x + 25, y: targetElementBounds.y - 10 })
+    const endPoint = windowPoint({ x: targetElementBounds.x + 45, y: targetElementBounds.y - 20 })
+
+    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseMoveToPoint(canvasControlsLayer, midPoint, {
+      modifiers: cmdModifier,
+      eventOptions: { buttons: 1 },
+    })
+    await keyUp('Meta')
     await mouseMoveToPoint(canvasControlsLayer, endPoint, { eventOptions: { buttons: 1 } })
     await mouseUpAtPoint(canvasControlsLayer, endPoint)
 

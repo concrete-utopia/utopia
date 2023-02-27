@@ -70,18 +70,16 @@ export function keyboardAbsoluteMoveStrategy(
             keyboardMovement = offsetPoint(keyboardMovement, keyPressMovement)
           })
         })
-        if (keyboardMovement.x !== 0 || keyboardMovement.y !== 0) {
-          selectedElements.forEach((selectedElement) => {
-            const elementResult = getMoveCommandsForSelectedElement(
-              selectedElement,
-              keyboardMovement,
-              canvasState,
-              interactionSession,
-            )
-            commands.push(...elementResult.commands)
-            intendedBounds.push(...elementResult.intendedBounds)
-          })
-        }
+        selectedElements.forEach((selectedElement) => {
+          const elementResult = getMoveCommandsForSelectedElement(
+            selectedElement,
+            keyboardMovement,
+            canvasState,
+            interactionSession,
+          )
+          commands.push(...elementResult.commands)
+          intendedBounds.push(...elementResult.intendedBounds)
+        })
         const multiselectBounds = getMultiselectBounds(
           canvasState.startingMetadata,
           selectedElements,
@@ -93,7 +91,6 @@ export function keyboardAbsoluteMoveStrategy(
 
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
-        commands.push(updateHighlightedViews('mid-interaction', []))
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBounds(intendedBounds))
         commands.push(setElementsToRerenderCommand(selectedElements))
