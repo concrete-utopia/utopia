@@ -9,7 +9,7 @@ import { KeyboardInteractionTimeout } from '../interaction-state'
 import sinon, { SinonFakeTimers } from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
-import { wait } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 
 const TestProject = (
@@ -724,8 +724,7 @@ describe('Keyboard Reorder Strategy', () => {
   })
 
   describe('with fragments', () => {
-    before(() => setFeatureEnabled('Fragment support', true))
-    after(() => setFeatureEnabled('Fragment support', false))
+    setFeatureForBrowserTests('Fragment support', true)
 
     it('pressing the arrow keys reorders in a flex layout, with a fragment present', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -744,7 +743,7 @@ describe('Keyboard Reorder Strategy', () => {
       )
 
       // pressing keyboard up and down reorders elements
-      await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+      await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
       const expectedNavigatorTargetsAfterArrowDown = [
         'utopia-storyboard-uid/scene-aaa',
@@ -777,7 +776,7 @@ describe('Keyboard Reorder Strategy', () => {
       ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
       // pressing keyboard left and right reorders elements
-      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
+      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
       const expectedNavigatorTargetsAfterArrowRight = [
         'utopia-storyboard-uid/scene-aaa',
@@ -842,7 +841,7 @@ describe('Keyboard Reorder Strategy', () => {
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
       ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
 
-      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
+      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
       const expectedNavigatorTargetsAfterArrowRight = [
         'utopia-storyboard-uid/scene-aaa',
@@ -874,7 +873,7 @@ describe('Keyboard Reorder Strategy', () => {
       ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
       // pressing keyboard up and down reorders elements
-      await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+      await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
       const expectedNavigatorTargetsAfterArrowDown = [
         'utopia-storyboard-uid/scene-aaa',
