@@ -14,6 +14,10 @@ import {
   InteractionLifecycle,
   targetPaths,
 } from '../canvas-strategy-types'
+import {
+  retargetStrategyToChildrenOfContentAffectingElements,
+  treatElementAsContentAffecting,
+} from './group-like-helpers'
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,
@@ -33,6 +37,14 @@ export function ancestorMetaStrategy(
 
     const target = targets[0]
 
+    const groupLikeChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+
+    if (groupLikeChildren.length !== 1) {
+      return []
+    }
+
+    const groupLikeChild = groupLikeChildren[0]
+
     // Avoid children of the storyboard
     if (EP.isEmptyPath(target) || EP.isStoryboardPath(target) || EP.isStoryboardChild(target)) {
       // TODO Maybe avoid root elements?
@@ -40,7 +52,10 @@ export function ancestorMetaStrategy(
     }
 
     // Is the selected element an only child?
-    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target)
+    const siblings = MetadataUtils.getSiblingsUnordered(
+      canvasState.startingMetadata,
+      groupLikeChild,
+    )
     if (siblings.length > 1) {
       return []
     }
@@ -48,7 +63,7 @@ export function ancestorMetaStrategy(
     // Is the selected element a flow layout element?
     const targetMetadata = MetadataUtils.findElementByElementPath(
       canvasState.startingMetadata,
-      target,
+      groupLikeChild,
     )
     const isStaticLayout = !(
       MetadataUtils.isPositionAbsolute(targetMetadata) ||
