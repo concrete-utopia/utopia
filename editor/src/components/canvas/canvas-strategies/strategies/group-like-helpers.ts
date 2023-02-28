@@ -3,7 +3,9 @@ import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
   isJSXElement,
+  isJSXFragment,
   isJSXTextBlock,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -28,13 +30,13 @@ export function retargetStrategyToChildrenOfContentAffectingElements(
   )
 }
 
-function isDomElement(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+function isNonDomElement(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
   const instance = MetadataUtils.findElementByElementPath(metadata, path)
   return (
     instance != null &&
     foldEither(
       () => false,
-      (e) => isJSXElement(e) || isJSXTextBlock(e),
+      (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
       instance.element,
     )
   )
@@ -45,14 +47,13 @@ export function replaceNonDomElementPathsWithTheirChildrenRecursive(
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
   return paths.flatMap((path) => {
-    if (isDomElement(metadata, path)) {
-      return [path]
+    if (isNonDomElement(metadata, path)) {
+      return replaceNonDomElementPathsWithTheirChildrenRecursive(
+        metadata,
+        MetadataUtils.getChildrenPathsUnordered(metadata, path),
+      )
     }
-
-    return replaceNonDomElementPathsWithTheirChildrenRecursive(
-      metadata,
-      MetadataUtils.getChildrenPathsUnordered(metadata, path),
-    )
+    return [path]
   })
 }
 
