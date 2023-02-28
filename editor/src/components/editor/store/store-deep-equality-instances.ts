@@ -1669,7 +1669,7 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
     (indicatorFlag) => indicatorFlag.showIndicator,
     BooleanKeepDeepEquality,
     (indicatorFlag) => indicatorFlag.dragType,
-    createCallWithTripleEquals<'absolute' | 'static'>(),
+    createCallWithTripleEquals<'absolute' | 'static' | 'none'>(),
     (indicatorFlag) => indicatorFlag.reparent,
     createCallWithTripleEquals<'same-component' | 'different-component' | 'none'>(),
     (indicatorFlag) => indicatorFlag.ancestor,
