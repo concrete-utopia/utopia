@@ -27,7 +27,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets } from './shared-move-strategies-helpers'
-import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
+import { treatElementAsContentAffecting } from './group-like-helpers'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -46,11 +46,7 @@ export function absoluteDuplicateStrategy(
   }
 
   const isDragging = interactionSession.interactionData.drag != null
-  const filteredSelectedElements = replaceContentAffectingPathsWithTheirChildrenRecursive(
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
-    getDragTargets(selectedElements),
-  )
+  const filteredSelectedElements = getDragTargets(selectedElements)
 
   if (!isApplicable(canvasState, filteredSelectedElements)) {
     return null
@@ -158,11 +154,6 @@ function isApplicable(
   filteredSelectedElements: ElementPath[],
 ) {
   return filteredSelectedElements.every((element) => {
-    const elementMetadata = MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      element,
-    )
-
     // for a multiselected elements, we only apply drag-to-duplicate if they are siblings
     // otherwise this would lead to an unpredictable behavior
     // we can revisit this once we have a more predictable reparenting
@@ -171,10 +162,27 @@ function isApplicable(
       EP.parentPath(element),
     )
 
+    const isElementContentAffecting = treatElementAsContentAffecting(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      element,
+    )
+
+    const isElementAbsolute = isElementContentAffecting
+      ? MetadataUtils.getChildrenPathsUnordered(canvasState.startingMetadata, element).every(
+          (path) =>
+            MetadataUtils.isPositionAbsolute(
+              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path),
+            ),
+        )
+      : MetadataUtils.isPositionAbsolute(
+          MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
+        )
+
     return (
-      elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
+      !EP.isRootElementOfInstance(element) &&
       allDraggedElementsHaveTheSameParent &&
-      !EP.isRootElementOfInstance(element)
+      isElementAbsolute
     )
   })
 }
