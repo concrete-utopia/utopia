@@ -125,6 +125,7 @@ import {
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { reorderConditionalChildPathTrees } from './conditionals'
+import { replaceContentAffectingPathsWithTheirChildrenRecursive } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1791,9 +1792,18 @@ export const MetadataUtils = {
   },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
     parentPath: ElementPath,
   ): DetectedLayoutSystem {
-    const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, parentPath)
+    const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
+    )
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
     const parentLayouts = children.map((c) => c.specialSizeMeasurements.parentLayoutSystem)
     if (parentLayouts.length === 0) {
       // fallback to parent instance
@@ -1804,15 +1814,26 @@ export const MetadataUtils = {
     }
     const allEqual = parentLayouts.slice(1).every((x) => x === parentLayouts[0])
     if (!allEqual) {
-      throw new Error('All children should have the same `parentLayoutSystem`')
+      throw new Error(
+        `All children should have the same \`parentLayoutSystem\`, instead: ${parentLayouts}`,
+      )
     }
     return parentLayouts[0]
   },
   findFlexDirectionForChildren(
     metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
     parentPath: ElementPath,
   ): FlexDirection | null {
-    const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, parentPath)
+    const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
+    )
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
     const flexDirections = children.map((c) => c.specialSizeMeasurements.parentFlexDirection)
     if (flexDirections.length === 0) {
       // fallback to parent instance
@@ -1823,7 +1844,9 @@ export const MetadataUtils = {
     }
     const allEqual = flexDirections.slice(1).every((x) => x === flexDirections[0])
     if (!allEqual) {
-      throw new Error('All children should have the same `flexDirections`')
+      throw new Error(
+        `All children should have the same \`flexDirection\`, instead: ${flexDirections}`,
+      )
     }
     return flexDirections[0]
   },

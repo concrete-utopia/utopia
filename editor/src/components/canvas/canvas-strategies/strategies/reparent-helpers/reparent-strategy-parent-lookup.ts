@@ -73,6 +73,7 @@ export function getReparentTargetUnified(
       reparentSubjects,
       canvasScale,
       pointOnCanvas,
+      allElementProps,
     )
 
   if (targetParentWithPaddedInsertionZone != null) {
@@ -91,6 +92,7 @@ export function getReparentTargetUnified(
     metadata,
     canvasScale,
     pointOnCanvas,
+    allElementProps,
   )
   return targetParentUnderPoint
 }
@@ -278,6 +280,7 @@ function findParentByPaddedInsertionZone(
   reparentSubjects: ReparentSubjects,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
+  allElementProps: AllElementProps,
 ): ReparentTarget | null {
   // with current parent under cursor filter ancestors from reparent targets
   const currentParentUnderCursor =
@@ -294,7 +297,11 @@ function findParentByPaddedInsertionZone(
       : validTargetparentsUnderPoint
 
   const singleAxisAutoLayoutContainersUnderPoint = mapDropNulls((element) => {
-    const autolayoutDirection = singleAxisAutoLayoutContainerDirections(element, metadata)
+    const autolayoutDirection = singleAxisAutoLayoutContainerDirections(
+      element,
+      allElementProps,
+      metadata,
+    )
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
@@ -357,8 +364,13 @@ function findParentUnderPointByArea(
   metadata: ElementInstanceMetadataMap,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
+  allElementProps: AllElementProps,
 ): ReparentTarget {
-  const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
+  const autolayoutDirection = singleAxisAutoLayoutContainerDirections(
+    targetParentPath,
+    allElementProps,
+    metadata,
+  )
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,
     targetParentPath,

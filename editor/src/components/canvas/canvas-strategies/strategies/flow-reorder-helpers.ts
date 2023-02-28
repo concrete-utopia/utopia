@@ -26,6 +26,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { DeleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
+import { AllElementProps } from '../../../editor/store/editor-state'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -63,12 +64,18 @@ export type SingleAxisAutolayoutContainerDirections = {
 
 export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
+  allElementProps: AllElementProps,
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
 
-  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
-  const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'
+  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(
+    metadata,
+    allElementProps,
+    container,
+  )
+  const flexDirection =
+    MetadataUtils.findFlexDirectionForChildren(metadata, allElementProps, container) ?? 'row'
 
   return singleAxisAutoLayoutDirections(
     children,

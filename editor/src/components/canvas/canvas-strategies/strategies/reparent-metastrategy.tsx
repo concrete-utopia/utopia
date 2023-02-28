@@ -87,23 +87,11 @@ export function getApplicableReparentFactories(
       case 'REPARENT_AS_STATIC': {
         const fitness = result.isFallback ? 2 : 3
 
-        const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+        const parentLayouSystems = MetadataUtils.findLayoutSystemForChildren(
           canvasState.startingMetadata,
           canvasState.startingAllElementProps,
-          MetadataUtils.getChildrenPathsUnordered(
-            canvasState.startingMetadata,
-            result.target.newParent,
-          ),
+          result.target.newParent,
         )
-
-        const parentLayouSystems = mapDropNulls(
-          (path) => MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path),
-          childrenPaths,
-        ).map((instance) => instance.specialSizeMeasurements.parentLayoutSystem)
-
-        if (!allElemsEqual(parentLayouSystems)) {
-          throw new Error('All children should have the same parent layout system')
-        }
 
         const targetParentDisplayType = parentLayouSystems.at(0) === 'flex' ? 'flex' : 'flow'
 

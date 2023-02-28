@@ -19,7 +19,10 @@ import {
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
-import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import {
+  AllElementProps,
+  getElementFromProjectContents,
+} from '../../../../editor/store/editor-state'
 import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
@@ -205,6 +208,7 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -220,6 +224,7 @@ export function getReparentPropertyChanges(
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       const directions = singleAxisAutoLayoutContainerDirections(
         newParent,
+        allElementProps,
         newParentStartingMetadata,
       )
 
