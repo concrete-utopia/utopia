@@ -50,7 +50,9 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       Substores.canvas,
       (store) =>
         store.editor.canvas.interactionSession != null &&
-        store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER',
+        store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
+        (store.editor.canvas.interactionSession.activeControl.type === 'BOUNDING_AREA' ||
+          store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER'),
       'ReorderSliderControl isDragging',
     )
     const isTargetElementHovered = useEditorState(
@@ -187,9 +189,10 @@ const ReorderIndicators = React.memo((props: ReorderIndicatorProps) => {
     (store) => {
       if (
         store.editor.canvas.interactionSession != null &&
-        store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER' &&
         store.editor.canvas.interactionSession.interactionData.type === 'DRAG' &&
-        store.editor.canvas.interactionSession.interactionData.drag != null
+        store.editor.canvas.interactionSession.interactionData.drag != null &&
+        (store.editor.canvas.interactionSession.activeControl.type === 'BOUNDING_AREA' ||
+          store.editor.canvas.interactionSession.activeControl.type === 'REORDER_SLIDER')
       ) {
         const dragDelta = store.editor.canvas.interactionSession.interactionData.drag
         return findNewIndex(startingIndex, dragDelta, siblings, 'raw-value')

@@ -558,10 +558,18 @@ export function onlyFitWhenDraggingThisControl(
   controlType: CanvasControlType['type'],
   fitnessWhenFit: number,
 ): number {
+  return onlyFitWhenDraggingTheseControls(interactionSession, [controlType], fitnessWhenFit)
+}
+
+export function onlyFitWhenDraggingTheseControls(
+  interactionSession: InteractionSession | null,
+  controls: Array<CanvasControlType['type']>,
+  fitnessWhenFit: number,
+): number {
   if (
     interactionSession != null &&
     interactionSession.interactionData.type === 'DRAG' &&
-    interactionSession.activeControl.type === controlType
+    controls.some((controlType) => interactionSession.activeControl.type === controlType)
   ) {
     return fitnessWhenFit
   } else {

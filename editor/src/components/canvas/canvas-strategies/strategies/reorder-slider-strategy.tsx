@@ -18,7 +18,7 @@ import {
 import { areAllSiblingsInOneDimensionFlexOrFlow, findNewIndex } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
-import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import { onlyFitWhenDraggingTheseControls } from '../canvas-strategies'
 
 export function reorderSliderStategy(
   canvasState: InteractionCanvasState,
@@ -56,13 +56,18 @@ export function reorderSliderStategy(
         show: 'always-visible',
       }),
     ],
-    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'REORDER_SLIDER', 100),
+    fitness: onlyFitWhenDraggingTheseControls(
+      interactionSession,
+      ['BOUNDING_AREA', 'REORDER_SLIDER'],
+      100,
+    ),
 
     apply: () => {
       if (
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.activeControl.type === 'REORDER_SLIDER'
+        (interactionSession.activeControl.type === 'BOUNDING_AREA' ||
+          interactionSession.activeControl.type === 'REORDER_SLIDER')
       ) {
         const siblingsOfTarget = siblings.map((element) => element.elementPath)
 
