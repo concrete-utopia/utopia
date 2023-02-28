@@ -341,9 +341,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          {/* FIXME Remove feature flags before merging */}
-          {when(isFeatureEnabled('Nine block control'), <FlexSection />)}
-          {when(isFeatureEnabled('Nine block control'), <SizingSection />)}
+          <FlexSection />
+          <SizingSection />
           <PositionSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
