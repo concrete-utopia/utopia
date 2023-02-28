@@ -276,14 +276,14 @@ function useIsProbablyScene(path: ElementPath): boolean {
 }
 
 const isHiddenConditionalBranchSelector = createSelector(
-  (elementPath: ElementPath) => elementPath,
-  (_elementPath: ElementPath, parentPath: ElementPath) => parentPath,
-  (_elementPath: ElementPath, parentPath: ElementPath, store: MetadataSubstate) =>
+  (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
     MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
+  (_store: MetadataSubstate, elementPath: ElementPath, _parentPath: ElementPath) => elementPath,
+  (_store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) => parentPath,
   (
+    parent: ElementInstanceMetadata | null,
     elementPath: ElementPath,
     parentPath: ElementPath,
-    parent: ElementInstanceMetadata | null,
   ): boolean => {
     const conditional = asConditional(parent)
     if (conditional == null) {
@@ -307,11 +307,11 @@ const isHiddenConditionalBranchSelector = createSelector(
 )
 
 const isActiveBranchOfOverriddenConditionalSelector = createSelector(
-  (elementPath: ElementPath) => elementPath,
-  (_elementPath: ElementPath, parentPath: ElementPath) => parentPath,
-  (_elementPath: ElementPath, parentPath: ElementPath, store: MetadataSubstate) =>
+  (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
     MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
-  (elementPath: ElementPath, parentPath: ElementPath, parent: ElementInstanceMetadata | null) => {
+  (_store: MetadataSubstate, elementPath: ElementPath, _parentPath: ElementPath) => elementPath,
+  (_store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) => parentPath,
+  (parent: ElementInstanceMetadata | null, elementPath: ElementPath, parentPath: ElementPath) => {
     const conditionalParent = asConditional(parent)
     if (conditionalParent == null) {
       return false
@@ -441,7 +441,7 @@ export const NavigatorItem: React.FunctionComponent<
   const isHiddenConditionalBranch = useEditorState(
     Substores.metadata,
     (store) =>
-      isHiddenConditionalBranchSelector(props.elementPath, EP.parentPath(props.elementPath), store),
+      isHiddenConditionalBranchSelector(store, props.elementPath, EP.parentPath(props.elementPath)),
     'NavigatorItem isHiddenConditionalBranch',
   )
 
@@ -543,9 +543,9 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     Substores.metadata,
     (store) =>
       isActiveBranchOfOverriddenConditionalSelector(
+        store,
         props.elementPath,
         EP.parentPath(props.elementPath),
-        store,
       ),
     'NavigatorRowLabel isActiveBranchOfOverriddenConditional',
   )
