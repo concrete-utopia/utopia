@@ -28,7 +28,6 @@ import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
-import { MetadataUtils } from '../model/element-metadata-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -1113,18 +1112,6 @@ export function isJSXConditionalExpression(
 
 export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
-}
-
-export function isNonDomElement(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
-  const instance = MetadataUtils.findElementByElementPath(metadata, path)
-  return (
-    instance != null &&
-    foldEither(
-      () => true,
-      (e) => !isJSXElementLike(e),
-      instance.element,
-    )
-  )
 }
 
 export type JSXElementChildren = Array<JSXElementChild>
