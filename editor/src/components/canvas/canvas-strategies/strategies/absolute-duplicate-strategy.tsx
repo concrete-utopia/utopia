@@ -27,6 +27,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets } from './shared-move-strategies-helpers'
+import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -45,7 +46,12 @@ export function absoluteDuplicateStrategy(
   }
 
   const isDragging = interactionSession.interactionData.drag != null
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const filteredSelectedElements = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    getDragTargets(selectedElements),
+  )
+
   if (!isApplicable(canvasState, filteredSelectedElements)) {
     return null
   }
