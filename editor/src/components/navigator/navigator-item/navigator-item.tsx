@@ -30,6 +30,8 @@ import {
 } from '../../../core/shared/element-template'
 import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
+import { createSelector } from 'reselect'
+import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -273,6 +275,69 @@ function useIsProbablyScene(path: ElementPath): boolean {
   )
 }
 
+const isHiddenConditionalBranchSelector = createSelector(
+  (elementPath: ElementPath) => elementPath,
+  (_elementPath: ElementPath, parentPath: ElementPath) => parentPath,
+  (_elementPath: ElementPath, parentPath: ElementPath, store: MetadataSubstate) =>
+    MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
+  (
+    elementPath: ElementPath,
+    parentPath: ElementPath,
+    parent: ElementInstanceMetadata | null,
+  ): boolean => {
+    const conditional = asConditional(parent)
+    if (conditional == null) {
+      return false
+    }
+    const flag = getConditionalFlag(conditional)
+    return flag == false
+      ? matchesOverriddenBranch(elementPath, parentPath, {
+          clause: conditional.whenTrue,
+          branch: 'then',
+          wantOverride: true,
+          parentOverride: true,
+        })
+      : matchesOverriddenBranch(elementPath, parentPath, {
+          clause: conditional.whenFalse,
+          branch: 'else',
+          wantOverride: false,
+          parentOverride: false,
+        })
+  },
+)
+
+const isActiveBranchOfOverriddenConditionalSelector = createSelector(
+  (elementPath: ElementPath) => elementPath,
+  (_elementPath: ElementPath, parentPath: ElementPath) => parentPath,
+  (_elementPath: ElementPath, parentPath: ElementPath, store: MetadataSubstate) =>
+    MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
+  (elementPath: ElementPath, parentPath: ElementPath, parent: ElementInstanceMetadata | null) => {
+    const conditionalParent = asConditional(parent)
+    if (conditionalParent == null) {
+      return false
+    }
+    const parentOverride = getConditionalFlag(conditionalParent)
+    if (parentOverride == null) {
+      return false
+    }
+
+    return (
+      matchesOverriddenBranch(elementPath, parentPath, {
+        clause: conditionalParent.whenTrue,
+        branch: 'then',
+        wantOverride: true,
+        parentOverride: parentOverride,
+      }) ||
+      matchesOverriddenBranch(elementPath, parentPath, {
+        clause: conditionalParent.whenFalse,
+        branch: 'else',
+        wantOverride: false,
+        parentOverride: parentOverride,
+      })
+    )
+  },
+)
+
 export const NavigatorItem: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemInnerProps>
 > = React.memo((props) => {
@@ -373,36 +438,12 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, elementPath, isFocusableComponent],
   )
 
-  const parentPath = React.useMemo(() => EP.parentPath(props.elementPath), [props.elementPath])
-
-  const parent = useEditorState(
+  const isHiddenConditionalBranch = useEditorState(
     Substores.metadata,
-    (store) => {
-      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath)
-    },
-    'NavigatorItem parent',
+    (store) =>
+      isHiddenConditionalBranchSelector(props.elementPath, EP.parentPath(props.elementPath), store),
+    'NavigatorItem isHiddenConditionalBranch',
   )
-
-  const isHiddenConditionalBranch = React.useMemo(() => {
-    const conditional = asConditional(parent)
-    if (conditional == null) {
-      return false
-    }
-    const flag = getConditionalFlag(conditional)
-    return flag == false
-      ? matchesOverriddenBranch(elementPath, parentPath, {
-          clause: conditional.whenTrue,
-          branch: 'then',
-          wantOverride: true,
-          parentOverride: true,
-        })
-      : matchesOverriddenBranch(elementPath, parentPath, {
-          clause: conditional.whenFalse,
-          branch: 'else',
-          wantOverride: false,
-          parentOverride: false,
-        })
-  }, [parent, elementPath, parentPath])
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -482,22 +523,12 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
-  const parentPath = React.useMemo(() => EP.parentPath(props.elementPath), [props.elementPath])
-
   const element = useEditorState(
     Substores.metadata,
     (store) => {
       return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, props.elementPath)
     },
     'NavigatorRowLabel element',
-  )
-
-  const parent = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath)
-    },
-    'NavigatorRowLabel parent',
   )
 
   const conditionalOverride = React.useMemo(() => {
@@ -508,31 +539,16 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     return getConditionalFlag(conditional)
   }, [element])
 
-  const isActiveBranchOfOverriddenConditional = React.useMemo(() => {
-    const conditionalParent = asConditional(parent)
-    if (conditionalParent == null) {
-      return false
-    }
-    const parentOverride = getConditionalFlag(conditionalParent)
-    if (parentOverride == null) {
-      return false
-    }
-
-    return (
-      matchesOverriddenBranch(props.elementPath, parentPath, {
-        clause: conditionalParent.whenTrue,
-        branch: 'then',
-        wantOverride: true,
-        parentOverride: parentOverride,
-      }) ||
-      matchesOverriddenBranch(props.elementPath, parentPath, {
-        clause: conditionalParent.whenFalse,
-        branch: 'else',
-        wantOverride: false,
-        parentOverride: parentOverride,
-      })
-    )
-  }, [props.elementPath, parent, parentPath])
+  const isActiveBranchOfOverriddenConditional = useEditorState(
+    Substores.metadata,
+    (store) =>
+      isActiveBranchOfOverriddenConditionalSelector(
+        props.elementPath,
+        EP.parentPath(props.elementPath),
+        store,
+      ),
+    'NavigatorRowLabel isActiveBranchOfOverriddenConditional',
+  )
 
   return (
     <React.Fragment>
