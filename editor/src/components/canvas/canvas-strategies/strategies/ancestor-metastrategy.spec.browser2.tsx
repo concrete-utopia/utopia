@@ -530,7 +530,7 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
 
 describe('Fragments are transparent for ancestor metastrategy', () => {
   setFeatureForBrowserTests('Fragment support', true)
-  it('dragging a fragment with absolute children trigger absolute move', () =>
+  it('dragging a fragment with multiple absolute children trigger absolute move', () =>
     runTest(
       TestProjectFragmentWithAbsoluteChildren,
       EP.fromString('storyboard/scene/container/outer/fragment'),
