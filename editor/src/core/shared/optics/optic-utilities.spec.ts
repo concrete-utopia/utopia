@@ -7,6 +7,7 @@ import {
   anyBy,
   exists,
   foldLOf,
+  forEachOf,
   inverseGet,
   modify,
   set,
@@ -456,6 +457,53 @@ describe('exists', () => {
   it('returns the expected value with a TRAVERSAL', () => {
     const property = FastCheck.property(FastCheck.array(FastCheck.integer()), (integerArray) => {
       return fastDeepEquals(exists(traverseArray(), integerArray), integerArray.length > 0)
+    })
+    FastCheck.assert(property, { verbose: true })
+  })
+})
+
+describe('forEachOf', () => {
+  it('returns the expected value with an ISO', () => {
+    const property = FastCheck.property(FastCheck.boolean(), (bool) => {
+      let result: Array<boolean> = []
+      forEachOf(not, bool, (b) => {
+        result.push(b)
+      })
+      return fastDeepEquals(result, [!bool])
+    })
+    FastCheck.assert(property, { verbose: true })
+  })
+  it('returns the expected value with a LENS', () => {
+    const property = FastCheck.property(fromFieldTestArbitrary, (fromFieldTest) => {
+      let result: Array<string> = []
+      forEachOf(fromField<FromFieldTest, 'testField'>('testField'), fromFieldTest, (s) => {
+        result.push(s)
+      })
+      return fastDeepEquals(result, [fromFieldTest.testField])
+    })
+    FastCheck.assert(property, { verbose: true })
+  })
+  it('returns the expected value with a PRISM', () => {
+    const property = FastCheck.property(FastCheck.integer(), (number) => {
+      let result: Array<number> = []
+      forEachOf(
+        filtered((toCheck: number) => toCheck > 1000),
+        number,
+        (n) => {
+          result.push(n)
+        },
+      )
+      return fastDeepEquals(result, number > 1000 ? [number] : [])
+    })
+    FastCheck.assert(property, { verbose: true })
+  })
+  it('returns the expected value with a TRAVERSAL', () => {
+    const property = FastCheck.property(FastCheck.array(FastCheck.integer()), (integerArray) => {
+      let result: Array<number> = []
+      forEachOf(traverseArray<number>(), integerArray, (n) => {
+        result.push(n)
+      })
+      return fastDeepEquals(result, integerArray)
     })
     FastCheck.assert(property, { verbose: true })
   })

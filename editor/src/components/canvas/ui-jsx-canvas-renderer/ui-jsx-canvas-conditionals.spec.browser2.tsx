@@ -3,6 +3,7 @@ import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import * as EP from '../../../core/shared/element-path'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 
 const appFilePath = '/src/app.js'
 const appFileContent = `
@@ -62,6 +63,7 @@ async function createAndRenderProject() {
 }
 
 describe('a project with conditionals', () => {
+  setFeatureForBrowserTests('Conditional support', true)
   it('fills the content of the navigator', async () => {
     FOR_TESTS_setNextGeneratedUids([
       'mock1',
@@ -74,7 +76,7 @@ describe('a project with conditionals', () => {
       'conditional1',
     ])
     const renderedProject = await createAndRenderProject()
-    const navigatorTargets = renderedProject.getEditorState().derived.navigatorTargets
+    const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
     const pathStrings = navigatorTargets.map(EP.toString)
     expect(pathStrings).toEqual([
       'storyboard/scene',
@@ -83,6 +85,8 @@ describe('a project with conditionals', () => {
       'storyboard/scene/app:app-root/conditional1',
       'storyboard/scene/app:app-root/conditional1/conditional2',
       'storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
+      'storyboard/scene/app:app-root/conditional1/conditional2/else-case',
+      'storyboard/scene/app:app-root/conditional1/else-case',
     ])
   })
 })
