@@ -7,6 +7,7 @@ import {
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
+  isNonDomElement,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
@@ -27,18 +28,6 @@ export function retargetStrategyToChildrenOfContentAffectingElements(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     targetsWithoutDescedants,
-  )
-}
-
-function isNonDomElement(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
-  const instance = MetadataUtils.findElementByElementPath(metadata, path)
-  return (
-    instance != null &&
-    foldEither(
-      () => true,
-      (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
-      instance.element,
-    )
   )
 }
 
