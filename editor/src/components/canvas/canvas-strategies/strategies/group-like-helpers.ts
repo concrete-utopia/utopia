@@ -35,7 +35,7 @@ function isNonDomElement(metadata: ElementInstanceMetadataMap, path: ElementPath
   return (
     instance != null &&
     foldEither(
-      () => false,
+      () => true,
       (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
       instance.element,
     )
