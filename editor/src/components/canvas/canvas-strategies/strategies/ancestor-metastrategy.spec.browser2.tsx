@@ -545,7 +545,7 @@ describe('Fragments are transparent for ancestor metastrategy', () => {
         expect(strategies[0].strategy.id).toEqual('ABSOLUTE_MOVE')
       },
     ))
-  it('dragging a fragment with no siblings and children no siblings triggers ancestor metastrategy', () =>
+  it('dragging a fragment with no siblings and single child triggers ancestor metastrategy', () =>
     runTest(
       TestProjectFragmentWithNoSiblings,
       EP.fromString('storyboard/scene/container/outer/fragment'),
