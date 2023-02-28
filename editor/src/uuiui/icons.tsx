@@ -1,5 +1,4 @@
 import React from 'react'
-import { FlexWrap } from 'utopia-api/core'
 import { Icn, IcnProps } from './icn'
 
 const makeIcon = (
