@@ -89,7 +89,6 @@ export function getApplicableReparentFactories(
 
         const parentLayouSystems = MetadataUtils.findLayoutSystemForChildren(
           canvasState.startingMetadata,
-          canvasState.startingAllElementProps,
           result.target.newParent,
         )
 

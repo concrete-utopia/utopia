@@ -208,7 +208,6 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
-  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   switch (reparentStrategy) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -224,7 +223,6 @@ export function getReparentPropertyChanges(
       const newPath = EP.appendToPath(newParent, EP.toUid(target))
       const directions = singleAxisAutoLayoutContainerDirections(
         newParent,
-        allElementProps,
         newParentStartingMetadata,
       )
 

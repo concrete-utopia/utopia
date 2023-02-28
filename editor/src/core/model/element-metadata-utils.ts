@@ -125,7 +125,7 @@ import {
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { reorderConditionalChildPathTrees } from './conditionals'
-import { replaceContentAffectingPathsWithTheirChildrenRecursive } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
+import { replaceNonDomElementPathsWithTheirChildrenRecursive } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1792,12 +1792,10 @@ export const MetadataUtils = {
   },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
     parentPath: ElementPath,
   ): DetectedLayoutSystem {
-    const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    const childrenPaths = replaceNonDomElementPathsWithTheirChildrenRecursive(
       metadata,
-      allElementProps,
       MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
     )
     const children = mapDropNulls(
@@ -1822,12 +1820,10 @@ export const MetadataUtils = {
   },
   findFlexDirectionForChildren(
     metadata: ElementInstanceMetadataMap,
-    allElementProps: AllElementProps,
     parentPath: ElementPath,
   ): FlexDirection | null {
-    const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    const childrenPaths = replaceNonDomElementPathsWithTheirChildrenRecursive(
       metadata,
-      allElementProps,
       MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
     )
 
