@@ -1804,19 +1804,19 @@ export const MetadataUtils = {
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       childrenPaths,
     )
+
+    const fallbackLayout =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .layoutSystemForChildren ?? 'none'
+
     const parentLayouts = children.map((c) => c.specialSizeMeasurements.parentLayoutSystem)
+
     if (parentLayouts.length === 0) {
-      // fallback to parent instance
-      return (
-        MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
-          .layoutSystemForChildren ?? 'none'
-      )
+      return fallbackLayout
     }
     const allEqual = parentLayouts.slice(1).every((x) => x === parentLayouts[0])
     if (!allEqual) {
-      throw new Error(
-        `All children should have the same \`parentLayoutSystem\`, instead: ${parentLayouts}`,
-      )
+      return fallbackLayout
     }
     return parentLayouts[0]
   },
@@ -1830,23 +1830,22 @@ export const MetadataUtils = {
       allElementProps,
       MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
     )
+
+    const fallbackFlexDirection =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .flexDirection ?? null
+
     const children = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       childrenPaths,
     )
     const flexDirections = children.map((c) => c.specialSizeMeasurements.parentFlexDirection)
     if (flexDirections.length === 0) {
-      // fallback to parent instance
-      return (
-        MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
-          .flexDirection ?? null
-      )
+      return fallbackFlexDirection
     }
     const allEqual = flexDirections.slice(1).every((x) => x === flexDirections[0])
     if (!allEqual) {
-      throw new Error(
-        `All children should have the same \`flexDirection\`, instead: ${flexDirections}`,
-      )
+      return fallbackFlexDirection
     }
     return flexDirections[0]
   },
