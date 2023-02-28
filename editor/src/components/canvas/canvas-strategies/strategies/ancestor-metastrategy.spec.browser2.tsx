@@ -2,6 +2,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { shiftModifier } from '../../../../utils/modifiers'
+import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -321,6 +322,133 @@ const TestProjectAbsoluteAndFlow = `
 </div>
 `
 
+const TestProjectFragmentWithAbsoluteChildren = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='container'
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: 359,
+            top: 57,
+            width: 196,
+            height: 82,
+          }}
+          data-uid='outer'
+        >
+          <React.Fragment data-uid='fragment'>
+            <div
+              data-testid='${DraggedDivId}'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                flexBasis: 80,
+                height: 28,
+                width: 40,
+                left: 27,
+                top: 37,
+              }}
+              data-uid='child1'
+            />
+            <div
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                flexBasis: 80,
+                height: 28,
+                width: 40,
+                left: 27,
+                top: 37,
+              }}
+              data-uid='child2'
+            />
+          </React.Fragment>
+        </div>
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const TestProjectFragmentWithNoSiblings = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='container'
+      >
+        <div
+          style={{
+            top: 73,
+            left: 63,
+            width: 200,
+            height: 200,
+            position: 'absolute',
+          }}
+          data-uid='outer'
+        >
+          <React.Fragment data-uid='fragment'>
+            <div
+              data-testid='${DraggedDivId}'
+              style={{
+                backgroundColor: 'red',
+                flexBasis: 80,
+                height: 28,
+                width: 40,
+              }}
+              data-uid='child'
+            />
+          </React.Fragment>
+        </div>
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
 async function dragElement(
   canvasControlsLayer: HTMLElement,
   startPoint: WindowPoint,
@@ -398,6 +526,40 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
       }
       expect(strategies[0].strategy.id).toEqual('FLOW_REORDER')
     }))
+})
+
+describe('Fragments are transparent for ancestor metastrategy', () => {
+  setFeatureForBrowserTests('Fragment support', true)
+  it('dragging a fragment with multiple absolute children trigger absolute move', () =>
+    runTest(
+      TestProjectFragmentWithAbsoluteChildren,
+      EP.fromString('storyboard/scene/container/outer/fragment'),
+      (editor) => {
+        const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
+
+        expect(strategies?.length).toBeGreaterThan(0)
+        if (strategies == null) {
+          // here for type assertion
+          throw new Error('`strategies` should not be null')
+        }
+        expect(strategies[0].strategy.id).toEqual('ABSOLUTE_MOVE')
+      },
+    ))
+  it('dragging a fragment with no siblings and single child triggers ancestor metastrategy', () =>
+    runTest(
+      TestProjectFragmentWithNoSiblings,
+      EP.fromString('storyboard/scene/container/outer/fragment'),
+      (editor) => {
+        const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
+
+        expect(strategies?.length).toBeGreaterThan(0)
+        if (strategies == null) {
+          // here for type assertion
+          throw new Error('`strategies` should not be null')
+        }
+        expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
+      },
+    ))
 })
 
 describe('finds keyboard strategy for absolute ancestor', () => {
