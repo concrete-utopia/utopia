@@ -1,7 +1,6 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { defaultDisplayTypeForHTMLElement } from '../../../../core/shared/dom-utils'
+import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
   DetectedLayoutSystem,
@@ -27,6 +26,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { DeleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
+import { AllElementProps } from '../../../editor/store/editor-state'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -66,16 +66,17 @@ export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
-  const containerElement = MetadataUtils.findElementByElementPath(metadata, container)
   const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
-  if (containerElement == null) {
-    return 'non-single-axis-autolayout'
-  }
 
-  const layoutSystem = containerElement.specialSizeMeasurements.layoutSystemForChildren
-  const flexDirection = MetadataUtils.getSimpleFlexDirection(containerElement)
+  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
+  const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'
 
-  return singleAxisAutoLayoutDirections(children, metadata, layoutSystem, flexDirection)
+  return singleAxisAutoLayoutDirections(
+    children,
+    metadata,
+    layoutSystem,
+    MetadataUtils.flexDirectionToSimpleFlexDirection(flexDirection),
+  )
 }
 
 export function singleAxisAutoLayoutChildrenDirections(

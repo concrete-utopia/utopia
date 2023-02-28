@@ -1,7 +1,7 @@
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { allElemsEqual, mapDropNulls } from '../../core/shared/array-utils'
+import { allElemsEqual, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -31,10 +31,14 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { setPropHugStrategies } from './inspector-strategies/inspector-strategies'
+import {
+  setPropFillStrategies,
+  setPropHugStrategies,
+} from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
+import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -242,8 +246,10 @@ export const hugContentsApplicableForText = (
   return optionalMap(elementOnlyHasTextChildren, element) === true
 }
 
-export const fillContainerApplicable = (elementPath: ElementPath): boolean =>
-  !EP.isStoryboardChild(elementPath)
+export const fillContainerApplicable = (
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean => !EP.isStoryboardChild(elementPath)
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
@@ -508,6 +514,8 @@ export type FixedHugFill =
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
 
+export type FixedHugFillMode = FixedHugFill['type']
+
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
@@ -616,6 +624,25 @@ export function resizeToFitCommands(
   return commands
 }
 
+export function resizeToFillCommands(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = [
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropFillStrategies('horizontal', 'default', false),
+    ) ?? []),
+    ...(commandsForFirstApplicableStrategy(
+      metadata,
+      selectedViews,
+      setPropFillStrategies('vertical', 'default', false),
+    ) ?? []),
+  ]
+  return commands
+}
+
 export function addPositionAbsoluteTopLeft(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
@@ -649,17 +676,6 @@ export function addPositionAbsoluteTopLeft(
   ]
 }
 
-export function notFixedSizeOnBothAxes(
-  metadata: ElementInstanceMetadataMap,
-  elementPaths: Array<ElementPath>,
-): boolean {
-  return elementPaths.every((elementPath) => {
-    const horizontalState = detectFillHugFixedState('horizontal', metadata, elementPath)?.type
-    const verticalState = detectFillHugFixedState('vertical', metadata, elementPath)?.type
-    return horizontalState !== 'fixed' && verticalState !== 'fixed'
-  })
-}
-
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
@@ -668,9 +684,40 @@ export function toggleResizeToFitSetToFixed(
     return []
   }
 
-  return notFixedSizeOnBothAxes(metadata, elementPaths)
+  const isSetToHug =
+    detectFillHugFixedState('horizontal', metadata, elementPaths[0])?.type === 'hug' &&
+    detectFillHugFixedState('vertical', metadata, elementPaths[0])?.type === 'hug'
+
+  return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
     : resizeToFitCommands(metadata, elementPaths)
+}
+
+export function getFixedFillHugOptionsForElement(
+  metadata: ElementInstanceMetadataMap,
+  selectedView: ElementPath,
+): Set<FixedHugFillMode> {
+  return new Set(
+    stripNulls([
+      'fixed',
+      hugContentsApplicableForText(metadata, selectedView) ||
+      hugContentsApplicableForContainer(metadata, selectedView)
+        ? 'hug'
+        : null,
+      fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
+    ]),
+  )
+}
+
+export function getFillFixedHugOptions(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): Array<FixedHugFillMode> {
+  return [
+    ...intersection(
+      selectedViews.map((selectedView) => getFixedFillHugOptionsForElement(metadata, selectedView)),
+    ),
+  ]
 }
 
 export function setParentToFixedIfHugCommands(

@@ -1,7 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { stripNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
@@ -16,10 +15,9 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   Axis,
   detectFillHugFixedState,
-  fillContainerApplicable,
   FixedHugFill,
-  hugContentsApplicableForContainer,
-  hugContentsApplicableForText,
+  FixedHugFillMode,
+  getFixedFillHugOptionsForElement,
 } from './inspector-common'
 import {
   setPropFillStrategies,
@@ -33,8 +31,6 @@ import {
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
-
-export type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
   if (a === undefined && b === undefined) {
@@ -92,22 +88,6 @@ function elementComputedDimension(
 const simpleControlStyles = getControlStyles('simple')
 
 interface FillHugFixedControlProps {}
-
-function getFixedFillHugOptionsForElement(
-  metadata: ElementInstanceMetadataMap,
-  selectedView: ElementPath,
-): Set<FixedHugFillMode> {
-  return new Set(
-    stripNulls([
-      'fixed',
-      hugContentsApplicableForText(metadata, selectedView) ||
-      hugContentsApplicableForContainer(metadata, selectedView)
-        ? 'hug'
-        : null,
-      fillContainerApplicable(selectedView) ? 'fill' : null,
-    ]),
-  )
-}
 
 const optionsSelector = createSelector(
   metadataSelector,
@@ -308,7 +288,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         options={options}
         onSubmitValue={onSubmitWidth}
         controlStyles={simpleControlStyles}
-        containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
         id={FillFixedHugControlId('width')}
@@ -332,7 +311,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         options={options}
         onSubmitValue={onSubmitHeight}
         controlStyles={simpleControlStyles}
-        containerMode='showBorderOnHover'
       />
       <SimpleCSSNumberInput
         id={FillFixedHugControlId('height')}

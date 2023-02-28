@@ -100,6 +100,7 @@ import { prependToSourceString, ElementsWithinInPosition } from './parser-printe
 import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import { isEmptyString } from '../../shared/string-utils'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1466,7 +1467,7 @@ function parseElementProps(
   return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
 
-type TSTextOrExpression = TS.JsxText | TS.JsxExpression
+type TSTextOrExpression = TS.JsxText | TS.JsxExpression | TS.ConditionalExpression
 type TSJSXElement = TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxFragment
 type ElementsToParse = Array<TSJSXElement | TSTextOrExpression>
 
@@ -1498,7 +1499,8 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxSelfClosingElement(node) ||
       TS.isJsxText(node) ||
       TS.isJsxExpression(node) ||
-      TS.isJsxFragment(node)
+      TS.isJsxFragment(node) ||
+      TS.isConditionalExpression(node)
     ) {
       result.push(node)
     } else {
@@ -1798,6 +1800,24 @@ export function parseOutJSXElements(
           }
         }
       }
+
+      function handleConditionalExpression(
+        expression: TS.ConditionalExpression,
+        comments: ParsedComments,
+      ): Either<string, SuccessfullyParsedElement> {
+        const possibleConditional = produceConditionalFromExpression(expression, comments)
+        return mapEither((success) => {
+          highlightBounds = {
+            ...highlightBounds,
+            ...success.highlightBounds,
+          }
+          propsUsed.push(...success.propsUsed)
+          definedElsewhere.push(...success.definedElsewhere)
+
+          return success.value
+        }, possibleConditional)
+      }
+
       for (const elem of toParse) {
         switch (elem.kind) {
           case TS.SyntaxKind.JsxFragment:
@@ -1811,36 +1831,39 @@ export function parseOutJSXElements(
             }
             break
           }
+          case TS.SyntaxKind.ConditionalExpression: {
+            const possibleCondition = handleConditionalExpression(elem, emptyComments)
+            if (isLeft(possibleCondition)) {
+              return possibleCondition
+            } else {
+              addParsedElement(possibleCondition.value)
+            }
+            break
+          }
           case TS.SyntaxKind.JsxExpression: {
             let parseResult: Either<string, SuccessfullyParsedElement> =
               left('Expression fallback.')
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
-              const childrenOfExpression = elem.getChildren(sourceFile)
-              // Trailing comments of the entire expression appear to be attached to the
-              // closing brace of the expression.
-              const leadingCommentsForBrace = getLeadingComments(
-                sourceText,
-                childrenOfExpression[childrenOfExpression.length - 1],
-              )
-              const possibleConditional = produceConditionalFromExpression(
-                elem.expression,
-                leadingCommentsForBrace,
-              )
-              parseResult = bimapEither(
-                (failure) => failure,
-                (success) => {
-                  highlightBounds = {
-                    ...highlightBounds,
-                    ...success.highlightBounds,
-                  }
-                  propsUsed.push(...success.propsUsed)
-                  definedElsewhere.push(...success.definedElsewhere)
+              const leadingComments = [...getLeadingComments(sourceText, elem.expression.condition)]
 
-                  return success.value
-                },
-                possibleConditional,
-              )
+              const questionTokenComments = {
+                leadingComments: [...getTrailingComments(sourceText, elem.expression.condition)],
+                trailingComments: [],
+              }
+
+              const childrenOfExpression = elem.getChildren(sourceFile)
+              const lastChild = childrenOfExpression[childrenOfExpression.length - 1]
+              const trailingComments = [
+                ...getTrailingComments(sourceText, elem.expression),
+                ...getLeadingComments(sourceText, lastChild),
+              ]
+
+              parseResult = handleConditionalExpression(elem.expression, {
+                leadingComments: leadingComments,
+                trailingComments: trailingComments,
+                questionTokenComments: questionTokenComments,
+              })
             }
             // Fallback to arbitrary block parsing.
             if (isLeft(parseResult)) {
@@ -1997,12 +2020,15 @@ export function parseOutJSXElements(
               elementName != null &&
               isJsxNameKnown(elementName, topLevelNames, imports))
           ) {
+            const childrenMinusWhitespaceOnlyTexts = childElems.filter(
+              (c) => !(isJSXTextBlock(c) && isEmptyString(c.text)),
+            )
             const parsedElement = createJSXElementOrFragmentAllocatingUID(
               sourceFile,
               tsElement,
               elementName,
               attrs.value,
-              childElems,
+              childrenMinusWhitespaceOnlyTexts,
               highlightBounds,
               alreadyExistingUIDs,
               imports,
@@ -2019,7 +2045,7 @@ export function parseOutJSXElements(
 
   function produceConditionalFromExpression(
     expression: TS.ConditionalExpression,
-    trailingComments: Array<Comment>,
+    comments: ParsedComments,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
     function parseAttribute(
       attributeExpression: TS.Expression,
@@ -2072,7 +2098,7 @@ export function parseOutJSXElements(
           condition.value,
           whenTrue.value,
           whenFalse.value,
-          parsedComments([], trailingComments),
+          comments,
         )
         highlightBounds = {
           ...highlightBounds,

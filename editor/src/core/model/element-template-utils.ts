@@ -39,6 +39,7 @@ import {
   jsxFragment,
   isJSXConditionalExpression,
   childOrBlockIsChild,
+  emptyComments,
 } from '../shared/element-template'
 import {
   Imports,
@@ -66,6 +67,7 @@ import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { styleStringInArray } from '../../utils/common-constants'
 import { forceNotNull } from '../shared/optional-utils'
+import { getConditionalClausePath } from './conditionals'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -536,6 +538,21 @@ export function removeJSXElementChild(
       return {
         ...parentElement,
         children: updatedChildren,
+      }
+    } else if (isJSXConditionalExpression(parentElement)) {
+      const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
+      const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
+
+      const nullAttribute: JSXAttribute = {
+        type: 'ATTRIBUTE_VALUE',
+        value: null,
+        comments: emptyComments,
+      }
+
+      return {
+        ...parentElement,
+        whenTrue: EP.pathsEqual(thenPath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(elsePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement

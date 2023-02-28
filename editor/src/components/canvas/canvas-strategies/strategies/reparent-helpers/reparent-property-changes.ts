@@ -19,7 +19,10 @@ import {
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
-import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import {
+  AllElementProps,
+  getElementFromProjectContents,
+} from '../../../../editor/store/editor-state'
 import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {

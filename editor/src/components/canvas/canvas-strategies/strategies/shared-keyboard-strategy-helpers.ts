@@ -3,7 +3,7 @@ import { setsEqual } from '../../../../core/shared/set-utils'
 import { last, mapDropNulls } from '../../../../core/shared/array-utils'
 import { Modifier, Modifiers } from '../../../../utils/modifiers'
 import { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
+import { KeyCharacter } from '../../../../utils/keyboard'
 import {
   collectParentAndSiblingGuidelines,
   oneGuidelinePerDimension,
@@ -114,7 +114,11 @@ export function getKeyboardStrategyGuidelines(
           )
           if (Utils.magnitude(snappingVector) === 0) {
             return {
-              guideline: guideline,
+              guideline: {
+                ...guideline,
+                yTop: Math.min(guideline.yTop, draggedFrame.y),
+                yBottom: Math.max(guideline.yBottom, draggedFrame.y + draggedFrame.height),
+              },
               snappingVector: snappingVector,
               pointsOfRelevance: [],
             } as GuidelineWithSnappingVectorAndPointsOfRelevance
@@ -130,7 +134,11 @@ export function getKeyboardStrategyGuidelines(
           )
           if (Utils.magnitude(snappingVector) === 0) {
             return {
-              guideline: guideline,
+              guideline: {
+                ...guideline,
+                xLeft: Math.min(guideline.xLeft, draggedFrame.x),
+                xRight: Math.max(guideline.xRight, draggedFrame.x + draggedFrame.width),
+              },
               snappingVector: snappingVector,
               pointsOfRelevance: [],
             } as GuidelineWithSnappingVectorAndPointsOfRelevance

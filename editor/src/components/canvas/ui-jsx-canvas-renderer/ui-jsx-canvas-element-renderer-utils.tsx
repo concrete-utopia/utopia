@@ -46,7 +46,11 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
+import {
+  addConditionalAlternative,
+  addFakeSpyEntry,
+  buildSpyWrappedElement,
+} from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -340,17 +344,25 @@ export function renderCoreElement(
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
-      const conditionValue: boolean =
+      const conditionValueAsAny =
         override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
+      // Coerce `conditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      const conditionValue: boolean = !!conditionValueAsAny
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
+      if (elementPath != null) {
+        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports)
+      }
+
+      let result: any
       if (childOrBlockIsChild(actualElement)) {
         const childPath = optionalMap(
           (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
           elementPath,
         )
 
-        return renderCoreElement(
+        result = renderCoreElement(
           actualElement,
           childPath,
           rootScope,
@@ -375,8 +387,33 @@ export function renderCoreElement(
           editedText,
         )
       } else {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+        result = jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+        if (elementPath != null) {
+          addConditionalAlternative(
+            metadataContext,
+            elementPath,
+            filePath,
+            imports,
+            actualElement,
+            conditionValue ? 'then' : 'else',
+          )
+        }
       }
+
+      // Include the alternative case.
+      if (elementPath != null) {
+        const alternativeCase = conditionValue ? element.whenFalse : element.whenTrue
+        addConditionalAlternative(
+          metadataContext,
+          elementPath,
+          filePath,
+          imports,
+          alternativeCase,
+          conditionValue ? 'else' : 'then',
+        )
+      }
+
+      return result
     }
     default:
       const _exhaustiveCheck: never = element
@@ -550,15 +587,17 @@ function renderJSXElement(
       ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
       : elementPropsWithScenePath
 
-  const finalProps =
-    elementIsIntrinsic && !elementIsBaseHTML
-      ? filterDataProps(elementPropsWithSceneID)
-      : elementPropsWithSceneID
-
-  const finalPropsIcludingElementPath = {
-    ...finalProps,
+  const propsIncludingElementPath = {
+    ...elementPropsWithSceneID,
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
+
+  const looksLikeReactIntrinsicButNotHTML = elementIsIntrinsic && !elementIsBaseHTML
+
+  const finalProps =
+    looksLikeReactIntrinsicButNotHTML || elementIsFragment
+      ? filterDataProps(propsIncludingElementPath)
+      : propsIncludingElementPath
 
   if (!elementIsFragment && FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
@@ -573,7 +612,7 @@ function renderJSXElement(
         filePath: filePath,
         text: textContent,
         component: FinalElement,
-        passthroughProps: finalPropsIcludingElementPath,
+        passthroughProps: finalProps,
       }
 
       return buildSpyWrappedElement(
@@ -593,7 +632,7 @@ function renderJSXElement(
     }
     return buildSpyWrappedElement(
       jsx,
-      finalPropsIcludingElementPath,
+      finalProps,
       elementPath,
       metadataContext,
       updateInvalidatedPaths,
@@ -610,21 +649,25 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       FinalElementOrFragment,
-      finalPropsIcludingElementPath,
+      finalProps,
       ...childrenElements,
     )
   }
 }
 
 function isHidden(hiddenInstances: ElementPath[], elementPath: ElementPath | null): boolean {
-  return elementPath != null && hiddenInstances.some((path) => EP.pathsEqual(path, elementPath))
+  return (
+    elementPath != null &&
+    hiddenInstances.some((path) => EP.isDescendantOfOrEqualTo(elementPath, path))
+  )
 }
 function elementIsDisplayNone(
   displayNoneInstances: ElementPath[],
   elementPath: ElementPath | null,
 ): boolean {
   return (
-    elementPath != null && displayNoneInstances.some((path) => EP.pathsEqual(path, elementPath))
+    elementPath != null &&
+    displayNoneInstances.some((path) => EP.isDescendantOfOrEqualTo(elementPath, path))
   )
 }
 

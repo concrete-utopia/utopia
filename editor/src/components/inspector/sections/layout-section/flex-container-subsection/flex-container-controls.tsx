@@ -191,7 +191,6 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         options={FlexWrapOptions}
         onSubmitValue={onSubmitValue}
         controlStyles={props.controlStyles}
-        containerMode='showBorderOnHover'
       />
     </InspectorContextMenuWrapper>
   )

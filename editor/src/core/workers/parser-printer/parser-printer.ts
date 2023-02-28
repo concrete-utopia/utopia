@@ -377,7 +377,13 @@ function jsxElementToExpression(
   element: JSXElementChild,
   imports: Imports,
   stripUIDs: boolean,
-): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
+):
+  | TS.JsxElement
+  | TS.JsxSelfClosingElement
+  | TS.JsxText
+  | TS.JsxExpression
+  | TS.JsxFragment
+  | TS.ConditionalExpression {
   switch (element.type) {
     case 'JSX_ELEMENT': {
       let attribsArray: Array<TS.JsxAttributeLike> = []
@@ -434,7 +440,7 @@ function jsxElementToExpression(
         const closing = TS.createJsxClosingElement(tagName)
         return TS.createJsxElement(
           opening,
-          element.children.map((child) => jsxElementToExpression(child, imports, stripUIDs)),
+          element.children.map((child) => jsxElementToJSXExpression(child, imports, stripUIDs)),
           closing,
         )
       }
@@ -469,7 +475,7 @@ function jsxElementToExpression(
     }
     case 'JSX_FRAGMENT': {
       const children = element.children.map((child) => {
-        return jsxElementToExpression(child, imports, stripUIDs)
+        return jsxElementToJSXExpression(child, imports, stripUIDs)
       })
       if (element.longForm) {
         const tagName = jsxElementNameToExpression(getFragmentElementNameFromImports(imports))
@@ -499,17 +505,33 @@ function jsxElementToExpression(
       const whenFalse = childOrBlockIsChild(element.whenFalse)
         ? jsxElementToExpression(element.whenFalse, imports, stripUIDs)
         : jsxAttributeToExpression(element.whenFalse)
-      // Trailing comments of the entire expression appear to be attached to the
-      // closing brace of the expression.
-      addCommentsToNode(whenFalse, element.comments)
-      return TS.createJsxExpression(
-        undefined,
-        TS.createConditional(condition, whenTrue as TS.Expression, whenFalse as TS.Expression),
+
+      const node = TS.createConditional(
+        condition,
+        whenTrue as TS.Expression,
+        whenFalse as TS.Expression,
       )
+      addCommentsToNode(node, element.comments)
+      addCommentsToNode(node.questionToken, element.comments.questionTokenComments ?? emptyComments)
+
+      return node
     }
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+  }
+}
+
+function jsxElementToJSXExpression(
+  element: JSXElementChild,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
+  const expression = jsxElementToExpression(element, imports, stripUIDs)
+  if (TS.isConditionalExpression(expression)) {
+    return TS.createJsxExpression(undefined, expression)
+  } else {
+    return expression
   }
 }
 
@@ -599,7 +621,12 @@ function printUtopiaJSXComponent(
   detailOfExports: ExportsDetail,
 ): TS.Node {
   const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
-  if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX) || TS.isJsxFragment(asJSX)) {
+  if (
+    TS.isJsxElement(asJSX) ||
+    TS.isJsxSelfClosingElement(asJSX) ||
+    TS.isJsxFragment(asJSX) ||
+    TS.isConditionalExpression(asJSX)
+  ) {
     let elementNode: TS.Node
     const jsxElementExpression = asJSX
     const modifiers = getModifersForComponent(element, detailOfExports)
