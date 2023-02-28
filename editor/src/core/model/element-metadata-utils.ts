@@ -6,7 +6,6 @@ import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import {
   mapDropNulls,
-  pluck,
   stripNulls,
   flatMapArray,
   uniqBy,
@@ -28,7 +27,6 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
-  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -75,7 +73,6 @@ import {
   MaybeInfinityLocalRectangle,
   Size,
   zeroCanvasRect,
-  zeroLocalRect,
   zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -125,7 +122,6 @@ import {
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { reorderConditionalChildPathTrees } from './conditionals'
-import { replaceNonDomElementPathsWithTheirChildrenRecursive } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1794,10 +1790,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     parentPath: ElementPath,
   ): DetectedLayoutSystem {
-    const childrenPaths = replaceNonDomElementPathsWithTheirChildrenRecursive(
-      metadata,
-      MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
-    )
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
     const children = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       childrenPaths,
@@ -1822,10 +1815,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     parentPath: ElementPath,
   ): FlexDirection | null {
-    const childrenPaths = replaceNonDomElementPathsWithTheirChildrenRecursive(
-      metadata,
-      MetadataUtils.getChildrenPathsOrdered(metadata, parentPath),
-    )
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
 
     const fallbackFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements

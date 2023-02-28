@@ -1055,7 +1055,6 @@ export function jsxFragment(
 }
 
 export type JSXElementLike = JSXElement | JSXFragment
-export type NonDOMJSXElement = JSXFragment | JSXConditionalExpression
 
 export interface JSXConditionalExpression extends WithComments {
   type: 'JSX_CONDITIONAL_EXPRESSION'
@@ -1113,10 +1112,6 @@ export function isJSXConditionalExpression(
 
 export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
-}
-
-export function isNonDOMJSXElement(element: JSXElementChild): element is NonDOMJSXElement {
-  return isJSXFragment(element) || isJSXConditionalExpression(element)
 }
 
 export type JSXElementChildren = Array<JSXElementChild>
