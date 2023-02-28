@@ -290,7 +290,7 @@ const isHiddenConditionalBranchSelector = createSelector(
       return false
     }
     const flag = getConditionalFlag(conditional)
-    return flag == false
+    return flag === false
       ? matchesOverriddenBranch(elementPath, parentPath, {
           clause: conditional.whenTrue,
           branch: 'then',
