@@ -37,6 +37,12 @@ export function ancestorMetaStrategy(
 
     const target = targets[0]
 
+    // Avoid children of the storyboard
+    if (EP.isEmptyPath(target) || EP.isStoryboardPath(target) || EP.isStoryboardChild(target)) {
+      // TODO Maybe avoid root elements?
+      return []
+    }
+
     const groupLikeChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
     if (groupLikeChildren.length !== 1) {
@@ -44,12 +50,6 @@ export function ancestorMetaStrategy(
     }
 
     const groupLikeChild = groupLikeChildren[0]
-
-    // Avoid children of the storyboard
-    if (EP.isEmptyPath(target) || EP.isStoryboardPath(target) || EP.isStoryboardChild(target)) {
-      // TODO Maybe avoid root elements?
-      return []
-    }
 
     // Is the selected element an only child?
     const siblings = MetadataUtils.getSiblingsUnordered(
