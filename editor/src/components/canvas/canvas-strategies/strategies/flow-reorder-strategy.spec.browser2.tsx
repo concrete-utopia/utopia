@@ -205,16 +205,6 @@ const TestCodeWithMixedTypesButStillVertical = `
   />
   <div
     style={{
-      backgroundColor: '#FF010133',
-      width: 50,
-      height: 50,
-      contain: 'layout',
-      display: 'inline-block',
-    }}
-    data-uid='eee'
-  />
-  <div
-    style={{
       backgroundColor: '#aaaaaa33',
       position: 'absolute',
       left: 120,
@@ -222,7 +212,7 @@ const TestCodeWithMixedTypesButStillVertical = `
       width: 50,
       height: 100,
     }}
-    data-uid='fff'
+    data-uid='eee'
   />
   <div
     style={{
@@ -230,8 +220,8 @@ const TestCodeWithMixedTypesButStillVertical = `
       width: 100,
       height: 100,
     }}
-    data-testid='ggg'
-    data-uid='ggg'
+    data-testid='fff'
+    data-uid='fff'
   />
 </div>
 `
@@ -258,30 +248,20 @@ const TestCodeWithMixedTypesButStillVerticalAfterReorder = `
   />
   <div
     style={{
+      backgroundColor: '#aaaaaa33',
+      width: 100,
+      height: 100,
+    }}
+    data-testid='fff'
+    data-uid='fff'
+  />
+  <div
+    style={{
       backgroundColor: '#2515FF33',
       width: 50,
       height: 50,
     }}
     data-uid='ddd'
-  />
-  <div
-    style={{
-      backgroundColor: '#aaaaaa33',
-      width: 100,
-      height: 100,
-    }}
-    data-testid='ggg'
-    data-uid='ggg'
-  />
-  <div
-    style={{
-      backgroundColor: '#FF010133',
-      width: 50,
-      height: 50,
-      contain: 'layout',
-      display: 'inline-block',
-    }}
-    data-uid='eee'
   />
   <div
     style={{
@@ -292,7 +272,7 @@ const TestCodeWithMixedTypesButStillVerticalAfterReorder = `
       width: 50,
       height: 100,
     }}
-    data-uid='fff'
+    data-uid='eee'
   />
 </div>
 `
@@ -469,19 +449,18 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
       'await-first-dom-report',
     )
 
-    // drag element 'ggg' up above 'eee'
+    // drag element 'fff' up above 'ddd'
     const dragDelta = windowPoint({ x: 0, y: -25 })
-    await dragElement(renderResult, 'ggg', dragDelta, emptyModifiers, [
+    await dragElement(renderResult, 'fff', dragDelta, emptyModifiers, [
       'utopia-storyboard-uid/scene-aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity',
       'utopia-storyboard-uid/scene-aaa/app-entity:container',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ggg',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fff',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()

@@ -48,16 +48,23 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
+  return singleAxisAutoLayoutSiblingDirections(target, metadata) !== 'non-single-axis-autolayout'
+}
+
+export function singleAxisAutoLayoutSiblingDirections(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(metadata, target) // including target
   if (siblings.length === 1) {
-    return false
+    return 'non-single-axis-autolayout'
   }
 
-  return singleAxisAutoLayoutChildrenDirections(siblings, metadata) !== 'non-single-axis-autolayout'
+  return singleAxisAutoLayoutChildrenDirections(siblings, metadata)
 }
 
 export type SingleAxisAutolayoutContainerDirections = {
-  direction: Direction | null
+  direction: Direction
   forwardOrReverse: ForwardOrReverse | null
   flexOrFlow: 'flex' | 'flow'
 }
@@ -157,7 +164,9 @@ export function singleAxisAutoLayoutDirections(
       predominantDirection === 'horizontal' &&
       firstChild.specialSizeMeasurements?.parentTextDirection === 'rtl'
 
-    const is1D = areNonWrappingSiblings(childrenFrames, predominantDirection, shouldReverse)
+    const is1D =
+      (numberOfHorizontalElements <= 1 || numberOfVerticalElements <= 1) &&
+      areNonWrappingSiblings(childrenFrames, predominantDirection, shouldReverse)
     if (!is1D) {
       return 'non-single-axis-autolayout'
     }
