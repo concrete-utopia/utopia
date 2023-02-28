@@ -1,10 +1,27 @@
 /* eslint-disable jest/expect-expect */
-import { fireEvent, RenderResult, screen } from '@testing-library/react'
+import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
+import * as Prettier from 'prettier/standalone'
+import { PrettierConfig } from 'utopia-vscode-common'
+import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { directory } from '../../../core/model/project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import {
+  ElementPath,
+  ProjectContents,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../../core/shared/project-file-types'
+import { setFeatureEnabled } from '../../../utils/feature-switches'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { contentsToTree } from '../../assets'
+import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -16,36 +33,14 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
+import { createCodeFile } from '../../custom-code/code-file.test-utils'
+import { EditorAction } from '../../editor/action-types'
 import {
   selectComponents,
   sendLinterRequestMessage,
   updateFromCodeEditor,
 } from '../../editor/actions/action-creators'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
-import { act } from '@testing-library/react'
-import { contentsToTree } from '../../assets'
-import {
-  ElementPath,
-  ProjectContents,
-  RevisionsState,
-  textFile,
-  textFileContents,
-  unparsed,
-} from '../../../core/shared/project-file-types'
-import { directory } from '../../../core/model/project-file-utils'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
-import { createCodeFile } from '../../custom-code/code-file.test-utils'
-import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
-import { EditorAction } from '../../editor/action-types'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../utils/utils.test-utils'
-import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
-import { setFeatureEnabled } from '../../../utils/feature-switches'
 import {
   ConditionalsControlSectionCloseTestId,
   ConditionalsControlSectionOpenTestId,
