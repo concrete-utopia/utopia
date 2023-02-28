@@ -3,10 +3,7 @@ import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
-  isJSXElement,
-  isJSXFragment,
-  isJSXTextBlock,
+  isNonDOMJSXElement,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
@@ -36,7 +33,7 @@ function isNonDomElement(metadata: ElementInstanceMetadataMap, path: ElementPath
     instance != null &&
     foldEither(
       () => true,
-      (e) => isJSXFragment(e) || isJSXConditionalExpression(e),
+      (e) => isNonDOMJSXElement(e),
       instance.element,
     )
   )
