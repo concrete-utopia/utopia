@@ -43,19 +43,16 @@ export function ancestorMetaStrategy(
       return []
     }
 
-    const groupLikeChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+    const unrolledChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
-    if (groupLikeChildren.length !== 1) {
+    if (unrolledChildren.length !== 1) {
       return []
     }
 
-    const groupLikeChild = groupLikeChildren[0]
+    const unrolledChild = unrolledChildren[0]
 
     // Is the selected element an only child?
-    const siblings = MetadataUtils.getSiblingsUnordered(
-      canvasState.startingMetadata,
-      groupLikeChild,
-    )
+    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, unrolledChild)
     if (siblings.length > 1) {
       return []
     }
@@ -63,7 +60,7 @@ export function ancestorMetaStrategy(
     // Is the selected element a flow layout element?
     const targetMetadata = MetadataUtils.findElementByElementPath(
       canvasState.startingMetadata,
-      groupLikeChild,
+      unrolledChild,
     )
     const isStaticLayout = !(
       MetadataUtils.isPositionAbsolute(targetMetadata) ||
