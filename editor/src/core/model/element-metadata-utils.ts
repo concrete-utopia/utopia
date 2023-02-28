@@ -6,7 +6,6 @@ import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import {
   mapDropNulls,
-  pluck,
   stripNulls,
   flatMapArray,
   uniqBy,
@@ -28,7 +27,6 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
-  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -53,6 +51,7 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
+  DetectedLayoutSystem,
   JSXConditionalExpression,
 } from '../shared/element-template'
 import {
@@ -74,7 +73,6 @@ import {
   MaybeInfinityLocalRectangle,
   Size,
   zeroCanvasRect,
-  zeroLocalRect,
   zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -1787,6 +1785,55 @@ export const MetadataUtils = {
       isRight(element.element) &&
       isJSXConditionalExpression(element.element.value)
     )
+  },
+  findLayoutSystemForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): DetectedLayoutSystem {
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
+
+    const fallbackLayout =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .layoutSystemForChildren ?? 'none'
+
+    const parentLayouts = children.map((c) => c.specialSizeMeasurements.parentLayoutSystem)
+
+    if (parentLayouts.length === 0) {
+      return fallbackLayout
+    }
+    const allEqual = parentLayouts.slice(1).every((x) => x === parentLayouts[0])
+    if (!allEqual) {
+      return fallbackLayout
+    }
+    return parentLayouts[0]
+  },
+  findFlexDirectionForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): FlexDirection | null {
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+
+    const fallbackFlexDirection =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .flexDirection ?? null
+
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
+    const flexDirections = children.map((c) => c.specialSizeMeasurements.parentFlexDirection)
+    if (flexDirections.length === 0) {
+      return fallbackFlexDirection
+    }
+    const allEqual = flexDirections.slice(1).every((x) => x === flexDirections[0])
+    if (!allEqual) {
+      return fallbackFlexDirection
+    }
+    return flexDirections[0]
   },
 }
 
