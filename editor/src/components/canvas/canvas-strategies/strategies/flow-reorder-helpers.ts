@@ -66,9 +66,6 @@ export function singleAxisAutoLayoutContainerDirections(
   metadata: ElementInstanceMetadataMap,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
   const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
-  if (children.length === 0) {
-    return 'non-single-axis-autolayout'
-  }
 
   const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
   const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'
