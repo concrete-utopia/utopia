@@ -90,7 +90,7 @@ export const InspectorSectionIcons = {
   }),
   Conditionals: makeIcon({
     category: 'element',
-    type: 'arc',
+    type: 'conditional',
     color: 'main',
     width: 18,
     height: 18,
