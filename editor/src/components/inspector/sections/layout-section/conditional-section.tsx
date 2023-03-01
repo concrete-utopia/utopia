@@ -41,19 +41,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     'Metadata',
   )
 
-  const areAllConditionals = React.useMemo(() => {
-    return paths.every((path) => {
-      return MetadataUtils.isConditionalFromMetadata(
-        MetadataUtils.findElementByElementPath(jsxMetadata, path),
-      )
-    })
-  }, [paths, jsxMetadata])
-
   const elements = React.useMemo(() => {
-    if (!areAllConditionals) {
-      return []
-    }
-
     return mapDropNulls((path) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
       if (
@@ -66,7 +54,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
       return elementMetadata.element.value
     }, paths)
-  }, [jsxMetadata, paths, areAllConditionals])
+  }, [jsxMetadata, paths])
 
   const condition: Condition = React.useMemo(() => {
     if (elements.length === 0) {
@@ -103,7 +91,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     [dispatch, paths, elements],
   )
 
-  if (!areAllConditionals) {
+  if (elements.length === 0) {
     return null
   }
 
