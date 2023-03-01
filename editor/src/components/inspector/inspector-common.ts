@@ -40,6 +40,7 @@ import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-u
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
+import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -526,11 +527,25 @@ export function detectFillHugFixedState(
     return null
   }
 
-  const flexGrow = foldEither(
+  const flexGrowLonghand = foldEither(
     () => null,
     (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flexGrow')),
   )
+
+  const flexGrow =
+    flexGrowLonghand ??
+    foldEither(
+      () => null,
+      (value) => {
+        return foldEither(
+          () => null,
+          (parsedFlexProp) => cssNumber(parsedFlexProp.flexGrow),
+          parseFlex(value),
+        )
+      },
+      getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flex')),
+    )
 
   if (flexGrow != null) {
     const flexDirection = optionalMap(

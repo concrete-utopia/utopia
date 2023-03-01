@@ -50,6 +50,36 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.flexGrow).toEqual('1')
     })
 
+    it('detects fill in flex row with shorthand style', async () => {
+      const editor = await renderTestEditorWithCode(
+        flexProjectWithInjectedStyle(`flex: '2 1 10px'`),
+        'await-first-dom-report',
+      )
+
+      await select(editor, 'child')
+
+      const fillControls = await editor.renderedDOM.findAllByText(FillContainerLabel)
+      expect(fillControls.length).toEqual(1)
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      expect((control as HTMLInputElement).value).toEqual('2')
+    })
+
+    it('detects fill in flex row with longhand style', async () => {
+      const editor = await renderTestEditorWithCode(
+        flexProjectWithInjectedStyle(`flexGrow: 1`),
+        'await-first-dom-report',
+      )
+
+      await select(editor, 'child')
+
+      const fillControls = await editor.renderedDOM.findAllByText(FillContainerLabel)
+      expect(fillControls.length).toEqual(1)
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      expect((control as HTMLInputElement).value).toEqual('1')
+    })
+
     it('set width to fill container in flex column', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithWidth('column'),
@@ -1037,6 +1067,32 @@ export var storyboard = (
         top: 0,
         width: 500,
         height: 500,
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{${stylePropsAsString}}}
+      />
+    </Scene>
+  </Storyboard>
+)`)
+
+const flexProjectWithInjectedStyle = (stylePropsAsString: string) =>
+  formatTestProjectCode(`
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      data-testid='parent'
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 500,
+        height: 500,
+        display: 'flex',
       }}
       data-label='Playground'
     >
