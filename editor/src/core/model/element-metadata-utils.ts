@@ -225,6 +225,14 @@ export const MetadataUtils = {
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
+  getSiblingsParticipatingInAutolayoutOrdered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    return MetadataUtils.getSiblingsOrdered(metadata, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
+  },
   isParentYogaLayoutedContainerAndElementParticipatesInLayout(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,

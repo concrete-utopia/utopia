@@ -48,16 +48,23 @@ export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const siblings = MetadataUtils.getSiblingsOrdered(metadata, target) // including target
+  return singleAxisAutoLayoutSiblingDirections(target, metadata) !== 'non-single-axis-autolayout'
+}
+
+export function singleAxisAutoLayoutSiblingDirections(
+  target: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
+  const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(metadata, target) // including target
   if (siblings.length === 1) {
-    return false
+    return 'non-single-axis-autolayout'
   }
 
-  return singleAxisAutoLayoutChildrenDirections(siblings, metadata) !== 'non-single-axis-autolayout'
+  return singleAxisAutoLayoutChildrenDirections(siblings, metadata)
 }
 
 export type SingleAxisAutolayoutContainerDirections = {
-  direction: Direction | null
+  direction: Direction
   forwardOrReverse: ForwardOrReverse | null
   flexOrFlow: 'flex' | 'flow'
 }
@@ -132,35 +139,40 @@ export function singleAxisAutoLayoutDirections(
       }
     }
     const firstChild = children[0]
-    const targetDirection = getElementDirection(firstChild)
-    const shouldReverse =
-      targetDirection === 'horizontal' &&
-      firstChild.specialSizeMeasurements?.parentTextDirection === 'rtl'
 
-    let allHorizontalOrVertical = true
+    let numberOfHorizontalElements = 0
+    let numberOfVerticalElements = 0
+
     let childrenFrames: Array<CanvasRectangle> = []
 
-    // TODO turn this into a loop with early return
     fastForEach(children, (child) => {
-      if (getElementDirection(child) !== targetDirection) {
-        allHorizontalOrVertical = false
-      }
-      if (child.globalFrame != null) {
-        const childFrame = isInfinityRectangle(child.globalFrame)
-          ? zeroCanvasRect
-          : child.globalFrame
+      const childFrame = zeroRectIfNullOrInfinity(child.globalFrame)
+      if (childFrame.width > 0 && childFrame.height > 0) {
         childrenFrames.push(childFrame)
+
+        if (getElementDirection(child) === 'horizontal') {
+          numberOfHorizontalElements++
+        } else {
+          numberOfVerticalElements++
+        }
       }
     })
 
+    const predominantDirection =
+      numberOfHorizontalElements > numberOfVerticalElements ? 'horizontal' : 'vertical'
+
+    const shouldReverse =
+      predominantDirection === 'horizontal' &&
+      firstChild.specialSizeMeasurements?.parentTextDirection === 'rtl'
+
     const is1D =
-      allHorizontalOrVertical &&
-      areNonWrappingSiblings(childrenFrames, targetDirection, shouldReverse)
+      (numberOfHorizontalElements <= 1 || numberOfVerticalElements <= 1) &&
+      areNonWrappingSiblings(childrenFrames, predominantDirection, shouldReverse)
     if (!is1D) {
       return 'non-single-axis-autolayout'
     }
     return {
-      direction: targetDirection,
+      direction: predominantDirection,
       forwardOrReverse: shouldReverse ? 'reverse' : 'forward',
       flexOrFlow: 'flow',
     }
@@ -197,39 +209,6 @@ export function getElementDirection(element: ElementInstanceMetadata | null): Di
 }
 
 const StyleDisplayProp = stylePropPathMappingFn('display', styleStringInArray)
-
-export function getOptionalDisplayPropCommandsForFlow(
-  lastReorderIdx: number | null | undefined,
-  interactionTarget: InteractionTarget,
-  startingMetadata: ElementInstanceMetadataMap,
-): Array<SetProperty | DeleteProperties> {
-  const selectedElements = getTargetPathsFromInteractionTarget(interactionTarget)
-  const target = selectedElements[0]
-  const elementMetadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
-  if (!MetadataUtils.isPositionedByFlow(elementMetadata)) {
-    return []
-  }
-
-  const siblingsOfTarget = MetadataUtils.getSiblingsOrdered(startingMetadata, target).map(
-    (element) => element.elementPath,
-  )
-  const element = MetadataUtils.findElementByElementPath(startingMetadata, target)
-  if (
-    element != null &&
-    lastReorderIdx != null &&
-    lastReorderIdx !== siblingsOfTarget.findIndex((sibling) => EP.pathsEqual(sibling, target))
-  ) {
-    const targetSibling = MetadataUtils.findElementByElementPath(
-      startingMetadata,
-      siblingsOfTarget[lastReorderIdx],
-    )
-    const elementDisplayType = elementMetadata?.specialSizeMeasurements.display ?? null
-    const newDirection = getElementDirection(targetSibling)
-    return getOptionalCommandToConvertDisplayInlineBlock(target, elementDisplayType, newDirection)
-  } else {
-    return []
-  }
-}
 
 export function getOptionalCommandToConvertDisplayInlineBlock(
   target: ElementPath,
