@@ -1136,7 +1136,6 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
     const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementUniqueIDs)
     return {
       ...element,
-      uniqueID: '',
       children: updatedChildren,
     }
   } else if (isJSXConditionalExpression(element)) {
@@ -1149,7 +1148,6 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       : clearAttributeUniqueIDs(element.whenFalse)
     return {
       ...element,
-      uniqueID: '',
       condition: updatedCondition,
       whenTrue: updatedWhenTrue,
       whenFalse: updatedWhenFalse,
