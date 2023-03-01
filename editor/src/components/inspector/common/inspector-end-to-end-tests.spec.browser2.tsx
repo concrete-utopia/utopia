@@ -2431,6 +2431,12 @@ describe('Inspector fields and code remain in sync', () => {
       startValue: 200,
       endValue: 300,
     },
+    {
+      stylePropKey: 'height',
+      controlTestId: 'hug-fixed-fill-height',
+      startValue: '200pt',
+      endValue: '100pt',
+    },
   ]
 
   function makeCodeSnippetWithKeyValue(stylePropKey: string, value: unknown): string {
