@@ -1,6 +1,7 @@
 // // The matchers API
 import expect from 'expect'
 import * as BrowserFS from 'browserfs'
+import * as ReactTestingLibrary from '@testing-library/react'
 
 // eslint react plugin uses this
 BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
@@ -9,6 +10,13 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
   }
 })
 window.BrowserFS = BrowserFS
+
+ReactTestingLibrary.configure({
+  getElementError: (message, _container) => {
+    // Prevent the testing library from serialising the whole dom
+    return new Error(message)
+  },
+})
 
 window.expect = expect
 window.jest = null
