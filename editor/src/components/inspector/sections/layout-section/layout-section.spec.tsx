@@ -46,8 +46,7 @@ describe('Position Section', () => {
       { legacyRoot: true },
     )
 
-    // Component 'W' is picked by the selector
-    expect(getByText('W')).toBeDefined()
+    expect(getByText('flow')).toBeDefined()
 
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {
