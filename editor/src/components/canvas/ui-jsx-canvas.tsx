@@ -321,10 +321,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   clearConsoleLogs()
   proxyConsole(console, addToConsoleLogs)
 
-  if (clearErrors != null) {
-    // a new canvas render, a new chance at having no errors
-    clearErrors()
-  }
+  React.useEffect(() => {
+    if (clearErrors != null) {
+      // a new canvas render, a new chance at having no errors
+      clearErrors()
+    }
+  }, [clearErrors])
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
