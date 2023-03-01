@@ -2688,7 +2688,7 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
 )
 
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
@@ -2700,6 +2700,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     (subject) => subject.parent,
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     (subject) => subject.textEdit,
+    BooleanKeepDeepEquality,
+    (subject) => subject.wrapInConditional,
     BooleanKeepDeepEquality,
     insertionSubject,
   )

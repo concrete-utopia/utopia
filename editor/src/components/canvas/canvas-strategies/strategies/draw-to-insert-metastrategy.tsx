@@ -492,7 +492,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
 
   const element = insertionSubject.element
-  const path = EP.appendToPath(rootPath, element.uid)
+  const path = editorState.selectedViews[0]
 
   const fakeMetadata = createFakeMetadataForElement(path, element, frame, startingMetadata)
 

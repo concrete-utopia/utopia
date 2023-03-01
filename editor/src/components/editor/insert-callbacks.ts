@@ -60,10 +60,22 @@ export function useEnterDrawToInsertForButton(): (event: React.MouseEvent<Elemen
   return useEnterDrawToInsertForElement(defaultButtonElement)
 }
 
+export function useEnterDrawToInsertForConditional(): (event: React.MouseEvent<Element>) => void {
+  const drawToInsertCallbackForConditional = useEnterDrawToInsertForElement(defaultDivElement)
+
+  return React.useCallback(
+    (event: React.MouseEvent<Element>): void => {
+      drawToInsertCallbackForConditional(event, { wrapInConditional: true })
+    },
+    [drawToInsertCallbackForConditional],
+  )
+}
+
 function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXElement): (
   event: React.MouseEvent<Element>,
   insertOptions?: {
     textEdit?: boolean
+    wrapInConditional?: boolean
   },
 ) => void {
   const dispatch = useDispatch()
@@ -74,6 +86,7 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
       event: React.MouseEvent<Element>,
       insertOptions: {
         textEdit?: boolean
+        wrapInConditional?: boolean
       } = {},
     ): void => {
       const modifiers = Modifier.modifiersForEvent(event)

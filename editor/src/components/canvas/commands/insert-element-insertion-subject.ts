@@ -1,6 +1,12 @@
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import {
+  emptyComments,
+  jsxAttributeValue,
+  jsxConditionalExpression,
+} from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
@@ -57,11 +63,21 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         return
       }
 
+      const uid = generateUidWithExistingComponents(editor.projectContents)
+      const elementToInsert = subject.wrapInConditional
+        ? jsxConditionalExpression(
+            uid,
+            jsxAttributeValue(true, emptyComments),
+            subject.element,
+            jsxAttributeValue(null, emptyComments),
+            emptyComments,
+          )
+        : subject.element
       const withElementInserted = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
         targetParent,
-        subject.element,
+        elementToInsert,
         utopiaComponents,
         null,
       )
@@ -76,7 +92,11 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
           underlyingFilePath,
         ),
       )
-      selectedViews.push(EP.appendToPath(targetParent, subject.element.uid))
+      if (subject.wrapInConditional) {
+        selectedViews.push(EP.appendToPath(EP.appendToPath(targetParent, uid), subject.element.uid))
+      } else {
+        selectedViews.push(EP.appendToPath(targetParent, subject.element.uid))
+      }
     },
   )
 

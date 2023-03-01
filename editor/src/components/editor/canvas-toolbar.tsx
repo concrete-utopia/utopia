@@ -27,6 +27,7 @@ import { EditorModes } from './editor-modes'
 import {
   useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
+  useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
@@ -50,6 +51,7 @@ export const CanvasToolbar = React.memo(() => {
   const insertSpanCallback = useEnterTextEditMode()
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
+  const insertConditionalCallback = useEnterDrawToInsertForConditional()
 
   const insertMenuMode = useEditorState(
     Substores.restOfEditor,
@@ -219,7 +221,11 @@ export const CanvasToolbar = React.memo(() => {
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Insert div' placement='bottom'>
-            <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
+            <InsertModeButton
+              iconType='view'
+              primary={divInsertion}
+              onClick={insertConditionalCallback}
+            />
           </Tooltip>
           <Tooltip title='Insert image' placement='bottom'>
             <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
