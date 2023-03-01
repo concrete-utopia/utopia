@@ -35,6 +35,7 @@ import {
 } from '../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../canvas/padding-utils'
 import { CanvasControlWithProps } from './common/inspector-atoms'
+import createCachedSelector from 're-reselect'
 
 export const NineBlockControlTestId = 'NineBlockControlTestId'
 
@@ -121,7 +122,7 @@ const DefaultJustifyContentFlexAlignment: JustifyContentFlexAlignemt = {
   alignItems: 'flex-start',
 }
 
-const isSelectedSelector = createSelector(
+const isSelectedSelector = createCachedSelector(
   justifyAlignSelector,
   flexDirectionSelector,
   (_: MetadataSubstate, x: JustifyContentFlexAlignemt) => x,
@@ -132,7 +133,7 @@ const isSelectedSelector = createSelector(
       detectedJustifyContentFlexAlignment ?? DefaultJustifyContentFlexAlignment,
     )
   },
-)
+)((_, x) => `${x.alignItems}_${x.justifyContent}`)
 
 const opacity = (isSelected: boolean, flexDirectionMatches: boolean): number => {
   if (!flexDirectionMatches) {
