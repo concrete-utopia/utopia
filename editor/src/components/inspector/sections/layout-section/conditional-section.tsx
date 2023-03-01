@@ -2,6 +2,7 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { isRight } from '../../../../core/shared/either'
 import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
@@ -17,6 +18,7 @@ import {
   SquareButton,
   useColorTheme,
 } from '../../../../uuiui'
+import { EditorAction } from '../../../editor/action-types'
 import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -26,6 +28,8 @@ export const ConditionalsControlSectionOpenTestId = 'conditionals-control-sectio
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
 export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
+
+type Condition = boolean | null | 'mixed'
 
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
@@ -37,46 +41,69 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     'Metadata',
   )
 
-  const path = React.useMemo(() => {
-    if (paths.length !== 1) {
-      return null
-    }
-    return paths[0]
-  }, [paths])
+  const areAllConditionals = React.useMemo(() => {
+    return paths.every((path) => {
+      return MetadataUtils.isConditionalFromMetadata(
+        MetadataUtils.findElementByElementPath(jsxMetadata, path),
+      )
+    })
+  }, [paths, jsxMetadata])
 
-  const element = React.useMemo(() => {
-    if (path == null) {
-      return
+  const elements = React.useMemo(() => {
+    if (!areAllConditionals) {
+      return []
     }
-    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-    if (
-      elementMetadata == null ||
-      !isRight(elementMetadata.element) ||
-      !isJSXConditionalExpression(elementMetadata.element.value)
-    ) {
-      return null
-    }
-    return elementMetadata.element.value
-  }, [jsxMetadata, path])
 
-  const condition = React.useMemo(() => {
-    if (element == null) {
+    return mapDropNulls((path) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+      if (
+        elementMetadata == null ||
+        !isRight(elementMetadata.element) ||
+        !isJSXConditionalExpression(elementMetadata.element.value)
+      ) {
+        return null
+      }
+
+      return elementMetadata.element.value
+    }, paths)
+  }, [jsxMetadata, paths, areAllConditionals])
+
+  const condition: Condition = React.useMemo(() => {
+    if (elements.length === 0) {
       return null
     }
-    return findUtopiaCommentFlag(element.comments, 'conditional')?.value ?? null
-  }, [element])
+
+    let conditions = new Set<boolean | null>()
+    elements.forEach((element) => {
+      const flag = findUtopiaCommentFlag(element.comments, 'conditional')
+      conditions.add(flag?.value ?? null)
+    })
+
+    switch (conditions.size) {
+      case 0:
+        return null
+      case 1:
+        return conditions.values().next().value
+      default:
+        return 'mixed'
+    }
+  }, [elements])
 
   const setCondition = React.useCallback(
     (value: boolean | null) => () => {
-      if (path == null || element == null) {
+      if (elements.length === 0) {
         return
       }
-      dispatch([setConditionalOverriddenCondition(path, value)])
+
+      const actions: EditorAction[] = paths.map((path) =>
+        setConditionalOverriddenCondition(path, value),
+      )
+      dispatch(actions)
     },
-    [dispatch, path, element],
+    [dispatch, paths, elements],
   )
 
-  if (element == null) {
+  if (!areAllConditionals) {
     return null
   }
 
@@ -131,7 +158,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <FlexRow style={{ flexGrow: 1, gap: 4 }}>
             <Button
               style={{ flex: 1 }}
-              spotlight={condition !== false}
+              spotlight={condition === true}
               highlight
               onClick={setCondition(true)}
               data-testid={ConditionalsControlToggleTrueTestId}
