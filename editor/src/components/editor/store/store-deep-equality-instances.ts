@@ -333,6 +333,11 @@ import {
   projectGithubSettings,
   ColorSwatch,
   newColorSwatch,
+  NavigatorEntry,
+  RegularNavigatorEntry,
+  regularNavigatorEntry,
+  ConditionalClauseNavigatorEntry,
+  conditionalClauseNavigatorEntry,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -475,6 +480,7 @@ import {
   RepositoryEntryPermissions,
 } from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
+import { ThenOrElse } from '../../../core/model/conditionals'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -499,12 +505,49 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
   )
 }
 
+export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RegularNavigatorEntry> =
+  combine1EqualityCall(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    regularNavigatorEntry,
+  )
+
+export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.clause,
+    createCallWithTripleEquals<ThenOrElse>(),
+    conditionalClauseNavigatorEntry,
+  )
+
+export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'REGULAR':
+      if (oldValue.type === newValue.type) {
+        return RegularNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'CONDITIONAL_CLAUSE':
+      if (oldValue.type === newValue.type) {
+        return ConditionalClauseNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
   return combine5EqualityCalls(
     (state) => state.navigatorTargets,
-    ElementPathArrayKeepDeepEquality,
+    arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
-    ElementPathArrayKeepDeepEquality,
+    arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.controls,
     HigherOrderControlArrayKeepDeepEquality,
     (state) => state.transientState,

@@ -396,6 +396,9 @@ import {
   withUnderlyingTarget,
   EditorStoreUnpatched,
   modifyOpenJsxElementOrConditionalAtPath,
+  isRegularNavigatorEntry,
+  NavigatorEntry,
+  regularNavigatorEntryOptic,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -478,6 +481,9 @@ import { collapseTextElements } from '../../../components/text-editor/text-handl
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
+import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
+import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1366,7 +1372,9 @@ function getZIndexOrderedViewsWithoutDirectChildren(
 ): Array<ElementPath> {
   let targetsAndZIndex: Array<{ target: ElementPath; index: number }> = []
   Utils.fastForEach(targets, (target) => {
-    const index = derived.navigatorTargets.findIndex((tp) => EP.pathsEqual(tp, target))
+    const index = derived.navigatorTargets.findIndex(
+      (entry) => isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, target),
+    )
     targetsAndZIndex.push({ target: target, index: index })
   })
   targetsAndZIndex.sort((a, b) => b.index - a.index)
@@ -1468,12 +1476,16 @@ function updateSelectedComponentsFromEditorPosition(
     // Looks like the canvas has errored out, so leave it alone for now.
     return editor
   } else {
-    const allElementPaths = derived.navigatorTargets
     const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
+    const allElementPathsOptic: Optic<Array<NavigatorEntry>, ElementPath> = compose3Optics(
+      traverseArray(),
+      regularNavigatorEntryOptic,
+      fromField('elementPath'),
+    )
     const newlySelectedElements = getElementPathsInBounds(
       line,
       highlightBoundsForUids,
-      allElementPaths,
+      toArrayOf(allElementPathsOptic, derived.navigatorTargets),
     )
     return UPDATE_FNS.SELECT_COMPONENTS(
       selectComponents(newlySelectedElements, false),

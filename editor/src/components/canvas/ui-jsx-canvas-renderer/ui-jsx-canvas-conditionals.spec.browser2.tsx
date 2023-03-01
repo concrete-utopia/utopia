@@ -1,5 +1,5 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { navigatorEntryToKey, StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import * as EP from '../../../core/shared/element-path'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
@@ -77,7 +77,7 @@ describe('a project with conditionals', () => {
     ])
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
-    const pathStrings = navigatorTargets.map(EP.toString)
+    const pathStrings = navigatorTargets.map(navigatorEntryToKey)
     expect(pathStrings).toEqual([
       'storyboard/scene',
       'storyboard/scene/app',

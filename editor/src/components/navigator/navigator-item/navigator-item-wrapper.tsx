@@ -3,6 +3,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
+import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -17,6 +18,9 @@ import {
   defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
+  isRegularNavigatorEntry,
+  navigatorEntriesEqual,
+  NavigatorEntry,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
@@ -29,7 +33,7 @@ import {
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  elementPath: ElementPath
+  navigatorEntry: NavigatorEntry
   getDragSelections: () => Array<DragSelection>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -37,21 +41,23 @@ interface NavigatorItemWrapperProps {
 
 const targetElementMetadataSelector = createSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
-  (store: MetadataSubstate, targetPath: ElementPath) => targetPath,
-  (metadata, targetPath): ElementInstanceMetadata | null => {
-    return MetadataUtils.findElementByElementPath(metadata, targetPath)
+  (store: MetadataSubstate, target: NavigatorEntry) => target,
+  (metadata, target): ElementInstanceMetadata | null => {
+    return MetadataUtils.findElementByElementPath(metadata, target.elementPath)
   },
 )
 
 const targetInNavigatorItemsSelector = createSelector(
   (store: EditorStorePatched) => store.derived.navigatorTargets,
-  (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
-  (navigatorTargets, targetPath) => {
-    return EP.containsPath(targetPath, navigatorTargets)
+  (store: EditorStorePatched, target: NavigatorEntry) => target,
+  (navigatorTargets, target) => {
+    return navigatorTargets.some((navigatorTarget) => {
+      return navigatorEntriesEqual(target, navigatorTarget)
+    })
   },
 )
 
-const targetSupportsChildrenSelector = createSelector(
+const canBeReparentedIntoSelector = createSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   targetElementMetadataSelector,
   targetInNavigatorItemsSelector,
@@ -76,11 +82,16 @@ const labelSelector = createSelector(
 
 const elementWarningsSelector = createSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
-  (_: DerivedSubstate, elementPath: ElementPath) => elementPath,
-  (elementWarnings, elementPath) => {
-    return (
-      getValueFromComplexMap(EP.toString, elementWarnings, elementPath) ?? defaultElementWarnings
-    )
+  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (elementWarnings, navigatorEntry) => {
+    if (isRegularNavigatorEntry(navigatorEntry)) {
+      return (
+        getValueFromComplexMap(EP.toString, elementWarnings, navigatorEntry.elementPath) ??
+        defaultElementWarnings
+      )
+    } else {
+      return defaultElementWarnings
+    }
   },
 )
 
@@ -90,7 +101,7 @@ const noOfChildrenSelector = createSelector(
   (navigatorTargets, targetPath) => {
     let result = 0
     for (const nt of navigatorTargets) {
-      if (EP.isChildOf(nt, targetPath)) {
+      if (EP.isChildOf(nt.elementPath, targetPath)) {
         result += 1
       }
     }
@@ -98,44 +109,70 @@ const noOfChildrenSelector = createSelector(
   },
 )
 
+function getNavigatorEntryLabel(
+  navigatorEntry: NavigatorEntry,
+  labelForTheElement: string,
+): string {
+  switch (navigatorEntry.type) {
+    case 'REGULAR':
+      return labelForTheElement
+    case 'CONDITIONAL_CLAUSE':
+      switch (navigatorEntry.clause) {
+        case 'then':
+          return 'Then'
+        case 'else':
+          return 'Else'
+        default:
+          throw assertNever(navigatorEntry.clause)
+      }
+    default:
+      assertNever(navigatorEntry)
+  }
+}
+
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
-    (store) => EP.containsPath(props.elementPath, store.editor.selectedViews),
+    (store) =>
+      isRegularNavigatorEntry(props.navigatorEntry) &&
+      EP.containsPath(props.navigatorEntry.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
   const isHighlighted = useEditorState(
     Substores.highlightedHoveredViews,
-    (store) => EP.containsPath(props.elementPath, store.editor.highlightedViews),
+    (store) =>
+      isRegularNavigatorEntry(props.navigatorEntry) &&
+      EP.containsPath(props.navigatorEntry.elementPath, store.editor.highlightedViews),
     'NavigatorItemWrapper isHighlighted',
   )
 
   const noOfChildren = useEditorState(
     Substores.derived,
     (store) => {
-      return noOfChildrenSelector(store, props.elementPath)
+      return noOfChildrenSelector(store, props.navigatorEntry.elementPath)
     },
     'NavigatorItemWrapper noOfChildren',
   )
 
-  const supportsChildren = useEditorState(
+  const canBeReparentedInto = useEditorState(
     Substores.fullStore,
     // this is not good
-    (store) => targetSupportsChildrenSelector(store, props.elementPath),
-    'NavigatorItemWrapper targetSupportsChildrenSelector',
+    (store) => canBeReparentedIntoSelector(store, props.navigatorEntry),
+    'NavigatorItemWrapper canBeReparentedIntoSelector',
   )
 
-  const label = useEditorState(
+  const labelForTheElement = useEditorState(
     Substores.metadata,
-    (store) => labelSelector(store, props.elementPath),
+    (store) => labelSelector(store, props.navigatorEntry),
     'NavigatorItemWrapper labelSelector',
   )
+  const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
   const elementWarnings = useEditorState(
     Substores.derived,
-    (store) => elementWarningsSelector(store, props.elementPath),
+    (store) => elementWarningsSelector(store, props.navigatorEntry),
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
@@ -153,21 +190,25 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         // dragging around the navigator but we don't want the entire navigator to re-render each time.
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
         if (
+          isRegularNavigatorEntry(props.navigatorEntry) &&
           EP.pathsEqual(
             store.editor.navigator.dropTargetHint.displayAtElementPath,
-            props.elementPath,
+            props.navigatorEntry.elementPath,
           )
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
         const elementIsCollapsed = EP.containsPath(
-          props.elementPath,
+          props.navigatorEntry.elementPath,
           store.editor.navigator.collapsedViews,
         )
         return {
           appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
           renamingTarget: store.editor.navigator.renamingTarget,
-          isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
+          isElementVisible: !EP.containsPath(
+            props.navigatorEntry.elementPath,
+            store.editor.hiddenInstances,
+          ),
           isCollapsed: elementIsCollapsed,
         }
       },
@@ -177,14 +218,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
     index: props.index,
     editorDispatch: dispatch,
-    elementPath: props.elementPath,
+    navigatorEntry: props.navigatorEntry,
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,
     getDragSelections: props.getDragSelections,
     getSelectedViewsInRange: props.getSelectedViewsInRange,
     appropriateDropTargetHint: appropriateDropTargetHint,
-    supportsChildren: supportsChildren,
+    canReparentInto: canBeReparentedInto,
     noOfChildren: noOfChildren,
     label: label,
     isElementVisible: isElementVisible,

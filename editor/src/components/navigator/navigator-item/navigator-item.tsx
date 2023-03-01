@@ -11,7 +11,13 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { ElementWarnings } from '../../editor/store/editor-state'
+import {
+  ElementWarnings,
+  isConditionalClauseNavigatorEntry,
+  isRegularNavigatorEntry,
+  NavigatorEntry,
+  navigatorEntryToKey,
+} from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
@@ -32,6 +38,7 @@ import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
 import { createSelector } from 'reselect'
 import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import { navigatorDepth, navigatorDepthAncestorShift } from '../navigator-utils'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -43,27 +50,16 @@ interface ComputedLook {
 
 export const BasePaddingUnit = 20
 
-export function getElementPadding(
-  elementPath: ElementPath,
-  visibleNavigatorTargets: Array<ElementPath>, // TODO: we only need this to filter out fragments, can be delete after 'Fragment support' FS is deleted
-): number {
-  if (isFeatureEnabled('Fragment support')) {
-    return EP.navigatorDepth(elementPath, visibleNavigatorTargets) * BasePaddingUnit
-  }
-
-  const ancestors = EP.getAncestors(elementPath)
-  const ancestorsNotInNavigator = ancestors.filter(
-    (path) => !visibleNavigatorTargets.some((navigatorPath) => EP.pathsEqual(path, navigatorPath)),
-  )
+export function getElementPadding(navigatorEntry: NavigatorEntry, ancestorShift: number): number {
   // an empty path and the storyboard is always part of the ancestorsNotInNavigator list and that doesn't matter,
   // so we can add 2 to the offset. NOTE: this 2 is also a constant in EP.navigatorDepth for the same reason
-  const paddingOffset = 2 - ancestorsNotInNavigator.length
+  const paddingOffset = ancestorShift - 1
 
-  return (EP.navigatorDepth(elementPath) + paddingOffset) * BasePaddingUnit
+  return (navigatorDepth(navigatorEntry.elementPath) + paddingOffset) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
-  elementPath: ElementPath
+  navigatorEntry: NavigatorEntry
   index: number
   getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
@@ -76,7 +72,7 @@ export interface NavigatorItemInnerProps {
   selected: boolean
   elementWarnings: ElementWarnings
   shouldShowParentOutline: boolean
-  visibleNavigatorTargets: Array<ElementPath>
+  visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
 function selectItem(
@@ -214,63 +210,70 @@ const computeResultingStyle = (
   return result
 }
 
-function useStyleFullyVisible(path: ElementPath): boolean {
+function useStyleFullyVisible(navigatorEntry: NavigatorEntry): boolean {
   return useEditorState(
     Substores.metadata,
     (store) => {
-      const metadata = store.editor.jsxMetadata
-      const selectedViews = store.editor.selectedViews
-      const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
-      const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
+      if (isRegularNavigatorEntry(navigatorEntry)) {
+        const path = navigatorEntry.elementPath
+        const metadata = store.editor.jsxMetadata
+        const selectedViews = store.editor.selectedViews
+        const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
+        const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
 
-      const isStoryboardChild = EP.isStoryboardChild(path)
+        const isStoryboardChild = EP.isStoryboardChild(path)
 
-      const isContainingBlockAncestor = selectedViews.some((selected) => {
-        return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
-      })
+        const isContainingBlockAncestor = selectedViews.some((selected) => {
+          return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
+        })
 
-      const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-        const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
-          metadata,
-          selected,
-        )?.specialSizeMeasurements
-        const parentPath = EP.parentPath(selected)
-        if (
-          selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
-          !isParentOfSelected &&
-          EP.isDescendantOfOrEqualTo(selected, path) &&
-          parentPath != null
-        ) {
-          const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+        const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
+          const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(
             metadata,
-            parentPath,
-          )
-          return EP.pathsEqual(flexDirectionChange, path)
-        } else {
-          return false
-        }
-      })
+            selected,
+          )?.specialSizeMeasurements
+          const parentPath = EP.parentPath(selected)
+          if (
+            selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
+            !isParentOfSelected &&
+            EP.isDescendantOfOrEqualTo(selected, path) &&
+            parentPath != null
+          ) {
+            const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+              metadata,
+              parentPath,
+            )
+            return EP.pathsEqual(flexDirectionChange, path)
+          } else {
+            return false
+          }
+        })
 
-      let isInsideFocusedComponent =
-        EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
+        let isInsideFocusedComponent =
+          EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
 
-      return (
-        isStoryboardChild ||
-        isSelected ||
-        isParentOfSelected ||
-        isContainingBlockAncestor ||
-        isFlexAncestorDirectionChange ||
-        isInsideFocusedComponent
-      )
+        return (
+          isStoryboardChild ||
+          isSelected ||
+          isParentOfSelected ||
+          isContainingBlockAncestor ||
+          isFlexAncestorDirectionChange ||
+          isInsideFocusedComponent
+        )
+      } else {
+        return false
+      }
     },
     'NavigatorItem useStyleFullyVisible',
   )
 }
 
-function useIsProbablyScene(path: ElementPath): boolean {
+function useIsProbablyScene(navigatorEntry: NavigatorEntry): boolean {
   return useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.isProbablyScene(store.editor.jsxMetadata, path),
+    (store) =>
+      isRegularNavigatorEntry(navigatorEntry) &&
+      MetadataUtils.isProbablyScene(store.editor.jsxMetadata, navigatorEntry.elementPath),
     'NavigatorItem useIsProbablyScene',
   )
 }
@@ -347,7 +350,7 @@ export const NavigatorItem: React.FunctionComponent<
     isElementVisible,
     selected,
     collapsed,
-    elementPath,
+    navigatorEntry,
     getSelectedViewsInRange,
     index,
     elementWarnings,
@@ -356,37 +359,48 @@ export const NavigatorItem: React.FunctionComponent<
   const colorTheme = useColorTheme()
   const isFocusedComponent = useEditorState(
     Substores.focusedElement,
-    (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
+    (store) =>
+      isRegularNavigatorEntry(navigatorEntry) &&
+      EP.isFocused(store.editor.focusedElementPath, navigatorEntry.elementPath),
     'NavigatorItem isFocusedComponent',
   )
 
   const isFocusableComponent = useEditorState(
     Substores.metadata,
     (store) => {
-      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
+      return (
+        isRegularNavigatorEntry(navigatorEntry) &&
+        MetadataUtils.isFocusableComponent(navigatorEntry.elementPath, store.editor.jsxMetadata)
+      )
     },
     'NavigatorItem isFocusable',
   )
 
-  const visibleNavigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.visibleNavigatorTargets,
-    'NavigatorItem visibleNavigatorTargets',
+  const ancestorShift = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return navigatorDepthAncestorShift(navigatorEntry, store.editor.jsxMetadata)
+    },
+    'NavigatorItem ancestorShift',
   )
 
   const childComponentCount = props.noOfChildren
 
-  const isDynamic = MetadataUtils.isElementGenerated(elementPath)
+  const isDynamic = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
 
-  const isInsideComponent = EP.isInsideFocusedComponent(elementPath) || isFocusedComponent
-  const fullyVisible = useStyleFullyVisible(elementPath)
-  const isProbablyScene = useIsProbablyScene(elementPath)
+  const isInsideComponent =
+    EP.isInsideFocusedComponent(navigatorEntry.elementPath) || isFocusedComponent
+  const fullyVisible = useStyleFullyVisible(navigatorEntry)
+  const isProbablyScene = useIsProbablyScene(navigatorEntry)
 
   const isHighlightedForInteraction = useEditorState(
     Substores.restOfEditor,
     (store) => {
-      return store.editor.navigator.highlightedTargets.some((target) =>
-        EP.pathsEqual(target, props.elementPath),
+      return (
+        isRegularNavigatorEntry(props.navigatorEntry) &&
+        store.editor.navigator.highlightedTargets.some((target) =>
+          EP.pathsEqual(target, props.navigatorEntry.elementPath),
+        )
       )
     },
     'isreallyhighlighted',
@@ -415,33 +429,45 @@ export const NavigatorItem: React.FunctionComponent<
 
   const collapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      collapseItem(dispatch, elementPath, event)
+      collapseItem(dispatch, navigatorEntry.elementPath, event)
       event.stopPropagation()
     },
-    [dispatch, elementPath],
+    [dispatch, navigatorEntry.elementPath],
   )
   const select = React.useCallback(
-    (event: any) =>
-      selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event),
-    [dispatch, getSelectedViewsInRange, elementPath, index, selected],
+    (event: any) => {
+      selectItem(
+        dispatch,
+        getSelectedViewsInRange,
+        navigatorEntry.elementPath,
+        index,
+        selected,
+        event,
+      )
+    },
+    [dispatch, getSelectedViewsInRange, navigatorEntry.elementPath, index, selected],
   )
   const highlight = React.useCallback(
-    () => highlightItem(dispatch, elementPath, selected, isHighlighted),
-    [dispatch, elementPath, selected, isHighlighted],
+    () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
+    [dispatch, navigatorEntry.elementPath, selected, isHighlighted],
   )
   const focusComponent = React.useCallback(
     (event: React.MouseEvent) => {
       if (isFocusableComponent && !event.altKey) {
-        dispatch([EditorActions.setFocusedElement(elementPath)])
+        dispatch([EditorActions.setFocusedElement(navigatorEntry.elementPath)])
       }
     },
-    [dispatch, elementPath, isFocusableComponent],
+    [dispatch, navigatorEntry.elementPath, isFocusableComponent],
   )
 
   const isHiddenConditionalBranch = useEditorState(
     Substores.metadata,
     (store) =>
-      isHiddenConditionalBranchSelector(store, props.elementPath, EP.parentPath(props.elementPath)),
+      isHiddenConditionalBranchSelector(
+        store,
+        props.navigatorEntry.elementPath,
+        EP.parentPath(props.navigatorEntry.elementPath),
+      ),
     'NavigatorItem isHiddenConditionalBranch',
   )
 
@@ -455,7 +481,7 @@ export const NavigatorItem: React.FunctionComponent<
   }, [isElementVisible, isHiddenConditionalBranch])
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
-    paddingLeft: getElementPadding(elementPath, visibleNavigatorTargets),
+    paddingLeft: getElementPadding(navigatorEntry, ancestorShift),
     height: UtopiaTheme.layout.rowHeight.smaller,
     ...resultingStyle.style,
   })
@@ -469,7 +495,7 @@ export const NavigatorItem: React.FunctionComponent<
       }}
     >
       <FlexRow
-        data-testid={NavigatorItemTestId(EP.toString(props.elementPath))}
+        data-testid={NavigatorItemTestId(navigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
         onMouseDown={select}
         onMouseMove={highlight}
@@ -485,7 +511,7 @@ export const NavigatorItem: React.FunctionComponent<
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
           />
           <NavigatorRowLabel
-            elementPath={elementPath}
+            navigatorEntry={navigatorEntry}
             label={props.label}
             renamingTarget={props.renamingTarget}
             selected={props.selected}
@@ -496,7 +522,7 @@ export const NavigatorItem: React.FunctionComponent<
           />
         </FlexRow>
         <NavigatorItemActionSheet
-          elementPath={elementPath}
+          navigatorEntry={navigatorEntry}
           selected={selected}
           highlighted={isHighlighted}
           isVisibleOnCanvas={isElementVisible}
@@ -510,7 +536,7 @@ export const NavigatorItem: React.FunctionComponent<
 NavigatorItem.displayName = 'NavigatorItem'
 
 interface NavigatorRowLabelProps {
-  elementPath: ElementPath
+  navigatorEntry: NavigatorEntry
   iconColor: IcnProps['color']
   warningText: string | null
   label: string
@@ -526,7 +552,10 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const element = useEditorState(
     Substores.metadata,
     (store) => {
-      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, props.elementPath)
+      return MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.navigatorEntry.elementPath,
+      )
     },
     'NavigatorRowLabel element',
   )
@@ -541,12 +570,16 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   const isActiveBranchOfOverriddenConditional = useEditorState(
     Substores.metadata,
-    (store) =>
-      isActiveBranchOfOverriddenConditionalSelector(
-        store,
-        props.elementPath,
-        EP.parentPath(props.elementPath),
-      ),
+    (store) => {
+      return (
+        isConditionalClauseNavigatorEntry(props.navigatorEntry) &&
+        isActiveBranchOfOverriddenConditionalSelector(
+          store,
+          props.navigatorEntry.elementPath,
+          EP.parentPath(props.navigatorEntry.elementPath),
+        )
+      )
+    },
     'NavigatorRowLabel isActiveBranchOfOverriddenConditional',
   )
 
@@ -554,7 +587,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     <React.Fragment>
       <LayoutIcon
         key={`layout-type-${props.label}`}
-        path={props.elementPath}
+        navigatorEntry={props.navigatorEntry}
         color={props.iconColor}
         warningText={props.warningText}
       />
@@ -564,10 +597,10 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         testId={`navigator-item-label-${props.label}`}
         name={props.label}
         isDynamic={props.isDynamic}
-        target={props.elementPath}
+        target={props.navigatorEntry}
         selected={props.selected}
         dispatch={props.dispatch}
-        inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
+        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
         style={{
           color:
             !props.selected && isActiveBranchOfOverriddenConditional
@@ -596,7 +629,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
       <ComponentPreview
         key={`preview-${props.label}`}
-        path={props.elementPath}
+        navigatorEntry={props.navigatorEntry}
         color={props.iconColor}
       />
     </React.Fragment>

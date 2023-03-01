@@ -14,7 +14,7 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { AllElementProps } from '../editor/store/editor-state'
+import { AllElementProps, NavigatorEntry } from '../editor/store/editor-state'
 import { isSpawnedActor } from 'xstate/lib/Actor'
 
 interface LayoutIconResult {
@@ -22,12 +22,16 @@ interface LayoutIconResult {
   isPositionAbsolute: boolean
 }
 
-export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
+export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIconResult {
   return useEditorState(
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createLayoutOrElementIconResult(path, metadata, store.editor.allElementProps)
+      return createLayoutOrElementIconResult(
+        navigatorEntry.elementPath,
+        metadata,
+        store.editor.allElementProps,
+      )
     },
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
@@ -39,12 +43,12 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   )
 }
 
-export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
+export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase | null {
   return useEditorState(
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createComponentIconProps(path, metadata)
+      return createComponentIconProps(navigatorEntry.elementPath, metadata)
     },
     'useComponentIcon',
   ) // TODO Memoize Icon Result

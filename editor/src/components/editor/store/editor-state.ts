@@ -141,7 +141,7 @@ import {
 import { Notice } from '../../common/notice'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
-import { fastForEach } from '../../../core/shared/utils'
+import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
 import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
@@ -181,6 +181,9 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import { ThenOrElse } from '../../../core/model/conditionals'
+import { Optic } from '../../../core/shared/optics/optics'
+import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2076,9 +2079,105 @@ export const defaultElementWarnings: ElementWarnings = {
   dynamicSceneChildWidthHeightPercentage: false,
 }
 
+export interface RegularNavigatorEntry {
+  type: 'REGULAR'
+  elementPath: ElementPath
+}
+
+export function regularNavigatorEntry(elementPath: ElementPath): RegularNavigatorEntry {
+  return {
+    type: 'REGULAR',
+    elementPath: elementPath,
+  }
+}
+
+export function regularNavigatorEntriesEqual(
+  first: RegularNavigatorEntry,
+  second: RegularNavigatorEntry,
+): boolean {
+  return EP.pathsEqual(first.elementPath, second.elementPath)
+}
+
+export interface ConditionalClauseNavigatorEntry {
+  type: 'CONDITIONAL_CLAUSE'
+  elementPath: ElementPath
+  clause: ThenOrElse
+}
+
+export function conditionalClauseNavigatorEntry(
+  elementPath: ElementPath,
+  clause: ThenOrElse,
+): ConditionalClauseNavigatorEntry {
+  return {
+    type: 'CONDITIONAL_CLAUSE',
+    elementPath: elementPath,
+    clause: clause,
+  }
+}
+
+export function conditionalClauseNavigatorEntriesEqual(
+  first: ConditionalClauseNavigatorEntry,
+  second: ConditionalClauseNavigatorEntry,
+): boolean {
+  return EP.pathsEqual(first.elementPath, second.elementPath) && first.clause === second.clause
+}
+
+export type NavigatorEntry = RegularNavigatorEntry | ConditionalClauseNavigatorEntry
+
+export function navigatorEntriesEqual(first: NavigatorEntry, second: NavigatorEntry): boolean {
+  if (first.type === 'REGULAR' && second.type === 'REGULAR') {
+    return regularNavigatorEntriesEqual(first, second)
+  }
+  if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
+    return conditionalClauseNavigatorEntriesEqual(first, second)
+  } else {
+    return false
+  }
+}
+
+export function navigatorEntryToKey(entry: NavigatorEntry): string {
+  switch (entry.type) {
+    case 'REGULAR':
+      return `regular-${EP.toComponentId(entry.elementPath)}`
+    case 'CONDITIONAL_CLAUSE':
+      return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
+    default:
+      assertNever(entry)
+  }
+}
+
+export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
+  switch (entry.type) {
+    case 'REGULAR':
+      return `regular_${EP.toVarSafeComponentId(entry.elementPath)}`
+    case 'CONDITIONAL_CLAUSE':
+      return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
+    default:
+      assertNever(entry)
+  }
+}
+
+export function isRegularNavigatorEntry(entry: NavigatorEntry): entry is RegularNavigatorEntry {
+  return entry.type === 'REGULAR'
+}
+
+export const regularNavigatorEntryOptic: Optic<NavigatorEntry, RegularNavigatorEntry> =
+  fromTypeGuard(isRegularNavigatorEntry)
+
+export function isConditionalClauseNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is ConditionalClauseNavigatorEntry {
+  return entry.type === 'CONDITIONAL_CLAUSE'
+}
+
+export const conditionalClauseNavigatorEntryOptic: Optic<
+  NavigatorEntry,
+  ConditionalClauseNavigatorEntry
+> = fromTypeGuard(isConditionalClauseNavigatorEntry)
+
 export interface DerivedState {
-  navigatorTargets: Array<ElementPath>
-  visibleNavigatorTargets: Array<ElementPath>
+  navigatorTargets: Array<NavigatorEntry>
+  visibleNavigatorTargets: Array<NavigatorEntry>
   controls: Array<HigherOrderControl>
   transientState: TransientCanvasState
   elementWarnings: ComplexMap<ElementPath, ElementWarnings>
@@ -2415,8 +2514,8 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
-  navigatorTargets: ElementPath[]
-  visibleNavigatorTargets: ElementPath[]
+  navigatorTargets: Array<NavigatorEntry>
+  visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: ComplexMap<ElementPath, ElementWarnings>
 }
 

@@ -21,6 +21,7 @@ import {
 } from '../../event-helpers.test-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 
 const TestProjectComplex = (additionalStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute' }} data-uid='container'>
@@ -271,7 +272,7 @@ async function dragControl(
     modifiers: modifiers,
     midDragCallback: async () => {
       expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
       ).toEqual(expectedNavigatorTargetsDuringMove)
     },
   })
