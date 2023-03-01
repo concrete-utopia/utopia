@@ -46,7 +46,7 @@ describe('Position Section', () => {
       { legacyRoot: true },
     )
 
-    expect(getByText('flow')).toBeDefined()
+    expect(getByText('Position (flow)')).toBeDefined()
 
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {
