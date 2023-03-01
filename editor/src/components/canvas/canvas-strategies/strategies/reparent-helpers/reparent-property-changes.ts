@@ -227,9 +227,7 @@ export function getReparentPropertyChanges(
       )
 
       const convertDisplayInline =
-        directions === 'non-single-axis-autolayout' ||
-        directions.direction == null ||
-        directions.flexOrFlow === 'flex'
+        directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
           ? 'do-not-convert'
           : directions.direction
 

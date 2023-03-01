@@ -12,7 +12,7 @@ const TestProject1 = `
     data-testid='child-1'
   />
   <div
-    style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 100, top: 150, width: 200, height: 100 }}
+    style={{ backgroundColor: '#aaaaaa33', width: 200, height: 100, display: 'inline-flex' }}
     data-uid='child-2'
   />
   <div

@@ -15,7 +15,6 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { getOptionalDisplayPropCommandsForFlow } from './flow-reorder-helpers'
 import { isReorderAllowed } from './reorder-utils'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
@@ -90,11 +89,6 @@ export function keyboardReorderStrategy(
               reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblings),
               updateHighlightedViews('mid-interaction', []),
-              ...getOptionalDisplayPropCommandsForFlow(
-                newIndex,
-                canvasState.interactionTarget,
-                canvasState.startingMetadata,
-              ),
             ],
             {
               lastReorderIdx: newIndex,
