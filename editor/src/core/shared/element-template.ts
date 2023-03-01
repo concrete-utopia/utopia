@@ -1058,7 +1058,7 @@ export type JSXElementLike = JSXElement | JSXFragment
 
 export interface JSXConditionalExpression extends WithComments {
   type: 'JSX_CONDITIONAL_EXPRESSION'
-  uniqueID: string
+  uid: string
   condition: JSXAttribute
   whenTrue: ChildOrAttribute
   whenFalse: ChildOrAttribute
@@ -1073,7 +1073,7 @@ export function jsxConditionalExpression(
 ): JSXConditionalExpression {
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
-    uniqueID: uid,
+    uid: uid,
     condition: condition,
     whenTrue: whenTrue,
     whenFalse: whenFalse,
@@ -1136,7 +1136,6 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
     const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementUniqueIDs)
     return {
       ...element,
-      uniqueID: '',
       children: updatedChildren,
     }
   } else if (isJSXConditionalExpression(element)) {
@@ -1149,7 +1148,6 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       : clearAttributeUniqueIDs(element.whenFalse)
     return {
       ...element,
-      uniqueID: '',
       condition: updatedCondition,
       whenTrue: updatedWhenTrue,
       whenFalse: updatedWhenFalse,

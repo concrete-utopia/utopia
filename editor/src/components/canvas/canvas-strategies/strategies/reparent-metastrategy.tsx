@@ -2,7 +2,7 @@ import {
   ElementSupportsChildren,
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
 import { memoize } from '../../../../core/shared/memoize'
@@ -87,13 +87,12 @@ export function getApplicableReparentFactories(
       case 'REPARENT_AS_STATIC': {
         const fitness = result.isFallback ? 2 : 3
 
-        const targetParentDisplayType =
-          MetadataUtils.findElementByElementPath(
-            canvasState.startingMetadata,
-            result.target.newParent,
-          )?.specialSizeMeasurements.display === 'flex'
-            ? 'flex'
-            : 'flow'
+        const parentLayouSystems = MetadataUtils.findLayoutSystemForChildren(
+          canvasState.startingMetadata,
+          result.target.newParent,
+        )
+
+        const targetParentDisplayType = parentLayouSystems.at(0) === 'flex' ? 'flex' : 'flow'
 
         return {
           targetParent: result.target.newParent,

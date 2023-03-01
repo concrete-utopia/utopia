@@ -19,7 +19,10 @@ import {
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
-import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import {
+  AllElementProps,
+  getElementFromProjectContents,
+} from '../../../../editor/store/editor-state'
 import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
@@ -224,9 +227,7 @@ export function getReparentPropertyChanges(
       )
 
       const convertDisplayInline =
-        directions === 'non-single-axis-autolayout' ||
-        directions.direction == null ||
-        directions.flexOrFlow === 'flex'
+        directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
           ? 'do-not-convert'
           : directions.direction
 

@@ -54,7 +54,7 @@ export const StrategyIndicator = React.memo(() => {
 })
 
 interface MoveIndicatorItemProps {
-  dragType: 'absolute' | 'static'
+  dragType: 'absolute' | 'static' | 'none'
 }
 
 const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
@@ -73,8 +73,11 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
           <VisibilityWrapper visible={props.dragType === 'absolute'}>
             <ModalityIcons.MoveAbsolute color={'on-highlight-main'} />
           </VisibilityWrapper>
-          <VisibilityWrapper visible={props.dragType !== 'absolute'}>
+          <VisibilityWrapper visible={props.dragType === 'static'}>
             <ModalityIcons.MoveAbsolute color={'main'} />
+          </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType === 'none'}>
+            <ModalityIcons.MoveAbsolute color={'subdued'} />
           </VisibilityWrapper>
         </div>
         <div
@@ -88,12 +91,21 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
           <VisibilityWrapper visible={props.dragType === 'static'}>
             <ModalityIcons.Reorder color={'on-highlight-main'} />
           </VisibilityWrapper>
-          <VisibilityWrapper visible={props.dragType !== 'static'}>
+          <VisibilityWrapper visible={props.dragType === 'absolute'}>
             <ModalityIcons.Reorder color={'main'} />
+          </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType === 'none'}>
+            <ModalityIcons.Reorder color={'subdued'} />
           </VisibilityWrapper>
         </div>
       </FlexRow>
-      <div style={{}}>{props.dragType === 'absolute' ? 'Move' : 'Reorder'}</div>
+      <div
+        style={{
+          color: props.dragType === 'none' ? colorTheme.fg8.value : colorTheme.fg2.value,
+        }}
+      >
+        {props.dragType === 'static' ? 'Reorder' : 'Move'}
+      </div>
     </FlexColumn>
   )
 })

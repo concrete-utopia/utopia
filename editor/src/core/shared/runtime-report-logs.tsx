@@ -116,3 +116,7 @@ export function useWriteOnlyConsoleLogs(): {
     clearConsoleLogs: clearConsoleLogs,
   }
 }
+
+export function getConsoleLogsForTests(): Array<ConsoleLog> {
+  return consoleLogsAtom.currentValue
+}
