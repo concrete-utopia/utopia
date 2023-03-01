@@ -18,7 +18,7 @@ const EsLintRecommended: Linter.RulesRecord = {
   'no-compare-neg-zero': 'error',
   'no-cond-assign': 'error',
   'no-const-assign': 'error',
-  'no-constant-condition': 'error',
+  'no-constant-condition': 'warn',
   'no-control-regex': 'error',
   'no-debugger': 'error',
   'no-delete-var': 'error',
