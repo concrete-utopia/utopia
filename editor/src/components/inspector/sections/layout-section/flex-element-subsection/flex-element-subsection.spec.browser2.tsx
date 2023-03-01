@@ -202,7 +202,8 @@ async function changeDimensionValue(
   await editor.getDispatchFollowUpActionsFinished()
 }
 
-describe('flex dimension controls', () => {
+// These flex dimenson controls no longer exist
+xdescribe('flex dimension controls', () => {
   // For every unit added on the end and for when no unit is explicitly supplied...
   for (const lengthUnit of ['fr', '%', null] as const) {
     // Common values relating to the length unit.
