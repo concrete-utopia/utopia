@@ -141,7 +141,7 @@ export function createElementIconPropsFromMetadata(
   if (isConditional) {
     return {
       category: 'element',
-      type: 'conditional',
+      type: 'arc',
       width: 18,
       height: 18,
     }
