@@ -1,11 +1,15 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import React from 'react'
+import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { isRight } from '../../../../core/shared/either'
-import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+} from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { when } from '../../../../utils/react-conditionals'
 import {
@@ -22,6 +26,7 @@ import { EditorAction } from '../../../editor/action-types'
 import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
@@ -29,20 +34,13 @@ export const ConditionalsControlSectionCloseTestId = 'conditionals-control-secti
 export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
 export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
 
-type Condition = boolean | null | 'mixed'
+type Condition = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 
-export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
-  const dispatch = useDispatch()
-  const colorTheme = useColorTheme()
-
-  const jsxMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'Metadata',
-  )
-
-  const elements = React.useMemo(() => {
-    return mapDropNulls((path) => {
+const conditionSelector = createSelector(
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (_store: MetadataSubstate, paths: ElementPath[]) => paths,
+  (jsxMetadata: ElementInstanceMetadataMap, paths: ElementPath[]): Condition => {
+    const elements = mapDropNulls((path) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
       if (
         elementMetadata == null ||
@@ -54,11 +52,9 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
       return elementMetadata.element.value
     }, paths)
-  }, [jsxMetadata, paths])
 
-  const condition: Condition = React.useMemo(() => {
     if (elements.length === 0) {
-      return null
+      return 'not-conditional'
     }
 
     let conditions = new Set<boolean | null>()
@@ -69,29 +65,36 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
     switch (conditions.size) {
       case 0:
-        return null
+        return 'not-overridden'
       case 1:
-        return conditions.values().next().value
+        return conditions.values().next().value ?? 'not-overridden'
       default:
         return 'mixed'
     }
-  }, [elements])
+  },
+)
+
+export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
+  const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
+
+  const condition = useEditorState(
+    Substores.metadata,
+    (store) => conditionSelector(store, paths),
+    'ConditionalSection condition',
+  )
 
   const setCondition = React.useCallback(
     (value: boolean | null) => () => {
-      if (elements.length === 0) {
-        return
-      }
-
       const actions: EditorAction[] = paths.map((path) =>
         setConditionalOverriddenCondition(path, value),
       )
       dispatch(actions)
     },
-    [dispatch, paths, elements],
+    [dispatch, paths],
   )
 
-  if (elements.length === 0) {
+  if (condition === 'not-conditional') {
     return null
   }
 
@@ -117,7 +120,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
           <span>Conditional</span>
         </FlexRow>
-        {condition != null ? (
+        {condition != 'not-overridden' ? (
           <SquareButton
             highlight
             onClick={setCondition(null)}
@@ -136,7 +139,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
         )}
       </InspectorSubsectionHeader>
       {when(
-        condition != null,
+        condition != 'not-overridden',
         <UIGridRow
           padded={true}
           variant='<---1fr--->|------172px-------|'
