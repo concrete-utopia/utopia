@@ -1,3 +1,4 @@
+import createCachedSelector from 're-reselect'
 import React, { CSSProperties } from 'react'
 import { createSelector } from 'reselect'
 import { FlexRow, Icn, Tooltip } from '../../uuiui'
@@ -19,7 +20,7 @@ export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 export const ResizeToFillControlTestId = 'ResizeToFillControlTestId'
 export const ResizeToFixedControlTestId = 'ResizeToFixedControlTestId'
 
-const isApplicableSelector = createSelector(
+const isApplicableSelector = createCachedSelector(
   metadataSelector,
   selectedViewsSelector,
   (_: MetadataSubstate, mode: FixedHugFillMode) => mode,
@@ -35,7 +36,7 @@ const isApplicableSelector = createSelector(
       detectFillHugFixedState('vertical', metadata, selectedViews[0])?.type === mode
     return isApplicable && !isAlreadyApplied
   },
-)
+)((_, mode) => mode)
 
 interface ResizeToFitControlProps {}
 
