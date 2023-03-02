@@ -82,6 +82,7 @@ import {
 import Utils, {
   absolute,
   after,
+  before,
   IndexPosition,
   shiftIndexPositionForRemovedElement,
 } from '../../utils/utils'
@@ -161,7 +162,7 @@ import {
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
@@ -2654,7 +2655,7 @@ export function duplicate(
   newParentPath: ElementPath | null,
   editor: EditorState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
-  insertAfterCurrentElement: boolean = false,
+  anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
   let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
@@ -2746,13 +2747,24 @@ export function duplicate(
             console.warn(`Could not duplicate ${EP.toVarSafeComponentId(path)}`)
             return success
           } else {
+            const position = () => {
+              switch (anchor) {
+                case 'before':
+                  return before(elementIndex)
+                case 'after':
+                  return after(elementIndex)
+                default:
+                  assertNever(anchor)
+              }
+            }
+
             utopiaComponents = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
               newParentPath,
               newElement,
               utopiaComponents,
-              after(elementIndex),
+              position(),
             )
 
             newSelectedViews.push(newPath)
