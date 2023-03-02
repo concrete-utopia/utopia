@@ -226,6 +226,14 @@ export const MetadataUtils = {
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
+  getSiblingsParticipatingInAutolayoutUnordered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    return MetadataUtils.getSiblingsUnordered(metadata, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
+  },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath | null,

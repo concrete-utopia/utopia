@@ -10,8 +10,6 @@ import {
   MoveStrategy,
 } from '../canvas-strategy-types'
 import {
-  areAllSiblingsInOneDimensionFlexOrFlow,
-  getElementDirection,
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
@@ -21,6 +19,13 @@ import {
   DragOutlineControl,
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
+import {
+  boundingRectangleArray,
+  nullIfInfinity,
+  offsetPoint,
+  rectContainsPoint,
+} from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 
 export function flowReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -74,12 +79,7 @@ export function flowReorderStrategy(
           show: 'visible-only-while-active',
         }),
       ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness:
-        interactionSession != null &&
-        interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.activeControl.type === 'BOUNDING_AREA'
-          ? 1
-          : 0,
+      fitness: getFitness(canvasState, interactionSession, target),
       apply: () => {
         return interactionSession == null
           ? emptyStrategyApplicationResult
@@ -94,4 +94,39 @@ export function flowReorderStrategy(
     },
     dragType: 'static',
   }
+}
+
+function getFitness(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  target: ElementPath,
+): number {
+  if (
+    interactionSession != null &&
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.activeControl.type === 'BOUNDING_AREA'
+  ) {
+    if (interactionSession.interactionData.drag == null) {
+      return 1
+    }
+
+    const autoLayoutSiblings = MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(
+      canvasState.startingMetadata,
+      target,
+    )
+    const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
+    const autoLayoutSiblingsBounds = boundingRectangleArray(autoLayoutSiblingsFrames)
+
+    const pointOnCanvas = offsetPoint(
+      interactionSession.interactionData.dragStart,
+      interactionSession.interactionData.drag,
+    )
+
+    const isInsideBoundingBoxOfSiblings =
+      autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
+
+    return isInsideBoundingBoxOfSiblings ? 1 : 0
+  }
+
+  return 0
 }
