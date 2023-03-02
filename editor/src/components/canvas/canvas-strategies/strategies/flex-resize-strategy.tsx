@@ -95,17 +95,6 @@ export function flexResizeStrategy(
       ? 'flexBasis'
       : 'height'
 
-  const elementDimensions =
-    elementDimensionsProps == null
-      ? null
-      : {
-          width: elementDimensionsProps[widthPropToUse],
-          height: elementDimensionsProps[heightPropToUse],
-        }
-
-  const hasDimensions =
-    elementDimensions != null &&
-    (elementDimensions.width != null || elementDimensions.height != null)
   const hasSizedParent =
     elementParentBounds != null &&
     elementParentBounds.width !== 0 &&
@@ -144,7 +133,7 @@ export function flexResizeStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
-      (hasDimensions || !hasSizedParent)
+      hasSizedParent
         ? 2
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
@@ -220,6 +209,7 @@ export function flexResizeStrategy(
                   elementParentFlexDirection,
                   metadata,
                   canvasState.startingMetadata,
+                  interactionSession.latestMetadata,
                 )
               : null
 
@@ -327,6 +317,7 @@ function shouldSnapToParentEdge(
   parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
+  latestMetadata: ElementInstanceMetadataMap,
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean
@@ -367,6 +358,14 @@ function shouldSnapToParentEdge(
     MetadataUtils.getFrameInCanvasCoords(sibling.elementPath, startingMetadata),
   )
 
+  // only this fn uses latestMetadata because on insertion the siblings are not ordered correctly based on the startingmetadata
+  const siblingIndex = MetadataUtils.getSiblingsOrdered(
+    latestMetadata,
+    element.elementPath,
+  ).findIndex((sibling) => EP.pathsEqual(element.elementPath, sibling.elementPath))
+  const isFirstSibling = siblingIndex === 0
+  const isLastSibling = siblingIndex === flexSiblingsWithoutSelected.length
+
   const parentInnerBounds = canvasRectangle({
     x: parentBounds.x + (parentPadding.left ?? 0),
     y: parentBounds.y + (parentPadding.top ?? 0),
@@ -378,79 +377,69 @@ function shouldSnapToParentEdge(
     return edgePosition.x === targetEdgePosition.x && edgePosition.y === targetEdgePosition.y
   }
   if (parentFlexDirection === 'row') {
-    if (
-      // in a row layout with left aligned elements dragging on the right edge/corner snaps to parent edge
-      (parentJustifyContent == null || parentJustifyContent === 'flex-start') &&
+    // positive free space is calculated with sibling frames, gap and paddings
+    const siblingsWidth = siblingFrames.reduce((working, frame) => {
+      return frame != null && isFiniteRectangle(frame) ? frame.width + working : working
+    }, 0)
+    const siblingsFrame = siblingsWidth + siblingFrames.length * parentGap
+    const shouldSnap =
+      siblingsFrame < parentInnerBounds.width && // there is open space in the layout
+      siblingsFrame + resizedBounds.width + SnappingThreshold > parentInnerBounds.width
+
+    const isLastEdge =
       (isDraggingEdge(EdgePositionRight) ||
         isDraggingEdge(EdgePositionTopRight) ||
-        isDraggingEdge(EdgePositionBottomRight))
-    ) {
-      return {
-        snapDirection: 'horizontal',
-        snap:
-          resizedBounds.x + resizedBounds.width + SnappingThreshold >
-          parentInnerBounds.x + parentInnerBounds.width,
-      }
-    } else if (parentJustifyContent === 'center' && edgePosition.x !== 0.5) {
-      // in a row layout with center aligned elements dragging on the left or right edge/corner snaps to parent edge
-      // positive free space is calculated with sibling frames, gap and paddings
-      const siblingsWidth = siblingFrames.reduce((working, frame) => {
-        return frame != null && isFiniteRectangle(frame) ? frame.width + working : working
-      }, 0)
-      const siblingsAndDraggedFrame =
-        siblingsWidth + resizedBounds.width + siblingFrames.length * parentGap
-      return {
-        snapDirection: 'horizontal',
-        snap: siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.width,
-      }
-    } else if (
-      // in a row layout with right aligned elements dragging on the left edge/corner snaps to parent edge
-      parentJustifyContent === 'flex-end' &&
+        isDraggingEdge(EdgePositionBottomRight)) &&
+      isLastSibling
+
+    const isFirstEdge =
       (isDraggingEdge(EdgePositionLeft) ||
         isDraggingEdge(EdgePositionTopLeft) ||
-        isDraggingEdge(EdgePositionBottomLeft))
-    ) {
+        isDraggingEdge(EdgePositionBottomLeft)) &&
+      isFirstSibling
+
+    const isElementDraggedOnOuterEdgeOrCorner =
+      ((parentJustifyContent == null || parentJustifyContent === 'flex-start') && isLastEdge) ||
+      (parentJustifyContent === 'center' && (isLastEdge || isFirstEdge)) ||
+      (parentJustifyContent === 'flex-end' && isFirstEdge)
+
+    if (isElementDraggedOnOuterEdgeOrCorner) {
       return {
         snapDirection: 'horizontal',
-        snap: parentInnerBounds.x > resizedBounds.x + SnappingThreshold,
+        snap: shouldSnap,
       }
     }
   } else if (parentFlexDirection === 'column') {
-    // in a column layout with top aligned elements dragging on the bottom edge/corner snaps to parent edge
-    if (
-      (parentJustifyContent == null || parentJustifyContent === 'flex-start') &&
+    // positive free space is calculated with sibling frames, gap and paddings
+    const siblingsHeight = siblingFrames.reduce((working, frame) => {
+      return frame != null && isFiniteRectangle(frame) ? frame.height + working : working
+    }, 0)
+    const siblingsFrame = siblingsHeight + siblingFrames.length * parentGap
+    const shouldSnap =
+      siblingsFrame < parentInnerBounds.height && // there is open space in the layout
+      siblingsFrame + resizedBounds.height + SnappingThreshold > parentInnerBounds.height
+
+    const isLastEdge =
       (isDraggingEdge(EdgePositionBottom) ||
         isDraggingEdge(EdgePositionBottomLeft) ||
-        isDraggingEdge(EdgePositionBottomRight))
-    ) {
-      const parentBottomEdge = parentInnerBounds.y + parentInnerBounds.height
-      const elementBottomEdge = resizedBounds.y + resizedBounds.height
-      return {
-        snapDirection: 'vertical',
-        snap: elementBottomEdge + SnappingThreshold > parentBottomEdge,
-      }
-    } else if (parentJustifyContent === 'center' && edgePosition.y !== 0.5) {
-      // in a column layout with center aligned elements dragging on the top or bottom edge/corner snaps to parent edge
-      // positive free space is calculated with sibling frames, gap and paddings
-      const siblingsHeight = siblingFrames.reduce((working, frame) => {
-        return frame != null && isFiniteRectangle(frame) ? frame.height + working : working
-      }, 0)
-      const siblingsAndDraggedFrame =
-        siblingsHeight + resizedBounds.height + siblingFrames.length * parentGap
-      return {
-        snapDirection: 'vertical',
-        snap: siblingsAndDraggedFrame + SnappingThreshold > parentInnerBounds.height,
-      }
-    } else if (
-      // in a column layout with bottom aligned elements dragging on the bottom edge/corner snaps to parent edge
-      parentJustifyContent === 'flex-end' &&
+        isDraggingEdge(EdgePositionBottomRight)) &&
+      isLastSibling
+
+    const isFirstEdge =
       (isDraggingEdge(EdgePositionTop) ||
         isDraggingEdge(EdgePositionTopLeft) ||
-        isDraggingEdge(EdgePositionTopRight))
-    ) {
+        isDraggingEdge(EdgePositionTopRight)) &&
+      isFirstSibling
+
+    const isElementDraggedOnOuterEdgeOrCorner =
+      ((parentJustifyContent == null || parentJustifyContent === 'flex-start') && isLastEdge) ||
+      (parentJustifyContent === 'center' && (isLastEdge || isFirstEdge)) ||
+      (parentJustifyContent === 'flex-end' && isFirstEdge)
+
+    if (isElementDraggedOnOuterEdgeOrCorner) {
       return {
         snapDirection: 'vertical',
-        snap: parentBounds.y > resizedBounds.y + SnappingThreshold,
+        snap: shouldSnap,
       }
     }
   }
