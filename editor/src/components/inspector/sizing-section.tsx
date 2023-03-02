@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlexRow, InspectorSectionIcons, InspectorSubsectionHeader } from '../../uuiui'
+import { FlexRow, InspectorSubsectionHeader } from '../../uuiui'
 import { FillHugFixedControl } from './fill-hug-fixed-control'
 import { ResizeToFitControl } from './resize-to-fit-control'
 
@@ -15,7 +15,6 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
             gap: 8,
           }}
         >
-          <InspectorSectionIcons.Layer />
           <span style={{ flexGrow: 1 }}>Size</span>
           <ResizeToFitControl />
         </FlexRow>

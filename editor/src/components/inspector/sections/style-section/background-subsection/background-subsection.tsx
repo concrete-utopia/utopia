@@ -42,7 +42,6 @@ import {
   FlexRow,
   SquareButton,
   Icn,
-  InspectorSectionIcons,
   Icons,
 } from '../../../../../uuiui'
 import { useContextSelector } from 'use-context-selector'
@@ -339,7 +338,6 @@ export const BackgroundSubsection = React.memo(() => {
     >
       <InspectorSubsectionHeader style={headerStyle}>
         <FlexRow style={{ flexGrow: 1, gap: 8 }}>
-          <InspectorSectionIcons.Background />
           <span>Background</span>
         </FlexRow>
         {propertyStatus.overwritable ? (

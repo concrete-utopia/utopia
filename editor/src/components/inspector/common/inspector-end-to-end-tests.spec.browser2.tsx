@@ -1897,7 +1897,9 @@ describe('inspector tests with real metadata', () => {
       `"detected"`,
     )
   })
-  it('Flex shorthand properties', async () => {
+
+  // TODO reinstate once flex shorthand is supported again
+  xit('Flex shorthand properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div
@@ -1921,11 +1923,6 @@ describe('inspector tests with real metadata', () => {
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
-
-    await act(async () => {
-      await screen.findByTestId('layout-system-expand')
-      fireEvent.click(screen.getByTestId('layout-system-expand'))
-    })
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -1956,6 +1953,7 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
   })
+
   it('Flex longhand properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1988,34 +1986,34 @@ describe('inspector tests with real metadata', () => {
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
-    const flexBasis = (await renderResult.renderedDOM.findByTestId(
-      'position-flexBasis-number-input',
-    )) as HTMLInputElement
+    // const flexBasis = (await renderResult.renderedDOM.findByTestId(
+    //   'position-flexBasis-number-input',
+    // )) as HTMLInputElement
     const flexGrow = (await renderResult.renderedDOM.findByTestId(
-      'position-flexGrow-number-input',
+      'hug-fixed-fill-width',
     )) as HTMLInputElement
-    const flexShrink = (await renderResult.renderedDOM.findByTestId(
-      'position-flexShrink-number-input',
-    )) as HTMLInputElement
+    // const flexShrink = (await renderResult.renderedDOM.findByTestId(
+    //   'position-flexShrink-number-input',
+    // )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexBasis'], `"15px"`)
-    matchInlineSnapshotBrowser(flexBasis.value, `"15"`)
-    matchInlineSnapshotBrowser(
-      flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
+    // matchInlineSnapshotBrowser(metadata.computedStyle?.['flexBasis'], `"15px"`)
+    // matchInlineSnapshotBrowser(flexBasis.value, `"15"`)
+    // matchInlineSnapshotBrowser(
+    //   flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    //   `"simple"`,
+    // )
     matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
     matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
     matchInlineSnapshotBrowser(
       flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
-    matchInlineSnapshotBrowser(flexShrink.value, `"0"`)
-    matchInlineSnapshotBrowser(
-      flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
+    // matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
+    // matchInlineSnapshotBrowser(flexShrink.value, `"0"`)
+    // matchInlineSnapshotBrowser(
+    //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    //   `"simple"`,
+    // )
   })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {

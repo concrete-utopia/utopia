@@ -10,8 +10,6 @@ import { fastForEach } from '../../../../../core/shared/utils'
 import {
   FunctionIcons,
   Icn,
-  Icons,
-  InspectorSectionIcons,
   InspectorSubsectionHeader,
   SquareButton,
   Tooltip,
@@ -54,8 +52,6 @@ function useActiveLayoutTab(
   let value: SelfLayoutTab
   if (position === 'absolute' || position === 'sticky') {
     value = position
-  } else if (parentLayoutSystem === 'flex') {
-    value = 'flex'
   } else if (parentLayoutSystem === 'grid') {
     // TODO GRID
     // value = 'grid'
@@ -97,26 +93,10 @@ const useLayoutSectionInitialToggleState = (
 export const LayoutSubsection = React.memo((props: SelfLayoutSubsectionProps) => {
   const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
 
-  const initialLayoutSectionOpen = useLayoutSectionInitialToggleState(
-    activeTab,
-    props.parentFlexDirection,
-  )
-
-  const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] =
-    usePropControlledStateV2(initialLayoutSectionOpen)
-
-  const toggleSection = React.useCallback(
-    () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
-    [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
-  )
   return (
     <>
-      <LayoutSectionHeader
-        layoutType={activeTab}
-        toggleSection={toggleSection}
-        selfLayoutSectionOpen={selfLayoutSectionOpen}
-      />
-      {when(selfLayoutSectionOpen, <LayoutSubsectionContent {...props} />)}
+      <LayoutSectionHeader layoutType={activeTab} />
+      <LayoutSubsectionContent {...props} />
     </>
   )
 })
@@ -129,9 +109,8 @@ export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionPr
   })
   return (
     <>
-      {when(activeTab === 'flex', <FlexInfoBox />)}
       {unless(
-        activeTab === 'flex',
+        activeTab === 'flow',
         <GiganticSizePinsSubsection
           key={selectedViews.map(EP.toString).join(',')}
           layoutType={activeTab}
@@ -140,18 +119,12 @@ export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionPr
           toggleAspectRatioLock={props.toggleAspectRatioLock}
         />,
       )}
-      {when(
-        activeTab === 'flex',
-        <FlexElementSubsectionExperiment parentFlexDirection={props.parentFlexDirection} />,
-      )}
     </>
   )
 })
 
 interface LayoutSectionHeaderProps {
   layoutType: SelfLayoutTab | 'grid'
-  selfLayoutSectionOpen: boolean
-  toggleSection: () => void
 }
 
 const selfLayoutProperties: Array<StyleLayoutProp> = [
@@ -202,7 +175,7 @@ function useDeleteAllSelfLayoutConfig() {
 
 const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   const colorTheme = useColorTheme()
-  const { layoutType, selfLayoutSectionOpen, toggleSection } = props
+  const { layoutType } = props
   const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
 
   const dispatch = useDispatch()
@@ -216,43 +189,23 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
   return (
     <InspectorSubsectionHeader>
       <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
-        <InspectorSectionIcons.Layout />
         <span
           style={{
-            textTransform: 'uppercase',
+            textTransform: 'capitalize',
             fontWeight: 600,
             paddingRight: 8,
-            color: colorTheme.primary.value,
-            fontSize: 10,
+            fontSize: 11,
           }}
         >
-          {layoutType}
+          Position ({layoutType})
         </span>
-        <ParentIndicatorAndLink />
-        <ChildrenOrContentIndicator />
       </div>
       {when(
-        selfLayoutSectionOpen && layoutType !== 'absolute',
-        <Tooltip title='Use Absolute Positioning' placement='bottom'>
-          <SquareButton highlight onClick={onAbsoluteButtonClick}>
-            <div style={{ color: colorTheme.brandNeonPink.value }}>*</div>
-          </SquareButton>
-        </Tooltip>,
-      )}
-      {when(
-        selfLayoutSectionOpen,
+        layoutType !== 'flow',
         <SquareButton highlight onClick={onDeleteAllConfig}>
           <FunctionIcons.Delete />
         </SquareButton>,
       )}
-      <SquareButton highlight onClick={toggleSection}>
-        <ExpandableIndicator
-          testId='layout-system-expand'
-          visible
-          collapsed={!selfLayoutSectionOpen}
-          selected={false}
-        />
-      </SquareButton>
     </InspectorSubsectionHeader>
   )
 })
