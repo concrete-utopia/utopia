@@ -1,11 +1,13 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */ import { jsx } from '@emotion/react'
+import createCachedSelector from 're-reselect'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
 import { isRight } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
@@ -36,7 +38,7 @@ export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle
 
 type Condition = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 
-const conditionSelector = createSelector(
+const conditionSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
   (jsxMetadata: ElementInstanceMetadataMap, paths: ElementPath[]): Condition => {
@@ -72,7 +74,7 @@ const conditionSelector = createSelector(
         return 'mixed'
     }
   },
-)
+)((_, paths) => paths.map(EP.toString).join(','))
 
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
