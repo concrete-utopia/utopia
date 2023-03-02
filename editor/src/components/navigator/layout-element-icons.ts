@@ -137,6 +137,16 @@ function createLayoutIconProps(
 export function createElementIconPropsFromMetadata(
   element: ElementInstanceMetadata | null,
 ): IcnPropsBase {
+  const isConditional = MetadataUtils.isConditionalFromMetadata(element)
+  if (isConditional) {
+    return {
+      category: 'element',
+      type: 'arc',
+      width: 18,
+      height: 18,
+    }
+  }
+
   const isFragment = MetadataUtils.isFragmentFromMetadata(element)
   if (isFragment) {
     return {

@@ -138,6 +138,70 @@ const complexProject = () => {
             />
           </div>
         </div>
+        <div
+          style={{
+            display: 'flex',
+            padding: 8,
+            flexDirection: 'column',
+          }}
+          data-uid='flex-column-2'
+        >
+          <div
+            style={{
+              backgroundColor: 'rebeccapurple',
+              width: '100%',
+              height: 80,
+              marginBottom: 20,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 15,
+              paddingLeft: 15,
+            }}
+            data-uid='purple-flex-row'
+          >
+            <div
+              style={{
+                backgroundColor: 'plum',
+                width: 50,
+                marginBottom: 20,
+              }}
+              data-uid='plum-static-div-1'
+            />
+            <div
+              style={{
+                backgroundColor: 'plum',
+                width: 50,
+              }}
+              data-uid='plum-static-div-2'
+            />
+            <React.Fragment data-uid="fragment-1">
+              <div
+                style={{
+                  backgroundColor: 'plum',
+                  width: 75,
+                  height: 40,
+                  alignSelf: 'flex-end',
+                }}
+                data-uid='plum-static-div-fragment-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: 'plum',
+                  width: 50,
+                }}
+                data-uid='plum-static-div-fragment-child-2'
+              />
+            </React.Fragment>
+            <div
+              style={{
+                backgroundColor: 'plum',
+                width: 50,
+                marginTop: 20,
+              }}
+              data-uid='plum-static-div-5'
+            />
+          </div>
+        </div>
       </div>
     )
   }
@@ -206,6 +270,36 @@ const AbsoluteDivInRelative = EP.appendNewElementPath(TestScenePath, [
   'absolute-div-in-relative',
 ])
 
+const FlexChild1 = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column-2',
+  'purple-flex-row',
+  'plum-static-div-1',
+])
+
+const FragmentInFlex = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column-2',
+  'purple-flex-row',
+  'fragment-1',
+])
+
+const FragmentChild1 = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column-2',
+  'purple-flex-row',
+  'fragment-1',
+  'plum-static-div-fragment-child-1',
+])
+
+const FragmentChild2 = EP.appendNewElementPath(TestScenePath, [
+  'app-inner',
+  'flex-column-2',
+  'purple-flex-row',
+  'fragment-1',
+  'plum-static-div-fragment-child-2',
+])
+
 interface EscapeHatchTestCases {
   targetsToConvert: Array<ElementPath>
   focusedElement: ElementPath | null
@@ -251,33 +345,25 @@ const escapeHatchTestCases: Array<EscapeHatchTestCases> = [
     ],
     expectedAbsoluteElements: [RelativeContainer, CardInstance],
   },
+  // selecting an element and its child results in only the parent being absolute converted (drag-to-move rules)
   {
     targetsToConvert: [FlexContainer, FlexRow],
     focusedElement: null,
     globalFrameUnchangedForElements: [
       {
         path: AbsoluteDivInFlex,
-        pathAfter: EP.appendToPath(
-          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
-          EP.toUid(AbsoluteDivInFlex),
-        ),
       },
       {
         path: RelativeContainer,
-        pathAfter: EP.appendToPath(
-          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
-          EP.toUid(RelativeContainer),
-        ),
       },
       {
         path: AbsoluteDivInRelative,
-        pathAfter: EP.appendToPath(
-          EP.appendToPath(AppRoot, EP.toUid(FlexRow)),
-          EP.toUid(AbsoluteDivInRelative),
-        ),
+      },
+      {
+        path: FlexRow,
       },
     ],
-    expectedAbsoluteElements: [FlexContainer, EP.appendToPath(AppRoot, EP.toUid(FlexRow))],
+    expectedAbsoluteElements: [FlexContainer],
   },
   {
     targetsToConvert: [CardInner],
@@ -288,6 +374,88 @@ const escapeHatchTestCases: Array<EscapeHatchTestCases> = [
       { path: CardTitle },
     ],
     expectedAbsoluteElements: [CardInner],
+  },
+  // Multiselection across parents will reparent the elements to a common ancestor!!!!
+  {
+    targetsToConvert: [RelativeContainer, FlexChild1],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      {
+        path: RelativeContainer,
+        pathAfter: EP.appendNewElementPath(TestScenePath, [
+          'app-inner',
+          'relative-container-green',
+        ]),
+      },
+      {
+        path: FlexChild1,
+        pathAfter: EP.appendNewElementPath(TestScenePath, ['app-inner', 'plum-static-div-1']),
+      },
+    ],
+    expectedAbsoluteElements: [
+      EP.appendNewElementPath(TestScenePath, ['app-inner', 'relative-container-green']),
+      EP.appendNewElementPath(TestScenePath, ['app-inner', 'plum-static-div-1']),
+    ],
+  },
+  {
+    targetsToConvert: [FragmentInFlex],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [{ path: FragmentChild1 }, { path: FragmentChild2 }],
+    expectedAbsoluteElements: [FragmentChild1, FragmentChild2],
+  },
+  // for a sibling of the fragment, there's no reparent involved
+  {
+    targetsToConvert: [FlexChild1, FragmentInFlex],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      { path: FlexChild1 },
+      { path: FragmentChild1 },
+      { path: FragmentChild2 },
+    ],
+    expectedAbsoluteElements: [FlexChild1, FragmentChild1, FragmentChild2],
+  },
+  // For fragment in a multiselect, we reparent the fragment, but absolutize the children of the fragment.
+  {
+    targetsToConvert: [RelativeContainer, FragmentInFlex],
+    focusedElement: null,
+    globalFrameUnchangedForElements: [
+      {
+        path: RelativeContainer,
+        pathAfter: EP.appendNewElementPath(TestScenePath, [
+          'app-inner',
+          'relative-container-green',
+        ]),
+      },
+      {
+        path: FragmentChild1,
+        pathAfter: EP.appendNewElementPath(TestScenePath, [
+          'app-inner',
+          'fragment-1',
+          'plum-static-div-fragment-child-1',
+        ]),
+      },
+      {
+        path: FragmentChild2,
+        pathAfter: EP.appendNewElementPath(TestScenePath, [
+          'app-inner',
+          'fragment-1',
+          'plum-static-div-fragment-child-2',
+        ]),
+      },
+    ],
+    expectedAbsoluteElements: [
+      EP.appendNewElementPath(TestScenePath, ['app-inner', 'relative-container-green']),
+      EP.appendNewElementPath(TestScenePath, [
+        'app-inner',
+        'fragment-1',
+        'plum-static-div-fragment-child-1',
+      ]),
+      EP.appendNewElementPath(TestScenePath, [
+        'app-inner',
+        'fragment-1',
+        'plum-static-div-fragment-child-2',
+      ]),
+    ],
   },
 ]
 
@@ -351,7 +519,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
 
 describe('Convert to Absolute', () => {
   it('Correctly uses the captured closestOffsetParentPath to determine which elements to update', async () => {
-    function getCodeForTestProject(appOpeningTag: string): string {
+    function getCodeForTestProject(childTag: string): string {
       return formatTestProjectCode(`
         import * as React from 'react'
         import { Scene, Storyboard } from 'utopia-api'
@@ -381,16 +549,8 @@ describe('Convert to Absolute', () => {
                 height: 812,
               }}
             >
-              ${appOpeningTag}
-                <div
-                  data-uid='child'
-                  style={{
-                    position: 'absolute',
-                    width: 200,
-                    height: 200,
-                    backgroundColor: '#d3d3d3',
-                  }}
-                />
+              <App data-uid='app'>
+                ${childTag}
               </App>
             </Scene>
           </Storyboard>
@@ -398,30 +558,43 @@ describe('Convert to Absolute', () => {
       `)
     }
 
-    const appOpeningTagBefore = `<App data-uid='app'>`
-    const appOpeningTagAfter = `
-      <App
-        data-uid='app'
-        style={{
-          position: 'absolute',
-          left: 0,
-          width: 375,
-          top: 0,
-          height: 300,
-        }}
-      >`
+    const childTagBefore = `
+    <div
+      data-uid='child'
+      style={{
+        width: 200,
+        height: 200,
+        backgroundColor: '#d3d3d3',
+      }}
+    />
+    `
+    const childTagAfter = `
+    <div
+      data-uid='child'
+      style={{
+        width: 200,
+        height: 200,
+        backgroundColor: '#d3d3d3',
+        position: 'absolute',
+        left: 0,
+        top: 100,
+      }}
+    />
+    `
 
     const renderResult = await renderTestEditorWithCode(
-      getCodeForTestProject(appOpeningTagBefore),
+      getCodeForTestProject(childTagBefore),
       'await-first-dom-report',
     )
 
     const targetToConvert = EP.fromString('sb/scene/app')
-    // Converting App should not result in any changes to `sb/scene/app/child`
+    // Update after the children affecting work:
+    // Converting App recognizes app as children-affecting, and converts sb/scene/app/child instead!
+    // (previously it used to update App and leave child unaffected)
     await renderResult.dispatch([runEscapeHatch([targetToConvert])], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      getCodeForTestProject(appOpeningTagAfter),
+      getCodeForTestProject(childTagAfter),
     )
   })
 })

@@ -206,7 +206,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       let actions: Array<EditorAction> = []
       const existingInteractionSession = editorStoreRef.current.editor.canvas.interactionSession
       if (existingInteractionSession != null) {
-        if (event.key === 'Meta') {
+        if (
+          existingInteractionSession.interactionData.type === 'KEYBOARD' &&
+          event.key === 'Meta'
+        ) {
           actions.push(CanvasActions.clearInteractionSession(true))
         } else {
           const action = CanvasActions.createInteractionSession(

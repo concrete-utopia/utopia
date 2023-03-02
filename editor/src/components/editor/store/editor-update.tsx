@@ -376,6 +376,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.APPLY_COMMANDS(action, state)
     case 'UPDATE_COLOR_SWATCHES':
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
+    case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
+      return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
     default:
       return state
   }

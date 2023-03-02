@@ -13,6 +13,7 @@ import {
   areAllSiblingsInOneDimensionFlexOrFlow,
   getElementDirection,
   isValidFlowReorderTarget,
+  singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { applyReorderCommon } from './reorder-utils'
@@ -35,10 +36,16 @@ export function flowReorderStrategy(
     canvasState.startingMetadata,
     target,
   )
+
+  const singleAxisAutolayoutDirection = singleAxisAutoLayoutSiblingDirections(
+    target,
+    canvasState.startingMetadata,
+  )
+
   if (
     !MetadataUtils.isPositionedByFlow(elementMetadata) ||
     !isValidFlowReorderTarget(target, canvasState.startingMetadata) ||
-    !areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
+    singleAxisAutolayoutDirection === 'non-single-axis-autolayout'
   ) {
     return null
   }
@@ -80,7 +87,7 @@ export function flowReorderStrategy(
               canvasState,
               interactionSession,
               customStrategyState,
-              getElementDirection(elementMetadata),
+              singleAxisAutolayoutDirection.direction,
               isValidFlowReorderTarget,
             )
       },

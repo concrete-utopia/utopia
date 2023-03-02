@@ -7,6 +7,7 @@ import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.t
 import { selectComponents } from '../editor/actions/action-creators'
 import { AspectRatioLockButtonTestId } from './sections/layout-section/self-layout-subsection/gigantic-size-pins-subsection'
 import { cmdModifier } from '../../utils/modifiers'
+import { wait } from '../../utils/utils.test-utils'
 
 function exampleProjectForSelection(): string {
   return `import * as React from "react";
@@ -108,7 +109,9 @@ export var storyboard = (
 }
 
 describe('inspector', () => {
-  it('toggle aspect ratio lock off', async () => {
+  // TODO aspect ratio lock is gone from inspector
+
+  xit('toggle aspect ratio lock off', async () => {
     const codeAfterToggle = await runToggleAspectRatioLockTest('locked')
     expect(codeAfterToggle).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -131,7 +134,7 @@ export var storyboard = (
 `)
   })
 
-  it('toggle aspect ratio lock on', async () => {
+  xit('toggle aspect ratio lock on', async () => {
     const codeAfterToggle = await runToggleAspectRatioLockTest('not-locked')
     expect(codeAfterToggle).toEqual(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'

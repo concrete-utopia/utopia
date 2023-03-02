@@ -95,13 +95,7 @@ export function baseFlexReparentToAbsoluteStrategy(
             )
 
             const escapeHatchCommands = getEscapeHatchCommands(
-              filteredSelectedElements.filter((path) => {
-                return !treatElementAsContentAffecting(
-                  canvasState.startingMetadata,
-                  canvasState.startingAllElementProps,
-                  path,
-                )
-              }),
+              filteredSelectedElements,
               canvasState.startingMetadata,
               canvasState,
               canvasPoint({ x: 0, y: 0 }),

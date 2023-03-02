@@ -807,6 +807,12 @@ export interface UpdateJSXElementName {
   importsToAdd: Imports
 }
 
+export interface SetConditionalOverriddenCondition {
+  action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION'
+  target: ElementPath
+  condition: boolean | null
+}
+
 export interface AddImports {
   action: 'ADD_IMPORTS'
   target: ElementPath
@@ -1278,6 +1284,7 @@ export type EditorAction =
   | SetAssetChecksum
   | ApplyCommandsAction
   | UpdateColorSwatches
+  | SetConditionalOverriddenCondition
 
 export type DispatchPriority =
   | 'everyone'

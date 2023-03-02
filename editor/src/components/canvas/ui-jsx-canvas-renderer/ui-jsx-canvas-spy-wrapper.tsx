@@ -1,6 +1,6 @@
 import React from 'react'
 import { MapLike } from 'typescript'
-import { right } from '../../../core/shared/either'
+import { Either, foldEither, left, right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
   emptyAttributeMetadatada,
@@ -8,6 +8,11 @@ import {
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
+  ChildOrAttribute,
+  childOrBlockIsChild,
+  JSXElementChild,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -15,6 +20,103 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
+import { getUtopiaID } from '../../../core/model/element-template-utils'
+import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { forEachOf } from '../../../core/shared/optics/optic-utilities'
+import { compose2Optics, Optic } from '../../../core/shared/optics/optics'
+import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { getConditionalClausePath, getThenOrElsePath } from '../../../core/model/conditionals'
+
+export function addFakeSpyEntry(
+  metadataContext: UiJsxCanvasContextData,
+  elementPath: ElementPath,
+  elementOrAttribute: ChildOrAttribute,
+  filePath: string,
+  imports: Imports,
+): void {
+  let element: Either<string, JSXElementChild>
+  if (childOrBlockIsChild(elementOrAttribute)) {
+    element = right(elementOrAttribute)
+  } else {
+    const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
+    element = left(
+      foldEither(
+        () => '(unknown)',
+        (value) => {
+          if (value === null) {
+            return 'null'
+          } else if (value === undefined) {
+            return 'undefined'
+          } else {
+            return value.toString()
+          }
+        },
+        simpleAttributeValue,
+      ),
+    )
+  }
+  const instanceMetadata: ElementInstanceMetadata = {
+    element: element,
+    elementPath: elementPath,
+    globalFrame: null,
+    localFrame: null,
+    componentInstance: false,
+    isEmotionOrStyledComponent: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
+    label: null,
+    importInfo: foldEither(
+      () => {
+        return null
+      },
+      (e) => {
+        if (isJSXElement(e)) {
+          return importInfoFromImportDetails(e.name, imports, filePath)
+        } else {
+          return null
+        }
+      },
+      element,
+    ),
+  }
+  const elementPathString = EP.toComponentId(elementPath)
+  metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
+}
+
+const childOrAttributeToConditionalOptic: Optic<ChildOrAttribute, JSXConditionalExpression> =
+  compose2Optics(fromTypeGuard(childOrBlockIsChild), fromTypeGuard(isJSXConditionalExpression))
+
+export function addConditionalAlternative(
+  metadataContext: UiJsxCanvasContextData,
+  parentPath: ElementPath,
+  filePath: string,
+  imports: Imports,
+  alternativeCase: ChildOrAttribute,
+  thenOrElseCase: 'then' | 'else',
+): void {
+  const elementPath = getConditionalClausePath(parentPath, alternativeCase, thenOrElseCase)
+  addFakeSpyEntry(metadataContext, elementPath, alternativeCase, filePath, imports)
+
+  forEachOf(childOrAttributeToConditionalOptic, alternativeCase, (elementAsConditional) => {
+    addConditionalAlternative(
+      metadataContext,
+      elementPath,
+      filePath,
+      imports,
+      elementAsConditional.whenTrue,
+      'then',
+    )
+    addConditionalAlternative(
+      metadataContext,
+      elementPath,
+      filePath,
+      imports,
+      elementAsConditional.whenFalse,
+      'else',
+    )
+  })
+}
 
 export function buildSpyWrappedElement(
   jsx: JSXElementLike,

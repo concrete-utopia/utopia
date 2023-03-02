@@ -32,6 +32,7 @@ import type { FlexAlignment, FlexJustifyContent } from '../../components/inspect
 export interface ParsedComments {
   leadingComments: Array<Comment>
   trailingComments: Array<Comment>
+  questionTokenComments?: ParsedComments
 }
 
 export const emptyComments: ParsedComments = {
@@ -1057,7 +1058,7 @@ export type JSXElementLike = JSXElement | JSXFragment
 
 export interface JSXConditionalExpression extends WithComments {
   type: 'JSX_CONDITIONAL_EXPRESSION'
-  uniqueID: string
+  uid: string
   condition: JSXAttribute
   whenTrue: ChildOrAttribute
   whenFalse: ChildOrAttribute
@@ -1072,7 +1073,7 @@ export function jsxConditionalExpression(
 ): JSXConditionalExpression {
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
-    uniqueID: uid,
+    uid: uid,
     condition: condition,
     whenTrue: whenTrue,
     whenFalse: whenFalse,
@@ -1135,8 +1136,21 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
     const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementUniqueIDs)
     return {
       ...element,
-      uniqueID: '',
       children: updatedChildren,
+    }
+  } else if (isJSXConditionalExpression(element)) {
+    const updatedCondition = clearAttributeUniqueIDs(element.condition)
+    const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
+      ? clearJSXElementUniqueIDs(element.whenTrue)
+      : clearAttributeUniqueIDs(element.whenTrue)
+    const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
+      ? clearJSXElementUniqueIDs(element.whenFalse)
+      : clearAttributeUniqueIDs(element.whenFalse)
+    return {
+      ...element,
+      condition: updatedCondition,
+      whenTrue: updatedWhenTrue,
+      whenFalse: updatedWhenFalse,
     }
   } else {
     return {

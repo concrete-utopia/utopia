@@ -53,6 +53,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  Comment,
   deleteJSXAttribute,
   DetectedLayoutSystem,
   ElementInstanceMetadataMap,
@@ -61,6 +62,7 @@ import {
   getJSXAttribute,
   isImportStatement,
   isJSXAttributeValue,
+  isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
   isPartOfJSXAttributeValue,
@@ -75,6 +77,7 @@ import {
   jsxElementName,
   jsxTextBlock,
   SettableLayoutSystem,
+  singleLineComment,
   UtopiaJSXComponent,
   walkElements,
 } from '../../../core/shared/element-template'
@@ -323,6 +326,7 @@ import {
   UpdateColorSwatches,
   PasteProperties,
   CopyProperties,
+  SetConditionalOverriddenCondition,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -391,6 +395,7 @@ import {
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   EditorStoreUnpatched,
+  modifyOpenJsxElementOrConditionalAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -472,6 +477,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4328,6 +4334,40 @@ export const UPDATE_FNS = {
         }
       },
       updatedEditor,
+    )
+  },
+  SET_CONDITIONAL_OVERRIDDEN_CONDITION: (
+    action: SetConditionalOverriddenCondition,
+    editor: EditorModel,
+  ): EditorModel => {
+    return modifyOpenJsxElementOrConditionalAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+
+        function isNotConditionalFlag(c: Comment): boolean {
+          return !isUtopiaCommentFlag(c, 'conditional')
+        }
+
+        const leadingComments = [...element.comments.leadingComments.filter(isNotConditionalFlag)]
+        if (action.condition != null) {
+          leadingComments.push(
+            makeUtopiaFlagComment({ type: 'conditional', value: action.condition }),
+          )
+        }
+
+        return {
+          ...element,
+          comments: {
+            leadingComments: leadingComments,
+            trailingComments: element.comments.trailingComments.filter(isNotConditionalFlag),
+            questionTokenComments: element.comments.questionTokenComments,
+          },
+        }
+      },
+      editor,
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {

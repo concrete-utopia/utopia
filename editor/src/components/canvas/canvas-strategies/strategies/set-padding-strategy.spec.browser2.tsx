@@ -654,21 +654,19 @@ describe('Padding resize strategy', () => {
       })
     })
 
-    it("controls are shown if padding is NOT specified on the component instance and instance doesn't have computed padding", async () => {
+    it("controls are not shown if padding is not specified on the component instance and instance doesn't have computed padding", async () => {
       const editor = await renderTestEditorWithCode(
         projectWithComponentThatDefinesPaddingInternally({}),
         'await-first-dom-report',
       )
 
       await clickOnMyDiv(editor)
-      EdgePieces.forEach((edge) => {
-        const paddingControlOuter = editor.renderedDOM.getByTestId(paddingControlTestId(edge))
-        expect(paddingControlOuter).toBeTruthy()
-        const paddingControlHandle = editor.renderedDOM.getByTestId(
-          paddingControlHandleTestId(edge),
-        )
-        expect(paddingControlHandle).toBeTruthy()
-      })
+      const paddingControls = EdgePieces.flatMap((edge) => [
+        ...editor.renderedDOM.queryAllByTestId(paddingControlTestId(edge)),
+        ...editor.renderedDOM.queryAllByTestId(paddingControlHandleTestId(edge)),
+      ])
+
+      expect(paddingControls).toEqual([])
     })
 
     it('controls are NOT shown if padding is NOT specified on the component instance and instance has computed padding', async () => {

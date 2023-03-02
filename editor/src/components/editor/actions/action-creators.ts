@@ -227,6 +227,7 @@ import type {
   PasteProperties,
   CopyProperties,
   MergeWithPrevUndo,
+  SetConditionalOverriddenCondition,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1059,6 +1060,7 @@ export function updateGithubSettings(
     settings: settings,
   }
 }
+
 export function updateGithubData(data: Partial<GithubData>): UpdateGithubData {
   return {
     action: 'UPDATE_GITHUB_DATA',
@@ -1741,5 +1743,16 @@ export function updateColorSwatches(colorSwatches: Array<ColorSwatch>): UpdateCo
   return {
     action: 'UPDATE_COLOR_SWATCHES',
     colorSwatches: colorSwatches,
+  }
+}
+
+export function setConditionalOverriddenCondition(
+  target: ElementPath,
+  condition: boolean | null,
+): SetConditionalOverriddenCondition {
+  return {
+    action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
+    target: target,
+    condition: condition,
   }
 }

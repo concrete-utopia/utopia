@@ -33837,7 +33837,6 @@ Object {
         "longForm": true,
         "type": "JSX_FRAGMENT",
         "uid": "fff",
-        "uniqueID": "",
       },
     },
     "elementPath": Object {
@@ -37753,7 +37752,6 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             data-path=\\"eee/fff/app:aaa/ggg/bbb/33e/ccc\\"
           ></div>
         </div>
-
         <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
       </div>
     </div>
@@ -38081,12 +38079,6 @@ Object {
       "value": Object {
         "children": Array [
           Object {
-            "text": "
-      ",
-            "type": "JSX_TEXT_BLOCK",
-            "uniqueID": "",
-          },
-          Object {
             "children": Array [
               Object {
                 "children": Array [
@@ -38165,7 +38157,6 @@ Object {
                     "longForm": false,
                     "type": "JSX_FRAGMENT",
                     "uid": "33e",
-                    "uniqueID": "",
                   },
                 ],
                 "name": Object {
@@ -38234,13 +38225,6 @@ Object {
             "longForm": true,
             "type": "JSX_FRAGMENT",
             "uid": "ggg",
-            "uniqueID": "",
-          },
-          Object {
-            "text": "
-      ",
-            "type": "JSX_TEXT_BLOCK",
-            "uniqueID": "",
           },
           Object {
             "children": Array [
@@ -38698,7 +38682,6 @@ export var storyboard = (
                 "longForm": false,
                 "type": "JSX_FRAGMENT",
                 "uid": "33e",
-                "uniqueID": "",
               },
             ],
             "name": Object {
@@ -38767,7 +38750,6 @@ export var storyboard = (
         "longForm": true,
         "type": "JSX_FRAGMENT",
         "uid": "ggg",
-        "uniqueID": "",
       },
     },
     "elementPath": Object {
@@ -38923,7 +38905,6 @@ export var storyboard = (
             "longForm": false,
             "type": "JSX_FRAGMENT",
             "uid": "33e",
-            "uniqueID": "",
           },
         ],
         "name": Object {
@@ -39140,7 +39121,6 @@ export var storyboard = (
         "longForm": false,
         "type": "JSX_FRAGMENT",
         "uid": "33e",
-        "uniqueID": "",
       },
     },
     "elementPath": Object {

@@ -603,6 +603,8 @@ export const PopupList = React.memo<PopupListProps>(
               width: '100%',
               padding: `${menuVerticalPadding}px 2px`,
               backgroundColor: colorTheme.contextMenuBackground.value,
+              position: 'absolute',
+              top: 0,
             }),
             menuList: (_, menuListProps) => {
               return {
@@ -653,7 +655,6 @@ export const PopupList = React.memo<PopupListProps>(
               display: 'flex',
               alignItems: 'center',
               flexGrow: containerMode === 'noBorder' ? 0 : 1,
-              backgroundColor: colorTheme.contextMenuBackground.value,
             }),
             indicatorSeparator: displayNone,
             clearIndicator: displayNone,

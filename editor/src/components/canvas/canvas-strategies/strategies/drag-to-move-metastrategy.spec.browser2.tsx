@@ -12,7 +12,7 @@ const TestProject1 = `
     data-testid='child-1'
   />
   <div
-    style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 100, top: 150, width: 200, height: 100 }}
+    style={{ backgroundColor: '#aaaaaa33', width: 200, height: 100, display: 'inline-flex' }}
     data-uid='child-2'
   />
   <div
@@ -126,6 +126,40 @@ describe('Drag To Move Metastrategy', () => {
 })
 
 describe('Drag To Move Strategy Indicator', () => {
+  it('when the DO_NOTHING strategy is active, nothing is active in the Strategy Indicator', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject1),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = async () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+
+      const { showIndicator, dragType, reparent, ancestor } =
+        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags
+
+      expect(showIndicator).toEqual(true)
+      expect(dragType).toEqual('none')
+      expect(reparent).toEqual('none')
+      expect(ancestor).toEqual(false)
+
+      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
+      expect(indicator).toBeDefined()
+    }
+
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
   it('when reparenting an element the Strategy Indicator is visible', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject1),

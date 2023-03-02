@@ -6,7 +6,6 @@ import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import {
   mapDropNulls,
-  pluck,
   stripNulls,
   flatMapArray,
   uniqBy,
@@ -28,7 +27,6 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
-  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -53,6 +51,8 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
+  DetectedLayoutSystem,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -73,7 +73,6 @@ import {
   MaybeInfinityLocalRectangle,
   Size,
   zeroCanvasRect,
-  zeroLocalRect,
   zeroRectIfNullOrInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
@@ -107,7 +106,13 @@ import {
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import { buildTree, ElementPathTree, getSubTree, reorderTree } from '../shared/element-path-tree'
+import {
+  buildTree,
+  ElementPathTree,
+  ElementPathTreeRoot,
+  getSubTree,
+  reorderTree,
+} from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import {
   Direction,
@@ -116,6 +121,7 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { reorderConditionalChildPathTrees } from './conditionals'
 
 const ObjectPathImmutable: any = OPI
 
@@ -218,6 +224,14 @@ export const MetadataUtils = {
       : MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
+  getSiblingsParticipatingInAutolayoutOrdered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    return MetadataUtils.getSiblingsOrdered(metadata, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
   },
   isParentYogaLayoutedContainerAndElementParticipatesInLayout(
     path: ElementPath,
@@ -1059,7 +1073,31 @@ export const MetadataUtils = {
           const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
           let unfurledComponents: Array<ElementPathTree> = []
-          fastForEach(subTree.children, (child) => {
+
+          let subTreeChildren: ElementPathTreeRoot = subTree.children
+          // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
+          // case for consistent ordering.
+          if (isFeatureEnabled('Conditional support') && isConditional) {
+            const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+            if (
+              elementMetadata != null &&
+              isRight(elementMetadata.element) &&
+              isJSXConditionalExpression(elementMetadata.element.value)
+            ) {
+              const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
+              subTreeChildren = reorderConditionalChildPathTrees(
+                jsxConditionalElement,
+                path,
+                subTreeChildren,
+              )
+            } else {
+              throw new Error(
+                `Unexpected non-conditional expression retrieved at ${EP.toString(path)}`,
+              )
+            }
+          }
+
+          fastForEach(subTreeChildren, (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
@@ -1756,6 +1794,55 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  findLayoutSystemForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): DetectedLayoutSystem {
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
+
+    const fallbackLayout =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .layoutSystemForChildren ?? 'none'
+
+    const parentLayouts = children.map((c) => c.specialSizeMeasurements.parentLayoutSystem)
+
+    if (parentLayouts.length === 0) {
+      return fallbackLayout
+    }
+    const allEqual = parentLayouts.slice(1).every((x) => x === parentLayouts[0])
+    if (!allEqual) {
+      return fallbackLayout
+    }
+    return parentLayouts[0]
+  },
+  findFlexDirectionForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): FlexDirection | null {
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+
+    const fallbackFlexDirection =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .flexDirection ?? null
+
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
+    const flexDirections = children.map((c) => c.specialSizeMeasurements.parentFlexDirection)
+    if (flexDirections.length === 0) {
+      return fallbackFlexDirection
+    }
+    const allEqual = flexDirections.slice(1).every((x) => x === flexDirections[0])
+    if (!allEqual) {
+      return fallbackFlexDirection
+    }
+    return flexDirections[0]
+  },
 }
 
 function fillSpyOnlyMetadata(
@@ -1764,7 +1851,7 @@ function fillSpyOnlyMetadata(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
-) {
+): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 
   const conditionalsWithDefaultMetadata = findConditionalsAndCreateMetadata(
@@ -1781,12 +1868,16 @@ function fillSpyOnlyMetadata(
       return existing
     }
 
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+    const fromSpyAndConditionals = {
+      ...conditionalsWithDefaultMetadata,
+      ...fromSpy,
+    }
+    const spyElem = fromSpyAndConditionals[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
       MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
-        fromSpy,
+        fromSpyAndConditionals,
       )
     const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
 
@@ -1812,6 +1903,7 @@ function fillSpyOnlyMetadata(
 
     const childrenAndUnfurledComponents = [
       ...childrenAndUnfurledComponentsFromDom,
+      ...childrenAndUnfurledComponentsNotInDom,
       ...recursiveChildrenAndUnfurledComponents,
     ]
 

@@ -1,25 +1,29 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { stripNulls } from '../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { PopupList, SimpleCSSNumberInput } from '../../uuiui'
+import { NumberInput, PopupList, SimpleCSSNumberInput } from '../../uuiui'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { CSSNumber, cssNumber, CSSNumberType, EmptyInputValue } from './common/css-utils'
+import {
+  CSSNumber,
+  cssNumber,
+  CSSNumberType,
+  EmptyInputValue,
+  UnknownOrEmptyInput,
+} from './common/css-utils'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   Axis,
   detectFillHugFixedState,
-  fillContainerApplicable,
   FixedHugFill,
-  hugContentsApplicableForContainer,
-  hugContentsApplicableForText,
+  FixedHugFillMode,
+  getFixedFillHugOptionsForElement,
 } from './inspector-common'
 import {
   setPropFillStrategies,
@@ -33,8 +37,6 @@ import {
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
-
-export type FixedHugFillMode = FixedHugFill['type']
 
 function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
   if (a === undefined && b === undefined) {
@@ -92,22 +94,6 @@ function elementComputedDimension(
 const simpleControlStyles = getControlStyles('simple')
 
 interface FillHugFixedControlProps {}
-
-function getFixedFillHugOptionsForElement(
-  metadata: ElementInstanceMetadataMap,
-  selectedView: ElementPath,
-): Set<FixedHugFillMode> {
-  return new Set(
-    stripNulls([
-      'fixed',
-      hugContentsApplicableForText(metadata, selectedView) ||
-      hugContentsApplicableForContainer(metadata, selectedView)
-        ? 'hug'
-        : null,
-      fillContainerApplicable(selectedView) ? 'fill' : null,
-    ]),
-  )
-}
 
 const optionsSelector = createSelector(
   metadataSelector,
@@ -218,16 +204,23 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   )
 
   const onAdjustHeight = React.useCallback(
-    (value: number | EmptyInputValue) => {
-      if (typeof value !== 'number') {
+    (value: UnknownOrEmptyInput<CSSNumber>) => {
+      if (
+        'type' in value &&
+        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
+      ) {
         return
       }
       if (heightCurrentValue?.type === 'fill') {
+        if (value.unit != null && value.unit !== '%') {
+          // fill mode only accepts percentage or valueless numbers
+          return
+        }
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFillStrategies('vertical', value, false),
+          setPropFillStrategies('vertical', value.value, false),
         )
       }
       if (heightCurrentValue?.type === 'fixed') {
@@ -235,7 +228,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('always', 'vertical', cssNumber(value, 'px')),
+          setPropFixedStrategies('always', 'vertical', value),
         )
       }
     },
@@ -243,16 +236,23 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   )
 
   const onAdjustWidth = React.useCallback(
-    (value: number | EmptyInputValue) => {
-      if (typeof value !== 'number') {
+    (value: UnknownOrEmptyInput<CSSNumber>) => {
+      if (
+        'type' in value &&
+        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
+      ) {
         return
       }
       if (widthCurrentValue?.type === 'fill') {
+        if (value.unit != null && value.unit !== '%') {
+          // fill mode only accepts percentage or valueless numbers
+          return
+        }
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFillStrategies('horizontal', value, false),
+          setPropFillStrategies('horizontal', value.value, false),
         )
       }
       if (widthCurrentValue?.type === 'fixed') {
@@ -260,7 +260,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           dispatch,
           metadataRef.current,
           selectedViewsRef.current,
-          setPropFixedStrategies('always', 'horizontal', cssNumber(value, 'px')),
+          setPropFixedStrategies('always', 'horizontal', value),
         )
       }
     },
@@ -308,9 +308,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         options={options}
         onSubmitValue={onSubmitWidth}
         controlStyles={simpleControlStyles}
-        containerMode='showBorderOnHover'
       />
-      <SimpleCSSNumberInput
+      <NumberInput
         id={FillFixedHugControlId('width')}
         testId={FillFixedHugControlId('width')}
         value={widthValue}
@@ -332,9 +331,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         options={options}
         onSubmitValue={onSubmitHeight}
         controlStyles={simpleControlStyles}
-        containerMode='showBorderOnHover'
       />
-      <SimpleCSSNumberInput
+      <NumberInput
         id={FillFixedHugControlId('height')}
         testId={FillFixedHugControlId('height')}
         value={heightValue}
@@ -385,7 +383,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
 
 function pickNumberType(value: FixedHugFill | undefined): CSSNumberType {
   if (value?.type === 'fixed') {
-    return 'Px'
+    return 'AnyValid'
   }
   if (value?.type === 'fill') {
     return value.value.unit === '%' ? 'Percent' : 'Unitless'

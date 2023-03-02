@@ -580,56 +580,7 @@ export var whatever = (props) => {
 
 exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
-  "combinedTopLevelArbitraryBlock": Object {
-    "definedElsewhere": Array [
-      "utopiaCanvasJSXLookup",
-    ],
-    "definedWithin": Array [
-      "a",
-      "b",
-    ],
-    "elementsWithin": Object {},
-    "javascript": "const a = (n) => n > 0 ? n : b(10)
-const b = (n) => n > 0 ? n : a(10)",
-    "sourceMap": Object {
-      "file": "code.tsx",
-      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
-      "names": Array [
-        "const",
-        "a",
-        " ",
-        "(",
-        "n",
-        "0",
-        "b",
-        "10",
-      ],
-      "sources": Array [
-        "code.tsx",
-      ],
-      "sourcesContent": Array [
-        "import * as React from \\"react\\";
-import {
-  View
-} from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
-",
-      ],
-      "version": 3,
-    },
-    "transpiledJavascript": "var a = function a(n) {
-  return n > 0 ? n : b(10);
-};
-
-var b = function b(n) {
-  return n > 0 ? n : a(10);
-};
-return { a: a, b: b };",
-    "type": "ARBITRARY_JS_BLOCK",
-    "uniqueID": "",
-  },
+  "combinedTopLevelArbitraryBlock": null,
   "exportsDetail": Array [
     Object {
       "functionName": "whatever",
@@ -637,6 +588,20 @@ return { a: a, b: b };",
     },
   ],
   "highlightBounds": Object {
+    "7dd": Object {
+      "endCol": 34,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "7dd",
+    },
+    "aa0": Object {
+      "endCol": 34,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "aa0",
+    },
     "aaa": Object {
       "endCol": 56,
       "endLine": 5,
@@ -695,33 +660,50 @@ return { a: a, b: b };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "definedElsewhere": Array [
-        "b",
-        "utopiaCanvasJSXLookup",
-      ],
-      "definedWithin": Array [
-        "a",
-      ],
-      "elementsWithin": Object {},
-      "javascript": "const a = (n) => n > 0 ? n : b(10)",
-      "sourceMap": Object {
-        "file": "code.tsx",
-        "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
-        "names": Array [
-          "const",
-          "a",
-          " ",
-          "(",
-          "n",
-          "0",
-          "b",
-          "10",
-        ],
-        "sources": Array [
-          "code.tsx",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
+      "arbitraryJSBlock": null,
+      "blockOrExpression": "expression",
+      "declarationSyntax": "const",
+      "isFunction": true,
+      "name": "a",
+      "param": Object {
+        "boundParam": Object {
+          "defaultExpression": null,
+          "paramName": "n",
+          "type": "REGULAR_PARAM",
+        },
+        "dotDotDotToken": false,
+        "type": "PARAM",
+      },
+      "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
+      "rootElement": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "condition": Object {
+          "definedElsewhere": Array [
+            "n",
+          ],
+          "elementsWithin": Object {},
+          "javascript": "n > 0",
+          "sourceMap": Object {
+            "file": "code.tsx",
+            "mappings": "OAImBA,CAACC,GAAEC,CAAJC",
+            "names": Array [
+              " ",
+              ">",
+              "0",
+              "n",
+            ],
+            "sources": Array [
+              "code.tsx",
+            ],
+            "sourcesContent": Array [
+              "import * as React from \\"react\\";
 import {
   View
 } from \\"utopia-api\\";
@@ -729,15 +711,82 @@ const a = (n) => n > 0 ? n : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
-        ],
-        "version": 3,
+            ],
+            "version": 3,
+          },
+          "transpiledJavascript": "return n > 0;",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "uniqueID": "",
+        },
+        "type": "JSX_CONDITIONAL_EXPRESSION",
+        "uid": "7dd",
+        "whenFalse": Object {
+          "definedElsewhere": Array [
+            "b",
+          ],
+          "elementsWithin": Object {},
+          "javascript": "b(10)",
+          "sourceMap": Object {
+            "file": "code.tsx",
+            "mappings": "OAI+BA,CAACC,IAAFC",
+            "names": Array [
+              "(",
+              "10",
+              "b",
+            ],
+            "sources": Array [
+              "code.tsx",
+            ],
+            "sourcesContent": Array [
+              "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid='aaa' />
+const b = (n) => n > 0 ? n : a(10)
+",
+            ],
+            "version": 3,
+          },
+          "transpiledJavascript": "return b(10);",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "uniqueID": "",
+        },
+        "whenTrue": Object {
+          "definedElsewhere": Array [
+            "n",
+          ],
+          "elementsWithin": Object {},
+          "javascript": "n",
+          "sourceMap": Object {
+            "file": "code.tsx",
+            "mappings": "OAI0BA",
+            "names": Array [
+              "n",
+            ],
+            "sources": Array [
+              "code.tsx",
+            ],
+            "sourcesContent": Array [
+              "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid='aaa' />
+const b = (n) => n > 0 ? n : a(10)
+",
+            ],
+            "version": 3,
+          },
+          "transpiledJavascript": "return n;",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "uniqueID": "",
+        },
       },
-      "transpiledJavascript": "var a = function a(n) {
-  return n > 0 ? n : b(10);
-};
-return { a: a };",
-      "type": "ARBITRARY_JS_BLOCK",
-      "uniqueID": "",
+      "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
     Object {
       "rawCode": "
@@ -802,33 +851,50 @@ return { a: a };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "definedElsewhere": Array [
-        "a",
-        "utopiaCanvasJSXLookup",
-      ],
-      "definedWithin": Array [
-        "b",
-      ],
-      "elementsWithin": Object {},
-      "javascript": "const b = (n) => n > 0 ? n : a(10)",
-      "sourceMap": Object {
-        "file": "code.tsx",
-        "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
-        "names": Array [
-          "const",
-          "b",
-          " ",
-          "(",
-          "n",
-          "0",
-          "a",
-          "10",
-        ],
-        "sources": Array [
-          "code.tsx",
-        ],
-        "sourcesContent": Array [
-          "import * as React from \\"react\\";
+      "arbitraryJSBlock": null,
+      "blockOrExpression": "expression",
+      "declarationSyntax": "const",
+      "isFunction": true,
+      "name": "b",
+      "param": Object {
+        "boundParam": Object {
+          "defaultExpression": null,
+          "paramName": "n",
+          "type": "REGULAR_PARAM",
+        },
+        "dotDotDotToken": false,
+        "type": "PARAM",
+      },
+      "propsUsed": Array [],
+      "returnStatementComments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
+      "rootElement": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "condition": Object {
+          "definedElsewhere": Array [
+            "n",
+          ],
+          "elementsWithin": Object {},
+          "javascript": "n > 0",
+          "sourceMap": Object {
+            "file": "code.tsx",
+            "mappings": "OAMmBA,CAACC,GAAEC,CAAJC",
+            "names": Array [
+              " ",
+              ">",
+              "0",
+              "n",
+            ],
+            "sources": Array [
+              "code.tsx",
+            ],
+            "sourcesContent": Array [
+              "import * as React from \\"react\\";
 import {
   View
 } from \\"utopia-api\\";
@@ -836,15 +902,82 @@ const a = (n) => n > 0 ? n : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
-        ],
-        "version": 3,
+            ],
+            "version": 3,
+          },
+          "transpiledJavascript": "return n > 0;",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "uniqueID": "",
+        },
+        "type": "JSX_CONDITIONAL_EXPRESSION",
+        "uid": "aa0",
+        "whenFalse": Object {
+          "definedElsewhere": Array [
+            "a",
+          ],
+          "elementsWithin": Object {},
+          "javascript": "a(10)",
+          "sourceMap": Object {
+            "file": "code.tsx",
+            "mappings": "OAM+BA,CAACC,IAAFC",
+            "names": Array [
+              "(",
+              "10",
+              "a",
+            ],
+            "sources": Array [
+              "code.tsx",
+            ],
+            "sourcesContent": Array [
+              "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid='aaa' />
+const b = (n) => n > 0 ? n : a(10)
+",
+            ],
+            "version": 3,
+          },
+          "transpiledJavascript": "return a(10);",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "uniqueID": "",
+        },
+        "whenTrue": Object {
+          "definedElsewhere": Array [
+            "n",
+          ],
+          "elementsWithin": Object {},
+          "javascript": "n",
+          "sourceMap": Object {
+            "file": "code.tsx",
+            "mappings": "OAM0BA",
+            "names": Array [
+              "n",
+            ],
+            "sources": Array [
+              "code.tsx",
+            ],
+            "sourcesContent": Array [
+              "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid='aaa' />
+const b = (n) => n > 0 ? n : a(10)
+",
+            ],
+            "version": 3,
+          },
+          "transpiledJavascript": "return n;",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+          "uniqueID": "",
+        },
       },
-      "transpiledJavascript": "var b = function b(n) {
-  return n > 0 ? n : a(10);
-};
-return { b: b };",
-      "type": "ARBITRARY_JS_BLOCK",
-      "uniqueID": "",
+      "type": "UTOPIA_JSX_COMPONENT",
+      "usedInReactDOMRender": false,
     },
     Object {
       "rawCode": "

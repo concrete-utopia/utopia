@@ -17,6 +17,7 @@ import {
 } from '../../../../../components/inspector/common/css-utils'
 import { act, fireEvent } from '@testing-library/react'
 import { applyPrettier } from 'utopia-vscode-common'
+import { wait } from '../../../../../utils/utils.test-utils'
 
 function getCrossCapitalDimension(flexDirection: FlexDirection): string {
   return flexDirection.startsWith('row') ? 'Height' : 'Width'
@@ -253,15 +254,12 @@ describe('flex dimension controls', () => {
     })
   }
 
-  it('do not delete the properties when the parent is not a flex container', async () => {
+  it("for non-flex child, the control doesn't show up", async () => {
     const editor = await renderTestEditorWithCode(
       createNonFlexProject('row', 100, 120),
       'await-first-dom-report',
     )
-    await changeDimensionValue(editor, 'row', '90')
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      createNonFlexProject('row', 100, 90),
-    )
+    expect(editor.renderedDOM.queryByTestId(getCrossDimensionTestId('row'))).toBeNull()
   })
 })
