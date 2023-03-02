@@ -21,11 +21,13 @@ import { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
-import { flowReorderStrategy } from './flow-reorder-strategy'
+import { flowReorderStrategy, getAutoLayoutSiblingsBounds } from './flow-reorder-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { getDragTargets } from './shared-move-strategies-helpers'
 import * as EP from '../../../../core/shared/element-path'
+import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
+import { CanvasRectangle, offsetPoint, rectContainsPoint } from '../../../../core/shared/math-utils'
 
 type MoveStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -121,6 +123,10 @@ export function doNothingStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
+    canvasState.startingMetadata,
+    selectedElements[0],
+  )
   return {
     id: 'DO_NOTHING',
     name: 'No Default Available',
@@ -143,8 +149,14 @@ export function doNothingStrategy(
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
+      controlWithProps({
+        control: AutoLayoutSiblingsOutline,
+        props: { bounds: autoLayoutSiblingsBounds },
+        key: 'autolayout-siblings-outline',
+        show: 'always-visible',
+      }),
     ],
-    fitness: 1.5,
+    fitness: getFitness(interactionSession, autoLayoutSiblingsBounds),
     apply: () => {
       return strategyApplicationResult([
         wildcardPatch('mid-interaction', {
@@ -164,4 +176,31 @@ export function doNothingStrategy(
       ])
     },
   }
+}
+
+function getFitness(
+  interactionSession: InteractionSession | null,
+  autoLayoutSiblingsBounds: CanvasRectangle | null,
+): number {
+  if (
+    interactionSession != null &&
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.activeControl.type === 'BOUNDING_AREA'
+  ) {
+    if (interactionSession.interactionData.drag == null) {
+      return 1
+    }
+
+    const pointOnCanvas = offsetPoint(
+      interactionSession.interactionData.dragStart,
+      interactionSession.interactionData.drag,
+    )
+
+    const isInsideBoundingBoxOfSiblings =
+      autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
+
+    return isInsideBoundingBoxOfSiblings ? 1.5 : 0.1
+  }
+
+  return 0
 }
