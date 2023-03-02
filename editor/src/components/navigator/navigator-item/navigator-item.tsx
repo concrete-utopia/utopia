@@ -32,6 +32,7 @@ import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
 import { createSelector } from 'reselect'
 import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import createCachedSelector from 're-reselect'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -275,7 +276,7 @@ function useIsProbablyScene(path: ElementPath): boolean {
   )
 }
 
-const isHiddenConditionalBranchSelector = createSelector(
+const isHiddenConditionalBranchSelector = createCachedSelector(
   (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
     MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
   (_store: MetadataSubstate, elementPath: ElementPath, _parentPath: ElementPath) => elementPath,
@@ -304,9 +305,9 @@ const isHiddenConditionalBranchSelector = createSelector(
           parentOverride: false,
         })
   },
-)
+)((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
-const isActiveBranchOfOverriddenConditionalSelector = createSelector(
+const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
   (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
     MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
   (_store: MetadataSubstate, elementPath: ElementPath, _parentPath: ElementPath) => elementPath,
@@ -336,7 +337,7 @@ const isActiveBranchOfOverriddenConditionalSelector = createSelector(
       })
     )
   },
-)
+)((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
 export const NavigatorItem: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemInnerProps>

@@ -1,3 +1,4 @@
+import createCachedSelector from 're-reselect'
 import { createSelector } from 'reselect'
 
 interface ExampleStore {
@@ -95,16 +96,16 @@ describe('Reselect Investigation', () => {
     // uh oh!!! be very careful when creating a selector with a curry function
   })
 
-  it('selectors that take an argument are memoized', () => {
+  it('re-reselect cached selectors that take an argument are memoized', () => {
     let numberOfTimesCalled = 0
-    const selector = createSelector(
+    const selector = createCachedSelector(
       (store: ExampleStore) => store.exNumber,
       (store: ExampleStore) => store.exString,
       (store: ExampleStore, argument: { greeting: string }) => argument.greeting,
       (n, s, argument) => {
         numberOfTimesCalled += 1
       },
-    )
+    )(() => 'defeat') // deliberately crippling createCachedSelector to simulate classic reselect for demo purposes
 
     const store: ExampleStore = {
       exNumber: 5,
@@ -125,14 +126,14 @@ describe('Reselect Investigation', () => {
 
   it("the argument doesn't need to be referentially stable, it's enough that the selector picking the argument returns a stable value", () => {
     let numberOfTimesCalled = 0
-    const selector = createSelector(
+    const selector = createCachedSelector(
       (store: ExampleStore) => store.exNumber,
       (store: ExampleStore) => store.exString,
       (store: ExampleStore, argument: { greeting: string }) => argument.greeting,
       (n, s, argument) => {
         numberOfTimesCalled += 1
       },
-    )
+    )(() => 'defeat') // deliberately crippling createCachedSelector to simulate classic reselect for demo purposes
 
     const store: ExampleStore = {
       exNumber: 5,
@@ -149,6 +150,67 @@ describe('Reselect Investigation', () => {
     expect(numberOfTimesCalled).toBe(1)
   })
 
+  it('HOWEVER! if the argument is not the same for consecutive calls, for example multiple instances of a component are calling with different target paths', () => {
+    let numberOfTimesCalled = 0
+    const selector = createCachedSelector(
+      (store: ExampleStore) => store.exNumber,
+      (store: ExampleStore) => store.exString,
+      (store: ExampleStore, argument: { greeting: string }) => argument.greeting,
+      (n, s, argument) => {
+        numberOfTimesCalled += 1
+      },
+    )(() => 'defeat') // deliberately crippling createCachedSelector to simulate classic reselect for demo purposes
+
+    const store: ExampleStore = {
+      exNumber: 5,
+      exString: 'hello',
+    }
+
+    selector(store, { greeting: 'hi there!' })
+    expect(numberOfTimesCalled).toBe(1)
+
+    // calling it two more times will TOTALLY increase numberOfTimesCalled!
+    selector(store, { greeting: 'hello there!' })
+    selector(store, { greeting: 'howdy there!' })
+
+    expect(numberOfTimesCalled).toBe(3)
+
+    // but the HUGE problem is that going back to a previous value will increase numberOfTimesCalled because the memo size is 1
+
+    selector(store, { greeting: 'hi there!' })
+    expect(numberOfTimesCalled).toBe(4)
+  })
+
+  it('the solution is a re-reselect memoized selector', () => {
+    let numberOfTimesCalled = 0
+    const selector = createCachedSelector(
+      (store: ExampleStore) => store.exNumber,
+      (store: ExampleStore) => store.exString,
+      (store: ExampleStore, argument: { greeting: string }) => argument.greeting,
+      (n, s, argument) => {
+        numberOfTimesCalled += 1
+      },
+    )((_, argument) => argument.greeting) // <- we use argument.greeting as the memo key
+
+    const store: ExampleStore = {
+      exNumber: 5,
+      exString: 'hello',
+    }
+
+    selector(store, { greeting: 'hi there!' })
+    expect(numberOfTimesCalled).toBe(1)
+
+    // calling it two more times will TOTALLY increase numberOfTimesCalled! – this is expected
+    selector(store, { greeting: 'hello there!' })
+    selector(store, { greeting: 'howdy there!' })
+
+    expect(numberOfTimesCalled).toBe(3)
+
+    // but LOOK! problem is that going back to a previous value will NOT increase the numberOfTimesCalled, because greeting is the memo key that retrieves that selector
+    selector(store, { greeting: 'hi there!' })
+    expect(numberOfTimesCalled).toBe(3)
+  })
+
   it('nested selectors are memoized as expected', () => {
     let numberOfTimesInnerCalled = 0
     let numberOfTimesOuterCalled = 0
@@ -160,7 +222,7 @@ describe('Reselect Investigation', () => {
         }
       }
     }
-    const innerSelector = createSelector(
+    const innerSelector = createCachedSelector(
       (store: ComplexStore) => store.outerProp.innerProp,
       (store: ComplexStore, parameter: 'value') => parameter,
       (innerProp, parameter) => {
@@ -168,13 +230,13 @@ describe('Reselect Investigation', () => {
         // imagine that this is a cheap selector that goes for a narrow state slice
         return innerProp[parameter]
       },
-    )
+    )((_, parameter) => parameter)
 
-    const outerSelector = createSelector(innerSelector, (selected) => {
+    const outerSelector = createCachedSelector(innerSelector, (selected) => {
       numberOfTimesOuterCalled += 1
       // imagine that this is an expensive selector here!
       return selected
-    })
+    })((_, parameter) => parameter)
 
     const referentiallyStableValue = 'hello'
 
