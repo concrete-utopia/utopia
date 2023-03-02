@@ -611,7 +611,7 @@ export function getZIndexOfElement(
   if (parentElement != null) {
     const elementUID = EP.toUid(target)
     return parentElement.children.findIndex((child) => {
-      return isJSXElement(child) && getUtopiaID(child) === elementUID
+      return isJSXElementLike(child) && getUtopiaID(child) === elementUID
     })
   } else {
     return -1

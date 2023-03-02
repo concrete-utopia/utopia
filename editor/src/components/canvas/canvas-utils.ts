@@ -2704,7 +2704,7 @@ export function duplicate(
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
-            if (isJSXElement(newElement)) {
+            if (isJSXElementLike(newElement)) {
               newElement = {
                 ...newElement,
                 children: guaranteeUniqueUids(newElement.children, [
