@@ -94,18 +94,10 @@ const resizeStrategies: MetaCanvasStrategy = (
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
+      flexResizeStrategy,
       basicResizeStrategy,
     ],
   )
-}
-
-// TODO move this to resizeStrategies after insertion is fixed
-const flexResizeMetaStrategy: MetaCanvasStrategy = (
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-  customStrategyState: CustomStrategyState,
-): Array<CanvasStrategy> => {
-  return mapDropNulls((factory) => factory(canvasState, interactionSession), [flexResizeStrategy])
 }
 
 const propertyControlStrategies: MetaCanvasStrategy = (
@@ -158,7 +150,7 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
-export const RegisteredCanvasStrategiesWithoutFlexResize: Array<MetaCanvasStrategy> = [
+export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
@@ -167,11 +159,6 @@ export const RegisteredCanvasStrategiesWithoutFlexResize: Array<MetaCanvasStrate
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
-]
-
-export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
-  ...RegisteredCanvasStrategiesWithoutFlexResize,
-  preventOnRootElements(flexResizeMetaStrategy),
 ]
 
 export function pickCanvasStateFromEditorState(

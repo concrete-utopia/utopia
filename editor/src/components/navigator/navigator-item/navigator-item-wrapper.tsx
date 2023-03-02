@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { createSelector } from 'reselect'
+import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -35,23 +35,23 @@ interface NavigatorItemWrapperProps {
   windowStyle: React.CSSProperties
 }
 
-const targetElementMetadataSelector = createSelector(
+const targetElementMetadataSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate, targetPath: ElementPath) => targetPath,
   (metadata, targetPath): ElementInstanceMetadata | null => {
     return MetadataUtils.findElementByElementPath(metadata, targetPath)
   },
-)
+)((_, targetPath) => EP.toString(targetPath))
 
-const targetInNavigatorItemsSelector = createSelector(
+const targetInNavigatorItemsSelector = createCachedSelector(
   (store: EditorStorePatched) => store.derived.navigatorTargets,
   (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
   (navigatorTargets, targetPath) => {
     return EP.containsPath(targetPath, navigatorTargets)
   },
-)
+)((_, targetPath) => EP.toString(targetPath))
 
-const targetSupportsChildrenSelector = createSelector(
+const targetSupportsChildrenSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   targetElementMetadataSelector,
   targetInNavigatorItemsSelector,
@@ -61,9 +61,9 @@ const targetSupportsChildrenSelector = createSelector(
     }
     return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
   },
-)
+)((_, targetPath) => EP.toString(targetPath))
 
-const labelSelector = createSelector(
+const labelSelector = createCachedSelector(
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (elementMetadata, allElementProps) => {
@@ -72,9 +72,9 @@ const labelSelector = createSelector(
     }
     return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
   },
-)
+)((_, targetPath) => EP.toString(targetPath))
 
-const elementWarningsSelector = createSelector(
+const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
   (_: DerivedSubstate, elementPath: ElementPath) => elementPath,
   (elementWarnings, elementPath) => {
@@ -82,9 +82,9 @@ const elementWarningsSelector = createSelector(
       getValueFromComplexMap(EP.toString, elementWarnings, elementPath) ?? defaultElementWarnings
     )
   },
-)
+)((_, targetPath) => EP.toString(targetPath))
 
-const noOfChildrenSelector = createSelector(
+const noOfChildrenSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.navigatorTargets,
   (_: DerivedSubstate, targetPath: ElementPath) => targetPath,
   (navigatorTargets, targetPath) => {
@@ -96,7 +96,7 @@ const noOfChildrenSelector = createSelector(
     }
     return result
   },
-)
+)((_, targetPath) => EP.toString(targetPath))
 
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
@@ -123,7 +123,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const supportsChildren = useEditorState(
     Substores.fullStore,
     // this is not good
-    (store) => targetSupportsChildrenSelector(store, props.elementPath),
+    (store) => {
+      return targetSupportsChildrenSelector(store, props.elementPath)
+    },
     'NavigatorItemWrapper targetSupportsChildrenSelector',
   )
 
