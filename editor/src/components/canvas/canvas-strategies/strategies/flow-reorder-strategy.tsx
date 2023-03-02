@@ -1,6 +1,21 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  CanvasRectangle,
+  nullIfInfinity,
+  offsetPoint,
+  rectContainsPoint,
+} from '../../../../core/shared/math-utils'
+import { memoize } from '../../../../core/shared/memoize'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
+import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
 import {
   controlWithProps,
   CustomStrategyState,
@@ -9,23 +24,12 @@ import {
   InteractionCanvasState,
   MoveStrategy,
 } from '../canvas-strategy-types'
+import { InteractionSession } from '../interaction-state'
 import {
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
-import { InteractionSession } from '../interaction-state'
 import { applyReorderCommon } from './reorder-utils'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
-import {
-  boundingRectangleArray,
-  nullIfInfinity,
-  offsetPoint,
-  rectContainsPoint,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
 
 export function flowReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -54,6 +58,7 @@ export function flowReorderStrategy(
   ) {
     return null
   }
+  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
 
   return {
     strategy: {
@@ -78,8 +83,14 @@ export function flowReorderStrategy(
           key: 'flow-reorder-drag-outline',
           show: 'visible-only-while-active',
         }),
+        controlWithProps({
+          control: AutoLayoutSiblingsOutline,
+          props: { bounds: autoLayoutSiblingsBounds },
+          key: 'autolayout-siblings-outline',
+          show: 'always-visible',
+        }),
       ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness: getFitness(canvasState, interactionSession, target),
+      fitness: getFitness(interactionSession, autoLayoutSiblingsBounds),
       apply: () => {
         return interactionSession == null
           ? emptyStrategyApplicationResult
@@ -96,10 +107,23 @@ export function flowReorderStrategy(
   }
 }
 
-function getFitness(
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
+const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { maxSize: 1 })
+
+function getAutoLayoutSiblingsBoundsInner(
+  jsxMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
+): CanvasRectangle | null {
+  const autoLayoutSiblings = MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(
+    jsxMetadata,
+    target,
+  )
+  const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
+  return boundingRectangleArray(autoLayoutSiblingsFrames)
+}
+
+function getFitness(
+  interactionSession: InteractionSession | null,
+  autoLayoutSiblingsBounds: CanvasRectangle | null,
 ): number {
   if (
     interactionSession != null &&
@@ -110,13 +134,6 @@ function getFitness(
       return 1
     }
 
-    const autoLayoutSiblings = MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(
-      canvasState.startingMetadata,
-      target,
-    )
-    const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
-    const autoLayoutSiblingsBounds = boundingRectangleArray(autoLayoutSiblingsFrames)
-
     const pointOnCanvas = offsetPoint(
       interactionSession.interactionData.dragStart,
       interactionSession.interactionData.drag,
@@ -125,7 +142,7 @@ function getFitness(
     const isInsideBoundingBoxOfSiblings =
       autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
-    return isInsideBoundingBoxOfSiblings ? 1 : 0
+    return isInsideBoundingBoxOfSiblings ? 1 : 0.1
   }
 
   return 0
