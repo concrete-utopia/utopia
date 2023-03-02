@@ -5,7 +5,10 @@ import {
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -124,7 +127,14 @@ describe('Absolute Duplicate Strategy', () => {
         'sb/fragment/child',
       ])
 
-      FOR_TESTS_setNextGeneratedUid('fragment2')
+      FOR_TESTS_setNextGeneratedUids([
+        'fragment2',
+        'fragment2',
+        'fragment2',
+        'fragment2',
+        'fragment2',
+        'fragment2',
+      ])
       const dragDelta = windowPoint({ x: 40, y: -25 })
 
       const targetElement = renderResult.renderedDOM.getByTestId('child')
@@ -144,10 +154,10 @@ describe('Absolute Duplicate Strategy', () => {
 
       expect(Object.keys(renderResult.getEditorState().editor.jsxMetadata)).toEqual([
         'sb',
-        'sb/fragment2',
-        'sb/fragment2/child',
         'sb/fragment',
         'sb/fragment/child',
+        'sb/fragment2',
+        'sb/fragment2/child',
       ])
     })
   })
