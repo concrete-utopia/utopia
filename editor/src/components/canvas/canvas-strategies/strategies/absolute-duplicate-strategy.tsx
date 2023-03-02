@@ -6,7 +6,7 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
-import { foldAndApplyCommandsInner } from '../../commands/commands'
+import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import { DuplicateElement, duplicateElement } from '../../commands/duplicate-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -28,6 +28,8 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets } from './shared-move-strategies-helpers'
 import { treatElementAsContentAffecting } from './group-like-helpers'
+import { updatePropIfExists } from '../../commands/update-prop-if-exists-command'
+import { create } from '../../../../core/shared/property-path'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -75,24 +77,39 @@ export function absoluteDuplicateStrategy(
         let duplicatedElementNewUids = {
           ...customStrategyState.duplicatedElementNewUids,
         }
-        let duplicateCommands: Array<DuplicateElement> = []
+        let duplicateCommands: Array<CanvasCommand> = []
         let newPaths: Array<ElementPath> = []
 
         filteredSelectedElements.forEach((selectedElement) => {
           const selectedElementString = EP.toString(selectedElement)
+          const oldUid = EP.toUid(selectedElement)
           const newUid =
             duplicatedElementNewUids[selectedElementString] ??
             generateUidWithExistingComponents(canvasState.projectContents)
           duplicatedElementNewUids[selectedElementString] = newUid
 
-          duplicateCommands.push(duplicateElement('always', selectedElement, newUid, 'after'))
+          const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
+
+          newPaths.push(newPath)
+          duplicateCommands.push(
+            duplicateElement('always', selectedElement, newUid, 'before'),
+            /**
+             * TODO: the UIDs are swapped to make it seem like that the element being dragged
+             * (the original element) is the new, duplicated element. While this works on the canvas,
+             * in the code editor, the wrong code snippet is highlighted until the affected files are saved.
+             *
+             * I added this as a fallback solution, definitely needs a better approach
+             */
+            updatePropIfExists('on-complete', selectedElement, create('data-uid'), newUid),
+            updatePropIfExists('on-complete', newPath, create('data-uid'), oldUid),
+          )
         })
 
         return strategyApplicationResult(
           [
             ...duplicateCommands,
             setElementsToRerenderCommand([...selectedElements, ...newPaths]),
-            updateSelectedViews('always', newPaths),
+            updateSelectedViews('always', selectedElements),
             updateFunctionCommand('always', (editorState, commandLifecycle) =>
               runMoveStrategy(
                 canvasState,

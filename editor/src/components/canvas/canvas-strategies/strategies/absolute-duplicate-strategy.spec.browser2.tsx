@@ -1,5 +1,6 @@
 import {
   EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -52,7 +53,7 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUids(['hello', 'hello', 'hello', 'hello', 'hello', 'hello'])
+    FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
@@ -63,12 +64,12 @@ describe('Absolute Duplicate Strategy', () => {
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
-            data-uid='hello'
-            data-testid='bbb'
-            />
-            <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            data-uid='hello'
             data-testid='bbb'
           />
         </div>
@@ -90,7 +91,7 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUids(['hello', 'hello', 'hello', 'hello', 'hello', 'hello'])
+    FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
@@ -101,12 +102,12 @@ describe('Absolute Duplicate Strategy', () => {
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
-            data-uid='hello'
-            data-testid='bbb'
-            />
-            <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='bbb'
+            data-testid='bbb'
+          />
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            data-uid='hello'
             data-testid='bbb'
           />
         </div>
@@ -117,24 +118,29 @@ describe('Absolute Duplicate Strategy', () => {
     setFeatureForBrowserTests('Fragment support', true)
     it('duplicates the selected absolute element when pressing alt, even if it is a fragment', async () => {
       const renderResult = await renderTestEditorWithCode(
-        projectWithFragment,
+        formatTestProjectCode(
+          projectWithFragment(`<React.Fragment data-uid='fragment'>
+        <div
+          style={{
+            backgroundColor: '#d089cc',
+            width: 150,
+            height: 186,
+            contain: 'layout',
+            left: 7,
+            top: 186,
+            position: 'absolute',
+          }}
+          data-uid='child'
+          data-testid='child'
+        >
+          second
+        </div>
+      </React.Fragment>`),
+        ),
         'await-first-dom-report',
       )
 
-      expect(Object.keys(renderResult.getEditorState().editor.jsxMetadata)).toEqual([
-        'sb',
-        'sb/fragment',
-        'sb/fragment/child',
-      ])
-
-      FOR_TESTS_setNextGeneratedUids([
-        'fragment2',
-        'fragment2',
-        'fragment2',
-        'fragment2',
-        'fragment2',
-        'fragment2',
-      ])
+      FOR_TESTS_setNextGeneratedUid('fragment2')
       const dragDelta = windowPoint({ x: 40, y: -25 })
 
       const targetElement = renderResult.renderedDOM.getByTestId('child')
@@ -152,23 +158,10 @@ describe('Absolute Duplicate Strategy', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(Object.keys(renderResult.getEditorState().editor.jsxMetadata)).toEqual([
-        'sb',
-        'sb/fragment2',
-        'sb/fragment2/child',
-        'sb/fragment',
-        'sb/fragment/child',
-      ])
-    })
-  })
-})
-
-const projectWithFragment = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <React.Fragment data-uid='fragment'>
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          projectWithFragment(`
+      <React.Fragment>
       <div
         style={{
           backgroundColor: '#d089cc',
@@ -179,12 +172,41 @@ export var storyboard = (
           top: 186,
           position: 'absolute',
         }}
+        data-uid='chi'
+        data-testid='child'
+      >
+        second
+      </div>
+      </React.Fragment>
+      <React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#d089cc',
+          width: 150,
+          height: 186,
+          contain: 'layout',
+          left: 47,
+          top: 161,
+          position: 'absolute',
+        }}
         data-uid='child'
         data-testid='child'
       >
         second
       </div>
-    </React.Fragment>
+      </React.Fragment>`),
+        ),
+      )
+    })
+  })
+})
+
+const projectWithFragment = (innards: string) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    ${innards}
   </Storyboard>
 )
 
