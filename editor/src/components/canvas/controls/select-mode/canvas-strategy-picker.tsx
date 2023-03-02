@@ -14,7 +14,9 @@ export const CanvasStrategyPicker = React.memo(() => {
   const { allApplicableStrategies } = useEditorState(
     Substores.restOfStore,
     (store) => ({
-      allApplicableStrategies: store.strategyState.sortedApplicableStrategies,
+      allApplicableStrategies: store.strategyState.sortedApplicableStrategies?.filter(
+        (strategy) => strategy.strategy.fitness > 0,
+      ),
     }),
     'CanvasStrategyPicker strategyState.currentStrategy',
   )

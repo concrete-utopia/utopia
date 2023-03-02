@@ -188,7 +188,7 @@ function getFitness(
     interactionSession.activeControl.type === 'BOUNDING_AREA'
   ) {
     if (interactionSession.interactionData.drag == null) {
-      return 1
+      return 1.5
     }
 
     const pointOnCanvas = offsetPoint(
@@ -199,7 +199,7 @@ function getFitness(
     const isInsideBoundingBoxOfSiblings =
       autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
-    return isInsideBoundingBoxOfSiblings ? 1.5 : 0.1
+    return isInsideBoundingBoxOfSiblings ? 1.5 : 0
   }
 
   return 0
