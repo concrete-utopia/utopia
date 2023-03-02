@@ -19,11 +19,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  wait,
-} from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
@@ -103,7 +99,7 @@ function actionsForUpdatedCode(updatedCodeSnippet: string) {
 async function clickButtonAndSelectTarget(
   renderResult: EditorRenderResult,
   buttonTestId: string,
-  targetPath: ElementPath,
+  targetPath: ElementPath[],
 ): Promise<void> {
   await expectSingleUndoStep(renderResult, async () => {
     await act(async () => {
@@ -114,7 +110,7 @@ async function clickButtonAndSelectTarget(
 
   await act(async () => {
     const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-    await renderResult.dispatch([selectComponents([targetPath], false)], true)
+    await renderResult.dispatch([selectComponents(targetPath, false)], true)
     await dispatchDone
   })
 
@@ -2225,11 +2221,9 @@ describe('inspector tests with real metadata', () => {
 
       // open the section in the inspector
       {
-        await clickButtonAndSelectTarget(
-          renderResult,
-          ConditionalsControlSectionOpenTestId,
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionOpenTestId, [
           targetPath,
-        )
+        ])
         expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
         expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
 
@@ -2251,11 +2245,9 @@ describe('inspector tests with real metadata', () => {
 
       // toggle to false
       {
-        await clickButtonAndSelectTarget(
-          renderResult,
-          ConditionalsControlToggleFalseTestId,
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
           targetPath,
-        )
+        ])
 
         expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
         expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
@@ -2278,11 +2270,9 @@ describe('inspector tests with real metadata', () => {
 
       // toggle to true
       {
-        await clickButtonAndSelectTarget(
-          renderResult,
-          ConditionalsControlToggleTrueTestId,
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleTrueTestId, [
           targetPath,
-        )
+        ])
 
         expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
         expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
@@ -2305,11 +2295,9 @@ describe('inspector tests with real metadata', () => {
 
       // close the inspector section
       {
-        await clickButtonAndSelectTarget(
-          renderResult,
-          ConditionalsControlSectionCloseTestId,
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionCloseTestId, [
           targetPath,
-        )
+        ])
         expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
         expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -2362,11 +2350,9 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      await clickButtonAndSelectTarget(
-        renderResult,
-        ConditionalsControlToggleFalseTestId,
+      await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
         targetPath,
-      )
+      ])
 
       expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
       expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
@@ -2387,6 +2373,189 @@ describe('inspector tests with real metadata', () => {
             </div>
          `),
       )
+    })
+    it('toggles multiple conditional branches', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'skip7',
+        'skip8',
+        'skip9',
+        'conditional1',
+        'skip10',
+        'skip11',
+        'conditional2',
+      ])
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {true ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
+          {true ? (
+            <div data-uid='ddd' data-testid='ddd'>baz</div>
+          ) : (
+            <div data-uid='eee' data-testid='eee'>qux</div>
+          )}
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const firstConditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional1'])
+      const secondConditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional2'])
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([firstConditional], false)], false)
+      })
+
+      // open the section in the inspector
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionOpenTestId, [
+          firstConditional,
+        ])
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=true
+                true ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+              {true ? (
+                <div data-uid='ddd' data-testid='ddd'>baz</div>
+              ) : (
+                <div data-uid='eee' data-testid='eee'>qux</div>
+              )}
+            </div>
+          `),
+        )
+      }
+
+      const bothConditionals = [firstConditional, secondConditional]
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents(bothConditionals, false)], false)
+      })
+
+      // toggle both to false
+      {
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlToggleFalseTestId,
+          bothConditionals,
+        )
+
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ddd')).toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('eee')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+            {
+              // @utopia/conditional=false
+              true ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+              {
+                // @utopia/conditional=false
+                true ? (
+                  <div data-uid='ddd' data-testid='ddd'>baz</div>
+                  ) : (
+                    <div data-uid='eee' data-testid='eee'>qux</div>
+                    )}
+                    </div>
+                    `),
+        )
+      }
+
+      // toggle to true
+      {
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlToggleTrueTestId,
+          bothConditionals,
+        )
+
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=true
+                true ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+              {
+                // @utopia/conditional=true
+                true ? (
+                <div data-uid='ddd' data-testid='ddd'>baz</div>
+              ) : (
+                <div data-uid='eee' data-testid='eee'>qux</div>
+              )}
+            </div>
+          `),
+        )
+      }
+
+      // close the inspector section
+      {
+        await clickButtonAndSelectTarget(
+          renderResult,
+          ConditionalsControlSectionCloseTestId,
+          bothConditionals,
+        )
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {true ? (
+                <div data-uid='bbb' data-testid='bbb'>foo</div>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>bar</div>
+              )}
+              {true ? (
+                <div data-uid='ddd' data-testid='ddd'>baz</div>
+              ) : (
+                <div data-uid='eee' data-testid='eee'>qux</div>
+              )}
+            </div>
+          `),
+        )
+      }
     })
   })
 })
