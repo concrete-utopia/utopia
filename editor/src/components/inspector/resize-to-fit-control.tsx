@@ -102,8 +102,8 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
             type='fitToChildren'
             color='main'
             category='layout/commands'
-            width={18}
-            height={18}
+            width={16}
+            height={16}
           />
         </div>
       </Tooltip>
@@ -113,7 +113,7 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
           onClick={onResizeToFill}
           style={{ cursor: 'pointer', ...disabledStyles(isFillApplicable) }}
         >
-          <Icn type='growToParent' color='main' category='layout/commands' width={18} height={18} />
+          <Icn type='growToParent' color='main' category='layout/commands' width={16} height={16} />
         </div>
       </Tooltip>
       <Tooltip title={'Fixed size'}>
