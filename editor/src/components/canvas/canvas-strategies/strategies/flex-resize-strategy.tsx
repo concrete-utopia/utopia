@@ -333,6 +333,13 @@ function shouldSnapToParentEdge(
     .filter((sibling) => !EP.pathsEqual(sibling.elementPath, element.elementPath))
     .filter(MetadataUtils.elementParticipatesInAutoLayout)
 
+  const isParentSetToHug =
+    detectFillHugFixedState(
+      parentFlexDirection === 'row' ? 'horizontal' : 'vertical',
+      startingMetadata,
+      EP.parentPath(element.elementPath),
+    )?.type === 'hug'
+
   const anySiblingFillSized = flexSiblingsWithoutSelected.some((sibling) => {
     const fillHugFixedState = detectFillHugFixedState(
       parentFlexDirection === 'row' ? 'horizontal' : 'vertical',
@@ -342,7 +349,7 @@ function shouldSnapToParentEdge(
     return fillHugFixedState?.type === 'fill'
   })
 
-  if (anySiblingFillSized) {
+  if (anySiblingFillSized || isParentSetToHug) {
     return null
   }
 
