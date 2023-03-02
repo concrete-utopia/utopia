@@ -54,10 +54,7 @@ import {
 import { FlexDirection } from '../../../inspector/common/css-utils'
 import { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
-import {
-  detectFillHugFixedState,
-  setParentToFixedIfHugCommands,
-} from '../../../inspector/inspector-common'
+import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { getElementDimensions } from './flex-resize-helpers'
@@ -221,15 +218,6 @@ export function flexResizeStrategy(
               ? { width: true, height: true }
               : dimensionToSetForEdgePosition(edgePosition)
 
-          const axis =
-            metadata.specialSizeMeasurements.parentFlexDirection === 'row'
-              ? 'horizontal'
-              : 'vertical'
-          const setParentToFixedCommands =
-            metadata.specialSizeMeasurements.parentHugsOnMainAxis && snapToParentEdge?.snap
-              ? setParentToFixedIfHugCommands(axis, canvasState.startingMetadata, target)
-              : []
-
           let resizeCommands: Array<CanvasCommand> = []
           if (dimensionToUpdate.width) {
             if (
@@ -305,7 +293,6 @@ export function flexResizeStrategy(
 
           return strategyApplicationResult([
             ...resizeCommands,
-            ...setParentToFixedCommands,
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
@@ -355,7 +342,7 @@ function shouldSnapToParentEdge(
     return fillHugFixedState?.type === 'fill'
   })
 
-  if (anySiblingFillSized) {
+  if (anySiblingFillSized || element.specialSizeMeasurements.parentHugsOnMainAxis) {
     return null
   }
 
