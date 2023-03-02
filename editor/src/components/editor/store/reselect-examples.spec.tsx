@@ -157,6 +157,7 @@ describe('Reselect Investigation', () => {
       (store: ExampleStore) => store.exString,
       (store: ExampleStore, argument: { greeting: string }) => argument.greeting,
       (n, s, argument) => {
+        // imagine I am the expensive selector that needs memoization
         numberOfTimesCalled += 1
       },
     )(() => 'defeat') // deliberately crippling createCachedSelector to simulate classic reselect for demo purposes
@@ -176,9 +177,16 @@ describe('Reselect Investigation', () => {
     expect(numberOfTimesCalled).toBe(3)
 
     // but the HUGE problem is that going back to a previous value will increase numberOfTimesCalled because the memo size is 1
-
+    // notice how we are calling these with the exact same store and yet they keep recalculating!
     selector(store, { greeting: 'hi there!' })
     expect(numberOfTimesCalled).toBe(4)
+    selector(store, { greeting: 'hello there!' })
+    expect(numberOfTimesCalled).toBe(5)
+    selector(store, { greeting: 'howdy there!' })
+    expect(numberOfTimesCalled).toBe(6)
+    // this is the same as multiple component instances sharing the same selector but calling it with a different target path
+
+    // how do we solve this?
   })
 
   it('the solution is a re-reselect memoized selector', () => {
@@ -209,6 +217,11 @@ describe('Reselect Investigation', () => {
     // but LOOK! problem is that going back to a previous value will NOT increase the numberOfTimesCalled, because greeting is the memo key that retrieves that selector
     selector(store, { greeting: 'hi there!' })
     expect(numberOfTimesCalled).toBe(3)
+    selector(store, { greeting: 'hello there!' })
+    expect(numberOfTimesCalled).toBe(3)
+    selector(store, { greeting: 'howdy there!' })
+    expect(numberOfTimesCalled).toBe(3)
+    // aha! so each selector ran once, that gives us the number 3. but re-calling the selectors didn't re-run them! re-reselect properly memoized them
   })
 
   it('nested selectors are memoized as expected', () => {
