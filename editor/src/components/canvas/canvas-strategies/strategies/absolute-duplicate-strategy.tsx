@@ -83,8 +83,9 @@ export function absoluteDuplicateStrategy(
           const newUid =
             duplicatedElementNewUids[selectedElementString] ??
             generateUidWithExistingComponents(canvasState.projectContents)
+          duplicatedElementNewUids[selectedElementString] = newUid
 
-          duplicateCommands.push(duplicateElement('always', selectedElement, newUid, 'before'))
+          duplicateCommands.push(duplicateElement('always', selectedElement, newUid, 'after'))
         })
 
         return strategyApplicationResult(
