@@ -1,5 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasRectangle,
@@ -51,10 +54,13 @@ export function flowReorderStrategy(
     canvasState.startingMetadata,
   )
 
+  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
+  const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
+
   if (
     !MetadataUtils.isPositionedByFlow(elementMetadata) ||
     !isValidFlowReorderTarget(target, canvasState.startingMetadata) ||
-    singleAxisAutolayoutDirection === 'non-single-axis-autolayout'
+    (singleAxisAutolayoutDirection === 'non-single-axis-autolayout' && hasAutoLayoutSiblings)
   ) {
     return null
   }
@@ -90,9 +96,10 @@ export function flowReorderStrategy(
           show: 'always-visible',
         }),
       ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness: getFitness(interactionSession, autoLayoutSiblingsBounds),
+      fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
       apply: () => {
-        return interactionSession == null
+        return interactionSession == null ||
+          singleAxisAutolayoutDirection === 'non-single-axis-autolayout'
           ? emptyStrategyApplicationResult
           : applyReorderCommon(
               canvasState,
@@ -113,16 +120,23 @@ function getAutoLayoutSiblingsBoundsInner(
   jsxMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): CanvasRectangle | null {
-  const autoLayoutSiblings = MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(
-    jsxMetadata,
-    target,
-  )
+  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, target)
   const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
   return boundingRectangleArray(autoLayoutSiblingsFrames)
 }
 
+const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 })
+
+function getAutoLayoutSiblingsInner(
+  jsxMetadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<ElementInstanceMetadata> {
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, target)
+}
+
 function getFitness(
   interactionSession: InteractionSession | null,
+  hasAutoLayoutSiblings: boolean,
   autoLayoutSiblingsBounds: CanvasRectangle | null,
 ): number {
   if (
@@ -142,7 +156,7 @@ function getFitness(
     const isInsideBoundingBoxOfSiblings =
       autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
-    return isInsideBoundingBoxOfSiblings ? 1 : 0.1
+    return isInsideBoundingBoxOfSiblings && hasAutoLayoutSiblings ? 1 : 0.1
   }
 
   return 0
