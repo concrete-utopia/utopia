@@ -52,7 +52,7 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUid('hello')
+    FOR_TESTS_setNextGeneratedUids(['hello', 'hello', 'hello', 'hello', 'hello', 'hello'])
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
@@ -63,12 +63,12 @@ describe('Absolute Duplicate Strategy', () => {
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
-            data-uid='bbb'
-            data-testid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='hello'
+            data-testid='bbb'
+            />
+            <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            data-uid='bbb'
             data-testid='bbb'
           />
         </div>
@@ -90,7 +90,7 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUid('hello')
+    FOR_TESTS_setNextGeneratedUids(['hello', 'hello', 'hello', 'hello', 'hello', 'hello'])
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 
@@ -101,12 +101,12 @@ describe('Absolute Duplicate Strategy', () => {
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
-            data-uid='bbb'
-            data-testid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='hello'
+            data-testid='bbb'
+            />
+            <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            data-uid='bbb'
             data-testid='bbb'
           />
         </div>
@@ -154,10 +154,10 @@ describe('Absolute Duplicate Strategy', () => {
 
       expect(Object.keys(renderResult.getEditorState().editor.jsxMetadata)).toEqual([
         'sb',
-        'sb/fragment',
-        'sb/fragment/child',
         'sb/fragment2',
         'sb/fragment2/child',
+        'sb/fragment',
+        'sb/fragment/child',
       ])
     })
   })
