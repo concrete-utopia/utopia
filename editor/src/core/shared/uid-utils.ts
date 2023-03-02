@@ -15,6 +15,8 @@ import {
   emptyComments,
   JSXElementLike,
   childOrBlockIsChild,
+  isJSXFragment,
+  JSXFragment,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -222,9 +224,21 @@ export function fixUtopiaElement(
     }
   }
 
+  function fixJSXFragment(fragment: JSXFragment): JSXFragment {
+    const newUID = generateConsistentUID(new Set(uniqueIDs), fragment.uid)
+    uniqueIDs.push(newUID)
+    return {
+      ...fragment,
+      uid: newUID,
+      children: fragment.children.map((child) => fixUtopiaElementInner(child)),
+    }
+  }
+
   function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
     if (isJSXElement(element)) {
       return fixJSXElement(element)
+    } else if (isJSXFragment(element)) {
+      return fixJSXFragment(element)
     } else if (isJSXArbitraryBlock(element)) {
       const fixedElementsWithin = objectMap(fixJSXElement, element.elementsWithin)
       if (shallowEqual(element.elementsWithin, fixedElementsWithin)) {

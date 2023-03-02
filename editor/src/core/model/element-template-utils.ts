@@ -1,16 +1,12 @@
 import {
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
-  walkContentsTree,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
-import { Either, isRight, right } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsWithin,
-  getJSXElementNameLastPart,
   isJSXArbitraryBlock,
   isJSXAttributeValue,
   isJSXElement,
@@ -41,7 +37,6 @@ import {
   childOrBlockIsChild,
 } from '../shared/element-template'
 import {
-  Imports,
   isParseSuccess,
   isTextFile,
   StaticElementPathPart,
@@ -57,14 +52,9 @@ import {
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import {
-  isUtopiaAPIComponent,
-  getComponentsFromTopLevelElements,
-  isSceneAgainstImports,
-} from './project-file-utils'
+import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { styleStringInArray } from '../../utils/common-constants'
 import { forceNotNull } from '../shared/optional-utils'
 
 function getAllUniqueUidsInner(
@@ -94,6 +84,9 @@ function getAllUniqueUidsInner(
           )
         }
       }
+    } else if (isJSXFragment(element)) {
+      fastForEach(element.children, extractUid)
+      uniqueIDs.add(element.uid)
     }
   }
 
