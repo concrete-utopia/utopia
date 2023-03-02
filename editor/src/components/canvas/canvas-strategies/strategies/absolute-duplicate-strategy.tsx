@@ -75,9 +75,6 @@ export function absoluteDuplicateStrategy(
         let duplicatedElementNewUids = {
           ...customStrategyState.duplicatedElementNewUids,
         }
-        let withDuplicatedMetadata: ElementInstanceMetadataMap = {
-          ...canvasState.startingMetadata,
-        }
         let duplicateCommands: Array<DuplicateElement> = []
         let newPaths: Array<ElementPath> = []
 
@@ -86,17 +83,8 @@ export function absoluteDuplicateStrategy(
           const newUid =
             duplicatedElementNewUids[selectedElementString] ??
             generateUidWithExistingComponents(canvasState.projectContents)
-          const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-          const newPathString = EP.toString(newPath)
-
-          duplicatedElementNewUids[selectedElementString] = newUid
-          withDuplicatedMetadata[newPathString] = {
-            ...withDuplicatedMetadata[EP.toString(selectedElement)],
-            elementPath: newPath,
-          }
 
           duplicateCommands.push(duplicateElement('always', selectedElement, newUid))
-          newPaths.push(newPath)
         })
 
         return strategyApplicationResult(
@@ -105,13 +93,12 @@ export function absoluteDuplicateStrategy(
             setElementsToRerenderCommand([...selectedElements, ...newPaths]),
             updateSelectedViews('always', newPaths),
             updateFunctionCommand('always', (editorState, commandLifecycle) =>
-              runMoveStrategyForFreshlyDuplicatedElements(
-                canvasState.builtInDependencies,
+              runMoveStrategy(
+                canvasState,
                 editorState,
                 interactionSession,
                 commandLifecycle,
                 strategyLifecycle,
-                withDuplicatedMetadata,
               ),
             ),
             setCursorCommand(CSSCursor.Duplicate),
@@ -128,20 +115,13 @@ export function absoluteDuplicateStrategy(
   }
 }
 
-function runMoveStrategyForFreshlyDuplicatedElements(
-  builtInDependencies: BuiltInDependencies,
+function runMoveStrategy(
+  canvasState: InteractionCanvasState,
   editorState: EditorState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
-  metadata: ElementInstanceMetadataMap,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorStateWithMetadata(
-    editorState,
-    builtInDependencies,
-    metadata,
-  )
-
   const moveCommands =
     absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(strategyLifecycle)
       .commands ?? []
