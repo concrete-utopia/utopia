@@ -74,6 +74,7 @@ import {
   Size,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
+  nullIfInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
@@ -2172,8 +2173,7 @@ export function createFakeMetadataForElement(
   specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
   specialSizeMeasurements.parentFlexDirection =
     parentElement?.specialSizeMeasurements.flexDirection ?? 'row'
-  specialSizeMeasurements.immediateParentBounds =
-    parentBounds == null || isInfinityRectangle(parentBounds) ? null : parentBounds
+  specialSizeMeasurements.immediateParentBounds = nullIfInfinity(parentBounds)
   specialSizeMeasurements.parentPadding =
     parentElement?.specialSizeMeasurements.padding ??
     sides(undefined, undefined, undefined, undefined)
