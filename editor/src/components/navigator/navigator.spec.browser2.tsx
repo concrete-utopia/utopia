@@ -217,733 +217,6 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
-function getProjectCodeDraggedToBeforeEverything(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeDraggedToAfterFirstSibling(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeDraggedToAfterLastSibling(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeReparentedUnderCousin(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      >
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-      </div>
-    </Scene>
-  </Storyboard>
-)
-`
-}
-function getProjectCodeReparentedUnderFirstSibling(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        >
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              height: 65,
-              width: 66,
-              position: 'absolute',
-              left: 265,
-              top: 233,
-            }}
-            data-uid='dragme'
-            data-testid='dragme'
-            data-label='dragme'
-          >
-            drag me
-          </div>
-        </div>
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeReparentedUnderScene(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-    <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          height: 65,
-          width: 66,
-          position: 'absolute',
-          left: 265,
-          top: 233,
-        }}
-        data-uid='dragme'
-        data-testid='dragme'
-        data-label='dragme'
-      >
-        drag me
-      </div>
-  </Storyboard>
-)
-`
-}
-
 describe('Navigator', () => {
   describe('selecting elements', () => {
     it('by clicking the center of the item', async () => {
@@ -1069,10 +342,16 @@ describe('Navigator', () => {
         ),
       )
 
-      await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeDraggedToBeforeEverything(), PrettierConfig),
-      )
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- moved to before `firstdiv`
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reorders to after the first sibling', async () => {
@@ -1119,10 +398,16 @@ describe('Navigator', () => {
         ),
       )
 
-      await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeDraggedToAfterFirstSibling(), PrettierConfig),
-      )
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- moved to after `firstdiv`
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reorders to after the last sibling', async () => {
@@ -1170,9 +455,17 @@ describe('Navigator', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeDraggedToAfterLastSibling(), PrettierConfig),
-      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- moved to after the last sibling `notdrag` under its parent
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reparents under the first sibling', async () => {
@@ -1221,9 +514,16 @@ describe('Navigator', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeReparentedUnderFirstSibling(), PrettierConfig),
-      )
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/dragme', // <- moved to under the first sibling
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reparents under grandparent', async () => {
@@ -1258,9 +558,16 @@ describe('Navigator', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeReparentedUnderScene(), PrettierConfig),
-      )
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+        'utopia-storyboard-uid/dragme', // <- moved to under the grandparent
+      ])
     })
 
     it('reparents under cousin element', async () => {
@@ -1308,9 +615,17 @@ describe('Navigator', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeReparentedUnderCousin(), PrettierConfig),
-      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+        'utopia-storyboard-uid/scene-aaa/parentsibling/dragme', // <- moved to under the cousin element
+      ])
     })
 
     it('attempt to reparent non-reparentable item', async () => {
@@ -1363,9 +678,17 @@ describe('Navigator', () => {
       ).toEqual(null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCode(), PrettierConfig),
-      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag', // <- cannot be moved
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('does not reparent to invalid target', async () => {
@@ -1413,9 +736,17 @@ describe('Navigator', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCode(), PrettierConfig),
-      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/sceneroot',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- cannot be moved
+        'utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('can reparent top-level element', () => expect('not implemented').toEqual('implemented'))
