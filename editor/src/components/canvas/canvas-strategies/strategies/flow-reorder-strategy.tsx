@@ -66,6 +66,17 @@ export function flowReorderStrategy(
   }
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
 
+  const autoLayoutSiblingsControl = hasAutoLayoutSiblings
+    ? [
+        controlWithProps({
+          control: AutoLayoutSiblingsOutline,
+          props: { bounds: autoLayoutSiblingsBounds },
+          key: 'autolayout-siblings-outline',
+          show: 'always-visible',
+        }),
+      ]
+    : []
+
   return {
     strategy: {
       id: 'FLOW_REORDER',
@@ -89,12 +100,7 @@ export function flowReorderStrategy(
           key: 'flow-reorder-drag-outline',
           show: 'visible-only-while-active',
         }),
-        controlWithProps({
-          control: AutoLayoutSiblingsOutline,
-          props: { bounds: autoLayoutSiblingsBounds },
-          key: 'autolayout-siblings-outline',
-          show: 'always-visible',
-        }),
+        ...autoLayoutSiblingsControl,
       ], // Uses existing hooks in select-mode-hooks.tsx
       fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
       apply: () => {
@@ -144,6 +150,10 @@ function getFitness(
     interactionSession.interactionData.type === 'DRAG' &&
     interactionSession.activeControl.type === 'BOUNDING_AREA'
   ) {
+    if (!hasAutoLayoutSiblings) {
+      return 0.1
+    }
+
     if (interactionSession.interactionData.drag == null) {
       return 1
     }
@@ -156,7 +166,7 @@ function getFitness(
     const isInsideBoundingBoxOfSiblings =
       autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
-    return isInsideBoundingBoxOfSiblings && hasAutoLayoutSiblings ? 1 : 0.1
+    return isInsideBoundingBoxOfSiblings ? 1 : 0.1
   }
 
   return 0
