@@ -97,6 +97,7 @@ import {
   LocalRectangle,
   nullIfInfinity,
   Size,
+  boundingRectangleArray,
 } from '../../core/shared/math-utils'
 import {
   DerivedState,
@@ -165,7 +166,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { uniqBy } from '../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
@@ -3368,4 +3369,17 @@ export function elementHasOnlyTextChildren(element: ElementInstanceMetadata): bo
   )
   const hasTextChildren = textChildren.length > 0
   return hasTextChildren && allChildrenText
+}
+
+export function getChildrenBoundingRectangle(
+  metadata: ElementInstanceMetadataMap,
+  parentPath: ElementPath,
+): CanvasRectangle | null {
+  const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath) // does not account for text children
+  const childrenBounds = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path)?.globalFrame,
+    childrenPaths,
+  ).filter((frame): frame is CanvasRectangle => isFiniteRectangle(frame))
+
+  return boundingRectangleArray(childrenBounds)
 }
