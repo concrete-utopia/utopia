@@ -14,6 +14,7 @@ import {
 } from '../../event-helpers.test-utils'
 import {
   isInfinityRectangle,
+  offsetPoint,
   rectangleDifference,
   windowPoint,
   WindowPoint,
@@ -174,6 +175,108 @@ const TestProjectMixedProperties = `
 </div>
 `
 
+const TestCodeWithMixedTypesButStillVertical = `
+<div style={{ width: '100%', height: '100%' }} data-uid='container'>
+  <div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      width: 100,
+      height: 100,
+    }}
+    data-uid='aaa'
+  />
+  <span data-uid='bbb' />
+  <div
+    style={{
+      backgroundColor: '#FF010133',
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+    }}
+    data-uid='ccc'
+  />
+  <div
+    style={{
+      backgroundColor: '#2515FF33',
+      width: 50,
+      height: 50,
+    }}
+    data-uid='ddd'
+  />
+  <div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 120,
+      top: 50,
+      width: 50,
+      height: 100,
+    }}
+    data-uid='eee'
+  />
+  <div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      width: 100,
+      height: 100,
+    }}
+    data-testid='fff'
+    data-uid='fff'
+  />
+</div>
+`
+
+const TestCodeWithMixedTypesButStillVerticalAfterReorder = `
+<div style={{ width: '100%', height: '100%' }} data-uid='container'>
+  <div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      width: 100,
+      height: 100,
+    }}
+    data-uid='aaa'
+  />
+  <span data-uid='bbb' />
+  <div
+    style={{
+      backgroundColor: '#FF010133',
+      width: 50,
+      height: 50,
+      display: 'inline-block',
+    }}
+    data-uid='ccc'
+  />
+  <div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      width: 100,
+      height: 100,
+    }}
+    data-testid='fff'
+    data-uid='fff'
+  />
+  <div
+    style={{
+      backgroundColor: '#2515FF33',
+      width: 50,
+      height: 50,
+    }}
+    data-uid='ddd'
+  />
+  <div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 120,
+      top: 50,
+      width: 50,
+      height: 100,
+    }}
+    data-uid='eee'
+  />
+</div>
+`
+
 const TestCodeWrappingTexts = `
 <div style={{ width: 150, height: '100%' }} data-uid='container'>
   <span
@@ -228,9 +331,10 @@ async function startDraggingAnElement(
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
   const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+  const endPoint = offsetPoint(startPoint, dragDelta)
 
-  await mouseDownAtPoint(canvasControlsLayer, startPoint, {})
-  await mouseMoveToPoint(canvasControlsLayer, dragDelta, {})
+  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseMoveToPoint(canvasControlsLayer, endPoint, {})
 }
 
 describe('Flow Reorder Strategy (Mixed Display Type)', () => {
@@ -334,10 +438,36 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
 
     const flowReorderNotInStrategies = Array.isArray(strategies)
-      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      ? strategies.findIndex((strategy) => strategy.strategy.id === 'FLOW_REORDER')
       : `no applicable strategies`
 
     expect(flowReorderNotInStrategies).toEqual(-1)
+  })
+  it('flow reorder is allowed with mixed types if they are still along the same dimension', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestCodeWithMixedTypesButStillVertical),
+      'await-first-dom-report',
+    )
+
+    // drag element 'fff' up above 'ddd'
+    const dragDelta = windowPoint({ x: 0, y: -25 })
+    await dragElement(renderResult, 'fff', dragDelta, emptyModifiers, [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fff',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+    ])
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(TestCodeWithMixedTypesButStillVerticalAfterReorder),
+    )
   })
   it('flow reorder is not allowed in a layout with wrapping multiline texts', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -353,7 +483,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
 
     const flowReorderNotInStrategies = Array.isArray(strategies)
-      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      ? strategies.findIndex((strategy) => strategy.strategy.id === 'FLOW_REORDER')
       : `no applicable strategies`
 
     expect(flowReorderNotInStrategies).toEqual(-1)
@@ -372,7 +502,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
 
     const flowReorderNotInStrategies = Array.isArray(strategies)
-      ? strategies.findIndex((strategy) => strategy.name === 'FLOW_REORDER')
+      ? strategies.findIndex((strategy) => strategy.strategy.id === 'FLOW_REORDER')
       : `no applicable strategies`
 
     expect(flowReorderNotInStrategies).toEqual(-1)

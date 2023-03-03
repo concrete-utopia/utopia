@@ -202,6 +202,7 @@ specifiers:
   puppeteer: 19.6.0
   rc-slider: git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6
+  re-reselect: ^4.0.1
   re-resizable: 6.9.1
   react: 18.1.0
   react-contexify: 5.0.0
@@ -351,6 +352,7 @@ dependencies:
   puppeteer: 19.6.0
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6_react-dom@18.1.0+react@18.1.0
+  re-reselect: 4.0.1_reselect@4.1.7
   re-resizable: 6.9.1_react-dom@18.1.0+react@18.1.0
   react: 18.1.0
   react-contexify: 5.0.0_react-dom@18.1.0+react@18.1.0
@@ -13523,6 +13525,14 @@ packages:
       rc-util: 5.14.0_react-dom@18.1.0+react@18.1.0
       react: 18.1.0
       react-dom: 18.1.0_react@18.1.0
+    dev: false
+
+  /re-reselect/4.0.1_reselect@4.1.7:
+    resolution: {integrity: sha512-xVTNGQy/dAxOolunBLmVMGZ49VUUR1s8jZUiJQb+g1sI63GAv9+a5Jas9yHvdxeUgiZkU9r3gDExDorxHzOgRA==}
+    peerDependencies:
+      reselect: '>1.0.0'
+    dependencies:
+      reselect: 4.1.7
     dev: false
 
   /re-resizable/6.9.1_react-dom@18.1.0+react@18.1.0:

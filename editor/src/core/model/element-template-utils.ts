@@ -35,6 +35,7 @@ import {
   jsxFragment,
   isJSXConditionalExpression,
   childOrBlockIsChild,
+  emptyComments,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -56,6 +57,7 @@ import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './proj
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
+import { getConditionalClausePath } from './conditionals'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -199,7 +201,7 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isJSXFragment(element)) {
     return element.uid
   } else if (isJSXConditionalExpression(element)) {
-    return element.uniqueID
+    return element.uid
   }
   throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
@@ -529,6 +531,21 @@ export function removeJSXElementChild(
       return {
         ...parentElement,
         children: updatedChildren,
+      }
+    } else if (isJSXConditionalExpression(parentElement)) {
+      const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
+      const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
+
+      const nullAttribute: JSXAttribute = {
+        type: 'ATTRIBUTE_VALUE',
+        value: null,
+        comments: emptyComments,
+      }
+
+      return {
+        ...parentElement,
+        whenTrue: EP.pathsEqual(thenPath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(elsePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement

@@ -123,7 +123,7 @@ export function doNothingStrategy(
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   return {
     id: 'DO_NOTHING',
-    name: '(Move)',
+    name: 'No Default Available',
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
@@ -153,7 +153,7 @@ export function doNothingStrategy(
               dragToMoveIndicatorFlags: {
                 $set: {
                   showIndicator: true,
-                  dragType: 'static',
+                  dragType: 'none',
                   reparent: 'none',
                   ancestor: false,
                 },

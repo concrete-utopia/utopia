@@ -45,6 +45,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       (store) => store.editor.jsxMetadata,
       'InsertionControls jsxMetadata',
     )
+
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
@@ -69,7 +70,7 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       return null
     }
 
-    if (parentElement.specialSizeMeasurements.layoutSystemForChildren !== 'flex') {
+    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, parentPath) !== 'flex') {
       return null
     }
 

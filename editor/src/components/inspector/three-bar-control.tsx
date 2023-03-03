@@ -23,6 +23,7 @@ import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { createSelector } from 'reselect'
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import createCachedSelector from 're-reselect'
 
 export const ThreeBarControlTestId = (alignItems: FlexAlignment): string =>
   `ThreeBarControlStartTestId-${alignItems}`
@@ -146,19 +147,19 @@ function layerFlexDirection(
   return LayerFlexDirection(detectFlexDirection(metadata, selectedViews))
 }
 
-const slabOpacitySelector = createSelector(
+const slabOpacitySelector = createCachedSelector(
   metadataSelector,
   selectedViewsSelector,
   (_: MetadataSubstate, x: FlexAlignment) => x,
   SlabOpacity,
-)
+)((_, x) => x)
 
-const dotOpacitySelector = createSelector(
+const dotOpacitySelector = createCachedSelector(
   metadataSelector,
   selectedViewsSelector,
   (_: MetadataSubstate, x: FlexAlignment) => x,
   DotOpacity,
-)
+)((_, x) => x)
 
 const layerFlexDirectionSelector = createSelector(
   metadataSelector,

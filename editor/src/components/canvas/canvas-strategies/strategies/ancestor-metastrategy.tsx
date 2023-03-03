@@ -14,6 +14,10 @@ import {
   InteractionLifecycle,
   targetPaths,
 } from '../canvas-strategy-types'
+import {
+  retargetStrategyToChildrenOfContentAffectingElements,
+  treatElementAsContentAffecting,
+} from './group-like-helpers'
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,
@@ -39,8 +43,16 @@ export function ancestorMetaStrategy(
       return []
     }
 
+    const unrolledChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+
+    if (unrolledChildren.length !== 1) {
+      return []
+    }
+
+    const unrolledChild = unrolledChildren[0]
+
     // Is the selected element an only child?
-    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target)
+    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, unrolledChild)
     if (siblings.length > 1) {
       return []
     }
@@ -48,7 +60,7 @@ export function ancestorMetaStrategy(
     // Is the selected element a flow layout element?
     const targetMetadata = MetadataUtils.findElementByElementPath(
       canvasState.startingMetadata,
-      target,
+      unrolledChild,
     )
     const isStaticLayout = !(
       MetadataUtils.isPositionAbsolute(targetMetadata) ||

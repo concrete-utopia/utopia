@@ -719,7 +719,7 @@ const b = (n) => n > 0 ? n : a(10)
           "uniqueID": "",
         },
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uniqueID": "",
+        "uid": "7dd",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "b",
@@ -910,7 +910,7 @@ const b = (n) => n > 0 ? n : a(10)
           "uniqueID": "",
         },
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uniqueID": "",
+        "uid": "aa0",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "a",

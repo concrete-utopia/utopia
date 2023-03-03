@@ -15,11 +15,7 @@ import {
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import {
-  areAllSiblingsInOneDimensionFlexOrFlow,
-  findNewIndex,
-  getOptionalDisplayPropCommandsForFlow,
-} from './flow-reorder-helpers'
+import { areAllSiblingsInOneDimensionFlexOrFlow, findNewIndex } from './flow-reorder-helpers'
 import { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -95,11 +91,6 @@ export function reorderSliderStategy(
               reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblingsOfTarget),
               updateHighlightedViews('mid-interaction', []),
-              ...getOptionalDisplayPropCommandsForFlow(
-                newIndex,
-                canvasState.interactionTarget,
-                canvasState.startingMetadata,
-              ),
               setCursorCommand(CSSCursor.ResizeEW),
             ],
             {

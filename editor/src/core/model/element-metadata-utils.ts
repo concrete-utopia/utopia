@@ -1,12 +1,11 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, Sides } from 'utopia-api/core'
+import { FlexLength, sides, Sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import {
   mapDropNulls,
-  pluck,
   stripNulls,
   flatMapArray,
   uniqBy,
@@ -28,7 +27,6 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
-  left,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -53,6 +51,7 @@ import {
   isJSXConditionalExpression,
   emptyComputedStyle,
   emptyAttributeMetadatada,
+  DetectedLayoutSystem,
   JSXConditionalExpression,
 } from '../shared/element-template'
 import {
@@ -74,8 +73,8 @@ import {
   MaybeInfinityLocalRectangle,
   Size,
   zeroCanvasRect,
-  zeroLocalRect,
   zeroRectIfNullOrInfinity,
+  nullIfInfinity,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
 import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
@@ -226,6 +225,14 @@ export const MetadataUtils = {
       : MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
+  getSiblingsParticipatingInAutolayoutOrdered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    return MetadataUtils.getSiblingsOrdered(metadata, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
   },
   isParentYogaLayoutedContainerAndElementParticipatesInLayout(
     path: ElementPath,
@@ -1788,6 +1795,55 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  findLayoutSystemForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): DetectedLayoutSystem {
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
+
+    const fallbackLayout =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .layoutSystemForChildren ?? 'none'
+
+    const parentLayouts = children.map((c) => c.specialSizeMeasurements.parentLayoutSystem)
+
+    if (parentLayouts.length === 0) {
+      return fallbackLayout
+    }
+    const allEqual = parentLayouts.slice(1).every((x) => x === parentLayouts[0])
+    if (!allEqual) {
+      return fallbackLayout
+    }
+    return parentLayouts[0]
+  },
+  findFlexDirectionForChildren(
+    metadata: ElementInstanceMetadataMap,
+    parentPath: ElementPath,
+  ): FlexDirection | null {
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+
+    const fallbackFlexDirection =
+      MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
+        .flexDirection ?? null
+
+    const children = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      childrenPaths,
+    )
+    const flexDirections = children.map((c) => c.specialSizeMeasurements.parentFlexDirection)
+    if (flexDirections.length === 0) {
+      return fallbackFlexDirection
+    }
+    const allEqual = flexDirections.slice(1).every((x) => x === flexDirections[0])
+    if (!allEqual) {
+      return fallbackFlexDirection
+    }
+    return flexDirections[0]
+  },
 }
 
 function fillSpyOnlyMetadata(
@@ -2117,6 +2173,11 @@ export function createFakeMetadataForElement(
   specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
   specialSizeMeasurements.parentFlexDirection =
     parentElement?.specialSizeMeasurements.flexDirection ?? 'row'
+  specialSizeMeasurements.immediateParentBounds = nullIfInfinity(parentBounds)
+  specialSizeMeasurements.parentPadding =
+    parentElement?.specialSizeMeasurements.padding ??
+    sides(undefined, undefined, undefined, undefined)
+  specialSizeMeasurements.parentFlexGap = parentElement?.specialSizeMeasurements.gap ?? 0
 
   return elementInstanceMetadata(
     path,

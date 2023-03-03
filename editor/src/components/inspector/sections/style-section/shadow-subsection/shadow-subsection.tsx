@@ -10,7 +10,6 @@ import {
   FlexRow,
   SquareButton,
   Icn,
-  InspectorSectionIcons,
   Icons,
 } from '../../../../../uuiui'
 import { ContextMenuItem } from '../../../../context-menu-items'
@@ -305,7 +304,6 @@ export const ShadowSubsection = React.memo(() => {
             gap: 8,
           }}
         >
-          <InspectorSectionIcons.Shadow />
           <span>Shadow</span>
         </FlexRow>
         {propertyStatus.overwritable ? (

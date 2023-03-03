@@ -587,15 +587,17 @@ function renderJSXElement(
       ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
       : elementPropsWithScenePath
 
-  const finalProps =
-    elementIsIntrinsic && !elementIsBaseHTML
-      ? filterDataProps(elementPropsWithSceneID)
-      : elementPropsWithSceneID
-
-  const finalPropsIcludingElementPath = {
-    ...finalProps,
+  const propsIncludingElementPath = {
+    ...elementPropsWithSceneID,
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
+
+  const looksLikeReactIntrinsicButNotHTML = elementIsIntrinsic && !elementIsBaseHTML
+
+  const finalProps =
+    looksLikeReactIntrinsicButNotHTML || elementIsFragment
+      ? filterDataProps(propsIncludingElementPath)
+      : propsIncludingElementPath
 
   if (!elementIsFragment && FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
@@ -610,7 +612,7 @@ function renderJSXElement(
         filePath: filePath,
         text: textContent,
         component: FinalElement,
-        passthroughProps: finalPropsIcludingElementPath,
+        passthroughProps: finalProps,
       }
 
       return buildSpyWrappedElement(
@@ -630,7 +632,7 @@ function renderJSXElement(
     }
     return buildSpyWrappedElement(
       jsx,
-      finalPropsIcludingElementPath,
+      finalProps,
       elementPath,
       metadataContext,
       updateInvalidatedPaths,
@@ -647,7 +649,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       FinalElementOrFragment,
-      finalPropsIcludingElementPath,
+      finalProps,
       ...childrenElements,
     )
   }
