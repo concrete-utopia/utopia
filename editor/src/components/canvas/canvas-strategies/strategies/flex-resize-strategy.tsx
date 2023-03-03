@@ -9,6 +9,7 @@ import {
   CanvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
+  nullIfInfinity,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import {
@@ -51,13 +52,14 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
+import { cssKeyword, FlexDirection } from '../../../inspector/common/css-utils'
 import { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
-import { detectFillHugFixedState } from '../../../inspector/inspector-common'
+import { detectFillHugFixedState, MaxContent } from '../../../inspector/inspector-common'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { getElementDimensions } from './flex-resize-helpers'
+import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -84,12 +86,12 @@ export function flexResizeStrategy(
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
   const elementParentFlexDirection = metadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
-  const widthPropToUse =
+  const widthPropToUse: 'flexBasis' | 'width' =
     (elementParentFlexDirection === 'row' || elementParentFlexDirection === 'row-reverse') &&
     elementDimensionsProps?.flexBasis != null
       ? 'flexBasis'
       : 'width'
-  const heightPropToUse =
+  const heightPropToUse: 'flexBasis' | 'height' =
     (elementParentFlexDirection === 'column' || elementParentFlexDirection === 'column-reverse') &&
     elementDimensionsProps?.flexBasis != null
       ? 'flexBasis'
@@ -213,6 +215,11 @@ export function flexResizeStrategy(
                 )
               : null
 
+          const snapToHug =
+            lockedAspectRatio == null
+              ? shouldSnapTohug(edgePosition, resizedBounds, metadata, canvasState.startingMetadata)
+              : null
+
           const dimensionToUpdate =
             lockedAspectRatio != null
               ? { width: true, height: true }
@@ -237,6 +244,20 @@ export function flexResizeStrategy(
                 deleteProperties('always', selectedElement, [
                   stylePropPathMappingFn(widthPropToUse, styleStringInArray),
                 ]),
+              )
+            } else if (
+              snapToHug != null &&
+              snapToHug.snapDirection === 'horizontal' &&
+              snapToHug.snap
+            ) {
+              resizeCommands.push(
+                setCssLengthProperty(
+                  'always',
+                  selectedElement,
+                  stylePropPathMappingFn(widthPropToUse, styleStringInArray),
+                  setExplicitCssValue(cssKeyword(MaxContent)),
+                  elementParentFlexDirection,
+                ),
               )
             } else {
               resizeCommands.push(
@@ -269,6 +290,20 @@ export function flexResizeStrategy(
                 deleteProperties('always', selectedElement, [
                   stylePropPathMappingFn(heightPropToUse, styleStringInArray),
                 ]),
+              )
+            } else if (
+              snapToHug != null &&
+              snapToHug.snapDirection === 'vertical' &&
+              snapToHug.snap
+            ) {
+              resizeCommands.push(
+                setCssLengthProperty(
+                  'always',
+                  selectedElement,
+                  stylePropPathMappingFn(heightPropToUse, styleStringInArray),
+                  setExplicitCssValue(cssKeyword(MaxContent)),
+                  elementParentFlexDirection,
+                ),
               )
             } else {
               resizeCommands.push(
@@ -455,4 +490,59 @@ function dimensionToSetForEdgePosition(edgePosition: EdgePosition): {
     width: edgePosition.x === 0 || edgePosition.x === 1,
     height: edgePosition.y === 0 || edgePosition.y === 1,
   }
+}
+
+function shouldSnapTohug(
+  edgePosition: EdgePosition,
+  resizedBounds: CanvasRectangle,
+  element: ElementInstanceMetadata,
+  startingMetadata: ElementInstanceMetadataMap,
+): {
+  snapDirection: 'horizontal' | 'vertical'
+  snap: boolean
+} | null {
+  if (MetadataUtils.isFlexLayoutedContainer(element)) {
+    const flexDirection = element.specialSizeMeasurements.flexDirection
+    const children = MetadataUtils.getChildrenUnordered(startingMetadata, element.elementPath)
+    const areAllChildrenFixed = children.some((child) => {
+      const fillHugFixedState = detectFillHugFixedState(
+        flexDirection === 'row' ? 'horizontal' : 'vertical',
+        startingMetadata,
+        child.elementPath,
+      )
+      return fillHugFixedState?.type === 'fixed'
+    })
+    if (!areAllChildrenFixed) {
+      return null
+    }
+    const childrenFrames = children
+      .filter(MetadataUtils.elementParticipatesInAutoLayout)
+      .map((child) => nullIfInfinity(child.globalFrame))
+    const resizeDirection = dimensionToSetForEdgePosition(edgePosition)
+    const gap = element.specialSizeMeasurements.gap ?? 0
+    if (flexDirection === 'row' && resizeDirection.width) {
+      const childrenWidth = childrenFrames.reduce((size, child) => size + (child?.width ?? 0), 0)
+      const childrenSize =
+        childrenWidth +
+        gap * children.length +
+        (element.specialSizeMeasurements.padding.left ?? 0) +
+        (element.specialSizeMeasurements.padding.right ?? 0)
+      return {
+        snapDirection: 'horizontal',
+        snap: childrenSize + 5 > resizedBounds.width,
+      }
+    } else if (flexDirection === 'column' && resizeDirection.height) {
+      const childrenHeight = childrenFrames.reduce((size, child) => size + (child?.height ?? 0), 0)
+      const childrenSize =
+        childrenHeight +
+        gap * children.length +
+        (element.specialSizeMeasurements.padding.top ?? 0) +
+        (element.specialSizeMeasurements.padding.bottom ?? 0)
+      return {
+        snapDirection: 'vertical',
+        snap: childrenSize + 5 > resizedBounds.height,
+      }
+    }
+  }
+  return null
 }
