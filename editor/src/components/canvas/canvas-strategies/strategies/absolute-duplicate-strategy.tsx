@@ -24,7 +24,10 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets } from './shared-move-strategies-helpers'
-import { treatElementAsContentAffecting } from './group-like-helpers'
+import {
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  treatElementAsContentAffecting,
+} from './group-like-helpers'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -143,22 +146,17 @@ function isApplicable(
       EP.parentPath(element),
     )
 
-    const isElementContentAffecting = treatElementAsContentAffecting(
+    const unrolledChildren = replaceContentAffectingPathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
-      element,
+      [element],
     )
 
-    const isElementAbsolute = isElementContentAffecting
-      ? MetadataUtils.getChildrenPathsUnordered(canvasState.startingMetadata, element).every(
-          (path) =>
-            MetadataUtils.isPositionAbsolute(
-              MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path),
-            ),
-        )
-      : MetadataUtils.isPositionAbsolute(
-          MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
-        )
+    const isElementAbsolute = unrolledChildren.every((path) =>
+      MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path),
+      ),
+    )
 
     return (
       !EP.isRootElementOfInstance(element) &&
