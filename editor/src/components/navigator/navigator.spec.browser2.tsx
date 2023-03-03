@@ -1417,5 +1417,13 @@ describe('Navigator', () => {
         Prettier.format(getProjectCode(), PrettierConfig),
       )
     })
+
+    it('can reparent top-level element', () => expect('not implemented').toEqual('implemented'))
+
+    it('cannot reparent parent element inside itself', () =>
+      expect('not implemented').toEqual('implemented'))
+
+    it('cannot reparent inside an element that does not support children', () =>
+      expect('not implemented').toEqual('implemented'))
   })
 })
