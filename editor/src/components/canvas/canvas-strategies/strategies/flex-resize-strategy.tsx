@@ -529,7 +529,9 @@ function shouldSnapTohug(
         (element.specialSizeMeasurements.padding.right ?? 0)
       return {
         snapDirection: 'horizontal',
-        snap: childrenSize + 5 > resizedBounds.width,
+        snap:
+          childrenSize - SnappingThreshold < resizedBounds.width &&
+          childrenSize + SnappingThreshold > resizedBounds.width,
       }
     } else if (flexDirection === 'column' && resizeDirection.height) {
       const childrenHeight = childrenFrames.reduce((size, child) => size + (child?.height ?? 0), 0)
@@ -540,7 +542,9 @@ function shouldSnapTohug(
         (element.specialSizeMeasurements.padding.bottom ?? 0)
       return {
         snapDirection: 'vertical',
-        snap: childrenSize + 5 > resizedBounds.height,
+        snap:
+          childrenSize - SnappingThreshold < resizedBounds.height &&
+          childrenSize + SnappingThreshold > resizedBounds.height,
       }
     }
   }
