@@ -1,13 +1,11 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
-import { DuplicateElement, duplicateElement } from '../../commands/duplicate-element-command'
+import { duplicateElement } from '../../commands/duplicate-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
@@ -15,7 +13,6 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import {
   CanvasStrategy,
   controlWithProps,
@@ -28,8 +25,6 @@ import {
 import { InteractionSession } from '../interaction-state'
 import { getDragTargets } from './shared-move-strategies-helpers'
 import { treatElementAsContentAffecting } from './group-like-helpers'
-import { updatePropIfExists } from '../../commands/update-prop-if-exists-command'
-import { create } from '../../../../core/shared/property-path'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -82,7 +77,6 @@ export function absoluteDuplicateStrategy(
 
         filteredSelectedElements.forEach((selectedElement) => {
           const selectedElementString = EP.toString(selectedElement)
-          const oldUid = EP.toUid(selectedElement)
           const newUid =
             duplicatedElementNewUids[selectedElementString] ??
             generateUidWithExistingComponents(canvasState.projectContents)
@@ -91,18 +85,7 @@ export function absoluteDuplicateStrategy(
           const newPath = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
           newPaths.push(newPath)
-          duplicateCommands.push(
-            duplicateElement('always', selectedElement, newUid, 'before'),
-            /**
-             * TODO: the UIDs are swapped to make it seem like that the element being dragged
-             * (the original element) is the new, duplicated element. While this works on the canvas,
-             * in the code editor, the wrong code snippet is highlighted until the affected files are saved.
-             *
-             * I added this as a fallback solution, definitely needs a better approach
-             */
-            updatePropIfExists('on-complete', selectedElement, create('data-uid'), newUid),
-            updatePropIfExists('on-complete', newPath, create('data-uid'), oldUid),
-          )
+          duplicateCommands.push(duplicateElement('always', selectedElement, newUid, 'before'))
         })
 
         return strategyApplicationResult(

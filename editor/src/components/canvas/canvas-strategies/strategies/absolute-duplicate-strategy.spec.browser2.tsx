@@ -64,12 +64,12 @@ describe('Absolute Duplicate Strategy', () => {
         <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
-            data-uid='bbb'
-            data-testid='bbb'
-          />
-          <div
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
             data-uid='hello'
+            data-testid='bbb'
+            />
+            <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
+            data-uid='bbb'
             data-testid='bbb'
           />
         </div>
@@ -102,12 +102,12 @@ describe('Absolute Duplicate Strategy', () => {
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
-            data-uid='bbb'
+            data-uid='hello'
             data-testid='bbb'
           />
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 80, top: 25, width: 200, height: 120 }}
-            data-uid='hello'
+            data-uid='bbb'
             data-testid='bbb'
           />
         </div>
@@ -130,7 +130,7 @@ describe('Absolute Duplicate Strategy', () => {
             top: 186,
             position: 'absolute',
           }}
-          data-uid='child'
+          data-uid='chi'
           data-testid='child'
         >
           second
@@ -172,7 +172,7 @@ describe('Absolute Duplicate Strategy', () => {
           top: 186,
           position: 'absolute',
         }}
-        data-uid='chi'
+        data-uid='aaa'
         data-testid='child'
       >
         second
@@ -189,7 +189,7 @@ describe('Absolute Duplicate Strategy', () => {
           top: 161,
           position: 'absolute',
         }}
-        data-uid='child'
+        data-uid='chi'
         data-testid='child'
       >
         second
