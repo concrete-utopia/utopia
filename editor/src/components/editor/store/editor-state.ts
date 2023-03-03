@@ -16,6 +16,8 @@ import {
   JSXAttributes,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  ChildOrAttribute,
+  childOrBlockIsChild,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -148,6 +150,8 @@ import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
+  JSXElementChildKeepDeepEquality,
+  SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -184,6 +188,7 @@ import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { ThenOrElse } from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2122,14 +2127,42 @@ export function conditionalClauseNavigatorEntriesEqual(
   return EP.pathsEqual(first.elementPath, second.elementPath) && first.clause === second.clause
 }
 
-export type NavigatorEntry = RegularNavigatorEntry | ConditionalClauseNavigatorEntry
+export interface SyntheticNavigatorEntry {
+  type: 'SYNTHETIC'
+  elementPath: ElementPath
+  childOrAttribute: ChildOrAttribute
+}
+
+export function syntheticNavigatorEntry(
+  elementPath: ElementPath,
+  childOrAttribute: ChildOrAttribute,
+): SyntheticNavigatorEntry {
+  return {
+    type: 'SYNTHETIC',
+    elementPath: elementPath,
+    childOrAttribute: childOrAttribute,
+  }
+}
+
+export function syntheticNavigatorEntriesEqual(
+  first: SyntheticNavigatorEntry,
+  second: SyntheticNavigatorEntry,
+): boolean {
+  return SyntheticNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
+export type NavigatorEntry =
+  | RegularNavigatorEntry
+  | ConditionalClauseNavigatorEntry
+  | SyntheticNavigatorEntry
 
 export function navigatorEntriesEqual(first: NavigatorEntry, second: NavigatorEntry): boolean {
   if (first.type === 'REGULAR' && second.type === 'REGULAR') {
     return regularNavigatorEntriesEqual(first, second)
-  }
-  if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
+  } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
     return conditionalClauseNavigatorEntriesEqual(first, second)
+  } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
+    return syntheticNavigatorEntriesEqual(first, second)
   } else {
     return false
   }
@@ -2141,6 +2174,11 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
       return `regular-${EP.toComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
       return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
+    case 'SYNTHETIC':
+      const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
+        ? `element-${getUtopiaID(entry.childOrAttribute)}`
+        : `attribute`
+      return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     default:
       assertNever(entry)
   }
@@ -2152,6 +2190,11 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       return `regular_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
+    case 'SYNTHETIC':
+      const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
+        ? `element_${getUtopiaID(entry.childOrAttribute)}`
+        : `attribute`
+      return `synthetic_${EP.toComponentId(entry.elementPath)}_${childOrAttributeDetails}`
     default:
       assertNever(entry)
   }
@@ -2524,12 +2567,11 @@ function deriveCacheableStateInner(
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
-  const { navigatorTargets, visibleNavigatorTargets } =
-    MetadataUtils.createOrderedElementPathsFromElements(
-      jsxMetadata,
-      collapsedViews,
-      hiddenInNavigator,
-    )
+  const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
+    jsxMetadata,
+    collapsedViews,
+    hiddenInNavigator,
+  )
 
   const warnings = getElementWarnings(jsxMetadata)
 

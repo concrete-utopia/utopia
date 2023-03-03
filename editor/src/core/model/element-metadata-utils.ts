@@ -544,12 +544,9 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
-    const possibleRootElementsOfTarget = mapDropNulls((navigatorEntry) => {
-      if (
-        isRegularNavigatorEntry(navigatorEntry) &&
-        EP.isRootElementOf(navigatorEntry.elementPath, target)
-      ) {
-        return navigatorEntry.elementPath
+    const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
+      if (EP.isRootElementOf(elementPath, target)) {
+        return elementPath
       } else {
         return null
       }
@@ -588,13 +585,9 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementPath> {
-    const possibleChildren = mapDropNulls((navigatorTarget) => {
-      if (
-        isRegularNavigatorEntry(navigatorTarget) &&
-        EP.isChildOf(navigatorTarget.elementPath, target) &&
-        !EP.isRootElementOfInstance(navigatorTarget.elementPath)
-      ) {
-        return navigatorTarget.elementPath
+    const possibleChildren = mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
       } else {
         return null
       }
@@ -619,13 +612,9 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    return mapDropNulls((navigatorTarget) => {
-      if (
-        isRegularNavigatorEntry(navigatorTarget) &&
-        EP.isChildOf(navigatorTarget.elementPath, target) &&
-        !EP.isRootElementOfInstance(navigatorTarget.elementPath)
-      ) {
-        return MetadataUtils.findElementByElementPath(elements, navigatorTarget.elementPath)
+    return mapDropNulls((elementPath) => {
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return MetadataUtils.findElementByElementPath(elements, elementPath)
       } else {
         return null
       }
@@ -1056,8 +1045,8 @@ export const MetadataUtils = {
       collapsedViews: Array<ElementPath>,
       hiddenInNavigator: Array<ElementPath>,
     ): {
-      navigatorTargets: Array<NavigatorEntry>
-      visibleNavigatorTargets: Array<NavigatorEntry>
+      navigatorTargets: Array<ElementPath>
+      visibleNavigatorTargets: Array<ElementPath>
     } => {
       // Note: This will not necessarily be representative of the structured ordering in
       // the code that produced these elements.
@@ -1068,8 +1057,8 @@ export const MetadataUtils = {
       )
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
-      let navigatorTargets: Array<NavigatorEntry> = []
-      let visibleNavigatorTargets: Array<NavigatorEntry> = []
+      let navigatorTargets: Array<ElementPath> = []
+      let visibleNavigatorTargets: Array<ElementPath> = []
 
       function walkAndAddKeys(subTree: ElementPathTree | null, collapsedAncestor: boolean): void {
         if (subTree != null) {
@@ -1077,7 +1066,7 @@ export const MetadataUtils = {
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
           const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
-          navigatorTargets.push(regularNavigatorEntry(path))
+          navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
@@ -1085,59 +1074,17 @@ export const MetadataUtils = {
             (isFeatureEnabled('Conditional support') || !isConditional) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
-            visibleNavigatorTargets.push(regularNavigatorEntry(path))
+            visibleNavigatorTargets.push(path)
           }
 
           const isCollapsed = EP.containsPath(path, collapsedViews)
           const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
-          function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
-            let unfurledComponents: Array<ElementPathTree> = []
+          let unfurledComponents: Array<ElementPathTree> = []
 
-            fastForEach(subTreeChildren, (child) => {
-              if (EP.isRootElementOfInstance(child.path)) {
-                unfurledComponents.push(child)
-              } else {
-                walkAndAddKeys(child, newCollapsedAncestor)
-              }
-            })
-
-            fastForEach(unfurledComponents, (unfurledComponent) => {
-              walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
-            })
-          }
-
-          function walkConditionalClause(
-            conditionalSubTree: ElementPathTree,
-            conditional: JSXConditionalExpression,
-            thenOrElse: ThenOrElse,
-          ): void {
-            // Get the clause path.
-            const clausePath = getConditionalClausePath(
-              path,
-              thenOrElse === 'then' ? conditional.whenTrue : conditional.whenFalse,
-              thenOrElse,
-            )
-
-            // Create the entry for the name of the clause.
-            const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, thenOrElse)
-            navigatorTargets.push(clauseTitleEntry)
-            visibleNavigatorTargets.push(clauseTitleEntry)
-
-            // Create the entry for the value of the clause.
-            const clauseValueEntry = regularNavigatorEntry(clausePath)
-            navigatorTargets.push(clauseValueEntry)
-            visibleNavigatorTargets.push(clauseValueEntry)
-
-            // Walk the clause of the conditional.
-            const clausePathTree = conditionalSubTree.children.find((childPath) => {
-              return EP.pathsEqual(childPath.path, clausePath)
-            })
-            if (clausePathTree != null) {
-              walkSubTree(clausePathTree.children)
-            }
-          }
-
+          let subTreeChildren: ElementPathTreeRoot = subTree.children
+          // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
+          // case for consistent ordering.
           if (isFeatureEnabled('Conditional support') && isConditional) {
             const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
             if (
@@ -1146,17 +1093,29 @@ export const MetadataUtils = {
               isJSXConditionalExpression(elementMetadata.element.value)
             ) {
               const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
-
-              walkConditionalClause(subTree, jsxConditionalElement, 'then')
-              walkConditionalClause(subTree, jsxConditionalElement, 'else')
+              subTreeChildren = reorderConditionalChildPathTrees(
+                jsxConditionalElement,
+                path,
+                subTreeChildren,
+              )
             } else {
               throw new Error(
                 `Unexpected non-conditional expression retrieved at ${EP.toString(path)}`,
               )
             }
-          } else {
-            walkSubTree(subTree.children)
           }
+
+          fastForEach(subTreeChildren, (child) => {
+            if (EP.isRootElementOfInstance(child.path)) {
+              unfurledComponents.push(child)
+            } else {
+              walkAndAddKeys(child, newCollapsedAncestor)
+            }
+          })
+
+          fastForEach(unfurledComponents, (unfurledComponent) => {
+            walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
+          })
         }
       }
 

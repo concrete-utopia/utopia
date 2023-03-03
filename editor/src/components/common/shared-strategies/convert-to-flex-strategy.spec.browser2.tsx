@@ -463,7 +463,11 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
 
     await selectComponentsForTest(editor, [EP.fromString('sb/parent')])
 
-    const originalElementOrder = ['sb/parent', 'sb/parent/first', 'sb/parent/second']
+    const originalElementOrder = [
+      'regular-sb/parent',
+      'regular-sb/parent/first',
+      'regular-sb/parent/second',
+    ]
 
     expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       originalElementOrder,

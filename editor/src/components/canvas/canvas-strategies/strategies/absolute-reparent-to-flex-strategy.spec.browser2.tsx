@@ -588,15 +588,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
       ],
     )
   })
@@ -631,15 +631,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2/targetdiv',
       ],
     )
   })
@@ -674,15 +674,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
       ],
     )
   })
@@ -716,15 +716,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
       ],
     )
   })
@@ -759,15 +759,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
       ],
     )
   })
@@ -802,15 +802,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
       ],
     )
   })
@@ -845,15 +845,15 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
     ])
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child1flex/innerchild1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/innerchild2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/flexcontainer/child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/targetdiv',
       ],
     )
   })

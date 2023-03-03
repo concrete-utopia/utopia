@@ -169,6 +169,9 @@ import {
   sameFileOrigin,
   ImportedOrigin,
   importedOrigin,
+  childOrBlockIsChild,
+  childOrBlockIsAttribute,
+  ChildOrAttribute,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -338,6 +341,8 @@ import {
   regularNavigatorEntry,
   ConditionalClauseNavigatorEntry,
   conditionalClauseNavigatorEntry,
+  SyntheticNavigatorEntry,
+  syntheticNavigatorEntry,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -521,6 +526,28 @@ export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCa
     conditionalClauseNavigatorEntry,
   )
 
+export const ChildOrAttributeKeepDeepEquality: KeepDeepEqualityCall<ChildOrAttribute> = (
+  oldValue,
+  newValue,
+) => {
+  if (childOrBlockIsChild(oldValue) && childOrBlockIsChild(newValue)) {
+    return JSXElementChildKeepDeepEquality()(oldValue, newValue)
+  } else if (childOrBlockIsAttribute(oldValue) && childOrBlockIsAttribute(newValue)) {
+    return JSXAttributeKeepDeepEqualityCall(oldValue, newValue)
+  } else {
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
+export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SyntheticNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    ChildOrAttributeKeepDeepEquality,
+    syntheticNavigatorEntry,
+  )
+
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
   newValue,
@@ -534,6 +561,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'CONDITIONAL_CLAUSE':
       if (oldValue.type === newValue.type) {
         return ConditionalClauseNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'SYNTHETIC':
+      if (oldValue.type === newValue.type) {
+        return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

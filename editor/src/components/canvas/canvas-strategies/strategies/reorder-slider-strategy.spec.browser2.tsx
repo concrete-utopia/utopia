@@ -295,14 +295,14 @@ describe('Reorder Slider Strategy', () => {
     // drag control for 'CCC' left to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: -ReorderChangeThreshold, y: 0 })
     await dragControl(renderResult, dragDelta, emptyModifiers, [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -321,14 +321,14 @@ describe('Reorder Slider Strategy', () => {
     // drag control for 'CCC' to the right
     const dragDelta = windowPoint({ x: ReorderChangeThreshold * 14, y: 0 })
     await dragControl(renderResult, dragDelta, emptyModifiers, [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()

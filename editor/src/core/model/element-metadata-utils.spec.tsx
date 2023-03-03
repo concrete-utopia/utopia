@@ -874,18 +874,18 @@ describe('getting the root paths', () => {
 })
 
 describe('createOrderedElementPathsFromElements returns all of the ordered navigator targets, visible and not', () => {
-  const expectedNavigatorTargets: Array<NavigatorEntry> = [
-    regularNavigatorEntry(testComponentSceneElement.elementPath),
-    regularNavigatorEntry(testComponentSceneChildElement.elementPath),
-    regularNavigatorEntry(testComponentSceneChildElementRoot.elementPath),
-    regularNavigatorEntry(testComponentSceneChildElementRootChild.elementPath),
-    regularNavigatorEntry(testComponentRoot1.elementPath),
-    regularNavigatorEntry(testComponentMetadataChild1.elementPath),
-    regularNavigatorEntry(testComponentMetadataChild2.elementPath),
-    regularNavigatorEntry(testComponentMetadataChild3.elementPath),
-    regularNavigatorEntry(testComponentMetadataGrandchild.elementPath),
-    regularNavigatorEntry(testStoryboardChildElement.elementPath),
-    regularNavigatorEntry(testStoryboardGrandChildElement.elementPath),
+  const expectedNavigatorTargets: Array<ElementPath> = [
+    testComponentSceneElement.elementPath,
+    testComponentSceneChildElement.elementPath,
+    testComponentSceneChildElementRoot.elementPath,
+    testComponentSceneChildElementRootChild.elementPath,
+    testComponentRoot1.elementPath,
+    testComponentMetadataChild1.elementPath,
+    testComponentMetadataChild2.elementPath,
+    testComponentMetadataChild3.elementPath,
+    testComponentMetadataGrandchild.elementPath,
+    testStoryboardChildElement.elementPath,
+    testStoryboardGrandChildElement.elementPath,
   ]
 
   it('with no collapsed paths', () => {
@@ -908,9 +908,9 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
-      regularNavigatorEntry(testComponentSceneElement.elementPath),
-      regularNavigatorEntry(testStoryboardChildElement.elementPath),
-      regularNavigatorEntry(testStoryboardGrandChildElement.elementPath),
+      testComponentSceneElement.elementPath,
+      testStoryboardChildElement.elementPath,
+      testStoryboardGrandChildElement.elementPath,
     ])
   })
 
@@ -923,11 +923,11 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
-      regularNavigatorEntry(testComponentSceneElement.elementPath),
-      regularNavigatorEntry(testComponentSceneChildElement.elementPath),
-      regularNavigatorEntry(testComponentRoot1.elementPath),
-      regularNavigatorEntry(testStoryboardChildElement.elementPath),
-      regularNavigatorEntry(testStoryboardGrandChildElement.elementPath),
+      testComponentSceneElement.elementPath,
+      testComponentSceneChildElement.elementPath,
+      testComponentRoot1.elementPath,
+      testStoryboardChildElement.elementPath,
+      testStoryboardGrandChildElement.elementPath,
     ])
   })
 })

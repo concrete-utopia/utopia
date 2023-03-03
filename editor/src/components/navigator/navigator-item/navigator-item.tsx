@@ -38,7 +38,7 @@ import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
 import { createSelector } from 'reselect'
 import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth, navigatorDepthAncestorShift } from '../navigator-utils'
+import { navigatorDepth } from '../navigator-utils'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -50,12 +50,12 @@ interface ComputedLook {
 
 export const BasePaddingUnit = 20
 
-export function getElementPadding(navigatorEntry: NavigatorEntry, ancestorShift: number): number {
+export function getElementPadding(withNavigatorDepth: number): number {
   // an empty path and the storyboard is always part of the ancestorsNotInNavigator list and that doesn't matter,
   // so we can add 2 to the offset. NOTE: this 2 is also a constant in EP.navigatorDepth for the same reason
-  const paddingOffset = ancestorShift - 1
+  const paddingOffset = withNavigatorDepth - 1
 
-  return (navigatorDepth(navigatorEntry.elementPath) + paddingOffset) * BasePaddingUnit
+  return paddingOffset * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
@@ -376,17 +376,31 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isFocusable',
   )
 
-  const ancestorShift = useEditorState(
+  const entryNavigatorDepth = useEditorState(
     Substores.metadata,
     (store) => {
-      return navigatorDepthAncestorShift(navigatorEntry, store.editor.jsxMetadata)
+      return navigatorDepth(navigatorEntry, store.editor.jsxMetadata)
     },
-    'NavigatorItem ancestorShift',
+    'NavigatorItem entryNavigatorDepth',
   )
 
   const childComponentCount = props.noOfChildren
 
   const isDynamic = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
+  const isConditional = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (isRegularNavigatorEntry(navigatorEntry)) {
+        return MetadataUtils.isElementPathConditionalFromMetadata(
+          store.editor.jsxMetadata,
+          navigatorEntry.elementPath,
+        )
+      } else {
+        return false
+      }
+    },
+    'NavigatorItem isConditional',
+  )
 
   const isInsideComponent =
     EP.isInsideFocusedComponent(navigatorEntry.elementPath) || isFocusedComponent
@@ -419,12 +433,14 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   let warningText: string | null = null
-  if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
-    warningText = ChildWithPercentageSize
-  } else if (elementWarnings.widthOrHeightZero) {
-    warningText = 'Missing width or height'
-  } else if (elementWarnings.absoluteWithUnpositionedParent) {
-    warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+  if (!isConditional) {
+    if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
+      warningText = ChildWithPercentageSize
+    } else if (elementWarnings.widthOrHeightZero) {
+      warningText = 'Missing width or height'
+    } else if (elementWarnings.absoluteWithUnpositionedParent) {
+      warningText = 'Element is trying to be position absolutely with an unconfigured parent'
+    }
   }
 
   const collapse = React.useCallback(
@@ -481,7 +497,7 @@ export const NavigatorItem: React.FunctionComponent<
   }, [isElementVisible, isHiddenConditionalBranch])
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
-    paddingLeft: getElementPadding(navigatorEntry, ancestorShift),
+    paddingLeft: getElementPadding(entryNavigatorDepth),
     height: UtopiaTheme.layout.rowHeight.smaller,
     ...resultingStyle.style,
   })

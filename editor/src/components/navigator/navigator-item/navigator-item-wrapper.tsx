@@ -7,7 +7,9 @@ import { assertNever } from '../../../core/shared/utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
+  childOrBlockIsChild,
   ElementInstanceMetadata,
+  getJSXElementNameLastPart,
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -29,6 +31,9 @@ import {
   NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
+import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { foldEither } from '../../../core/shared/either'
+import { navigatorDepth } from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -125,6 +130,39 @@ function getNavigatorEntryLabel(
         default:
           throw assertNever(navigatorEntry.clause)
       }
+    case 'SYNTHETIC': {
+      if (childOrBlockIsChild(navigatorEntry.childOrAttribute)) {
+        switch (navigatorEntry.childOrAttribute.type) {
+          case 'JSX_ELEMENT':
+            return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+          case 'JSX_ARBITRARY_BLOCK':
+            return 'Unknown'
+          case 'JSX_TEXT_BLOCK':
+            return navigatorEntry.childOrAttribute.text
+          case 'JSX_FRAGMENT':
+            return 'Fragment'
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return 'Conditional'
+          default:
+            throw assertNever(navigatorEntry.childOrAttribute)
+        }
+      } else {
+        const simpleAttributeValue = jsxSimpleAttributeToValue(navigatorEntry.childOrAttribute)
+        return foldEither(
+          () => 'Unknown',
+          (value) => {
+            if (value === null) {
+              return 'null'
+            } else if (value === undefined) {
+              return 'undefined'
+            } else {
+              return value.toString()
+            }
+          },
+          simpleAttributeValue,
+        )
+      }
+    }
     default:
       assertNever(navigatorEntry)
   }
@@ -169,6 +207,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper labelSelector',
   )
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
+
+  const entryDepth = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return navigatorDepth(props.navigatorEntry, store.editor.jsxMetadata)
+    },
+    'NavigatorItemWrapper entryDepth',
+  )
 
   const elementWarnings = useEditorState(
     Substores.derived,
@@ -219,6 +265,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     index: props.index,
     editorDispatch: dispatch,
     navigatorEntry: props.navigatorEntry,
+    entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,

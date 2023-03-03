@@ -217,13 +217,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -232,13 +232,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -248,13 +248,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -263,13 +263,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -297,13 +297,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -312,13 +312,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -328,13 +328,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -343,13 +343,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -377,13 +377,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -392,13 +392,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -408,13 +408,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -423,13 +423,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -457,13 +457,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -472,13 +472,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -488,13 +488,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -503,13 +503,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -536,13 +536,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -551,13 +551,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -567,13 +567,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -582,13 +582,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -615,13 +615,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -630,13 +630,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -646,13 +646,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -661,13 +661,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -694,13 +694,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -709,13 +709,13 @@ describe('Keyboard Reorder Strategy', () => {
     await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -745,14 +745,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
       const expectedNavigatorTargetsAfterArrowDown = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -761,14 +761,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
       const expectedNavigatorTargetsAfterArrowUp = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -778,14 +778,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
       const expectedNavigatorTargetsAfterArrowRight = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -794,14 +794,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
       const expectedNavigatorTargetsAfterArrowLeft = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -827,14 +827,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
       const expectedNavigatorTargetsAfterArrowLeft = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -843,14 +843,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
       const expectedNavigatorTargetsAfterArrowRight = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -858,14 +858,14 @@ describe('Keyboard Reorder Strategy', () => {
 
       await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
       const expectedNavigatorTargetsAfterArrowUp = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
@@ -875,14 +875,14 @@ describe('Keyboard Reorder Strategy', () => {
       await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
       const expectedNavigatorTargetsAfterArrowDown = [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
       ]
       expect(
         renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),

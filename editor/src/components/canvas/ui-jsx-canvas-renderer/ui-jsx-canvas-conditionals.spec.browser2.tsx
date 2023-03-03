@@ -79,14 +79,18 @@ describe('a project with conditionals', () => {
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
     const pathStrings = navigatorTargets.map(navigatorEntryToKey)
     expect(pathStrings).toEqual([
-      'storyboard/scene',
-      'storyboard/scene/app',
-      'storyboard/scene/app:app-root',
-      'storyboard/scene/app:app-root/conditional1',
-      'storyboard/scene/app:app-root/conditional1/conditional2',
-      'storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
-      'storyboard/scene/app:app-root/conditional1/conditional2/else-case',
-      'storyboard/scene/app:app-root/conditional1/else-case',
+      'regular-storyboard/scene',
+      'regular-storyboard/scene/app',
+      'regular-storyboard/scene/app:app-root',
+      'regular-storyboard/scene/app:app-root/conditional1',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-then',
+      'regular-storyboard/scene/app:app-root/conditional1/conditional2',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals-then',
+      'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/else-case-else',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/else-case-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/else-case-else',
+      'synthetic-storyboard/scene/app:app-root/conditional1/else-case-attribute',
     ])
   })
 })

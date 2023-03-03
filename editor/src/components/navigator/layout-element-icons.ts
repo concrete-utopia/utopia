@@ -14,7 +14,11 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { AllElementProps, NavigatorEntry } from '../editor/store/editor-state'
+import {
+  AllElementProps,
+  isRegularNavigatorEntry,
+  NavigatorEntry,
+} from '../editor/store/editor-state'
 import { isSpawnedActor } from 'xstate/lib/Actor'
 
 interface LayoutIconResult {
@@ -27,11 +31,7 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createLayoutOrElementIconResult(
-        navigatorEntry.elementPath,
-        metadata,
-        store.editor.allElementProps,
-      )
+      return createLayoutOrElementIconResult(navigatorEntry, metadata, store.editor.allElementProps)
     },
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
@@ -56,15 +56,17 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
 
 export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {
   return (
-    createComponentIconPropsFromMetadata(element) ?? createElementIconPropsFromMetadata(element)
+    createComponentIconPropsFromMetadata(element) ??
+    createElementIconPropsFromMetadata(null, element)
   )
 }
 
 export function createLayoutOrElementIconResult(
-  path: ElementPath,
+  navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): LayoutIconResult {
+  const path = navigatorEntry.elementPath
   let isPositionAbsolute: boolean = false
 
   const element = MetadataUtils.findElementByElementPath(metadata, path)
@@ -93,7 +95,7 @@ export function createLayoutOrElementIconResult(
     }
   } else {
     return {
-      iconProps: createElementIconProps(path, metadata),
+      iconProps: createElementIconProps(navigatorEntry, metadata),
       isPositionAbsolute: isPositionAbsolute,
     }
   }
@@ -139,9 +141,13 @@ function createLayoutIconProps(
 }
 
 export function createElementIconPropsFromMetadata(
+  navigatorEntry: NavigatorEntry | null,
   element: ElementInstanceMetadata | null,
 ): IcnPropsBase {
-  const isConditional = MetadataUtils.isConditionalFromMetadata(element)
+  const isConditional =
+    navigatorEntry != null &&
+    isRegularNavigatorEntry(navigatorEntry) &&
+    MetadataUtils.isConditionalFromMetadata(element)
   if (isConditional) {
     return {
       category: 'element',
@@ -218,11 +224,11 @@ export function createElementIconPropsFromMetadata(
 }
 
 export function createElementIconProps(
-  path: ElementPath,
+  navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-  return createElementIconPropsFromMetadata(element)
+  const element = MetadataUtils.findElementByElementPath(metadata, navigatorEntry.elementPath)
+  return createElementIconPropsFromMetadata(navigatorEntry, element)
 }
 
 function createComponentIconPropsFromMetadata(
