@@ -1,20 +1,17 @@
 import {
   EditorRenderResult,
-  getPrintedUiJsCode,
   renderTestEditorWithCode,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { wait } from '../../utils/utils.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -216,6 +213,99 @@ export var ${BakedInStoryboardVariableName} = (
 )
 `
 }
+
+const projectWithHierarchy = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 207,
+        height: 311,
+      }}
+      data-testid='parent1'
+      data-uid='parent1'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: -18,
+          top: 164,
+          position: 'absolute',
+        }}
+        data-uid='child1'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: -18,
+          top: -38,
+          position: 'absolute',
+        }}
+        data-uid='755'
+      />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 51,
+        top: 444,
+        width: 207,
+        height: 311,
+      }}
+      data-uid='parent2'
+      data-testid='parent2'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: -18,
+          top: 164,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: -18,
+          top: -38,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+      />
+    </div>
+    <span
+      style={{
+        position: 'absolute',
+        wordBreak: 'break-word',
+        left: 326,
+        top: 215,
+        width: 143,
+        height: 19,
+      }}
+      data-testid='text'
+      data-uid='text'
+    >
+      Cannot reparent here
+    </span>
+  </Storyboard>
+)
+`
 
 describe('Navigator', () => {
   describe('selecting elements', () => {
@@ -749,12 +839,155 @@ describe('Navigator', () => {
       ])
     })
 
-    it('can reparent top-level element', () => expect('not implemented').toEqual('implemented'))
+    it('can reparent top-level element', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
 
-    it('cannot reparent parent element inside itself', () =>
-      expect('not implemented').toEqual('implemented'))
+      const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-sb/parent1`,
+      )
+      const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
+      const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
 
-    it('cannot reparent inside an element that does not support children', () =>
-      expect('not implemented').toEqual('implemented'))
+      const child1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-sb/parent2`,
+      )
+      const child1DndContainerRect = child1DndContainer.getBoundingClientRect()
+      const child1DndContainerCenter = getDomRectCenter(child1DndContainerRect)
+      const dragTo = {
+        x: child1DndContainerCenter.x,
+        y: child1DndContainerRect.y + 14,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - parent1DndContainerCenter.x,
+        y: dragTo.y - parent1DndContainerCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-sb/parent1`,
+          `navigator-item-sb/parent2`,
+          windowPoint(parent1DndContainerCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'sb/parent2',
+        'sb/parent2/aaa',
+        'sb/parent2/aab',
+        'sb/parent2/parent1', // <- parent1 and its children moved under parent2
+        'sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
+        'sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
+        'sb/text',
+      ])
+    })
+
+    it('cannot reparent parent element inside itself', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
+
+      const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-sb/parent1`,
+      )
+      const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
+      const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
+
+      const child1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-sb/parent1/child1`,
+      )
+      const child1DndContainerRect = child1DndContainer.getBoundingClientRect()
+      const child1DndContainerCenter = getDomRectCenter(child1DndContainerRect)
+      const dragTo = {
+        x: child1DndContainerCenter.x,
+        y: child1DndContainerRect.y + 14,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - parent1DndContainerCenter.x,
+        y: dragTo.y - parent1DndContainerCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-sb/parent1`,
+          `navigator-item-sb/parent1/child1`,
+          windowPoint(parent1DndContainerCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'sb/parent1', // <- cannot be reparented under its own child
+        'sb/parent1/child1',
+        'sb/parent1/755',
+        'sb/parent2',
+        'sb/parent2/aaa',
+        'sb/parent2/aab',
+        'sb/text',
+      ])
+    })
+
+    it('cannot reparent inside an element that does not support children', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
+
+      const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-sb/parent1`,
+      )
+      const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
+      const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
+
+      const textDndContainer = await renderResult.renderedDOM.findByTestId(`navigator-item-sb/text`)
+      const textDndContainerRect = textDndContainer.getBoundingClientRect()
+      const textDndContainerCenter = getDomRectCenter(textDndContainerRect)
+      const dragTo = {
+        x: textDndContainerCenter.x,
+        y: textDndContainerRect.y + 14,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - parent1DndContainerCenter.x,
+        y: dragTo.y - parent1DndContainerCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-sb/parent1`,
+          `navigator-item-sb/text`,
+          windowPoint(parent1DndContainerCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(renderResult.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual([
+        'sb/parent1', // <- cannot be reparented under `text`
+        'sb/parent1/child1',
+        'sb/parent1/755',
+        'sb/parent2',
+        'sb/parent2/aaa',
+        'sb/parent2/aab',
+        'sb/text',
+      ])
+    })
   })
 })
