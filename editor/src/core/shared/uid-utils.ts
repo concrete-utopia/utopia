@@ -225,12 +225,15 @@ export function fixUtopiaElement(
   }
 
   function fixJSXFragment(fragment: JSXFragment): JSXFragment {
-    const newUID = generateConsistentUID(new Set(uniqueIDs), fragment.uid)
-    uniqueIDs.push(newUID)
+    const fixedChildren = fragment.children.map((child) => fixUtopiaElementInner(child))
+    const fixedUID = uniqueIDs.includes(fragment.uid)
+      ? generateConsistentUID(new Set(uniqueIDs), fragment.uid)
+      : fragment.uid
+    uniqueIDs.push(fixedUID)
     return {
       ...fragment,
-      uid: newUID,
-      children: fragment.children.map((child) => fixUtopiaElementInner(child)),
+      uid: fixedUID,
+      children: fixedChildren,
     }
   }
 
