@@ -438,13 +438,13 @@ export function findJSXElementChildAtPath(
           return null
         }
 
-        const whenTrue = elementOrNullFromClause(element.whenTrue, 'then')
-        if (whenTrue != null) {
-          return whenTrue
+        const elementWhenTrue = elementOrNullFromClause(element.whenTrue, 'then')
+        if (elementWhenTrue != null) {
+          return elementWhenTrue
         }
-        const whenFalse = elementOrNullFromClause(element.whenFalse, 'else')
-        if (whenFalse != null) {
-          return whenFalse
+        const elementWhenFalse = elementOrNullFromClause(element.whenFalse, 'else')
+        if (elementWhenFalse != null) {
+          return elementWhenFalse
         }
 
         return null
