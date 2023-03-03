@@ -198,6 +198,96 @@ describe('Absolute Duplicate Strategy', () => {
         ),
       )
     })
+    it('also works with nasty nested fragments', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          projectWithFragment(`
+          <React.Fragment data-uid='fragment'>
+            <React.Fragment data-uid='inner-fragment'>
+              <div
+                style={{
+                  backgroundColor: '#d089cc',
+                  width: 150,
+                  height: 186,
+                  contain: 'layout',
+                  left: 7,
+                  top: 186,
+                  position: 'absolute',
+                }}
+                data-uid='chi'
+                data-testid='child'
+              >
+                second
+              </div>
+            </React.Fragment>
+          </React.Fragment>
+          `),
+        ),
+        'await-first-dom-report',
+      )
+
+      FOR_TESTS_setNextGeneratedUid('fragment2')
+      const dragDelta = windowPoint({ x: 40, y: -25 })
+
+      const targetElement = renderResult.renderedDOM.getByTestId('child')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+      const endPoint = offsetPoint(startPoint, dragDelta)
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/fragment')])
+
+      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+        modifiers: altModifier,
+      })
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          projectWithFragment(`
+      <React.Fragment>
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#d089cc',
+              width: 150,
+              height: 186,
+              contain: 'layout',
+              left: 7,
+              top: 186,
+              position: 'absolute',
+            }}
+            data-uid='aaa'
+            data-testid='child'
+          >
+            second
+          </div>
+        </React.Fragment>
+      </React.Fragment>
+      <React.Fragment>
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#d089cc',
+              width: 150,
+              height: 186,
+              contain: 'layout',
+              left: 47,
+              top: 161,
+              position: 'absolute',
+            }}
+            data-uid='chi'
+            data-testid='child'
+          >
+            second
+          </div>
+        </React.Fragment>
+      </React.Fragment>`),
+        ),
+      )
+    })
   })
 })
 
