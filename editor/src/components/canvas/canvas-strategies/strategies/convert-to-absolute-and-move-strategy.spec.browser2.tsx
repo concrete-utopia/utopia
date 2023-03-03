@@ -643,4 +643,68 @@ describe('Convert to absolute/escape hatch', () => {
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
     expect(currentStrategy).toEqual('CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY')
   })
+
+  it('becomes the active strategy while space is pressed rather than ancestor metastrategy', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 100,
+              top: 100,
+              width: 300,
+              height: 300,
+            }}
+            data-uid='grandparent'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 200,
+                height: 200,
+              }}
+              data-uid='parent'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='child'
+                data-testid='child'
+              />
+            </div>
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('child')
+    const elementBounds = element.getBoundingClientRect()
+
+    await mouseDownAtPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + 10,
+        y: elementBounds.y + 10,
+      },
+      { modifiers: cmdModifier },
+    )
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + 50,
+      y: elementBounds.y + 50,
+    })
+
+    const strategyBeforeSpacePressed = renderResult.getEditorState().strategyState.currentStrategy
+    expect(strategyBeforeSpacePressed).toEqual('ABSOLUTE_MOVE_ANCESTOR_2')
+
+    keyDown('Space')
+
+    const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(currentStrategy).toEqual('CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY')
+  })
 })

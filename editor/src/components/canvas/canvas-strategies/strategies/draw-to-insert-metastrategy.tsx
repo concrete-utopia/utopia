@@ -47,7 +47,6 @@ import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
-  RegisteredCanvasStrategiesWithoutFlexResize,
 } from '../canvas-strategies'
 import {
   CanvasStrategy,
@@ -578,7 +577,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   }
 
   const { strategy: resizeStrategy } = findCanvasStrategy(
-    RegisteredCanvasStrategiesWithoutFlexResize,
+    RegisteredCanvasStrategies,
     patchedCanvasState,
     patchedInteractionSession,
     customStrategyState,

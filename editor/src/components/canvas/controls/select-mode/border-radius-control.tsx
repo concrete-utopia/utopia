@@ -1,3 +1,4 @@
+import createCachedSelector from 're-reselect'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -52,7 +53,7 @@ const isDraggingSelector = (store: CanvasSubstate): boolean => {
   return borderRadiusHandleIsDragged && dragIsNotNull
 }
 
-const borderRadiusSelector = createSelector(
+const borderRadiusSelector = createCachedSelector(
   metadataSelector,
   (_: MetadataSubstate, x: ElementPath) => x,
   (metadata, selectedElement) => {
@@ -62,7 +63,7 @@ const borderRadiusSelector = createSelector(
     }
     return borderRadiusFromElement(element)
   },
-)
+)((_, x) => EP.toString(x))
 
 export interface BorderRadiusControlProps {
   selectedElement: ElementPath

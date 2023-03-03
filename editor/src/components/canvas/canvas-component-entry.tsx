@@ -90,11 +90,8 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
   )
 
   const localClearRuntimeErrors = React.useCallback(() => {
-    // this is wrapped in a timeout 0 to avoid the React bad setState() warning "Cannot update a component (`Unknown`) while rendering a different component (`Unknown`)."
-    setTimeout(() => {
-      setLastRenderReactHookError(false)
-      clearRuntimeErrors()
-    }, 0)
+    setLastRenderReactHookError(false)
+    clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
   const containerRef = useApplyCanvasOffsetToStyle(true)
