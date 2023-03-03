@@ -428,9 +428,12 @@ export function findJSXElementChildAtPath(
           clause: ChildOrAttribute,
           branch: ThenOrElse,
         ): JSXElementChild | null {
+          // if it's an attribute, match its path with the right branch
           if (!childOrBlockIsChild(clause)) {
             return tailPath[0] === thenOrElsePathPart(branch) ? element : null
           }
+
+          // if it's a child, get its inner element
           if (tailPath[0] !== getUtopiaID(clause)) {
             return null
           }
