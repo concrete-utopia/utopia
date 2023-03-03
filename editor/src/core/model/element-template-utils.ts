@@ -428,25 +428,18 @@ export function findJSXElementChildAtPath(
           clause: ChildOrAttribute,
           branch: ThenOrElse,
         ): JSXElementChild | null {
-          if (childOrBlockIsChild(clause)) {
-            if (tailPath[0] === getUtopiaID(clause)) {
-              const elementWithin = clause
-              const withinResult = findAtPathInner(elementWithin, tailPath)
-              if (withinResult != null) {
-                return withinResult
-              }
-            }
-          } else {
-            if (tailPath[0] === thenOrElsePathPart(branch)) {
-              return element
-            }
+          if (!childOrBlockIsChild(clause)) {
+            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
           }
-          return null
+          if (tailPath[0] !== getUtopiaID(clause)) {
+            return null
+          }
+          return findAtPathInner(clause, tailPath)
         }
+
         return (
           elementOrNullFromClause(element.whenTrue, 'then') ??
-          elementOrNullFromClause(element.whenFalse, 'else') ??
-          null
+          elementOrNullFromClause(element.whenFalse, 'else')
         )
       }
     }
