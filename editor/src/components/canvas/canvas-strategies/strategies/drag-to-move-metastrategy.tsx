@@ -115,6 +115,8 @@ export function filterStrategiesWhileSpacePressed(
   }
 }
 
+export const DoNothingStrategyID = 'DO_NOTHING'
+
 export function doNothingStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -123,7 +125,7 @@ export function doNothingStrategy(
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
   return {
-    id: 'DO_NOTHING',
+    id: DoNothingStrategyID,
     name: 'No Default Available',
     controlsToRender: [
       controlWithProps({
