@@ -73,8 +73,8 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const filteredSelectedElements = getDragTargets(targets)
   if (
     filteredSelectedElements.length === 0 ||
     !filteredSelectedElements.every((element) => {
@@ -91,7 +91,7 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const target = selectedElements[0]
+  const target = filteredSelectedElements[0]
   const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)

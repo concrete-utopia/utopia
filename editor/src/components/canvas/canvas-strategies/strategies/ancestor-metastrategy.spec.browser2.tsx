@@ -436,8 +436,8 @@ export var storyboard = (
               style={{
                 backgroundColor: 'red',
                 flexBasis: 80,
-                height: 28,
-                width: 40,
+                height: '100%',
+                width: '100%',
               }}
               data-uid='child'
             />
@@ -528,8 +528,7 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
     }))
 })
 
-// FIXME Fragments are triggering regular strategies but probably never should be
-xdescribe('Fragments are transparent for ancestor metastrategy', () => {
+describe('Fragments are transparent for ancestor metastrategy', () => {
   setFeatureForBrowserTests('Fragment support', true)
   it('dragging a fragment with multiple absolute children trigger absolute move', () =>
     runTest(
