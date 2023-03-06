@@ -24,6 +24,7 @@ import { mapArrayToDictionary } from '../../../../core/shared/array-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { keyDown, mouseDownAtPoint, mouseMoveToPoint } from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
+import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 
 const complexProject = () => {
   const code = `
@@ -641,7 +642,7 @@ describe('Convert to absolute/escape hatch', () => {
     keyDown('Space')
 
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(currentStrategy).toEqual('CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY')
+    expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
   })
 
   it('becomes the active strategy while space is pressed rather than ancestor metastrategy', async () => {
@@ -705,6 +706,129 @@ describe('Convert to absolute/escape hatch', () => {
     keyDown('Space')
 
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(currentStrategy).toEqual('CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY')
+    expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+  })
+
+  it('becomes the active strategy when dragging flow elements out of sibling bounds', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flow')),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('child1')
+    const elementBounds = element.getBoundingClientRect()
+
+    await mouseDownAtPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + 10,
+        y: elementBounds.y + 10,
+      },
+      { modifiers: cmdModifier },
+    )
+
+    // Drag without going outside the sibling bounds
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + 50,
+      y: elementBounds.y + 10,
+    })
+
+    const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(midDragStrategy).not.toBeNull()
+    expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+    // Now drag until we have passed the sibling bounds
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + 110,
+      y: elementBounds.y + 10,
+    })
+
+    const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(endDragStrategy).not.toBeNull()
+    expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+  })
+
+  it('becomes the active strategy when dragging flex elements out of sibling bounds', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flex')),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('child1')
+    const elementBounds = element.getBoundingClientRect()
+
+    await mouseDownAtPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + 10,
+        y: elementBounds.y + 10,
+      },
+      { modifiers: cmdModifier },
+    )
+
+    // Drag without going outside the sibling bounds
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + 50,
+      y: elementBounds.y + 10,
+    })
+
+    const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(midDragStrategy).not.toBeNull()
+    expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+    // Now drag until we have passed the sibling bounds
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + 110,
+      y: elementBounds.y + 10,
+    })
+
+    const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(endDragStrategy).not.toBeNull()
+    expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
   })
 })
+
+function codeForDragToEscapeHatchProject(flowOrFlex: 'flow' | 'flex'): string {
+  return `
+    <div
+      style={{
+        width: 400,
+        height: 400,
+        ${flowOrFlex === 'flex' ? "display: 'flex'," : ''}
+        ${flowOrFlex === 'flex' ? "flexDirection: 'column'," : ''}
+      }}
+      data-uid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#FF0000',
+          width: 100,
+          height: 100,
+          contain: 'layout',
+        }}
+        data-uid='child1'
+        data-testid='child1'
+      />
+      <div
+        style={{
+          backgroundColor: '#00FF00',
+          width: 100,
+          height: 100,
+          contain: 'layout',
+        }}
+        data-uid='child2'
+      />
+      <div
+        style={{
+          backgroundColor: '#0000FF',
+          width: 100,
+          height: 100,
+          contain: 'layout',
+        }}
+        data-uid='child3'
+      />
+    </div>
+  `
+}

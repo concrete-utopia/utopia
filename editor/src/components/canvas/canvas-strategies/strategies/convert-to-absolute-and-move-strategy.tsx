@@ -67,6 +67,8 @@ import {
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
 
+export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
+
 export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -106,7 +108,7 @@ export function convertToAbsoluteAndMoveStrategy(
     : []
 
   return {
-    id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
+    id: ConvertToAbsoluteAndMoveStrategyID,
     name: 'Move (Abs)',
     controlsToRender: [
       controlWithProps({
