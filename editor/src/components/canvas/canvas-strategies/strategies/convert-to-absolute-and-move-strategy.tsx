@@ -195,7 +195,6 @@ function getFitness(
     }
 
     if (interactionSession.interactionData.drag == null) {
-      // || !hasAutoLayoutSiblings) {
       return BaseWeight
     }
 
