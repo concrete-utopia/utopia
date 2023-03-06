@@ -1,18 +1,4 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
-import {
-  boundingRectangleArray,
-  CanvasRectangle,
-  nullIfInfinity,
-  offsetPoint,
-  rectContainsPoint,
-} from '../../../../core/shared/math-utils'
-import { memoize } from '../../../../core/shared/memoize'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
@@ -54,28 +40,13 @@ export function flowReorderStrategy(
     canvasState.startingMetadata,
   )
 
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
-  const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
-
   if (
     !MetadataUtils.isPositionedByFlow(elementMetadata) ||
     !isValidFlowReorderTarget(target, canvasState.startingMetadata) ||
-    (singleAxisAutolayoutDirection === 'non-single-axis-autolayout' && hasAutoLayoutSiblings)
+    singleAxisAutolayoutDirection === 'non-single-axis-autolayout'
   ) {
     return null
   }
-  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
-
-  const autoLayoutSiblingsControl = hasAutoLayoutSiblings
-    ? [
-        controlWithProps({
-          control: AutoLayoutSiblingsOutline,
-          props: { bounds: autoLayoutSiblingsBounds },
-          key: 'autolayout-siblings-outline',
-          show: 'always-visible',
-        }),
-      ]
-    : []
 
   return {
     strategy: {
@@ -100,12 +71,15 @@ export function flowReorderStrategy(
           key: 'flow-reorder-drag-outline',
           show: 'visible-only-while-active',
         }),
-        ...autoLayoutSiblingsControl,
       ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
+      fitness:
+        interactionSession != null &&
+        interactionSession.interactionData.type === 'DRAG' &&
+        interactionSession.activeControl.type === 'BOUNDING_AREA'
+          ? 1
+          : 0,
       apply: () => {
-        return interactionSession == null ||
-          singleAxisAutolayoutDirection === 'non-single-axis-autolayout'
+        return interactionSession == null
           ? emptyStrategyApplicationResult
           : applyReorderCommon(
               canvasState,
@@ -118,56 +92,4 @@ export function flowReorderStrategy(
     },
     dragType: 'static',
   }
-}
-
-export const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { maxSize: 1 })
-
-function getAutoLayoutSiblingsBoundsInner(
-  jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
-): CanvasRectangle | null {
-  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, target)
-  const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
-  return boundingRectangleArray(autoLayoutSiblingsFrames)
-}
-
-const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 })
-
-function getAutoLayoutSiblingsInner(
-  jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
-): Array<ElementInstanceMetadata> {
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, target)
-}
-
-function getFitness(
-  interactionSession: InteractionSession | null,
-  hasAutoLayoutSiblings: boolean,
-  autoLayoutSiblingsBounds: CanvasRectangle | null,
-): number {
-  if (
-    interactionSession != null &&
-    interactionSession.interactionData.type === 'DRAG' &&
-    interactionSession.activeControl.type === 'BOUNDING_AREA'
-  ) {
-    if (!hasAutoLayoutSiblings) {
-      return 0.1
-    }
-
-    if (interactionSession.interactionData.drag == null) {
-      return 1
-    }
-
-    const pointOnCanvas = offsetPoint(
-      interactionSession.interactionData.dragStart,
-      interactionSession.interactionData.drag,
-    )
-
-    const isInsideBoundingBoxOfSiblings =
-      autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
-
-    return isInsideBoundingBoxOfSiblings ? 1 : 0.1
-  }
-
-  return 0
 }

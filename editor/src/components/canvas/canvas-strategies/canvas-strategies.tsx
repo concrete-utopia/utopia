@@ -290,7 +290,7 @@ export function getApplicableStrategiesOrderedByFitness(
 
   const strategiesWithFitness = mapDropNulls((strategy) => {
     const fitness = strategy.fitness
-    if (fitness <= 0 && strategy.id !== 'DO_NOTHING') {
+    if (fitness <= 0) {
       return null
     } else {
       return {

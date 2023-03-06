@@ -21,20 +21,11 @@ import { InteractionSession } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { appendCommandsToApplyResult } from './ancestor-metastrategy'
 import { flexReorderStrategy } from './flex-reorder-strategy'
-import { flowReorderStrategy, getAutoLayoutSiblingsBounds } from './flow-reorder-strategy'
+import { flowReorderStrategy } from './flow-reorder-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { getDragTargets } from './shared-move-strategies-helpers'
 import * as EP from '../../../../core/shared/element-path'
-import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
-import { CanvasRectangle, offsetPoint, rectContainsPoint } from '../../../../core/shared/math-utils'
-import { memoize } from '../../../../core/shared/memoize'
-import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 type MoveStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -130,26 +121,6 @@ export function doNothingStrategy(
   customStrategyState: CustomStrategyState,
 ): CanvasStrategy {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const autoLayoutSiblings = getAutoLayoutSiblings(
-    canvasState.startingMetadata,
-    selectedElements[0],
-  )
-  const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
-  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
-    canvasState.startingMetadata,
-    selectedElements[0],
-  )
-
-  const autoLayoutSiblingsControl = hasAutoLayoutSiblings
-    ? [
-        controlWithProps({
-          control: AutoLayoutSiblingsOutline,
-          props: { bounds: autoLayoutSiblingsBounds },
-          key: 'autolayout-siblings-outline',
-          show: 'always-visible',
-        }),
-      ]
-    : []
 
   return {
     id: 'DO_NOTHING',
@@ -173,9 +144,8 @@ export function doNothingStrategy(
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
-      ...autoLayoutSiblingsControl,
     ],
-    fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
+    fitness: 1.5,
     apply: () => {
       return strategyApplicationResult([
         wildcardPatch('mid-interaction', {
@@ -195,41 +165,4 @@ export function doNothingStrategy(
       ])
     },
   }
-}
-
-const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 })
-
-function getAutoLayoutSiblingsInner(
-  jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
-): Array<ElementInstanceMetadata> {
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, target)
-}
-
-function getFitness(
-  interactionSession: InteractionSession | null,
-  hasAutoLayoutSiblings: boolean,
-  autoLayoutSiblingsBounds: CanvasRectangle | null,
-): number {
-  if (
-    interactionSession != null &&
-    interactionSession.interactionData.type === 'DRAG' &&
-    interactionSession.activeControl.type === 'BOUNDING_AREA'
-  ) {
-    if (interactionSession.interactionData.drag == null || !hasAutoLayoutSiblings) {
-      return 1.5
-    }
-
-    const pointOnCanvas = offsetPoint(
-      interactionSession.interactionData.dragStart,
-      interactionSession.interactionData.drag,
-    )
-
-    const isInsideBoundingBoxOfSiblings =
-      autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
-
-    return isInsideBoundingBoxOfSiblings ? 1.5 : 0
-  }
-
-  return 0
 }
