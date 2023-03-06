@@ -90,6 +90,13 @@ export function convertToAbsoluteAndMoveStrategy(
   }
 
   const target = selectedElements[0]
+  const targetIsRelative = selectedElements.some((selectedElement) => {
+    const targetMetadata = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      selectedElement,
+    )
+    return targetMetadata != null && targetMetadata.specialSizeMeasurements.position === 'relative'
+  })
   const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
@@ -123,7 +130,12 @@ export function convertToAbsoluteAndMoveStrategy(
       }),
       ...autoLayoutSiblingsControl,
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
+    fitness: getFitness(
+      interactionSession,
+      targetIsRelative,
+      hasAutoLayoutSiblings,
+      autoLayoutSiblingsBounds,
+    ),
     apply: () => {
       if (
         interactionSession != null &&
@@ -177,10 +189,11 @@ export function convertToAbsoluteAndMoveStrategy(
 }
 
 const BaseWeight = 0.5
-const DragConversionWeight = 5
+const DragConversionWeight = 1.5
 
 function getFitness(
   interactionSession: InteractionSession | null,
+  targetIsRelative: boolean,
   hasAutoLayoutSiblings: boolean,
   autoLayoutSiblingsBounds: CanvasRectangle | null,
 ): number {
@@ -194,7 +207,7 @@ function getFitness(
       return 100
     }
 
-    if (interactionSession.interactionData.drag == null) {
+    if (interactionSession.interactionData.drag == null || targetIsRelative) {
       return BaseWeight
     }
 

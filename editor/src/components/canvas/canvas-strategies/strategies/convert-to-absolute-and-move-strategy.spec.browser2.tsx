@@ -662,16 +662,16 @@ describe('Convert to absolute/escape hatch', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
-                width: 200,
-                height: 200,
+                width: '100%',
+                height: '100%',
               }}
               data-uid='parent'
             >
               <div
                 style={{
                   backgroundColor: '#aaaaaa33',
-                  width: 100,
-                  height: 100,
+                  width: '100%',
+                  height: '100%',
                 }}
                 data-uid='child'
                 data-testid='child'
