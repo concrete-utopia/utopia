@@ -10,7 +10,6 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
-  zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import {
@@ -61,9 +60,6 @@ import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { getElementDimensions } from './flex-resize-helpers'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
-import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
-import { Guidelines, GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
-import { fastForEach } from '../../../../core/shared/utils'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -263,9 +259,6 @@ export function flexResizeStrategy(
                   elementParentFlexDirection,
                 ),
               )
-              resizeCommands.push(
-                setSnappingGuidelines('mid-interaction', snapToHug.guidelinesWithSnappingVector),
-              )
             } else {
               resizeCommands.push(
                 ...makeResizeCommand(
@@ -311,9 +304,6 @@ export function flexResizeStrategy(
                   setExplicitCssValue(cssKeyword(MaxContent)),
                   elementParentFlexDirection,
                 ),
-              )
-              resizeCommands.push(
-                setSnappingGuidelines('mid-interaction', snapToHug.guidelinesWithSnappingVector),
               )
             } else {
               resizeCommands.push(
@@ -510,7 +500,6 @@ function shouldSnapTohug(
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } | null {
   if (MetadataUtils.isFlexLayoutedContainer(element)) {
     const flexDirection = element.specialSizeMeasurements.flexDirection
@@ -538,51 +527,11 @@ function shouldSnapTohug(
         gap * children.length +
         (element.specialSizeMeasurements.padding.left ?? 0) +
         (element.specialSizeMeasurements.padding.right ?? 0)
-      const snap =
-        childrenSize - SnappingThreshold < resizedBounds.width &&
-        childrenSize + SnappingThreshold > resizedBounds.width
-
-      // guideline
-      let guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance> = []
-      if (snap) {
-        if (edgePosition.x === 0) {
-          const childFrame = childrenFrames[0]
-          if (childFrame != null) {
-            guidelinesWithSnappingVector = [
-              {
-                snappingVector: zeroCanvasPoint,
-                guideline: {
-                  type: 'XAxisGuideline',
-                  x: childFrame.x,
-                  yTop: childFrame.y - childFrame.height * 3,
-                  yBottom: childFrame.y + childFrame.height * 3,
-                },
-                pointsOfRelevance: [],
-              },
-            ]
-          }
-        } else {
-          const childFrame = childrenFrames[childrenFrames.length - 1]
-          if (childFrame != null) {
-            guidelinesWithSnappingVector = [
-              {
-                snappingVector: zeroCanvasPoint,
-                guideline: {
-                  type: 'XAxisGuideline',
-                  x: childFrame.x + childFrame.width,
-                  yTop: childFrame.y - childFrame.height * 3,
-                  yBottom: childFrame.y + childFrame.height * 3,
-                },
-                pointsOfRelevance: [],
-              },
-            ]
-          }
-        }
-      }
       return {
-        guidelinesWithSnappingVector: guidelinesWithSnappingVector,
         snapDirection: 'horizontal',
-        snap: snap,
+        snap:
+          childrenSize - SnappingThreshold < resizedBounds.width &&
+          childrenSize + SnappingThreshold > resizedBounds.width,
       }
     } else if (flexDirection === 'column' && resizeDirection.height) {
       const childrenHeight = childrenFrames.reduce((size, child) => size + (child?.height ?? 0), 0)
@@ -591,51 +540,11 @@ function shouldSnapTohug(
         gap * children.length +
         (element.specialSizeMeasurements.padding.top ?? 0) +
         (element.specialSizeMeasurements.padding.bottom ?? 0)
-      const snap =
-        childrenSize - SnappingThreshold < resizedBounds.height &&
-        childrenSize + SnappingThreshold > resizedBounds.height
-
-      // guideline
-      let guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance> = []
-      if (snap) {
-        if (edgePosition.y === 0) {
-          const childFrame = childrenFrames[0]
-          if (childFrame != null) {
-            guidelinesWithSnappingVector = [
-              {
-                snappingVector: zeroCanvasPoint,
-                guideline: {
-                  type: 'YAxisGuideline',
-                  y: childFrame.y,
-                  xLeft: childFrame.x - childFrame.width * 3,
-                  xRight: childFrame.x + childFrame.width * 3,
-                },
-                pointsOfRelevance: [],
-              },
-            ]
-          }
-        } else {
-          const childFrame = childrenFrames[childrenFrames.length - 1]
-          if (childFrame != null) {
-            guidelinesWithSnappingVector = [
-              {
-                snappingVector: zeroCanvasPoint,
-                guideline: {
-                  type: 'YAxisGuideline',
-                  y: childFrame.y + childFrame.height,
-                  xLeft: childFrame.x - childFrame.width * 3,
-                  xRight: childFrame.x + childFrame.width * 3,
-                },
-                pointsOfRelevance: [],
-              },
-            ]
-          }
-        }
-      }
       return {
-        guidelinesWithSnappingVector: guidelinesWithSnappingVector,
         snapDirection: 'vertical',
-        snap: snap,
+        snap:
+          childrenSize - SnappingThreshold < resizedBounds.height &&
+          childrenSize + SnappingThreshold > resizedBounds.height,
       }
     }
   }

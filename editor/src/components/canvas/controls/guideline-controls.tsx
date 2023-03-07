@@ -72,21 +72,21 @@ export const GuidelineControls = React.memo(() => {
     [...pointsOfRelevance, ...intersectionPoints],
   )
 
-  // if (!strategyMovedSuccessfully) {
-  //   return null
-  // } else {
-  return (
-    <CanvasOffsetWrapper>
-      <GuidelineControl index={0} />
-      <GuidelineControl index={1} />
-      <GuidelineControl index={2} />
-      <GuidelineControl index={3} />
-      {xMarkPoints.map((point, idx) => (
-        <XMarkControl key={idx} point={point} scale={scale} index={idx} />
-      ))}
-    </CanvasOffsetWrapper>
-  )
-  // }
+  if (!strategyMovedSuccessfully) {
+    return null
+  } else {
+    return (
+      <CanvasOffsetWrapper>
+        <GuidelineControl index={0} />
+        <GuidelineControl index={1} />
+        <GuidelineControl index={2} />
+        <GuidelineControl index={3} />
+        {xMarkPoints.map((point, idx) => (
+          <XMarkControl key={idx} point={point} scale={scale} index={idx} />
+        ))}
+      </CanvasOffsetWrapper>
+    )
+  }
 })
 
 interface GuidelineProps {
