@@ -9,7 +9,7 @@ import { LocalNavigatorAction } from '../components/navigator/actions'
 import { DragSelection } from '../components/navigator/navigator-item/navigator-item-dnd-container'
 import * as EP from '../core/shared/element-path'
 import Utils from '../utils/utils'
-import { NavigatorStateKeepDeepEquality } from '../utils/deep-equality-instances'
+import { NavigatorStateKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 
 export function createDragSelections(
   navigatorEntries: Array<NavigatorEntry>,

@@ -10,15 +10,17 @@ import {
   EitherKeepDeepEquality,
   NameAndIconResultKeepDeepEquality,
   NameAndIconResultArrayKeepDeepEquality,
-  DropTargetHintKeepDeepEquality,
-  NavigatorStateKeepDeepEquality,
   LayoutTargetablePropArrayKeepDeepEquality,
 } from './deep-equality-instances'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { Either, left, right } from '../core/shared/either'
 import { arrayDeepEquality, createCallWithTripleEquals } from './deep-equality'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
-import { DropTargetHint, NavigatorState } from '../components/editor/store/editor-state'
+import {
+  DropTargetHint,
+  NavigatorState,
+  regularNavigatorEntry,
+} from '../components/editor/store/editor-state'
 import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 
 describe('ElementPathKeepDeepEquality', () => {
@@ -381,101 +383,6 @@ describe('NameAndIconResultArrayKeepDeepEquality', () => {
     expect(result.value[0].name).toBe(oldValue[0].name)
     expect(result.value[0].label).toBe(oldValue[0].label)
     expect(result.value[0].iconProps).toBe(newDifferentValue[0].iconProps)
-    expect(result.value).toEqual(newDifferentValue)
-    expect(result.areEqual).toEqual(false)
-  })
-})
-
-describe('DropTargetHintKeepDeepEquality', () => {
-  const oldValue: DropTargetHint = {
-    displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    type: 'before',
-  }
-  const newSameValue: DropTargetHint = {
-    displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    type: 'before',
-  }
-  const newDifferentValue: DropTargetHint = {
-    displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    type: 'after',
-  }
-
-  it('same reference returns the same reference', () => {
-    const result = DropTargetHintKeepDeepEquality(oldValue, oldValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('same value returns the same reference', () => {
-    const result = DropTargetHintKeepDeepEquality(oldValue, newSameValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('different but similar value handled appropriately', () => {
-    const result = DropTargetHintKeepDeepEquality(oldValue, newDifferentValue)
-    expect(result.value.displayAtElementPath).toBe(oldValue.displayAtElementPath)
-    expect(result.value.type).toBe(newDifferentValue.type)
-    expect(result.value).toEqual(newDifferentValue)
-    expect(result.areEqual).toEqual(false)
-  })
-})
-
-describe('NavigatorStateKeepDeepEquality', () => {
-  const oldValue: NavigatorState = {
-    minimised: false,
-    dropTargetHint: {
-      displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      type: 'before',
-    },
-    collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    highlightedTargets: [],
-    hiddenInNavigator: [],
-  }
-  const newSameValue: NavigatorState = {
-    minimised: false,
-    dropTargetHint: {
-      displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      type: 'before',
-    },
-    collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    highlightedTargets: [],
-    hiddenInNavigator: [],
-  }
-  const newDifferentValue: NavigatorState = {
-    minimised: true,
-    dropTargetHint: {
-      displayAtElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      moveToElementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      type: 'before',
-    },
-    collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
-    highlightedTargets: [],
-    hiddenInNavigator: [],
-  }
-
-  it('same reference returns the same reference', () => {
-    const result = NavigatorStateKeepDeepEquality(oldValue, oldValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('same value returns the same reference', () => {
-    const result = NavigatorStateKeepDeepEquality(oldValue, newSameValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('different but similar value handled appropriately', () => {
-    const result = NavigatorStateKeepDeepEquality(oldValue, newDifferentValue)
-    expect(result.value.minimised).toBe(newDifferentValue.minimised)
-    expect(result.value.dropTargetHint).toBe(oldValue.dropTargetHint)
-    expect(result.value.collapsedViews).toBe(oldValue.collapsedViews)
-    expect(result.value.renamingTarget).toBe(oldValue.renamingTarget)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })

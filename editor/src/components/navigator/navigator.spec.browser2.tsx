@@ -15,7 +15,11 @@ import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { wait } from '../../utils/utils.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { navigatorEntryToKey, regularNavigatorEntry } from '../editor/store/editor-state'
+import {
+  navigatorEntryToKey,
+  regularNavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../editor/store/editor-state'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -956,7 +960,7 @@ describe('Navigator', () => {
       const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(navigatorEntryToKey(regularNavigatorEntry(dragMePath))),
+        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -981,7 +985,7 @@ describe('Navigator', () => {
       const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(navigatorEntryToKey(regularNavigatorEntry(dragMePath))),
+        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -1004,7 +1008,7 @@ describe('Navigator', () => {
       const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(navigatorEntryToKey(regularNavigatorEntry(dragMePath))),
+        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()

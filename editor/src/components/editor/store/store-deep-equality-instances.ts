@@ -228,7 +228,6 @@ import {
   WindowPointKeepDeepEquality,
   CanvasPointKeepDeepEquality,
   StaticElementPathKeepDeepEquality,
-  NavigatorStateKeepDeepEquality,
   ElementsToRerenderKeepDeepEquality,
   PropertyPathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
@@ -343,6 +342,8 @@ import {
   conditionalClauseNavigatorEntry,
   SyntheticNavigatorEntry,
   syntheticNavigatorEntry,
+  DropTargetHint,
+  NavigatorState,
 } from './editor-state'
 import {
   CornerGuideline,
@@ -509,6 +510,18 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
     transientCanvasState,
   )
 }
+export const ChildOrAttributeKeepDeepEquality: KeepDeepEqualityCall<ChildOrAttribute> = (
+  oldValue,
+  newValue,
+) => {
+  if (childOrBlockIsChild(oldValue) && childOrBlockIsChild(newValue)) {
+    return JSXElementChildKeepDeepEquality()(oldValue, newValue)
+  } else if (childOrBlockIsAttribute(oldValue) && childOrBlockIsAttribute(newValue)) {
+    return JSXAttributeKeepDeepEqualityCall(oldValue, newValue)
+  } else {
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
 
 export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RegularNavigatorEntry> =
   combine1EqualityCall(
@@ -525,19 +538,6 @@ export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCa
     createCallWithTripleEquals<ThenOrElse>(),
     conditionalClauseNavigatorEntry,
   )
-
-export const ChildOrAttributeKeepDeepEquality: KeepDeepEqualityCall<ChildOrAttribute> = (
-  oldValue,
-  newValue,
-) => {
-  if (childOrBlockIsChild(oldValue) && childOrBlockIsChild(newValue)) {
-    return JSXElementChildKeepDeepEquality()(oldValue, newValue)
-  } else if (childOrBlockIsAttribute(oldValue) && childOrBlockIsAttribute(newValue)) {
-    return JSXAttributeKeepDeepEqualityCall(oldValue, newValue)
-  } else {
-    return keepDeepEqualityResult(newValue, false)
-  }
-}
 
 export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SyntheticNavigatorEntry> =
   combine2EqualityCalls(
@@ -573,6 +573,56 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
   }
   return keepDeepEqualityResult(newValue, false)
 }
+
+export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
+  combine3EqualityCalls(
+    (hint) => hint.displayAtElementPath,
+    nullableDeepEquality(NavigatorEntryKeepDeepEquality),
+    (hint) => hint.moveToElementPath,
+    nullableDeepEquality(NavigatorEntryKeepDeepEquality),
+    (hint) => hint.type,
+    createCallWithTripleEquals(),
+    (displayAtElementPath, moveToElementPath, type) => {
+      return {
+        displayAtElementPath: displayAtElementPath,
+        moveToElementPath: moveToElementPath,
+        type: type,
+      }
+    },
+  )
+
+export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState> =
+  combine6EqualityCalls(
+    (state) => state.minimised,
+    createCallWithTripleEquals(),
+    (state) => state.dropTargetHint,
+    DropTargetHintKeepDeepEquality,
+    (state) => state.collapsedViews,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.renamingTarget,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (state) => state.highlightedTargets,
+    ElementPathArrayKeepDeepEquality,
+    (state) => state.hiddenInNavigator,
+    ElementPathArrayKeepDeepEquality,
+    (
+      minimised,
+      dropTargetHint,
+      collapsedViews,
+      renamingTarget,
+      highlightedTargets,
+      hiddenInNavigator,
+    ) => {
+      return {
+        minimised: minimised,
+        dropTargetHint: dropTargetHint,
+        collapsedViews: collapsedViews,
+        renamingTarget: renamingTarget,
+        highlightedTargets: highlightedTargets,
+        hiddenInNavigator: hiddenInNavigator,
+      }
+    },
+  )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
   return combine5EqualityCalls(

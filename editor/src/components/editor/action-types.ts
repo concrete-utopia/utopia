@@ -60,6 +60,7 @@ import {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  NavigatorEntry,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -119,16 +120,10 @@ export type MoveRowAfter = {
 
 export type ReparentRow = {
   type: 'REPARENT_ROW'
-  target: ElementPath
+  target: NavigatorEntry
 }
 
-export type ReparentToIndex = {
-  type: 'REPARENT_TO_INDEX'
-  target: ElementPath
-  index: number
-}
-
-export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow | ReparentToIndex
+export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
 
 export type NavigatorReorder = {
   action: 'NAVIGATOR_REORDER'

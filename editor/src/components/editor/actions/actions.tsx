@@ -53,6 +53,7 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
+  childOrBlockIsAttribute,
   Comment,
   deleteJSXAttribute,
   DetectedLayoutSystem,
@@ -70,6 +71,7 @@ import {
   jsxAttributesFromMap,
   jsxAttributeValue,
   JSXAttributeValue,
+  JSXConditionalExpression,
   JSXElement,
   jsxElement,
   JSXElementChild,
@@ -83,6 +85,7 @@ import {
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
@@ -128,10 +131,10 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
+import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import Utils, { IndexPosition } from '../../../utils/utils'
+import Utils, { IndexPosition, absolute } from '../../../utils/utils'
 import {
   addFileToProjectContents,
   contentsToTree,
@@ -429,7 +432,7 @@ import {
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
 import utils from '../../../utils/utils'
@@ -481,9 +484,15 @@ import { collapseTextElements } from '../../../components/text-editor/text-handl
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
+import { set, toArrayOf, unsafeGet } from '../../../core/shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
+import {
+  conditionalWhenFalseOptic,
+  conditionalWhenTrueOptic,
+  forElementOptic,
+  jsxConditionalExpressionOptic,
+} from '../../../core/model/common-optics'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1737,61 +1746,124 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const dragSources = action.dragSources
     const dropTarget = action.dropTarget
-    const targetPath = dropTarget.target
-    const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
-    let indexPosition: IndexPosition
-    let newParentPath: ElementPath | null
-    switch (dropTarget.type) {
-      case 'MOVE_ROW_BEFORE':
-        indexPosition = {
-          type: 'before',
-          index: index,
-        }
-        newParentPath = EP.parentPath(targetPath)
-        break
-      case 'MOVE_ROW_AFTER':
-        indexPosition = {
-          type: 'after',
-          index: index,
-        }
-        newParentPath = EP.parentPath(targetPath)
-        break
-      case 'REPARENT_ROW':
-        indexPosition = {
-          type: 'front',
-        }
-        newParentPath = targetPath
-        break
-      case 'REPARENT_TO_INDEX':
-        indexPosition = {
-          type: 'before',
-          index: dropTarget.index,
-        }
-        newParentPath = targetPath
-        break
-      default:
-        const _exhaustiveCheck: never = dropTarget
-        throw new Error('Something went really wrong.')
+    const dragSources = action.dragSources
+
+    const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
+
+    function reparentToIndexPosition(
+      newParentPath: ElementPath,
+      indexPosition: IndexPosition,
+    ): EditorModel {
+      const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
+        builtInDependencies,
+        toReparent,
+        indexPosition,
+        newParentPath,
+        editor,
+      )
+
+      return {
+        ...withMovedTemplate,
+        selectedViews: newPaths,
+        highlightedViews: [],
+        canvas: {
+          ...withMovedTemplate.canvas,
+          domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
+        },
+      }
     }
 
-    const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
-      builtInDependencies,
-      reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
-      indexPosition,
-      newParentPath,
-      editor,
-    )
+    if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
+      const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
+      const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, dropTarget.target)
+      let indexPosition: IndexPosition
+      switch (dropTarget.type) {
+        case 'MOVE_ROW_BEFORE': {
+          indexPosition = {
+            type: 'before',
+            index: index,
+          }
+          break
+        }
+        case 'MOVE_ROW_AFTER': {
+          indexPosition = {
+            type: 'after',
+            index: index,
+          }
+          break
+        }
+        default:
+          assertNever(dropTarget)
+      }
 
-    return {
-      ...withMovedTemplate,
-      selectedViews: newPaths,
-      highlightedViews: [],
-      canvas: {
-        ...withMovedTemplate.canvas,
-        domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
-      },
+      return reparentToIndexPosition(newParentPath, indexPosition)
+    } else {
+      switch (dropTarget.type) {
+        case 'REPARENT_ROW': {
+          switch (dropTarget.target.type) {
+            case 'REGULAR': {
+              const newParentPath: ElementPath | null = dropTarget.target.elementPath
+              return reparentToIndexPosition(newParentPath, absolute(0))
+            }
+            case 'CONDITIONAL_CLAUSE': {
+              throw new Error(`Currently not implemented.`)
+              /*
+              const getConditionalOptic: Optic<EditorState, JSXConditionalExpression> =
+                compose2Optics(
+                  forElementOptic(dropTarget.target.elementPath),
+                  jsxConditionalExpressionOptic,
+                )
+              // If this fails, then somehow the element has moved.
+              const conditional = unsafeGet(getConditionalOptic, editor)
+              const clauseValue =
+                dropTarget.target.clause === 'then' ? conditional.whenTrue : conditional.whenFalse
+              // If the value within the clause is null or undefined, then swap the
+              // value into this "slot".
+              // Otherwise if the value is a fragment, put it into the fragment.
+              // If it's not a fragment, wrap both the existing and reparented values into a fragment.
+              const toClauseOptic = compose2Optics(
+                getConditionalOptic,
+                dropTarget.target.clause === 'then'
+                  ? conditionalWhenTrueOptic
+                  : conditionalWhenFalseOptic,
+              )
+              if (childOrBlockIsAttribute(clauseValue)) {
+                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
+                return foldEither(
+                  () => {
+                    return editor
+                  },
+                  (value) => {
+                    if (value == null) {
+                      return set(
+                        toClauseOptic,
+                        unsafeGet(forElementOptic(toReparent[0]), editor),
+                        editor,
+                      )
+                    } else {
+                      return editor
+                    }
+                  },
+                  simpleValue,
+                )
+              } else {
+                return editor
+              }
+              */
+            }
+            case 'SYNTHETIC': {
+              // Find the containing conditional clause, which should be an immediate parent,
+              // then use the reparenting logic for there.
+              // As currently this is the only case where a SYNTHETIC entry is currently used.
+              throw new Error(`Currently not implemented.`)
+            }
+          }
+          break
+        }
+        default:
+          assertNever(dropTarget)
+      }
     }
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {

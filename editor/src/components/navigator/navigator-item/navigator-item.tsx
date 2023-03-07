@@ -16,7 +16,7 @@ import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   NavigatorEntry,
-  navigatorEntryToKey,
+  varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -25,7 +25,6 @@ import { LayoutIcon } from './layout-icon'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { isLeft } from '../../../core/shared/either'
 import {
@@ -511,7 +510,7 @@ export const NavigatorItem: React.FunctionComponent<
       }}
     >
       <FlexRow
-        data-testid={NavigatorItemTestId(navigatorEntryToKey(navigatorEntry))}
+        data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
         onMouseDown={select}
         onMouseMove={highlight}

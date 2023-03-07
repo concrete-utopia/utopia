@@ -602,8 +602,8 @@ export const DefaultTheme: ThemeSetting = 'system'
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
 export interface DropTargetHint {
-  displayAtElementPath: ElementPath | null
-  moveToElementPath: ElementPath | null
+  displayAtElementPath: NavigatorEntry | null
+  moveToElementPath: NavigatorEntry | null
   type: DropTargetType
 }
 
@@ -2156,15 +2156,30 @@ export type NavigatorEntry =
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
 
-export function navigatorEntriesEqual(first: NavigatorEntry, second: NavigatorEntry): boolean {
-  if (first.type === 'REGULAR' && second.type === 'REGULAR') {
-    return regularNavigatorEntriesEqual(first, second)
-  } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
-    return conditionalClauseNavigatorEntriesEqual(first, second)
-  } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
-    return syntheticNavigatorEntriesEqual(first, second)
+export function navigatorEntriesEqual(
+  first: NavigatorEntry | null,
+  second: NavigatorEntry | null,
+): boolean {
+  if (first == null) {
+    if (second == null) {
+      return true
+    } else {
+      return false
+    }
   } else {
-    return false
+    if (second == null) {
+      return false
+    } else {
+      if (first.type === 'REGULAR' && second.type === 'REGULAR') {
+        return regularNavigatorEntriesEqual(first, second)
+      } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
+        return conditionalClauseNavigatorEntriesEqual(first, second)
+      } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
+        return syntheticNavigatorEntriesEqual(first, second)
+      } else {
+        return false
+      }
+    }
   }
 }
 
@@ -2194,7 +2209,7 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
         ? `element_${getUtopiaID(entry.childOrAttribute)}`
         : `attribute`
-      return `synthetic_${EP.toComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+      return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
     default:
       assertNever(entry)
   }

@@ -241,9 +241,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
         if (
           isRegularNavigatorEntry(props.navigatorEntry) &&
-          EP.pathsEqual(
+          store.editor.navigator.dropTargetHint.displayAtElementPath != null &&
+          navigatorEntriesEqual(
             store.editor.navigator.dropTargetHint.displayAtElementPath,
-            props.navigatorEntry.elementPath,
+            props.navigatorEntry,
           )
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
