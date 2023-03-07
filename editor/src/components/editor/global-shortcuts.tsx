@@ -15,11 +15,12 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import { Modifier, Modifiers } from '../../utils/modifiers'
-import Utils from '../../utils/utils'
+import Utils, { getChainSegmentEdge } from '../../utils/utils'
 import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
 import {
+  cssPixelLength,
   toggleBackgroundLayers,
   toggleBorder,
   toggleShadow,
@@ -140,6 +141,12 @@ import {
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
+import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../canvas/commands/set-css-length-command'
+import { isInfinityRectangle } from '../../core/shared/math-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -862,41 +869,78 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        return [
-          EditorActions.applyCommandsAction(
-            editor.selectedViews.flatMap((elementPath) => {
-              const element = MetadataUtils.findElementByElementPath(
-                editor.jsxMetadata,
-                elementPath,
-              )
-              if (element == null) {
-                return []
-              }
 
-              if (MetadataUtils.isPositionAbsolute(element)) {
-                return [
-                  ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-                  ...(isIntrinsicallyInlineElement(element)
-                    ? [
-                        ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
-                        setProperty(
-                          'always',
-                          elementPath,
-                          PP.create('style', 'display'),
-                          'inline-block',
-                        ),
-                      ]
-                    : []),
-                ]
-              } else {
-                return [
-                  ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
-                  ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
-                ]
-              }
-            }),
-          ),
-        ]
+        const commands = editor.selectedViews.flatMap((elementPath) => {
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
+          if (element == null) {
+            return []
+          }
+
+          const contentAffectingType = getElementContentAffectingType(
+            editor.jsxMetadata,
+            editor.allElementProps,
+            elementPath,
+          )
+
+          if (contentAffectingType === 'fragment') {
+            return []
+          }
+
+          if (contentAffectingType === 'simple-div') {
+            const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
+              elementPath,
+              editor.jsxMetadata,
+            )
+            if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
+              return []
+            }
+
+            return [
+              setCssLengthProperty(
+                'always',
+                elementPath,
+                PP.create('style', 'width'),
+                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.width)),
+                element.specialSizeMeasurements.parentFlexDirection ?? null,
+              ),
+              setCssLengthProperty(
+                'always',
+                elementPath,
+                PP.create('style', 'height'),
+                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.height)),
+                element.specialSizeMeasurements.parentFlexDirection ?? null,
+              ),
+            ]
+          }
+
+          if (MetadataUtils.isPositionAbsolute(element)) {
+            return [
+              ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+              ...(isIntrinsicallyInlineElement(element)
+                ? [
+                    ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                    setProperty(
+                      'always',
+                      elementPath,
+                      PP.create('style', 'display'),
+                      'inline-block',
+                    ),
+                  ]
+                : []),
+            ]
+          } else {
+            return [
+              ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+              ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
+            ]
+          }
+        })
+
+        if (commands.length === 0) {
+          return []
+        }
+
+        return [EditorActions.applyCommandsAction(commands)]
       },
       [RESIZE_TO_FIT]: () => {
         if (!isSelectMode(editor.mode)) {

@@ -98,6 +98,7 @@ import {
   LocalRectangle,
   nullIfInfinity,
   Size,
+  boundingRectangleArray,
 } from '../../core/shared/math-utils'
 import {
   DerivedState,
@@ -166,7 +167,7 @@ import { assertNever, fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { uniqBy } from '../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'

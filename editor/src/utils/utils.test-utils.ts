@@ -423,14 +423,29 @@ export function slightlyOffsetPointBecauseVeryWeirdIssue(point: { x: number; y: 
   return { x: point.x - 0.001, y: point.y - 0.001 }
 }
 
-export async function expectSingleUndoStep(
+async function expectNUndoSteps(
   editor: EditorRenderResult,
+  steps: number,
   action: () => Promise<void>,
 ): Promise<void> {
   const historySizeBefore = editor.getEditorState().history.previous.length
   await action()
   const historySizeAfter = editor.getEditorState().history.previous.length
-  expect(historySizeAfter - historySizeBefore).toEqual(1)
+  expect(historySizeAfter - historySizeBefore).toEqual(steps)
+}
+
+export async function expectNoAction(
+  editor: EditorRenderResult,
+  action: () => Promise<void>,
+): Promise<void> {
+  return expectNUndoSteps(editor, 0, action)
+}
+
+export async function expectSingleUndoStep(
+  editor: EditorRenderResult,
+  action: () => Promise<void>,
+): Promise<void> {
+  return expectNUndoSteps(editor, 1, action)
 }
 
 export async function selectComponentsForTest(

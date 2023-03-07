@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
@@ -52,34 +53,59 @@ export function replaceContentAffectingPathsWithTheirChildrenRecursive(
   })
 }
 
+type ContentAffectingType = 'fragment' | 'simple-div'
+
+export function getElementContentAffectingType(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): ContentAffectingType | null {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+
+  const elementProps = allElementProps[EP.toString(path)]
+
+  if (
+    elementMetadata?.element != null &&
+    foldEither(
+      () => false,
+      (e) => isJSXFragment(e),
+      elementMetadata.element,
+    )
+  ) {
+    return 'fragment'
+  }
+
+  if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
+    // for now, do not treat flex parents ever as content-affecting / group-like
+    return null
+  }
+
+  if (EP.isStoryboardPath(path)) {
+    // the Storyboard is not children-affecting
+    return null
+  }
+
+  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
+  if (childrenCount === 0) {
+    // do not treat elements with zero children as content-affecting
+    return null
+  }
+
+  const hasNoWidthAndHeightProps =
+    elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
+
+  if (hasNoWidthAndHeightProps) {
+    return 'simple-div'
+  }
+
+  return null
+}
+
 // TODO make it internal
 export function treatElementAsContentAffecting(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
 ): boolean {
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-
-  const elementProps = allElementProps[EP.toString(path)]
-
-  if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
-    // for now, do not treat flex parents ever as content-affecting / group-like
-    return false
-  }
-
-  if (EP.isStoryboardPath(path)) {
-    // the Storyboard is not children-affecting
-    return false
-  }
-
-  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
-  if (childrenCount === 0) {
-    // do not treat elements with zero children as content-affecting
-    return false
-  }
-
-  const hasNoWidthAndHeightProps =
-    elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
-
-  return hasNoWidthAndHeightProps
+  return getElementContentAffectingType(metadata, allElementProps, path) != null
 }

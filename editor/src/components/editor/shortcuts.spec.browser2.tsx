@@ -1,7 +1,13 @@
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import {
+  expectNoAction,
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
@@ -66,6 +72,8 @@ describe('shortcuts', () => {
   })
 
   describe('x', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+
     it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
@@ -137,6 +145,37 @@ describe('shortcuts', () => {
       expect(div.style.height).toEqual('130px')
       expect(div.style.top).toEqual('0px')
       expect(div.style.left).toEqual('0px')
+    })
+
+    // eslint-disable-next-line jest/expect-expect
+    it('pressing x when a fragment is selected does nothing', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithContentAffectingElements,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+      await expectNoAction(editor, async () => {
+        await pressKey('x')
+      })
+    })
+
+    it('pressing x when an unsized simple div is selected sizes it to wrap its children', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithContentAffectingElements,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+
+      const groupContainer = editor.renderedDOM.getByTestId('group')
+      expect(groupContainer.style.width).toEqual('207px')
+      expect(groupContainer.style.height).toEqual('311px')
     })
   })
 })
@@ -226,6 +265,72 @@ export var storyboard = (
     >
       hello there
     </span>
+  </Storyboard>
+)
+`
+
+const projectWithContentAffectingElements = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          position: 'absolute',
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 500,
+          top: 175,
+        }}
+        data-uid='aff'
+      />
+      <div
+        style={{
+          position: 'absolute',
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 500,
+          top: 377,
+        }}
+        data-uid='4ec'
+      />
+    </React.Fragment>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 101,
+        top: 176,
+      }}
+      data-uid='group'
+      data-testid='group'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 0,
+          top: 202,
+          position: 'absolute',
+        }}
+        data-uid='0bf'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 0,
+          top: 0,
+          position: 'absolute',
+        }}
+        data-uid='755'
+      />
+    </div>
   </Storyboard>
 )
 `
