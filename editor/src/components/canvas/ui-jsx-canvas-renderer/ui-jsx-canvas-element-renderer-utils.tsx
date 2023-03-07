@@ -46,7 +46,7 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
+import { addFakeSpyEntry, buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -346,6 +346,10 @@ export function renderCoreElement(
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       const conditionValue: boolean = !!conditionValueAsAny
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+
+      if (elementPath != null) {
+        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports)
+      }
 
       if (childOrBlockIsChild(actualElement)) {
         const childPath = optionalMap(

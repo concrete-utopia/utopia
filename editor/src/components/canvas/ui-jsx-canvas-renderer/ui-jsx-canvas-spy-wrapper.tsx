@@ -8,6 +8,9 @@ import {
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
+  ChildOrAttribute,
+  JSXElementChild,
+  childOrBlockIsChild,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -15,6 +18,64 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
+import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+
+export function addFakeSpyEntry(
+  metadataContext: UiJsxCanvasContextData,
+  elementPath: ElementPath,
+  elementOrAttribute: ChildOrAttribute,
+  filePath: string,
+  imports: Imports,
+): void {
+  let element: Either<string, JSXElementChild>
+  if (childOrBlockIsChild(elementOrAttribute)) {
+    element = right(elementOrAttribute)
+  } else {
+    const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
+    element = left(
+      foldEither(
+        () => '(unknown)',
+        (value) => {
+          if (value === null) {
+            return 'null'
+          } else if (value === undefined) {
+            return 'undefined'
+          } else {
+            return value.toString()
+          }
+        },
+        simpleAttributeValue,
+      ),
+    )
+  }
+  const instanceMetadata: ElementInstanceMetadata = {
+    element: element,
+    elementPath: elementPath,
+    globalFrame: null,
+    localFrame: null,
+    componentInstance: false,
+    isEmotionOrStyledComponent: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
+    label: null,
+    importInfo: foldEither(
+      () => {
+        return null
+      },
+      (e) => {
+        if (isJSXElement(e)) {
+          return importInfoFromImportDetails(e.name, imports, filePath)
+        } else {
+          return null
+        }
+      },
+      element,
+    ),
+  }
+  const elementPathString = EP.toComponentId(elementPath)
+  metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
+}
 
 export function buildSpyWrappedElement(
   jsx: JSXElementLike,
