@@ -1,3 +1,4 @@
+import Draggable from 'react-draggable'
 import { Resizable, ResizeCallback, ResizeDirection } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -41,6 +42,7 @@ import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { MiniTitleBar } from './mini-title-bar'
 
 interface NumberSize {
   width: number
@@ -201,6 +203,8 @@ const DesignPanelRootInner = React.memo(() => {
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
+      event.stopPropagation()
+      event.stopImmediatePropagation()
       if (navigatorVisible) {
         setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
       }
@@ -249,44 +253,81 @@ const DesignPanelRootInner = React.memo(() => {
             <NothingOpenCard />
           </div>
         ) : null}
-        <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
-          <Resizable
-            defaultSize={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
-            }}
-            size={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
-            }}
-            onResizeStop={onResizeStop}
-            onResize={onResize}
-            enable={{
-              top: false,
-              right: isCanvasVisible,
-              bottom: false,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            className='resizableFlexColumnCanvasCode'
+        <Draggable>
+          <SimpleFlexColumn
             style={{
-              ...UtopiaStyles.flexColumn,
-              display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
-              height: '100%',
-              position: 'relative',
+              flexGrow: isCanvasVisible ? undefined : 1,
+              position: 'absolute',
+              zIndex: 99999, // delete me
+              left: 250,
+              top: 12,
+              borderRadius: 5,
               overflow: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+              border: '1px solid black',
             }}
           >
-            {when(codeEditorEnabled, <CodeEditorWrapper />)}
-            <ConsoleAndErrorsPane />
-          </Resizable>
-        </SimpleFlexColumn>
+            <Resizable
+              defaultSize={{
+                width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+                height: '100%',
+              }}
+              size={{
+                width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+                height: '100%',
+              }}
+              onResizeStop={onResizeStop}
+              onResize={onResize}
+              enable={{
+                top: false,
+                right: isCanvasVisible,
+                bottom: false,
+                topRight: false,
+                bottomRight: false,
+                bottomLeft: false,
+                topLeft: false,
+              }}
+              className='resizableFlexColumnCanvasCode'
+              style={{
+                ...UtopiaStyles.flexColumn,
+                display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+                width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+                justifyContent: 'stretch',
+                alignItems: 'stretch',
+                borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+                backgroundColor: 'white',
+              }}
+            >
+              <div
+                style={{
+                  paddingLeft: 4,
+                  height: 27,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <div style={{ borderRadius: 4, height: 6, width: 6, background: 'black' }} />
+                <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
+                <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
+                <span style={{ fontWeight: 600, marginLeft: 2 }}>Cõte</span>
+              </div>
+              <div
+                style={{
+                  transformOrigin: 'top left',
+                  width: 'calc(100%/0.7)',
+                  height: 'calc(100%/0.7)',
+                  transform: 'scale(0.7)',
+                }}
+              >
+                {when(codeEditorEnabled, <CodeEditorWrapper />)}
+                <ConsoleAndErrorsPane />
+              </div>
+            </Resizable>
+          </SimpleFlexColumn>
+        </Draggable>
 
         {isCanvasVisible ? (
           <SimpleFlexColumn
@@ -299,14 +340,16 @@ const DesignPanelRootInner = React.memo(() => {
             {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
-                  height: '100%',
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
                   zIndex: 20,
                   overflow: 'hidden',
                   borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
                   borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
+                  borderRadius: 8,
+                  top: 4,
+                  left: 4,
+                  bottom: 4,
+                  border: '1px solid black',
                 }}
               >
                 <ResizableFlexColumn
@@ -320,6 +363,7 @@ const DesignPanelRootInner = React.memo(() => {
                     height: '100%',
                   }}
                 >
+                  <MiniTitleBar />
                   <NavigatorComponent />
                 </ResizableFlexColumn>
               </div>
@@ -381,44 +425,57 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
   }, [updateInspectorWidth])
 
   return (
-    <Resizable
-      ref={resizableRef}
-      defaultSize={{
-        width: UtopiaTheme.layout.inspectorSmallWidth,
-        height: '100%',
-      }}
-      size={{
-        width: width,
-        height: '100%',
-      }}
-      style={{ transition: 'width 100ms ease-in-out' }}
-      snap={{
-        x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
-      }}
-      onResizeStart={onResize}
-      onResize={onResize}
-      onResizeStop={onResize}
-      enable={{
-        left: true,
+    <div
+      style={{
+        position: 'absolute',
+        border: '1px solid black',
+        borderRadius: 8,
+        top: 4,
+        right: 4,
+        bottom: 4,
+        overflow: 'hidden',
       }}
     >
-      <SimpleFlexRow
-        className='Inspector-entrypoint'
-        style={{
-          alignItems: 'stretch',
-          flexDirection: 'column',
-          width: '100%',
+      <Resizable
+        ref={resizableRef}
+        defaultSize={{
+          width: UtopiaTheme.layout.inspectorSmallWidth,
           height: '100%',
-          overflowY: 'scroll',
-          backgroundColor: colorTheme.inspectorBackground.value,
-          flexGrow: 0,
-          flexShrink: 0,
-          paddingBottom: 100,
+        }}
+        size={{
+          width: width,
+          height: '100%',
+        }}
+        style={{ transition: 'width 100ms ease-in-out' }}
+        snap={{
+          x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
+        }}
+        onResizeStart={onResize}
+        onResize={onResize}
+        onResizeStop={onResize}
+        enable={{
+          left: true,
         }}
       >
-        {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
-      </SimpleFlexRow>
-      <CanvasStrategyInspector />
-    </Resizable>
+        <SimpleFlexRow
+          className='Inspector-entrypoint'
+          style={{
+            alignItems: 'stretch',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+            overflowY: 'scroll',
+            backgroundColor: colorTheme.inspectorBackground.value,
+            flexGrow: 0,
+            flexShrink: 0,
+            paddingBottom: 100,
+          }}
+        >
+          <MiniTitleBar />
+          {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+        </SimpleFlexRow>
+        <CanvasStrategyInspector />
+      </Resizable>
+    </div>
   )
 })
