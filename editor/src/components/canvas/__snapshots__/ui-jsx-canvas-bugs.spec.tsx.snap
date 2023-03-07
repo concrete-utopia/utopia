@@ -45,7 +45,7 @@ Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
-    "conditionalValue": null,
+    "conditionalValue": "not-a-conditional",
     "element": Object {
       "type": "RIGHT",
       "value": Object {
@@ -205,7 +205,7 @@ Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
-    "conditionalValue": null,
+    "conditionalValue": "not-a-conditional",
     "element": Object {
       "type": "RIGHT",
       "value": Object {

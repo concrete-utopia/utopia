@@ -869,7 +869,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
-    conditionalValue: null,
+    conditionalValue: 'not-a-conditional',
   }
 
   const childElementProps: ElementProps = {
@@ -893,7 +893,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
-    conditionalValue: null,
+    conditionalValue: 'not-a-conditional',
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {
@@ -1551,7 +1551,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       emptyAttributeMetadatada,
       null,
       null,
-      null,
+      'not-a-conditional',
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1586,7 +1586,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       emptyAttributeMetadatada,
       null,
       null,
-      null,
+      'not-a-conditional',
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: cardElementMetadata,

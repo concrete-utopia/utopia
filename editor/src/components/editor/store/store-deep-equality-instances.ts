@@ -169,6 +169,7 @@ import {
   sameFileOrigin,
   ImportedOrigin,
   importedOrigin,
+  ConditionalValue,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -214,6 +215,7 @@ import {
   NumberKeepDeepEquality,
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
+  unionDeepEquality,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -1410,6 +1412,13 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
   createCallWithShallowEquals()
 
+const ConditionalValueKeepDeepEquality: KeepDeepEqualityCall<ConditionalValue> = unionDeepEquality(
+  createCallWithTripleEquals<ConditionalValue>(),
+  BooleanKeepDeepEquality,
+  (p): p is 'not-a-conditional' => p === 'not-a-conditional',
+  (p): p is boolean => typeof p === 'boolean',
+)
+
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
   combine12EqualityCalls(
     (metadata) => metadata.elementPath,
@@ -1435,7 +1444,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     (metadata) => metadata.importInfo,
     nullableDeepEquality(ImportInfoKeepDeepEquality),
     (metadata) => metadata.conditionalValue,
-    nullableDeepEquality(BooleanKeepDeepEquality),
+    ConditionalValueKeepDeepEquality,
     elementInstanceMetadata,
   )
 

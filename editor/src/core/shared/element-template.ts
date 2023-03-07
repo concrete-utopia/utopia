@@ -1629,6 +1629,8 @@ export function createNotImported(path: string, variableName: string): ImportInf
   return sameFileOrigin(path, variableName)
 }
 
+export type ConditionalValue = boolean | 'not-a-conditional'
+
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
@@ -1641,7 +1643,7 @@ export interface ElementInstanceMetadata {
   attributeMetadatada: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
-  conditionalValue: boolean | null
+  conditionalValue: ConditionalValue
 }
 
 export function elementInstanceMetadata(
@@ -1656,7 +1658,7 @@ export function elementInstanceMetadata(
   attributeMetadatada: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
-  conditionalValue: boolean | null,
+  conditionalValue: ConditionalValue,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
