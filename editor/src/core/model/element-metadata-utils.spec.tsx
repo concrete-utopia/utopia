@@ -71,7 +71,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -88,7 +88,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -106,7 +106,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentPropsGrandchild: ElementProps = {
@@ -128,7 +128,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -143,7 +143,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
@@ -161,7 +161,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
@@ -179,7 +179,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
@@ -194,7 +194,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentSceneElement: ElementInstanceMetadata = {
@@ -209,7 +209,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testComponentSceneElementProps: ElementProps = {
@@ -231,7 +231,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
@@ -246,7 +246,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testStoryboardElement: ElementInstanceMetadata = {
@@ -261,7 +261,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionValue: null,
+  conditionalValue: null,
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
@@ -350,7 +350,7 @@ function dummyInstanceDataForElementType(
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: importInfo,
-    conditionValue: null,
+    conditionalValue: null,
   }
 }
 

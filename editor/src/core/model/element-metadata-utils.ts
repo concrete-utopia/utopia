@@ -1795,11 +1795,11 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
-  getConditionValueFromMetadata(element: ElementInstanceMetadata | null): boolean | null {
+  getConditionalValueFromMetadata(element: ElementInstanceMetadata | null): boolean | null {
     if (!this.isConditionalFromMetadata(element)) {
       return null
     }
-    return element?.conditionValue ?? null
+    return element?.conditionalValue ?? null
   },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,

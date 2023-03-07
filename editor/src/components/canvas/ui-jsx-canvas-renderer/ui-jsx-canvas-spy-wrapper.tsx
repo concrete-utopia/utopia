@@ -33,7 +33,7 @@ export function addFakeSpyEntry(
   elementOrAttribute: ChildOrAttribute,
   filePath: string,
   imports: Imports,
-  conditionValue: boolean | null,
+  conditionalValue: boolean | null,
 ): void {
   let element: Either<string, JSXElementChild>
   if (childOrBlockIsChild(elementOrAttribute)) {
@@ -80,7 +80,7 @@ export function addFakeSpyEntry(
       },
       element,
     ),
-    conditionValue: conditionValue,
+    conditionalValue: conditionalValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -159,7 +159,7 @@ export function buildSpyWrappedElement(
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
-      conditionValue: null,
+      conditionalValue: null,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

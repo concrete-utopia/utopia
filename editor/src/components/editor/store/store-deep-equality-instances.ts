@@ -1434,7 +1434,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.importInfo,
     nullableDeepEquality(ImportInfoKeepDeepEquality),
-    (metadata) => metadata.conditionValue,
+    (metadata) => metadata.conditionalValue,
     nullableDeepEquality(BooleanKeepDeepEquality),
     elementInstanceMetadata,
   )
