@@ -40,6 +40,7 @@ import {
   isJSXConditionalExpression,
   childOrBlockIsChild,
   emptyComments,
+  ChildOrAttribute,
 } from '../shared/element-template'
 import {
   Imports,
@@ -67,7 +68,7 @@ import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { styleStringInArray } from '../../utils/common-constants'
 import { forceNotNull } from '../shared/optional-utils'
-import { getConditionalClausePath } from './conditionals'
+import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -423,26 +424,21 @@ export function findJSXElementChildAtPath(
         // this is the element we want
         return element
       } else {
-        if (
-          childOrBlockIsChild(element.whenTrue) &&
-          tailPath[0] === getUtopiaID(element.whenTrue)
-        ) {
-          const elementWithin = element.whenTrue
-          const withinResult = findAtPathInner(elementWithin, tailPath)
-          if (withinResult != null) {
-            return withinResult
+        function elementOrNullFromClause(
+          clause: ChildOrAttribute,
+          branch: ThenOrElse,
+        ): JSXElementChild | null {
+          // if it's an attribute, match its path with the right branch
+          if (!childOrBlockIsChild(clause)) {
+            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
           }
+          // if it's a child, get its inner element
+          return findAtPathInner(clause, tailPath)
         }
-        if (
-          childOrBlockIsChild(element.whenFalse) &&
-          tailPath[0] === getUtopiaID(element.whenFalse)
-        ) {
-          const elementWithin = element.whenFalse
-          const withinResult = findAtPathInner(elementWithin, tailPath)
-          if (withinResult != null) {
-            return withinResult
-          }
-        }
+        return (
+          elementOrNullFromClause(element.whenTrue, 'then') ??
+          elementOrNullFromClause(element.whenFalse, 'else')
+        )
       }
     }
     return null

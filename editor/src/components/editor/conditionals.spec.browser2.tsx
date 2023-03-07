@@ -14,20 +14,21 @@ import { deleteSelected, selectComponents } from '../editor/actions/action-creat
 describe('conditionals', () => {
   before(() => setFeatureEnabled('Conditional support', true))
   after(() => setFeatureEnabled('Conditional support', false))
-  it('deleting a conditional branch replaces it with null', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'conditional',
-    ])
-    const startSnippet = `
+  describe('deletion', () => {
+    it('replaces a branch with null', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'conditional',
+      ])
+      const startSnippet = `
         <div data-uid='aaa'>
         {
-          [].length === 0 ? (
+          true ? (
             <div data-uid='bbb' data-testid='bbb'>foo</div>
           ) : (
             <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -35,30 +36,64 @@ describe('conditionals', () => {
         }
         </div>
       `
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(startSnippet),
-      'await-first-dom-report',
-    )
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
 
-    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
-    await act(async () => {
-      await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    })
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
 
-    await act(async () => {
-      await renderResult.dispatch([deleteSelected()], true)
-    })
+      await act(async () => {
+        await renderResult.dispatch([deleteSelected()], true)
+      })
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
-                [].length === 0 ? null : (
+                true ? null : (
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 )
               }
             </div>
          `),
-    )
+      )
+    })
+    it('replaces a text string branch with null', async () => {
+      FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'conditional'])
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          true ? 'hello' : 'there'
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'then-case'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await act(async () => {
+        await renderResult.dispatch([deleteSelected()], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                true ? null : 'there'
+              }
+            </div>
+         `),
+      )
+    })
   })
 })

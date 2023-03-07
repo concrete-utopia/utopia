@@ -1276,6 +1276,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const parentJustifyContentEquals = oldSize.parentJustifyContent === newSize.parentJustifyContent
     const parentFlexGapEquals = NumberKeepDeepEquality(oldSize.parentFlexGap, newSize.parentFlexGap)
     const parentPaddingEquals = SidesKeepDeepEquality(oldSize.parentPadding, newSize.parentPadding)
+    const parentHugsOnMainAxisEquals = BooleanKeepDeepEquality(
+      oldSize.parentHugsOnMainAxis,
+      newSize.parentHugsOnMainAxis,
+    )
     const gapEquals = NullableNumberKeepDeepEquality(oldSize.gap, newSize.gap).areEqual
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
 
@@ -1324,6 +1328,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       parentJustifyContentEquals &&
       parentFlexGapEquals &&
       parentPaddingEquals &&
+      parentHugsOnMainAxisEquals &&
       gapEquals &&
       flexDirectionResult &&
       justifyContentEquals &&
@@ -1366,6 +1371,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentJustifyContent,
         newSize.parentFlexGap,
         newSize.parentPadding,
+        newSize.parentHugsOnMainAxis,
         newSize.gap,
         newSize.flexDirection,
         newSize.justifyContent,
