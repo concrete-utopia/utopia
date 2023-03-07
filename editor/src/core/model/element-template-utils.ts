@@ -1,16 +1,12 @@
 import {
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
-  walkContentsTree,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
-import { Either, isRight, right } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsWithin,
-  getJSXElementNameLastPart,
   isJSXArbitraryBlock,
   isJSXAttributeValue,
   isJSXElement,
@@ -43,7 +39,6 @@ import {
   ChildOrAttribute,
 } from '../shared/element-template'
 import {
-  Imports,
   isParseSuccess,
   isTextFile,
   StaticElementPathPart,
@@ -59,14 +54,9 @@ import {
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import {
-  isUtopiaAPIComponent,
-  getComponentsFromTopLevelElements,
-  isSceneAgainstImports,
-} from './project-file-utils'
+import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { styleStringInArray } from '../../utils/common-constants'
 import { forceNotNull } from '../shared/optional-utils'
 import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
 
@@ -97,6 +87,9 @@ function getAllUniqueUidsInner(
           )
         }
       }
+    } else if (isJSXFragment(element)) {
+      fastForEach(element.children, extractUid)
+      uniqueIDs.add(element.uid)
     }
   }
 
@@ -624,7 +617,7 @@ export function getZIndexOfElement(
   if (parentElement != null) {
     const elementUID = EP.toUid(target)
     return parentElement.children.findIndex((child) => {
-      return isJSXElement(child) && getUtopiaID(child) === elementUID
+      return isJSXElementLike(child) && getUtopiaID(child) === elementUID
     })
   } else {
     return -1
