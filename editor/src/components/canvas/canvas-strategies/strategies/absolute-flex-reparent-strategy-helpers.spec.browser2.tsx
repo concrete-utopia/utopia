@@ -539,20 +539,20 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='bbb'
             data-testid='bbb'
           />
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 50,
               height: 50,
+              contain: 'layout',
             }}
             data-uid='draggedElement'
             data-testid='draggedElement'
@@ -594,20 +594,20 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 50,
               height: 50,
+              contain: 'layout',
             }}
             data-uid='draggedElement'
             data-testid='draggedElement'
           />
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='bbb'
             data-testid='bbb'
@@ -633,20 +633,20 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='bbb'
             data-testid='bbb'
           />
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 50,
               height: 50,
+              contain: 'layout',
             }}
             data-uid='draggedElement'
             data-testid='draggedElement'
@@ -688,20 +688,21 @@ describe('Unified Reparent Fitness Function Tests', () => {
         >
           <div
             style={{
-              position: 'relative',
               backgroundColor: '#aaaaaa33',
               width: 100,
               height: 100,
+              contain: 'layout',
             }}
             data-uid='bbb'
             data-testid='bbb'
           >
             <div
               style={{
-                position: 'absolute',
                 backgroundColor: '#aaaaaa33',
                 width: 50,
                 height: 50,
+                contain: 'layout',
+                position: 'absolute',
                 left: 65,
                 top: 0,
               }}

@@ -77,8 +77,8 @@ export var storyboard = (
             data-testid='${DraggedDivId}'
             data-uid='a75'
             style={{
-              height: 54,
-              width: 50,
+              height: '100%',
+              width: '100%',
               backgroundColor: '#EB0A0A',
               left: 245,
               top: 196,
@@ -247,8 +247,8 @@ export var storyboard = (
               data-uid='a75'
               data-testid='${DraggedDivId}'
               style={{
-                height: 54,
-                width: 50,
+                height: '100%',
+                width: '100%',
                 backgroundColor: '#EB0A0A',
                 left: 245,
                 top: 196,
@@ -436,8 +436,8 @@ export var storyboard = (
               style={{
                 backgroundColor: 'red',
                 flexBasis: 80,
-                height: 28,
-                width: 40,
+                height: '100%',
+                width: '100%',
               }}
               data-uid='child'
             />

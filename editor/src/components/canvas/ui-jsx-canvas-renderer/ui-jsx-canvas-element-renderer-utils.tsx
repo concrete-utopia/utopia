@@ -348,7 +348,7 @@ export function renderCoreElement(
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
-        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports)
+        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
       }
 
       if (childOrBlockIsChild(actualElement)) {

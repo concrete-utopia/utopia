@@ -40,7 +40,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
-import { dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
@@ -305,7 +305,12 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  return sortedStrategies
+  // Special case for the DO NOTHING strategy - it should never be a fallback strategy
+  const filteredSortedStrategies = sortedStrategies.filter(
+    ({ strategy }, index) => index === 0 || strategy.id !== DoNothingStrategyID,
+  )
+
+  return filteredSortedStrategies
 }
 
 function pickDefaultCanvasStrategy(
