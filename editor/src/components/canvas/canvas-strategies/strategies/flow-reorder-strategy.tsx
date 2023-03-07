@@ -2,6 +2,10 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import {
+  DragOutlineControl,
+  dragTargetsElementPaths,
+} from '../../controls/select-mode/drag-outline-control'
+import {
   controlWithProps,
   CustomStrategyState,
   emptyStrategyApplicationResult,
@@ -9,18 +13,12 @@ import {
   InteractionCanvasState,
   MoveStrategy,
 } from '../canvas-strategy-types'
+import { InteractionSession } from '../interaction-state'
 import {
-  areAllSiblingsInOneDimensionFlexOrFlow,
-  getElementDirection,
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
-import { InteractionSession } from '../interaction-state'
 import { applyReorderCommon } from './reorder-utils'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
 
 export function flowReorderStrategy(
   canvasState: InteractionCanvasState,

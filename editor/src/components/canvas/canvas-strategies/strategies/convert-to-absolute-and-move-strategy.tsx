@@ -9,11 +9,13 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import {
   asLocal,
+  boundingRectangleArray,
   CanvasPoint,
   CanvasRectangle,
   canvasRectangleToLocalRectangle,
@@ -21,7 +23,10 @@ import {
   isFiniteRectangle,
   LocalPoint,
   LocalRectangle,
+  nullIfInfinity,
+  offsetPoint,
   offsetRect,
+  rectContainsPoint,
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
@@ -59,13 +64,17 @@ import {
   replaceContentAffectingPathsWithTheirChildrenRecursive,
   retargetStrategyToChildrenOfContentAffectingElements,
 } from './group-like-helpers'
+import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
+import { memoize } from '../../../../core/shared/memoize'
+
+export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
 export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const filteredSelectedElements = getDragTargets(targets)
   if (
     filteredSelectedElements.length === 0 ||
     !filteredSelectedElements.every((element) => {
@@ -82,8 +91,24 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
+  const target = filteredSelectedElements[0]
+  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
+  const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
+  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
+
+  const autoLayoutSiblingsControl = hasAutoLayoutSiblings
+    ? [
+        controlWithProps({
+          control: AutoLayoutSiblingsOutline,
+          props: { bounds: autoLayoutSiblingsBounds },
+          key: 'autolayout-siblings-outline',
+          show: 'always-visible',
+        }),
+      ]
+    : []
+
   return {
-    id: 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY',
+    id: ConvertToAbsoluteAndMoveStrategyID,
     name: 'Move (Abs)',
     controlsToRender: [
       controlWithProps({
@@ -98,15 +123,9 @@ export function convertToAbsoluteAndMoveStrategy(
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
+      ...autoLayoutSiblingsControl,
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness:
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
-        ? interactionSession.interactionData.spacePressed
-          ? 100 // If space is pressed, this should happening!
-          : 0.5
-        : 0,
+    fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
     apply: () => {
       if (
         interactionSession != null &&
@@ -157,6 +176,66 @@ export function convertToAbsoluteAndMoveStrategy(
       return emptyStrategyApplicationResult
     },
   }
+}
+
+const BaseWeight = 0.5
+const DragConversionWeight = 1.5
+
+function getFitness(
+  interactionSession: InteractionSession | null,
+  hasAutoLayoutSiblings: boolean,
+  autoLayoutSiblingsBounds: CanvasRectangle | null,
+): number {
+  if (
+    interactionSession != null &&
+    interactionSession.interactionData.type === 'DRAG' &&
+    interactionSession.activeControl.type === 'BOUNDING_AREA'
+  ) {
+    if (interactionSession.interactionData.spacePressed) {
+      // If space is pressed, this should happening!
+      return 100
+    }
+
+    if (interactionSession.interactionData.drag == null) {
+      return BaseWeight
+    }
+
+    if (!hasAutoLayoutSiblings) {
+      return DragConversionWeight
+    }
+
+    const pointOnCanvas = offsetPoint(
+      interactionSession.interactionData.dragStart,
+      interactionSession.interactionData.drag,
+    )
+
+    const isInsideBoundingBoxOfSiblings =
+      autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
+
+    return isInsideBoundingBoxOfSiblings ? BaseWeight : DragConversionWeight
+  }
+
+  return 0
+}
+
+const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { maxSize: 1 })
+
+function getAutoLayoutSiblingsBoundsInner(
+  jsxMetadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): CanvasRectangle | null {
+  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, target)
+  const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
+  return boundingRectangleArray(autoLayoutSiblingsFrames)
+}
+
+const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 })
+
+function getAutoLayoutSiblingsInner(
+  jsxMetadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<ElementInstanceMetadata> {
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, target)
 }
 
 export function getEscapeHatchCommands(

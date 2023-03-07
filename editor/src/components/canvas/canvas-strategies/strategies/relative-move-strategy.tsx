@@ -66,9 +66,7 @@ export function relativeMoveStrategy(
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.activeControl.type === 'BOUNDING_AREA'
-          ? hasOffsets
-            ? 4 // +1 than reorder flow
-            : 1
+          ? 4
           : 0,
 
       apply: () => {
