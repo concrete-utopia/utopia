@@ -1795,6 +1795,12 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  getConditionValueFromMetadata(element: ElementInstanceMetadata | null): boolean | null {
+    if (!this.isConditionalFromMetadata(element)) {
+      return null
+    }
+    return element?.conditionValue ?? null
+  },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,
     parentPath: ElementPath,
@@ -2068,6 +2074,7 @@ function findConditionalsAndCreateMetadata(
             emptyAttributeMetadatada,
             'Conditional',
             null,
+            null,
           )
         }
       },
@@ -2187,6 +2194,7 @@ export function createFakeMetadataForElement(
     false,
     false,
     specialSizeMeasurements,
+    null,
     null,
     null,
     null,

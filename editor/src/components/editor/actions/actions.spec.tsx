@@ -869,6 +869,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
+    conditionValue: null,
   }
 
   const childElementProps: ElementProps = {
@@ -892,6 +893,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
+    conditionValue: null,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {
@@ -1549,6 +1551,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       emptyAttributeMetadatada,
       null,
       null,
+      null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1581,6 +1584,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
       emptyAttributeMetadatada,
+      null,
       null,
       null,
     )

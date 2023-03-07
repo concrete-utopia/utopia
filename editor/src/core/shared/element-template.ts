@@ -1641,6 +1641,7 @@ export interface ElementInstanceMetadata {
   attributeMetadatada: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
+  conditionValue: boolean | null
 }
 
 export function elementInstanceMetadata(
@@ -1655,6 +1656,7 @@ export function elementInstanceMetadata(
   attributeMetadatada: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
+  conditionValue: boolean | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -1668,6 +1670,7 @@ export function elementInstanceMetadata(
     attributeMetadatada: attributeMetadatada,
     label: label,
     importInfo: importInfo,
+    conditionValue: conditionValue,
   }
 }
 

@@ -117,6 +117,7 @@ function callPropertyControlsHook(
       null,
       null,
       importInfos[0],
+      null,
     ),
   }
   let allElementProps: AllElementProps = {
@@ -136,6 +137,7 @@ function callPropertyControlsHook(
       null,
       null,
       importInfos[1],
+      null,
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -154,6 +156,7 @@ function callPropertyControlsHook(
       null,
       null,
       importInfos[2],
+      null,
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }

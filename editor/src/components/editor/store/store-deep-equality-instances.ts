@@ -1411,7 +1411,7 @@ export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<
   createCallWithShallowEquals()
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine11EqualityCalls(
+  combine12EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1434,6 +1434,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.importInfo,
     nullableDeepEquality(ImportInfoKeepDeepEquality),
+    (metadata) => metadata.conditionValue,
+    nullableDeepEquality(BooleanKeepDeepEquality),
     elementInstanceMetadata,
   )
 

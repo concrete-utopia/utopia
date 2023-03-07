@@ -760,6 +760,7 @@ function collectAndCreateMetadataForElement(
       attributeMetadata,
       null,
       null,
+      null,
     )
   })
 
@@ -1085,6 +1086,7 @@ function walkCanvasRootFragment(
       emptyAttributeMetadatada,
       null,
       null, // this comes from the Spy Wrapper
+      null,
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata

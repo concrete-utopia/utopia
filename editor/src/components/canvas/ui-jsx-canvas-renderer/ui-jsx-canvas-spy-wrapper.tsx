@@ -33,6 +33,7 @@ export function addFakeSpyEntry(
   elementOrAttribute: ChildOrAttribute,
   filePath: string,
   imports: Imports,
+  conditionValue: boolean | null,
 ): void {
   let element: Either<string, JSXElementChild>
   if (childOrBlockIsChild(elementOrAttribute)) {
@@ -79,6 +80,7 @@ export function addFakeSpyEntry(
       },
       element,
     ),
+    conditionValue: conditionValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -96,7 +98,7 @@ export function addConditionalAlternative(
   thenOrElseCase: 'then' | 'else',
 ): void {
   const elementPath = getConditionalClausePath(parentPath, alternativeCase, thenOrElseCase)
-  addFakeSpyEntry(metadataContext, elementPath, alternativeCase, filePath, imports)
+  addFakeSpyEntry(metadataContext, elementPath, alternativeCase, filePath, imports, null)
 
   forEachOf(childOrAttributeToConditionalOptic, alternativeCase, (elementAsConditional) => {
     addConditionalAlternative(
@@ -157,6 +159,7 @@ export function buildSpyWrappedElement(
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
+      conditionValue: null,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)
