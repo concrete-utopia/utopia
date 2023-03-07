@@ -23,7 +23,6 @@ import {
 } from './shared-move-strategies-helpers'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
-import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { CanvasCommand } from '../../commands/commands'
 import {
   accumulatePresses,
@@ -37,12 +36,13 @@ import { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import { InteractionSession } from '../interaction-state'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
   if (selectedElements.length === 0) {
     return null
   }
