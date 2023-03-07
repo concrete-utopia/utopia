@@ -3370,16 +3370,3 @@ export function elementHasOnlyTextChildren(element: ElementInstanceMetadata): bo
   const hasTextChildren = textChildren.length > 0
   return hasTextChildren && allChildrenText
 }
-
-export function getChildrenBoundingRectangle(
-  metadata: ElementInstanceMetadataMap,
-  parentPath: ElementPath,
-): CanvasRectangle | null {
-  const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath) // does not account for text children
-  const childrenBounds = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path)?.globalFrame,
-    childrenPaths,
-  ).filter((frame): frame is CanvasRectangle => isFiniteRectangle(frame))
-
-  return boundingRectangleArray(childrenBounds)
-}

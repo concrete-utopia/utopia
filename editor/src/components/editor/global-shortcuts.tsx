@@ -107,11 +107,7 @@ import {
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
-import {
-  getChildrenBoundingRectangle,
-  getDragStateStart,
-  pickColorWithEyeDropper,
-} from '../canvas/canvas-utils'
+import { getDragStateStart, pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
@@ -150,6 +146,7 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
+import { isInfinityRectangle } from '../../core/shared/math-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -890,11 +887,11 @@ export function handleKeyDown(
           }
 
           if (contentAffectingType === 'simple-div') {
-            const childrenBoundingFrame = getChildrenBoundingRectangle(
-              editor.jsxMetadata,
+            const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
               elementPath,
+              editor.jsxMetadata,
             )
-            if (childrenBoundingFrame == null) {
+            if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
               return []
             }
 
