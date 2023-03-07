@@ -246,6 +246,29 @@ describe('Keyboard switching back and forth between absolute move and absolute r
       height: 101,
     })
   })
+
+  describe('retargets to group children', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+    it('resizes children', async () => {
+      const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+      await keyDownArrowRightHoldingCmd3x()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const aaa = editor.renderedDOM.getByTestId('aaa')
+      const bbb = editor.renderedDOM.getByTestId('bbb')
+
+      expect(aaa.style.top).toEqual('210px')
+      expect(aaa.style.left).toEqual('8px')
+      expect(aaa.style.width).toEqual('76px')
+      expect(aaa.style.height).toEqual('109px')
+      expect(bbb.style.top).toEqual('8px')
+      expect(bbb.style.left).toEqual('8px')
+      expect(bbb.style.width).toEqual('210px')
+      expect(bbb.style.height).toEqual('202px')
+    })
+  })
 })
 
 describe('Keyboard move shows correct distance controls', () => {
