@@ -17,8 +17,10 @@ const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? 'http://localhost:8001'
   : BASE_URL
 
+export const IS_JEST_ENVIRONMENT = process.env.JEST_WORKER_ID != null
+
 export const IS_TEST_ENVIRONMENT: boolean =
-  process.env.JEST_WORKER_ID != null ||
+  IS_JEST_ENVIRONMENT ||
   (typeof window != 'undefined' && (window as any)?.KarmaTestEnvironment != null)
 
 export const IS_BROWSER_TEST_DEBUG: boolean =

@@ -2,8 +2,8 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { createSelector } from 'reselect'
 import { assertNever } from '../../../core/shared/utils'
+import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -23,6 +23,7 @@ import {
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
+  navigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
@@ -44,15 +45,15 @@ interface NavigatorItemWrapperProps {
   windowStyle: React.CSSProperties
 }
 
-const targetElementMetadataSelector = createSelector(
+const targetElementMetadataSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate, target: NavigatorEntry) => target,
   (metadata, target): ElementInstanceMetadata | null => {
     return MetadataUtils.findElementByElementPath(metadata, target.elementPath)
   },
-)
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const targetInNavigatorItemsSelector = createSelector(
+const targetInNavigatorItemsSelector = createCachedSelector(
   (store: EditorStorePatched) => store.derived.navigatorTargets,
   (store: EditorStorePatched, target: NavigatorEntry) => target,
   (navigatorTargets, target) => {
@@ -60,9 +61,9 @@ const targetInNavigatorItemsSelector = createSelector(
       return navigatorEntriesEqual(target, navigatorTarget)
     })
   },
-)
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const canBeReparentedIntoSelector = createSelector(
+const canBeReparentedIntoSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   targetElementMetadataSelector,
   targetInNavigatorItemsSelector,
@@ -72,9 +73,9 @@ const canBeReparentedIntoSelector = createSelector(
     }
     return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
   },
-)
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const labelSelector = createSelector(
+const labelSelector = createCachedSelector(
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (elementMetadata, allElementProps) => {
@@ -83,9 +84,9 @@ const labelSelector = createSelector(
     }
     return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
   },
-)
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const elementWarningsSelector = createSelector(
+const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
@@ -98,21 +99,24 @@ const elementWarningsSelector = createSelector(
       return defaultElementWarnings
     }
   },
-)
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const noOfChildrenSelector = createSelector(
+const noOfChildrenSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.navigatorTargets,
-  (_: DerivedSubstate, targetPath: ElementPath) => targetPath,
-  (navigatorTargets, targetPath) => {
+  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (navigatorTargets, navigatorEntry) => {
     let result = 0
     for (const nt of navigatorTargets) {
-      if (EP.isChildOf(nt.elementPath, targetPath)) {
+      if (
+        isRegularNavigatorEntry(navigatorEntry) &&
+        EP.isChildOf(nt.elementPath, navigatorEntry.elementPath)
+      ) {
         result += 1
       }
     }
     return result
   },
-)
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 function getNavigatorEntryLabel(
   navigatorEntry: NavigatorEntry,
@@ -189,7 +193,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const noOfChildren = useEditorState(
     Substores.derived,
     (store) => {
-      return noOfChildrenSelector(store, props.navigatorEntry.elementPath)
+      return noOfChildrenSelector(store, props.navigatorEntry)
     },
     'NavigatorItemWrapper noOfChildren',
   )

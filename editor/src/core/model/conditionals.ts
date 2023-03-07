@@ -7,11 +7,23 @@ import {
 } from '../shared/element-template'
 import { ElementPathTree } from '../shared/element-path-tree'
 import { getUtopiaID } from './element-template-utils'
+import { assertNever } from '../shared/utils'
 
 export type ThenOrElse = 'then' | 'else'
 
+export function thenOrElsePathPart(thenOrElse: ThenOrElse): string {
+  switch (thenOrElse) {
+    case 'then':
+      return 'then-case'
+    case 'else':
+      return 'else-case'
+    default:
+      assertNever(thenOrElse)
+  }
+}
+
 export function getThenOrElsePath(elementPath: ElementPath, thenOrElse: ThenOrElse): ElementPath {
-  return EP.appendToPath(elementPath, `${thenOrElse}-case`)
+  return EP.appendToPath(elementPath, thenOrElsePathPart(thenOrElse))
 }
 
 // Get the path for the clause (then or else) of a conditional.
