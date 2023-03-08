@@ -28,7 +28,7 @@ export type AssetFilenameUpdate = (
 ) => Promise<void>
 
 // Chain promises off of this so that there's not 50 running at once.
-let baseAssetPromise: Promise<void> = Promise.resolve()
+export let baseAssetPromise: Promise<void> = Promise.resolve()
 
 export function triggerAssetRenames(
   projectId: string | null,
