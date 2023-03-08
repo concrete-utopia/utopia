@@ -9,22 +9,27 @@ import {
 import { duplicate } from '../canvas-utils'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
+export type Anchor = 'before' | 'after'
+
 export interface DuplicateElement extends BaseCommand {
   type: 'DUPLICATE_ELEMENT'
   target: ElementPath
   newUid: string
+  anchor?: Anchor
 }
 
 export function duplicateElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   newUid: string,
+  anchor?: Anchor,
 ): DuplicateElement {
   return {
     type: 'DUPLICATE_ELEMENT',
     whenToRun: whenToRun,
     target: target,
     newUid: newUid,
+    anchor,
   }
 }
 
@@ -40,7 +45,7 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     targetParent,
     editorState,
     [{ originalPath: command.target, newUID: command.newUid }],
-    true,
+    command.anchor,
   )
 
   const originalParsedFile = withUnderlyingTargetFromEditorState(

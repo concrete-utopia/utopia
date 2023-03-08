@@ -1,18 +1,17 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import { IcnProps, Icn } from '../../../uuiui'
-import * as EP from '../../../core/shared/element-path'
 import { useComponentIcon } from '../layout-element-icons'
+import { NavigatorEntry } from '../../../components/editor/store/editor-state'
 
 interface ComponentPreviewProps {
-  path: ElementPath
+  navigatorEntry: NavigatorEntry
   color: IcnProps['color']
 }
 
 export const ComponentPreview: React.FunctionComponent<
   React.PropsWithChildren<ComponentPreviewProps>
 > = React.memo((props) => {
-  const iconProps = useComponentIcon(props.path)
+  const iconProps = useComponentIcon(props.navigatorEntry)
 
   if (iconProps == null) {
     return null

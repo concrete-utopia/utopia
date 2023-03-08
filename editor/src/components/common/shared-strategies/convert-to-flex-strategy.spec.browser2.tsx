@@ -1,4 +1,4 @@
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { navigatorEntryToKey } from '../../../components/editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import {
   expectSingleUndoStep,
@@ -463,15 +463,19 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
 
     await selectComponentsForTest(editor, [EP.fromString('sb/parent')])
 
-    const originalElementOrder = ['sb/parent', 'sb/parent/first', 'sb/parent/second']
+    const originalElementOrder = [
+      'regular-sb/parent',
+      'regular-sb/parent/first',
+      'regular-sb/parent/second',
+    ]
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual(
+    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       originalElementOrder,
     )
 
     await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(EP.toString)).toEqual(
+    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       originalElementOrder,
     )
   })

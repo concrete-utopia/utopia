@@ -80,7 +80,7 @@ import type {
 } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { pick } from '../../core/shared/object-utils'
-import { getFlexAlignment, getFlexJustifyContent } from '../inspector/inspector-common'
+import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -760,6 +760,7 @@ function collectAndCreateMetadataForElement(
       attributeMetadata,
       null,
       null,
+      'not-a-conditional',
     )
   })
 
@@ -853,6 +854,12 @@ function getSpecialMeasurements(
     parseFlexDirection(parentElementStyle?.flexDirection, null),
   )
   const parentJustifyContent = getFlexJustifyContent(parentElementStyle?.justifyContent ?? null)
+
+  const sizeMainAxis = parentFlexDirection === 'row' ? 'width' : 'height'
+  const parentHugsOnMainAxis =
+    parentLayoutSystem === 'flex' &&
+    element.parentElement != null &&
+    element.parentElement.style[sizeMainAxis] === MaxContent
 
   const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
@@ -978,6 +985,7 @@ function getSpecialMeasurements(
     isRight(parentPadding)
       ? parentPadding.value
       : sides(undefined, undefined, undefined, undefined),
+    parentHugsOnMainAxis,
     gap,
     flexDirection,
     justifyContent,
@@ -1078,6 +1086,7 @@ function walkCanvasRootFragment(
       emptyAttributeMetadatada,
       null,
       null, // this comes from the Spy Wrapper
+      'not-a-conditional',
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata

@@ -342,7 +342,7 @@ function shouldSnapToParentEdge(
     return fillHugFixedState?.type === 'fill'
   })
 
-  if (anySiblingFillSized) {
+  if (anySiblingFillSized || element.specialSizeMeasurements.parentHugsOnMainAxis) {
     return null
   }
 

@@ -17,16 +17,18 @@ import {
 } from '../../../core/shared/math-utils'
 import {
   CanvasRectangleKeepDeepEquality,
+  DropTargetHintKeepDeepEquality,
   ElementInstanceMetadataKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
   ImportInfoKeepDeepEquality,
   LocalPointKeepDeepEquality,
   LocalRectangleKeepDeepEquality,
+  NavigatorStateKeepDeepEquality,
   SidesKeepDeepEquality,
   SpecialSizeMeasurementsKeepDeepEquality,
 } from './store-deep-equality-instances'
 import * as EP from '../../../core/shared/element-path'
-import { ElementProps } from './editor-state'
+import { DropTargetHint, ElementProps, NavigatorState, regularNavigatorEntry } from './editor-state'
 
 describe('CanvasRectangleKeepDeepEquality', () => {
   const oldValue: CanvasRectangle = canvasRectangle({
@@ -258,6 +260,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 0,
       left: 0,
     },
+    parentHugsOnMainAxis: false,
     gap: 11,
     flexDirection: 'column',
     justifyContent: 'center',
@@ -336,6 +339,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       bottom: 0,
       left: 0,
     },
+    parentHugsOnMainAxis: false,
     gap: 11,
     flexDirection: 'column',
     justifyContent: 'center',
@@ -469,6 +473,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 0,
         left: 0,
       },
+      parentHugsOnMainAxis: false,
       gap: 11,
       flexDirection: 'column',
       justifyContent: 'center',
@@ -507,6 +512,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     },
     label: 'label',
     importInfo: createImportedFrom('old', 'old', 'old'),
+    conditionalValue: 'not-a-conditional',
   }
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -575,6 +581,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         bottom: 0,
         left: 0,
       },
+      parentHugsOnMainAxis: false,
       gap: 11,
       flexDirection: 'column',
       justifyContent: 'center',
@@ -613,6 +620,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     },
     label: 'new-label',
     importInfo: createImportedFrom('old', 'old', 'old'),
+    conditionalValue: 'not-a-conditional',
   }
 
   it('same reference returns the same reference', () => {
@@ -707,6 +715,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 0,
           left: 0,
         },
+        parentHugsOnMainAxis: false,
         gap: 11,
         flexDirection: 'column',
         justifyContent: 'center',
@@ -745,6 +754,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       },
       label: 'label',
       importInfo: createImportedFrom('old', 'old', 'old'),
+      conditionalValue: 'not-a-conditional',
     },
   }
   const newSameValue: ElementInstanceMetadataMap = {
@@ -815,6 +825,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 0,
           left: 0,
         },
+        parentHugsOnMainAxis: false,
         gap: 11,
         flexDirection: 'column',
         justifyContent: 'center',
@@ -853,6 +864,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       },
       label: 'label',
       importInfo: createImportedFrom('old', 'old', 'old'),
+      conditionalValue: 'not-a-conditional',
     },
   }
   const newDifferentValue: ElementInstanceMetadataMap = {
@@ -923,6 +935,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           bottom: 0,
           left: 0,
         },
+        parentHugsOnMainAxis: false,
         gap: 11,
         flexDirection: 'column',
         justifyContent: 'center',
@@ -961,6 +974,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       },
       label: 'new-label',
       importInfo: createImportedFrom('old', 'old', 'old'),
+      conditionalValue: 'not-a-conditional',
     },
   }
 
@@ -989,6 +1003,101 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     expect(result.value.elem.attributeMetadatada).toBe(oldValue.elem.attributeMetadatada)
     expect(result.value.elem.label).toBe(newDifferentValue.elem.label)
     expect(result.value.elem.importInfo).toBe(oldValue.elem.importInfo)
+    expect(result.value).toEqual(newDifferentValue)
+    expect(result.areEqual).toEqual(false)
+  })
+})
+
+describe('DropTargetHintKeepDeepEquality', () => {
+  const oldValue: DropTargetHint = {
+    displayAtElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    moveToElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    type: 'before',
+  }
+  const newSameValue: DropTargetHint = {
+    displayAtElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    moveToElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    type: 'before',
+  }
+  const newDifferentValue: DropTargetHint = {
+    displayAtElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    moveToElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    type: 'after',
+  }
+
+  it('same reference returns the same reference', () => {
+    const result = DropTargetHintKeepDeepEquality(oldValue, oldValue)
+    expect(result.value).toBe(oldValue)
+    expect(result.areEqual).toEqual(true)
+  })
+  it('same value returns the same reference', () => {
+    const result = DropTargetHintKeepDeepEquality(oldValue, newSameValue)
+    expect(result.value).toBe(oldValue)
+    expect(result.areEqual).toEqual(true)
+  })
+  it('different but similar value handled appropriately', () => {
+    const result = DropTargetHintKeepDeepEquality(oldValue, newDifferentValue)
+    expect(result.value.displayAtElementPath).toBe(oldValue.displayAtElementPath)
+    expect(result.value.type).toBe(newDifferentValue.type)
+    expect(result.value).toEqual(newDifferentValue)
+    expect(result.areEqual).toEqual(false)
+  })
+})
+
+describe('NavigatorStateKeepDeepEquality', () => {
+  const oldValue: NavigatorState = {
+    minimised: false,
+    dropTargetHint: {
+      displayAtElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      moveToElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      type: 'before',
+    },
+    collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+    renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    highlightedTargets: [],
+    hiddenInNavigator: [],
+  }
+  const newSameValue: NavigatorState = {
+    minimised: false,
+    dropTargetHint: {
+      displayAtElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      moveToElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      type: 'before',
+    },
+    collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+    renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    highlightedTargets: [],
+    hiddenInNavigator: [],
+  }
+  const newDifferentValue: NavigatorState = {
+    minimised: true,
+    dropTargetHint: {
+      displayAtElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      moveToElementPath: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      type: 'before',
+    },
+    collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+    renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
+    highlightedTargets: [],
+    hiddenInNavigator: [],
+  }
+
+  it('same reference returns the same reference', () => {
+    const result = NavigatorStateKeepDeepEquality(oldValue, oldValue)
+    expect(result.value).toBe(oldValue)
+    expect(result.areEqual).toEqual(true)
+  })
+  it('same value returns the same reference', () => {
+    const result = NavigatorStateKeepDeepEquality(oldValue, newSameValue)
+    expect(result.value).toBe(oldValue)
+    expect(result.areEqual).toEqual(true)
+  })
+  it('different but similar value handled appropriately', () => {
+    const result = NavigatorStateKeepDeepEquality(oldValue, newDifferentValue)
+    expect(result.value.minimised).toBe(newDifferentValue.minimised)
+    expect(result.value.dropTargetHint).toBe(oldValue.dropTargetHint)
+    expect(result.value.collapsedViews).toBe(oldValue.collapsedViews)
+    expect(result.value.renamingTarget).toBe(oldValue.renamingTarget)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })

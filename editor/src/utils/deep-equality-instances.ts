@@ -64,11 +64,14 @@ export const HigherOrderControlArrayKeepDeepEquality: KeepDeepEqualityCall<
   Array<HigherOrderControl>
 > = arrayDeepEquality(HigherOrderControlKeepDeepEquality)
 
-export const JSXElementNameKeepDeepEqualityCall: KeepDeepEqualityCall<JSXElementName> =
-  combine2EqualityCalls(
-    (name) => name.baseVariable,
+export function JSXElementNameKeepDeepEqualityCall(
+  oldValue: JSXElementName,
+  newValue: JSXElementName,
+): KeepDeepEqualityResult<JSXElementName> {
+  return combine2EqualityCalls(
+    (name: JSXElementName) => name.baseVariable,
     StringKeepDeepEquality,
-    (name) => name.propertyPath,
+    (name: JSXElementName) => name.propertyPath,
     PropertyPathKeepDeepEquality(),
     (baseVariable, propertyPath) => {
       return {
@@ -76,7 +79,8 @@ export const JSXElementNameKeepDeepEqualityCall: KeepDeepEqualityCall<JSXElement
         propertyPath: propertyPath,
       }
     },
-  )
+  )(oldValue, newValue)
+}
 
 export function EitherKeepDeepEquality<L, R>(
   leftDeep: KeepDeepEqualityCall<L>,
@@ -139,56 +143,6 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
 export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<
   Array<NameAndIconResult>
 > = arrayDeepEquality(NameAndIconResultKeepDeepEquality)
-
-export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
-  combine3EqualityCalls(
-    (hint) => hint.displayAtElementPath,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
-    (hint) => hint.moveToElementPath,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
-    (hint) => hint.type,
-    createCallWithTripleEquals(),
-    (displayAtElementPath, moveToElementPath, type) => {
-      return {
-        displayAtElementPath: displayAtElementPath,
-        moveToElementPath: moveToElementPath,
-        type: type,
-      }
-    },
-  )
-
-export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState> =
-  combine6EqualityCalls(
-    (state) => state.minimised,
-    createCallWithTripleEquals(),
-    (state) => state.dropTargetHint,
-    DropTargetHintKeepDeepEquality,
-    (state) => state.collapsedViews,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.renamingTarget,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
-    (state) => state.highlightedTargets,
-    ElementPathArrayKeepDeepEquality,
-    (state) => state.hiddenInNavigator,
-    ElementPathArrayKeepDeepEquality,
-    (
-      minimised,
-      dropTargetHint,
-      collapsedViews,
-      renamingTarget,
-      highlightedTargets,
-      hiddenInNavigator,
-    ) => {
-      return {
-        minimised: minimised,
-        dropTargetHint: dropTargetHint,
-        collapsedViews: collapsedViews,
-        renamingTarget: renamingTarget,
-        highlightedTargets: highlightedTargets,
-        hiddenInNavigator: hiddenInNavigator,
-      }
-    },
-  )
 
 export const LayoutTargetablePropArrayKeepDeepEquality: KeepDeepEqualityCall<
   Array<LayoutTargetableProp>
