@@ -497,30 +497,32 @@ export function editorDispatch(
   //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
   //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
 
-  let newHistory: StateHistory
-  if (transientOrNoChange) {
-    newHistory = result.history
-  } else if (allMergeWithPrevUndo) {
-    newHistory = History.replaceLast(result.history, editorFilteredForFiles, frozenDerivedState)
-  } else {
-    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
-  }
-
-  const alreadySaved = result.alreadySaved
-
-  const isLoaded = editorFilteredForFiles.isLoaded
-  const shouldSave =
-    isLoaded &&
-    !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
-    isBrowserEnvironment
-
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
       ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
       : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
 
   const frozenEditorState = editorWithModelChecked.editorState
+
+  const alreadySaved = result.alreadySaved
+
+  const isLoaded = editorFilteredForFiles.isLoaded
+  const shouldSave =
+    forceSave ||
+    (isLoaded &&
+      !isLoadAction &&
+      editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
+      (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
+      isBrowserEnvironment)
+
+  let newHistory: StateHistory
+  if (transientOrNoChange || !shouldSave) {
+    newHistory = result.history
+  } else if (allMergeWithPrevUndo) {
+    newHistory = History.replaceLast(result.history, editorFilteredForFiles, frozenDerivedState)
+  } else {
+    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
+  }
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
@@ -590,6 +592,14 @@ export function editorDispatch(
   )
 
   return finalStore
+}
+
+function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {
+  return (
+    oldState.projectContents !== newState.projectContents ||
+    oldState.githubSettings !== newState.githubSettings ||
+    oldState.branchContents !== newState.branchContents
+  )
 }
 
 let cullElementPathCacheTimeoutId: number | undefined = undefined
