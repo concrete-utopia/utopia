@@ -1,5 +1,10 @@
+import * as EP from '../../../../core/shared/element-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { shiftCmdModifier } from '../../../../utils/modifiers'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -151,6 +156,42 @@ describe('adjust font size with the keyboard', () => {
       expect(div.style.fontSize).toEqual('1.9em')
     })
   })
+
+  describe('retargets to group children', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+
+    it('with no font size set', async () => {
+      const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+      await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const aaa = editor.renderedDOM.getByTestId('aaa')
+      const bbb = editor.renderedDOM.getByTestId('bbb')
+
+      expect(aaa.style.fontSize).toEqual('17px')
+      expect(bbb.style.fontSize).toEqual('17px')
+    })
+    it('with font size already set', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithFragmentWithFontSize,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+      await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 2 })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const aaa = editor.renderedDOM.getByTestId('aaa')
+      const bbb = editor.renderedDOM.getByTestId('bbb')
+
+      expect(aaa.style.fontSize).toEqual('29px')
+      expect(bbb.style.fontSize).toEqual('29px')
+    })
+  })
 })
 
 async function doSelect(editor: EditorRenderResult, type: 'single' | 'double' = 'single') {
@@ -180,11 +221,11 @@ async function doTestWithDelta(
   editor: EditorRenderResult,
   delta: { decreaseBy: number; increaseBy: number },
 ) {
-  for (let i = 0; i < delta.increaseBy; i++) {
+  for await (const _ of Array(delta.increaseBy)) {
     await pressKey('.', { modifiers: shiftCmdModifier })
   }
 
-  for (let i = 0; i < delta.decreaseBy; i++) {
+  for await (const _ of Array(delta.decreaseBy)) {
     await pressKey(',', { modifiers: shiftCmdModifier })
   }
 
@@ -298,6 +339,86 @@ export var storyboard = (
     >
       hello
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithFragment = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+    </React.Fragment>
+  </Storyboard>
+)
+`
+
+const projectWithFragmentWithFontSize = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+          fontSize: 31
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+          fontSize: 31
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+    </React.Fragment>
   </Storyboard>
 )
 `

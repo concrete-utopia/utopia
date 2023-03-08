@@ -1,3 +1,5 @@
+import { fromString } from '../../../../core/shared/element-path'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
@@ -146,6 +148,24 @@ describe('adjust font weight with the keyboard', () => {
       expect(div.style.fontWeight).toEqual('200')
     })
   })
+
+  describe('retargets to group children', () => {
+    it('sets font weight', async () => {
+      it('increase font weight', async () => {
+        const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
+
+        await selectComponentsForTest(editor, [fromString('sb/fragment')])
+        await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.fontWeight).toEqual('500')
+        expect(bbb.style.fontWeight).toEqual('500')
+      })
+    })
+  })
 })
 
 async function doSelect(editor: EditorRenderResult) {
@@ -221,6 +241,45 @@ export var storyboard = (
     >
       hello
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithFragment = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+    </React.Fragment>
   </Storyboard>
 )
 `
