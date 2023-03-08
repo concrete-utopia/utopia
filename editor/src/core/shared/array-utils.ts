@@ -426,3 +426,10 @@ export function allElemsEqual<T>(
 
   return ts.slice(1).every((obj) => areEqual(ts[0], obj))
 }
+
+export function strictEvery<T>(
+  ts: T[],
+  predicate: (t: T, index: number, array: T[]) => boolean,
+): boolean {
+  return ts.length > 0 && ts.every(predicate)
+}

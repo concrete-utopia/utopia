@@ -46,11 +46,7 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import {
-  addConditionalAlternative,
-  addFakeSpyEntry,
-  buildSpyWrappedElement,
-} from './ui-jsx-canvas-spy-wrapper'
+import { addFakeSpyEntry, buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -355,14 +351,13 @@ export function renderCoreElement(
         addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
       }
 
-      let result: any
       if (childOrBlockIsChild(actualElement)) {
         const childPath = optionalMap(
           (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
           elementPath,
         )
 
-        result = renderCoreElement(
+        return renderCoreElement(
           actualElement,
           childPath,
           rootScope,
@@ -387,33 +382,8 @@ export function renderCoreElement(
           editedText,
         )
       } else {
-        result = jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
-        if (elementPath != null) {
-          addConditionalAlternative(
-            metadataContext,
-            elementPath,
-            filePath,
-            imports,
-            actualElement,
-            conditionValue ? 'then' : 'else',
-          )
-        }
+        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
       }
-
-      // Include the alternative case.
-      if (elementPath != null) {
-        const alternativeCase = conditionValue ? element.whenFalse : element.whenTrue
-        addConditionalAlternative(
-          metadataContext,
-          elementPath,
-          filePath,
-          imports,
-          alternativeCase,
-          conditionValue ? 'else' : 'then',
-        )
-      }
-
-      return result
     }
     default:
       const _exhaustiveCheck: never = element

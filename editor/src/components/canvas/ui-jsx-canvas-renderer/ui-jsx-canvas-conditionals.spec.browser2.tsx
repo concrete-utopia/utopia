@@ -1,5 +1,5 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { navigatorEntryToKey, StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import * as EP from '../../../core/shared/element-path'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
@@ -77,16 +77,20 @@ describe('a project with conditionals', () => {
     ])
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
-    const pathStrings = navigatorTargets.map(EP.toString)
+    const pathStrings = navigatorTargets.map(navigatorEntryToKey)
     expect(pathStrings).toEqual([
-      'storyboard/scene',
-      'storyboard/scene/app',
-      'storyboard/scene/app:app-root',
-      'storyboard/scene/app:app-root/conditional1',
-      'storyboard/scene/app:app-root/conditional1/conditional2',
-      'storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
-      'storyboard/scene/app:app-root/conditional1/conditional2/else-case',
-      'storyboard/scene/app:app-root/conditional1/else-case',
+      'regular-storyboard/scene',
+      'regular-storyboard/scene/app',
+      'regular-storyboard/scene/app:app-root',
+      'regular-storyboard/scene/app:app-root/conditional1',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-then',
+      'regular-storyboard/scene/app:app-root/conditional1/conditional2',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals-then',
+      'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/else-case-else',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/else-case-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/else-case-else',
+      'synthetic-storyboard/scene/app:app-root/conditional1/else-case-attribute',
     ])
   })
 })

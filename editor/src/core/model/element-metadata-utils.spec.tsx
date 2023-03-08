@@ -45,6 +45,8 @@ import {
 import {
   AllElementProps,
   ElementProps,
+  NavigatorEntry,
+  regularNavigatorEntry,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { parseCode } from '../workers/parser-printer/parser-printer'

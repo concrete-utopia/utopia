@@ -1,7 +1,7 @@
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { allElemsEqual, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import { allElemsEqual, mapDropNulls, strictEvery, stripNulls } from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -212,7 +212,7 @@ export function detectAreElementsFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
 ): boolean {
-  return elementPaths.every((path) =>
+  return strictEvery(elementPaths, (path) =>
     MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
   )
 }

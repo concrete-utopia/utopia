@@ -103,7 +103,11 @@ import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
+  conditionalClauseNavigatorEntry,
+  isRegularNavigatorEntry,
   LockedElements,
+  NavigatorEntry,
+  regularNavigatorEntry,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -123,7 +127,11 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { reorderConditionalChildPathTrees } from './conditionals'
+import {
+  getConditionalClausePath,
+  reorderConditionalChildPathTrees,
+  ThenOrElse,
+} from './conditionals'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1791,6 +1799,19 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(componentMetadata, elementPath)
 
     return MetadataUtils.isConditionalFromMetadata(element)
+  },
+  isElementPathConditionalClauseFromMetadata(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath | null,
+  ): boolean {
+    if (elementPath == null) {
+      return false
+    } else {
+      const parentPath = EP.parentPath(elementPath)
+      const parentMetadata = MetadataUtils.findElementByElementPath(componentMetadata, parentPath)
+
+      return MetadataUtils.isConditionalFromMetadata(parentMetadata)
+    }
   },
   isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (

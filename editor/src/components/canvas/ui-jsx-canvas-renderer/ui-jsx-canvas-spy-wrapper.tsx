@@ -9,8 +9,8 @@ import {
   JSXElementLike,
   isJSXElement,
   ChildOrAttribute,
-  childOrBlockIsChild,
   JSXElementChild,
+  childOrBlockIsChild,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   ConditionalValue,
@@ -21,12 +21,7 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
-import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
-import { forEachOf } from '../../../core/shared/optics/optic-utilities'
-import { compose2Optics, Optic } from '../../../core/shared/optics/optics'
-import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { getConditionalClausePath, getThenOrElsePath } from '../../../core/model/conditionals'
 
 export function addFakeSpyEntry(
   metadataContext: UiJsxCanvasContextData,
@@ -85,47 +80,6 @@ export function addFakeSpyEntry(
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
-}
-
-const childOrAttributeToConditionalOptic: Optic<ChildOrAttribute, JSXConditionalExpression> =
-  compose2Optics(fromTypeGuard(childOrBlockIsChild), fromTypeGuard(isJSXConditionalExpression))
-
-export function addConditionalAlternative(
-  metadataContext: UiJsxCanvasContextData,
-  parentPath: ElementPath,
-  filePath: string,
-  imports: Imports,
-  alternativeCase: ChildOrAttribute,
-  thenOrElseCase: 'then' | 'else',
-): void {
-  const elementPath = getConditionalClausePath(parentPath, alternativeCase, thenOrElseCase)
-  addFakeSpyEntry(
-    metadataContext,
-    elementPath,
-    alternativeCase,
-    filePath,
-    imports,
-    'not-a-conditional',
-  )
-
-  forEachOf(childOrAttributeToConditionalOptic, alternativeCase, (elementAsConditional) => {
-    addConditionalAlternative(
-      metadataContext,
-      elementPath,
-      filePath,
-      imports,
-      elementAsConditional.whenTrue,
-      'then',
-    )
-    addConditionalAlternative(
-      metadataContext,
-      elementPath,
-      filePath,
-      imports,
-      elementAsConditional.whenFalse,
-      'else',
-    )
-  })
 }
 
 export function buildSpyWrappedElement(
