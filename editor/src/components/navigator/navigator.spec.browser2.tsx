@@ -1,20 +1,17 @@
 import {
   EditorRenderResult,
-  getPrintedUiJsCode,
   renderTestEditorWithCode,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
 import { act, fireEvent } from '@testing-library/react'
 import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { wait } from '../../utils/utils.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -222,732 +219,98 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
-function getProjectCodeDraggedToBeforeEverything(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+const projectWithHierarchy = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
 
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeDraggedToAfterFirstSibling(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeDraggedToAfterLastSibling(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeReparentedUnderCousin(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      >
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-          data-uid='dragme'
-          data-testid='dragme'
-          data-label='dragme'
-        >
-          drag me
-        </div>
-      </div>
-    </Scene>
-  </Storyboard>
-)
-`
-}
-function getProjectCodeReparentedUnderFirstSibling(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        >
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              height: 65,
-              width: 66,
-              position: 'absolute',
-              left: 265,
-              top: 233,
-            }}
-            data-uid='dragme'
-            data-testid='dragme'
-            data-label='dragme'
-          >
-            drag me
-          </div>
-        </div>
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-}
-
-function getProjectCodeReparentedUnderScene(): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-const unmoveableColour = 'orange'
-
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 500,
-        }}
-        data-uid='sceneroot'
-        data-testid='sceneroot'
-        data-label='sceneroot'
-      >
-        <div
-          style={{
-            backgroundColor: 'teal',
-            position: 'absolute',
-            left: 255,
-            top: 35,
-            width: 109,
-            height: 123,
-          }}
-          data-uid='firstdiv'
-          data-testid='firstdiv'
-          data-label='firstdiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'purple',
-            position: 'absolute',
-            left: 21,
-            top: 215.5,
-            width: 123,
-            height: 100,
-          }}
-          data-uid='seconddiv'
-          data-testid='seconddiv'
-          data-label='seconddiv'
-        />
-        <div
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            left: 26,
-            top: 35,
-            width: 118,
-            height: 123,
-          }}
-          data-uid='thirddiv'
-          data-testid='thirddiv'
-          data-label='thirddiv'
-        />
-        <div
-          style={{
-            backgroundColor: unmoveableColour,
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 300,
-          }}
-          data-uid='notdrag'
-          data-testid='notdrag'
-          data-label='notdrag'
-        >
-          not drag
-        </div>
-      </div>
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 500,
-          width: 400,
-          height: 200,
-        }}
-        data-uid='parentsibling'
-        data-testid='parentsibling'
-        data-label='parentsibling'
-      />
-    </Scene>
+export var storyboard = (
+  <Storyboard data-uid='sb'>
     <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 207,
+        height: 311,
+      }}
+      data-testid='parent1'
+      data-uid='parent1'
+    >
+      <div
         style={{
           backgroundColor: '#aaaaaa33',
-          height: 65,
-          width: 66,
+          width: 73,
+          height: 109,
+          left: -18,
+          top: 164,
           position: 'absolute',
-          left: 265,
-          top: 233,
         }}
-        data-uid='dragme'
-        data-testid='dragme'
-        data-label='dragme'
-      >
-        drag me
-      </div>
+        data-uid='child1'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: -18,
+          top: -38,
+          position: 'absolute',
+        }}
+        data-uid='755'
+      />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 51,
+        top: 444,
+        width: 207,
+        height: 311,
+      }}
+      data-uid='parent2'
+      data-testid='parent2'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: -18,
+          top: 164,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: -18,
+          top: -38,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+      />
+    </div>
+    <span
+      style={{
+        position: 'absolute',
+        wordBreak: 'break-word',
+        left: 326,
+        top: 215,
+        width: 143,
+        height: 19,
+      }}
+      data-testid='text'
+      data-uid='text'
+    >
+      Cannot reparent here
+    </span>
   </Storyboard>
 )
 `
-}
 
 describe('Navigator', () => {
   describe('selecting elements', () => {
@@ -1050,7 +413,9 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+      const targetElement = EP.fromString(
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+      )
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -1068,10 +433,18 @@ describe('Navigator', () => {
         ),
       )
 
-      await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeDraggedToBeforeEverything(), PrettierConfig),
-      )
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- moved to before `firstdiv`
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reorders to after the first sibling', async () => {
@@ -1100,7 +473,9 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+      const targetElement = EP.fromString(
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+      )
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -1118,10 +493,18 @@ describe('Navigator', () => {
         ),
       )
 
-      await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeDraggedToAfterFirstSibling(), PrettierConfig),
-      )
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- moved to after `firstdiv`
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reorders to after the last sibling', async () => {
@@ -1150,7 +533,9 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+      const targetElement = EP.fromString(
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+      )
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -1169,9 +554,19 @@ describe('Navigator', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeDraggedToAfterLastSibling(), PrettierConfig),
-      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- moved to after the last sibling `notdrag` under its parent
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reparents under the first sibling', async () => {
@@ -1192,7 +587,7 @@ describe('Navigator', () => {
       const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
       const dragTo = {
         x: firstDivElementCenter.x,
-        y: firstDivElementRect.y + 15,
+        y: firstDivElementRect.y + 20,
       }
 
       const dragDelta = windowPoint({
@@ -1220,9 +615,18 @@ describe('Navigator', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeReparentedUnderFirstSibling(), PrettierConfig),
-      )
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv/dragme', // <- moved to under the first sibling
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('reparents under grandparent', async () => {
@@ -1257,13 +661,18 @@ describe('Navigator', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      if (getPrintedUiJsCode(renderResult.getEditorState()) === getProjectCode()) {
-        throw new Error(`Code is unchanged.`)
-      }
-
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeReparentedUnderScene(), PrettierConfig),
-      )
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+        'regular-utopia-storyboard-uid/dragme', // <- moved to under the grandparent
+      ])
     })
 
     it('reparents under cousin element', async () => {
@@ -1311,9 +720,19 @@ describe('Navigator', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCodeReparentedUnderCousin(), PrettierConfig),
-      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling/dragme', // <- moved to under the cousin element
+      ])
     })
 
     it('attempt to reparent non-reparentable item', async () => {
@@ -1366,9 +785,19 @@ describe('Navigator', () => {
       ).toEqual(null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCode(), PrettierConfig),
-      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag', // <- cannot be moved
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
     })
 
     it('does not reparent to invalid target', async () => {
@@ -1397,7 +826,9 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
+      const targetElement = EP.fromString(
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
+      )
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -1416,9 +847,178 @@ describe('Navigator', () => {
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        Prettier.format(getProjectCode(), PrettierConfig),
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme', // <- cannot be moved
+        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
+        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
+      ])
+    })
+
+    it('can reparent top-level element', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
       )
+
+      const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1`,
+      )
+      const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
+      const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
+
+      const child1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent2`,
+      )
+      const child1DndContainerRect = child1DndContainer.getBoundingClientRect()
+      const child1DndContainerCenter = getDomRectCenter(child1DndContainerRect)
+      const dragTo = {
+        x: child1DndContainerCenter.x,
+        y: child1DndContainerRect.y + 14,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - parent1DndContainerCenter.x,
+        y: dragTo.y - parent1DndContainerCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/parent1`,
+          `navigator-item-regular_sb/parent2`,
+          windowPoint(parent1DndContainerCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/parent2',
+        'regular-sb/parent2/parent1', // <- parent1 and its children moved under parent2
+        'regular-sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
+        'regular-sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
+      ])
+    })
+
+    it('cannot reparent parent element inside itself', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
+
+      const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1`,
+      )
+      const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
+      const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
+
+      const child1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1/child1`,
+      )
+      const child1DndContainerRect = child1DndContainer.getBoundingClientRect()
+      const child1DndContainerCenter = getDomRectCenter(child1DndContainerRect)
+      const dragTo = {
+        x: child1DndContainerCenter.x,
+        y: child1DndContainerRect.y + 14,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - parent1DndContainerCenter.x,
+        y: dragTo.y - parent1DndContainerCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/parent1`,
+          `navigator-item-regular_sb/parent1/child1`,
+          windowPoint(parent1DndContainerCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/parent1', // <- cannot be reparented under its own child
+        'regular-sb/parent1/child1',
+        'regular-sb/parent1/755',
+        'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
+      ])
+    })
+
+    it('cannot reparent inside an element that does not support children', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithHierarchy,
+        'await-first-dom-report',
+      )
+
+      const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/parent1`,
+      )
+      const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
+      const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
+
+      const textDndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/text`,
+      )
+      const textDndContainerRect = textDndContainer.getBoundingClientRect()
+      const textDndContainerCenter = getDomRectCenter(textDndContainerRect)
+      const dragTo = {
+        x: textDndContainerCenter.x,
+        y: textDndContainerRect.y + 14,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - parent1DndContainerCenter.x,
+        y: dragTo.y - parent1DndContainerCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/parent1`,
+          `navigator-item-regular_sb/text`,
+          windowPoint(parent1DndContainerCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/parent1', // <- cannot be reparented under `text`
+        'regular-sb/parent1/child1',
+        'regular-sb/parent1/755',
+        'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
+      ])
     })
   })
 })

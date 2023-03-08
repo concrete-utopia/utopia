@@ -25,7 +25,6 @@ import {
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
@@ -166,8 +165,6 @@ function onHoverDropTargetLine(
     ? []
     : [EditorActions.setHighlightedView(propsOfDraggedItem.navigatorEntry.elementPath)]
 
-  const canReparentInto = propsOfDropTargetItem.canReparentInto
-
   if (cursor == null || cursorDelta == null) {
     return propsOfDraggedItem.editorDispatch(
       [showNavigatorDropTargetHint(null, null, null)],
@@ -191,17 +188,17 @@ function onHoverDropTargetLine(
     return EP.dropNPathParts(propsOfDropTargetItem.navigatorEntry.elementPath, targetDepth)
   })()
 
-  if (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed) {
-    if (canReparentInto && cursorDelta.x >= BasePaddingUnit) {
-      return propsOfDraggedItem.editorDispatch([
-        ...targetAction,
-        showNavigatorDropTargetHint(
-          'reparent',
-          regularNavigatorEntry(targetPathWithReparentWiggle),
-          propsOfDropTargetItem.navigatorEntry,
-        ),
-      ])
-    }
+  const { collapsed, canReparentInto } = propsOfDropTargetItem
+
+  if (!collapsed && canReparentInto && cursorDelta.x >= BasePaddingUnit) {
+    return propsOfDraggedItem.editorDispatch([
+      ...targetAction,
+      showNavigatorDropTargetHint(
+        'reparent',
+        regularNavigatorEntry(targetPathWithReparentWiggle),
+        propsOfDropTargetItem.navigatorEntry,
+      ),
+    ])
   }
 
   if (
@@ -257,8 +254,6 @@ function onHoverParentOutline(
     ? []
     : [EditorActions.setHighlightedView(propsOfDraggedItem.navigatorEntry.elementPath)]
 
-  const canReparentInto = propsOfDropTargetItem.canReparentInto
-
   if (cursor == null || cursorDelta == null) {
     return propsOfDraggedItem.editorDispatch(
       [showNavigatorDropTargetHint(null, null, null)],
@@ -266,17 +261,17 @@ function onHoverParentOutline(
     )
   }
 
-  if (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed) {
-    if (canReparentInto) {
-      return propsOfDraggedItem.editorDispatch([
-        ...targetAction,
-        showNavigatorDropTargetHint(
-          'reparent',
-          propsOfDropTargetItem.navigatorEntry,
-          propsOfDropTargetItem.navigatorEntry,
-        ),
-      ])
-    }
+  const { collapsed, canReparentInto } = propsOfDropTargetItem
+
+  if (!collapsed && canReparentInto) {
+    return propsOfDraggedItem.editorDispatch([
+      ...targetAction,
+      showNavigatorDropTargetHint(
+        'reparent',
+        propsOfDropTargetItem.navigatorEntry,
+        propsOfDropTargetItem.navigatorEntry,
+      ),
+    ])
   }
 
   return propsOfDraggedItem.editorDispatch(
