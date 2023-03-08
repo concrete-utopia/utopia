@@ -1634,7 +1634,7 @@ export const UPDATE_FNS = {
   },
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canUndo(stateHistory)) {
-      const history = History.undo(stateHistory)
+      const history = History.undo(editor.id, stateHistory, 'run-side-effects')
       return restoreEditorState(editor, history)
     } else {
       return editor
@@ -1642,7 +1642,7 @@ export const UPDATE_FNS = {
   },
   REDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canRedo(stateHistory)) {
-      const history = History.redo(stateHistory)
+      const history = History.redo(editor.id, stateHistory, 'run-side-effects')
       return restoreEditorState(editor, history)
     } else {
       return editor
@@ -4641,7 +4641,12 @@ export const UPDATE_FNS = {
       return {
         ...editorStore,
         unpatchedEditor: withCollapsedElements,
-        history: History.add(editorStore.history, withUpdatedText, editorStore.unpatchedDerived),
+        history: History.add(
+          editorStore.history,
+          withUpdatedText,
+          editorStore.unpatchedDerived,
+          [],
+        ),
       }
     }
   },
