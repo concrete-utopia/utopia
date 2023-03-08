@@ -25,7 +25,6 @@ import {
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'

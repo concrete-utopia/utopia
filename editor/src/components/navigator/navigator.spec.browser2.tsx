@@ -11,7 +11,7 @@ import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -587,7 +587,7 @@ describe('Navigator', () => {
       const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
       const dragTo = {
         x: firstDivElementCenter.x,
-        y: firstDivElementRect.y + 15,
+        y: firstDivElementRect.y + 20,
       }
 
       const dragDelta = windowPoint({
@@ -595,9 +595,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -643,9 +641,7 @@ describe('Navigator', () => {
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -705,9 +701,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -767,9 +761,7 @@ describe('Navigator', () => {
         y: dragTo.y - notDragElementCenter.y,
       })
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/notdrag')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -877,13 +869,13 @@ describe('Navigator', () => {
       )
 
       const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-sb/parent1`,
+        `navigator-item-regular_sb/parent1`,
       )
       const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
       const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
 
       const child1DndContainer = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-sb/parent2`,
+        `navigator-item-regular_sb/parent2`,
       )
       const child1DndContainerRect = child1DndContainer.getBoundingClientRect()
       const child1DndContainerCenter = getDomRectCenter(child1DndContainerRect)
@@ -902,8 +894,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-sb/parent1`,
-          `navigator-item-sb/parent2`,
+          `navigator-item-drag-regular_sb/parent1`,
+          `navigator-item-regular_sb/parent2`,
           windowPoint(parent1DndContainerCenter),
           dragDelta,
           'apply-hover-events',
@@ -913,13 +905,13 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
-        'sb/parent2',
-        'sb/parent2/aaa',
-        'sb/parent2/aab',
-        'sb/parent2/parent1', // <- parent1 and its children moved under parent2
-        'sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
-        'sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
-        'sb/text',
+        'regular-sb/parent2',
+        'regular-sb/parent2/parent1', // <- parent1 and its children moved under parent2
+        'regular-sb/parent2/parent1/child1', // <- parent1 and its children moved under parent2
+        'regular-sb/parent2/parent1/755', // <- parent1 and its children moved under parent2
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
       ])
     })
 
@@ -930,13 +922,13 @@ describe('Navigator', () => {
       )
 
       const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-sb/parent1`,
+        `navigator-item-regular_sb/parent1`,
       )
       const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
       const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
 
       const child1DndContainer = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-sb/parent1/child1`,
+        `navigator-item-regular_sb/parent1/child1`,
       )
       const child1DndContainerRect = child1DndContainer.getBoundingClientRect()
       const child1DndContainerCenter = getDomRectCenter(child1DndContainerRect)
@@ -955,8 +947,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-sb/parent1`,
-          `navigator-item-sb/parent1/child1`,
+          `navigator-item-drag-regular_sb/parent1`,
+          `navigator-item-regular_sb/parent1/child1`,
           windowPoint(parent1DndContainerCenter),
           dragDelta,
           'apply-hover-events',
@@ -966,13 +958,13 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
-        'sb/parent1', // <- cannot be reparented under its own child
-        'sb/parent1/child1',
-        'sb/parent1/755',
-        'sb/parent2',
-        'sb/parent2/aaa',
-        'sb/parent2/aab',
-        'sb/text',
+        'regular-sb/parent1', // <- cannot be reparented under its own child
+        'regular-sb/parent1/child1',
+        'regular-sb/parent1/755',
+        'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
       ])
     })
 
@@ -983,12 +975,14 @@ describe('Navigator', () => {
       )
 
       const parent1DndContainer = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-sb/parent1`,
+        `navigator-item-regular_sb/parent1`,
       )
       const parent1DndContainerRect = parent1DndContainer.getBoundingClientRect()
       const parent1DndContainerCenter = getDomRectCenter(parent1DndContainerRect)
 
-      const textDndContainer = await renderResult.renderedDOM.findByTestId(`navigator-item-sb/text`)
+      const textDndContainer = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/text`,
+      )
       const textDndContainerRect = textDndContainer.getBoundingClientRect()
       const textDndContainerCenter = getDomRectCenter(textDndContainerRect)
       const dragTo = {
@@ -1006,8 +1000,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-sb/parent1`,
-          `navigator-item-sb/text`,
+          `navigator-item-drag-regular_sb/parent1`,
+          `navigator-item-regular_sb/text`,
           windowPoint(parent1DndContainerCenter),
           dragDelta,
           'apply-hover-events',
@@ -1017,13 +1011,13 @@ describe('Navigator', () => {
       expect(
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
-        'sb/parent1', // <- cannot be reparented under `text`
-        'sb/parent1/child1',
-        'sb/parent1/755',
-        'sb/parent2',
-        'sb/parent2/aaa',
-        'sb/parent2/aab',
-        'sb/text',
+        'regular-sb/parent1', // <- cannot be reparented under `text`
+        'regular-sb/parent1/child1',
+        'regular-sb/parent1/755',
+        'regular-sb/parent2',
+        'regular-sb/parent2/aaa',
+        'regular-sb/parent2/aab',
+        'regular-sb/text',
       ])
     })
   })
