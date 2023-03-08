@@ -15,6 +15,11 @@ import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { wait } from '../../utils/utils.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
+import {
+  navigatorEntryToKey,
+  regularNavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../editor/store/editor-state'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -952,12 +957,10 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePathString = EP.toString(
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`),
-      )
+      const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(dragMePathString),
+        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -970,7 +973,7 @@ describe('Navigator', () => {
       await renderResult.getDispatchFollowUpActionsFinished()
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-      expect(selectedViewPaths).toEqual([dragMePathString])
+      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
     })
 
     it('by clicking the top of the item', async () => {
@@ -979,12 +982,10 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePathString = EP.toString(
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`),
-      )
+      const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(dragMePathString),
+        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -995,7 +996,7 @@ describe('Navigator', () => {
       })
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-      expect(selectedViewPaths).toEqual([dragMePathString])
+      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
     })
 
     it('by clicking the bottom of the item', async () => {
@@ -1004,12 +1005,10 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePathString = EP.toString(
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`),
-      )
+      const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(dragMePathString),
+        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -1020,7 +1019,7 @@ describe('Navigator', () => {
       })
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-      expect(selectedViewPaths).toEqual([dragMePathString])
+      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
     })
   })
 
@@ -1032,12 +1031,12 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const firstDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
       )
       const firstDivElementRect = firstDivElement.getBoundingClientRect()
       const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
@@ -1061,8 +1060,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-before-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -1082,12 +1081,12 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const firstDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
       )
       const firstDivElementRect = firstDivElement.getBoundingClientRect()
       const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
@@ -1111,8 +1110,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -1132,12 +1131,12 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -1161,8 +1160,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -1182,12 +1181,12 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const firstDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
       )
       const firstDivElementRect = firstDivElement.getBoundingClientRect()
       const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
@@ -1211,8 +1210,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -1233,7 +1232,7 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
@@ -1248,8 +1247,8 @@ describe('Navigator', () => {
       act(() => {
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
           windowPoint(dragMeElementCenter),
           windowPoint({ x: -65, y: 0 }),
           'apply-hover-events',
@@ -1257,6 +1256,10 @@ describe('Navigator', () => {
       })
 
       await renderResult.getDispatchFollowUpActionsFinished()
+
+      if (getPrintedUiJsCode(renderResult.getEditorState()) === getProjectCode()) {
+        throw new Error(`Code is unchanged.`)
+      }
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         Prettier.format(getProjectCodeReparentedUnderScene(), PrettierConfig),
@@ -1270,12 +1273,12 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const cousinDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/parentsibling`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
       )
       const cousinDivElementRect = cousinDivElement.getBoundingClientRect()
       const cousinDivElementCenter = getDomRectCenter(cousinDivElementRect)
@@ -1299,8 +1302,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-utopia_storyboard_uid/scene_aaa/parentsibling`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
@@ -1320,12 +1323,12 @@ describe('Navigator', () => {
       )
 
       const notDragElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
       )
       const notDragElementRect = notDragElement.getBoundingClientRect()
       const notDragElementCenter = getDomRectCenter(notDragElementRect)
       const cousinDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/parentsibling`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
       )
       const cousinDivElementRect = cousinDivElement.getBoundingClientRect()
       const cousinDivElementCenter = getDomRectCenter(cousinDivElementRect)
@@ -1349,8 +1352,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-          `navigator-item-drop-after-utopia_storyboard_uid/scene_aaa/parentsibling`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
           windowPoint(notDragElementCenter),
           dragDelta,
           'do-not-apply-hover-events',
@@ -1375,12 +1378,12 @@ describe('Navigator', () => {
       )
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
       )
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
       const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
       const notDraggableDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
       )
       const notDraggableDivElementRect = notDraggableDivElement.getBoundingClientRect()
       const notDraggableDivElementCenter = getDomRectCenter(notDraggableDivElementRect)
@@ -1404,8 +1407,8 @@ describe('Navigator', () => {
       act(() =>
         dragElement(
           renderResult,
-          `navigator-item-drag-utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+          `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',

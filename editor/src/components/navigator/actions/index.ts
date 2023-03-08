@@ -1,10 +1,10 @@
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { NavigatorReorder, RenameComponent } from '../../editor/action-types'
-import { DropTargetType } from '../../editor/store/editor-state'
+import { DropTargetType, NavigatorEntry } from '../../editor/store/editor-state'
 
 export function reparentComponents(
   draggedComponents: Array<ElementPath>,
-  targetParent: ElementPath,
+  targetParent: NavigatorEntry,
 ): NavigatorReorder {
   return {
     action: 'NAVIGATOR_REORDER',
@@ -12,22 +12,6 @@ export function reparentComponents(
     dropTarget: {
       type: 'REPARENT_ROW',
       target: targetParent,
-    },
-  }
-}
-
-export function reparentComponentsToIndex(
-  draggedComponents: Array<ElementPath>,
-  targetParent: ElementPath,
-  index: number,
-): NavigatorReorder {
-  return {
-    action: 'NAVIGATOR_REORDER',
-    dragSources: draggedComponents,
-    dropTarget: {
-      type: 'REPARENT_TO_INDEX',
-      target: targetParent,
-      index: index,
     },
   }
 }
@@ -73,19 +57,19 @@ export type LocalNavigatorAction = ShowNavigatorDropTargetHint
 export interface ShowNavigatorDropTargetHint {
   action: 'DROP_TARGET_HINT'
   type: DropTargetType
-  moveToElementPath: ElementPath | null
-  displayAtElementPath: ElementPath | null
+  moveToElementPath: NavigatorEntry | null
+  displayAtElementPath: NavigatorEntry | null
 }
 
 export function showNavigatorDropTargetHint(
   type: DropTargetType,
-  moveToElementPath: ElementPath | null,
-  target: ElementPath | null,
+  moveToElementPath: NavigatorEntry | null,
+  displayAtElementPath: NavigatorEntry | null,
 ): ShowNavigatorDropTargetHint {
   return {
     action: 'DROP_TARGET_HINT',
     type: type,
     moveToElementPath: moveToElementPath,
-    displayAtElementPath: target,
+    displayAtElementPath: displayAtElementPath,
   }
 }

@@ -1957,3 +1957,9 @@ export function childOrBlockIsChild(
       throw new Error(`Unhandled type ${JSON.stringify(childOrBlock)}`)
   }
 }
+
+export function childOrBlockIsAttribute(
+  childOrBlock: ChildOrAttribute,
+): childOrBlock is JSXAttribute {
+  return !childOrBlockIsChild(childOrBlock)
+}
