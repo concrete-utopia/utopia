@@ -534,7 +534,7 @@ export const NavigatorItem: React.FunctionComponent<
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
             warningText={warningText}
-          />
+          ></NavigatorRowLabel>
         </FlexRow>
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
@@ -600,12 +600,14 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   return (
     <React.Fragment>
-      <LayoutIcon
-        key={`layout-type-${props.label}`}
-        navigatorEntry={props.navigatorEntry}
-        color={props.iconColor}
-        warningText={props.warningText}
-      />
+      {props.navigatorEntry.type != 'CONDITIONAL_CLAUSE' ? (
+        <LayoutIcon
+          key={`layout-type-${props.label}`}
+          navigatorEntry={props.navigatorEntry}
+          color={props.iconColor}
+          warningText={props.warningText}
+        />
+      ) : null}
 
       <ItemLabel
         key={`label-${props.label}`}
