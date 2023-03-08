@@ -1,5 +1,10 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import { defaultEither, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
+import { nullIfInfinity, rectanglesEqual } from '../../../../core/shared/math-utils'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
@@ -73,6 +78,18 @@ export function ancestorMetaStrategy(
     const shouldCheckAncestor = isStaticLayout || EP.isRootElementOfInstance(target)
 
     if (!shouldCheckAncestor) {
+      return []
+    }
+
+    const targetFrame = targetMetadata == null ? null : nullIfInfinity(targetMetadata.globalFrame)
+    const parentFrame = targetMetadata?.specialSizeMeasurements.immediateParentBounds
+    const targetSmallerThatParent =
+      targetFrame != null &&
+      parentFrame != null &&
+      parentFrame.width > targetFrame.width &&
+      parentFrame.height > targetFrame.height
+
+    if (targetSmallerThatParent) {
       return []
     }
 

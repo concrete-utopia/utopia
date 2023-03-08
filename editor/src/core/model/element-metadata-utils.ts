@@ -53,6 +53,7 @@ import {
   emptyAttributeMetadatada,
   DetectedLayoutSystem,
   JSXConditionalExpression,
+  ConditionalValue,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -225,6 +226,14 @@ export const MetadataUtils = {
       : MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
+  getSiblingsParticipatingInAutolayoutUnordered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    return MetadataUtils.getSiblingsUnordered(metadata, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
   },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
@@ -1795,6 +1804,12 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  getConditionalValueFromMetadata(element: ElementInstanceMetadata | null): ConditionalValue {
+    if (!this.isConditionalFromMetadata(element)) {
+      return 'not-a-conditional'
+    }
+    return element?.conditionalValue ?? 'not-a-conditional'
+  },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,
     parentPath: ElementPath,
@@ -2068,6 +2083,7 @@ function findConditionalsAndCreateMetadata(
             emptyAttributeMetadatada,
             'Conditional',
             null,
+            'not-a-conditional',
           )
         }
       },
@@ -2191,5 +2207,6 @@ export function createFakeMetadataForElement(
     null,
     null,
     null,
+    'not-a-conditional',
   )
 }

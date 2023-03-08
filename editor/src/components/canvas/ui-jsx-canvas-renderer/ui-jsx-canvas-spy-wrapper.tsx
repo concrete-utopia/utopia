@@ -13,6 +13,7 @@ import {
   JSXElementChild,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  ConditionalValue,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -33,6 +34,7 @@ export function addFakeSpyEntry(
   elementOrAttribute: ChildOrAttribute,
   filePath: string,
   imports: Imports,
+  conditionalValue: ConditionalValue,
 ): void {
   let element: Either<string, JSXElementChild>
   if (childOrBlockIsChild(elementOrAttribute)) {
@@ -79,6 +81,7 @@ export function addFakeSpyEntry(
       },
       element,
     ),
+    conditionalValue: conditionalValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -96,7 +99,14 @@ export function addConditionalAlternative(
   thenOrElseCase: 'then' | 'else',
 ): void {
   const elementPath = getConditionalClausePath(parentPath, alternativeCase, thenOrElseCase)
-  addFakeSpyEntry(metadataContext, elementPath, alternativeCase, filePath, imports)
+  addFakeSpyEntry(
+    metadataContext,
+    elementPath,
+    alternativeCase,
+    filePath,
+    imports,
+    'not-a-conditional',
+  )
 
   forEachOf(childOrAttributeToConditionalOptic, alternativeCase, (elementAsConditional) => {
     addConditionalAlternative(
@@ -157,6 +167,7 @@ export function buildSpyWrappedElement(
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
+      conditionalValue: 'not-a-conditional',
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)
