@@ -34,6 +34,7 @@ import {
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
   isUtopiaJSXComponent,
+  JSXConditionalWithoutUID,
   JSXElement,
   JSXElementWithoutUID,
   UtopiaJSXComponent,
@@ -96,7 +97,7 @@ export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) =
 
 export interface ComponentInfo {
   insertMenuLabel: string
-  elementToInsert: JSXElementWithoutUID
+  elementToInsert: JSXElementWithoutUID | JSXConditionalWithoutUID
   importsToAdd: Imports
 }
 

@@ -489,42 +489,50 @@ export var FloatingMenu = React.memo(() => {
         switch (floatingMenuState.insertMenuMode) {
           case 'wrap': {
             const newUID = generateUidWithExistingComponents(projectContentsRef.current)
-            const newElement = jsxElement(
-              pickedInsertableComponent.element.name,
-              newUID,
-              setJSXAttributesAttribute(
-                pickedInsertableComponent.element.props,
-                'data-uid',
-                jsxAttributeValue(newUID, emptyComments),
-              ),
-              pickedInsertableComponent.element.children,
-            )
 
-            const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
-              newElement.name,
-            )
-            const flexDirection_KILLME =
-              getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(newElement.name)
+            if (pickedInsertableComponent.element === 'conditional') {
+              actionsToDispatch = [wrapInView(selectedViews, 'conditional')]
+            } else {
+              const newElement = jsxElement(
+                pickedInsertableComponent.element.name,
+                newUID,
+                setJSXAttributesAttribute(
+                  pickedInsertableComponent.element.props,
+                  'data-uid',
+                  jsxAttributeValue(newUID, emptyComments),
+                ),
+                pickedInsertableComponent.element.children,
+              )
 
-            actionsToDispatch = [
-              preserveVisualPositionForWrap
-                ? wrapInView(
-                    selectedViews,
-                    {
+              const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
+                newElement.name,
+              )
+              const flexDirection_KILLME =
+                getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(newElement.name)
+
+              actionsToDispatch = [
+                preserveVisualPositionForWrap
+                  ? wrapInView(
+                      selectedViews,
+                      {
+                        element: newElement,
+                        importsToAdd: pickedInsertableComponent.importsToAdd,
+                      },
+                      isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
+                      flexDirection_KILLME,
+                    )
+                  : wrapInElement(selectedViews, {
                       element: newElement,
                       importsToAdd: pickedInsertableComponent.importsToAdd,
-                    },
-                    isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
-                    flexDirection_KILLME,
-                  )
-                : wrapInElement(selectedViews, {
-                    element: newElement,
-                    importsToAdd: pickedInsertableComponent.importsToAdd,
-                  }),
-            ]
+                    }),
+              ]
+            }
             break
           }
           case 'insert': {
+            if (pickedInsertableComponent.element === 'conditional') {
+              break
+            }
             let elementToInsert = pickedInsertableComponent
             if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
               elementToInsert = {
@@ -553,14 +561,14 @@ export var FloatingMenu = React.memo(() => {
             break
           }
           case 'convert': {
+            if (pickedInsertableComponent.element === 'conditional') {
+              break
+            }
+            const { element, importsToAdd } = pickedInsertableComponent
             // this is taken from render-as.tsx
             const targetsForUpdates = getElementsToTarget(selectedViews)
             actionsToDispatch = targetsForUpdates.flatMap((path) => {
-              return updateJSXElementName(
-                path,
-                pickedInsertableComponent.element.name,
-                pickedInsertableComponent.importsToAdd,
-              )
+              return updateJSXElementName(path, element.name, importsToAdd)
             })
             break
           }

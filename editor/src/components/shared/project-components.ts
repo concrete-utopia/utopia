@@ -60,7 +60,7 @@ export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
 
 export interface InsertableComponent {
   importsToAdd: Imports
-  element: JSXElementWithoutUID
+  element: JSXElementWithoutUID | 'conditional'
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
@@ -68,7 +68,7 @@ export interface InsertableComponent {
 
 export function insertableComponent(
   importsToAdd: Imports,
-  element: JSXElementWithoutUID,
+  element: JSXElementWithoutUID | 'conditional',
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
@@ -89,6 +89,16 @@ export interface InsertableComponentGroupHTML {
 export function insertableComponentGroupHTML(): InsertableComponentGroupHTML {
   return {
     type: 'HTML_GROUP',
+  }
+}
+
+export interface InsertableComponentGroupConditionals {
+  type: 'CONDITIONALS_GROUP'
+}
+
+export function insertableComponentGroupConditionals(): InsertableComponentGroupConditionals {
+  return {
+    type: 'CONDITIONALS_GROUP',
   }
 }
 
@@ -127,6 +137,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupHTML
   | InsertableComponentGroupProjectComponent
   | InsertableComponentGroupProjectDependency
+  | InsertableComponentGroupConditionals
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -151,6 +162,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return insertableType.dependencyName
     case 'PROJECT_COMPONENT_GROUP':
       return insertableType.path
+    case 'CONDITIONALS_GROUP':
+      return 'Conditionals'
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
@@ -166,6 +179,8 @@ export function getInsertableGroupPackageStatus(
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
     case 'PROJECT_COMPONENT_GROUP':
+      return 'loaded'
+    case 'CONDITIONALS_GROUP':
       return 'loaded'
     default:
       const _exhaustiveCheck: never = insertableType
@@ -474,6 +489,20 @@ export function getComponentGroups(
 
   // Add HTML entries.
   addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
+
+  // Add conditionals group.
+  addDependencyDescriptor(null, insertableComponentGroupConditionals(), {
+    conditional: {
+      properties: {},
+      variants: [
+        {
+          insertMenuLabel: 'Conditional',
+          elementToInsert: 'conditional',
+          importsToAdd: {},
+        },
+      ],
+    },
+  })
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
