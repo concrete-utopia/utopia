@@ -312,6 +312,84 @@ export var storyboard = (
 )
 `
 
+const projectWithGroupsAndNotGroups = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 1136,
+          top: 325,
+          width: 141,
+          height: 190,
+        }}
+        data-uid='groupchild'
+      />
+    </div>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 257.5,
+          top: 229,
+          width: 250,
+          height: 238,
+        }}
+        data-uid='fragmentchild'
+      />
+    </React.Fragment>
+    <div
+      data-uid='offsetparent'
+      style={{
+        position: 'absolute',
+        width: 310,
+        height: 575,
+        left: 566,
+        top: -2,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 165,
+          top: 360,
+          width: 119,
+          height: 193,
+        }}
+        data-uid='offsetchild'
+      />
+    </div>
+    <div
+      data-uid='nonoffsetparent'
+      style={{
+        width: 310,
+        height: 575,
+        left: 248,
+        top: 515,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 83,
+          top: 274,
+          width: 119,
+          height: 193,
+        }}
+        data-uid='nonoffsetchild'
+      />
+    </div>
+  </Storyboard>
+)
+`
+
 describe('Navigator', () => {
   describe('selecting elements', () => {
     it('by clicking the center of the item', async () => {
@@ -1019,6 +1097,32 @@ describe('Navigator', () => {
         'regular-sb/parent2/aab',
         'regular-sb/text',
       ])
+    })
+  })
+
+  describe('derived data', () => {
+    it('element warnings', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithGroupsAndNotGroups,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/group/groupchild')])
+
+      const { elementWarnings } = editor.getEditorState().derived
+
+      expect(elementWarnings['sb/group/groupchild'].value.absoluteWithUnpositionedParent).toEqual(
+        false,
+      )
+      expect(
+        elementWarnings['sb/fragment/fragmentchild'].value.absoluteWithUnpositionedParent,
+      ).toEqual(false)
+      expect(
+        elementWarnings['sb/offsetparent/offsetchild'].value.absoluteWithUnpositionedParent,
+      ).toEqual(false)
+      expect(
+        elementWarnings['sb/nonoffsetparent/nonoffsetchild'].value.absoluteWithUnpositionedParent,
+      ).toEqual(true)
     })
   })
 })
