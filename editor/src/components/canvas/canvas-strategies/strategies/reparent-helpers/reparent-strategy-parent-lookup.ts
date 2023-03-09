@@ -10,6 +10,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXFragment,
+  isNonDomElement,
 } from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -466,20 +467,22 @@ export function flowParentAbsoluteOrStatic(
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
-  const flattenFragmentChildren = (c: ElementInstanceMetadata): ElementInstanceMetadata[] => {
+  const flattenFragmentAndConditionalChildren = (
+    c: ElementInstanceMetadata,
+  ): ElementInstanceMetadata[] => {
     if (isLeft(c.element)) {
       return [c]
     }
-    if (!isJSXFragment(c.element.value)) {
+    if (!isNonDomElement(c.element.value)) {
       return [c]
     }
     return MetadataUtils.getChildrenUnordered(metadata, c.elementPath).flatMap(
-      flattenFragmentChildren,
+      flattenFragmentAndConditionalChildren,
     )
   }
   const children = MetadataUtils.getChildrenUnordered(metadata, parent)
     // filter out fragment blocks and merge their children with the parent children
-    .flatMap(flattenFragmentChildren)
+    .flatMap(flattenFragmentAndConditionalChildren)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {

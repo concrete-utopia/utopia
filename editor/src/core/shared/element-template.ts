@@ -1114,6 +1114,12 @@ export function isJSXElementLike(element: JSXElementChild): element is JSXElemen
   return isJSXElement(element) || isJSXFragment(element)
 }
 
+export type JSXNonDomElement = JSXFragment | JSXConditionalExpression
+
+export function isNonDomElement(element: JSXElementChild): element is JSXNonDomElement {
+  return isJSXFragment(element) || isJSXConditionalExpression(element)
+}
+
 export type JSXElementChildren = Array<JSXElementChild>
 
 export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {
