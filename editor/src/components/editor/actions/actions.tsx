@@ -3044,8 +3044,13 @@ export const UPDATE_FNS = {
             currentValue.originalElementPath,
           )
           const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
+          const pastedElementIsConditional =
+            MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
-          if (!(pastedElementIsAbsolute || pastedElementIsFlex)) {
+          const continueWithPaste =
+            pastedElementIsAbsolute || pastedElementIsFlex || pastedElementIsConditional
+
+          if (!continueWithPaste) {
             return workingEditorState
           } else {
             const propertyChangeCommands = getReparentPropertyChanges(
