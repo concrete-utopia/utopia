@@ -534,7 +534,7 @@ export const NavigatorItem: React.FunctionComponent<
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
             warningText={warningText}
-          ></NavigatorRowLabel>
+          />
         </FlexRow>
         <NavigatorItemActionSheet
           navigatorEntry={navigatorEntry}
