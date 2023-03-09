@@ -114,7 +114,6 @@ export function getElementContentAffectingType(
   return null
 }
 
-// TODO make it internal
 export function treatElementAsContentAffecting(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
