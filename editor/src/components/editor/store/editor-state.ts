@@ -189,6 +189,7 @@ import { ThenOrElse } from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
+import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2533,6 +2534,7 @@ export interface OriginalCanvasAndLocalFrame {
 
 function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): ComplexMap<ElementPath, ElementWarnings> {
   let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
   Object.values(rootMetadata).forEach((elementMetadata) => {
@@ -2545,13 +2547,17 @@ function getElementWarningsInner(
 
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.
-    let absoluteWithUnpositionedParent: boolean = false
-    if (
-      elementMetadata.specialSizeMeasurements.position === 'absolute' &&
-      !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-    ) {
-      absoluteWithUnpositionedParent = true
-    }
+    const isParentGroupLike = treatElementAsContentAffecting(
+      rootMetadata,
+      allElementProps,
+      EP.parentPath(elementMetadata.elementPath),
+    )
+
+    const isParentConfiguredForPins =
+      MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(rootMetadata, elementMetadata.elementPath),
+      ) && !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+    const absoluteWithUnpositionedParent = isParentConfiguredForPins && isParentGroupLike === false
 
     // Build the warnings object and add it to the map.
     if (
@@ -2579,6 +2585,7 @@ type CacheableDerivedState = {
 
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
@@ -2588,7 +2595,7 @@ function deriveCacheableStateInner(
     hiddenInNavigator,
   )
 
-  const warnings = getElementWarnings(jsxMetadata)
+  const warnings = getElementWarnings(jsxMetadata, allElementProps)
 
   return {
     navigatorTargets: navigatorTargets,
@@ -2616,6 +2623,7 @@ export function deriveState(
     elementWarnings: warnings,
   } = deriveCacheableState(
     editor.jsxMetadata,
+    editor.allElementProps,
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
   )
