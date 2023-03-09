@@ -23,6 +23,8 @@ describe('conditionals', () => {
         'skip4',
         'skip5',
         'skip6',
+        'skip7',
+        'skip8',
         'conditional',
       ])
       const startSnippet = `
@@ -63,7 +65,7 @@ describe('conditionals', () => {
       )
     })
     it('replaces a text string branch with null', async () => {
-      FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'conditional'])
+      FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'skip4', 'conditional'])
       const startSnippet = `
         <div data-uid='aaa'>
         {

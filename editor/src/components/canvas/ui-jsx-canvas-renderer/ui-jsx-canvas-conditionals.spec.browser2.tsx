@@ -67,13 +67,17 @@ describe('a project with conditionals', () => {
   it('fills the content of the navigator', async () => {
     FOR_TESTS_setNextGeneratedUids([
       'mock1',
-      'conditional2',
       'mock2',
+      'mock3',
+      'mock4',
       'conditional1',
+      'conditional2',
       'mock1',
-      'conditional2',
       'mock2',
+      'mock3',
+      'mock4',
       'conditional1',
+      'conditional2',
     ])
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
