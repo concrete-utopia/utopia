@@ -10,6 +10,7 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
+  zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import {
@@ -60,6 +61,8 @@ import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { getElementDimensions } from './flex-resize-helpers'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
+import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -226,6 +229,25 @@ export function flexResizeStrategy(
               : dimensionToSetForEdgePosition(edgePosition)
 
           let resizeCommands: Array<CanvasCommand> = []
+          if (snapToParentEdge != null && snapToParentEdge.snap && elementParentBounds != null) {
+            const parentGuideline = collectParentGuideline(
+              edgePosition,
+              snapToParentEdge.snapDirection,
+              elementParentBounds,
+            )
+            resizeCommands.push(setSnappingGuidelines('mid-interaction', [parentGuideline]))
+          }
+          if (snapToHug != null && snapToHug.snap) {
+            const childGuideline = collectChildGuideline(
+              edgePosition,
+              snapToHug.snapDirection,
+              metadata,
+              canvasState.startingMetadata,
+            )
+            if (childGuideline != null) {
+              resizeCommands.push(setSnappingGuidelines('mid-interaction', [childGuideline]))
+            }
+          }
           if (dimensionToUpdate.width) {
             if (
               snapToParentEdge != null &&
@@ -549,4 +571,84 @@ function shouldSnapTohug(
     }
   }
   return null
+}
+
+function collectParentGuideline(
+  edgePosition: EdgePosition,
+  direction: 'horizontal' | 'vertical',
+  parentBounds: CanvasRectangle,
+): GuidelineWithSnappingVectorAndPointsOfRelevance {
+  if (direction === 'horizontal') {
+    const guidelinePositionX =
+      edgePosition.x === 0 ? parentBounds.x : parentBounds.x + parentBounds.width
+    return {
+      snappingVector: zeroCanvasPoint,
+      guideline: {
+        type: 'XAxisGuideline',
+        x: guidelinePositionX,
+        yTop: parentBounds.y,
+        yBottom: parentBounds.y + parentBounds.height,
+      },
+      pointsOfRelevance: [],
+    } as GuidelineWithSnappingVectorAndPointsOfRelevance
+  } else {
+    const guidelinePositionY =
+      edgePosition.y === 0 ? parentBounds.y : parentBounds.y + parentBounds.height
+    return {
+      snappingVector: zeroCanvasPoint,
+      guideline: {
+        type: 'YAxisGuideline',
+        y: guidelinePositionY,
+        xLeft: parentBounds.x,
+        xRight: parentBounds.x + parentBounds.width,
+      },
+      pointsOfRelevance: [],
+    } as GuidelineWithSnappingVectorAndPointsOfRelevance
+  }
+}
+
+function collectChildGuideline(
+  edgePosition: EdgePosition,
+  direction: 'horizontal' | 'vertical',
+  element: ElementInstanceMetadata,
+  metadata: ElementInstanceMetadataMap,
+): GuidelineWithSnappingVectorAndPointsOfRelevance | null {
+  const children = MetadataUtils.getChildrenOrdered(metadata, element.elementPath).filter(
+    MetadataUtils.elementParticipatesInAutoLayout,
+  )
+  if (direction === 'horizontal') {
+    const childIndex = edgePosition.x === 0 ? 0 : children.length - 1
+    const childFrame = children.length > 0 ? nullIfInfinity(children[childIndex].globalFrame) : null
+    if (childFrame == null) {
+      return null
+    }
+    const guidelinePositionX = edgePosition.x === 0 ? childFrame.x : childFrame.x + childFrame.width
+    return {
+      snappingVector: zeroCanvasPoint,
+      guideline: {
+        type: 'XAxisGuideline',
+        x: guidelinePositionX,
+        yTop: childFrame.y,
+        yBottom: childFrame.y + childFrame.height,
+      },
+      pointsOfRelevance: [],
+    } as GuidelineWithSnappingVectorAndPointsOfRelevance
+  } else {
+    const childIndex = edgePosition.y === 0 ? 0 : children.length - 1
+    const childFrame = children.length > 0 ? nullIfInfinity(children[childIndex].globalFrame) : null
+    if (childFrame == null) {
+      return null
+    }
+    const guidelinePositionY = edgePosition.y === 0 ? childFrame.y : childFrame.y + childFrame.width
+    return {
+      snappingVector: zeroCanvasPoint,
+      guideline: {
+        type: 'YAxisGuideline',
+        y: guidelinePositionY,
+        xLeft: childFrame.x,
+        xRight: childFrame.x + childFrame.width,
+      },
+      pointsOfRelevance: [],
+    } as GuidelineWithSnappingVectorAndPointsOfRelevance
+  }
 }

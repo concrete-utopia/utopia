@@ -274,6 +274,101 @@ describe('Flex Resize with flex grow', () => {
       )
     })
   })
+  describe('Resizing further than the snapping area adds width/height', () => {
+    it('resizing in a flex row', async () => {
+      const initialSize = size(50, 60)
+      const expectedSize = size(130, 35) // width 110px to snap
+      await resizeTestKeepsWidthHeight(
+        EdgePositionTopRight,
+        canvasPoint({ x: 80, y: 25 }),
+        'row',
+        'flex-start',
+        initialSize,
+        expectedSize,
+      )
+    })
+    it('resizing in a flex column', async () => {
+      const initialSize = size(50, 60)
+      const expectedSize = size(50, 120) // height 110px to snap
+      await resizeTestKeepsWidthHeight(
+        EdgePositionBottom,
+        canvasPoint({ x: 10, y: 60 }),
+        'column',
+        'flex-start',
+        initialSize,
+        expectedSize,
+      )
+    })
+  })
+})
+
+describe('Resizing sets hug when size matches with children size', () => {
+  describe('Resizing an element with children in a flex row', () => {
+    it('Sets hug when sized as children', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 'max-content',
+        height: 380,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTopLeft,
+        canvasPoint({ x: 18, y: 10 }),
+        'row',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets width when the size doesn`t reach the snap threshold', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 50,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionLeft,
+        canvasPoint({ x: 10, y: 10 }),
+        'row',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets width when size is greater than children size', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 30,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionLeft,
+        canvasPoint({ x: 30, y: 10 }),
+        'row',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+  })
 })
 
 async function resizeTestAddsFlexGrow(
@@ -595,4 +690,61 @@ async function resizeTestKeepsWidthHeight(
   await dragResizeControl(renderResult, target, pos, dragVector)
 
   expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode(expectedSize))
+}
+
+async function resizeTestWithChildrenSetHug(
+  pos: EdgePosition,
+  dragVector: CanvasVector,
+  flexDirection: 'row' | 'column',
+  initialStyle: React.CSSProperties,
+  expectedStyle: React.CSSProperties,
+) {
+  const inputCode = (targetStyle: React.CSSProperties) =>
+    makeTestProjectCodeWithSnippet(`
+      <div
+      data-uid='aaa'
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFFFFF',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: '${flexDirection}',
+        gap: 10,
+        padding: 5,
+      }}
+    >
+      <div
+        data-uid='ddd'
+        style={${JSON.stringify(targetStyle)}}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 20,
+            border: '1px solid rgb(0, 0, 0, 1)',
+          }}
+          data-uid='eee'
+        />
+      </div>
+      <div
+        data-uid='bbb'
+        style={{
+          width: 180,
+          height: 180,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+    </div>
+    `)
+
+  const renderResult = await renderTestEditorWithCode(
+    inputCode(initialStyle),
+    'await-first-dom-report',
+  )
+  const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ddd`)
+
+  await dragResizeControl(renderResult, target, pos, dragVector)
+
+  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode(expectedStyle))
 }
