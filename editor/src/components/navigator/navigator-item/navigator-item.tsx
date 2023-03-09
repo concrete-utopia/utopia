@@ -12,10 +12,11 @@ import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import {
-  ElementWarnings,
+  defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   NavigatorEntry,
+  navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
@@ -35,9 +36,10 @@ import {
 } from '../../../core/shared/element-template'
 import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
 import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
-import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
+import { getValueFromComplexMap } from '../../../utils/map'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -69,7 +71,6 @@ export interface NavigatorItemInnerProps {
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   selected: boolean
-  elementWarnings: ElementWarnings
   shouldShowParentOutline: boolean
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
@@ -340,6 +341,21 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
+const elementWarningsSelector = createCachedSelector(
+  (store: DerivedSubstate) => store.derived.elementWarnings,
+  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (elementWarnings, navigatorEntry) => {
+    if (isRegularNavigatorEntry(navigatorEntry)) {
+      return (
+        getValueFromComplexMap(EP.toString, elementWarnings, navigatorEntry.elementPath) ??
+        defaultElementWarnings
+      )
+    } else {
+      return defaultElementWarnings
+    }
+  },
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
+
 export const NavigatorItem: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemInnerProps>
 > = React.memo((props) => {
@@ -352,7 +368,6 @@ export const NavigatorItem: React.FunctionComponent<
     navigatorEntry,
     getSelectedViewsInRange,
     index,
-    elementWarnings,
   } = props
 
   const colorTheme = useColorTheme()
@@ -362,6 +377,12 @@ export const NavigatorItem: React.FunctionComponent<
       isRegularNavigatorEntry(navigatorEntry) &&
       EP.isFocused(store.editor.focusedElementPath, navigatorEntry.elementPath),
     'NavigatorItem isFocusedComponent',
+  )
+
+  const elementWarnings = useEditorState(
+    Substores.derived,
+    (store) => elementWarningsSelector(store, props.navigatorEntry),
+    'NavigatorItem elementWarningsSelector',
   )
 
   const isFocusableComponent = useEditorState(
