@@ -438,10 +438,10 @@ function shouldSnapToParentEdge(
     const siblingsWidth = siblingFrames.reduce((working, frame) => {
       return frame != null && isFiniteRectangle(frame) ? frame.width + working : working
     }, 0)
-    const siblingsFrame = siblingsWidth + siblingFrames.length * parentGap
+    const siblingSize = siblingsWidth + siblingFrames.length * parentGap
     const shouldSnap =
-      siblingsFrame < parentInnerBounds.width && // there is open space in the layout
-      siblingsFrame + resizedBounds.width + SnappingThreshold > parentInnerBounds.width
+      siblingSize < parentInnerBounds.width && // there is open space in the layout
+      Math.abs(siblingSize + resizedBounds.width - parentInnerBounds.width) <= SnappingThreshold
 
     const isLastEdge =
       (isDraggingEdge(EdgePositionRight) ||
@@ -471,10 +471,10 @@ function shouldSnapToParentEdge(
     const siblingsHeight = siblingFrames.reduce((working, frame) => {
       return frame != null && isFiniteRectangle(frame) ? frame.height + working : working
     }, 0)
-    const siblingsFrame = siblingsHeight + siblingFrames.length * parentGap
+    const siblingSize = siblingsHeight + siblingFrames.length * parentGap
     const shouldSnap =
-      siblingsFrame < parentInnerBounds.height && // there is open space in the layout
-      siblingsFrame + resizedBounds.height + SnappingThreshold > parentInnerBounds.height
+      siblingSize < parentInnerBounds.height && // there is open space in the layout
+      Math.abs(siblingSize + resizedBounds.height - parentInnerBounds.height) <= SnappingThreshold
 
     const isLastEdge =
       (isDraggingEdge(EdgePositionBottom) ||
@@ -551,9 +551,7 @@ function shouldSnapTohug(
         (element.specialSizeMeasurements.padding.right ?? 0)
       return {
         snapDirection: 'horizontal',
-        snap:
-          childrenSize - SnappingThreshold < resizedBounds.width &&
-          childrenSize + SnappingThreshold > resizedBounds.width,
+        snap: Math.abs(resizedBounds.width - childrenSize) <= SnappingThreshold,
       }
     } else if (flexDirection === 'column' && resizeDirection.height) {
       const childrenHeight = childrenFrames.reduce((size, child) => size + (child?.height ?? 0), 0)
@@ -564,9 +562,7 @@ function shouldSnapTohug(
         (element.specialSizeMeasurements.padding.bottom ?? 0)
       return {
         snapDirection: 'vertical',
-        snap:
-          childrenSize - SnappingThreshold < resizedBounds.height &&
-          childrenSize + SnappingThreshold > resizedBounds.height,
+        snap: Math.abs(resizedBounds.height - childrenSize) <= SnappingThreshold,
       }
     }
   }
