@@ -176,12 +176,18 @@ export function flexResizeStrategy(
             anySelectedElementAspectRatioLocked,
           )
 
+          const parentMetadata = MetadataUtils.getParent(
+            canvasState.startingMetadata,
+            metadata.elementPath,
+          )
+          const isCenterBasedResize =
+            parentMetadata?.specialSizeMeasurements.alignItems === 'center'
           const resizedBounds = resizeBoundingBox(
             originalBounds,
             drag,
             edgePosition,
             lockedAspectRatio,
-            'non-center-based',
+            isCenterBasedResize ? 'center-based' : 'non-center-based',
           )
 
           const makeResizeCommand = (
