@@ -16,6 +16,7 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  findJSXElementLikeAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
@@ -2817,7 +2818,7 @@ export function reorderComponent(
 
   const jsxElement = findElementAtPath(target, workingComponents)
   const parentPath = EP.parentPath(target)
-  const parentElement = findJSXElementAtPath(parentPath, workingComponents)
+  const parentElement = findJSXElementLikeAtPath(parentPath, workingComponents)
 
   if (jsxElement != null && parentElement != null) {
     const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)

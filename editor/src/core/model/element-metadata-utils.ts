@@ -54,6 +54,8 @@ import {
   DetectedLayoutSystem,
   JSXConditionalExpression,
   ConditionalValue,
+  isJSXElementLike,
+  JSXElementLike,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -2133,6 +2135,20 @@ export function findJSXElementAtPath(
   const elem = findElementAtPath(target, components)
   return Utils.optionalMap((e) => {
     if (isJSXElement(e)) {
+      return e
+    } else {
+      return null
+    }
+  }, elem)
+}
+
+export function findJSXElementLikeAtPath(
+  target: ElementPath | null,
+  components: Array<UtopiaJSXComponent>,
+): JSXElementLike | null {
+  const elem = findElementAtPath(target, components)
+  return Utils.optionalMap((e) => {
+    if (isJSXElementLike(e)) {
       return e
     } else {
       return null
