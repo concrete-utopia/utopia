@@ -2161,25 +2161,17 @@ export function navigatorEntriesEqual(
   second: NavigatorEntry | null,
 ): boolean {
   if (first == null) {
-    if (second == null) {
-      return true
-    } else {
-      return false
-    }
+    return second == null
+  } else if (second == null) {
+    return false
+  } else if (first.type === 'REGULAR' && second.type === 'REGULAR') {
+    return regularNavigatorEntriesEqual(first, second)
+  } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
+    return conditionalClauseNavigatorEntriesEqual(first, second)
+  } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
+    return syntheticNavigatorEntriesEqual(first, second)
   } else {
-    if (second == null) {
-      return false
-    } else {
-      if (first.type === 'REGULAR' && second.type === 'REGULAR') {
-        return regularNavigatorEntriesEqual(first, second)
-      } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
-        return conditionalClauseNavigatorEntriesEqual(first, second)
-      } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
-        return syntheticNavigatorEntriesEqual(first, second)
-      } else {
-        return false
-      }
-    }
+    return false
   }
 }
 

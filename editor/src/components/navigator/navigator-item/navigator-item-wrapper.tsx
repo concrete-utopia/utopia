@@ -140,7 +140,7 @@ function getNavigatorEntryLabel(
           case 'JSX_ELEMENT':
             return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
           case 'JSX_ARBITRARY_BLOCK':
-            return 'Unknown'
+            return '(code)'
           case 'JSX_TEXT_BLOCK':
             return navigatorEntry.childOrAttribute.text
           case 'JSX_FRAGMENT':
