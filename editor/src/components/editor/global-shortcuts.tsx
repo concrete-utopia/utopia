@@ -1065,7 +1065,7 @@ function addCreateHoverInteractionActionToSwitchModeAction(
             CanvasMousePositionRaw,
             modifiers,
             boundingArea(),
-            'zero-drag-not-permitted',
+            'zero-drag-permitted',
           ),
         ),
       ]
