@@ -2554,23 +2554,16 @@ function getElementWarningsInner(
     )
 
     const isParentConfiguredForPins =
-      MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(rootMetadata, elementMetadata.elementPath),
-      ) && !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+      MetadataUtils.isPositionAbsolute(elementMetadata) &&
+      !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
     const absoluteWithUnpositionedParent = isParentConfiguredForPins && isParentGroupLike === false
 
-    // Build the warnings object and add it to the map.
-    if (
-      widthOrHeightZero !== defaultElementWarnings.widthOrHeightZero ||
-      absoluteWithUnpositionedParent !== defaultElementWarnings.absoluteWithUnpositionedParent
-    ) {
-      const warnings: ElementWarnings = {
-        widthOrHeightZero: widthOrHeightZero,
-        absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
-        dynamicSceneChildWidthHeightPercentage: false,
-      }
-      result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
+    const warnings: ElementWarnings = {
+      widthOrHeightZero: widthOrHeightZero,
+      absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+      dynamicSceneChildWidthHeightPercentage: false,
     }
+    result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
   })
   return result
 }
