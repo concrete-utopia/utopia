@@ -50,10 +50,7 @@ interface ComputedLook {
 export const BasePaddingUnit = 20
 
 export function getElementPadding(withNavigatorDepth: number): number {
-  // an empty path and the storyboard is always part of the ancestorsNotInNavigator list and that doesn't matter,
-  // so we can add 2 to the offset. NOTE: this 2 is also a constant in EP.navigatorDepth for the same reason
   const paddingOffset = withNavigatorDepth - 1
-
   return paddingOffset * BasePaddingUnit
 }
 

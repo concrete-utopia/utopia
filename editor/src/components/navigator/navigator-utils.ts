@@ -91,8 +91,9 @@ export function getNavigatorTargets(
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
-  // Note: This will not necessarily be representative of the structured ordering in
-  // the code that produced these elements.
+  // Note: This value will not necessarily be representative of the structured ordering in
+  // the code that produced these elements, between siblings, as a result of it
+  // relying on `metadata`, which has insertion ordering.
   const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map((subTree) => {
     return reorderTree(subTree, metadata)
   })
