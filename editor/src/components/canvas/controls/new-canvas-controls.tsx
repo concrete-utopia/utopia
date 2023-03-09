@@ -421,7 +421,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {unless(dragging, <LayoutParentControl />)}
           {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
-          <GuidelineControls />
           <ZeroSizedElementControls.control showAllPossibleElements={false} />
           {when(
             isSelectOrInsertMode(editorMode),
@@ -436,6 +435,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             </>,
           )}
           {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
+          <GuidelineControls />
         </>,
       )}
     </div>

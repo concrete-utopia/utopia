@@ -234,6 +234,7 @@ export function flexResizeStrategy(
               edgePosition,
               snapToParentEdge.snapDirection,
               elementParentBounds,
+              resizedBounds,
             )
             resizeCommands.push(setSnappingGuidelines('mid-interaction', [parentGuideline]))
           }
@@ -243,6 +244,7 @@ export function flexResizeStrategy(
               snapToHug.snapDirection,
               metadata,
               canvasState.startingMetadata,
+              resizedBounds,
             )
             if (childGuideline != null) {
               resizeCommands.push(setSnappingGuidelines('mid-interaction', [childGuideline]))
@@ -573,6 +575,7 @@ function collectParentGuideline(
   edgePosition: EdgePosition,
   direction: 'horizontal' | 'vertical',
   parentBounds: CanvasRectangle,
+  resizedBounds: CanvasRectangle,
 ): GuidelineWithSnappingVectorAndPointsOfRelevance {
   if (direction === 'horizontal') {
     const guidelinePositionX =
@@ -582,10 +585,30 @@ function collectParentGuideline(
       guideline: {
         type: 'XAxisGuideline',
         x: guidelinePositionX,
-        yTop: parentBounds.y,
-        yBottom: parentBounds.y + parentBounds.height,
+        yTop: Math.min(parentBounds.y, resizedBounds.y),
+        yBottom: Math.max(
+          parentBounds.y + parentBounds.height,
+          resizedBounds.y + resizedBounds.height,
+        ),
       },
-      pointsOfRelevance: [],
+      pointsOfRelevance: [
+        {
+          x: guidelinePositionX,
+          y: parentBounds.y,
+        },
+        {
+          x: guidelinePositionX,
+          y: parentBounds.y + parentBounds.height,
+        },
+        {
+          x: guidelinePositionX,
+          y: resizedBounds.y,
+        },
+        {
+          x: guidelinePositionX,
+          y: resizedBounds.y + resizedBounds.height,
+        },
+      ],
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   } else {
     const guidelinePositionY =
@@ -595,10 +618,30 @@ function collectParentGuideline(
       guideline: {
         type: 'YAxisGuideline',
         y: guidelinePositionY,
-        xLeft: parentBounds.x,
-        xRight: parentBounds.x + parentBounds.width,
+        xLeft: Math.min(parentBounds.x, resizedBounds.x),
+        xRight: Math.max(
+          parentBounds.x + parentBounds.width,
+          resizedBounds.x + resizedBounds.width,
+        ),
       },
-      pointsOfRelevance: [],
+      pointsOfRelevance: [
+        {
+          x: parentBounds.x,
+          y: guidelinePositionY,
+        },
+        {
+          x: parentBounds.x + parentBounds.width,
+          y: guidelinePositionY,
+        },
+        {
+          x: resizedBounds.x,
+          y: guidelinePositionY,
+        },
+        {
+          x: resizedBounds.x + resizedBounds.width,
+          y: guidelinePositionY,
+        },
+      ],
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   }
 }
@@ -608,6 +651,7 @@ function collectChildGuideline(
   direction: 'horizontal' | 'vertical',
   element: ElementInstanceMetadata,
   metadata: ElementInstanceMetadataMap,
+  resizedBounds: CanvasRectangle,
 ): GuidelineWithSnappingVectorAndPointsOfRelevance | null {
   const children = MetadataUtils.getChildrenOrdered(metadata, element.elementPath).filter(
     MetadataUtils.elementParticipatesInAutoLayout,
@@ -624,10 +668,27 @@ function collectChildGuideline(
       guideline: {
         type: 'XAxisGuideline',
         x: guidelinePositionX,
-        yTop: childFrame.y,
-        yBottom: childFrame.y + childFrame.height,
+        yTop: Math.min(childFrame.y, resizedBounds.y),
+        yBottom: Math.max(childFrame.y + childFrame.height, resizedBounds.y + resizedBounds.height),
       },
-      pointsOfRelevance: [],
+      pointsOfRelevance: [
+        {
+          x: guidelinePositionX,
+          y: childFrame.y,
+        },
+        {
+          x: guidelinePositionX,
+          y: childFrame.y + childFrame.height,
+        },
+        {
+          x: guidelinePositionX,
+          y: resizedBounds.y,
+        },
+        {
+          x: guidelinePositionX,
+          y: resizedBounds.y + resizedBounds.height,
+        },
+      ],
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   } else {
     const childIndex = edgePosition.y === 0 ? 0 : children.length - 1
@@ -641,10 +702,27 @@ function collectChildGuideline(
       guideline: {
         type: 'YAxisGuideline',
         y: guidelinePositionY,
-        xLeft: childFrame.x,
-        xRight: childFrame.x + childFrame.width,
+        xLeft: Math.min(childFrame.x, resizedBounds.x),
+        xRight: Math.max(childFrame.x + childFrame.width, resizedBounds.x + resizedBounds.width),
       },
-      pointsOfRelevance: [],
+      pointsOfRelevance: [
+        {
+          x: childFrame.x,
+          y: guidelinePositionY,
+        },
+        {
+          x: childFrame.x + childFrame.width,
+          y: guidelinePositionY,
+        },
+        {
+          x: resizedBounds.x,
+          y: guidelinePositionY,
+        },
+        {
+          x: resizedBounds.x + resizedBounds.width,
+          y: guidelinePositionY,
+        },
+      ],
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   }
 }
