@@ -1972,6 +1972,9 @@ function fillSpyOnlyMetadata(
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
 
+  elementsWithoutIntrinsicSize.sort()
+  elementsWithoutIntrinsicSize.reverse()
+
   const workingElements: ElementInstanceMetadataMap = {}
 
   fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
