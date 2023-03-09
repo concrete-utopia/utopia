@@ -886,7 +886,7 @@ export function handleKeyDown(
             return []
           }
 
-          if (contentAffectingType === 'simple-div') {
+          if (contentAffectingType === 'sizeless-div') {
             const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
               elementPath,
               editor.jsxMetadata,
