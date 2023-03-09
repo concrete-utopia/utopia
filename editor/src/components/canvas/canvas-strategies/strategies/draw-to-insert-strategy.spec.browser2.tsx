@@ -2763,7 +2763,13 @@ describe('Conditionals support', () => {
         expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
         // Drag from inside bbb to inside ccc
-        await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+        await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'Draw to Insert (Abs)',
+            )
+          },
+        })
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2845,8 +2851,13 @@ describe('Conditionals support', () => {
         // Highlight should show the candidate parent
         expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
 
-        // Drag from inside bbb to inside ccc
-        await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+        await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+          midDragCallback: async () => {
+            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+              'Draw to Insert (Abs)',
+            )
+          },
+        })
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
