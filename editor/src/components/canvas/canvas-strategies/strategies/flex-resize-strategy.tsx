@@ -243,7 +243,7 @@ export function flexResizeStrategy(
               edgePosition,
               snapToHug.snapDirection,
               metadata,
-              canvasState.startingMetadata,
+              interactionSession.latestMetadata,
               resizedBounds,
             )
             if (childGuideline != null) {
