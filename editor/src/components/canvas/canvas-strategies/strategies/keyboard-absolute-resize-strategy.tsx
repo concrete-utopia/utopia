@@ -20,7 +20,6 @@ import {
   CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
@@ -35,6 +34,7 @@ import {
   getMovementDeltaFromKey,
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -98,7 +98,7 @@ export function keyboardAbsoluteResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
   if (
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {

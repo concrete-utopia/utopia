@@ -1,6 +1,9 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
+import { is } from '../../../../core/shared/equality-utils'
+import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
@@ -23,12 +26,19 @@ export function retargetStrategyToChildrenOfContentAffectingElements(
   )
 }
 
-export function replaceContentAffectingPathsWithTheirChildrenRecursive(
+export const replaceContentAffectingPathsWithTheirChildrenRecursive = memoize(
+  replaceContentAffectingPathsWithTheirChildrenRecursiveInner,
+  { maxSize: 1, equals: is },
+)
+
+function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
-  return paths.flatMap((path) => {
+  let pathsWereReplaced = false
+
+  const updatedPaths = paths.flatMap((path) => {
     const elementIsContentAffecting = treatElementAsContentAffecting(
       metadata,
       allElementProps,
@@ -41,6 +51,8 @@ export function replaceContentAffectingPathsWithTheirChildrenRecursive(
         // with no children, actually let's just return the original element
         return path
       }
+
+      pathsWereReplaced = true
       return replaceContentAffectingPathsWithTheirChildrenRecursive(
         metadata,
         allElementProps,
@@ -50,6 +62,56 @@ export function replaceContentAffectingPathsWithTheirChildrenRecursive(
 
     return path
   })
+
+  return pathsWereReplaced ? updatedPaths : paths
+}
+
+type ContentAffectingType = 'fragment' | 'simple-div'
+
+export function getElementContentAffectingType(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): ContentAffectingType | null {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+
+  const elementProps = allElementProps[EP.toString(path)]
+
+  if (
+    elementMetadata?.element != null &&
+    foldEither(
+      () => false,
+      (e) => isJSXFragment(e),
+      elementMetadata.element,
+    )
+  ) {
+    return 'fragment'
+  }
+
+  if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
+    // for now, do not treat flex parents ever as content-affecting / group-like
+    return null
+  }
+
+  if (EP.isStoryboardPath(path)) {
+    // the Storyboard is not children-affecting
+    return null
+  }
+
+  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
+  if (childrenCount === 0) {
+    // do not treat elements with zero children as content-affecting
+    return null
+  }
+
+  const hasNoWidthAndHeightProps =
+    elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
+
+  if (hasNoWidthAndHeightProps) {
+    return 'simple-div'
+  }
+
+  return null
 }
 
 // TODO make it internal
@@ -58,28 +120,5 @@ export function treatElementAsContentAffecting(
   allElementProps: AllElementProps,
   path: ElementPath,
 ): boolean {
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-
-  const elementProps = allElementProps[EP.toString(path)]
-
-  if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
-    // for now, do not treat flex parents ever as content-affecting / group-like
-    return false
-  }
-
-  if (EP.isStoryboardPath(path)) {
-    // the Storyboard is not children-affecting
-    return false
-  }
-
-  const childrenCount = MetadataUtils.getChildrenUnordered(metadata, path).length
-  if (childrenCount === 0) {
-    // do not treat elements with zero children as content-affecting
-    return false
-  }
-
-  const hasNoWidthAndHeightProps =
-    elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
-
-  return hasNoWidthAndHeightProps
+  return getElementContentAffectingType(metadata, allElementProps, path) != null
 }

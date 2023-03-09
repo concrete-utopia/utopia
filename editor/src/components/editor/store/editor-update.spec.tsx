@@ -62,6 +62,7 @@ import {
   StoryboardFilePath,
   getJSXComponentsAndImportsForPathFromState,
   DefaultPackageJson,
+  regularNavigatorEntry,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
@@ -310,7 +311,7 @@ describe('action NAVIGATOR_REORDER', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
     const reparentAction = reparentComponents(
       [EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['jjj'])],
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
+      regularNavigatorEntry(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa'])),
     )
     const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {

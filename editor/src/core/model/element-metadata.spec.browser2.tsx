@@ -72,7 +72,7 @@ describe('Frame calculation for fragments', () => {
     )
   })
   it('Conditionals have metadata and their frame is the frame of the active branch', async () => {
-    FOR_TESTS_setNextGeneratedUids(['foo1', 'foo2', 'foo3', 'foo4', 'cond']) // ugly, but the conditional is the 5th uid which is generated
+    FOR_TESTS_setNextGeneratedUids(['foo1', 'foo2', 'foo3', 'foo4', 'foo5', 'foo6', 'cond']) // ugly, but the conditional is the 5th uid which is generated
 
     const condComponentPath = 'story/scene/app:root/cond'
     const trueBranchComponentPath = 'story/scene/app:root/cond/truebranch'

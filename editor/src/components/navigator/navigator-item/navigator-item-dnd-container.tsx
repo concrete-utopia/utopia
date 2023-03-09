@@ -18,7 +18,16 @@ import {
   NavigatorHintCircleDiameter,
   NavigatorHintTop,
 } from './navigator-item-components'
-import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
+import {
+  DropTargetHint,
+  ElementWarnings,
+  isConditionalClauseNavigatorEntry,
+  isRegularNavigatorEntry,
+  navigatorEntriesEqual,
+  NavigatorEntry,
+  regularNavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../../editor/store/editor-state'
 import {
   Substores,
   useEditorState,
@@ -29,6 +38,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
+import { navigatorDepth } from '../navigator-utils'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -49,7 +59,8 @@ export interface DragSelection {
 
 export interface NavigatorItemDragAndDropWrapperProps {
   index: number
-  elementPath: ElementPath
+  navigatorEntry: NavigatorEntry
+  entryDepth: number
   appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
   selected: boolean
@@ -57,18 +68,18 @@ export interface NavigatorItemDragAndDropWrapperProps {
   collapsed: boolean // TODO are we sure about this?
   getDragSelections: () => Array<DragSelection>
   getSelectedViewsInRange: (index: number) => Array<ElementPath> // TODO remove me
-  supportsChildren: boolean
+  canReparentInto: boolean
   noOfChildren: number
   label: string
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
-  visibleNavigatorTargets: Array<ElementPath>
+  visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
-  return !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
+  return !EP.isDescendantOfOrEqualTo(props.navigatorEntry.elementPath, dropSource)
 }
 
 function onDrop(
@@ -87,24 +98,27 @@ function onDrop(
   const clearHintAction = showNavigatorDropTargetHint(null, null, null)
   const target =
     propsOfDropTargetItem.appropriateDropTargetHint?.moveToElementPath ??
-    propsOfDropTargetItem.elementPath
+    propsOfDropTargetItem.navigatorEntry
 
   switch (propsOfDropTargetItem.appropriateDropTargetHint?.type) {
     case 'before':
       propsOfDraggedItem.editorDispatch(
-        [placeComponentsBefore(draggedElements, target), clearHintAction],
+        [placeComponentsBefore(draggedElements, target.elementPath), clearHintAction],
         'everyone',
       )
       break
     case 'after':
       propsOfDraggedItem.editorDispatch(
-        [placeComponentsAfter(draggedElements, target), clearHintAction],
+        [placeComponentsAfter(draggedElements, target.elementPath), clearHintAction],
         'everyone',
       )
       break
     case 'reparent':
       propsOfDraggedItem.editorDispatch(
-        [reparentComponents(draggedElements, target), clearHintAction],
+        [
+          reparentComponents(draggedElements, propsOfDropTargetItem.navigatorEntry),
+          clearHintAction,
+        ],
         'everyone',
       )
       break
@@ -134,7 +148,10 @@ function onHoverDropTargetLine(
     !propsOfDraggedItem
       .getDragSelections()
       .every((selection) => canDrop(propsOfDropTargetItem, selection.elementPath)) ||
-    EP.pathsEqual(propsOfDraggedItem.elementPath, propsOfDropTargetItem.elementPath)
+    EP.pathsEqual(
+      propsOfDraggedItem.navigatorEntry.elementPath,
+      propsOfDropTargetItem.navigatorEntry.elementPath,
+    )
   ) {
     return propsOfDraggedItem.editorDispatch(
       [showNavigatorDropTargetHint(null, null, null)],
@@ -146,9 +163,7 @@ function onHoverDropTargetLine(
   const cursorDelta = monitor.getDifferenceFromInitialOffset()
   const targetAction = propsOfDraggedItem.highlighted
     ? []
-    : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
-
-  const canReparent = propsOfDropTargetItem.supportsChildren
+    : [EditorActions.setHighlightedView(propsOfDraggedItem.navigatorEntry.elementPath)]
 
   if (cursor == null || cursorDelta == null) {
     return propsOfDraggedItem.editorDispatch(
@@ -160,37 +175,37 @@ function onHoverDropTargetLine(
   const targetPathWithReparentWiggle = (() => {
     if (
       cursorDelta.x >= -BasePaddingUnit ||
-      EP.parentPath(propsOfDraggedItem.elementPath) == null
+      EP.parentPath(propsOfDraggedItem.navigatorEntry.elementPath) == null
     ) {
-      return propsOfDropTargetItem.elementPath
+      return propsOfDropTargetItem.navigatorEntry.elementPath
     }
 
-    const maximumTargetDepth = EP.navigatorDepth(propsOfDropTargetItem.elementPath)
+    const maximumTargetDepth = propsOfDropTargetItem.entryDepth - 1
     const cursorTargetDepth = Math.floor(Math.abs(cursorDelta.x) / BasePaddingUnit)
 
     const targetDepth = Math.min(cursorTargetDepth, maximumTargetDepth)
 
-    return EP.dropNPathParts(propsOfDropTargetItem.elementPath, targetDepth)
+    return EP.dropNPathParts(propsOfDropTargetItem.navigatorEntry.elementPath, targetDepth)
   })()
 
-  if (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed) {
-    if (canReparent && cursorDelta.x >= BasePaddingUnit) {
-      return propsOfDraggedItem.editorDispatch([
-        ...targetAction,
-        showNavigatorDropTargetHint(
-          'reparent',
-          targetPathWithReparentWiggle,
-          propsOfDropTargetItem.elementPath,
-        ),
-      ])
-    }
+  const { collapsed, canReparentInto } = propsOfDropTargetItem
+
+  if (!collapsed && canReparentInto && cursorDelta.x >= BasePaddingUnit) {
+    return propsOfDraggedItem.editorDispatch([
+      ...targetAction,
+      showNavigatorDropTargetHint(
+        'reparent',
+        regularNavigatorEntry(targetPathWithReparentWiggle),
+        propsOfDropTargetItem.navigatorEntry,
+      ),
+    ])
   }
 
   if (
     propsOfDraggedItem.appropriateDropTargetHint?.type !== position ||
-    !EP.pathsEqual(
+    !navigatorEntriesEqual(
       propsOfDraggedItem.appropriateDropTargetHint?.displayAtElementPath,
-      propsOfDropTargetItem.elementPath,
+      propsOfDropTargetItem.navigatorEntry,
     )
   ) {
     return propsOfDraggedItem.editorDispatch(
@@ -198,8 +213,8 @@ function onHoverDropTargetLine(
         ...targetAction,
         showNavigatorDropTargetHint(
           position,
-          targetPathWithReparentWiggle,
-          propsOfDropTargetItem.elementPath,
+          regularNavigatorEntry(targetPathWithReparentWiggle),
+          propsOfDropTargetItem.navigatorEntry,
         ),
       ],
       'leftpane',
@@ -222,7 +237,10 @@ function onHoverParentOutline(
     !propsOfDraggedItem
       .getDragSelections()
       .every((selection) => canDrop(propsOfDropTargetItem, selection.elementPath)) ||
-    EP.pathsEqual(propsOfDraggedItem.elementPath, propsOfDropTargetItem.elementPath)
+    EP.pathsEqual(
+      propsOfDraggedItem.navigatorEntry.elementPath,
+      propsOfDropTargetItem.navigatorEntry.elementPath,
+    )
   ) {
     return propsOfDraggedItem.editorDispatch(
       [showNavigatorDropTargetHint(null, null, null)],
@@ -234,9 +252,7 @@ function onHoverParentOutline(
   const cursorDelta = monitor.getDifferenceFromInitialOffset()
   const targetAction = propsOfDraggedItem.highlighted
     ? []
-    : [EditorActions.setHighlightedView(propsOfDraggedItem.elementPath)]
-
-  const canReparent = propsOfDropTargetItem.supportsChildren
+    : [EditorActions.setHighlightedView(propsOfDraggedItem.navigatorEntry.elementPath)]
 
   if (cursor == null || cursorDelta == null) {
     return propsOfDraggedItem.editorDispatch(
@@ -245,17 +261,17 @@ function onHoverParentOutline(
     )
   }
 
-  if (propsOfDraggedItem.noOfChildren === 0 || propsOfDraggedItem.collapsed) {
-    if (canReparent) {
-      return propsOfDraggedItem.editorDispatch([
-        ...targetAction,
-        showNavigatorDropTargetHint(
-          'reparent',
-          propsOfDropTargetItem.elementPath,
-          propsOfDropTargetItem.elementPath,
-        ),
-      ])
-    }
+  const { collapsed, canReparentInto } = propsOfDropTargetItem
+
+  if (!collapsed && canReparentInto) {
+    return propsOfDraggedItem.editorDispatch([
+      ...targetAction,
+      showNavigatorDropTargetHint(
+        'reparent',
+        propsOfDropTargetItem.navigatorEntry,
+        propsOfDropTargetItem.navigatorEntry,
+      ),
+    ])
   }
 
   return propsOfDraggedItem.editorDispatch(
@@ -267,8 +283,11 @@ function onHoverParentOutline(
 function beginDrag(
   props: NavigatorItemDragAndDropWrapperProps,
 ): NavigatorItemDragAndDropWrapperProps {
-  if (!props.selected) {
-    props.editorDispatch(MetaActions.selectComponents([props.elementPath], false), 'leftpane')
+  if (!props.selected && isRegularNavigatorEntry(props.navigatorEntry)) {
+    props.editorDispatch(
+      MetaActions.selectComponents([props.navigatorEntry.elementPath], false),
+      'leftpane',
+    )
   }
   return props
 }
@@ -291,11 +310,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       beginDrag: beginDrag,
       canDrag: (monitor) => {
         const editorState = editorStateRef.current
-        const result = isAllowedToReparent(
-          editorState.projectContents,
-          editorState.jsxMetadata,
-          props.elementPath,
-        )
+        const result =
+          isRegularNavigatorEntry(props.navigatorEntry) &&
+          isAllowedToReparent(
+            editorState.projectContents,
+            editorState.jsxMetadata,
+            props.navigatorEntry.elementPath,
+          )
         return result
       },
     }),
@@ -324,11 +345,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         const isReparentTarget = item.appropriateDropTargetHint?.type === 'reparent'
         const childrenSupportedIfRequired =
           !isReparentTarget ||
-          MetadataUtils.targetSupportsChildren(
-            editorState.projectContents,
-            editorState.jsxMetadata,
-            props.elementPath,
-          )
+          isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
+          (isRegularNavigatorEntry(props.navigatorEntry) &&
+            MetadataUtils.targetSupportsChildren(
+              editorState.projectContents,
+              editorState.jsxMetadata,
+              props.navigatorEntry.elementPath,
+            ))
         const notSelectedItem = item.getDragSelections().every((selection) => {
           return canDrop(props, selection.elementPath)
         })
@@ -360,11 +383,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         const isReparentTarget = item.appropriateDropTargetHint?.type === 'reparent'
         const childrenSupportedIfRequired =
           !isReparentTarget ||
-          MetadataUtils.targetSupportsChildren(
-            editorState.projectContents,
-            editorState.jsxMetadata,
-            props.elementPath,
-          )
+          isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
+          (isRegularNavigatorEntry(props.navigatorEntry) &&
+            MetadataUtils.targetSupportsChildren(
+              editorState.projectContents,
+              editorState.jsxMetadata,
+              props.navigatorEntry.elementPath,
+            ))
         const notSelectedItem = item.getDragSelections().every((selection) => {
           return canDrop(props, selection.elementPath)
         })
@@ -396,11 +421,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         const isReparentTarget = item.appropriateDropTargetHint?.type === 'reparent'
         const childrenSupportedIfRequired =
           !isReparentTarget ||
-          MetadataUtils.targetSupportsChildren(
-            editorState.projectContents,
-            editorState.jsxMetadata,
-            props.elementPath,
-          )
+          isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
+          (isRegularNavigatorEntry(props.navigatorEntry) &&
+            MetadataUtils.targetSupportsChildren(
+              editorState.projectContents,
+              editorState.jsxMetadata,
+              props.navigatorEntry.elementPath,
+            ))
         const notSelectedItem = item.getDragSelections().every((selection) => {
           return canDrop(props, selection.elementPath)
         })
@@ -410,7 +437,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props],
   )
 
-  const safeComponentId = EP.toVarSafeComponentId(props.elementPath)
+  const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
 
   React.useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true })
@@ -433,22 +460,33 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     (props.appropriateDropTargetHint?.type === 'after' ||
       props.appropriateDropTargetHint?.type === 'reparent')
 
+  const appropriateDropTargetHintDepth = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (props.appropriateDropTargetHint?.moveToElementPath == null) {
+        return 0
+      } else {
+        return navigatorDepth(
+          regularNavigatorEntry(props.appropriateDropTargetHint.moveToElementPath.elementPath),
+          store.editor.jsxMetadata,
+        )
+      }
+    },
+    'NavigatorItemDndWrapper appropriateDropTargetHintDepth',
+  )
+
   const margin = (() => {
     if (
       props.appropriateDropTargetHint?.type === 'reparent' &&
       props.appropriateDropTargetHint.moveToElementPath != null
     ) {
-      return getHintPaddingForDepth(
-        EP.navigatorDepth(props.appropriateDropTargetHint.moveToElementPath) + 1,
-      )
+      return getHintPaddingForDepth(appropriateDropTargetHintDepth)
     }
     if (
       props.appropriateDropTargetHint?.type != null &&
       props.appropriateDropTargetHint.moveToElementPath != null
     ) {
-      return getHintPaddingForDepth(
-        EP.navigatorDepth(props.appropriateDropTargetHint.moveToElementPath),
-      )
+      return getHintPaddingForDepth(appropriateDropTargetHintDepth - 1)
     }
 
     return 0
@@ -458,7 +496,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     dropTargetHintType === 'reparent'
       ? isOverBottomHint || isOverParentOutline
       : moveToElementPath != null &&
-        EP.pathsEqual(props.elementPath, EP.parentPath(moveToElementPath))
+        isRegularNavigatorEntry(moveToElementPath) &&
+        EP.pathsEqual(
+          props.navigatorEntry.elementPath,
+          EP.parentPath(moveToElementPath.elementPath),
+        )
 
   const metadata = useEditorState(
     Substores.metadata,
@@ -467,14 +509,20 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
 
   const isFirstSibling = React.useMemo(() => {
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.elementPath)
+    if (!isRegularNavigatorEntry(props.navigatorEntry)) {
+      return false
+    }
+
+    // FIXME: Performance: This is retrieving everything ordered and then getting just the siblings,
+    // for every single navigator item.
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.navigatorEntry.elementPath)
     const firstSibling = siblings.at(0)
     if (firstSibling == null) {
       return false
     }
 
-    return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
-  }, [metadata, props.elementPath])
+    return EP.pathsEqual(firstSibling.elementPath, props.navigatorEntry.elementPath)
+  }, [metadata, props.navigatorEntry])
 
   const shouldDropLinesInterceptMouseEvents = dropTargetHintType != null
 
@@ -503,7 +551,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         data-testid={`navigator-item-${safeComponentId}`}
       >
         <NavigatorItem
-          elementPath={props.elementPath}
+          navigatorEntry={props.navigatorEntry}
           index={props.index}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}

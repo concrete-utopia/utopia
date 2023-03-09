@@ -2,11 +2,14 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
+import { assertNever } from '../../../core/shared/utils'
 import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
+  childOrBlockIsChild,
   ElementInstanceMetadata,
+  getJSXElementNameLastPart,
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -17,6 +20,10 @@ import {
   defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
+  isRegularNavigatorEntry,
+  navigatorEntriesEqual,
+  NavigatorEntry,
+  navigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
@@ -25,11 +32,14 @@ import {
   NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
+import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { foldEither } from '../../../core/shared/either'
+import { navigatorDepth } from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  elementPath: ElementPath
+  navigatorEntry: NavigatorEntry
   getDragSelections: () => Array<DragSelection>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -37,21 +47,23 @@ interface NavigatorItemWrapperProps {
 
 const targetElementMetadataSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
-  (store: MetadataSubstate, targetPath: ElementPath) => targetPath,
-  (metadata, targetPath): ElementInstanceMetadata | null => {
-    return MetadataUtils.findElementByElementPath(metadata, targetPath)
+  (store: MetadataSubstate, target: NavigatorEntry) => target,
+  (metadata, target): ElementInstanceMetadata | null => {
+    return MetadataUtils.findElementByElementPath(metadata, target.elementPath)
   },
-)((_, targetPath) => EP.toString(targetPath))
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const targetInNavigatorItemsSelector = createCachedSelector(
   (store: EditorStorePatched) => store.derived.navigatorTargets,
-  (store: EditorStorePatched, targetPath: ElementPath) => targetPath,
-  (navigatorTargets, targetPath) => {
-    return EP.containsPath(targetPath, navigatorTargets)
+  (store: EditorStorePatched, target: NavigatorEntry) => target,
+  (navigatorTargets, target) => {
+    return navigatorTargets.some((navigatorTarget) => {
+      return navigatorEntriesEqual(target, navigatorTarget)
+    })
   },
-)((_, targetPath) => EP.toString(targetPath))
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const targetSupportsChildrenSelector = createCachedSelector(
+const canBeReparentedIntoSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   targetElementMetadataSelector,
   targetInNavigatorItemsSelector,
@@ -61,7 +73,7 @@ const targetSupportsChildrenSelector = createCachedSelector(
     }
     return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
   },
-)((_, targetPath) => EP.toString(targetPath))
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const labelSelector = createCachedSelector(
   targetElementMetadataSelector,
@@ -72,72 +84,145 @@ const labelSelector = createCachedSelector(
     }
     return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
   },
-)((_, targetPath) => EP.toString(targetPath))
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
-  (_: DerivedSubstate, elementPath: ElementPath) => elementPath,
-  (elementWarnings, elementPath) => {
-    return (
-      getValueFromComplexMap(EP.toString, elementWarnings, elementPath) ?? defaultElementWarnings
-    )
+  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (elementWarnings, navigatorEntry) => {
+    if (isRegularNavigatorEntry(navigatorEntry)) {
+      return (
+        getValueFromComplexMap(EP.toString, elementWarnings, navigatorEntry.elementPath) ??
+        defaultElementWarnings
+      )
+    } else {
+      return defaultElementWarnings
+    }
   },
-)((_, targetPath) => EP.toString(targetPath))
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const noOfChildrenSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.navigatorTargets,
-  (_: DerivedSubstate, targetPath: ElementPath) => targetPath,
-  (navigatorTargets, targetPath) => {
+  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (navigatorTargets, navigatorEntry) => {
     let result = 0
     for (const nt of navigatorTargets) {
-      if (EP.isChildOf(nt, targetPath)) {
+      if (
+        isRegularNavigatorEntry(navigatorEntry) &&
+        EP.isChildOf(nt.elementPath, navigatorEntry.elementPath)
+      ) {
         result += 1
       }
     }
     return result
   },
-)((_, targetPath) => EP.toString(targetPath))
+)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
+
+function getNavigatorEntryLabel(
+  navigatorEntry: NavigatorEntry,
+  labelForTheElement: string,
+): string {
+  switch (navigatorEntry.type) {
+    case 'REGULAR':
+      return labelForTheElement
+    case 'CONDITIONAL_CLAUSE':
+      switch (navigatorEntry.clause) {
+        case 'then':
+          return 'Then'
+        case 'else':
+          return 'Else'
+        default:
+          throw assertNever(navigatorEntry.clause)
+      }
+    case 'SYNTHETIC': {
+      if (childOrBlockIsChild(navigatorEntry.childOrAttribute)) {
+        switch (navigatorEntry.childOrAttribute.type) {
+          case 'JSX_ELEMENT':
+            return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+          case 'JSX_ARBITRARY_BLOCK':
+            return '(code)'
+          case 'JSX_TEXT_BLOCK':
+            return navigatorEntry.childOrAttribute.text
+          case 'JSX_FRAGMENT':
+            return 'Fragment'
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return 'Conditional'
+          default:
+            throw assertNever(navigatorEntry.childOrAttribute)
+        }
+      } else {
+        const simpleAttributeValue = jsxSimpleAttributeToValue(navigatorEntry.childOrAttribute)
+        return foldEither(
+          () => 'Unknown',
+          (value) => {
+            if (value === null) {
+              return 'null'
+            } else if (value === undefined) {
+              return 'undefined'
+            } else {
+              return value.toString()
+            }
+          },
+          simpleAttributeValue,
+        )
+      }
+    }
+    default:
+      assertNever(navigatorEntry)
+  }
+}
 
 export const NavigatorItemWrapper: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
-    (store) => EP.containsPath(props.elementPath, store.editor.selectedViews),
+    (store) =>
+      isRegularNavigatorEntry(props.navigatorEntry) &&
+      EP.containsPath(props.navigatorEntry.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
   const isHighlighted = useEditorState(
     Substores.highlightedHoveredViews,
-    (store) => EP.containsPath(props.elementPath, store.editor.highlightedViews),
+    (store) =>
+      isRegularNavigatorEntry(props.navigatorEntry) &&
+      EP.containsPath(props.navigatorEntry.elementPath, store.editor.highlightedViews),
     'NavigatorItemWrapper isHighlighted',
   )
 
   const noOfChildren = useEditorState(
     Substores.derived,
     (store) => {
-      return noOfChildrenSelector(store, props.elementPath)
+      return noOfChildrenSelector(store, props.navigatorEntry)
     },
     'NavigatorItemWrapper noOfChildren',
   )
 
-  const supportsChildren = useEditorState(
+  const canBeReparentedInto = useEditorState(
     Substores.fullStore,
     // this is not good
-    (store) => {
-      return targetSupportsChildrenSelector(store, props.elementPath)
-    },
-    'NavigatorItemWrapper targetSupportsChildrenSelector',
+    (store) => canBeReparentedIntoSelector(store, props.navigatorEntry),
+    'NavigatorItemWrapper canBeReparentedIntoSelector',
   )
 
-  const label = useEditorState(
+  const labelForTheElement = useEditorState(
     Substores.metadata,
-    (store) => labelSelector(store, props.elementPath),
+    (store) => labelSelector(store, props.navigatorEntry),
     'NavigatorItemWrapper labelSelector',
+  )
+  const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
+
+  const entryDepth = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return navigatorDepth(props.navigatorEntry, store.editor.jsxMetadata)
+    },
+    'NavigatorItemWrapper entryDepth',
   )
 
   const elementWarnings = useEditorState(
     Substores.derived,
-    (store) => elementWarningsSelector(store, props.elementPath),
+    (store) => elementWarningsSelector(store, props.navigatorEntry),
     'NavigatorItemWrapper elementWarningsSelector',
   )
 
@@ -155,21 +240,26 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         // dragging around the navigator but we don't want the entire navigator to re-render each time.
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
         if (
-          EP.pathsEqual(
+          isRegularNavigatorEntry(props.navigatorEntry) &&
+          store.editor.navigator.dropTargetHint.displayAtElementPath != null &&
+          navigatorEntriesEqual(
             store.editor.navigator.dropTargetHint.displayAtElementPath,
-            props.elementPath,
+            props.navigatorEntry,
           )
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
         const elementIsCollapsed = EP.containsPath(
-          props.elementPath,
+          props.navigatorEntry.elementPath,
           store.editor.navigator.collapsedViews,
         )
         return {
           appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
           renamingTarget: store.editor.navigator.renamingTarget,
-          isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
+          isElementVisible: !EP.containsPath(
+            props.navigatorEntry.elementPath,
+            store.editor.hiddenInstances,
+          ),
           isCollapsed: elementIsCollapsed,
         }
       },
@@ -179,14 +269,15 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
     index: props.index,
     editorDispatch: dispatch,
-    elementPath: props.elementPath,
+    navigatorEntry: props.navigatorEntry,
+    entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,
     getDragSelections: props.getDragSelections,
     getSelectedViewsInRange: props.getSelectedViewsInRange,
     appropriateDropTargetHint: appropriateDropTargetHint,
-    supportsChildren: supportsChildren,
+    canReparentInto: canBeReparentedInto,
     noOfChildren: noOfChildren,
     label: label,
     isElementVisible: isElementVisible,

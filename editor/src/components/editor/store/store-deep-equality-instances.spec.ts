@@ -25,6 +25,7 @@ import { addToComplexMap, emptyComplexMap } from '../../../utils/map'
 import {
   defaultElementWarnings,
   DerivedState,
+  regularNavigatorEntry,
   transientCanvasState,
   TransientCanvasState,
   transientFileState,
@@ -153,8 +154,8 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
-    navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+    navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -189,8 +190,8 @@ describe('DerivedStateKeepDeepEquality', () => {
     ),
   }
   const newSameValue: DerivedState = {
-    navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+    navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -225,8 +226,8 @@ describe('DerivedStateKeepDeepEquality', () => {
     ),
   }
   const newDifferentValue: DerivedState = {
-    navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'ddd']])],
-    visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+    navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
+    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     controls: [],
     transientState: transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -272,7 +273,9 @@ describe('DerivedStateKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, newDifferentValue)
-    expect(result.value.navigatorTargets[0]).toBe(newDifferentValue.navigatorTargets[0])
+    expect(result.value.navigatorTargets[0].elementPath).toBe(
+      newDifferentValue.navigatorTargets[0].elementPath,
+    )
     expect(result.value.visibleNavigatorTargets).toBe(oldValue.visibleNavigatorTargets)
     expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.transientState).toBe(oldValue.transientState)

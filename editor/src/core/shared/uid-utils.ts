@@ -15,6 +15,10 @@ import {
   emptyComments,
   JSXElementLike,
   childOrBlockIsChild,
+  isJSXFragment,
+  JSXFragment,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -222,9 +226,45 @@ export function fixUtopiaElement(
     }
   }
 
+  function fixJSXFragment(fragment: JSXFragment): JSXFragment {
+    const fixedChildren = fragment.children.map((child) => fixUtopiaElementInner(child))
+    const fixedUID = uniqueIDs.includes(fragment.uid)
+      ? generateConsistentUID(new Set(uniqueIDs), fragment.uid)
+      : fragment.uid
+    uniqueIDs.push(fixedUID)
+    return {
+      ...fragment,
+      uid: fixedUID,
+      children: fixedChildren,
+    }
+  }
+
+  function fixJSXConditionalExpression(
+    conditional: JSXConditionalExpression,
+  ): JSXConditionalExpression {
+    const fixedUID = uniqueIDs.concat(conditional.uid).includes(conditional.uid)
+      ? generateConsistentUID(new Set(uniqueIDs), conditional.uid)
+      : conditional.uid
+    uniqueIDs.push(fixedUID)
+    return {
+      ...conditional,
+      uid: fixedUID,
+      whenTrue: childOrBlockIsChild(conditional.whenTrue)
+        ? fixUtopiaElementInner(conditional.whenTrue)
+        : conditional.whenTrue,
+      whenFalse: childOrBlockIsChild(conditional.whenFalse)
+        ? fixUtopiaElementInner(conditional.whenFalse)
+        : conditional.whenFalse,
+    }
+  }
+
   function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
     if (isJSXElement(element)) {
       return fixJSXElement(element)
+    } else if (isJSXFragment(element)) {
+      return fixJSXFragment(element)
+    } else if (isJSXConditionalExpression(element)) {
+      return fixJSXConditionalExpression(element)
     } else if (isJSXArbitraryBlock(element)) {
       const fixedElementsWithin = objectMap(fixJSXElement, element.elementsWithin)
       if (shallowEqual(element.elementsWithin, fixedElementsWithin)) {

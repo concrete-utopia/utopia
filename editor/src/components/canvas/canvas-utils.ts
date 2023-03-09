@@ -82,6 +82,7 @@ import {
 import Utils, {
   absolute,
   after,
+  before,
   IndexPosition,
   shiftIndexPositionForRemovedElement,
 } from '../../utils/utils'
@@ -97,6 +98,7 @@ import {
   LocalRectangle,
   nullIfInfinity,
   Size,
+  boundingRectangleArray,
 } from '../../core/shared/math-utils'
 import {
   DerivedState,
@@ -161,11 +163,11 @@ import {
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { uniqBy } from '../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
@@ -2654,7 +2656,7 @@ export function duplicate(
   newParentPath: ElementPath | null,
   editor: EditorState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
-  insertAfterCurrentElement: boolean = false,
+  anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
   let duplicateNewUIDs: ReadonlyArray<DuplicateNewUID> = duplicateNewUIDsInjected
   let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
@@ -2704,7 +2706,7 @@ export function duplicate(
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
-            if (isJSXElement(newElement)) {
+            if (isJSXElementLike(newElement)) {
               newElement = {
                 ...newElement,
                 children: guaranteeUniqueUids(newElement.children, [
@@ -2746,13 +2748,24 @@ export function duplicate(
             console.warn(`Could not duplicate ${EP.toVarSafeComponentId(path)}`)
             return success
           } else {
+            const position = () => {
+              switch (anchor) {
+                case 'before':
+                  return before(elementIndex)
+                case 'after':
+                  return after(elementIndex)
+                default:
+                  assertNever(anchor)
+              }
+            }
+
             utopiaComponents = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
               newParentPath,
               newElement,
               utopiaComponents,
-              after(elementIndex),
+              position(),
             )
 
             newSelectedViews.push(newPath)

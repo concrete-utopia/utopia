@@ -2196,6 +2196,8 @@ describe('inspector tests with real metadata', () => {
         'skip4',
         'skip5',
         'skip6',
+        'skip7',
+        'skip8',
         'conditional',
       ])
       const startSnippet = `
@@ -2323,6 +2325,8 @@ describe('inspector tests with real metadata', () => {
         'skip4',
         'skip5',
         'skip6',
+        'skip7',
+        'skip8',
         'conditional',
       ])
       const startSnippet = `
@@ -2385,9 +2389,13 @@ describe('inspector tests with real metadata', () => {
         'skip7',
         'skip8',
         'skip9',
-        'conditional1',
         'skip10',
         'skip11',
+        'skip12',
+        'skip13',
+        'skip14',
+        'skip15',
+        'conditional1',
         'conditional2',
       ])
       const startSnippet = `

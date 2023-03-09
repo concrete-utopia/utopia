@@ -3,9 +3,10 @@ import React from 'react'
 import { IcnProps, Icn, useColorTheme } from '../../../uuiui'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { useLayoutOrElementIcon } from '../layout-element-icons'
+import { NavigatorEntry } from '../../../components/editor/store/editor-state'
 
 interface LayoutIconProps {
-  path: ElementPath
+  navigatorEntry: NavigatorEntry
   color: IcnProps['color']
   warningText: string | null
 }
@@ -21,7 +22,7 @@ const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): str
 export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
   React.memo((props) => {
     const colorTheme = useColorTheme()
-    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.path)
+    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.navigatorEntry)
 
     return (
       <div

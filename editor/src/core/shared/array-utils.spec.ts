@@ -1,4 +1,4 @@
-import { aperture, intersection, mapAndFilter } from './array-utils'
+import { aperture, intersection, mapAndFilter, strictEvery } from './array-utils'
 
 describe('intersection', () => {
   it('two empty arrays should return an empty array', () => {
@@ -63,5 +63,23 @@ describe('mapAndFilter', () => {
   it('should correctly map and filter an array', () => {
     const actualResult = mapAndFilter(mapFn, filter, input)
     expect(actualResult).toEqual([12, 14])
+  })
+})
+
+describe('strictEvery', () => {
+  it('returns false for empty arrays', () => {
+    // Because `[].every()` always returns true, and that has caused so much pain
+    expect([].every(() => false)).toBeTruthy()
+    expect(strictEvery([], () => false)).toBeFalsy()
+  })
+
+  it('returns true for non-empty arrays where the predicate is satisfied', () => {
+    expect([1].every(() => true)).toBeTruthy()
+    expect(strictEvery([1], () => true)).toBeTruthy()
+  })
+
+  it('returns false for non-empty arrays where the predicate is not satisfied', () => {
+    expect([1].every(() => false)).toBeFalsy()
+    expect(strictEvery([1], () => false)).toBeFalsy()
   })
 })

@@ -53,6 +53,7 @@ import {
   emptyAttributeMetadatada,
   DetectedLayoutSystem,
   JSXConditionalExpression,
+  ConditionalValue,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -102,7 +103,11 @@ import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
+  conditionalClauseNavigatorEntry,
+  isRegularNavigatorEntry,
   LockedElements,
+  NavigatorEntry,
+  regularNavigatorEntry,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -122,7 +127,11 @@ import {
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { reorderConditionalChildPathTrees } from './conditionals'
+import {
+  getConditionalClausePath,
+  reorderConditionalChildPathTrees,
+  ThenOrElse,
+} from './conditionals'
 
 const ObjectPathImmutable: any = OPI
 
@@ -225,6 +234,14 @@ export const MetadataUtils = {
       : MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
+  },
+  getSiblingsParticipatingInAutolayoutUnordered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    return MetadataUtils.getSiblingsUnordered(metadata, target).filter(
+      MetadataUtils.elementParticipatesInAutoLayout,
+    )
   },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
@@ -1783,6 +1800,19 @@ export const MetadataUtils = {
 
     return MetadataUtils.isConditionalFromMetadata(element)
   },
+  isElementPathConditionalClauseFromMetadata(
+    componentMetadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath | null,
+  ): boolean {
+    if (elementPath == null) {
+      return false
+    } else {
+      const parentPath = EP.parentPath(elementPath)
+      const parentMetadata = MetadataUtils.findElementByElementPath(componentMetadata, parentPath)
+
+      return MetadataUtils.isConditionalFromMetadata(parentMetadata)
+    }
+  },
   isFragmentFromMetadata(element: ElementInstanceMetadata | null): boolean {
     return (
       element?.element != null && isRight(element.element) && isJSXFragment(element.element.value)
@@ -1794,6 +1824,12 @@ export const MetadataUtils = {
       isRight(element.element) &&
       isJSXConditionalExpression(element.element.value)
     )
+  },
+  getConditionalValueFromMetadata(element: ElementInstanceMetadata | null): ConditionalValue {
+    if (!this.isConditionalFromMetadata(element)) {
+      return 'not-a-conditional'
+    }
+    return element?.conditionalValue ?? 'not-a-conditional'
   },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,
@@ -2068,6 +2104,7 @@ function findConditionalsAndCreateMetadata(
             emptyAttributeMetadatada,
             'Conditional',
             null,
+            'not-a-conditional',
           )
         }
       },
@@ -2191,5 +2228,6 @@ export function createFakeMetadataForElement(
     null,
     null,
     null,
+    'not-a-conditional',
   )
 }

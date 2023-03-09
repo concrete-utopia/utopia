@@ -15,9 +15,11 @@ describe('JSX parser', () => {
     FOR_TESTS_setNextGeneratedUids([
       'mock1',
       'mock2',
+      'mock3',
       'conditional',
-      'mock1',
-      'mock2',
+      'mock4',
+      'mock5',
+      'mock6',
       'conditional',
     ])
     const code = applyPrettier(SimpleConditionalsExample, false).formatted
@@ -58,13 +60,17 @@ describe('JSX parser', () => {
   it('handles nested ternaries', () => {
     FOR_TESTS_setNextGeneratedUids([
       'mock1',
-      'conditional2',
       'mock2',
+      'mock3',
+      'mock4',
       'conditional1',
+      'conditional2',
       'mock1',
-      'conditional2',
       'mock2',
+      'mock3',
+      'mock4',
       'conditional1',
+      'conditional2',
     ])
     const code = applyPrettier(NestedTernariesExample, false).formatted
     const firstParseResult = testParseCode(code)
@@ -103,7 +109,14 @@ describe('JSX parser', () => {
 
 describe('JSX printer', () => {
   it('handles nested ternaries', () => {
-    FOR_TESTS_setNextGeneratedUids(['mock1', 'conditional2', 'mock2', 'conditional1'])
+    FOR_TESTS_setNextGeneratedUids([
+      'mock1',
+      'mock2',
+      'mock3',
+      'mock4',
+      'conditional1',
+      'conditional2',
+    ])
     const code = applyPrettier(NestedTernariesExample, false).formatted
     const parseResult = testParseCode(code)
     if (isParseSuccess(parseResult)) {

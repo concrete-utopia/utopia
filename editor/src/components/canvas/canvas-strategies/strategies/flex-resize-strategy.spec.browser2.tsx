@@ -274,6 +274,30 @@ describe('Flex Resize with flex grow', () => {
       )
     })
   })
+  describe('Resizing when the parent has hug x hug set', () => {
+    it('In a flex row when reaching the parent edge width is updated, instead of adding flexGrow', async () => {
+      const initialSize = size(50, 60)
+      const expectedSize = size(110, 85)
+      await resizeTestParentSizeMaxContent(
+        EdgePositionBottomRight,
+        canvasPoint({ x: 60, y: 25 }),
+        'row',
+        initialSize,
+        expectedSize,
+      )
+    })
+    it('In a flex column when reaching the parent edge width is updated, instead of adding flexGrow', async () => {
+      const initialSize = size(50, 60)
+      const expectedSize = size(60, 110)
+      await resizeTestParentSizeMaxContent(
+        EdgePositionBottomRight,
+        canvasPoint({ x: 10, y: 50 }),
+        'column',
+        initialSize,
+        expectedSize,
+      )
+    })
+  })
   describe('Resizing further than the snapping area adds width/height', () => {
     it('resizing in a flex row', async () => {
       const initialSize = size(50, 60)
@@ -678,6 +702,66 @@ async function resizeTestKeepsWidthHeight(
         }}
       />
       ${justifyContent === 'flex-start' ? targetElement(targetSize) : ''}
+    </div>
+    `)
+
+  const renderResult = await renderTestEditorWithCode(
+    inputCode(initialSize),
+    'await-first-dom-report',
+  )
+  const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ddd`)
+
+  await dragResizeControl(renderResult, target, pos, dragVector)
+
+  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(inputCode(expectedSize))
+}
+
+async function resizeTestParentSizeMaxContent(
+  pos: EdgePosition,
+  dragVector: CanvasVector,
+  flexDirection: 'row' | 'column',
+  initialSize: Size,
+  expectedSize: Size,
+) {
+  const inputCode = (targetSize: Size) =>
+    makeTestProjectCodeWithSnippet(`
+      <div
+      data-uid='aaa'
+      style={{
+        width: 'max-content',
+        height: 'max-content',
+        backgroundColor: '#FFFFFF',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: '${flexDirection}',
+        gap: 10,
+        padding: 5,
+      }}
+    >
+      <div
+        data-uid='bbb'
+        style={{
+          width: 180,
+          height: 180,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+      <div
+        data-uid='ccc'
+        style={{
+          backgroundColor: '#FF0000',
+          width: 80,
+          height: 80,
+        }}
+      />
+      <div
+        data-uid='ddd'
+        style={{
+          backgroundColor: '#FF0000',
+          width: ${targetSize.width},
+          height: ${targetSize.height},
+        }}
+      />
     </div>
     `)
 

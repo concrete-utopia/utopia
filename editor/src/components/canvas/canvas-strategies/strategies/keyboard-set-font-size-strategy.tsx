@@ -20,18 +20,18 @@ import { setProperty } from '../../commands/set-property-command'
 import {
   InteractionCanvasState,
   CanvasStrategy,
-  getTargetPathsFromInteractionTarget,
   emptyStrategyApplicationResult,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const validTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget).filter(
+  const validTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState).filter(
     (path) => isValidTarget(canvasState.startingMetadata, path),
   )
 
