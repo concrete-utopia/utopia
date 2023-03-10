@@ -98,7 +98,7 @@ export const RenderAsRow = React.memo(() => {
       for (const selectOptionGroup of insertableComponents) {
         for (const selectOption of selectOptionGroup.options ?? []) {
           const insertableComponent: InsertableComponent = selectOption.value
-          if (insertableComponent != null) {
+          if (insertableComponent != null && insertableComponent.element !== 'conditional') {
             if (jsxElementNameEquals(insertableComponent.element.name, nameToSearchFor)) {
               return selectOption
             }

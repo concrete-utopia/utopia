@@ -240,7 +240,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
+              if (component.element === 'conditional') {
+                return null
+              }
               const insertItemOnMouseDown = (event: React.MouseEvent) => {
+                if (component.element === 'conditional') {
+                  return
+                }
+
                 const newUID = this.getNewUID()
 
                 const updatedPropsWithPosition = addPositionAbsoluteToProps(component.element.props)
