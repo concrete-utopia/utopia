@@ -30,6 +30,7 @@ export const ZOOM_UI_OUT_SHORTCUT = 'zoom-ui-out'
 export const ZOOM_CANVAS_OUT_SHORTCUT = 'zoom-canvas-out'
 export const FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT = 'first-child-or-edit-text'
 export const JUMP_TO_PARENT_SHORTCUT = 'jump-to-parent'
+export const JUMP_TO_PARENT_SHORTCUT_BACKSLASH = 'jump-to-parent-backslash'
 export const CANCEL_EVERYTHING_SHORTCUT = 'cancel-everything'
 export const CYCLE_HIERACHY_TARGETS_SHORTCUT = 'cycle-hierachy-targets'
 export const CYCLE_FORWARD_SIBLING_TARGETS_SHORTCUT = 'cycle-forward-sibling-targets'
@@ -102,6 +103,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('enter', []),
   ),
   [JUMP_TO_PARENT_SHORTCUT]: shortcut('Jump to parent element.', key('enter', 'shift')),
+  [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: shortcut(
+    'Jump to parent element, with backslash.',
+    key('backslash', []),
+  ),
   [CANCEL_EVERYTHING_SHORTCUT]: shortcut(
     'Exit insert mode, dragging or anything else back to default.',
     key('esc', []),

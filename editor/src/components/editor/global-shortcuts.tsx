@@ -104,6 +104,7 @@ import {
   CONVERT_TO_FLEX_CONTAINER,
   REMOVE_ABSOLUTE_POSITIONING,
   RESIZE_TO_FIT,
+  JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -447,6 +448,13 @@ export function handleKeyDown(
         return []
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode)) {
+          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+        } else {
+          return []
+        }
+      },
+      [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: () => {
         if (isSelectMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
         } else {
