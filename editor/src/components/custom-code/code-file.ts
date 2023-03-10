@@ -34,7 +34,6 @@ import {
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
   isUtopiaJSXComponent,
-  JSXConditionalWithoutUID,
   JSXElement,
   JSXElementWithoutUID,
   UtopiaJSXComponent,
@@ -95,15 +94,17 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
+export type ComponentElementToInsert = JSXElementWithoutUID | 'conditional'
+
 export interface ComponentInfo {
   insertMenuLabel: string
-  elementToInsert: JSXElementWithoutUID | JSXConditionalWithoutUID
+  elementToInsert: ComponentElementToInsert
   importsToAdd: Imports
 }
 
 export function componentInfo(
   insertMenuLabel: string,
-  elementToInsert: JSXElementWithoutUID,
+  elementToInsert: ComponentElementToInsert,
   importsToAdd: Imports,
 ): ComponentInfo {
   return {
