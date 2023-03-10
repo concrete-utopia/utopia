@@ -48,6 +48,9 @@ export const RenderAsRow = React.memo(() => {
   const onSelect = React.useCallback(
     (selectOption: SelectOption) => {
       const value: InsertableComponent = selectOption.value
+      if (value.element === 'conditional') {
+        return
+      }
       onElementTypeChange(value.element.name, value.importsToAdd)
     },
     [onElementTypeChange],
