@@ -2418,22 +2418,28 @@ export const UPDATE_FNS = {
 
           const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
+          function getElementToInsert(): JSXElement | JSXConditionalExpression {
+            switch (action.whatToWrapWith) {
+              case 'default-empty-div':
+                return defaultTransparentViewElement(newUID)
+              case 'conditional':
+                return jsxConditionalExpression(
+                  newUID,
+                  jsxAttributeValue(true, emptyComments),
+                  jsxAttributeValue(null, emptyComments),
+                  jsxAttributeValue(null, emptyComments),
+                  emptyComments,
+                )
+              default:
+                return action.whatToWrapWith.element
+            }
+          }
+
           const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
             targetSuccess.filePath,
             editor,
             (parseSuccess) => {
-              const elementToInsert: JSXElement | JSXConditionalExpression =
-                action.whatToWrapWith === 'default-empty-div'
-                  ? defaultTransparentViewElement(newUID)
-                  : action.whatToWrapWith === 'conditional'
-                  ? jsxConditionalExpression(
-                      newUID,
-                      { type: 'ATTRIBUTE_VALUE', value: true, comments: emptyComments },
-                      { type: 'ATTRIBUTE_VALUE', value: null, comments: emptyComments },
-                      { type: 'ATTRIBUTE_VALUE', value: null, comments: emptyComments },
-                      emptyComments,
-                    )
-                  : action.whatToWrapWith.element
+              const elementToInsert = getElementToInsert()
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               let withTargetAdded: Array<UtopiaJSXComponent>
