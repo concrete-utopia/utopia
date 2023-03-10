@@ -128,9 +128,9 @@ function getNavigatorEntryLabel(
     case 'CONDITIONAL_CLAUSE':
       switch (navigatorEntry.clause) {
         case 'then':
-          return 'Then'
+          return 'true'
         case 'else':
-          return 'Else'
+          return 'false'
         default:
           throw assertNever(navigatorEntry.clause)
       }

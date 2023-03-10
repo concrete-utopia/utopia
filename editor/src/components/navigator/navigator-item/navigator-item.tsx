@@ -284,24 +284,32 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
     elementPath: ElementPath,
     parentPath: ElementPath,
   ): boolean => {
+    if (parent == null) {
+      return false
+    }
+    const originalConditionValue = parent.conditionalValue
+    if (originalConditionValue === 'not-a-conditional') {
+      return false
+    }
+
     const conditional = asConditional(parent)
     if (conditional == null) {
       return false
     }
+
     const flag = getConditionalFlag(conditional)
-    return flag === false
-      ? matchesOverriddenBranch(elementPath, parentPath, {
-          clause: conditional.whenTrue,
-          branch: 'then',
-          wantOverride: true,
-          parentOverride: true,
-        })
-      : matchesOverriddenBranch(elementPath, parentPath, {
-          clause: conditional.whenFalse,
-          branch: 'else',
-          wantOverride: false,
-          parentOverride: false,
-        })
+
+    // the final condition value, either from the original or from the override
+    const overriddenConditionValue: boolean = flag ?? originalConditionValue
+
+    // when the condition is true, then the 'then' branch is not hidden
+    if (overriddenConditionValue) {
+      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue, 'then')
+      return !EP.pathsEqual(elementPath, trueClausePath)
+    }
+    // when the condition is false, then the 'else' branch is not hidden
+    const falseClausePath = getConditionalClausePath(parentPath, conditional.whenFalse, 'else')
+    return !EP.pathsEqual(elementPath, falseClausePath)
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
@@ -597,12 +605,14 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   return (
     <React.Fragment>
-      <LayoutIcon
-        key={`layout-type-${props.label}`}
-        navigatorEntry={props.navigatorEntry}
-        color={props.iconColor}
-        warningText={props.warningText}
-      />
+      {props.navigatorEntry.type != 'CONDITIONAL_CLAUSE' ? (
+        <LayoutIcon
+          key={`layout-type-${props.label}`}
+          navigatorEntry={props.navigatorEntry}
+          color={props.iconColor}
+          warningText={props.warningText}
+        />
+      ) : null}
 
       <ItemLabel
         key={`label-${props.label}`}

@@ -11,7 +11,11 @@ import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -308,6 +312,83 @@ export var storyboard = (
     >
       Cannot reparent here
     </span>
+  </Storyboard>
+)
+`
+
+const projectWithGroupsAndNotGroups = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 1136,
+          top: 325,
+          width: 141,
+          height: 190,
+        }}
+        data-uid='groupchild'
+      />
+    </div>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 257.5,
+          top: 229,
+          width: 250,
+          height: 238,
+        }}
+        data-uid='fragmentchild'
+      />
+    </React.Fragment>
+    <div
+      data-uid='offsetparent'
+      style={{
+        position: 'absolute',
+        width: 310,
+        height: 575,
+        left: 566,
+        top: -2,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 165,
+          top: 360,
+          width: 119,
+          height: 193,
+        }}
+        data-uid='offsetchild'
+      />
+    </div>
+    <div
+      data-uid='nonoffsetparent'
+      style={{
+        width: 310,
+        height: 575,
+        left: 248,
+        top: 515,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 83,
+          top: 274,
+          width: 119,
+          height: 193,
+        }}
+        data-uid='nonoffsetchild'
+      />
+    </div>
   </Storyboard>
 )
 `
@@ -1018,6 +1099,116 @@ describe('Navigator', () => {
         'regular-sb/parent2/aaa',
         'regular-sb/parent2/aab',
         'regular-sb/text',
+      ])
+    })
+  })
+
+  describe('reparenting to children-affecting elements', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+
+    it('reparenting into fragment reparents to the correct index', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithGroupsAndNotGroups,
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/offsetparent/offsetchild`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const dragToElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/fragment/fragmentchild`,
+      )
+      const dragToElementRect = dragToElement.getBoundingClientRect()
+      const dragToElementRectCenter = getDomRectCenter(dragToElementRect)
+      const dragTo = {
+        x: dragToElementRectCenter.x,
+        y: dragToElementRect.y + 3,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
+          `navigator-item-drop-before-regular_sb/fragment/fragmentchild`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/group',
+        'regular-sb/group/groupchild',
+        'regular-sb/fragment',
+        'regular-sb/fragment/offsetchild', // <- offsetchild is moved to under fragment from offsetparent
+        'regular-sb/fragment/fragmentchild',
+        'regular-sb/offsetparent',
+        'regular-sb/nonoffsetparent',
+        'regular-sb/nonoffsetparent/nonoffsetchild',
+      ])
+    })
+
+    it('reparenting into sizeless div reparents to the right index', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithGroupsAndNotGroups,
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/offsetparent/offsetchild`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const dragToElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/nonoffsetparent/nonoffsetchild`,
+      )
+      const dragToElementRect = dragToElement.getBoundingClientRect()
+      const dragToElementRectCenter = getDomRectCenter(dragToElementRect)
+      const dragTo = {
+        x: dragToElementRectCenter.x,
+        y: dragToElementRect.y + 3,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
+          `navigator-item-drop-before-regular_sb/nonoffsetparent/nonoffsetchild`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/group',
+        'regular-sb/group/groupchild',
+        'regular-sb/fragment',
+        'regular-sb/fragment/fragmentchild',
+        'regular-sb/offsetparent',
+        'regular-sb/nonoffsetparent',
+        'regular-sb/nonoffsetparent/offsetchild', // <- offsetchild is moved to under nonoffsetparent from offsetparent
+        'regular-sb/nonoffsetparent/nonoffsetchild',
       ])
     })
   })
