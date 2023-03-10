@@ -22,7 +22,6 @@ import {
   jsxAttributeValue,
   jsxElementName,
   jsxElementWithoutUID,
-  JSXElementWithoutUID,
   parsedComments,
   simpleAttribute,
 } from '../../core/shared/element-template'
@@ -51,6 +50,7 @@ import {
   PropertyControlsInfo,
   ComponentDescriptor,
   ComponentDescriptorsForFile,
+  ComponentElementToInsert,
 } from '../custom-code/code-file'
 import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
@@ -60,7 +60,7 @@ export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
 
 export interface InsertableComponent {
   importsToAdd: Imports
-  element: JSXElementWithoutUID | 'conditional'
+  element: ComponentElementToInsert
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
@@ -68,7 +68,7 @@ export interface InsertableComponent {
 
 export function insertableComponent(
   importsToAdd: Imports,
-  element: JSXElementWithoutUID | 'conditional',
+  element: ComponentElementToInsert,
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
