@@ -588,12 +588,12 @@ export var FloatingMenu = React.memo(() => {
     },
     [
       floatingMenuState,
-      selectedViewsref,
-      addContentForInsertion,
-      fixedSizeForInsertion,
-      preserveVisualPositionForWrap,
       projectContentsRef,
+      selectedViewsref,
+      fixedSizeForInsertion,
+      addContentForInsertion,
       wrapContentForInsertion,
+      preserveVisualPositionForWrap,
     ],
   )
 
