@@ -62,6 +62,7 @@ import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { assertNever } from '../../../core/shared/utils'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -486,13 +487,24 @@ export var FloatingMenu = React.memo(() => {
         const selectedViews = selectedViewsref.current
 
         let actionsToDispatch: Array<EditorAction> = []
-        switch (floatingMenuState.insertMenuMode) {
-          case 'wrap': {
-            const newUID = generateUidWithExistingComponents(projectContentsRef.current)
 
-            if (pickedInsertableComponent.element === 'conditional') {
+        if (pickedInsertableComponent.element === 'conditional') {
+          switch (floatingMenuState.insertMenuMode) {
+            case 'wrap':
               actionsToDispatch = [wrapInView(selectedViews, 'conditional')]
-            } else {
+              break
+            case 'insert':
+            case 'convert':
+            case 'closed':
+              break
+            default:
+              assertNever(floatingMenuState)
+          }
+        } else {
+          switch (floatingMenuState.insertMenuMode) {
+            case 'wrap':
+              const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+
               const newElement = jsxElement(
                 pickedInsertableComponent.element.name,
                 newUID,
@@ -526,57 +538,50 @@ export var FloatingMenu = React.memo(() => {
                       importsToAdd: pickedInsertableComponent.importsToAdd,
                     }),
               ]
-            }
-            break
-          }
-          case 'insert': {
-            if (pickedInsertableComponent.element === 'conditional') {
               break
-            }
-            let elementToInsert = pickedInsertableComponent
-            if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
-              elementToInsert = {
-                ...pickedInsertableComponent,
-                element: {
-                  ...pickedInsertableComponent.element,
-                  children: [jsxTextBlock('Utopia')],
-                },
+            case 'insert':
+              let elementToInsert = pickedInsertableComponent
+              if (
+                addContentForInsertion &&
+                pickedInsertableComponent.element.children.length === 0
+              ) {
+                elementToInsert = {
+                  ...pickedInsertableComponent,
+                  element: {
+                    ...pickedInsertableComponent.element,
+                    children: [jsxTextBlock('Utopia')],
+                  },
+                }
               }
-            }
 
-            const targetParent: ElementPath | null =
-              floatingMenuState.parentPath ?? safeIndex(selectedViews, 0) ?? null
-            if (targetParent != null) {
-              // TODO multiselect?
-              actionsToDispatch = [
-                insertInsertable(
-                  targetParent,
-                  elementToInsert,
-                  fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-                  wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
-                  floatingMenuState.indexPosition,
-                ),
-              ]
-            }
-            break
-          }
-          case 'convert': {
-            if (pickedInsertableComponent.element === 'conditional') {
+              const targetParent: ElementPath | null =
+                floatingMenuState.parentPath ?? safeIndex(selectedViews, 0) ?? null
+              if (targetParent != null) {
+                // TODO multiselect?
+                actionsToDispatch = [
+                  insertInsertable(
+                    targetParent,
+                    elementToInsert,
+                    fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+                    wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
+                    floatingMenuState.indexPosition,
+                  ),
+                ]
+              }
               break
-            }
-            const { element, importsToAdd } = pickedInsertableComponent
-            // this is taken from render-as.tsx
-            const targetsForUpdates = getElementsToTarget(selectedViews)
-            actionsToDispatch = targetsForUpdates.flatMap((path) => {
-              return updateJSXElementName(path, element.name, importsToAdd)
-            })
-            break
+            case 'convert':
+              const { element, importsToAdd } = pickedInsertableComponent
+              // this is taken from render-as.tsx
+              const targetsForUpdates = getElementsToTarget(selectedViews)
+              actionsToDispatch = targetsForUpdates.flatMap((path) => {
+                return updateJSXElementName(path, element.name, importsToAdd)
+              })
+              break
+            case 'closed':
+              break
+            default:
+              assertNever(floatingMenuState)
           }
-          case 'closed':
-            break
-          default:
-            const _exhaustiveCheck: never = floatingMenuState
-            throw new Error(`Unhandled type ${JSON.stringify(floatingMenuState)}`)
         }
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
