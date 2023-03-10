@@ -66,7 +66,7 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-type ContentAffectingType = 'fragment' | 'simple-div'
+type ContentAffectingType = 'fragment' | 'sizeless-div'
 
 export function getElementContentAffectingType(
   metadata: ElementInstanceMetadataMap,
@@ -108,13 +108,12 @@ export function getElementContentAffectingType(
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
   if (hasNoWidthAndHeightProps) {
-    return 'simple-div'
+    return 'sizeless-div'
   }
 
   return null
 }
 
-// TODO make it internal
 export function treatElementAsContentAffecting(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
