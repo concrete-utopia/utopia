@@ -559,6 +559,7 @@ function shouldSnapTohug(
     const gap = element.specialSizeMeasurements.gap ?? 0
     if (elementParentFlexDirection === 'row' && resizeDirection.width) {
       if (elementParentFlexDirection === elementFlexDirection) {
+        // the element is in a row and it has children in a row it snaps on to all children + gaps + paddings
         const childrenWidth = childrenFrames.reduce((size, child) => size + (child?.width ?? 0), 0)
         const childrenSize =
           childrenWidth +
@@ -570,6 +571,7 @@ function shouldSnapTohug(
           snap: Math.abs(resizedBounds.width - childrenSize) <= SnappingThreshold,
         }
       } else {
+        // when the element is in row and it has children in a column only the widest child is needed and paddings
         const maxChildWidth = Math.max(...childrenFrames.map((child) => child?.width ?? 0))
         const childrenSize =
           maxChildWidth +
@@ -582,6 +584,7 @@ function shouldSnapTohug(
       }
     } else if (elementParentFlexDirection === 'column' && resizeDirection.height) {
       if (elementParentFlexDirection === elementFlexDirection) {
+        // the element is in a column and it has children in a column it snaps on to all children + gaps + paddings
         const childrenHeight = childrenFrames.reduce(
           (size, child) => size + (child?.height ?? 0),
           0,
@@ -596,6 +599,7 @@ function shouldSnapTohug(
           snap: Math.abs(resizedBounds.height - childrenSize) <= SnappingThreshold,
         }
       } else {
+        // when the element is in column and it has children in a row only the tallest child element is needed and paddings
         const maxChildHeight = Math.max(...childrenFrames.map((child) => child?.height ?? 0))
         const childrenSize =
           maxChildHeight +
