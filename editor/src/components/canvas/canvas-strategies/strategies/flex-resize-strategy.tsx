@@ -226,7 +226,13 @@ export function flexResizeStrategy(
 
           const snapToHug =
             lockedAspectRatio == null
-              ? shouldSnapTohug(edgePosition, resizedBounds, metadata, canvasState.startingMetadata)
+              ? shouldSnapTohug(
+                  edgePosition,
+                  resizedBounds,
+                  elementParentFlexDirection,
+                  metadata,
+                  canvasState.startingMetadata,
+                )
               : null
 
           const dimensionToUpdate =
@@ -525,6 +531,7 @@ function dimensionToSetForEdgePosition(edgePosition: EdgePosition): {
 function shouldSnapTohug(
   edgePosition: EdgePosition,
   resizedBounds: CanvasRectangle,
+  elementParentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
 ): {
@@ -532,11 +539,11 @@ function shouldSnapTohug(
   snap: boolean
 } | null {
   if (MetadataUtils.isFlexLayoutedContainer(element)) {
-    const flexDirection = element.specialSizeMeasurements.flexDirection
+    const elementFlexDirection = element.specialSizeMeasurements.flexDirection
     const children = MetadataUtils.getChildrenUnordered(startingMetadata, element.elementPath)
     const areAllChildrenFixed = children.some((child) => {
       const fillHugFixedState = detectFillHugFixedState(
-        flexDirection === 'row' ? 'horizontal' : 'vertical',
+        elementParentFlexDirection === 'row' ? 'horizontal' : 'vertical',
         startingMetadata,
         child.elementPath,
       )
@@ -550,33 +557,61 @@ function shouldSnapTohug(
       .map((child) => nullIfInfinity(child.globalFrame))
     const resizeDirection = dimensionToSetForEdgePosition(edgePosition)
     const gap = element.specialSizeMeasurements.gap ?? 0
-    if (flexDirection === 'row' && resizeDirection.width) {
-      const childrenWidth = childrenFrames.reduce((size, child) => size + (child?.width ?? 0), 0)
-      const childrenSize =
-        childrenWidth +
-        gap * children.length +
-        (element.specialSizeMeasurements.padding.left ?? 0) +
-        (element.specialSizeMeasurements.padding.right ?? 0)
-      return {
-        snapDirection: 'horizontal',
-        snap: Math.abs(resizedBounds.width - childrenSize) <= SnappingThreshold,
+    if (elementParentFlexDirection === 'row' && resizeDirection.width) {
+      if (elementParentFlexDirection === elementFlexDirection) {
+        const childrenWidth = childrenFrames.reduce((size, child) => size + (child?.width ?? 0), 0)
+        const childrenSize =
+          childrenWidth +
+          gap * children.length +
+          (element.specialSizeMeasurements.padding.left ?? 0) +
+          (element.specialSizeMeasurements.padding.right ?? 0)
+        return {
+          snapDirection: 'horizontal',
+          snap: Math.abs(resizedBounds.width - childrenSize) <= SnappingThreshold,
+        }
+      } else {
+        const maxChildWidth = Math.max(...childrenFrames.map((child) => child?.width ?? 0))
+        const childrenSize =
+          maxChildWidth +
+          (element.specialSizeMeasurements.padding.left ?? 0) +
+          (element.specialSizeMeasurements.padding.right ?? 0)
+        return {
+          snapDirection: 'horizontal',
+          snap: Math.abs(resizedBounds.width - childrenSize) <= SnappingThreshold,
+        }
       }
-    } else if (flexDirection === 'column' && resizeDirection.height) {
-      const childrenHeight = childrenFrames.reduce((size, child) => size + (child?.height ?? 0), 0)
-      const childrenSize =
-        childrenHeight +
-        gap * children.length +
-        (element.specialSizeMeasurements.padding.top ?? 0) +
-        (element.specialSizeMeasurements.padding.bottom ?? 0)
-      return {
-        snapDirection: 'vertical',
-        snap: Math.abs(resizedBounds.height - childrenSize) <= SnappingThreshold,
+    } else if (elementParentFlexDirection === 'column' && resizeDirection.height) {
+      if (elementParentFlexDirection === elementFlexDirection) {
+        const childrenHeight = childrenFrames.reduce(
+          (size, child) => size + (child?.height ?? 0),
+          0,
+        )
+        const childrenSize =
+          childrenHeight +
+          gap * children.length +
+          (element.specialSizeMeasurements.padding.top ?? 0) +
+          (element.specialSizeMeasurements.padding.bottom ?? 0)
+        return {
+          snapDirection: 'vertical',
+          snap: Math.abs(resizedBounds.height - childrenSize) <= SnappingThreshold,
+        }
+      } else {
+        const maxChildHeight = Math.max(...childrenFrames.map((child) => child?.height ?? 0))
+        const childrenSize =
+          maxChildHeight +
+          (element.specialSizeMeasurements.padding.top ?? 0) +
+          (element.specialSizeMeasurements.padding.bottom ?? 0)
+        return {
+          snapDirection: 'vertical',
+          snap: Math.abs(resizedBounds.height - childrenSize) <= SnappingThreshold,
+        }
       }
     }
   }
   return null
 }
 
+/** show guideline on snap with small x marks positioned on parent corners and resized element corners */
 function collectParentGuideline(
   edgePosition: EdgePosition,
   direction: 'horizontal' | 'vertical',
@@ -652,6 +687,7 @@ function collectParentGuideline(
   }
 }
 
+/** show guideline on snap with small x marks on child corners and resized element corners */
 function collectChildGuideline(
   edgePosition: EdgePosition,
   direction: 'horizontal' | 'vertical',
@@ -702,7 +738,8 @@ function collectChildGuideline(
     if (childFrame == null) {
       return null
     }
-    const guidelinePositionY = edgePosition.y === 0 ? childFrame.y : childFrame.y + childFrame.width
+    const guidelinePositionY =
+      edgePosition.y === 0 ? childFrame.y : childFrame.y + childFrame.height
     return {
       snappingVector: zeroCanvasPoint,
       guideline: {

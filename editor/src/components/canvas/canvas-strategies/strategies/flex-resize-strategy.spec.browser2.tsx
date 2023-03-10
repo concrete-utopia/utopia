@@ -28,6 +28,7 @@ import {
   EdgePositionBottomRight,
   EdgePositionLeft,
   EdgePositionRight,
+  EdgePositionTop,
   EdgePositionTopLeft,
   EdgePositionTopRight,
 } from '../../canvas-types'
@@ -333,7 +334,7 @@ describe('Resizing sets hug when size matches with children size', () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 60,
+        width: 100,
       }
       const expectedStyle = {
         display: 'flex',
@@ -344,7 +345,7 @@ describe('Resizing sets hug when size matches with children size', () => {
       }
       await resizeTestWithChildrenSetHug(
         EdgePositionTopLeft,
-        canvasPoint({ x: 18, y: 10 }),
+        canvasPoint({ x: 18, y: 10 }), // x: 20px to snap
         'row',
         initialStyle,
         expectedStyle,
@@ -355,39 +356,181 @@ describe('Resizing sets hug when size matches with children size', () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 60,
+        width: 100,
       }
       const expectedStyle = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 50,
+        width: 86,
       }
       await resizeTestWithChildrenSetHug(
         EdgePositionLeft,
-        canvasPoint({ x: 10, y: 10 }),
+        canvasPoint({ x: 14, y: 10 }),
         'row',
         initialStyle,
         expectedStyle,
       )
     })
-    it('Sets width when size is greater than children size', async () => {
+    it('Sets width when size is smaller than children size', async () => {
       const initialStyle = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 60,
+        width: 100,
       }
       const expectedStyle = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 30,
+        width: 70,
       }
       await resizeTestWithChildrenSetHug(
         EdgePositionLeft,
         canvasPoint({ x: 30, y: 10 }),
         'row',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+  })
+  describe('Resizing an element with children in a flex column', () => {
+    it('Sets hug when sized as children, resized element has flexDirection: row', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row' as const,
+        height: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row' as const,
+        height: 'max-content',
+        width: 380,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTopLeft,
+        canvasPoint({ x: 10, y: 42 }), // y: 40px to snap
+        'column',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets height when the size doesn`t reach the snap threshold, resized element has flexDirection: row', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row' as const,
+        height: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row' as const,
+        height: 26,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTop,
+        canvasPoint({ x: 10, y: 34 }),
+        'column',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets height when size is smaller than children size, resized element has flexDirection: row', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row' as const,
+        height: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row' as const,
+        height: 14,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTop,
+        canvasPoint({ x: 10, y: 46 }),
+        'column',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets hug when sized as children, resized element has flexDirection: column', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column' as const,
+        height: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column' as const,
+        height: 'max-content',
+        width: 380,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTopLeft,
+        canvasPoint({ x: 10, y: 22 }), // y: 20px to snap
+        'column',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets height when the size doesn`t reach the snap threshold, resized element has flexDirection: column', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column' as const,
+        height: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column' as const,
+        height: 46,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTop,
+        canvasPoint({ x: 10, y: 14 }),
+        'column',
+        initialStyle,
+        expectedStyle,
+      )
+    })
+    it('Sets height when size is smaller than children size, resized element has flexDirection: column', async () => {
+      const initialStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column' as const,
+        height: 60,
+      }
+      const expectedStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column' as const,
+        height: 34,
+      }
+      await resizeTestWithChildrenSetHug(
+        EdgePositionTop,
+        canvasPoint({ x: 10, y: 26 }),
+        'column',
         initialStyle,
         expectedStyle,
       )
@@ -809,6 +952,14 @@ async function resizeTestWithChildrenSetHug(
             border: '1px solid rgb(0, 0, 0, 1)',
           }}
           data-uid='eee'
+        />
+        <div
+          style={{
+            width: 40,
+            height: 20,
+            border: '1px solid rgb(0, 0, 0, 1)',
+          }}
+          data-uid='fff'
         />
       </div>
       <div
