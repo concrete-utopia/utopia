@@ -31,10 +31,6 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsFrame,
-} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
@@ -159,11 +155,6 @@ function dragToInsertStrategyFactory(
     }))
   })()
 
-  // we don't want outline for images for now
-  const nonImageInsertionSubjectsWithFrames = insertionSubjectsWithFrames.filter(
-    (s) => getJSXElementNameLastPart(s.subject.element.name) !== 'img',
-  )
-
   return {
     id: name,
     name: name,
@@ -178,12 +169,6 @@ function dragToInsertStrategyFactory(
         control: ParentBounds,
         props: { targetParent: targetParent },
         key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: DragOutlineControl,
-        props: dragTargetsFrame(nonImageInsertionSubjectsWithFrames.map((s) => s.frame)),
-        key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
