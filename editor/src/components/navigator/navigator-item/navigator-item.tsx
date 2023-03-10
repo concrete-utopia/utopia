@@ -300,7 +300,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
     const flag = getConditionalFlag(conditional)
 
     // the final condition value, either from the original or from the override
-    const overriddenConditionValue = flag ?? originalConditionValue
+    const overriddenConditionValue: boolean = flag ?? originalConditionValue
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
