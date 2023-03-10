@@ -468,13 +468,10 @@ export function updateFramesOfScenesAndComponents(
       (success, underlyingElement) => underlyingElement,
     )
 
-    const targetElementMetadata = MetadataUtils.findElementByElementPath(
-      editorState.jsxMetadata,
-      target,
-    )
-    const targetElementProps = editorState.allElementProps[EP.toString(target)] ?? {}
+    const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
+    const elementProps = editorState.allElementProps[EP.toString(target)] ?? {}
 
-    const elementProps = isJSXConditionalExpression(element) ? [] : element.props
+    const elementAttributes = isJSXConditionalExpression(element) ? [] : element.props
 
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -527,12 +524,12 @@ export function updateFramesOfScenesAndComponents(
               'style',
             ])
             const valueFromDOM = getObservableValueForLayoutProp(
-              targetElementMetadata,
+              elementMetadata,
               frameAndTarget.targetProperty,
-              targetElementProps,
+              elementProps,
             )
             const valueFromAttributes = eitherToMaybe(
-              getSimpleAttributeAtPath(right(elementProps), targetPropertyPath),
+              getSimpleAttributeAtPath(right(elementAttributes), targetPropertyPath),
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
@@ -611,7 +608,6 @@ export function updateFramesOfScenesAndComponents(
             )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
-            const elementAttributes = elementProps
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
@@ -688,7 +684,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             if (p !== 'width' && p !== 'height') {
-              const value = getLayoutProperty(p, right(elementProps), styleStringInArray)
+              const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
               if (isLeft(value) || value.value != null) {
                 frameProps[p] = cssNumberAsNumberIfPossible(value.value)
                 propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
@@ -725,7 +721,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             const framePoint = framePointForPinnedProp(p)
-            const value = getLayoutProperty(p, right(elementProps), styleStringInArray)
+            const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
             if (isLeft(value) || value.value != null) {
               frameProps[framePoint] = cssNumberAsNumberIfPossible(value.value)
               propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
