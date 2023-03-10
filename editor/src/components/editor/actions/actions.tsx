@@ -2454,8 +2454,15 @@ export const UPDATE_FNS = {
                     if (metadata == null || isLeft(metadata.element)) {
                       return null
                     }
-                    return metadata.element.value
+                    const value = { ...metadata.element.value }
+                    if (isElementWithUid(value)) {
+                      value.uid = generateUidWithExistingComponents(editor.projectContents)
+                    }
+                    return value
                   }
+
+                  // if the selection is a single element, put it directly into the true branch.
+                  // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
                   const targetElements: JSXElementChild | JSXFragment | null =
                     action.targets.length === 1
                       ? getSingleElement(action.targets[0])
@@ -2464,12 +2471,9 @@ export const UPDATE_FNS = {
                           mapDropNulls(getSingleElement, action.targets),
                           false,
                         )
+
                   if (targetElements != null) {
-                    const branch = { ...targetElements }
-                    if (isElementWithUid(branch)) {
-                      branch.uid = generateUidWithExistingComponents(editor.projectContents)
-                    }
-                    elementToInsert.whenTrue = branch
+                    elementToInsert.whenTrue = targetElements
                     withTargetAdded = insertElementAtPath(
                       editor.projectContents,
                       editor.canvas.openFile?.filename ?? null,
