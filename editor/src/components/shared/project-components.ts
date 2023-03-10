@@ -316,6 +316,19 @@ const basicHTMLElementsDescriptors = {
   ),
 }
 
+const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
+  conditional: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Conditional',
+        elementToInsert: 'conditional',
+        importsToAdd: {},
+      },
+    ],
+  },
+}
+
 export function stylePropOptionsForPropertyControls(
   propertyControls: PropertyControls,
 ): Array<StylePropOption> {
@@ -491,18 +504,11 @@ export function getComponentGroups(
   addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
   // Add conditionals group.
-  addDependencyDescriptor(null, insertableComponentGroupConditionals(), {
-    conditional: {
-      properties: {},
-      variants: [
-        {
-          insertMenuLabel: 'Conditional',
-          elementToInsert: 'conditional',
-          importsToAdd: {},
-        },
-      ],
-    },
-  })
+  addDependencyDescriptor(
+    null,
+    insertableComponentGroupConditionals(),
+    conditionalElementsDescriptors,
+  )
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
