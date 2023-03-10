@@ -2461,19 +2461,37 @@ export const UPDATE_FNS = {
                     return value
                   }
 
+                  function pathsToBeWrappedInFragment(): ElementPath[] {
+                    const elements: ElementPath[] = action.targets.filter((path) => {
+                      return !action.targets
+                        .filter((otherPath) => !EP.pathsEqual(otherPath, path))
+                        .some((otherPath) => EP.isDescendantOf(path, otherPath))
+                    })
+                    const parents = new Set<ElementPath>()
+                    elements.forEach((e) => parents.add(EP.parentPath(e)))
+                    if (parents.size !== 1) {
+                      return []
+                    }
+                    return elements
+                  }
+
                   // if the selection is a single element, put it directly into the true branch.
                   // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
-                  const targetElements: JSXElementChild | JSXFragment | null =
+                  const branch: JSXElementChild | JSXFragment | null =
                     action.targets.length === 1
                       ? getSingleElement(action.targets[0])
                       : jsxFragment(
                           generateUidWithExistingComponents(editor.projectContents),
-                          mapDropNulls(getSingleElement, action.targets),
+                          mapDropNulls(getSingleElement, pathsToBeWrappedInFragment()),
                           false,
                         )
 
-                  if (targetElements != null) {
-                    elementToInsert.whenTrue = targetElements
+                  if (branch != null) {
+                    if (isJSXFragment(branch) && branch.children.length === 0) {
+                      // nothing to do
+                      return parseSuccess
+                    }
+                    elementToInsert.whenTrue = branch
                     withTargetAdded = insertElementAtPath(
                       editor.projectContents,
                       editor.canvas.openFile?.filename ?? null,
