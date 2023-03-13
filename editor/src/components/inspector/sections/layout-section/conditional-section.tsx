@@ -140,19 +140,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   const toggleConditionOverride = React.useCallback(
     (whichButton: boolean) => () => {
-      const newCond = (() => {
-        if (whichButton === true) {
-          if (conditionOverride === true) {
-            return null
-          }
-          return true
-        }
-
-        if (conditionOverride === false) {
-          return null
-        }
-        return false
-      })()
+      const newCond = whichButton === conditionOverride ? null : whichButton
       setConditionOverride(newCond)()
     },
     [conditionOverride, setConditionOverride],
