@@ -5,6 +5,8 @@ import {
   ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
 import {
+  canvasPoint,
+  CanvasPoint,
   canvasRectangle,
   CanvasRectangle,
   isFiniteRectangle,
@@ -636,24 +638,11 @@ function collectParentGuideline(
           resizedBounds.y + resizedBounds.height,
         ),
       },
-      pointsOfRelevance: [
-        {
-          x: guidelinePositionX,
-          y: parentBounds.y,
-        },
-        {
-          x: guidelinePositionX,
-          y: parentBounds.y + parentBounds.height,
-        },
-        {
-          x: guidelinePositionX,
-          y: resizedBounds.y,
-        },
-        {
-          x: guidelinePositionX,
-          y: resizedBounds.y + resizedBounds.height,
-        },
-      ],
+      pointsOfRelevance: getHorizontalGuidelinePoints(
+        guidelinePositionX,
+        parentBounds,
+        resizedBounds,
+      ),
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   } else {
     const guidelinePositionY =
@@ -669,24 +658,11 @@ function collectParentGuideline(
           resizedBounds.x + resizedBounds.width,
         ),
       },
-      pointsOfRelevance: [
-        {
-          x: parentBounds.x,
-          y: guidelinePositionY,
-        },
-        {
-          x: parentBounds.x + parentBounds.width,
-          y: guidelinePositionY,
-        },
-        {
-          x: resizedBounds.x,
-          y: guidelinePositionY,
-        },
-        {
-          x: resizedBounds.x + resizedBounds.width,
-          y: guidelinePositionY,
-        },
-      ],
+      pointsOfRelevance: getVerticalGuidelinePoints(
+        guidelinePositionY,
+        parentBounds,
+        resizedBounds,
+      ),
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   }
 }
@@ -717,24 +693,11 @@ function collectChildGuideline(
         yTop: Math.min(childFrame.y, resizedBounds.y),
         yBottom: Math.max(childFrame.y + childFrame.height, resizedBounds.y + resizedBounds.height),
       },
-      pointsOfRelevance: [
-        {
-          x: guidelinePositionX,
-          y: childFrame.y,
-        },
-        {
-          x: guidelinePositionX,
-          y: childFrame.y + childFrame.height,
-        },
-        {
-          x: guidelinePositionX,
-          y: resizedBounds.y,
-        },
-        {
-          x: guidelinePositionX,
-          y: resizedBounds.y + resizedBounds.height,
-        },
-      ],
+      pointsOfRelevance: getHorizontalGuidelinePoints(
+        guidelinePositionX,
+        childFrame,
+        resizedBounds,
+      ),
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   } else {
     const childIndex = edgePosition.y === 0 ? 0 : children.length - 1
@@ -752,24 +715,57 @@ function collectChildGuideline(
         xLeft: Math.min(childFrame.x, resizedBounds.x),
         xRight: Math.max(childFrame.x + childFrame.width, resizedBounds.x + resizedBounds.width),
       },
-      pointsOfRelevance: [
-        {
-          x: childFrame.x,
-          y: guidelinePositionY,
-        },
-        {
-          x: childFrame.x + childFrame.width,
-          y: guidelinePositionY,
-        },
-        {
-          x: resizedBounds.x,
-          y: guidelinePositionY,
-        },
-        {
-          x: resizedBounds.x + resizedBounds.width,
-          y: guidelinePositionY,
-        },
-      ],
+      pointsOfRelevance: getVerticalGuidelinePoints(guidelinePositionY, childFrame, resizedBounds),
     } as GuidelineWithSnappingVectorAndPointsOfRelevance
   }
+}
+
+function getHorizontalGuidelinePoints(
+  positionX: number,
+  frameA: CanvasRectangle,
+  frameB: CanvasRectangle,
+): Array<CanvasPoint> {
+  return [
+    canvasPoint({
+      x: positionX,
+      y: frameA.y,
+    }),
+    canvasPoint({
+      x: positionX,
+      y: frameA.y + frameA.height,
+    }),
+    canvasPoint({
+      x: positionX,
+      y: frameB.y,
+    }),
+    canvasPoint({
+      x: positionX,
+      y: frameB.y + frameB.height,
+    }),
+  ]
+}
+
+function getVerticalGuidelinePoints(
+  positionY: number,
+  frameA: CanvasRectangle,
+  frameB: CanvasRectangle,
+): Array<CanvasPoint> {
+  return [
+    canvasPoint({
+      x: frameA.x,
+      y: positionY,
+    }),
+    canvasPoint({
+      x: frameA.x + frameA.width,
+      y: positionY,
+    }),
+    canvasPoint({
+      x: frameB.x,
+      y: positionY,
+    }),
+    canvasPoint({
+      x: frameB.x + frameB.width,
+      y: positionY,
+    }),
+  ]
 }
