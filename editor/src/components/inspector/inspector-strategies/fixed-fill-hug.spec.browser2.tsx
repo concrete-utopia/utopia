@@ -692,7 +692,7 @@ describe('Fixed / Fill / Hug control', () => {
         expect((heightControl as HTMLInputElement).value).toEqual('407px')
       }
 
-      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/group'))
+      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup/group'))
       expect(groupGlobalFrame.width).toBe(326)
       expect(groupGlobalFrame.height).toBe(407)
 
@@ -1310,7 +1310,7 @@ async function getGlobalFrame(editor: EditorRenderResult, path: ElementPath) {
   await selectComponentsForTest(editor, [path])
   const instance = MetadataUtils.findElementByElementPath(
     editor.getEditorState().editor.jsxMetadata,
-    EP.fromString('sb/supergroup'),
+    path,
   )
   if (instance?.globalFrame == null) {
     throw new Error('`instance?.globalFrame` is null')
