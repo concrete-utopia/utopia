@@ -182,7 +182,7 @@ function rawCodeToExpressionStatement(
   }
 }
 
-export function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
+function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
   function createExpression(): TS.Expression {
     switch (attribute.type) {
       case 'ATTRIBUTE_VALUE':
