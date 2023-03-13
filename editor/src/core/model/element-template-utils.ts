@@ -38,6 +38,7 @@ import {
   emptyComments,
   ChildOrAttribute,
   jsxAttributeValue,
+  childOrBlockIsAttribute,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -57,9 +58,21 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import {
+  getJSXAttributeAtPath,
+  GetJSXAttributeResult,
+  jsxSimpleAttributeToValue,
+} from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsConditionalClause,
+} from '../../components/editor/store/editor-state'
+import { conditionalWhenFalseOptic, conditionalWhenTrueOptic } from './common-optics'
+import { modify } from '../shared/optics/optic-utilities'
+import { foldEither } from '../shared/either'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -421,26 +434,29 @@ export function findJSXElementChildAtPath(
         }
       }
     } else if (isJSXConditionalExpression(element)) {
-      const tailPath = workingPath.slice(1)
-      if (tailPath.length === 0) {
-        // this is the element we want
-        return element
-      } else {
-        function elementOrNullFromClause(
-          clause: ChildOrAttribute,
-          branch: ThenOrElse,
-        ): JSXElementChild | null {
-          // if it's an attribute, match its path with the right branch
-          if (!childOrBlockIsChild(clause)) {
-            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
+      const uid = getUtopiaID(element)
+      if (uid === firstUIDOrIndex) {
+        const tailPath = workingPath.slice(1)
+        if (tailPath.length === 0) {
+          // this is the element we want
+          return element
+        } else {
+          function elementOrNullFromClause(
+            clause: ChildOrAttribute,
+            branch: ThenOrElse,
+          ): JSXElementChild | null {
+            // if it's an attribute, match its path with the right branch
+            if (!childOrBlockIsChild(clause)) {
+              return tailPath[0] === thenOrElsePathPart(branch) ? element : null
+            }
+            // if it's a child, get its inner element
+            return findAtPathInner(clause, tailPath)
           }
-          // if it's a child, get its inner element
-          return findAtPathInner(clause, tailPath)
+          return (
+            elementOrNullFromClause(element.whenTrue, 'then') ??
+            elementOrNullFromClause(element.whenFalse, 'else')
+          )
         }
-        return (
-          elementOrNullFromClause(element.whenTrue, 'then') ??
-          elementOrNullFromClause(element.whenFalse, 'else')
-        )
       }
     }
     return null
@@ -568,7 +584,7 @@ export function removeJSXElementChild(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: StaticElementPath | null,
+  targetParent: ReparentTargetParent<StaticElementPath> | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -584,9 +600,43 @@ export function insertJSXElementChild(
   } else {
     return transformJSXComponentAtPath(
       components,
-      targetParentIncludingStoryboardRoot,
+      getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot),
       (parentElement) => {
-        if (isJSXElementLike(parentElement)) {
+        if (
+          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
+          isJSXConditionalExpression(parentElement)
+        ) {
+          // Determine which clause of the conditional we want to modify.
+          const toClauseOptic =
+            targetParentIncludingStoryboardRoot.clause === 'then'
+              ? conditionalWhenTrueOptic
+              : conditionalWhenFalseOptic
+          // Update the clause if it currently holds a null value.
+          return modify(
+            toClauseOptic,
+            (clauseValue) => {
+              if (childOrBlockIsAttribute(clauseValue)) {
+                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
+                return foldEither(
+                  () => {
+                    return clauseValue
+                  },
+                  (value) => {
+                    if (value == null) {
+                      return elementToInsert
+                    } else {
+                      return clauseValue
+                    }
+                  },
+                  simpleValue,
+                )
+              } else {
+                return clauseValue
+              }
+            },
+            parentElement,
+          )
+        } else if (isJSXElementLike(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)
