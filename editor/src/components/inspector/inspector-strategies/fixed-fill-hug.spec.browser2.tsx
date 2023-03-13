@@ -1,5 +1,8 @@
 import { act, fireEvent } from '@testing-library/react'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import {
   expectSingleUndoStep,
@@ -542,8 +545,7 @@ describe('Fixed / Fill / Hug control', () => {
     })
   })
 
-  // the expect is in `expectOptionsToBePresent`
-  // eslint-disable-next-line jest/expect-expect
+  /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectOptionsToBePresent"] }] */
   it('when toggling between element, options in the dropdown are updated', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithElementsToToggleBetween,
@@ -669,6 +671,37 @@ describe('Fixed / Fill / Hug control', () => {
         expect(child.style.height).toEqual('100%')
         expect(parent.style.height).toEqual('386px')
       })
+    })
+  })
+
+  describe('fixed size', () => {
+    it('global frames are correct for groups of groups', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithNestedGroups,
+        'await-first-dom-report',
+      )
+
+      const superGroupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup'))
+      expect(superGroupGlobalFrame.width).toBe(326)
+      expect(superGroupGlobalFrame.height).toBe(407)
+
+      {
+        const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+        expect((widthControl as HTMLInputElement).value).toEqual('326px')
+        const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+        expect((heightControl as HTMLInputElement).value).toEqual('407px')
+      }
+
+      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/group'))
+      expect(groupGlobalFrame.width).toBe(326)
+      expect(groupGlobalFrame.height).toBe(407)
+
+      {
+        const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+        expect((widthControl as HTMLInputElement).value).toEqual('326px')
+        const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+        expect((heightControl as HTMLInputElement).value).toEqual('407px')
+      }
     })
   })
 })
@@ -1052,6 +1085,53 @@ export var storyboard = (
   </Storyboard>
 )
 `
+const projectWithNestedGroups = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='supergroup'>
+      <div data-uid='group'>
+        <div
+          style={{
+            backgroundColor: '#00acff',
+            position: 'absolute',
+            left: -783,
+            top: 335,
+            width: 100,
+            height: 407,
+          }}
+          data-uid='aab'
+          data-label='eee'
+        />
+        <div
+          style={{
+            backgroundColor: '#ff0001',
+            position: 'absolute',
+            left: -557,
+            top: 335,
+            width: 100,
+            height: 407,
+          }}
+          data-uid='aaa'
+          data-label='eee'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          position: 'absolute',
+          left: -670,
+          top: 335,
+          width: 100,
+          height: 407,
+        }}
+        data-uid='aac'
+        data-label='eee'
+      />
+    </div>
+  </Storyboard>
+)
+`
 
 const absoluteProjectWithInjectedStyle = (stylePropsAsString: string) =>
   formatTestProjectCode(`
@@ -1225,3 +1305,18 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+async function getGlobalFrame(editor: EditorRenderResult, path: ElementPath) {
+  await selectComponentsForTest(editor, [path])
+  const instance = MetadataUtils.findElementByElementPath(
+    editor.getEditorState().editor.jsxMetadata,
+    EP.fromString('sb/supergroup'),
+  )
+  if (instance?.globalFrame == null) {
+    throw new Error('`instance?.globalFrame` is null')
+  }
+  if (isInfinityRectangle(instance.globalFrame)) {
+    throw new Error('`instance?.globalFrame` is infinity rect')
+  }
+  return instance.globalFrame
+}
