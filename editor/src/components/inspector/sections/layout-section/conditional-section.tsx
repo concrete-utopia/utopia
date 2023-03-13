@@ -107,7 +107,7 @@ const conditionExpressionSelector = createCachedSelector(
 
     const element = elements[0]
 
-    return jsxAttributeToString(element.element.condition)
+    return element.element.expression
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
