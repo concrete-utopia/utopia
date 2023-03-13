@@ -672,14 +672,6 @@ export const MetadataUtils = {
     }
     return null
   },
-  getAllStoryboardChildrenUnordered(
-    metadata: ElementInstanceMetadataMap,
-  ): ElementInstanceMetadata[] {
-    const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
-    return storyboardMetadata == null
-      ? []
-      : MetadataUtils.getImmediateChildrenUnordered(metadata, storyboardMetadata.elementPath)
-  },
   getAllStoryboardChildrenPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
@@ -687,15 +679,18 @@ export const MetadataUtils = {
       : MetadataUtils.getImmediateChildrenPathsUnordered(metadata, storyboardMetadata.elementPath)
   },
   getAllCanvasRootPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
-    const rootScenesAndElements = MetadataUtils.getAllStoryboardChildrenUnordered(metadata)
-    return flatMapArray<ElementInstanceMetadata, ElementPath>((root) => {
-      const rootElements = MetadataUtils.getRootViewPathsUnordered(metadata, root.elementPath)
-      if (rootElements.length > 0) {
-        return rootElements
+    const allPaths = objectValues(metadata).map((m) => m.elementPath)
+    const rootPaths = allPaths.filter(EP.isRootElementOfInstance)
+    const rootsOfStoryboardChildren = rootPaths.filter((path) => path.parts.length === 2)
+
+    return flatMapArray((root) => {
+      const childrenOfRoot = MetadataUtils.getChildrenPathsUnordered(metadata, root)
+      if (childrenOfRoot.length > 0) {
+        return childrenOfRoot
       } else {
-        return [root.elementPath]
+        return [root]
       }
-    }, rootScenesAndElements)
+    }, rootsOfStoryboardChildren)
   },
   getAllPaths: memoize(
     (metadata: ElementInstanceMetadataMap): ElementPath[] => {

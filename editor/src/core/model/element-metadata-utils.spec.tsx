@@ -842,15 +842,6 @@ describe('getStoryboardMetadata', () => {
 })
 
 describe('getting the root paths', () => {
-  it('getAllStoryboardChildren returns instance metadata of all children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenUnordered(testJsxMetadata)
-    const expectedResult: Array<ElementInstanceMetadata> = [
-      testComponentSceneElement,
-      testStoryboardChildElement,
-    ]
-    expect(actualResult).toEqual(expectedResult)
-  })
-
   it('getAllStoryboardChildrenPaths returns paths of all children of the storyboard', () => {
     const actualResult = MetadataUtils.getAllStoryboardChildrenPathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
