@@ -961,12 +961,14 @@ describe('findJSXElementChildAtPath', () => {
       projectFile,
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
     )
+    expect(elementAtTrueBranch).not.toBeNull()
     expect(getUtopiaID(elementAtTrueBranch!)).toEqual('ternary-true-root')
 
     const elementAtFalseBranch = findElement(
       projectFile,
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
     )
+    expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 
