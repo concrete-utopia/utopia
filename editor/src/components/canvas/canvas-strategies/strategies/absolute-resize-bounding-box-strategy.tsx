@@ -65,8 +65,10 @@ export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
-  const filteredSelectedElements = getDragTargets(targets)
+  const selectedTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const filteredSelectedTargets = getDragTargets(selectedTargets)
+  const filteredSelectedElements = getDragTargets(retargetedTargets)
   if (
     filteredSelectedElements.length === 0 ||
     !filteredSelectedElements.every((element) => {
@@ -141,7 +143,7 @@ export function absoluteResizeBoundingBoxStrategy(
               centerBased,
             )
             const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-              filteredSelectedElements,
+              filteredSelectedTargets,
               canvasState.startingMetadata,
               edgePosition,
               newBoundingBox,
@@ -205,7 +207,7 @@ export function absoluteResizeBoundingBoxStrategy(
               ...commandsForSelectedElements,
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(targets),
+              setElementsToRerenderCommand(retargetedTargets),
             ])
           }
         } else {

@@ -1,11 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { toString } from '../../../../core/shared/element-path'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   MoveStrategy,
 } from '../canvas-strategy-types'
@@ -22,11 +22,12 @@ export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   const isApplicable =
-    targets.length > 0 &&
-    getDragTargets(targets).every((element) => {
+    retargetedTargets.length > 0 &&
+    getDragTargets(retargetedTargets).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,
@@ -47,13 +48,13 @@ export function absoluteMoveStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: targets },
+          props: { targets: retargetedTargets },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: targets },
+          props: { targets: retargetedTargets },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -76,9 +77,10 @@ export function absoluteMoveStrategy(
         ) {
           return applyMoveCommon(
             targets,
+            retargetedTargets,
             canvasState,
             interactionSession,
-            getAdjustMoveCommands(targets, canvasState, interactionSession),
+            getAdjustMoveCommands(retargetedTargets, canvasState, interactionSession),
           )
         }
         // Fallback for when the checks above are not satisfied.

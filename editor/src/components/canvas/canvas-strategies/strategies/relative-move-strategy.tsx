@@ -78,6 +78,7 @@ export function relativeMoveStrategy(
         ) {
           return applyMoveCommon(
             filteredSelectedElements,
+            filteredSelectedElements,
             canvasState,
             interactionSession,
             getAdjustMoveCommands(filteredSelectedElements, canvasState, interactionSession, {

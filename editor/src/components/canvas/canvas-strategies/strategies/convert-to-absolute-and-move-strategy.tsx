@@ -146,6 +146,7 @@ export function convertToAbsoluteAndMoveStrategy(
           )
         }
         const absoluteMoveApplyResult = applyMoveCommon(
+          targets,
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle contentAffecting elements
           canvasState,
           interactionSession,

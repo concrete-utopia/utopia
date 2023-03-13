@@ -97,6 +97,7 @@ export const getAdjustMoveCommands =
   }
 
 export function applyMoveCommon(
+  originalTargets: Array<ElementPath>,
   targets: Array<ElementPath>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
@@ -131,7 +132,8 @@ export function applyMoveCommon(
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         canvasState.startingMetadata,
-        targetsForSnapping,
+        canvasState.startingAllElementProps,
+        originalTargets,
       )
 
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
