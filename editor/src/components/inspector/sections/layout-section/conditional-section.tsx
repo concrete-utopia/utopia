@@ -5,7 +5,7 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
-import { isRight } from '../../../../core/shared/either'
+import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
@@ -47,7 +47,7 @@ const conditionOverrideSelector = createCachedSelector(
       const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
       if (
         elementMetadata == null ||
-        !isRight(elementMetadata.element) ||
+        isLeft(elementMetadata.element) ||
         !isJSXConditionalExpression(elementMetadata.element.value)
       ) {
         return null
@@ -85,7 +85,7 @@ const conditionExpressionSelector = createCachedSelector(
       const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
       if (
         elementMetadata == null ||
-        !isRight(elementMetadata.element) ||
+        isLeft(elementMetadata.element) ||
         !isJSXConditionalExpression(elementMetadata.element.value)
       ) {
         return null
