@@ -1103,6 +1103,31 @@ describe('Navigator', () => {
     })
   })
 
+  describe('derived data', () => {
+    it('element warnings', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithGroupsAndNotGroups,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/group/groupchild')])
+
+      const { elementWarnings } = editor.getEditorState().derived
+
+      expect(elementWarnings['sb/group/groupchild'].value.absoluteWithUnpositionedParent).toEqual(
+        false,
+      )
+      expect(
+        elementWarnings['sb/fragment/fragmentchild'].value.absoluteWithUnpositionedParent,
+      ).toEqual(false)
+      expect(
+        elementWarnings['sb/offsetparent/offsetchild'].value.absoluteWithUnpositionedParent,
+      ).toEqual(false)
+      expect(
+        elementWarnings['sb/nonoffsetparent/nonoffsetchild'].value.absoluteWithUnpositionedParent,
+      ).toEqual(true)
+    })
+  })
+
   describe('reparenting to children-affecting elements', () => {
     setFeatureForBrowserTests('Fragment support', true)
 
