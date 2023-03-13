@@ -52,6 +52,10 @@ import { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
+import {
+  DragOutlineControl,
+  dragTargetsFrame,
+} from '../../controls/select-mode/drag-outline-control'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -155,6 +159,11 @@ function dragToInsertStrategyFactory(
     }))
   })()
 
+  // we don't want outline for images for now
+  const nonImageInsertionSubjectsWithFrames = insertionSubjectsWithFrames.filter(
+    (s) => getJSXElementNameLastPart(s.subject.element.name) !== 'img',
+  )
+
   return {
     id: name,
     name: name,
@@ -175,6 +184,12 @@ function dragToInsertStrategyFactory(
         control: FlexReparentTargetIndicator,
         props: {},
         key: 'flex-reparent-target-indicator',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: DragOutlineControl,
+        props: dragTargetsFrame(nonImageInsertionSubjectsWithFrames.map((s) => s.frame)),
+        key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
     ],

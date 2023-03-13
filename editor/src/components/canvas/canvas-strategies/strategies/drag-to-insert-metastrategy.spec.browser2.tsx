@@ -69,10 +69,15 @@ async function dragFromInsertMenuDivButtonToPoint(
   targetPoint: { x: number; y: number },
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
+  showDragOutline: 'show-drag-outline' | 'no-drag-outline',
 ) {
   await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
-  const dragOutlineControl = renderResult.renderedDOM.getByTestId(DragOutlineControlTestId)
-  expect(dragOutlineControl).not.toBeNull()
+  const dragOutlineControl = await renderResult.renderedDOM.queryByTestId(DragOutlineControlTestId)
+  if (showDragOutline === 'show-drag-outline') {
+    expect(dragOutlineControl).not.toBeNull()
+  } else {
+    expect(dragOutlineControl).toBeNull()
+  }
   await finishDraggingToPoint(targetPoint, modifiers, renderResult)
 
   await renderResult.getDispatchFollowUpActionsFinished()
@@ -126,7 +131,12 @@ describe('Dragging from the insert menu into an absolute layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+    )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -190,7 +200,12 @@ describe('Dragging from the insert menu into an absolute layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+    )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -292,7 +307,12 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetNextSiblingBounds.y + 5,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'show-drag-outline',
+    )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -483,7 +503,12 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetPrevSiblingBounds.y + targetPrevSiblingBounds.height - 5,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'show-drag-outline',
+    )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -543,7 +568,12 @@ describe('Dragging from the insert menu into a flex layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
-    await dragFromInsertMenuDivButtonToPoint(targetPoint, emptyModifiers, renderResult)
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+    )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
