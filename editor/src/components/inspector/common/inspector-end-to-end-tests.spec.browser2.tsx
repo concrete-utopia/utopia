@@ -2351,7 +2351,7 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      // open the section in the inspector
+      // switch branches
       {
         await clickButtonAndSelectTarget(renderResult, ConditionalsControlSwitchBranches, [
           targetPath,
@@ -2365,78 +2365,6 @@ describe('inspector tests with real metadata', () => {
             ) : (
               <div data-uid='bbb' data-testid='bbb'>foo</div>
             )}
-            </div>
-          `),
-        )
-      }
-
-      // toggle to false
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
-          targetPath,
-        ])
-
-        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/conditional=false
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
-      // toggle to true
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleTrueTestId, [
-          targetPath,
-        ])
-
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/conditional=true
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
-      // close the inspector section
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionCloseTestId, [
-          targetPath,
-        ])
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
             </div>
           `),
         )
