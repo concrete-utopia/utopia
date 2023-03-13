@@ -107,7 +107,7 @@ const conditionExpressionSelector = createCachedSelector(
 
     const element = elements[0]
 
-    return element.element.expression
+    return element.element.originalConditionString
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
