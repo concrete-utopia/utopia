@@ -972,7 +972,7 @@ describe('findJSXElementChildAtPath', () => {
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 
-  it('conditional expressions with children that are JSXAttribute', () => {
+  it('conditional expressions with branches that are JSXAttribute', () => {
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
@@ -1004,5 +1004,51 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
     ])
+  })
+
+  it('conditional expressions with branches that are mixed JSXAttribute and JSXElementChild', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {true ? 
+              (
+                "hello"
+              ) : (
+                <div data-uid='ternary-false-root'>
+                  <div data-uid='ternary-false-child' />
+                </div> 
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root/ternary-false-child',
+    ])
+
+    // !!! what to do with the then-case and else-case "uid" behaviors? how do we proceed from here?
+
+    const elementAtTrueBranch = findElement(
+      projectFile,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
+    )
+    expect(elementAtTrueBranch).toBeNull()
+
+    const elementAtFalseBranch = findElement(
+      projectFile,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
+    )
+    expect(elementAtFalseBranch).not.toBeNull()
+    expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 })
