@@ -1,3 +1,5 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementAtPathHasMatchingUID*", "expectElementFoundNull"] }] */
+
 import {
   jsxAttributeValue,
   isJSXAttributeValue,
@@ -16,6 +18,7 @@ import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
+  findJSXElementChildAtPath,
   getUtopiaID,
   guaranteeUniqueUids,
   rearrangeJsxChildren,
@@ -38,8 +41,15 @@ import {
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { ProjectContentFile } from '../../components/assets'
-import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
-import { dynamicPathToStaticPath, fromString, fromStringStatic } from '../shared/element-path'
+import { ElementPath, ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import {
+  dynamicPathToStaticPath,
+  fromString,
+  fromStringStatic,
+  toUid,
+} from '../shared/element-path'
+import { getComponentsFromTopLevelElements } from './project-file-utils'
+import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -739,3 +749,245 @@ describe('rearrangeJsxChildren', () => {
 function printCode(projectFile: ParseSuccess): string {
   return testPrintCodeFromParseSuccess('storyboard.js', projectFile)
 }
+
+describe('findJSXElementChildAtPath', () => {
+  setFeatureForUnitTests('Conditional support', true)
+
+  function findElement(file: ParseSuccess, pathString: string) {
+    const path = fromStringStatic(pathString)
+    const foundElement = findJSXElementChildAtPath(
+      getComponentsFromTopLevelElements(file.topLevelElements),
+      path,
+    )
+    return foundElement
+  }
+
+  function expectElementAtPathHasMatchingUID(file: ParseSuccess, pathString: string) {
+    const foundElement = findElement(file, pathString)
+
+    expect(foundElement).toBeDefined()
+    expect(getUtopiaID(foundElement!)).toEqual(toUid(fromStringStatic(pathString)))
+  }
+
+  function expectElementAtPathHasMatchingUIDForPaths(file: ParseSuccess, paths: Array<string>) {
+    paths.forEach((path) => expectElementAtPathHasMatchingUID(file, path))
+  }
+
+  function expectElementFoundNull(file: ParseSuccess, paths: Array<string>) {
+    paths.forEach((path) => expect(findElement(file, path)).toBeNull())
+  }
+
+  it('simple project with divs', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            <div data-uid='child-c'>
+              <div data-uid='grandchild-c' />
+            </div>
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+    ])
+    expectElementFoundNull(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/not-existing-child',
+    ])
+  })
+
+  it('simple project with divs with a conditional expression as sibling', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            {true ? 
+              (
+                <div data-uid='ternary-true-root'>
+                  <div data-uid='ternary-true-child' />
+                </div> 
+              ) : (
+                <div data-uid='ternary-false-root'>
+                  <div data-uid='ternary-false-child' />
+                </div> 
+              )
+            }
+            <div data-uid='child-d' />
+            <div data-uid='child-c'>
+              <div data-uid='grandchild-c' />
+            </div>
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+    ])
+
+    // !!!! This is a deliberately failing test to demonstrate the issue Berci found
+    expectElementFoundNull(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/not-existing-child',
+    ])
+  })
+
+  it('project with arbitrary js block', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {[1, 2, 3].map(id => {
+              return (
+                <div data-uid='mapped-root'>
+                  <div data-uid='mapped-child' />
+                </div> 
+              )
+            })}
+            {[1, 2, 3].map(id => {
+              return (
+                <div data-uid='other-mapped-element' />
+              )
+            })}
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root/mapped-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/other-mapped-element',
+    ])
+  })
+
+  it('project with arbitrary js block that has a conditional expression inside', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {[1, 2, 3].map(id => {
+              return (
+                <div data-uid='mapped-root'>
+                  <div data-uid='mapped-child' />
+                </div> 
+              )
+            })}
+            {[1, 2, 3].map(id => {
+              return (
+                true ? 
+                  (
+                    <div data-uid='ternary-true-root'>
+                      <div data-uid='ternary-true-child' />
+                    </div> 
+                  ) : (
+                    <div data-uid='ternary-false-root'>
+                      <div data-uid='ternary-false-child' />
+                    </div> 
+                  )
+              )
+            })}
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root/mapped-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-true-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-true-root/ternary-true-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-false-root/ternary-false-child',
+    ])
+  })
+
+  it('conditional expressions', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {true ? 
+              (
+                <div data-uid='ternary-true-root'>
+                  <div data-uid='ternary-true-child' />
+                </div> 
+              ) : (
+                <div data-uid='ternary-false-root'>
+                  <div data-uid='ternary-false-child' />
+                </div> 
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-true-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-true-root/ternary-true-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root/ternary-false-child',
+    ])
+  })
+
+  it('conditional expressions with children that are JSXAttribute', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {true ? 
+              (
+                "hello"
+              ) : (
+                "world"
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
+    ])
+
+    // !!! what to do with the then-case and else-case "uid" behaviors? how do we proceed from here?
+
+    expectElementFoundNull(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
+    ])
+  })
+})
