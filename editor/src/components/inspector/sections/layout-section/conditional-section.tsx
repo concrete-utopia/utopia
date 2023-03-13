@@ -13,6 +13,7 @@ import {
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { jsxAttributeToString } from '../../../../core/workers/parser-printer/parser-printer'
+import { unless } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexRow,
@@ -201,7 +202,8 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           </SquareButton>
         )}
       </InspectorSubsectionHeader>
-      {conditionExpression !== 'multiselect' ? (
+      {unless(
+        conditionExpression === 'multiselect',
         <UIGridRow
           padded={true}
           variant='<---1fr--->|------172px-------|'
@@ -213,8 +215,8 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <FlexRow style={{ flexGrow: 1, gap: 4 }}>
             <span style={{ flex: 1, textAlign: 'center' }}>{conditionExpression}</span>
           </FlexRow>
-        </UIGridRow>
-      ) : null}
+        </UIGridRow>,
+      )}
       <UIGridRow
         padded={true}
         variant='<---1fr--->|------172px-------|'
