@@ -955,6 +955,19 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root/ternary-false-child',
     ])
+
+    // !!!! Do I misunderstand something?? shouldn't the then-case and else-case return the true-root and false-root here?? these tests fail now...
+    const elementAtTrueBranch = findElement(
+      projectFile,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
+    )
+    expect(getUtopiaID(elementAtTrueBranch!)).toEqual('ternary-true-root')
+
+    const elementAtFalseBranch = findElement(
+      projectFile,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
+    )
+    expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 
   it('conditional expressions with children that are JSXAttribute', () => {
