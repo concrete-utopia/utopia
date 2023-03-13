@@ -1,11 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
-  isJSXFragment,
-} from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -70,7 +66,7 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-type ContentAffectingType = 'fragment' | 'conditional' | 'sizeless-div'
+type ContentAffectingType = 'fragment' | 'sizeless-div'
 
 export function getElementContentAffectingType(
   metadata: ElementInstanceMetadataMap,
@@ -90,17 +86,6 @@ export function getElementContentAffectingType(
     )
   ) {
     return 'fragment'
-  }
-
-  if (
-    elementMetadata?.element != null &&
-    foldEither(
-      () => false,
-      (e) => isJSXConditionalExpression(e),
-      elementMetadata.element,
-    )
-  ) {
-    return 'conditional'
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
