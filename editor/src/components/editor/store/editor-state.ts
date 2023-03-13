@@ -2553,10 +2553,10 @@ function getElementWarningsInner(
       EP.parentPath(elementMetadata.elementPath),
     )
 
-    const isParentConfiguredForPins =
+    const isParentNotConfiguredForPins =
       MetadataUtils.isPositionAbsolute(elementMetadata) &&
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-    const absoluteWithUnpositionedParent = isParentConfiguredForPins && isParentGroupLike === false
+    const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentGroupLike
 
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,
