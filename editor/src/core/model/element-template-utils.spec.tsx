@@ -836,7 +836,6 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
     ])
 
-    // !!!! This is a deliberately failing test to demonstrate the issue Berci found
     expectElementFoundNull(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/not-existing-child',
     ])
@@ -998,8 +997,6 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
     ])
 
-    // !!! what to do with the then-case and else-case "uid" behaviors? how do we proceed from here?
-
     expectElementFoundNull(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
@@ -1035,8 +1032,6 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root/ternary-false-child',
     ])
-
-    // !!! what to do with the then-case and else-case "uid" behaviors? how do we proceed from here?
 
     const elementAtTrueBranch = findElement(
       projectFile,
