@@ -2339,7 +2339,7 @@ describe('inspector tests with real metadata', () => {
           <div data-uid='ccc' data-testid='ccc'>bar</div>
         )
           /* this is a test */
-          // @utopia/conditional=false
+          // @utopia/conditional=true
           // and another comment
         }
         </div>
