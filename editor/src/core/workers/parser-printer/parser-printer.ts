@@ -2027,18 +2027,3 @@ export function lintAndParse(
     return parseFailure(null, null, null, lintResult)
   }
 }
-
-export function jsxAttributeToString(attribute: JSXAttribute): string {
-  switch (attribute.type) {
-    case 'ATTRIBUTE_VALUE':
-      if (typeof attribute.value === 'string') {
-        return attribute.value
-      } else {
-        return attribute.value.toString()
-      }
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return attribute.javascript
-    default:
-      return 'Not supported yet'
-  }
-}
