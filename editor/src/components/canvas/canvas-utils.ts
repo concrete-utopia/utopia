@@ -177,6 +177,7 @@ import { uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
+import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1097,6 +1098,7 @@ export function collectGuidelines(
 
   let guidelines: Array<GuidelineWithRelevantPoints> = collectParentAndSiblingGuidelines(
     metadata,
+    allElementProps,
     selectedViews,
   )
 
@@ -1419,7 +1421,10 @@ export function snapPoint(
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
-  const shouldSnap = enableSnapping && !anythingPinnedAndNotAbsolutePositioned
+  const shouldSnap =
+    enableSnapping &&
+    (treatElementAsContentAffecting(jsxMetadata, allElementProps, selectedViews[0]) || // TODO
+      !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
@@ -2493,6 +2498,7 @@ function produceMoveTransientCanvasState(
 
   const moveGuidelines = collectParentAndSiblingGuidelines(
     workingEditorState.jsxMetadata,
+    workingEditorState.allElementProps,
     selectedViews,
   ).map((g) => g.guideline)
 
