@@ -134,12 +134,5 @@ export function treatElementAsContentAffecting(
   allElementProps: AllElementProps,
   path: ElementPath,
 ): boolean {
-  const type = getElementContentAffectingType(metadata, allElementProps, path)
-  switch (type) {
-    case null:
-    case 'conditional':
-      return false
-    default:
-      return true
-  }
+  return getElementContentAffectingType(metadata, allElementProps, path) != null
 }
