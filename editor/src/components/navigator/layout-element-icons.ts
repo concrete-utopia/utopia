@@ -20,7 +20,7 @@ import {
   NavigatorEntry,
 } from '../editor/store/editor-state'
 import { isSpawnedActor } from 'xstate/lib/Actor'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { treatElementAsContentAffecting } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -77,8 +77,14 @@ export function createLayoutOrElementIconResult(
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
   }
 
-  const contentAffectingType = getElementContentAffectingType(metadata, allElementProps, path)
-  if (contentAffectingType != null && contentAffectingType != 'conditional') {
+  if (MetadataUtils.isConditionalFromMetadata(element)) {
+    return {
+      iconProps: createElementIconProps(navigatorEntry, metadata),
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  if (treatElementAsContentAffecting(metadata, allElementProps, path)) {
     return {
       iconProps: {
         category: 'element',
