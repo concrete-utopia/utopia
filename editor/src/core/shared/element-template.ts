@@ -1120,6 +1120,14 @@ export function isNonDomElement(element: JSXElementChild): element is JSXNonDomE
   return isJSXFragment(element) || isJSXConditionalExpression(element)
 }
 
+interface ElementWithUid {
+  uid: string
+}
+
+export function isElementWithUid(element: unknown): element is ElementWithUid {
+  return (element as ElementWithUid).uid != null
+}
+
 export type JSXElementChildren = Array<JSXElementChild>
 
 export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {

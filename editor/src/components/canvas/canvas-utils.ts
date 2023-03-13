@@ -16,6 +16,7 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  findJSXElementLikeAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
@@ -455,7 +456,7 @@ export function updateFramesOfScenesAndComponents(
       null,
       (success, underlyingElement) => underlyingElement,
     )
-    if (element == null || !isJSXElement(element)) {
+    if (element == null || !(isJSXElement(element) || isJSXConditionalExpression(element))) {
       throw new Error(`Unexpected result when looking for element: ${element}`)
     }
 
@@ -469,6 +470,8 @@ export function updateFramesOfScenesAndComponents(
 
     const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
     const elementProps = editorState.allElementProps[EP.toString(target)] ?? {}
+
+    const elementAttributes = isJSXConditionalExpression(element) ? [] : element.props
 
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -526,7 +529,7 @@ export function updateFramesOfScenesAndComponents(
               elementProps,
             )
             const valueFromAttributes = eitherToMaybe(
-              getSimpleAttributeAtPath(right(element.props), targetPropertyPath),
+              getSimpleAttributeAtPath(right(elementAttributes), targetPropertyPath),
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
@@ -605,7 +608,6 @@ export function updateFramesOfScenesAndComponents(
             )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
-            const elementAttributes = element.props
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
@@ -682,7 +684,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             if (p !== 'width' && p !== 'height') {
-              const value = getLayoutProperty(p, right(element.props), styleStringInArray)
+              const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
               if (isLeft(value) || value.value != null) {
                 frameProps[p] = cssNumberAsNumberIfPossible(value.value)
                 propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
@@ -719,7 +721,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             const framePoint = framePointForPinnedProp(p)
-            const value = getLayoutProperty(p, right(element.props), styleStringInArray)
+            const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
             if (isLeft(value) || value.value != null) {
               frameProps[framePoint] = cssNumberAsNumberIfPossible(value.value)
               propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
@@ -2817,7 +2819,7 @@ export function reorderComponent(
 
   const jsxElement = findElementAtPath(target, workingComponents)
   const parentPath = EP.parentPath(target)
-  const parentElement = findJSXElementAtPath(parentPath, workingComponents)
+  const parentElement = findJSXElementLikeAtPath(parentPath, workingComponents)
 
   if (jsxElement != null && parentElement != null) {
     const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)

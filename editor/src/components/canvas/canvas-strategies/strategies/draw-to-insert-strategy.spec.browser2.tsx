@@ -356,80 +356,92 @@ describe('Inserting into absolute', () => {
     )
   })
 
-  it('Click to insert with default size', async () => {
-    const renderResult = await setupInsertTest(inputCode)
-    await enterInsertModeFromInsertMenu(renderResult)
+  describe('Click to insert with default size', () => {
+    async function runClickToInsertTest(renderResult: EditorRenderResult) {
+      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: targetElementBounds.x + 65,
+        y: targetElementBounds.y + 55,
+      })
 
-    const point = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-      x: targetElementBounds.x + 65,
-      y: targetElementBounds.y + 55,
-    })
+      // Move before clicking
+      await mouseMoveToPoint(canvasControlsLayer, point)
 
-    // Move before clicking
-    await mouseMoveToPoint(canvasControlsLayer, point)
+      // Highlight should show the candidate parent
+      expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
-    // Highlight should show the candidate parent
-    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+      // Click in bbb
+      await mouseClickAtPoint(canvasControlsLayer, point)
 
-    // Click in bbb
-    await mouseClickAtPoint(canvasControlsLayer, point)
+      await renderResult.getDispatchFollowUpActionsFinished()
 
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    // Check that the inserted element is a child of bbb
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          data-uid='aaa'
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#FFFFFF',
-            position: 'relative',
-          }}
-        >
+      // Check that the inserted element is a child of bbb
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
           <div
-            data-uid='bbb'
-            data-testid='bbb'
+            data-uid='aaa'
             style={{
-              position: 'absolute',
-              left: 10,
-              top: 10,
-              width: 380,
-              height: 180,
-              backgroundColor: '#d3d3d3',
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+              position: 'relative',
             }}
           >
             <div
+              data-uid='bbb'
+              data-testid='bbb'
               style={{
-                backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 15,
-                top: 5,
-                width: 100,
-                height: 100,
+                left: 10,
+                top: 10,
+                width: 380,
+                height: 180,
+                backgroundColor: '#d3d3d3',
               }}
-              data-uid='ddd'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 15,
+                  top: 5,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='ddd'
+              />
+            </div>
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 200,
+                width: 380,
+                height: 190,
+                backgroundColor: '#FF0000',
+              }}
             />
           </div>
-          <div
-            data-uid='ccc'
-            style={{
-              position: 'absolute',
-              left: 10,
-              top: 200,
-              width: 380,
-              height: 190,
-              backgroundColor: '#FF0000',
-            }}
-          />
-        </div>
-      `),
-    )
+        `),
+      )
+    }
+
+    it('works from the insert menu', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+      await enterInsertModeFromInsertMenu(renderResult)
+      await runClickToInsertTest(renderResult)
+    })
+
+    it('works with the keyboard shortcut', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+      await pressKey('d')
+      ensureInInsertMode(renderResult)
+      await runClickToInsertTest(renderResult)
+    })
   })
 
   it('Click to insert into an element smaller than the default size', async () => {

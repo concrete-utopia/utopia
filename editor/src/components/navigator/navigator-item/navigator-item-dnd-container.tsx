@@ -73,7 +73,6 @@ export interface NavigatorItemDragAndDropWrapperProps {
   label: string
   isElementVisible: boolean
   renamingTarget: ElementPath | null
-  elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
@@ -562,7 +561,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           renamingTarget={props.renamingTarget}
           collapsed={props.collapsed}
           selected={props.selected}
-          elementWarnings={props.elementWarnings}
           shouldShowParentOutline={shouldShowParentOutline}
           visibleNavigatorTargets={props.visibleNavigatorTargets}
         />
