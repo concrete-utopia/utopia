@@ -408,6 +408,7 @@ import {
   componentDescriptor,
   ComponentDescriptor,
   ComponentDescriptorsForFile,
+  ComponentElementToInsert,
   componentInfo,
   ComponentInfo,
   CurriedResolveFn,
@@ -2779,12 +2780,20 @@ export const CodeResultCacheKeepDeepEquality: KeepDeepEqualityCall<CodeResultCac
     codeResultCache,
   )
 
+export const ComponentElementToInsertKeepDeepEquality: KeepDeepEqualityCall<ComponentElementToInsert> =
+  unionDeepEquality(
+    createCallWithTripleEquals<ComponentElementToInsert>(),
+    JSXElementWithoutUIDKeepDeepEquality(),
+    (p): p is 'conditional' => p === 'conditional',
+    (p): p is JSXElementWithoutUID => (p as JSXElementWithoutUID).name != null,
+  )
+
 export const ComponentInfoKeepDeepEquality: KeepDeepEqualityCall<ComponentInfo> =
   combine3EqualityCalls(
     (info) => info.insertMenuLabel,
     StringKeepDeepEquality,
     (info) => info.elementToInsert,
-    JSXElementWithoutUIDKeepDeepEquality(),
+    ComponentElementToInsertKeepDeepEquality,
     (info) => info.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     componentInfo,

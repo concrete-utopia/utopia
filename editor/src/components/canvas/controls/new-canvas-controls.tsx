@@ -357,7 +357,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           return false
         }
         return (
-          MetadataUtils.targetTextEditable(componentMetadata, EP.fromString(p)) &&
+          MetadataUtils.targetTextEditableAndHasText(componentMetadata, EP.fromString(p)) &&
           ['hasOnlyTextChildren', 'supportsChildren'].includes(
             MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, metadata),
           )

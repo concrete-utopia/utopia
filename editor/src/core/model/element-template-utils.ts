@@ -37,6 +37,7 @@ import {
   childOrBlockIsChild,
   emptyComments,
   ChildOrAttribute,
+  jsxAttributeValue,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -540,11 +541,7 @@ export function removeJSXElementChild(
       const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
       const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
 
-      const nullAttribute: JSXAttribute = {
-        type: 'ATTRIBUTE_VALUE',
-        value: null,
-        comments: emptyComments,
-      }
+      const nullAttribute = jsxAttributeValue(null, emptyComments)
 
       return {
         ...parentElement,

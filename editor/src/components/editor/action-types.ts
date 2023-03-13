@@ -500,7 +500,10 @@ export interface WrapInView {
   targets: ElementPath[]
   layoutSystem: SettableLayoutSystem
   newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
+  whatToWrapWith:
+    | { element: JSXElement; importsToAdd: Imports }
+    | 'default-empty-div'
+    | 'conditional'
 }
 
 export interface WrapInElement {
