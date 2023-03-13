@@ -394,33 +394,28 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element)) {
-      const uid = getUtopiaID(element)
-      if (uid === firstUIDOrIndex) {
-        const tailPath = workingPath.slice(1)
-        if (tailPath.length === 0) {
-          // this is the element we want
-          return element
-        } else {
-          // we will want to delve into the children
-          const children = element.children
-          for (const child of children) {
-            const childResult = findAtPathInner(child, tailPath)
-            if (childResult != null) {
-              return childResult
-            }
+    if (isJSXElementLike(element) && getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        // we will want to delve into the children
+        const children = element.children
+        for (const child of children) {
+          const childResult = findAtPathInner(child, tailPath)
+          if (childResult != null) {
+            return childResult
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const elementWithin = element.elementsWithin[firstUIDOrIndex]
-        const withinResult = findAtPathInner(elementWithin, workingPath)
-        if (withinResult != null) {
-          return withinResult
-        }
+    } else if (isJSXArbitraryBlock(element) && firstUIDOrIndex in element.elementsWithin) {
+      const elementWithin = element.elementsWithin[firstUIDOrIndex]
+      const withinResult = findAtPathInner(elementWithin, workingPath)
+      if (withinResult != null) {
+        return withinResult
       }
-    } else if (isJSXConditionalExpression(element)) {
+    } else if (isJSXConditionalExpression(element) && getUtopiaID(element) === firstUIDOrIndex) {
       const tailPath = workingPath.slice(1)
       if (tailPath.length === 0) {
         // this is the element we want
