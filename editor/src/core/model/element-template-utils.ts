@@ -38,6 +38,7 @@ import {
   emptyComments,
   ChildOrAttribute,
   jsxAttributeValue,
+  childOrBlockIsAttribute,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -425,12 +426,18 @@ export function findJSXElementChildAtPath(
           clause: ChildOrAttribute,
           branch: ThenOrElse,
         ): JSXElementChild | null {
-          // if it's an attribute, match its path with the right branch
-          if (!childOrBlockIsChild(clause)) {
-            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
+          // handle the special cased then-case / else-case path element first
+          if (tailPath.length === 1 && tailPath[0] === thenOrElsePathPart(branch)) {
+            // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
+            return childOrBlockIsAttribute(clause) ? null : clause
           }
-          // if it's a child, get its inner element
-          return findAtPathInner(clause, tailPath)
+
+          if (childOrBlockIsChild(clause)) {
+            // if it's a child, get its inner element
+            return findAtPathInner(clause, tailPath)
+          }
+
+          return null
         }
         return (
           elementOrNullFromClause(element.whenTrue, 'then') ??
