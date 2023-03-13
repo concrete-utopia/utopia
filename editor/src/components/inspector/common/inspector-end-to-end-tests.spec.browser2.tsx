@@ -44,6 +44,7 @@ import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/edito
 import {
   ConditionalsControlSectionCloseTestId,
   ConditionalsControlSectionOpenTestId,
+  ConditionalsControlSwitchBranches,
   ConditionalsControlToggleFalseTestId,
   ConditionalsControlToggleTrueTestId,
 } from '../sections/layout-section/conditional-section'
@@ -2240,6 +2241,130 @@ describe('inspector tests with real metadata', () => {
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 )
               }
+            </div>
+          `),
+        )
+      }
+
+      // toggle to false
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=false
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      }
+
+      // toggle to true
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleTrueTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/conditional=true
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      }
+
+      // close the inspector section
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionCloseTestId, [
+          targetPath,
+        ])
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      }
+    })
+    it('switches conditional branches', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'skip7',
+        'skip8',
+        'conditional',
+      ])
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {[].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      // open the section in the inspector
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSwitchBranches, [
+          targetPath,
+        ])
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+            {[].length === 0 ? (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            ) : (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            )}
             </div>
           `),
         )
