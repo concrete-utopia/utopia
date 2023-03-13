@@ -417,6 +417,22 @@ Array [
     },
   },
   Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": "conditional",
+        "importsToAdd": Object {},
+        "name": "Conditional",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "CONDITIONALS_GROUP",
+    },
+  },
+  Object {
     "insertableComponents": Array [],
     "source": Object {
       "dependencyName": "@heroicons/react",
@@ -841,6 +857,22 @@ Array [
     ],
     "source": Object {
       "type": "HTML_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": "conditional",
+        "importsToAdd": Object {},
+        "name": "Conditional",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "CONDITIONALS_GROUP",
     },
   },
   Object {
