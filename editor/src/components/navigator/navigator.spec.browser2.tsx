@@ -11,7 +11,11 @@ import { selectComponents } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -314,7 +318,6 @@ export var storyboard = (
 
 const projectWithGroupsAndNotGroups = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
-
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <div data-uid='group'>
@@ -1106,7 +1109,6 @@ describe('Navigator', () => {
         projectWithGroupsAndNotGroups,
         'await-first-dom-report',
       )
-
       await selectComponentsForTest(editor, [EP.fromString('sb/group/groupchild')])
 
       const { elementWarnings } = editor.getEditorState().derived
@@ -1123,6 +1125,116 @@ describe('Navigator', () => {
       expect(
         elementWarnings['sb/nonoffsetparent/nonoffsetchild'].value.absoluteWithUnpositionedParent,
       ).toEqual(true)
+    })
+  })
+
+  describe('reparenting to children-affecting elements', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+
+    it('reparenting into fragment reparents to the correct index', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithGroupsAndNotGroups,
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/offsetparent/offsetchild`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const dragToElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/fragment/fragmentchild`,
+      )
+      const dragToElementRect = dragToElement.getBoundingClientRect()
+      const dragToElementRectCenter = getDomRectCenter(dragToElementRect)
+      const dragTo = {
+        x: dragToElementRectCenter.x,
+        y: dragToElementRect.y + 3,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
+          `navigator-item-drop-before-regular_sb/fragment/fragmentchild`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/group',
+        'regular-sb/group/groupchild',
+        'regular-sb/fragment',
+        'regular-sb/fragment/offsetchild', // <- offsetchild is moved to under fragment from offsetparent
+        'regular-sb/fragment/fragmentchild',
+        'regular-sb/offsetparent',
+        'regular-sb/nonoffsetparent',
+        'regular-sb/nonoffsetparent/nonoffsetchild',
+      ])
+    })
+
+    it('reparenting into sizeless div reparents to the right index', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithGroupsAndNotGroups,
+        'await-first-dom-report',
+      )
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/offsetparent/offsetchild`,
+      )
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+      const dragToElement = await renderResult.renderedDOM.findByTestId(
+        `navigator-item-regular_sb/nonoffsetparent/nonoffsetchild`,
+      )
+      const dragToElementRect = dragToElement.getBoundingClientRect()
+      const dragToElementRectCenter = getDomRectCenter(dragToElementRect)
+      const dragTo = {
+        x: dragToElementRectCenter.x,
+        y: dragToElementRect.y + 3,
+      }
+
+      const dragDelta = windowPoint({
+        x: dragTo.x - dragMeElementCenter.x,
+        y: dragTo.y - dragMeElementCenter.y,
+      })
+
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
+
+      act(() =>
+        dragElement(
+          renderResult,
+          `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
+          `navigator-item-drop-before-regular_sb/nonoffsetparent/nonoffsetchild`,
+          windowPoint(dragMeElementCenter),
+          dragDelta,
+          'apply-hover-events',
+        ),
+      )
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/group',
+        'regular-sb/group/groupchild',
+        'regular-sb/fragment',
+        'regular-sb/fragment/fragmentchild',
+        'regular-sb/offsetparent',
+        'regular-sb/nonoffsetparent',
+        'regular-sb/nonoffsetparent/offsetchild', // <- offsetchild is moved to under nonoffsetparent from offsetparent
+        'regular-sb/nonoffsetparent/nonoffsetchild',
+      ])
     })
   })
 })

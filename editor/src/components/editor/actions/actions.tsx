@@ -61,6 +61,7 @@ import {
   emptyComments,
   emptyJsxMetadata,
   getJSXAttribute,
+  isElementWithUid,
   isImportStatement,
   isJSXAttributeValue,
   isJSXConditionalExpression,
@@ -71,12 +72,15 @@ import {
   jsxAttributesFromMap,
   jsxAttributeValue,
   JSXAttributeValue,
+  jsxConditionalExpression,
   JSXConditionalExpression,
   JSXElement,
   jsxElement,
   JSXElementChild,
   JSXElementChildren,
   jsxElementName,
+  JSXFragment,
+  jsxFragment,
   jsxTextBlock,
   SettableLayoutSystem,
   singleLineComment,
@@ -1655,7 +1659,7 @@ export const UPDATE_FNS = {
   },
   UNDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canUndo(stateHistory)) {
-      const history = History.undo(stateHistory)
+      const history = History.undo(editor.id, stateHistory, 'run-side-effects')
       return restoreEditorState(editor, history)
     } else {
       return editor
@@ -1663,7 +1667,7 @@ export const UPDATE_FNS = {
   },
   REDO: (editor: EditorModel, stateHistory: StateHistory): EditorModel => {
     if (History.canRedo(stateHistory)) {
-      const history = History.redo(stateHistory)
+      const history = History.redo(editor.id, stateHistory, 'run-side-effects')
       return restoreEditorState(editor, history)
     } else {
       return editor
@@ -2340,7 +2344,7 @@ export const UPDATE_FNS = {
         }
 
         const newUID =
-          action.whatToWrapWith === 'default-empty-div'
+          action.whatToWrapWith === 'default-empty-div' || action.whatToWrapWith === 'conditional'
             ? generateUidWithExistingComponents(editor.projectContents)
             : action.whatToWrapWith.element.uid
 
@@ -2414,50 +2418,141 @@ export const UPDATE_FNS = {
 
           const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
+          function getElementToInsert(): JSXElement | JSXConditionalExpression {
+            switch (action.whatToWrapWith) {
+              case 'default-empty-div':
+                return defaultTransparentViewElement(newUID)
+              case 'conditional':
+                return jsxConditionalExpression(
+                  newUID,
+                  jsxAttributeValue(true, emptyComments),
+                  jsxAttributeValue(null, emptyComments),
+                  jsxAttributeValue(null, emptyComments),
+                  emptyComments,
+                )
+              default:
+                return action.whatToWrapWith.element
+            }
+          }
+
           const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
             targetSuccess.filePath,
             editor,
             (parseSuccess) => {
-              const elementToInsert: JSXElement =
-                action.whatToWrapWith === 'default-empty-div'
-                  ? defaultTransparentViewElement(newUID)
-                  : action.whatToWrapWith.element
-
-              const elementToInsertWithPositionAttribute = isParentFlex
-                ? setPositionAttribute(elementToInsert, 'relative')
-                : setPositionAttribute(elementToInsert, 'absolute')
+              const elementToInsert = getElementToInsert()
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               let withTargetAdded: Array<UtopiaJSXComponent>
 
-              if (targetThatIsRootElementOfCommonParent == null) {
-                withTargetAdded = insertElementAtPath(
-                  editor.projectContents,
-                  editor.canvas.openFile?.filename ?? null,
-                  parentPath,
-                  elementToInsertWithPositionAttribute,
-                  utopiaJSXComponents,
-                  optionalMap(
-                    (index) => ({
-                      type: 'before',
-                      index: index,
-                    }),
-                    indexInParent,
-                  ),
-                )
+              if (isJSXConditionalExpression(elementToInsert)) {
+                if (targetThatIsRootElementOfCommonParent == null) {
+                  function getSingleElement(path: ElementPath): JSXElementChild | null {
+                    const metadata = MetadataUtils.findElementByElementPath(
+                      editor.jsxMetadata,
+                      path,
+                    )
+                    if (metadata == null || isLeft(metadata.element)) {
+                      return null
+                    }
+                    const value = { ...metadata.element.value }
+                    if (isElementWithUid(value)) {
+                      value.uid = generateUidWithExistingComponents(editor.projectContents)
+                    }
+                    return value
+                  }
+
+                  function pathsToBeWrappedInFragment(): ElementPath[] {
+                    const elements: ElementPath[] = action.targets.filter((path) => {
+                      return !action.targets
+                        .filter((otherPath) => !EP.pathsEqual(otherPath, path))
+                        .some((otherPath) => EP.isDescendantOf(path, otherPath))
+                    })
+                    const parents = new Set<ElementPath>()
+                    elements.forEach((e) => parents.add(EP.parentPath(e)))
+                    if (parents.size !== 1) {
+                      return []
+                    }
+                    return elements
+                  }
+
+                  // if the selection is a single element, put it directly into the true branch.
+                  // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
+                  const branch: JSXElementChild | JSXFragment | null =
+                    action.targets.length === 1
+                      ? getSingleElement(action.targets[0])
+                      : jsxFragment(
+                          generateUidWithExistingComponents(editor.projectContents),
+                          mapDropNulls(getSingleElement, pathsToBeWrappedInFragment()),
+                          false,
+                        )
+
+                  if (branch != null) {
+                    if (isJSXFragment(branch) && branch.children.length === 0) {
+                      // nothing to do
+                      return parseSuccess
+                    }
+                    elementToInsert.whenTrue = branch
+                    withTargetAdded = insertElementAtPath(
+                      editor.projectContents,
+                      editor.canvas.openFile?.filename ?? null,
+                      parentPath,
+                      elementToInsert,
+                      utopiaJSXComponents,
+                      optionalMap(
+                        (index) => ({
+                          type: 'before',
+                          index: index,
+                        }),
+                        indexInParent,
+                      ),
+                    )
+                  }
+                } else {
+                  withTargetAdded = transformJSXComponentAtPath(
+                    utopiaJSXComponents,
+                    EP.dynamicPathToStaticPath(targetThatIsRootElementOfCommonParent),
+                    (elem) => {
+                      return {
+                        ...elementToInsert,
+                        whenTrue: elem,
+                      }
+                    },
+                  )
+                }
               } else {
-                const staticTarget = EP.dynamicPathToStaticPath(
-                  targetThatIsRootElementOfCommonParent,
-                )
-                withTargetAdded = transformJSXComponentAtPath(
-                  utopiaJSXComponents,
-                  staticTarget,
-                  (oldRoot) =>
-                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
-                      ...elementToInsert.children,
-                      oldRoot,
-                    ]),
-                )
+                const elementToInsertWithPositionAttribute = isParentFlex
+                  ? setPositionAttribute(elementToInsert, 'relative')
+                  : setPositionAttribute(elementToInsert, 'absolute')
+
+                if (targetThatIsRootElementOfCommonParent == null) {
+                  withTargetAdded = insertElementAtPath(
+                    editor.projectContents,
+                    editor.canvas.openFile?.filename ?? null,
+                    parentPath,
+                    elementToInsertWithPositionAttribute,
+                    utopiaJSXComponents,
+                    optionalMap(
+                      (index) => ({
+                        type: 'before',
+                        index: index,
+                      }),
+                      indexInParent,
+                    ),
+                  )
+                } else {
+                  const staticTarget = EP.dynamicPathToStaticPath(
+                    targetThatIsRootElementOfCommonParent,
+                  )
+                  withTargetAdded = transformJSXComponentAtPath(
+                    utopiaJSXComponents,
+                    staticTarget,
+                    (oldRoot) =>
+                      jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
+                        ...elementToInsert.children,
+                        oldRoot,
+                      ]),
+                  )
+                }
               }
 
               viewPath = anyTargetIsARootElement
@@ -2465,7 +2560,8 @@ export const UPDATE_FNS = {
                 : EP.appendToPath(parentPath, newUID)
 
               const importsToAdd: Imports =
-                action.whatToWrapWith === 'default-empty-div'
+                action.whatToWrapWith === 'default-empty-div' ||
+                action.whatToWrapWith === 'conditional'
                   ? emptyImports()
                   : action.whatToWrapWith.importsToAdd
 
@@ -3044,8 +3140,13 @@ export const UPDATE_FNS = {
             currentValue.originalElementPath,
           )
           const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
+          const pastedElementIsConditional =
+            MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
-          if (!(pastedElementIsAbsolute || pastedElementIsFlex)) {
+          const continueWithPaste =
+            pastedElementIsAbsolute || pastedElementIsFlex || pastedElementIsConditional
+
+          if (!continueWithPaste) {
             return workingEditorState
           } else {
             const propertyChangeCommands = getReparentPropertyChanges(
@@ -4725,7 +4826,12 @@ export const UPDATE_FNS = {
       return {
         ...editorStore,
         unpatchedEditor: withCollapsedElements,
-        history: History.add(editorStore.history, withUpdatedText, editorStore.unpatchedDerived),
+        history: History.add(
+          editorStore.history,
+          withUpdatedText,
+          editorStore.unpatchedDerived,
+          [],
+        ),
       }
     }
   },
@@ -4986,6 +5092,10 @@ export const UPDATE_FNS = {
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
+          if (action.toInsert.element === 'conditional') {
+            return success
+          }
+
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 

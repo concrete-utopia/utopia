@@ -146,7 +146,7 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { isInfinityRectangle } from '../../core/shared/math-utils'
+import { isInfinityRectangle, zeroCanvasPoint } from '../../core/shared/math-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -886,7 +886,7 @@ export function handleKeyDown(
             return []
           }
 
-          if (contentAffectingType === 'simple-div') {
+          if (contentAffectingType === 'sizeless-div') {
             const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
               elementPath,
               editor.jsxMetadata,
@@ -1057,19 +1057,13 @@ function addCreateHoverInteractionActionToSwitchModeAction(
   switchModeAction: SwitchEditorMode,
   modifiers: Modifiers,
 ) {
-  return CanvasMousePositionRaw != null
-    ? [
-        switchModeAction,
-        CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(
-            CanvasMousePositionRaw,
-            modifiers,
-            boundingArea(),
-            'zero-drag-not-permitted',
-          ),
-        ),
-      ]
-    : [switchModeAction]
+  const mousePoint = CanvasMousePositionRaw ?? zeroCanvasPoint
+  return [
+    switchModeAction,
+    CanvasActions.createInteractionSession(
+      createHoverInteractionViaMouse(mousePoint, modifiers, boundingArea(), 'zero-drag-permitted'),
+    ),
+  ]
 }
 
 function detectBestWrapperElement(

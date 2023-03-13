@@ -37,6 +37,7 @@ import {
   childOrBlockIsChild,
   emptyComments,
   ChildOrAttribute,
+  jsxAttributeValue,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -90,6 +91,14 @@ function getAllUniqueUidsInner(
     } else if (isJSXFragment(element)) {
       fastForEach(element.children, extractUid)
       uniqueIDs.add(element.uid)
+    } else if (isJSXConditionalExpression(element)) {
+      uniqueIDs.add(element.uid)
+      if (childOrBlockIsChild(element.whenTrue)) {
+        extractUid(element.whenTrue)
+      }
+      if (childOrBlockIsChild(element.whenFalse)) {
+        extractUid(element.whenFalse)
+      }
     }
   }
 
@@ -532,11 +541,7 @@ export function removeJSXElementChild(
       const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
       const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
 
-      const nullAttribute: JSXAttribute = {
-        type: 'ATTRIBUTE_VALUE',
-        value: null,
-        comments: emptyComments,
-      }
+      const nullAttribute = jsxAttributeValue(null, emptyComments)
 
       return {
         ...parentElement,

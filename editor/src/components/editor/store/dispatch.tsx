@@ -170,10 +170,10 @@ function processAction(
   let newStateHistory: StateHistory
   switch (action.action) {
     case 'UNDO':
-      newStateHistory = History.undo(working.history)
+      newStateHistory = History.undo(working.unpatchedEditor.id, working.history, 'no-side-effects')
       break
     case 'REDO':
-      newStateHistory = History.redo(working.history)
+      newStateHistory = History.redo(working.unpatchedEditor.id, working.history, 'no-side-effects')
       break
     case 'NEW':
     case 'LOAD':
@@ -497,13 +497,33 @@ export function editorDispatch(
   //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
   //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
 
+  // Include asset renames with the history.
+  let assetRenames: Array<History.AssetRename> = []
+  for (const action of dispatchedActions) {
+    if (action.action === 'UPDATE_FILE_PATH') {
+      assetRenames.push({
+        filenameChangedFrom: action.oldPath,
+        filenameChangedTo: action.newPath,
+      })
+    }
+  }
   let newHistory: StateHistory
   if (transientOrNoChange) {
     newHistory = result.history
   } else if (allMergeWithPrevUndo) {
-    newHistory = History.replaceLast(result.history, editorFilteredForFiles, frozenDerivedState)
+    newHistory = History.replaceLast(
+      result.history,
+      editorFilteredForFiles,
+      frozenDerivedState,
+      assetRenames,
+    )
   } else {
-    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
+    newHistory = History.add(
+      result.history,
+      editorFilteredForFiles,
+      frozenDerivedState,
+      assetRenames,
+    )
   }
 
   const alreadySaved = result.alreadySaved

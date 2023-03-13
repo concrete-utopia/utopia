@@ -113,9 +113,9 @@ function getNavigatorEntryLabel(
     case 'CONDITIONAL_CLAUSE':
       switch (navigatorEntry.clause) {
         case 'then':
-          return 'Then'
+          return 'true'
         case 'else':
-          return 'Else'
+          return 'false'
         default:
           throw assertNever(navigatorEntry.clause)
       }
@@ -125,7 +125,7 @@ function getNavigatorEntryLabel(
           case 'JSX_ELEMENT':
             return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
           case 'JSX_ARBITRARY_BLOCK':
-            return 'Unknown'
+            return '(code)'
           case 'JSX_TEXT_BLOCK':
             return navigatorEntry.childOrAttribute.text
           case 'JSX_FRAGMENT':
