@@ -256,14 +256,9 @@ export function getSelectableViews(
   let candidateViews: Array<ElementPath>
 
   if (allElementsDirectlySelectable) {
-    const unfilteredCandidates =
-      MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
-    candidateViews = unfilteredCandidates.filter(
-      (path) =>
-        path.parts.length > 2 || (path.parts.length > 1 && !EP.isRootElementOfInstance(path)),
-    )
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
-    const allRoots = MetadataUtils.getAllCanvasRootPathsUnordered(componentMetadata)
+    const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(componentMetadata)
     const siblings = collectSelectableSiblings(
       componentMetadata,
       selectedViews,

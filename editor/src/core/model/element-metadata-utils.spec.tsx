@@ -852,7 +852,7 @@ describe('getting the root paths', () => {
   })
 
   it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
-    const actualResult = MetadataUtils.getAllCanvasRootPathsUnordered(testJsxMetadata)
+    const actualResult = MetadataUtils.getAllCanvasSelectablePathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
       testComponentRoot1.elementPath,
       testStoryboardChildElement.elementPath,

@@ -678,19 +678,38 @@ export const MetadataUtils = {
       ? []
       : MetadataUtils.getImmediateChildrenPathsUnordered(metadata, storyboardMetadata.elementPath)
   },
-  getAllCanvasRootPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
+  getAllCanvasSelectablePathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
+    // 1) Get the storyboard children
     const allPaths = objectValues(metadata).map((m) => m.elementPath)
-    const rootPaths = allPaths.filter(EP.isRootElementOfInstance)
-    const rootsOfStoryboardChildren = rootPaths.filter((path) => path.parts.length === 2)
+    const storyboardChildren = allPaths.filter(EP.isStoryboardChild)
 
-    return flatMapArray((root) => {
-      const childrenOfRoot = MetadataUtils.getChildrenPathsUnordered(metadata, root)
-      if (childrenOfRoot.length > 0) {
-        return childrenOfRoot
+    // 2) Skip over any Scenes with children at this level
+    const withScenesSkipped = flatMapArray((path) => {
+      if (MetadataUtils.targetIsScene(metadata, path)) {
+        const sceneChildren = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+        return sceneChildren.length > 0 ? sceneChildren : [path]
       } else {
-        return [root]
+        return [path]
       }
-    }, rootsOfStoryboardChildren)
+    }, storyboardChildren)
+
+    // 3) Replace (focused) component instances at this level with their root paths and children
+    const rootPaths = allPaths.filter(EP.isRootElementOfInstance)
+    const withComponentInstancesReplaced = flatMapArray((path) => {
+      const rootPath = rootPaths.find((rp) => EP.isRootElementOf(rp, path))
+      if (rootPath == null) {
+        return [path]
+      } else {
+        const componentChildren = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+
+        // 4) Replace any root paths with their children
+        const rootPathChildren = MetadataUtils.getChildrenPathsUnordered(metadata, rootPath)
+        const rootPathOrRootChildren = rootPathChildren.length > 0 ? rootPathChildren : [rootPath]
+        return [...rootPathOrRootChildren, ...componentChildren]
+      }
+    }, withScenesSkipped)
+
+    return withComponentInstancesReplaced
   },
   getAllPaths: memoize(
     (metadata: ElementInstanceMetadataMap): ElementPath[] => {
@@ -793,6 +812,10 @@ export const MetadataUtils = {
   },
   isSpan(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'span')
+  },
+  targetIsScene(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    return elementMetadata != null && isSceneFromMetadata(elementMetadata)
   },
   overflows(allElementProps: AllElementProps, path: ElementPath): boolean {
     const elementProps = allElementProps[EP.toString(path)] ?? {}
