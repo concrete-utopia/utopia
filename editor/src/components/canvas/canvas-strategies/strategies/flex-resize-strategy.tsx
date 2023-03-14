@@ -607,41 +607,6 @@ function shouldSnapTohug(
   return null
 }
 
-/** show guideline on snap to fill with small x marks positioned on parent corners and resized element corners */
-/** show guideline on snap to hug with small x marks positioned on child corners and resized element corners */
-function collectGuideline(
-  edgePosition: EdgePosition,
-  direction: 'horizontal' | 'vertical',
-  frameA: CanvasRectangle,
-  frameB: CanvasRectangle,
-): GuidelineWithSnappingVectorAndPointsOfRelevance {
-  if (direction === 'horizontal') {
-    const guidelinePositionX = edgePosition.x === 0 ? frameA.x : frameA.x + frameA.width
-    return {
-      snappingVector: zeroCanvasPoint,
-      guideline: {
-        type: 'XAxisGuideline',
-        x: guidelinePositionX,
-        yTop: Math.min(frameA.y, frameB.y),
-        yBottom: Math.max(frameA.y + frameA.height, frameB.y + frameB.height),
-      },
-      pointsOfRelevance: getHorizontalGuidelinePoints(guidelinePositionX, frameA, frameB),
-    } as GuidelineWithSnappingVectorAndPointsOfRelevance
-  } else {
-    const guidelinePositionY = edgePosition.y === 0 ? frameA.y : frameA.y + frameA.height
-    return {
-      snappingVector: zeroCanvasPoint,
-      guideline: {
-        type: 'YAxisGuideline',
-        y: guidelinePositionY,
-        xLeft: Math.min(frameA.x, frameB.x),
-        xRight: Math.max(frameA.x + frameA.width, frameB.x + frameB.width),
-      },
-      pointsOfRelevance: getVerticalGuidelinePoints(guidelinePositionY, frameA, frameB),
-    } as GuidelineWithSnappingVectorAndPointsOfRelevance
-  }
-}
-
 /** show guideline on snap with small x marks on child corners and resized element corners */
 function collectChildGuideline(
   edgePosition: EdgePosition,
@@ -667,51 +632,74 @@ function collectChildGuideline(
   return null
 }
 
-function getHorizontalGuidelinePoints(
-  positionX: number,
+/** show guideline on snap to fill with small x marks positioned on parent corners and resized element corners */
+/** show guideline on snap to hug with small x marks positioned on child corners and resized element corners */
+function collectGuideline(
+  edgePosition: EdgePosition,
+  direction: 'horizontal' | 'vertical',
   frameA: CanvasRectangle,
   frameB: CanvasRectangle,
+): GuidelineWithSnappingVectorAndPointsOfRelevance {
+  if (direction === 'horizontal') {
+    const guidelinePositionX = edgePosition.x === 0 ? frameA.x : frameA.x + frameA.width
+    return {
+      snappingVector: zeroCanvasPoint,
+      guideline: {
+        type: 'XAxisGuideline',
+        x: guidelinePositionX,
+        yTop: Math.min(frameA.y, frameB.y),
+        yBottom: Math.max(frameA.y + frameA.height, frameB.y + frameB.height),
+      },
+      pointsOfRelevance: [
+        ...getHorizontalGuidelineMarkerPoints(guidelinePositionX, frameA),
+        ...getHorizontalGuidelineMarkerPoints(guidelinePositionX, frameB),
+      ],
+    } as GuidelineWithSnappingVectorAndPointsOfRelevance
+  } else {
+    const guidelinePositionY = edgePosition.y === 0 ? frameA.y : frameA.y + frameA.height
+    return {
+      snappingVector: zeroCanvasPoint,
+      guideline: {
+        type: 'YAxisGuideline',
+        y: guidelinePositionY,
+        xLeft: Math.min(frameA.x, frameB.x),
+        xRight: Math.max(frameA.x + frameA.width, frameB.x + frameB.width),
+      },
+      pointsOfRelevance: [
+        ...getVerticalGuidelineMarkerPoints(guidelinePositionY, frameA),
+        ...getVerticalGuidelineMarkerPoints(guidelinePositionY, frameB),
+      ],
+    } as GuidelineWithSnappingVectorAndPointsOfRelevance
+  }
+}
+
+function getHorizontalGuidelineMarkerPoints(
+  positionX: number,
+  frame: CanvasRectangle,
 ): Array<CanvasPoint> {
   return [
     canvasPoint({
       x: positionX,
-      y: frameA.y,
+      y: frame.y,
     }),
     canvasPoint({
       x: positionX,
-      y: frameA.y + frameA.height,
-    }),
-    canvasPoint({
-      x: positionX,
-      y: frameB.y,
-    }),
-    canvasPoint({
-      x: positionX,
-      y: frameB.y + frameB.height,
+      y: frame.y + frame.height,
     }),
   ]
 }
 
-function getVerticalGuidelinePoints(
+function getVerticalGuidelineMarkerPoints(
   positionY: number,
-  frameA: CanvasRectangle,
-  frameB: CanvasRectangle,
+  frame: CanvasRectangle,
 ): Array<CanvasPoint> {
   return [
     canvasPoint({
-      x: frameA.x,
+      x: frame.x,
       y: positionY,
     }),
     canvasPoint({
-      x: frameA.x + frameA.width,
-      y: positionY,
-    }),
-    canvasPoint({
-      x: frameB.x,
-      y: positionY,
-    }),
-    canvasPoint({
-      x: frameB.x + frameB.width,
+      x: frame.x + frame.width,
       y: positionY,
     }),
   ]
