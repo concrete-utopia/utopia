@@ -9,8 +9,6 @@ import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXFragment,
-  isNonDomElement,
 } from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
