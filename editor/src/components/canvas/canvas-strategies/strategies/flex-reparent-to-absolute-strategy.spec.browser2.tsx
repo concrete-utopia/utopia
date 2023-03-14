@@ -18,6 +18,7 @@ import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-help
 import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import * as EP from '../../../../core/shared/element-path'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -261,11 +262,11 @@ describe('Flex Reparent To Absolute Strategy', () => {
 
 describe('Flex Reparent to Absolute – children affecting elements', () => {
   setFeatureForBrowserTests('Fragment support', true)
-  ;(['fragment', 'div'] as const).forEach((divOrFragment) => {
-    describe(`– ${divOrFragment} parents`, () => {
+  AllContentAffectingTypes.forEach((type) => {
+    describe(`– ${type} parents`, () => {
       it('reparents regular child from a children-affecting flex parent to absolute', async () => {
         const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(fragmentTestCode(divOrFragment)),
+          makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
           'await-first-dom-report',
         )
 
@@ -307,7 +308,7 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
 
       it('reparents children-affecting element from flex to absolute', async () => {
         const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(fragmentTestCode(divOrFragment)),
+          makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
           'await-first-dom-report',
         )
 
@@ -369,7 +370,31 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
   })
 })
 
-function fragmentTestCode(divOrFragment: 'div' | 'fragment') {
+function getOpeningTag(type: ContentAffectingType): string {
+  switch (type) {
+    case 'sizeless-div':
+      return `<div data-uid='children-affecting' data-testid='children-affecting'>`
+    case 'fragment':
+      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
+    default:
+      const _exhaustiveCheck: never = type
+      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+  }
+}
+
+function getClosingTag(type: ContentAffectingType): string {
+  switch (type) {
+    case 'sizeless-div':
+      return `</div>`
+    case 'fragment':
+      return `</React.Fragment>`
+    default:
+      const _exhaustiveCheck: never = type
+      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+  }
+}
+
+function fragmentTestCode(type: ContentAffectingType) {
   return `
   <div
     style={{
@@ -419,11 +444,7 @@ function fragmentTestCode(divOrFragment: 'div' | 'fragment') {
       data-uid='flexparent'
       data-testid='flexparent'
     >
-      ${
-        divOrFragment === 'div'
-          ? `<div data-uid='children-affecting' data-testid='children-affecting'>`
-          : `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
-      }
+      ${getOpeningTag(type)}
         <div
           style={{
             width: 100,
@@ -442,7 +463,7 @@ function fragmentTestCode(divOrFragment: 'div' | 'fragment') {
           data-uid='flexchild2'
           data-testid='flexchild2'
         />
-      ${divOrFragment === 'div' ? `</div>` : `</React.Fragment>`}
+      ${getClosingTag(type)}
     </div>
   </div>
 `
