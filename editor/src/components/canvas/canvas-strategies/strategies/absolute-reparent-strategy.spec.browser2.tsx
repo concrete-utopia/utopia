@@ -1000,29 +1000,11 @@ function getRegularNavigatorTargets(entries: Array<NavigatorEntry>): Array<strin
 describe('children-affecting reparent tests', () => {
   setFeatureForBrowserTests('Fragment support', true)
   setFeatureForBrowserTests('Conditional support', true)
-  AllContentAffectingTypes.forEach((target) => {
-    describe(`Absolute reparent with children-affecting element ${target} in the mix`, () => {
+  AllContentAffectingTypes.forEach((type) => {
+    describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
       it('cannot reparent into a children-affecting div', async () => {
-        if (target === 'conditional') {
-          FOR_TESTS_setNextGeneratedUids([
-            'skip1',
-            'skip2',
-            'skip3',
-            'skip4',
-            'skip5',
-            'skip6',
-            'inner-fragment',
-            'skip8',
-            'skip9',
-            'skip10',
-            'children-affecting',
-          ])
-        } else {
-          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
-        }
-
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(target),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1058,26 +1040,8 @@ describe('children-affecting reparent tests', () => {
       })
 
       it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
-        if (target === 'conditional') {
-          FOR_TESTS_setNextGeneratedUids([
-            'skip1',
-            'skip2',
-            'skip3',
-            'skip4',
-            'skip5',
-            'skip6',
-            'inner-fragment',
-            'skip8',
-            'skip9',
-            'skip10',
-            'children-affecting',
-          ])
-        } else {
-          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
-        }
-
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(target),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1095,25 +1059,8 @@ describe('children-affecting reparent tests', () => {
       })
 
       it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
-        if (target === 'conditional') {
-          FOR_TESTS_setNextGeneratedUids([
-            'skip1',
-            'skip2',
-            'skip3',
-            'skip4',
-            'skip5',
-            'skip6',
-            'inner-fragment',
-            'skip8',
-            'skip9',
-            'skip10',
-            'children-affecting',
-          ])
-        } else {
-          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
-        }
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(target),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1141,26 +1088,8 @@ describe('children-affecting reparent tests', () => {
       })
 
       it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
-        if (target === 'conditional') {
-          FOR_TESTS_setNextGeneratedUids([
-            'skip1',
-            'skip2',
-            'skip3',
-            'skip4',
-            'skip5',
-            'skip6',
-            'inner-fragment',
-            'skip8',
-            'skip9',
-            'skip10',
-            'children-affecting',
-          ])
-        } else {
-          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
-        }
-
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(target),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1187,27 +1116,9 @@ describe('children-affecting reparent tests', () => {
       })
     })
 
-    it(`reparenting the children-affecting ${target} to an absolute parent works`, async () => {
-      if (target === 'conditional') {
-        FOR_TESTS_setNextGeneratedUids([
-          'skip1',
-          'skip2',
-          'skip3',
-          'skip4',
-          'skip5',
-          'skip6',
-          'inner-fragment',
-          'skip8',
-          'skip9',
-          'skip10',
-          'children-affecting',
-        ])
-      } else {
-        FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
-      }
-
+    it(`reparenting the children-affecting ${type} to an absolute parent works`, async () => {
       const renderResult = await renderTestEditorWithCode(
-        testProjectWithUnstyledDivOrFragment(target),
+        testProjectWithUnstyledDivOrFragment(type),
         'await-first-dom-report',
       )
 
@@ -1309,6 +1220,24 @@ function getClosingTag(type: ContentAffectingType): string {
 }
 
 function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
+  if (type === 'conditional') {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'inner-fragment',
+      'skip8',
+      'skip9',
+      'skip10',
+      'children-affecting',
+    ])
+  } else {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+  }
+
   return makeTestProjectCodeWithSnippet(`
       <div
         style={{
