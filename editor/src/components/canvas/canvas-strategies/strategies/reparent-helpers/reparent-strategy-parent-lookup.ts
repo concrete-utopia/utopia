@@ -135,14 +135,6 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
-    // TODO: later we should allow reparenting into fragments
-    if (
-      MetadataUtils.isElementPathFragmentFromMetadata(metadata, target) ||
-      MetadataUtils.isElementPathConditionalFromMetadata(metadata, target)
-    ) {
-      return false
-    }
-
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false
@@ -467,22 +459,7 @@ export function flowParentAbsoluteOrStatic(
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
-  const flattenFragmentAndConditionalChildren = (
-    c: ElementInstanceMetadata,
-  ): ElementInstanceMetadata[] => {
-    if (isLeft(c.element)) {
-      return [c]
-    }
-    if (!isNonDomElement(c.element.value)) {
-      return [c]
-    }
-    return MetadataUtils.getChildrenUnordered(metadata, c.elementPath).flatMap(
-      flattenFragmentAndConditionalChildren,
-    )
-  }
   const children = MetadataUtils.getChildrenUnordered(metadata, parent)
-    // filter out fragment blocks and merge their children with the parent children
-    .flatMap(flattenFragmentAndConditionalChildren)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {

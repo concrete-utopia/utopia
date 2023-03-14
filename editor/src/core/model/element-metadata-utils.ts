@@ -2020,6 +2020,9 @@ function fillSpyOnlyMetadata(
     return parentLayoutSystem == null
   })
 
+  elementsWithoutParentData.sort()
+  elementsWithoutParentData.reverse()
+
   fastForEach(elementsWithoutParentData, (pathStr) => {
     const spyElem = fromSpy[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
@@ -2047,6 +2050,7 @@ function fillSpyOnlyMetadata(
     const immediateParentBoundsFromChildren = childrenFromWorking.map(
       (c) => c.specialSizeMeasurements.immediateParentBounds,
     )
+    const positionForChildren = childrenFromWorking.map((c) => c.specialSizeMeasurements.position)
 
     workingElements[pathStr] = {
       ...spyElem,
@@ -2062,6 +2066,9 @@ function fillSpyOnlyMetadata(
         immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
           ? immediateParentBoundsFromChildren[0]
           : spyElem.specialSizeMeasurements.immediateParentBounds,
+        position: allElemsEqual(positionForChildren)
+          ? positionForChildren[0]
+          : spyElem.specialSizeMeasurements.position,
       },
     }
   })
