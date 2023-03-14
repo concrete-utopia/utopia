@@ -43,6 +43,7 @@ import {
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
   ConditionalsControlSectionCloseTestId,
+  ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlToggleFalseTestId,
   ConditionalsControlToggleTrueTestId,
@@ -2565,6 +2566,44 @@ describe('inspector tests with real metadata', () => {
         )
       }
     })
+  })
+  it('displays the condition', async () => {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'skip7',
+      'skip8',
+      'conditional',
+    ])
+    const startSnippet = `
+        <div data-uid='aaa'>
+        {[].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+        </div>
+      `
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(startSnippet),
+      'await-first-dom-report',
+    )
+
+    expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+    await act(async () => {
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    })
+
+    const expressionElement = renderResult.renderedDOM.getByTestId(
+      ConditionalsControlSectionExpressionTestId,
+    )
+    expect(expressionElement.textContent).toEqual('[].length === 0')
   })
 })
 
