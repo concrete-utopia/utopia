@@ -1978,13 +1978,12 @@ function fillSpyOnlyMetadata(
   // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
+  elementsWithoutIntrinsicSize.sort()
+  elementsWithoutIntrinsicSize.reverse()
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
   elementsWithoutParentData.sort()
   elementsWithoutParentData.reverse()
-
-  elementsWithoutIntrinsicSize.sort()
-  elementsWithoutIntrinsicSize.reverse()
 
   const workingElements: ElementInstanceMetadataMap = {}
 
