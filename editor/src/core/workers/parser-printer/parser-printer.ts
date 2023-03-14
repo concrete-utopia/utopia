@@ -2027,3 +2027,8 @@ export function lintAndParse(
     return parseFailure(null, null, null, lintResult)
   }
 }
+
+export function jsxAttributeToString(attribute: JSXAttribute): string {
+  const expression = jsxAttributeToExpression(attribute)
+  return printStatements([expression], false, false)
+}
