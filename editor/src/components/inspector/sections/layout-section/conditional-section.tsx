@@ -35,6 +35,7 @@ export const ConditionalsControlSectionOpenTestId = 'conditionals-control-sectio
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
 export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
+export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
 
 type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-conditional'
@@ -201,7 +202,12 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
         >
           Condition
           <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-            <span style={{ flex: 1, textAlign: 'center' }}>{conditionExpression}</span>
+            <span
+              style={{ flex: 1, textAlign: 'center' }}
+              data-testId={ConditionalsControlSectionExpressionTestId}
+            >
+              {conditionExpression}
+            </span>
           </FlexRow>
         </UIGridRow>,
       )}

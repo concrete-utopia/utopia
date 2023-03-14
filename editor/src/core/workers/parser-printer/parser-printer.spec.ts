@@ -29,6 +29,8 @@ import {
   getJSXAttributeForced,
   isJSXAttributesEntry,
   emptyComments,
+  JSXAttribute,
+  jsxAttributesEntry,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
@@ -52,6 +54,7 @@ import {
   getHighlightBoundsWithoutUID,
   getHighlightBoundsWithUID,
   boundsAreValid,
+  jsxAttributeToString,
 } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
@@ -4965,5 +4968,63 @@ describe('Getting highlight bounds', () => {
     // One of the JSX elements has no UID, so we expect the bounds for that to be invalid
     const invalidBounds = boundsWithUIDs.find((bounds) => !boundsAreValid(bounds.uid))
     expect(invalidBounds).not.toBeUndefined()
+  })
+})
+
+describe('jsxAttributeToString', () => {
+  const tests: {
+    name: string
+    input: JSXAttribute
+    want: string
+  }[] = [
+    {
+      name: 'value',
+      input: jsxAttributeValue(null, emptyComments),
+      want: 'null',
+    },
+    {
+      name: 'other javascript',
+      input: jsxAttributeOtherJavaScript('32 + 3', '32 + 2', [], null, {}),
+      want: '32 + 3',
+    },
+    {
+      name: 'empty object',
+      input: jsxAttributeNestedObjectSimple([], emptyComments),
+      want: '{}',
+    },
+    {
+      name: 'object',
+      input: jsxAttributeNestedObjectSimple(
+        [
+          jsxAttributesEntry('foo', jsxAttributeValue(true, emptyComments), emptyComments),
+          jsxAttributesEntry('bar', jsxAttributeValue(42, emptyComments), emptyComments),
+          jsxAttributesEntry(
+            'baz',
+            jsxAttributeNestedObjectSimple(
+              [jsxAttributesEntry('qux', jsxAttributeValue('hey', emptyComments), emptyComments)],
+              emptyComments,
+            ),
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
+      want: '{ "foo": true, "bar": 42, "baz": { "qux": "hey" } }',
+    },
+    {
+      name: 'array',
+      input: jsxAttributeNestedArraySimple([
+        jsxAttributeValue(true, emptyComments),
+        jsxAttributeValue(false, emptyComments),
+        jsxAttributeValue('hello', emptyComments),
+      ]),
+      want: '[true, false, "hello"]',
+    },
+  ]
+  tests.forEach((t) => {
+    it(`${t.name}`, async () => {
+      const got = jsxAttributeToString(t.input)
+      expect(got).toEqual(t.want)
+    })
   })
 })
