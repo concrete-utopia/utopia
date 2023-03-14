@@ -511,6 +511,7 @@ function snapToHugChildren(
       element.elementPath,
     ).filter(MetadataUtils.elementParticipatesInAutoLayout)
     const childrenFrames = mapDropNulls((child) => nullIfInfinity(child.globalFrame), children)
+    const childrenBoundingBox = boundingRectangleArray(childrenFrames)
 
     const areAllChildrenFixed = strictEvery(children, (child) => {
       const fillHugFixedState = detectFillHugFixedState(
@@ -520,7 +521,7 @@ function snapToHugChildren(
       )
       return fillHugFixedState?.type === 'fixed'
     })
-    if (!areAllChildrenFixed) {
+    if (!areAllChildrenFixed || childrenBoundingBox == null) {
       return null
     }
 
@@ -537,10 +538,10 @@ function snapToHugChildren(
         parentFlexDirection,
       )
 
-      const guideline = collectChildGuideline(
+      const guideline = collectGuideline(
         edgePosition,
         direction,
-        childrenFrames,
+        childrenBoundingBox,
         resizedBounds,
       )
 
@@ -593,21 +594,6 @@ function isSnappingToChildren(
   return (
     Math.abs(resizedBounds[dimensionToUse] - childrenSizeWithGapAndPadding) <= SnappingThreshold
   )
-}
-
-/** show guideline on snap with small x marks on child corners and resized element corners */
-function collectChildGuideline(
-  edgePosition: EdgePosition,
-  direction: 'horizontal' | 'vertical',
-  childrenFrames: Array<CanvasRectangle>,
-  resizedBounds: CanvasRectangle,
-): GuidelineWithSnappingVectorAndPointsOfRelevance | null {
-  const childrenArea = boundingRectangleArray(childrenFrames)
-
-  if (childrenArea != null) {
-    return collectGuideline(edgePosition, direction, childrenArea, resizedBounds)
-  }
-  return null
 }
 
 /** show guideline on snap to fill with small x marks positioned on parent corners and resized element corners */
