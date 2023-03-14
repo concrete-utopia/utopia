@@ -220,8 +220,8 @@ xdescribe('conditionals in the navigator', () => {
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div-then
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/false-case-else
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/false-case-attribute
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/else-case-else
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/else-case-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-else
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
@@ -245,11 +245,11 @@ xdescribe('conditionals in the navigator', () => {
 
     // Getting info relating to where the element will be dragged to.
     const elementPathToTarget = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/false-case`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/else-case`,
     )
     const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
       `navigator-item-${varSafeNavigatorEntryToKey(
-        conditionalClauseNavigatorEntry(elementPathToTarget, 'false-case'),
+        conditionalClauseNavigatorEntry(elementPathToTarget, 'else'),
       )}`,
     )
     const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
@@ -265,7 +265,7 @@ xdescribe('conditionals in the navigator', () => {
         renderResult,
         `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
         `navigator-item-${varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(elementPathToTarget, 'false-case'),
+          conditionalClauseNavigatorEntry(elementPathToTarget, 'else'),
         )}`,
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
@@ -291,8 +291,8 @@ xdescribe('conditionals in the navigator', () => {
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div-then
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/false-case-else
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/false-case-attribute
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/else-case-else
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/else-case-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-else
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
