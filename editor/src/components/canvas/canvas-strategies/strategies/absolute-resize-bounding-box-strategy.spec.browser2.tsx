@@ -392,6 +392,61 @@ export var storyboard = (
 )
 `
 
+const projectForMultiSelectResize = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 146,
+        top: 118,
+        width: 305,
+        height: 233,
+      }}
+      data-uid='one'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 213,
+        top: 377,
+        width: 178,
+        height: 179,
+      }}
+      data-uid='two'
+    />
+    <div
+      style={{
+        backgroundColor: '#00acff',
+        position: 'absolute',
+        left: 759,
+        top: 155,
+        width: 228,
+        height: 254,
+      }}
+      data-uid='horizontal'
+      data-testid='horizontal'
+    />
+    <div
+      style={{
+        backgroundColor: '#2b8f65',
+        position: 'absolute',
+        left: 70,
+        top: 779,
+        width: 267,
+        height: 275,
+      }}
+      data-uid='vertical'
+      data-testid='vertical'
+    />
+  </Storyboard>
+)
+`
+
 const projectForEdgeDblClickWithPosition = (
   leftPos: CSSProperties['position'],
   rightPos: CSSProperties['position'],
@@ -1182,6 +1237,113 @@ export var storyboard = (
     const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
     expect(supportsStyleRect.width).toEqual(100)
     expect(supportsStyleRect.height).toEqual(100)
+  })
+  describe('snap lines', () => {
+    it('horizontal snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      const canvasControl = editor.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
+      )
+
+      const resizeCornerBounds = canvasControl.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: resizeCornerBounds.x + 2,
+        y: resizeCornerBounds.y + 2,
+      })
+
+      await mouseDragFromPointWithDelta(
+        canvasControl,
+        startPoint,
+        { x: 0, y: -147 },
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(1)
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+            ).toEqual('YAxisGuideline')
+          },
+        },
+      )
+    })
+    it('vertical snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      const canvasControl = editor.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
+      )
+
+      const resizeCornerBounds = canvasControl.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: resizeCornerBounds.x + 2,
+        y: resizeCornerBounds.y + 2,
+      })
+
+      await mouseDragFromPointWithDelta(
+        canvasControl,
+        startPoint,
+        { x: -114, y: 0 },
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(1)
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+            ).toEqual('XAxisGuideline')
+          },
+        },
+      )
+    })
+    it('both vertical and horizontal snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      const canvasControl = editor.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
+      )
+
+      const resizeCornerBounds = canvasControl.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: resizeCornerBounds.x + 2,
+        y: resizeCornerBounds.y + 2,
+      })
+
+      await mouseDragFromPointWithDelta(
+        canvasControl,
+        startPoint,
+        { x: -114, y: -147 },
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(2)
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+            ).toEqual('XAxisGuideline')
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+            ).toEqual('YAxisGuideline')
+          },
+        },
+      )
+    })
   })
 })
 
