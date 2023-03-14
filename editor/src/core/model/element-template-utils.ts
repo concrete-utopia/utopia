@@ -58,21 +58,9 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import {
-  getJSXAttributeAtPath,
-  GetJSXAttributeResult,
-  jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
+import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
-import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
-} from '../../components/editor/store/editor-state'
-import { conditionalWhenFalseOptic, conditionalWhenTrueOptic } from './common-optics'
-import { modify } from '../shared/optics/optic-utilities'
-import { foldEither } from '../shared/either'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -582,7 +570,7 @@ export function removeJSXElementChild(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ReparentTargetParent<StaticElementPath> | null,
+  targetParent: StaticElementPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -598,43 +586,9 @@ export function insertJSXElementChild(
   } else {
     return transformJSXComponentAtPath(
       components,
-      getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot),
+      targetParentIncludingStoryboardRoot,
       (parentElement) => {
-        if (
-          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
-          isJSXConditionalExpression(parentElement)
-        ) {
-          // Determine which clause of the conditional we want to modify.
-          const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'then'
-              ? conditionalWhenTrueOptic
-              : conditionalWhenFalseOptic
-          // Update the clause if it currently holds a null value.
-          return modify(
-            toClauseOptic,
-            (clauseValue) => {
-              if (childOrBlockIsAttribute(clauseValue)) {
-                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
-                return foldEither(
-                  () => {
-                    return clauseValue
-                  },
-                  (value) => {
-                    if (value == null) {
-                      return elementToInsert
-                    } else {
-                      return clauseValue
-                    }
-                  },
-                  simpleValue,
-                )
-              } else {
-                return clauseValue
-              }
-            },
-            parentElement,
-          )
-        } else if (isJSXElementLike(parentElement)) {
+        if (isJSXElementLike(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)

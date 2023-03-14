@@ -603,8 +603,8 @@ export const DefaultTheme: ThemeSetting = 'system'
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
 export interface DropTargetHint {
-  displayAtEntry: NavigatorEntry | null
-  moveToEntry: NavigatorEntry | null
+  displayAtElementPath: NavigatorEntry | null
+  moveToElementPath: NavigatorEntry | null
   type: DropTargetType
 }
 
@@ -1965,15 +1965,12 @@ export function removeElementAtPath(
 export function insertElementAtPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ReparentTargetParent<ElementPath> | null,
+  targetParent: ElementPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget =
-    targetParent == null
-      ? null
-      : dynamicReparentTargetParentToStaticReparentTargetParent(targetParent)
+  const staticTarget = targetParent == null ? null : EP.dynamicPathToStaticPath(targetParent)
   return insertJSXElementChild(
     projectContents,
     openFile,
@@ -2107,60 +2104,10 @@ export function regularNavigatorEntriesEqual(
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
 
-export interface ConditionalClause<P extends ElementPath> {
-  elementPath: P
-  clause: ThenOrElse
-}
-
-export function conditionalClause<P extends ElementPath>(
-  elementPath: P,
-  clause: ThenOrElse,
-): ConditionalClause<P> {
-  return {
-    elementPath: elementPath,
-    clause: clause,
-  }
-}
-
-export type ReparentTargetParent<P extends ElementPath> = P | ConditionalClause<P>
-
-export function reparentTargetParentIsConditionalClause<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is ConditionalClause<P> {
-  return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
-}
-
-export function reparentTargetParentIsElementPath<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is P {
-  return !reparentTargetParentIsConditionalClause(reparentTargetParent)
-}
-
-export function getElementPathFromReparentTargetParent<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): P {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return reparentTargetParent.elementPath
-  } else {
-    return reparentTargetParent
-  }
-}
-
-export function dynamicReparentTargetParentToStaticReparentTargetParent(
-  reparentTargetParent: ReparentTargetParent<ElementPath>,
-): ReparentTargetParent<StaticElementPath> {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return conditionalClause(
-      EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
-      reparentTargetParent.clause,
-    )
-  } else {
-    return EP.dynamicPathToStaticPath(reparentTargetParent)
-  }
-}
-
-export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
+export interface ConditionalClauseNavigatorEntry {
   type: 'CONDITIONAL_CLAUSE'
+  elementPath: ElementPath
+  clause: ThenOrElse
 }
 
 export function conditionalClauseNavigatorEntry(
@@ -2278,26 +2225,6 @@ export const conditionalClauseNavigatorEntryOptic: Optic<
   NavigatorEntry,
   ConditionalClauseNavigatorEntry
 > = fromTypeGuard(isConditionalClauseNavigatorEntry)
-
-export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is SyntheticNavigatorEntry {
-  return entry.type === 'SYNTHETIC'
-}
-
-export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
-  fromTypeGuard(isSyntheticNavigatorEntry)
-
-export function reparentTargetFromNavigatorEntry(
-  navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-): ReparentTargetParent<ElementPath> {
-  switch (navigatorEntry.type) {
-    case 'REGULAR':
-      return navigatorEntry.elementPath
-    case 'CONDITIONAL_CLAUSE':
-      return navigatorEntry
-    default:
-      assertNever(navigatorEntry)
-  }
-}
 
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
@@ -2532,8 +2459,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     navigator: {
       minimised: false,
       dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: [],
@@ -2868,8 +2795,8 @@ export function editorModelFromPersistentModel(
     saveError: false,
     navigator: {
       dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: [],
