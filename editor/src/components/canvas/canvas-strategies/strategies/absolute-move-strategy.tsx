@@ -48,13 +48,13 @@ export function absoluteMoveStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: retargetedTargets },
+          props: { targets: targets },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: retargetedTargets },
+          props: { targets: targets },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),

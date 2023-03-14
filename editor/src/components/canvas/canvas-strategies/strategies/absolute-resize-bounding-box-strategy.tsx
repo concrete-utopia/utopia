@@ -96,13 +96,13 @@ export function absoluteResizeBoundingBoxStrategy(
       }),
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
+        props: { targets: selectedTargets },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ImmediateParentBounds,
-        props: { targets: filteredSelectedElements },
+        props: { targets: selectedTargets },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
