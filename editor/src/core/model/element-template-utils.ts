@@ -38,6 +38,7 @@ import {
   emptyComments,
   ChildOrAttribute,
   jsxAttributeValue,
+  childOrBlockIsAttribute,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -394,56 +395,54 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element)) {
-      const uid = getUtopiaID(element)
-      if (uid === firstUIDOrIndex) {
-        const tailPath = workingPath.slice(1)
-        if (tailPath.length === 0) {
-          // this is the element we want
-          return element
-        } else {
-          // we will want to delve into the children
-          const children = element.children
-          for (const child of children) {
-            const childResult = findAtPathInner(child, tailPath)
-            if (childResult != null) {
-              return childResult
-            }
+    if (isJSXElementLike(element) && getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        // we will want to delve into the children
+        const children = element.children
+        for (const child of children) {
+          const childResult = findAtPathInner(child, tailPath)
+          if (childResult != null) {
+            return childResult
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const elementWithin = element.elementsWithin[firstUIDOrIndex]
-        const withinResult = findAtPathInner(elementWithin, workingPath)
-        if (withinResult != null) {
-          return withinResult
-        }
+    } else if (isJSXArbitraryBlock(element) && firstUIDOrIndex in element.elementsWithin) {
+      const elementWithin = element.elementsWithin[firstUIDOrIndex]
+      const withinResult = findAtPathInner(elementWithin, workingPath)
+      if (withinResult != null) {
+        return withinResult
       }
-    } else if (isJSXConditionalExpression(element)) {
-      const uid = getUtopiaID(element)
-      if (uid === firstUIDOrIndex) {
-        const tailPath = workingPath.slice(1)
-        if (tailPath.length === 0) {
-          // this is the element we want
-          return element
-        } else {
-          function elementOrNullFromClause(
-            clause: ChildOrAttribute,
-            branch: ThenOrElse,
-          ): JSXElementChild | null {
-            // if it's an attribute, match its path with the right branch
-            if (!childOrBlockIsChild(clause)) {
-              return tailPath[0] === thenOrElsePathPart(branch) ? element : null
-            }
+    } else if (isJSXConditionalExpression(element) && getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        function elementOrNullFromClause(
+          clause: ChildOrAttribute,
+          branch: ThenOrElse,
+        ): JSXElementChild | null {
+          // handle the special cased then-case / else-case path element first
+          if (tailPath.length === 1 && tailPath[0] === thenOrElsePathPart(branch)) {
+            // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
+            return childOrBlockIsAttribute(clause) ? null : clause
+          }
+
+          if (childOrBlockIsChild(clause)) {
             // if it's a child, get its inner element
             return findAtPathInner(clause, tailPath)
           }
-          return (
-            elementOrNullFromClause(element.whenTrue, 'then') ??
-            elementOrNullFromClause(element.whenFalse, 'else')
-          )
+
+          return null
         }
+        return (
+          elementOrNullFromClause(element.whenTrue, 'then') ??
+          elementOrNullFromClause(element.whenFalse, 'else')
+        )
       }
     }
     return null

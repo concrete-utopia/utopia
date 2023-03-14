@@ -77,6 +77,13 @@ export function createLayoutOrElementIconResult(
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
   }
 
+  if (MetadataUtils.isConditionalFromMetadata(element)) {
+    return {
+      iconProps: createElementIconProps(navigatorEntry, metadata),
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
   if (treatElementAsContentAffecting(metadata, allElementProps, path)) {
     return {
       iconProps: {

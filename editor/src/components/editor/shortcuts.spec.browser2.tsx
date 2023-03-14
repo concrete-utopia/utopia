@@ -1,6 +1,6 @@
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
-import { altCmdModifier, cmdModifier, ctrlModifier } from '../../utils/modifiers'
+import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../utils/modifiers'
 import {
   expectNoAction,
   expectSingleUndoStep,
@@ -178,6 +178,56 @@ describe('shortcuts', () => {
       expect(groupContainer.style.height).toEqual('311px')
     })
   })
+
+  describe('jump to parent', () => {
+    it('with esc', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlexLayout,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
+      ])
+
+      await pressKey('esc')
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        `${StoryBoardId}/${ParentId}`,
+      ])
+    })
+
+    it('with backslash', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlexLayout,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
+      ])
+
+      await pressKey('\\')
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        `${StoryBoardId}/${ParentId}`,
+      ])
+    })
+
+    it('with shift + enter', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithChildInFlexLayout,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
+      ])
+
+      await pressKey('enter', { modifiers: shiftModifier })
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        `${StoryBoardId}/${ParentId}`,
+      ])
+    })
+  })
 })
 
 const project = `import * as React from 'react'
@@ -230,15 +280,16 @@ export var storyboard = (
         padding: '47px 20px 20px 50px',
       }}
       data-uid='${ParentId}'
+      data-testid='${ParentId}'
     >
       <div
-        data-testid='${TestIdOne}'
         style={{
           backgroundColor: '#aaaaaa33',
           contain: 'layout',
           height: '100%',
           flexGrow: 1
         }}
+        data-testid='${TestIdOne}'
         data-uid='${TestIdOne}'
       />
     </div>

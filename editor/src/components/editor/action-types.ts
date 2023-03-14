@@ -1105,6 +1105,11 @@ export interface UpdateColorSwatches {
   colorSwatches: Array<ColorSwatch>
 }
 
+export interface SwitchConditionalBranches {
+  action: 'SWITCH_CONDITIONAL_BRANCHES'
+  target: ElementPath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1283,6 +1288,7 @@ export type EditorAction =
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
+  | SwitchConditionalBranches
 
 export type DispatchPriority =
   | 'everyone'

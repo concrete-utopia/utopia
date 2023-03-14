@@ -14,10 +14,6 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import { StaticReparentTargetOutlineIndicator } from '../../controls/select-mode/static-reparent-target-outline'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
@@ -61,12 +57,6 @@ export function baseReparentAsStaticStrategy(
     return {
       ...getIdAndNameOfReparentToStaticStrategy(targetLayout),
       controlsToRender: [
-        controlWithProps({
-          control: DragOutlineControl,
-          props: dragTargetsElementPaths(filteredSelectedElements),
-          key: 'ghost-outline-control',
-          show: 'visible-only-while-active',
-        }),
         controlWithProps({
           control: ParentOutlines,
           props: { targetParent: reparentTarget.newParent },

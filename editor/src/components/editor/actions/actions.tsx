@@ -334,6 +334,7 @@ import {
   PasteProperties,
   CopyProperties,
   SetConditionalOverriddenCondition,
+  SwitchConditionalBranches,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -1082,21 +1083,16 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
       function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-        const element = findElementAtPath(targetPath, utopiaComponents)
-        if (element == null) {
-          return parseSuccess
-        } else {
-          const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-            targetPath,
-            utopiaComponents,
-          )
-          return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-            return {
-              ...success,
-              utopiaComponents: withTargetRemoved,
-            }
-          }, parseSuccess)
-        }
+        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
+          targetPath,
+          utopiaComponents,
+        )
+        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+          return {
+            ...success,
+            utopiaComponents: withTargetRemoved,
+          }
+        }, parseSuccess)
       }
       return modifyParseSuccessAtPath(
         targetSuccess.filePath,
@@ -5484,6 +5480,36 @@ export const UPDATE_FNS = {
       ...editor,
       colorSwatches: action.colorSwatches,
     }
+  },
+  SWITCH_CONDITIONAL_BRANCHES: (
+    action: SwitchConditionalBranches,
+    editor: EditorModel,
+  ): EditorModel => {
+    const openFile = editor.canvas.openFile?.filename
+    if (openFile == null) {
+      return editor
+    }
+
+    const updatedEditor = modifyUnderlyingTargetElement(
+      action.target,
+      openFile,
+      editor,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+        return jsxConditionalExpression(
+          element.uid,
+          element.condition,
+          element.whenFalse,
+          element.whenTrue,
+          element.comments,
+        )
+      },
+      (parseSuccess) => parseSuccess,
+    )
+
+    return updatedEditor
   },
 }
 
