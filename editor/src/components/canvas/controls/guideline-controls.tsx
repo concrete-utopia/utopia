@@ -8,11 +8,12 @@ import {
   CanvasRectangle,
   canvasSegment,
   CanvasSegment,
+  isInfinityRectangle,
   rectanglesEqual,
+  roundRectangle,
   segmentIntersection,
 } from '../../../core/shared/math-utils'
-import { bold, useColorTheme } from '../../../uuiui'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import { useColorTheme } from '../../../uuiui'
 import {
   Substores,
   useEditorState,
@@ -38,10 +39,10 @@ export const GuidelineControls = React.memo(() => {
             target,
             store.editor.jsxMetadata,
           )
-          if (measuredFrame == null) {
+          if (measuredFrame == null || isInfinityRectangle(measuredFrame)) {
             return false
           } else {
-            return rectanglesEqual(measuredFrame, frame)
+            return rectanglesEqual(roundRectangle(measuredFrame), roundRectangle(frame))
           }
         })
       )

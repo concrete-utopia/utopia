@@ -153,9 +153,6 @@ export function absoluteResizeBoundingBoxStrategy(
               canvasState.startingAllElementProps,
             )
 
-            const isResizingGrouplikeElement =
-              selectedTargets.length !== retargetedTargets.length && selectedTargets.length === 1
-
             const commandsForSelectedElements = filteredSelectedElements.flatMap(
               (selectedElement) => {
                 const element = getElementFromProjectContents(
@@ -201,18 +198,10 @@ export function absoluteResizeBoundingBoxStrategy(
                     elementParentFlexDirection,
                     edgePosition,
                   ),
-                  ...(isResizingGrouplikeElement
-                    ? []
-                    : [pushIntendedBounds([{ target: selectedElement, frame: newFrame }])]),
+                  pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
                 ]
               },
             )
-
-            if (isResizingGrouplikeElement) {
-              commandsForSelectedElements.push(
-                pushIntendedBounds([{ target: selectedTargets[0], frame: snappedBoundingBox }]),
-              )
-            }
 
             return strategyApplicationResult([
               ...commandsForSelectedElements,
