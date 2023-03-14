@@ -50,6 +50,7 @@ import {
 } from '../shared/element-path'
 import { getComponentsFromTopLevelElements } from './project-file-utils'
 import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
+import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -765,7 +766,7 @@ describe('findJSXElementChildAtPath', () => {
   function expectElementAtPathHasMatchingUID(file: ParseSuccess, pathString: string) {
     const foundElement = findElement(file, pathString)
 
-    expect(foundElement).toBeDefined()
+    expect(foundElement).not.toBeNull()
     expect(getUtopiaID(foundElement!)).toEqual(toUid(fromStringStatic(pathString)))
   }
 
@@ -922,6 +923,7 @@ describe('findJSXElementChildAtPath', () => {
   })
 
   it('conditional expressions', () => {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'skip4', 'skip5', 'conditional-1'])
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
@@ -948,30 +950,31 @@ describe('findJSXElementChildAtPath', () => {
     expectElementAtPathHasMatchingUIDForPaths(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-true-root',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-true-root/ternary-true-child',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root/ternary-false-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-true-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-true-root/ternary-true-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
 
     // !!!! Do I misunderstand something?? shouldn't the then-case and else-case return the true-root and false-root here?? these tests fail now...
     const elementAtTrueBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
     )
     expect(elementAtTrueBranch).not.toBeNull()
     expect(getUtopiaID(elementAtTrueBranch!)).toEqual('ternary-true-root')
 
     const elementAtFalseBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
     )
     expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 
   it('conditional expressions with branches that are JSXAttribute', () => {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'conditional-1'])
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
@@ -994,16 +997,17 @@ describe('findJSXElementChildAtPath', () => {
     expectElementAtPathHasMatchingUIDForPaths(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
     ])
 
     expectElementFoundNull(projectFile, [
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
     ])
   })
 
   it('conditional expressions with branches that are mixed JSXAttribute and JSXElementChild', () => {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'conditional-1'])
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
@@ -1028,20 +1032,20 @@ describe('findJSXElementChildAtPath', () => {
     expectElementAtPathHasMatchingUIDForPaths(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/ternary-false-root/ternary-false-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
 
     const elementAtTrueBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
     )
     expect(elementAtTrueBranch).toBeNull()
 
     const elementAtFalseBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ca0/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
     )
     expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
