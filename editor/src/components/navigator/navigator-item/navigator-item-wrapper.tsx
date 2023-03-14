@@ -20,6 +20,7 @@ import {
   defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
+  isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
@@ -40,7 +41,7 @@ interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
   navigatorEntry: NavigatorEntry
-  getDragSelections: () => Array<DragSelection>
+  getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
 }
@@ -63,7 +64,7 @@ const targetInNavigatorItemsSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const canBeReparentedIntoSelector = createCachedSelector(
+const elementSupportsChildrenSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   targetElementMetadataSelector,
   targetInNavigatorItemsSelector,
@@ -183,12 +184,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper noOfChildren',
   )
 
-  const canBeReparentedInto = useEditorState(
+  const elementSupportsChildren = useEditorState(
     Substores.fullStore,
     // this is not good
-    (store) => canBeReparentedIntoSelector(store, props.navigatorEntry),
-    'NavigatorItemWrapper canBeReparentedIntoSelector',
+    (store) => elementSupportsChildrenSelector(store, props.navigatorEntry),
+    'NavigatorItemWrapper elementSupportsChildren',
   )
+  const canReparentInto =
+    elementSupportsChildren || isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
   const labelForTheElement = useEditorState(
     Substores.metadata,
@@ -219,10 +222,11 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         // dragging around the navigator but we don't want the entire navigator to re-render each time.
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
         if (
-          isRegularNavigatorEntry(props.navigatorEntry) &&
-          store.editor.navigator.dropTargetHint.displayAtElementPath != null &&
+          (isRegularNavigatorEntry(props.navigatorEntry) ||
+            isConditionalClauseNavigatorEntry(props.navigatorEntry)) &&
+          store.editor.navigator.dropTargetHint.displayAtEntry != null &&
           navigatorEntriesEqual(
-            store.editor.navigator.dropTargetHint.displayAtElementPath,
+            store.editor.navigator.dropTargetHint.displayAtEntry,
             props.navigatorEntry,
           )
         ) {
@@ -253,10 +257,10 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,
-    getDragSelections: props.getDragSelections,
+    getCurrentlySelectedEntries: props.getCurrentlySelectedEntries,
     getSelectedViewsInRange: props.getSelectedViewsInRange,
     appropriateDropTargetHint: appropriateDropTargetHint,
-    canReparentInto: canBeReparentedInto,
+    canReparentInto: canReparentInto,
     noOfChildren: noOfChildren,
     label: label,
     isElementVisible: isElementVisible,

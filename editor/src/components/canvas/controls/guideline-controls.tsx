@@ -24,6 +24,7 @@ import { Guideline } from '../guideline'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { CanvasSubstate } from '../../editor/store/store-hook-substore-types'
+import { FLEX_RESIZE_STRATEGY_ID } from '../canvas-strategies/strategies/flex-resize-strategy'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
@@ -72,7 +73,13 @@ export const GuidelineControls = React.memo(() => {
     [...pointsOfRelevance, ...intersectionPoints],
   )
 
-  if (!strategyMovedSuccessfully) {
+  const activeStrategyIsFlexResize = useEditorState(
+    Substores.restOfStore,
+    (store) => store.strategyState.currentStrategy === FLEX_RESIZE_STRATEGY_ID,
+    'Guideline activeStrategyIsFlexResize',
+  )
+
+  if (!strategyMovedSuccessfully && !activeStrategyIsFlexResize) {
     return null
   } else {
     return (

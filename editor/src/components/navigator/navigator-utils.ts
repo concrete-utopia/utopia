@@ -75,7 +75,7 @@ export function navigatorDepth(
     isFeatureEnabled('Conditional support') &&
     isConditionalClauseNavigatorEntry(navigatorEntry)
   ) {
-    result = result - 1
+    result = result + 1
   }
 
   return result
@@ -150,7 +150,10 @@ export function getNavigatorTargets(
         const clausePath = getConditionalClausePath(path, clauseValue, conditionalCase)
 
         // Create the entry for the name of the clause.
-        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, conditionalCase)
+        const clauseTitleEntry = conditionalClauseNavigatorEntry(
+          conditionalSubTree.path,
+          conditionalCase,
+        )
         navigatorTargets.push(clauseTitleEntry)
         visibleNavigatorTargets.push(clauseTitleEntry)
 
