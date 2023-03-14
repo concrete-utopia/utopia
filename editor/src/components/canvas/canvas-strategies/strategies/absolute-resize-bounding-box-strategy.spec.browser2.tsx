@@ -28,6 +28,7 @@ import {
   EdgePositionRight,
   EdgePositionBottom,
   EdgePositionTop,
+  EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
   selectComponentsForTest,
@@ -442,6 +443,88 @@ export var storyboard = (
       }}
       data-uid='vertical'
       data-testid='vertical'
+    />
+  </Storyboard>
+)
+`
+
+const projectWithGroupsForResize = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      <div
+        style={{
+          backgroundColor: '#00acff',
+          position: 'absolute',
+          left: 319.5,
+          top: 341,
+          width: 194,
+          height: 403,
+        }}
+        data-uid='aab'
+        data-label='eee'
+      />
+      <div
+        style={{
+          backgroundColor: '#ff0001',
+          position: 'absolute',
+          left: 757.5,
+          top: 341,
+          width: 194,
+          height: 403,
+        }}
+        data-uid='aaa'
+        data-label='eee'
+      />
+    </div>
+    <React.Fragment data-uid='fragment'>
+      <div
+        style={{
+          backgroundColor: '#00acff',
+          position: 'absolute',
+          left: 379.5,
+          top: 94.5,
+          width: 163,
+          height: 184,
+        }}
+        data-uid='aac'
+        data-label='eee'
+      />
+      <div
+        style={{
+          backgroundColor: '#ff0001',
+          position: 'absolute',
+          left: 980.5,
+          top: 62.5,
+          width: 306,
+          height: 239,
+        }}
+        data-uid='aad'
+        data-label='eee'
+      />
+    </React.Fragment>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 258.5,
+        top: -193,
+        width: 243,
+        height: 195,
+      }}
+      data-uid='98d'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -431,
+        top: 754.5,
+        width: 447,
+        height: 266,
+      }}
+      data-uid='5ce'
     />
   </Storyboard>
 )
@@ -1343,6 +1426,149 @@ export var storyboard = (
           },
         },
       )
+    })
+
+    describe('groups', () => {
+      setFeatureForBrowserTests('Fragment support', true)
+      it('vertical snap lines are shown when resizing a fragment', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupsForResize,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+        const canvasControl = editor.renderedDOM.getByTestId(
+          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
+        )
+
+        const resizeCornerBounds = canvasControl.getBoundingClientRect()
+        const startPoint = windowPoint({
+          x: resizeCornerBounds.x + 2,
+          y: resizeCornerBounds.y + 2,
+        })
+
+        await mouseDragFromPointWithDelta(
+          canvasControl,
+          startPoint,
+          { x: -121, y: 0 },
+          {
+            modifiers: emptyModifiers,
+            midDragCallback: async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+            },
+          },
+        )
+      })
+      it('horizontal snap lines are shown when resizing a fragment', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupsForResize,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+        const canvasControl = editor.renderedDOM.getByTestId(
+          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
+        )
+
+        const resizeCornerBounds = canvasControl.getBoundingClientRect()
+        const startPoint = windowPoint({
+          x: resizeCornerBounds.x + 2,
+          y: resizeCornerBounds.y + 2,
+        })
+
+        await mouseDragFromPointWithDelta(
+          canvasControl,
+          startPoint,
+          { x: 0, y: 39 },
+          {
+            modifiers: emptyModifiers,
+            midDragCallback: async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+            },
+          },
+        )
+      })
+      it('both snap lines are shown when resizing a fragment', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupsForResize,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+
+        const canvasControl = editor.renderedDOM.getByTestId(
+          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
+        )
+
+        const resizeCornerBounds = canvasControl.getBoundingClientRect()
+        const startPoint = windowPoint({
+          x: resizeCornerBounds.x + 2,
+          y: resizeCornerBounds.y + 2,
+        })
+
+        await mouseDragFromPointWithDelta(
+          canvasControl,
+          startPoint,
+          { x: -121, y: 39 },
+          {
+            modifiers: emptyModifiers,
+            midDragCallback: async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(2)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('YAxisGuideline')
+            },
+          },
+        )
+      })
+      it('vertical snap lines are shown when resizing a sizeless div', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupsForResize,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+
+        const canvasControl = editor.renderedDOM.getByTestId(
+          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
+        )
+
+        const resizeCornerBounds = canvasControl.getBoundingClientRect()
+        const startPoint = windowPoint({
+          x: resizeCornerBounds.x + 2,
+          y: resizeCornerBounds.y + 2,
+        })
+
+        await mouseDragFromPointWithDelta(
+          canvasControl,
+          startPoint,
+          { x: -61, y: 0 },
+          {
+            modifiers: emptyModifiers,
+            midDragCallback: async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('YAxisGuideline')
+            },
+          },
+        )
+      })
     })
   })
 })
