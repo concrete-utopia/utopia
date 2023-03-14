@@ -60,7 +60,7 @@ import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './proj
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
-import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
+import { getConditionalClausePath, ConditionalCase } from './conditionals'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -424,10 +424,10 @@ export function findJSXElementChildAtPath(
       } else {
         function elementOrNullFromClause(
           clause: ChildOrAttribute,
-          branch: ThenOrElse,
+          branch: ConditionalCase,
         ): JSXElementChild | null {
-          // handle the special cased then-case / else-case path element first
-          if (tailPath.length === 1 && tailPath[0] === thenOrElsePathPart(branch)) {
+          // handle the special cased true-case / false-case path element first
+          if (tailPath.length === 1 && tailPath[0] === branch) {
             // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
             return childOrBlockIsAttribute(clause) ? null : clause
           }
@@ -440,8 +440,8 @@ export function findJSXElementChildAtPath(
           return null
         }
         return (
-          elementOrNullFromClause(element.whenTrue, 'then') ??
-          elementOrNullFromClause(element.whenFalse, 'else')
+          elementOrNullFromClause(element.whenTrue, 'true-case') ??
+          elementOrNullFromClause(element.whenFalse, 'false-case')
         )
       }
     }
@@ -540,15 +540,19 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
-      const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
+      const falseCasePath = getConditionalClausePath(
+        parentPath,
+        parentElement.whenFalse,
+        'false-case',
+      )
 
       const nullAttribute = jsxAttributeValue(null, emptyComments)
 
       return {
         ...parentElement,
-        whenTrue: EP.pathsEqual(thenPath, target) ? nullAttribute : parentElement.whenTrue,
-        whenFalse: EP.pathsEqual(elsePath, target) ? nullAttribute : parentElement.whenFalse,
+        whenTrue: EP.pathsEqual(trueCasePath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(falseCasePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement

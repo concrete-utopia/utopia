@@ -78,7 +78,7 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'then-case'])
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'true-case'])
       await act(async () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })

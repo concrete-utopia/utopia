@@ -185,7 +185,7 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ThenOrElse } from '../../../core/model/conditionals'
+import { ConditionalCase } from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
@@ -2107,12 +2107,12 @@ export function regularNavigatorEntriesEqual(
 export interface ConditionalClauseNavigatorEntry {
   type: 'CONDITIONAL_CLAUSE'
   elementPath: ElementPath
-  clause: ThenOrElse
+  clause: ConditionalCase
 }
 
 export function conditionalClauseNavigatorEntry(
   elementPath: ElementPath,
-  clause: ThenOrElse,
+  clause: ConditionalCase,
 ): ConditionalClauseNavigatorEntry {
   return {
     type: 'CONDITIONAL_CLAUSE',

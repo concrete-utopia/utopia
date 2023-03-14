@@ -91,10 +91,10 @@ describe('a project with conditionals', () => {
       'regular-storyboard/scene/app:app-root/conditional1/conditional2',
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals-then',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/else-case-else',
-      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/else-case-attribute',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/else-case-else',
-      'synthetic-storyboard/scene/app:app-root/conditional1/else-case-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/false-case-else',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/false-case-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/false-case-else',
+      'synthetic-storyboard/scene/app:app-root/conditional1/false-case-attribute',
     ])
   })
 })

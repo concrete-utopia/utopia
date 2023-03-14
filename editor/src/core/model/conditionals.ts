@@ -7,35 +7,26 @@ import {
 } from '../shared/element-template'
 import { ElementPathTree } from '../shared/element-path-tree'
 import { getUtopiaID } from './element-template-utils'
-import { assertNever } from '../shared/utils'
 
-export type ThenOrElse = 'then' | 'else'
+export type ConditionalCase = 'true-case' | 'false-case'
 
-export function thenOrElsePathPart(thenOrElse: ThenOrElse): string {
-  switch (thenOrElse) {
-    case 'then':
-      return 'then-case'
-    case 'else':
-      return 'else-case'
-    default:
-      assertNever(thenOrElse)
-  }
+export function getConditionalCasePath(
+  elementPath: ElementPath,
+  conditionalCase: ConditionalCase,
+): ElementPath {
+  return EP.appendToPath(elementPath, conditionalCase)
 }
 
-export function getThenOrElsePath(elementPath: ElementPath, thenOrElse: ThenOrElse): ElementPath {
-  return EP.appendToPath(elementPath, thenOrElsePathPart(thenOrElse))
-}
-
-// Get the path for the clause (then or else) of a conditional.
+// Get the path for the clause (true case or false case) of a conditional.
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
   conditionalClause: ChildOrAttribute,
-  thenOrElse: ThenOrElse,
+  conditionalCase: ConditionalCase,
 ): ElementPath {
   if (childOrBlockIsChild(conditionalClause)) {
     return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
   } else {
-    return getThenOrElsePath(conditionalPath, thenOrElse)
+    return getConditionalCasePath(conditionalPath, conditionalCase)
   }
 }
 
@@ -52,17 +43,29 @@ export function reorderConditionalChildPathTrees(
     let result: Array<ElementPathTree> = []
 
     // The whenTrue clause should be first.
-    const thenPath = getConditionalClausePath(conditionalPath, conditional.whenTrue, 'then')
-    const thenPathTree = childPaths.find((childPath) => EP.pathsEqual(childPath.path, thenPath))
-    if (thenPathTree != null) {
-      result.push(thenPathTree)
+    const trueCasePath = getConditionalClausePath(
+      conditionalPath,
+      conditional.whenTrue,
+      'true-case',
+    )
+    const trueCasePathTree = childPaths.find((childPath) =>
+      EP.pathsEqual(childPath.path, trueCasePath),
+    )
+    if (trueCasePathTree != null) {
+      result.push(trueCasePathTree)
     }
 
     // The whenFalse clause should be second.
-    const elsePath = getConditionalClausePath(conditionalPath, conditional.whenFalse, 'else')
-    const elsePathTree = childPaths.find((childPath) => EP.pathsEqual(childPath.path, elsePath))
-    if (elsePathTree != null) {
-      result.push(elsePathTree)
+    const falseCasePath = getConditionalClausePath(
+      conditionalPath,
+      conditional.whenFalse,
+      'false-case',
+    )
+    const falseCasePathTree = childPaths.find((childPath) =>
+      EP.pathsEqual(childPath.path, falseCasePath),
+    )
+    if (falseCasePathTree != null) {
+      result.push(falseCasePathTree)
     }
 
     return result

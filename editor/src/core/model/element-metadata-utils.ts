@@ -132,7 +132,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   getConditionalClausePath,
   reorderConditionalChildPathTrees,
-  ThenOrElse,
+  ConditionalCase,
 } from './conditionals'
 
 const ObjectPathImmutable: any = OPI

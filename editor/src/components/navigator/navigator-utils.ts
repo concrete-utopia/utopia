@@ -26,7 +26,7 @@ import {
 } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
-import { getConditionalClausePath, ThenOrElse } from '../../core/model/conditionals'
+import { getConditionalClausePath, ConditionalCase } from '../../core/model/conditionals'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -141,15 +141,16 @@ export function getNavigatorTargets(
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
         conditional: JSXConditionalExpression,
-        thenOrElse: ThenOrElse,
+        conditionalCase: ConditionalCase,
       ): void {
-        const clauseValue = thenOrElse === 'then' ? conditional.whenTrue : conditional.whenFalse
+        const clauseValue =
+          conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
         // Get the clause path.
-        const clausePath = getConditionalClausePath(path, clauseValue, thenOrElse)
+        const clausePath = getConditionalClausePath(path, clauseValue, conditionalCase)
 
         // Create the entry for the name of the clause.
-        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, thenOrElse)
+        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, conditionalCase)
         navigatorTargets.push(clauseTitleEntry)
         visibleNavigatorTargets.push(clauseTitleEntry)
 
@@ -180,8 +181,8 @@ export function getNavigatorTargets(
         ) {
           const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
 
-          walkConditionalClause(subTree, jsxConditionalElement, 'then')
-          walkConditionalClause(subTree, jsxConditionalElement, 'else')
+          walkConditionalClause(subTree, jsxConditionalElement, 'true-case')
+          walkConditionalClause(subTree, jsxConditionalElement, 'false-case')
         } else {
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
