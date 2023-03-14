@@ -57,6 +57,7 @@ import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-cs
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -242,40 +243,21 @@ export function flexResizeStrategy(
               snapToParentEdge.snap
             ) {
               resizeCommands.push(
-                setProperty(
-                  'always',
-                  selectedElement,
-                  stylePropPathMappingFn('flexGrow', styleStringInArray),
-                  1,
-                ),
+                ...getFillCommands(selectedElement, widthPropToUse, snapToParentEdge.guideline),
               )
-              resizeCommands.push(
-                deleteProperties('always', selectedElement, [
-                  stylePropPathMappingFn(widthPropToUse, styleStringInArray),
-                ]),
-              )
-              if (snapToParentEdge.guideline != null) {
-                resizeCommands.push(
-                  setSnappingGuidelines('mid-interaction', [snapToParentEdge.guideline]),
-                )
-              }
             } else if (
               snapToHug != null &&
               snapToHug.snapDirection === 'horizontal' &&
               snapToHug.isSnapping
             ) {
               resizeCommands.push(
-                setCssLengthProperty(
-                  'always',
+                ...getHugCommands(
                   selectedElement,
-                  stylePropPathMappingFn(widthPropToUse, styleStringInArray),
-                  setExplicitCssValue(cssKeyword(MaxContent)),
+                  widthPropToUse,
+                  snapToHug.guideline,
                   elementParentFlexDirection,
                 ),
               )
-              if (snapToHug.guideline != null) {
-                resizeCommands.push(setSnappingGuidelines('mid-interaction', [snapToHug.guideline]))
-              }
             } else {
               resizeCommands.push(
                 ...makeResizeCommand(
@@ -296,40 +278,21 @@ export function flexResizeStrategy(
               snapToParentEdge.snap
             ) {
               resizeCommands.push(
-                setProperty(
-                  'always',
-                  selectedElement,
-                  stylePropPathMappingFn('flexGrow', styleStringInArray),
-                  1,
-                ),
+                ...getFillCommands(selectedElement, heightPropToUse, snapToParentEdge.guideline),
               )
-              resizeCommands.push(
-                deleteProperties('always', selectedElement, [
-                  stylePropPathMappingFn(heightPropToUse, styleStringInArray),
-                ]),
-              )
-              if (snapToParentEdge.guideline != null) {
-                resizeCommands.push(
-                  setSnappingGuidelines('mid-interaction', [snapToParentEdge.guideline]),
-                )
-              }
             } else if (
               snapToHug != null &&
               snapToHug.snapDirection === 'vertical' &&
               snapToHug.isSnapping
             ) {
               resizeCommands.push(
-                setCssLengthProperty(
-                  'always',
+                ...getHugCommands(
                   selectedElement,
-                  stylePropPathMappingFn(heightPropToUse, styleStringInArray),
-                  setExplicitCssValue(cssKeyword(MaxContent)),
+                  heightPropToUse,
+                  snapToHug.guideline,
                   elementParentFlexDirection,
                 ),
               )
-              if (snapToHug.guideline != null) {
-                resizeCommands.push(setSnappingGuidelines('mid-interaction', [snapToHug.guideline]))
-              }
             } else {
               resizeCommands.push(
                 ...makeResizeCommand(
@@ -368,6 +331,49 @@ export function flexResizeStrategy(
       return emptyStrategyApplicationResult
     },
   }
+}
+
+function getFillCommands(
+  selectedElement: ElementPath,
+  propToUpdate: 'width' | 'height' | 'flexBasis',
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null,
+): Array<CanvasCommand> {
+  let commands: Array<CanvasCommand> = [
+    setProperty(
+      'always',
+      selectedElement,
+      stylePropPathMappingFn('flexGrow', styleStringInArray),
+      1,
+    ),
+    deleteProperties('always', selectedElement, [
+      stylePropPathMappingFn(propToUpdate, styleStringInArray),
+    ]),
+  ]
+  if (guideline != null) {
+    commands.push(setSnappingGuidelines('mid-interaction', [guideline]))
+  }
+  return commands
+}
+
+function getHugCommands(
+  selectedElement: ElementPath,
+  propToUpdate: 'width' | 'height' | 'flexBasis',
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null,
+  elementParentFlexDirection: FlexDirection | null,
+): Array<CanvasCommand> {
+  let commands: Array<CanvasCommand> = [
+    setCssLengthProperty(
+      'always',
+      selectedElement,
+      stylePropPathMappingFn(propToUpdate, styleStringInArray),
+      setExplicitCssValue(cssKeyword(MaxContent)),
+      elementParentFlexDirection,
+    ),
+  ]
+  if (guideline != null) {
+    commands.push(setSnappingGuidelines('mid-interaction', [guideline]))
+  }
+  return commands
 }
 
 function shouldSnapToParentEdge(
