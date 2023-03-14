@@ -334,6 +334,7 @@ import {
   PasteProperties,
   CopyProperties,
   SetConditionalOverriddenCondition,
+  SwitchConditionalBranches,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -5484,6 +5485,36 @@ export const UPDATE_FNS = {
       ...editor,
       colorSwatches: action.colorSwatches,
     }
+  },
+  SWITCH_CONDITIONAL_BRANCHES: (
+    action: SwitchConditionalBranches,
+    editor: EditorModel,
+  ): EditorModel => {
+    const openFile = editor.canvas.openFile?.filename
+    if (openFile == null) {
+      return editor
+    }
+
+    const updatedEditor = modifyUnderlyingTargetElement(
+      action.target,
+      openFile,
+      editor,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+        return jsxConditionalExpression(
+          element.uid,
+          element.condition,
+          element.whenFalse,
+          element.whenTrue,
+          element.comments,
+        )
+      },
+      (parseSuccess) => parseSuccess,
+    )
+
+    return updatedEditor
   },
 }
 
