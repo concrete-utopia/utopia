@@ -357,7 +357,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           return false
         }
         return (
-          MetadataUtils.targetTextEditable(componentMetadata, EP.fromString(p)) &&
+          MetadataUtils.targetTextEditableAndHasText(componentMetadata, EP.fromString(p)) &&
           ['hasOnlyTextChildren', 'supportsChildren'].includes(
             MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, metadata),
           )
@@ -421,7 +421,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           {unless(dragging, <LayoutParentControl />)}
           {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
           <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
-          <GuidelineControls />
           <ZeroSizedElementControls.control showAllPossibleElements={false} />
           {when(
             isSelectOrInsertMode(editorMode),
@@ -436,6 +435,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             </>,
           )}
           {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
+          <GuidelineControls />
         </>,
       )}
     </div>

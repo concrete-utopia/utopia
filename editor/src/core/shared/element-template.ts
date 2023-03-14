@@ -1114,6 +1114,14 @@ export function isJSXElementLike(element: JSXElementChild): element is JSXElemen
   return isJSXElement(element) || isJSXFragment(element)
 }
 
+interface ElementWithUid {
+  uid: string
+}
+
+export function isElementWithUid(element: unknown): element is ElementWithUid {
+  return (element as ElementWithUid).uid != null
+}
+
 export type JSXElementChildren = Array<JSXElementChild>
 
 export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {

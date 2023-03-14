@@ -86,21 +86,6 @@ const labelSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const elementWarningsSelector = createCachedSelector(
-  (store: DerivedSubstate) => store.derived.elementWarnings,
-  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
-  (elementWarnings, navigatorEntry) => {
-    if (isRegularNavigatorEntry(navigatorEntry)) {
-      return (
-        getValueFromComplexMap(EP.toString, elementWarnings, navigatorEntry.elementPath) ??
-        defaultElementWarnings
-      )
-    } else {
-      return defaultElementWarnings
-    }
-  },
-)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
-
 const noOfChildrenSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.navigatorTargets,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
@@ -128,9 +113,9 @@ function getNavigatorEntryLabel(
     case 'CONDITIONAL_CLAUSE':
       switch (navigatorEntry.clause) {
         case 'then':
-          return 'Then'
+          return 'true'
         case 'else':
-          return 'Else'
+          return 'false'
         default:
           throw assertNever(navigatorEntry.clause)
       }
@@ -220,12 +205,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper entryDepth',
   )
 
-  const elementWarnings = useEditorState(
-    Substores.derived,
-    (store) => elementWarningsSelector(store, props.navigatorEntry),
-    'NavigatorItemWrapper elementWarningsSelector',
-  )
-
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
     (store) => store.derived.visibleNavigatorTargets,
@@ -282,7 +261,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     label: label,
     isElementVisible: isElementVisible,
     renamingTarget: renamingTarget,
-    elementWarnings: elementWarnings,
     windowStyle: props.windowStyle,
     visibleNavigatorTargets: visibleNavigatorTargets,
   }

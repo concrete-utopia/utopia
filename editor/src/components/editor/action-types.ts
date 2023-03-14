@@ -500,7 +500,10 @@ export interface WrapInView {
   targets: ElementPath[]
   layoutSystem: SettableLayoutSystem
   newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
+  whatToWrapWith:
+    | { element: JSXElement; importsToAdd: Imports }
+    | 'default-empty-div'
+    | 'conditional'
 }
 
 export interface WrapInElement {
@@ -1102,6 +1105,11 @@ export interface UpdateColorSwatches {
   colorSwatches: Array<ColorSwatch>
 }
 
+export interface SwitchConditionalBranches {
+  action: 'SWITCH_CONDITIONAL_BRANCHES'
+  target: ElementPath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1280,6 +1288,7 @@ export type EditorAction =
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
+  | SwitchConditionalBranches
 
 export type DispatchPriority =
   | 'everyone'

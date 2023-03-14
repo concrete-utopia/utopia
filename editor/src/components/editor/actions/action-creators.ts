@@ -228,6 +228,7 @@ import type {
   CopyProperties,
   MergeWithPrevUndo,
   SetConditionalOverriddenCondition,
+  SwitchConditionalBranches,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -755,7 +756,10 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
 
 export function wrapInView(
   targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
+  whatToWrapWith:
+    | { element: JSXElement; importsToAdd: Imports }
+    | 'default-empty-div'
+    | 'conditional',
   layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
   newParentMainAxis: 'horizontal' | 'vertical' | null = null,
 ): WrapInView {
@@ -1754,5 +1758,12 @@ export function setConditionalOverriddenCondition(
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,
     condition: condition,
+  }
+}
+
+export function switchConditionalBranches(target: ElementPath): SwitchConditionalBranches {
+  return {
+    action: 'SWITCH_CONDITIONAL_BRANCHES',
+    target: target,
   }
 }

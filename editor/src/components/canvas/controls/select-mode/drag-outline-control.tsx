@@ -64,10 +64,21 @@ export const DragOutlineControl = controlForStrategyMemoized((props: DragOutline
     'OutlineControl scale',
   )
   const frame = useFrameFromProps(props)
+  const isAbsoluteStrategy = useEditorState(
+    Substores.restOfStore,
+    (store) =>
+      store.strategyState.sortedApplicableStrategies != null &&
+      store.strategyState.sortedApplicableStrategies?.length > 0
+        ? store.strategyState.sortedApplicableStrategies[0].strategy.id
+            .toLowerCase()
+            .includes('abs')
+        : false,
+    'DragOutlineControl isAbsoluteStrategy',
+  )
 
   const colorTheme = useColorTheme()
 
-  if (frame == null) {
+  if (frame == null || isAbsoluteStrategy) {
     return null
   }
 

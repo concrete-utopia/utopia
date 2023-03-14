@@ -37,6 +37,8 @@ import {
   childOrBlockIsChild,
   emptyComments,
   ChildOrAttribute,
+  jsxAttributeValue,
+  childOrBlockIsAttribute,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -393,33 +395,28 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element)) {
-      const uid = getUtopiaID(element)
-      if (uid === firstUIDOrIndex) {
-        const tailPath = workingPath.slice(1)
-        if (tailPath.length === 0) {
-          // this is the element we want
-          return element
-        } else {
-          // we will want to delve into the children
-          const children = element.children
-          for (const child of children) {
-            const childResult = findAtPathInner(child, tailPath)
-            if (childResult != null) {
-              return childResult
-            }
+    if (isJSXElementLike(element) && getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        // we will want to delve into the children
+        const children = element.children
+        for (const child of children) {
+          const childResult = findAtPathInner(child, tailPath)
+          if (childResult != null) {
+            return childResult
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const elementWithin = element.elementsWithin[firstUIDOrIndex]
-        const withinResult = findAtPathInner(elementWithin, workingPath)
-        if (withinResult != null) {
-          return withinResult
-        }
+    } else if (isJSXArbitraryBlock(element) && firstUIDOrIndex in element.elementsWithin) {
+      const elementWithin = element.elementsWithin[firstUIDOrIndex]
+      const withinResult = findAtPathInner(elementWithin, workingPath)
+      if (withinResult != null) {
+        return withinResult
       }
-    } else if (isJSXConditionalExpression(element)) {
+    } else if (isJSXConditionalExpression(element) && getUtopiaID(element) === firstUIDOrIndex) {
       const tailPath = workingPath.slice(1)
       if (tailPath.length === 0) {
         // this is the element we want
@@ -429,12 +426,18 @@ export function findJSXElementChildAtPath(
           clause: ChildOrAttribute,
           branch: ThenOrElse,
         ): JSXElementChild | null {
-          // if it's an attribute, match its path with the right branch
-          if (!childOrBlockIsChild(clause)) {
-            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
+          // handle the special cased then-case / else-case path element first
+          if (tailPath.length === 1 && tailPath[0] === thenOrElsePathPart(branch)) {
+            // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
+            return childOrBlockIsAttribute(clause) ? null : clause
           }
-          // if it's a child, get its inner element
-          return findAtPathInner(clause, tailPath)
+
+          if (childOrBlockIsChild(clause)) {
+            // if it's a child, get its inner element
+            return findAtPathInner(clause, tailPath)
+          }
+
+          return null
         }
         return (
           elementOrNullFromClause(element.whenTrue, 'then') ??
@@ -540,11 +543,7 @@ export function removeJSXElementChild(
       const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
       const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
 
-      const nullAttribute: JSXAttribute = {
-        type: 'ATTRIBUTE_VALUE',
-        value: null,
-        comments: emptyComments,
-      }
+      const nullAttribute = jsxAttributeValue(null, emptyComments)
 
       return {
         ...parentElement,

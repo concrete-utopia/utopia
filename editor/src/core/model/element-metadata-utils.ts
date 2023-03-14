@@ -54,6 +54,8 @@ import {
   DetectedLayoutSystem,
   JSXConditionalExpression,
   ConditionalValue,
+  isJSXElementLike,
+  JSXElementLike,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1966,11 +1968,20 @@ function fillSpyOnlyMetadata(
     ...spyElementsWithoutDomMetadata,
     ...Object.keys(conditionalsWithDefaultMetadata),
   ])
-  // Sort and then reverse these, so that lower level elements are handled ahead of their parents
+
+  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
+    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
+    return parentLayoutSystem == null
+  })
+
+  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
+  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
+  elementsWithoutParentData.sort()
+  elementsWithoutParentData.reverse()
 
   elementsWithoutIntrinsicSize.sort()
   elementsWithoutIntrinsicSize.reverse()
@@ -2016,11 +2027,6 @@ function fillSpyOnlyMetadata(
     }
   })
 
-  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
-    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
-    return parentLayoutSystem == null
-  })
-
   fastForEach(elementsWithoutParentData, (pathStr) => {
     const spyElem = fromSpy[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
@@ -2048,6 +2054,7 @@ function fillSpyOnlyMetadata(
     const immediateParentBoundsFromChildren = childrenFromWorking.map(
       (c) => c.specialSizeMeasurements.immediateParentBounds,
     )
+    const positionForChildren = childrenFromWorking.map((c) => c.specialSizeMeasurements.position)
 
     workingElements[pathStr] = {
       ...spyElem,
@@ -2063,6 +2070,9 @@ function fillSpyOnlyMetadata(
         immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
           ? immediateParentBoundsFromChildren[0]
           : spyElem.specialSizeMeasurements.immediateParentBounds,
+        position: allElemsEqual(positionForChildren)
+          ? positionForChildren[0]
+          : spyElem.specialSizeMeasurements.position,
       },
     }
   })
@@ -2136,6 +2146,20 @@ export function findJSXElementAtPath(
   const elem = findElementAtPath(target, components)
   return Utils.optionalMap((e) => {
     if (isJSXElement(e)) {
+      return e
+    } else {
+      return null
+    }
+  }, elem)
+}
+
+export function findJSXElementLikeAtPath(
+  target: ElementPath | null,
+  components: Array<UtopiaJSXComponent>,
+): JSXElementLike | null {
+  const elem = findElementAtPath(target, components)
+  return Utils.optionalMap((e) => {
+    if (isJSXElementLike(e)) {
       return e
     } else {
       return null

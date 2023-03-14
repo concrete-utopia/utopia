@@ -76,7 +76,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
 
         const { targetParent } = factory
 
-        const textEditable = MetadataUtils.targetTextEditable(
+        const textEditableAndHasText = MetadataUtils.targetTextEditableAndHasText(
           canvasState.startingMetadata,
           targetParent,
         )
@@ -85,7 +85,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           targetParent.parts.length > 0 ? targetParent.parts[0].length : 0
         const isRoot = targetParentPathParts === 1
         const isClick = s === 'end-interaction' && interactionSession.interactionData.drag == null
-        if (!isRoot && textEditable && isClick) {
+        if (!isRoot && textEditableAndHasText && isClick) {
           return strategyApplicationResult([
             updateSelectedViews('on-complete', [targetParent]),
             setCursorCommand(CSSCursor.Select),

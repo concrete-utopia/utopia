@@ -20,6 +20,7 @@ import {
   NavigatorEntry,
 } from '../editor/store/editor-state'
 import { isSpawnedActor } from 'xstate/lib/Actor'
+import { treatElementAsContentAffecting } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -76,7 +77,26 @@ export function createLayoutOrElementIconResult(
     isPositionAbsolute = elementProps.style['position'] === 'absolute'
   }
 
-  const layoutIcon = createLayoutIconProps(path, metadata)
+  if (MetadataUtils.isConditionalFromMetadata(element)) {
+    return {
+      iconProps: createElementIconProps(navigatorEntry, metadata),
+      isPositionAbsolute: isPositionAbsolute,
+    }
+  }
+
+  if (treatElementAsContentAffecting(metadata, allElementProps, path)) {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'group-open',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
   if (MetadataUtils.isProbablyScene(metadata, path)) {
     return {
       iconProps: {
@@ -88,16 +108,19 @@ export function createLayoutOrElementIconResult(
 
       isPositionAbsolute: false,
     }
-  } else if (layoutIcon != null) {
+  }
+
+  const layoutIcon = createLayoutIconProps(path, metadata)
+  if (layoutIcon != null) {
     return {
       iconProps: layoutIcon,
       isPositionAbsolute: isPositionAbsolute,
     }
-  } else {
-    return {
-      iconProps: createElementIconProps(navigatorEntry, metadata),
-      isPositionAbsolute: isPositionAbsolute,
-    }
+  }
+
+  return {
+    iconProps: createElementIconProps(navigatorEntry, metadata),
+    isPositionAbsolute: isPositionAbsolute,
   }
 }
 
