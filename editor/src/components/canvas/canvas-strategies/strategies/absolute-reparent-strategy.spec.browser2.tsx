@@ -30,6 +30,8 @@ import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ContentAffectingType, AllContentAffectingTypes } from './group-like-helpers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import { pluck } from '../../../../core/shared/array-utils'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -988,12 +990,37 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 })
 
+function getRegularNavigatorTargets(entries: Array<NavigatorEntry>): Array<string> {
+  return entries
+    .filter((t) => t.type === 'REGULAR')
+    .map((t) => t.elementPath)
+    .map(EP.toString)
+}
+
 describe('children-affecting reparent tests', () => {
   setFeatureForBrowserTests('Fragment support', true)
   setFeatureForBrowserTests('Conditional support', true)
   AllContentAffectingTypes.forEach((target) => {
     describe(`Absolute reparent with children-affecting element ${target} in the mix`, () => {
       it('cannot reparent into a children-affecting div', async () => {
+        if (target === 'conditional') {
+          FOR_TESTS_setNextGeneratedUids([
+            'skip1',
+            'skip2',
+            'skip3',
+            'skip4',
+            'skip5',
+            'skip6',
+            'inner-fragment',
+            'skip8',
+            'skip9',
+            'skip10',
+            'children-affecting',
+          ])
+        } else {
+          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+        }
+
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragment(target),
           'await-first-dom-report',
@@ -1013,15 +1040,17 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of children-affecting
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
@@ -1029,6 +1058,24 @@ describe('children-affecting reparent tests', () => {
       })
 
       it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
+        if (target === 'conditional') {
+          FOR_TESTS_setNextGeneratedUids([
+            'skip1',
+            'skip2',
+            'skip3',
+            'skip4',
+            'skip5',
+            'skip6',
+            'inner-fragment',
+            'skip8',
+            'skip9',
+            'skip10',
+            'children-affecting',
+          ])
+        } else {
+          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+        }
+
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragment(target),
           'await-first-dom-report',
@@ -1048,6 +1095,23 @@ describe('children-affecting reparent tests', () => {
       })
 
       it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
+        if (target === 'conditional') {
+          FOR_TESTS_setNextGeneratedUids([
+            'skip1',
+            'skip2',
+            'skip3',
+            'skip4',
+            'skip5',
+            'skip6',
+            'inner-fragment',
+            'skip8',
+            'skip9',
+            'skip10',
+            'children-affecting',
+          ])
+        } else {
+          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+        }
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragment(target),
           'await-first-dom-report',
@@ -1059,14 +1123,16 @@ describe('children-affecting reparent tests', () => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         // no reparent have happened
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
@@ -1075,6 +1141,24 @@ describe('children-affecting reparent tests', () => {
       })
 
       it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
+        if (target === 'conditional') {
+          FOR_TESTS_setNextGeneratedUids([
+            'skip1',
+            'skip2',
+            'skip3',
+            'skip4',
+            'skip5',
+            'skip6',
+            'inner-fragment',
+            'skip8',
+            'skip9',
+            'skip10',
+            'children-affecting',
+          ])
+        } else {
+          FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+        }
+
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragment(target),
           'await-first-dom-report',
@@ -1085,14 +1169,16 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <child-1 is not the direct child of bbb
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
@@ -1101,7 +1187,7 @@ describe('children-affecting reparent tests', () => {
       })
     })
 
-    it(`reparenting the children-affecting ${divOrFragment} to an absolute parent works`, async () => {
+    it(`reparenting the children-affecting ${target} to an absolute parent works`, async () => {
       if (target === 'conditional') {
         FOR_TESTS_setNextGeneratedUids([
           'skip1',
@@ -1119,6 +1205,7 @@ describe('children-affecting reparent tests', () => {
       } else {
         FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
       }
+
       const renderResult = await renderTestEditorWithCode(
         testProjectWithUnstyledDivOrFragment(target),
         'await-first-dom-report',
@@ -1147,8 +1234,9 @@ describe('children-affecting reparent tests', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata).sort()).toEqual([
-        'utopia-storyboard-uid',
+      expect(
+        getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+      ).toEqual([
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
