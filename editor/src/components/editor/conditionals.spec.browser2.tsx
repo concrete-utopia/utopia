@@ -1,10 +1,7 @@
 /* eslint-disable jest/expect-expect */
 import { act } from '@testing-library/react'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
-import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
-import { isJSXConditionalExpression } from '../../core/shared/element-template'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import {
   getPrintedUiJsCode,
