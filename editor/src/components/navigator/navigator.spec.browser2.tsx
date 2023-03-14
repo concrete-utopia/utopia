@@ -861,9 +861,9 @@ describe('Navigator', () => {
       )
 
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(null)
-      expect(renderResult.getEditorState().editor.navigator.dropTargetHint.displayAtEntry).toEqual(
-        null,
-      )
+      expect(
+        renderResult.getEditorState().editor.navigator.dropTargetHint.displayAtElementPath,
+      ).toEqual(null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 

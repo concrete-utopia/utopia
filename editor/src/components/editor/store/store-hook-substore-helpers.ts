@@ -122,8 +122,8 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   navigator: {
     minimised: false,
     dropTargetHint: {
-      displayAtEntry: null,
-      moveToEntry: null,
+      displayAtElementPath: null,
+      moveToElementPath: null,
       type: null,
     },
     collapsedViews: [],

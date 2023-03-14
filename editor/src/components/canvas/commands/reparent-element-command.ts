@@ -2,28 +2,24 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import {
-  ConditionalClause,
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  getElementPathFromReparentTargetParent,
   insertElementAtPath,
   removeElementAtPath,
-  ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
-  newParent: ReparentTargetParent<ElementPath>
+  newParent: ElementPath
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
-  newParent: ReparentTargetParent<ElementPath>,
+  newParent: ElementPath,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
@@ -43,7 +39,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     editorState,
     (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
-        getElementPathFromReparentTargetParent(command.newParent),
+        command.newParent,
         editorState,
         (
           successNewParent,
@@ -106,19 +102,10 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     },
   )
 
-  let parentDescription: string
-  if (reparentTargetParentIsConditionalClause(command.newParent)) {
-    parentDescription = `${EP.toUid(command.newParent.elementPath)} (${
-      command.newParent.clause
-    } clause)`
-  } else {
-    parentDescription = EP.toUid(command.newParent)
-  }
-
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Reparent Element ${EP.toUid(
-      command.target,
-    )} to new parent ${parentDescription}`,
+    commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
+      command.newParent,
+    )}`,
   }
 }
