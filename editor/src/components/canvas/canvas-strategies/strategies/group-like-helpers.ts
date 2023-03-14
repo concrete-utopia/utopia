@@ -66,7 +66,8 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-type ContentAffectingType = 'fragment' | 'sizeless-div'
+export const AllContentAffectingTypes = ['fragment', 'sizeless-div'] as const
+export type ContentAffectingType = typeof AllContentAffectingTypes[number] // <- this gives us the union type of the Array's entries
 
 export function getElementContentAffectingType(
   metadata: ElementInstanceMetadataMap,

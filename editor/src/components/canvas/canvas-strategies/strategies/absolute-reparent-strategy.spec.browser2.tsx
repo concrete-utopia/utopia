@@ -28,6 +28,7 @@ import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-ut
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { ContentAffectingType, AllContentAffectingTypes } from './group-like-helpers'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -988,7 +989,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
 describe('children-affecting reparent tests', () => {
   setFeatureForBrowserTests('Fragment support', true)
-  ;(['div', 'fragment'] as const).forEach((divOrFragment) => {
+  AllContentAffectingTypes.forEach((divOrFragment) => {
     describe(`Absolute reparent with children-affecting element ${divOrFragment} in the mix`, () => {
       it('cannot reparent into a children-affecting div', async () => {
         const renderResult = await renderTestEditorWithCode(
@@ -1171,7 +1172,31 @@ describe('children-affecting reparent tests', () => {
   })
 })
 
-function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment'): string {
+function getOpeningTag(type: ContentAffectingType): string {
+  switch (type) {
+    case 'sizeless-div':
+      return `<div data-uid='children-affecting' data-testid='children-affecting'>`
+    case 'fragment':
+      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
+    default:
+      const _exhaustiveCheck: never = type
+      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+  }
+}
+
+function getClosingTag(type: ContentAffectingType): string {
+  switch (type) {
+    case 'sizeless-div':
+      return `</div>`
+    case 'fragment':
+      return `</React.Fragment>`
+    default:
+      const _exhaustiveCheck: never = type
+      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+  }
+}
+
+function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
   return makeTestProjectCodeWithSnippet(`
       <div
         style={{
@@ -1192,11 +1217,7 @@ function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment')
           }}
           data-uid='bbb'
         >
-          ${
-            divOrFragment === 'div'
-              ? `<div data-uid='children-affecting' data-testid='children-affecting'>`
-              : `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
-          }
+          ${getOpeningTag(type)}
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1221,7 +1242,7 @@ function testProjectWithUnstyledDivOrFragment(divOrFragment: 'div' | 'fragment')
               data-uid='child-2'
               data-testid='child-2'
             />
-          ${divOrFragment === 'div' ? `</div>` : `</React.Fragment>`}
+          ${getClosingTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
