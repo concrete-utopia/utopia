@@ -25,7 +25,10 @@ import {
   useColorTheme,
 } from '../../../../uuiui'
 import { EditorAction } from '../../../editor/action-types'
-import { setConditionalOverriddenCondition } from '../../../editor/actions/action-creators'
+import {
+  setConditionalOverriddenCondition,
+  switchConditionalBranches,
+} from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
@@ -35,6 +38,7 @@ export const ConditionalsControlSectionOpenTestId = 'conditionals-control-sectio
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
 export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
+export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=branches'
 
 type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-conditional'
@@ -146,6 +150,15 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     [conditionOverride, setConditionOverride],
   )
 
+  const replaceBranches = React.useCallback(
+    () => () => {
+      const actions: EditorAction[] = paths.map((path) => switchConditionalBranches(path))
+
+      dispatch(actions)
+    },
+    [dispatch, paths],
+  )
+
   if (conditionOverride === 'not-conditional' || conditionExpression === 'not-conditional') {
     return null
   }
@@ -202,6 +215,14 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           Condition
           <FlexRow style={{ flexGrow: 1, gap: 4 }}>
             <span style={{ flex: 1, textAlign: 'center' }}>{conditionExpression}</span>
+            <Button
+              style={{ flex: 1 }}
+              highlight
+              onClick={replaceBranches()}
+              data-testid={ConditionalsControlSwitchBranches}
+            >
+              Switch branches
+            </Button>
           </FlexRow>
         </UIGridRow>,
       )}

@@ -228,6 +228,7 @@ import type {
   CopyProperties,
   MergeWithPrevUndo,
   SetConditionalOverriddenCondition,
+  SwitchConditionalBranches,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1757,5 +1758,12 @@ export function setConditionalOverriddenCondition(
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,
     condition: condition,
+  }
+}
+
+export function switchConditionalBranches(target: ElementPath): SwitchConditionalBranches {
+  return {
+    action: 'SWITCH_CONDITIONAL_BRANCHES',
+    target: target,
   }
 }
