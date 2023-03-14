@@ -9,7 +9,6 @@ import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXFragment,
 } from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -134,14 +133,6 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
-    // TODO: later we should allow reparenting into fragments
-    if (
-      MetadataUtils.isElementPathFragmentFromMetadata(metadata, target) ||
-      MetadataUtils.isElementPathConditionalFromMetadata(metadata, target)
-    ) {
-      return false
-    }
-
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false
@@ -466,20 +457,7 @@ export function flowParentAbsoluteOrStatic(
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
-  const flattenFragmentChildren = (c: ElementInstanceMetadata): ElementInstanceMetadata[] => {
-    if (isLeft(c.element)) {
-      return [c]
-    }
-    if (!isJSXFragment(c.element.value)) {
-      return [c]
-    }
-    return MetadataUtils.getChildrenUnordered(metadata, c.elementPath).flatMap(
-      flattenFragmentChildren,
-    )
-  }
   const children = MetadataUtils.getChildrenUnordered(metadata, parent)
-    // filter out fragment blocks and merge their children with the parent children
-    .flatMap(flattenFragmentChildren)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {
