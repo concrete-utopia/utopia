@@ -92,7 +92,6 @@ function canDrop(
   draggedItem: NavigatorItemDragAndDropWrapperProps,
   draggedOnto: NavigatorItemDragAndDropWrapperProps,
 ): boolean {
-  // TODO: What is this checking?
   const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
   const childrenSupportedIfRequired =
     !isReparentTarget ||
