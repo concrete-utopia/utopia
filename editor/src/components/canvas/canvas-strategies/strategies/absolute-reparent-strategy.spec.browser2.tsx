@@ -1,3 +1,26 @@
+import * as Prettier from 'prettier/standalone'
+import { PrettierConfig } from 'utopia-vscode-common'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import * as EP from '../../../../core/shared/element-path'
+import {
+  canvasVector,
+  offsetRect,
+  windowPoint,
+  WindowPoint,
+} from '../../../../core/shared/math-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/meta-actions'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { CSSCursor } from '../../canvas-types'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
@@ -7,31 +30,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import {
-  canvasVector,
-  offsetRect,
-  windowPoint,
-  WindowPoint,
-} from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
-import {
-  BakedInStoryboardVariableName,
-  BakedInStoryboardUID,
-} from '../../../../core/model/scene-utils'
-import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
-import { CSSCursor } from '../../canvas-types'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/meta-actions'
-import * as EP from '../../../../core/shared/element-path'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ContentAffectingType, AllContentAffectingTypes } from './group-like-helpers'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
-import { pluck } from '../../../../core/shared/array-utils'
-import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -1166,7 +1165,13 @@ describe('children-affecting reparent tests', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
         ]
       // the fragment-like element continues to have no style prop
-      expect(propsOfFragment?.style).not.toBeDefined()
+      expect(propsOfFragment?.style == null).toBeTruthy()
+      const propsOfInnerFragment =
+        renderResult.getEditorState().editor.allElementProps[
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+        ]
+      // the inner fragment-like element continues to have no style prop
+      expect(propsOfInnerFragment?.style == null).toBeTruthy()
 
       const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
         EP.fromString(
