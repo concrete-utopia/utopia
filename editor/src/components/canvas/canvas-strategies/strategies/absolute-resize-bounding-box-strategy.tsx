@@ -153,6 +153,9 @@ export function absoluteResizeBoundingBoxStrategy(
               canvasState.startingAllElementProps,
             )
 
+            const isResizingGrouplikeElement =
+              selectedTargets.length !== retargetedTargets.length && selectedTargets.length === 1
+
             const commandsForSelectedElements = filteredSelectedElements.flatMap(
               (selectedElement) => {
                 const element = getElementFromProjectContents(
@@ -198,13 +201,22 @@ export function absoluteResizeBoundingBoxStrategy(
                     elementParentFlexDirection,
                     edgePosition,
                   ),
-                  setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
-                  pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
+                  ...(isResizingGrouplikeElement
+                    ? []
+                    : [pushIntendedBounds([{ target: selectedElement, frame: newFrame }])]),
                 ]
               },
             )
+
+            if (isResizingGrouplikeElement) {
+              commandsForSelectedElements.push(
+                pushIntendedBounds([{ target: selectedTargets[0], frame: snappedBoundingBox }]),
+              )
+            }
+
             return strategyApplicationResult([
               ...commandsForSelectedElements,
+              setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
               setElementsToRerenderCommand(retargetedTargets),
