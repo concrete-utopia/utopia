@@ -38,6 +38,7 @@ import {
   emptyComments,
   ChildOrAttribute,
   jsxAttributeValue,
+  childOrBlockIsAttribute,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -57,9 +58,21 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import {
+  getJSXAttributeAtPath,
+  GetJSXAttributeResult,
+  jsxSimpleAttributeToValue,
+} from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsConditionalClause,
+} from '../../components/editor/store/editor-state'
+import { conditionalWhenFalseOptic, conditionalWhenTrueOptic } from './common-optics'
+import { modify } from '../shared/optics/optic-utilities'
+import { foldEither } from '../shared/either'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -394,33 +407,28 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element)) {
-      const uid = getUtopiaID(element)
-      if (uid === firstUIDOrIndex) {
-        const tailPath = workingPath.slice(1)
-        if (tailPath.length === 0) {
-          // this is the element we want
-          return element
-        } else {
-          // we will want to delve into the children
-          const children = element.children
-          for (const child of children) {
-            const childResult = findAtPathInner(child, tailPath)
-            if (childResult != null) {
-              return childResult
-            }
+    if (isJSXElementLike(element) && getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        // we will want to delve into the children
+        const children = element.children
+        for (const child of children) {
+          const childResult = findAtPathInner(child, tailPath)
+          if (childResult != null) {
+            return childResult
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const elementWithin = element.elementsWithin[firstUIDOrIndex]
-        const withinResult = findAtPathInner(elementWithin, workingPath)
-        if (withinResult != null) {
-          return withinResult
-        }
+    } else if (isJSXArbitraryBlock(element) && firstUIDOrIndex in element.elementsWithin) {
+      const elementWithin = element.elementsWithin[firstUIDOrIndex]
+      const withinResult = findAtPathInner(elementWithin, workingPath)
+      if (withinResult != null) {
+        return withinResult
       }
-    } else if (isJSXConditionalExpression(element)) {
+    } else if (isJSXConditionalExpression(element) && getUtopiaID(element) === firstUIDOrIndex) {
       const tailPath = workingPath.slice(1)
       if (tailPath.length === 0) {
         // this is the element we want
@@ -430,12 +438,18 @@ export function findJSXElementChildAtPath(
           clause: ChildOrAttribute,
           branch: ThenOrElse,
         ): JSXElementChild | null {
-          // if it's an attribute, match its path with the right branch
-          if (!childOrBlockIsChild(clause)) {
-            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
+          // handle the special cased then-case / else-case path element first
+          if (tailPath.length === 1 && tailPath[0] === thenOrElsePathPart(branch)) {
+            // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
+            return childOrBlockIsAttribute(clause) ? null : clause
           }
-          // if it's a child, get its inner element
-          return findAtPathInner(clause, tailPath)
+
+          if (childOrBlockIsChild(clause)) {
+            // if it's a child, get its inner element
+            return findAtPathInner(clause, tailPath)
+          }
+
+          return null
         }
         return (
           elementOrNullFromClause(element.whenTrue, 'then') ??
@@ -568,7 +582,7 @@ export function removeJSXElementChild(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: StaticElementPath | null,
+  targetParent: ReparentTargetParent<StaticElementPath> | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -584,9 +598,43 @@ export function insertJSXElementChild(
   } else {
     return transformJSXComponentAtPath(
       components,
-      targetParentIncludingStoryboardRoot,
+      getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot),
       (parentElement) => {
-        if (isJSXElementLike(parentElement)) {
+        if (
+          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
+          isJSXConditionalExpression(parentElement)
+        ) {
+          // Determine which clause of the conditional we want to modify.
+          const toClauseOptic =
+            targetParentIncludingStoryboardRoot.clause === 'then'
+              ? conditionalWhenTrueOptic
+              : conditionalWhenFalseOptic
+          // Update the clause if it currently holds a null value.
+          return modify(
+            toClauseOptic,
+            (clauseValue) => {
+              if (childOrBlockIsAttribute(clauseValue)) {
+                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
+                return foldEither(
+                  () => {
+                    return clauseValue
+                  },
+                  (value) => {
+                    if (value == null) {
+                      return elementToInsert
+                    } else {
+                      return clauseValue
+                    }
+                  },
+                  simpleValue,
+                )
+              } else {
+                return clauseValue
+              }
+            },
+            parentElement,
+          )
+        } else if (isJSXElementLike(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)

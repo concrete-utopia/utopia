@@ -4,7 +4,12 @@ import {
   emptyImports,
   mergeImports,
 } from '../../../../core/workers/common/project-file-utils'
-import { withUnderlyingTarget } from '../../../editor/store/editor-state'
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsElementPath,
+  withUnderlyingTarget,
+} from '../../../editor/store/editor-state'
 import { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
@@ -82,11 +87,11 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: ElementPath | null,
+  targetParent: ReparentTargetParent<ElementPath> | null,
   whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
-  let newParent: ElementPath
+  let newParent: ReparentTargetParent<ElementPath>
   if (targetParent == null) {
     const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
     if (storyboardElementPath == null) {
@@ -102,6 +107,7 @@ export function getReparentOutcome(
   // Early exit if there's no need to make any change.
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
+    reparentTargetParentIsElementPath(newParent) &&
     EP.pathsEqual(newParent, EP.parentPath(toReparent.target))
   ) {
     return {
@@ -110,11 +116,15 @@ export function getReparentOutcome(
     }
   }
 
+  const newParentElementPath = getElementPathFromReparentTargetParent(newParent)
+
   // Lookup the filename that will be added to.
   const newTargetFilePath = forceNotNull(
-    `Unable to determine target path for ${newParent == null ? null : EP.toString(newParent)}`,
+    `Unable to determine target path for ${
+      newParent == null ? null : EP.toString(newParentElementPath)
+    }`,
     withUnderlyingTarget(
-      newParent,
+      newParentElementPath,
       projectContents,
       nodeModules,
       openFile,
@@ -140,12 +150,12 @@ export function getReparentOutcome(
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
       commands.push(reparentElement(whenToRun, toReparent.target, newParent))
-      newPath = EP.appendToPath(newParent, EP.toUid(toReparent.target))
+      newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
-      newPath = EP.appendToPath(newParent, getUtopiaID(toReparent.element))
+      newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
-      commands.push(addElement(whenToRun, newParent, toReparent.element))
+      commands.push(addElement(whenToRun, newParentElementPath, toReparent.element))
       break
     default:
       const _exhaustiveCheck: never = toReparent

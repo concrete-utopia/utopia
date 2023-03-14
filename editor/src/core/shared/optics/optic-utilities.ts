@@ -196,3 +196,23 @@ export function forEachOf<S, A>(withOptic: Optic<S, A>, s: S, withEach: (a: A) =
       assertNever(withOptic)
   }
 }
+
+// If we can obtain a value from `getFrom` using `getWithOptic`,
+// then attempt to set that value into `setInto` using `setWithOptic`.
+export function getAndSet<S1, S2, A2, A1 extends A2>(
+  getWithOptic: Optic<S1, A1>,
+  setWithOptic: Optic<S2, A2>,
+  getFrom: S1,
+  setInto: S2,
+): S2 {
+  const valueToSet = toFirst(getWithOptic, getFrom)
+  return foldEither(
+    () => {
+      return setInto
+    },
+    (value) => {
+      return set(setWithOptic, value, setInto)
+    },
+    valueToSet,
+  )
+}
