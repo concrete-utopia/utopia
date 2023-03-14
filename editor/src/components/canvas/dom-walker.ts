@@ -43,6 +43,7 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   zeroRectIfNullOrInfinity,
+  roundRectangleToNearestWhole,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -613,7 +614,9 @@ function collectMetadataForElement(
   specialSizeMeasurementsObject: SpecialSizeMeasurements
 } {
   const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const globalFrame = roundRectangleToNearestWhole(
+    globalFrameForElement(element, scale, containerRectLazy),
+  )
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(
