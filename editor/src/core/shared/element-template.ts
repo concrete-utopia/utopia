@@ -1,33 +1,32 @@
+import { MapLike } from 'typescript'
+import { LayoutSystem, Sides, sides } from 'utopia-api/core'
+import { v4 as UUID } from 'uuid'
+import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
+import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
+import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
+import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
+import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
+import { Either } from './either'
+import * as EP from './element-path'
+import { ModifiableAttribute } from './jsx-attributes'
+import {
+  CanvasRectangle,
+  LocalPoint,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
+  zeroCanvasRect,
+} from './math-utils'
+import { objectMap } from './object-utils'
+import { forceNotNull } from './optional-utils'
 import type {
+  ElementPath,
   PropertyPath,
   PropertyPathPart,
   StaticElementPathPart,
-  ElementPath,
 } from './project-file-types'
-import {
-  CanvasRectangle,
-  LocalRectangle,
-  LocalPoint,
-  zeroCanvasRect,
-  MaybeInfinityCanvasRectangle,
-  MaybeInfinityLocalRectangle,
-} from './math-utils'
-import { Either, foldEither, isLeft, left, right } from './either'
-import { v4 as UUID } from 'uuid'
-import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
-import { Sides, sides, LayoutSystem } from 'utopia-api/core'
-import { fastForEach, unknownObjectProperty } from './utils'
-import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
-import { objectMap } from './object-utils'
-import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
-import { ModifiableAttribute } from './jsx-attributes'
-import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
-import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
-import type { MapLike } from 'typescript'
-import { forceNotNull } from './optional-utils'
-import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
+import { fastForEach, unknownObjectProperty } from './utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -1060,7 +1059,6 @@ export interface JSXConditionalExpression extends WithComments {
   type: 'JSX_CONDITIONAL_EXPRESSION'
   uid: string
   condition: JSXAttribute
-  originalConditionString: string
   whenTrue: ChildOrAttribute
   whenFalse: ChildOrAttribute
 }
@@ -1068,7 +1066,6 @@ export interface JSXConditionalExpression extends WithComments {
 export function jsxConditionalExpression(
   uid: string,
   condition: JSXAttribute,
-  originalConditionString: string,
   whenTrue: ChildOrAttribute,
   whenFalse: ChildOrAttribute,
   comments: ParsedComments,
@@ -1076,7 +1073,6 @@ export function jsxConditionalExpression(
   return {
     type: 'JSX_CONDITIONAL_EXPRESSION',
     uid: uid,
-    originalConditionString: originalConditionString,
     condition: condition,
     whenTrue: whenTrue,
     whenFalse: whenFalse,

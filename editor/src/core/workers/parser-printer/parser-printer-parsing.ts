@@ -2096,7 +2096,6 @@ export function parseOutJSXElements(
         const conditionalExpression = jsxConditionalExpression(
           uid,
           condition.value,
-          expression.condition.getFullText(sourceFile).trim(),
           whenTrue.value,
           whenFalse.value,
           comments,

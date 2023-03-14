@@ -10,9 +10,9 @@ import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
-  JSXAttribute,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { jsxAttributeToString } from '../../../../core/workers/parser-printer/parser-printer'
 import { unless } from '../../../../utils/react-conditionals'
 import {
   Button,
@@ -107,7 +107,7 @@ const conditionExpressionSelector = createCachedSelector(
 
     const element = elements[0]
 
-    return element.element.originalConditionString
+    return jsxAttributeToString(element.element.condition)
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
@@ -235,18 +235,3 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     </React.Fragment>
   )
 })
-
-function jsxAttributeToString(attribute: JSXAttribute): string {
-  switch (attribute.type) {
-    case 'ATTRIBUTE_VALUE':
-      if (typeof attribute.value === 'string') {
-        return attribute.value
-      } else {
-        return attribute.value.toString()
-      }
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return attribute.javascript
-    default:
-      return 'Not supported yet'
-  }
-}
