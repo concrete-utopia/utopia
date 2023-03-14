@@ -1083,21 +1083,16 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
       function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-        const element = findElementAtPath(targetPath, utopiaComponents)
-        if (element == null) {
-          return parseSuccess
-        } else {
-          const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-            targetPath,
-            utopiaComponents,
-          )
-          return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-            return {
-              ...success,
-              utopiaComponents: withTargetRemoved,
-            }
-          }, parseSuccess)
-        }
+        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
+          targetPath,
+          utopiaComponents,
+        )
+        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+          return {
+            ...success,
+            utopiaComponents: withTargetRemoved,
+          }
+        }, parseSuccess)
       }
       return modifyParseSuccessAtPath(
         targetSuccess.filePath,
