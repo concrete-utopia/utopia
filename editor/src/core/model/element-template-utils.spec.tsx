@@ -957,7 +957,6 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
 
-    // !!!! Do I misunderstand something?? shouldn't the true-case and false-case return the true-root and false-root here?? these tests fail now...
     const elementAtTrueBranch = findElement(
       projectFile,
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
