@@ -13,19 +13,10 @@ import {
   isInfinityRectangle,
   nullIfInfinity,
   zeroCanvasPoint,
+  boundingRectangleArray,
 } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import {
-  EdgePosition,
-  EdgePositionBottom,
-  EdgePositionBottomLeft,
-  EdgePositionBottomRight,
-  EdgePositionLeft,
-  EdgePositionRight,
-  EdgePositionTop,
-  EdgePositionTopLeft,
-  EdgePositionTopRight,
-} from '../../canvas-types'
+import { EdgePosition } from '../../canvas-types'
 import { SnappingThreshold } from '../../canvas-utils'
 import {
   AdjustCssLengthProperty,
@@ -65,6 +56,7 @@ import { getElementDimensions } from './flex-resize-helpers'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
+import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -228,7 +220,7 @@ export function flexResizeStrategy(
 
           const snapToHug =
             lockedAspectRatio == null
-              ? shouldSnapTohug(
+              ? snapToHugChildren(
                   edgePosition,
                   resizedBounds,
                   elementParentFlexDirection,
@@ -270,7 +262,7 @@ export function flexResizeStrategy(
             } else if (
               snapToHug != null &&
               snapToHug.snapDirection === 'horizontal' &&
-              snapToHug.snap
+              snapToHug.isSnapping
             ) {
               resizeCommands.push(
                 setCssLengthProperty(
@@ -324,7 +316,7 @@ export function flexResizeStrategy(
             } else if (
               snapToHug != null &&
               snapToHug.snapDirection === 'vertical' &&
-              snapToHug.snap
+              snapToHug.isSnapping
             ) {
               resizeCommands.push(
                 setCssLengthProperty(
@@ -394,6 +386,7 @@ function shouldSnapToParentEdge(
   const parentPadding = element.specialSizeMeasurements.parentPadding
   const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
   const parentGap = element.specialSizeMeasurements.parentFlexGap
+  const direction = parentFlexDirection === 'row' ? 'horizontal' : 'vertical'
 
   const flexSiblingsWithoutSelected = MetadataUtils.getSiblingsUnordered(
     startingMetadata,
@@ -404,7 +397,7 @@ function shouldSnapToParentEdge(
 
   const anySiblingFillSized = flexSiblingsWithoutSelected.some((sibling) => {
     const fillHugFixedState = detectFillHugFixedState(
-      parentFlexDirection === 'row' ? 'horizontal' : 'vertical',
+      direction,
       startingMetadata,
       sibling.elementPath,
     )
@@ -435,15 +428,7 @@ function shouldSnapToParentEdge(
   const isFirstSibling = siblingIndex === 0
   const isLastSibling = siblingIndex === flexSiblingsWithoutSelected.length
 
-  const parentInnerBounds = canvasRectangle({
-    x: parentBounds.x + (parentPadding.left ?? 0),
-    y: parentBounds.y + (parentPadding.top ?? 0),
-    width: parentBounds.width - ((parentPadding.left ?? 0) + (parentPadding.right ?? 0)),
-    height: parentBounds.height - ((parentPadding.top ?? 0) + (parentPadding.bottom ?? 0)),
-  })
-
-  const direction = parentFlexDirection === 'row' ? 'horizontal' : 'vertical'
-
+  // snap to fill can be applied only to the element closest to the parent edge dragged on the closest side/corner
   const isDraggingRightEdgeOrCorner = edgePosition.x === 1
   const isDraggingBottomEdgeOrCorner = edgePosition.y === 1
   const isLastEdgeOrCorner =
@@ -466,30 +451,24 @@ function shouldSnapToParentEdge(
     (parentJustifyContent === 'flex-end' && isFirstEdgeOrCorner)
 
   if (isElementDraggedOnOuterEdgeOrCorner) {
-    const shouldSnap = (() => {
-      if (direction === 'horizontal') {
-        // positive free space is calculated with sibling frames, gap and paddings
-        const siblingsWidth = siblingFrames.reduce((working, frame) => {
-          return frame != null && isFiniteRectangle(frame) ? frame.width + working : working
-        }, 0)
-        const siblingSize = siblingsWidth + siblingFrames.length * parentGap
-        return (
-          siblingSize < parentInnerBounds.width && // there is open space in the layout
-          Math.abs(siblingSize + resizedBounds.width - parentInnerBounds.width) <= SnappingThreshold
-        )
-      } else {
-        // positive free space is calculated with sibling frames, gap and paddings
-        const siblingsHeight = siblingFrames.reduce((working, frame) => {
-          return frame != null && isFiniteRectangle(frame) ? frame.height + working : working
-        }, 0)
-        const siblingSize = siblingsHeight + siblingFrames.length * parentGap
-        return (
-          siblingSize < parentInnerBounds.height && // there is open space in the layout
-          Math.abs(siblingSize + resizedBounds.height - parentInnerBounds.height) <=
-            SnappingThreshold
-        )
-      }
-    })()
+    const parentInnerBounds = canvasRectangle({
+      x: parentBounds.x + (parentPadding.left ?? 0),
+      y: parentBounds.y + (parentPadding.top ?? 0),
+      width: parentBounds.width - ((parentPadding.left ?? 0) + (parentPadding.right ?? 0)),
+      height: parentBounds.height - ((parentPadding.top ?? 0) + (parentPadding.bottom ?? 0)),
+    })
+    const dimensionToUse = direction === 'horizontal' ? 'width' : 'height'
+
+    // positive free space is calculated with sibling frames, gap and paddings
+    const siblingsSize = siblingFrames.reduce((working, frame) => {
+      return frame != null && isFiniteRectangle(frame) ? frame[dimensionToUse] + working : working
+    }, 0)
+    const siblingSize = siblingsSize + siblingFrames.length * parentGap
+    const shouldSnap =
+      siblingSize < parentInnerBounds[dimensionToUse] && // there is open space in the layout
+      Math.abs(siblingSize + resizedBounds[dimensionToUse] - parentInnerBounds[dimensionToUse]) <=
+        SnappingThreshold
+
     const guideline = shouldSnap
       ? collectGuideline(edgePosition, direction, parentBounds, resizedBounds)
       : null
@@ -513,23 +492,29 @@ function dimensionToSetForEdgePosition(edgePosition: EdgePosition): {
   }
 }
 
-function shouldSnapTohug(
+function snapToHugChildren(
   edgePosition: EdgePosition,
   resizedBounds: CanvasRectangle,
-  elementParentFlexDirection: FlexDirection | null,
+  parentFlexDirection: FlexDirection | null,
   element: ElementInstanceMetadata,
   startingMetadata: ElementInstanceMetadataMap,
 ): {
   snapDirection: 'horizontal' | 'vertical'
-  snap: boolean
+  isSnapping: boolean
   guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
 } | null {
   if (MetadataUtils.isFlexLayoutedContainer(element)) {
-    const elementFlexDirection = element.specialSizeMeasurements.flexDirection
-    const children = MetadataUtils.getChildrenUnordered(startingMetadata, element.elementPath)
-    const areAllChildrenFixed = children.every((child) => {
+    const direction = parentFlexDirection === 'row' ? 'horizontal' : 'vertical'
+
+    const children = MetadataUtils.getChildrenUnordered(
+      startingMetadata,
+      element.elementPath,
+    ).filter(MetadataUtils.elementParticipatesInAutoLayout)
+    const childrenFrames = mapDropNulls((child) => nullIfInfinity(child.globalFrame), children)
+
+    const areAllChildrenFixed = strictEvery(children, (child) => {
       const fillHugFixedState = detectFillHugFixedState(
-        elementParentFlexDirection === 'row' ? 'horizontal' : 'vertical',
+        direction,
         startingMetadata,
         child.elementPath,
       )
@@ -539,66 +524,26 @@ function shouldSnapTohug(
       return null
     }
 
-    const direction = elementParentFlexDirection === 'row' ? 'horizontal' : 'vertical'
     const resizeDirection = dimensionToSetForEdgePosition(edgePosition)
-
     if (
       (direction === 'horizontal' && resizeDirection.width) ||
       (direction === 'vertical' && resizeDirection.height)
     ) {
-      const shouldSnap = (() => {
-        const childrenFrames = children
-          .filter(MetadataUtils.elementParticipatesInAutoLayout)
-          .map((child) => nullIfInfinity(child.globalFrame))
-        const gap = element.specialSizeMeasurements.gap ?? 0
+      const snapResult = isSnappingToChildren(
+        direction,
+        element,
+        childrenFrames,
+        resizedBounds,
+        parentFlexDirection,
+      )
 
-        if (direction === 'horizontal') {
-          const paddingSize =
-            (element.specialSizeMeasurements.padding.left ?? 0) +
-            (element.specialSizeMeasurements.padding.right ?? 0)
-          let childrenSize = 0
-          if (elementParentFlexDirection === elementFlexDirection) {
-            // the element is in a row and it has children in a row it snaps on to all children + gaps + paddings
-            const childrenWidth = childrenFrames.reduce(
-              (size, child) => size + (child?.width ?? 0),
-              0,
-            )
-            childrenSize = childrenWidth + gap * children.length + paddingSize
-          } else {
-            // when the element is in row and it has children in a column only the widest child is needed and paddings
-            const maxChildWidth = Math.max(...childrenFrames.map((child) => child?.width ?? 0))
-            childrenSize = maxChildWidth + paddingSize
-          }
-
-          return Math.abs(resizedBounds.width - childrenSize) <= SnappingThreshold
-        } else {
-          const paddingSize =
-            (element.specialSizeMeasurements.padding.top ?? 0) +
-            (element.specialSizeMeasurements.padding.bottom ?? 0)
-          let childrenSize = 0
-          if (elementParentFlexDirection === elementFlexDirection) {
-            // the element is in a column and it has children in a column it snaps on to all children + gaps + paddings
-            const childrenHeight = childrenFrames.reduce(
-              (size, child) => size + (child?.height ?? 0),
-              0,
-            )
-            childrenSize = childrenHeight + gap * children.length + paddingSize
-          } else {
-            // when the element is in column and it has children in a row only the tallest child element is needed and paddings
-            const maxChildHeight = Math.max(...childrenFrames.map((child) => child?.height ?? 0))
-            childrenSize = maxChildHeight + paddingSize
-          }
-          return Math.abs(resizedBounds.height - childrenSize) <= SnappingThreshold
-        }
-      })()
-
-      const guideline = shouldSnap
-        ? collectChildGuideline(edgePosition, direction, element, startingMetadata, resizedBounds)
+      const guideline = snapResult
+        ? collectChildGuideline(edgePosition, direction, childrenFrames, resizedBounds)
         : null
 
       return {
         snapDirection: direction,
-        snap: shouldSnap,
+        isSnapping: snapResult,
         guideline: guideline,
       }
     }
@@ -607,27 +552,57 @@ function shouldSnapTohug(
   return null
 }
 
+function isSnappingToChildren(
+  direction: 'vertical' | 'horizontal',
+  element: ElementInstanceMetadata,
+  childrenFrames: Array<CanvasRectangle>,
+  resizedBounds: CanvasRectangle,
+  parentFlexDirection: FlexDirection | null,
+): boolean {
+  const elementFlexDirection = element.specialSizeMeasurements.flexDirection
+  const gap = element.specialSizeMeasurements.gap ?? 0
+
+  const elementPadding = element.specialSizeMeasurements.padding
+  const paddingLeftAndRight = (elementPadding.left ?? 0) + (elementPadding.right ?? 0)
+  const paddingTopAndBottom = (elementPadding.top ?? 0) + (elementPadding.bottom ?? 0)
+
+  const dimensionToUse = direction === 'horizontal' ? 'width' : 'height'
+  const paddingsMatchingDirection =
+    direction === 'horizontal' ? paddingLeftAndRight : paddingTopAndBottom
+
+  const childrenSizeWithGapAndPadding = (() => {
+    if (parentFlexDirection === elementFlexDirection) {
+      // the element is in a row and it has children in a row it snaps on to all children + gaps + paddings
+      // same when using column plus the element is flex column
+      const childrenSize = childrenFrames.reduce(
+        (size, child) => size + (child?.[dimensionToUse] ?? 0),
+        0,
+      )
+      return childrenSize + gap * childrenFrames.length + paddingsMatchingDirection
+    } else {
+      // when the element is in row and it has children in a column only the widest child is needed and paddings
+      // same when using column plus the element is flex column, then it needs only the tallest child
+      const maxSize = Math.max(...childrenFrames.map((child) => child?.[dimensionToUse] ?? 0))
+      return maxSize + paddingsMatchingDirection
+    }
+  })()
+
+  return (
+    Math.abs(resizedBounds[dimensionToUse] - childrenSizeWithGapAndPadding) <= SnappingThreshold
+  )
+}
+
 /** show guideline on snap with small x marks on child corners and resized element corners */
 function collectChildGuideline(
   edgePosition: EdgePosition,
   direction: 'horizontal' | 'vertical',
-  element: ElementInstanceMetadata,
-  metadata: ElementInstanceMetadataMap,
+  childrenFrames: Array<CanvasRectangle>,
   resizedBounds: CanvasRectangle,
 ): GuidelineWithSnappingVectorAndPointsOfRelevance | null {
-  const children = MetadataUtils.getChildrenOrdered(metadata, element.elementPath).filter(
-    MetadataUtils.elementParticipatesInAutoLayout,
-  )
-  let childIndex = 0
-  if (direction === 'horizontal') {
-    childIndex = edgePosition.x === 0 ? 0 : children.length - 1
-  } else {
-    childIndex = edgePosition.y === 0 ? 0 : children.length - 1
-  }
+  const childrenArea = boundingRectangleArray(childrenFrames)
 
-  const childFrame = children.length > 0 ? nullIfInfinity(children[childIndex].globalFrame) : null
-  if (childFrame != null) {
-    return collectGuideline(edgePosition, direction, childFrame, resizedBounds)
+  if (childrenArea != null) {
+    return collectGuideline(edgePosition, direction, childrenArea, resizedBounds)
   }
   return null
 }
