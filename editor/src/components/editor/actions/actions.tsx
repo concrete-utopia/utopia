@@ -5456,6 +5456,7 @@ export const UPDATE_FNS = {
         return jsxConditionalExpression(
           element.uid,
           element.condition,
+          element.originalConditionString,
           element.whenFalse,
           element.whenTrue,
           element.comments,
