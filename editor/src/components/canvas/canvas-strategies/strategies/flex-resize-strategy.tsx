@@ -337,9 +337,9 @@ export function flexResizeStrategy(
 function getFillCommands(
   selectedElement: ElementPath,
   propToUpdate: 'width' | 'height' | 'flexBasis',
-  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null,
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance,
 ): Array<CanvasCommand> {
-  let commands: Array<CanvasCommand> = [
+  return [
     setProperty(
       'always',
       selectedElement,
@@ -349,20 +349,17 @@ function getFillCommands(
     deleteProperties('always', selectedElement, [
       stylePropPathMappingFn(propToUpdate, styleStringInArray),
     ]),
+    setSnappingGuidelines('mid-interaction', [guideline]),
   ]
-  if (guideline != null) {
-    commands.push(setSnappingGuidelines('mid-interaction', [guideline]))
-  }
-  return commands
 }
 
 function getHugCommands(
   selectedElement: ElementPath,
   propToUpdate: 'width' | 'height' | 'flexBasis',
-  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null,
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance,
   elementParentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
-  let commands: Array<CanvasCommand> = [
+  return [
     setCssLengthProperty(
       'always',
       selectedElement,
@@ -370,11 +367,8 @@ function getHugCommands(
       setExplicitCssValue(cssKeyword(MaxContent)),
       elementParentFlexDirection,
     ),
+    setSnappingGuidelines('mid-interaction', [guideline]),
   ]
-  if (guideline != null) {
-    commands.push(setSnappingGuidelines('mid-interaction', [guideline]))
-  }
-  return commands
 }
 
 function shouldSnapToParentEdge(
@@ -388,7 +382,7 @@ function shouldSnapToParentEdge(
 ): {
   snapDirection: 'horizontal' | 'vertical'
   snap: boolean
-  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance
 } | null {
   const parentPadding = element.specialSizeMeasurements.parentPadding
   const parentJustifyContent = element.specialSizeMeasurements.parentJustifyContent
@@ -476,9 +470,8 @@ function shouldSnapToParentEdge(
       Math.abs(siblingSize + resizedBounds[dimensionToUse] - parentInnerBounds[dimensionToUse]) <=
         SnappingThreshold
 
-    const guideline = shouldSnap
-      ? collectGuideline(edgePosition, direction, parentBounds, resizedBounds)
-      : null
+    const guideline = collectGuideline(edgePosition, direction, parentBounds, resizedBounds)
+
     return {
       snapDirection: direction,
       snap: shouldSnap,
@@ -508,7 +501,7 @@ function snapToHugChildren(
 ): {
   snapDirection: 'horizontal' | 'vertical'
   isSnapping: boolean
-  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance
 } | null {
   if (MetadataUtils.isFlexLayoutedContainer(element)) {
     const direction = parentFlexDirection === 'row' ? 'horizontal' : 'vertical'
@@ -544,9 +537,12 @@ function snapToHugChildren(
         parentFlexDirection,
       )
 
-      const guideline = snapResult
-        ? collectChildGuideline(edgePosition, direction, childrenFrames, resizedBounds)
-        : null
+      const guideline = collectChildGuideline(
+        edgePosition,
+        direction,
+        childrenFrames,
+        resizedBounds,
+      )
 
       return {
         snapDirection: direction,
