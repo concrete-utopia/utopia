@@ -8,7 +8,9 @@ import {
   CanvasRectangle,
   canvasSegment,
   CanvasSegment,
+  isInfinityRectangle,
   rectanglesEqual,
+  roundRectangleToNearestWhole,
   segmentIntersection,
 } from '../../../core/shared/math-utils'
 import { bold, useColorTheme } from '../../../uuiui'
@@ -38,10 +40,13 @@ export const GuidelineControls = React.memo(() => {
             target,
             store.editor.jsxMetadata,
           )
-          if (measuredFrame == null) {
+          if (measuredFrame == null || isInfinityRectangle(measuredFrame)) {
             return false
           } else {
-            return rectanglesEqual(measuredFrame, frame)
+            return rectanglesEqual(
+              roundRectangleToNearestWhole(measuredFrame),
+              roundRectangleToNearestWhole(frame),
+            )
           }
         })
       )
