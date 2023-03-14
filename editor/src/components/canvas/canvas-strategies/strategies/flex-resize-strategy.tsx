@@ -230,6 +230,7 @@ export function flexResizeStrategy(
                 )
               : null
 
+          // only update width or height based on dragged edge/corner
           const dimensionToUpdate =
             lockedAspectRatio != null
               ? { width: true, height: true }
