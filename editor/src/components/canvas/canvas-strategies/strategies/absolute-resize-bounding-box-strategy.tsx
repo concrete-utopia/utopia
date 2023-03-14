@@ -11,7 +11,6 @@ import {
   canvasRectangleToLocalRectangle,
   isInfinityRectangle,
   rectangleDifference,
-  roundRectangleToNearestWhole,
   roundTo,
   SimpleRectangle,
   transformFrameUsingBoundingBox,
@@ -174,12 +173,10 @@ export function absoluteResizeBoundingBoxStrategy(
                   return []
                 }
 
-                const newFrame = roundRectangleToNearestWhole(
-                  transformFrameUsingBoundingBox(
-                    snappedBoundingBox,
-                    originalBoundingBox,
-                    originalFrame,
-                  ),
+                const newFrame = transformFrameUsingBoundingBox(
+                  snappedBoundingBox,
+                  originalBoundingBox,
+                  originalFrame,
                 )
                 const metadata = MetadataUtils.findElementByElementPath(
                   canvasState.startingMetadata,
