@@ -42,10 +42,7 @@ export const GuidelineControls = React.memo(() => {
           if (measuredFrame == null || isInfinityRectangle(measuredFrame)) {
             return false
           } else {
-            return rectanglesEqual(
-              roundRectangleToNearestWhole(measuredFrame),
-              roundRectangleToNearestWhole(frame),
-            )
+            return rectanglesEqual(measuredFrame, frame)
           }
         })
       )
