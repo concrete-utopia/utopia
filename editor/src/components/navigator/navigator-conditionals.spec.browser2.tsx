@@ -322,7 +322,7 @@ describe('conditionals in the navigator', () => {
     )
     const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
       `navigator-item-${varSafeNavigatorEntryToKey(
-        conditionalClauseNavigatorEntry(elementPathToTarget, 'then'),
+        conditionalClauseNavigatorEntry(elementPathToTarget, 'false-case'),
       )}`,
     )
     const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
@@ -338,7 +338,7 @@ describe('conditionals in the navigator', () => {
         renderResult,
         `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
         `navigator-item-${varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(elementPathToTarget, 'then'),
+          conditionalClauseNavigatorEntry(elementPathToTarget, 'false-case'),
         )}`,
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
