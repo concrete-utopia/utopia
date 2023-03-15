@@ -27,11 +27,10 @@ import { compose3Optics, Optic } from '../../core/shared/optics/optics'
 import { ChildOrAttribute } from '../../core/shared/element-template'
 import { forElementOptic } from '../../core/model/common-optics'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { MOCK_NEXT_GENERATED_UIDS, MOCK_NEXT_GENERATED_UIDS_IDX } from '../../core/shared/uid-utils'
 import {
   conditionalWhenFalseOptic,
   jsxConditionalExpressionOptic,
-} from 'src/core/model/conditionals'
+} from '../../core/model/conditionals'
 
 function dragElement(
   renderResult: EditorRenderResult,
