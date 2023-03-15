@@ -18,9 +18,9 @@ import {
   isJSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { jsxSimpleAttributeToValue } from '../../core/shared/jsx-attributes'
-import { getUtopiaID } from '../../core/model/element-template-utils'
 import { foldEither } from '../../core/shared/either'
 import fastDeepEquals from 'fast-deep-equal'
+import { getUtopiaID } from '../../core/shared/uid-utils'
 
 // Validate this by making the type `Set<keyof CSSProperties>`.
 export const stylePropertiesEligibleForMerge: Set<string> = new Set([

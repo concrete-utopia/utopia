@@ -89,7 +89,6 @@ import {
   componentUsesProperty,
   elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
-  getUtopiaID,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -134,6 +133,7 @@ import {
   reorderConditionalChildPathTrees,
   ThenOrElse,
 } from './conditionals'
+import { getUtopiaID } from '../shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
 

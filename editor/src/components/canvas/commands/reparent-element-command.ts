@@ -1,3 +1,8 @@
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsConditionalClause,
+} from '../../../components/editor/store/reparent-target'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -13,13 +18,13 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
-  newParent: ElementPath
+  newParent: ReparentTargetParent<ElementPath>
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
-  newParent: ElementPath,
+  newParent: ReparentTargetParent<ElementPath>,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
@@ -39,7 +44,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     editorState,
     (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
-        command.newParent,
+        getElementPathFromReparentTargetParent(command.newParent),
         editorState,
         (
           successNewParent,
@@ -102,10 +107,19 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     },
   )
 
+  let parentDescription: string
+  if (reparentTargetParentIsConditionalClause(command.newParent)) {
+    parentDescription = `${EP.toUid(command.newParent.elementPath)} (${
+      command.newParent.clause
+    } clause)`
+  } else {
+    parentDescription = EP.toUid(command.newParent)
+  }
+
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
-      command.newParent,
-    )}`,
+    commandDescription: `Reparent Element ${EP.toUid(
+      command.target,
+    )} to new parent ${parentDescription}`,
   }
 }

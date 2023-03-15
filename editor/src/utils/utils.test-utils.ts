@@ -33,7 +33,6 @@ import {
   walkElements,
   emptyComments,
 } from '../core/shared/element-template'
-import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import {
@@ -74,6 +73,7 @@ import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { fireEvent } from '@testing-library/react'
 import { FeatureName, isFeatureEnabled, setFeatureEnabled } from './feature-switches'
+import { getUtopiaID } from 'src/core/shared/uid-utils'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))

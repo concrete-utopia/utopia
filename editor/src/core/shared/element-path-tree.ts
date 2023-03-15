@@ -4,8 +4,8 @@ import { fastForEach } from './utils'
 import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { foldEither } from './either'
-import { getUtopiaID } from '../model/element-template-utils'
 import { move } from './array-utils'
+import { getUtopiaID } from './uid-utils'
 
 export interface ElementPathTree {
   path: ElementPath

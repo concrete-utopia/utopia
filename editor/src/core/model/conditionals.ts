@@ -6,8 +6,8 @@ import {
   JSXConditionalExpression,
 } from '../shared/element-template'
 import { ElementPathTree } from '../shared/element-path-tree'
-import { getUtopiaID } from './element-template-utils'
 import { assertNever } from '../shared/utils'
+import { getUtopiaID } from '../shared/uid-utils'
 
 export type ThenOrElse = 'then' | 'else'
 
