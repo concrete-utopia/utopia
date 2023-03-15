@@ -3,11 +3,11 @@ import { ContentAffectingType } from './group-like-helpers'
 export function getOpeningGroupLikeTag(type: ContentAffectingType): string {
   switch (type) {
     case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'><>`
+      return `<div data-uid='children-affecting' data-testid='children-affecting'><React.Fragment data-uid='inner-fragment'>`
     case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'><>`
+      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'><React.Fragment data-uid='inner-fragment'>`
     case 'conditional':
-      return `{ true ? ( <>`
+      return `{ true ? ( <React.Fragment data-uid='inner-fragment'>`
     default:
       const _exhaustiveCheck: never = type
       throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
@@ -17,11 +17,11 @@ export function getOpeningGroupLikeTag(type: ContentAffectingType): string {
 export function getClosingGroupLikeTag(type: ContentAffectingType): string {
   switch (type) {
     case 'sizeless-div':
-      return `</></div>`
+      return `</React.Fragment></div>`
     case 'fragment':
-      return `</></React.Fragment>`
+      return `</React.Fragment></React.Fragment>`
     case 'conditional':
-      return `</> ) : null }`
+      return `</React.Fragment> ) : null }`
     default:
       const _exhaustiveCheck: never = type
       throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
