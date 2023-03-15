@@ -20,6 +20,7 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -397,34 +398,6 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
   })
 })
 
-function getOpeningTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'><>`
-    case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'><>`
-    case 'conditional':
-      return `{ true ? ( <>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
-function getClosingTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `</></div>`
-    case 'fragment':
-      return `</></React.Fragment>`
-    case 'conditional':
-      return `</> ) : null }`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
 function fragmentTestCode(type: ContentAffectingType) {
   if (type === 'conditional') {
     FOR_TESTS_setNextGeneratedUids([
@@ -499,7 +472,7 @@ function fragmentTestCode(type: ContentAffectingType) {
       data-uid='flexparent'
       data-testid='flexparent'
     >
-      ${getOpeningTag(type)}
+      ${getOpeningGroupLikeTag(type)}
         <div
           style={{
             width: 100,
@@ -518,7 +491,7 @@ function fragmentTestCode(type: ContentAffectingType) {
           data-uid='flexchild2'
           data-testid='flexchild2'
         />
-      ${getClosingTag(type)}
+      ${getClosingGroupLikeTag(type)}
     </div>
   </div>
 `

@@ -31,6 +31,7 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -1196,34 +1197,6 @@ describe('children-affecting reparent tests', () => {
   })
 })
 
-function getOpeningTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'><>`
-    case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'><>`
-    case 'conditional':
-      return `{ true ? ( <>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
-function getClosingTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `</></div>`
-    case 'fragment':
-      return `</></React.Fragment>`
-    case 'conditional':
-      return `</> ) : null }`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
 function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
   if (type === 'conditional') {
     FOR_TESTS_setNextGeneratedUids([
@@ -1263,7 +1236,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
           }}
           data-uid='bbb'
         >
-          ${getOpeningTag(type)}
+          ${getOpeningGroupLikeTag(type)}
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1288,7 +1261,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
               data-uid='child-2'
               data-testid='child-2'
             />
-          ${getClosingTag(type)}
+          ${getClosingGroupLikeTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
