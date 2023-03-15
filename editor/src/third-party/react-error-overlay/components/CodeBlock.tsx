@@ -30,7 +30,7 @@ const secondaryPreStyle = {
   backgroundColor: yellowTransparent,
 }
 
-export const codeStyle = {
+const codeStyle = {
   fontFamily: 'Consolas, Menlo, monospace',
 }
 

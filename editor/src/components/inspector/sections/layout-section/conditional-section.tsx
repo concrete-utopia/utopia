@@ -12,7 +12,6 @@ import {
   isJSXConditionalExpression,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { codeStyle } from '../../../../third-party/react-error-overlay/components/CodeBlock'
 import { unless } from '../../../../utils/react-conditionals'
 import {
   Button,
@@ -24,6 +23,7 @@ import {
   SquareButton,
   StringInput,
   useColorTheme,
+  UtopiaStyles,
 } from '../../../../uuiui'
 import { EditorAction } from '../../../editor/action-types'
 import {
@@ -256,7 +256,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
             onKeyUp={onExpressionKeyUp}
             onBlur={onUpdateExpression}
             css={{
-              ...codeStyle,
+              ...UtopiaStyles.fontStyles.monospaced,
               textAlign: 'center',
               fontWeight: 600,
             }}
