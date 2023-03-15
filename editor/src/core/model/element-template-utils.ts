@@ -565,19 +565,46 @@ export function insertJSXElementChild(
                 const simpleValue = jsxSimpleAttributeToValue(clauseValue)
                 return foldEither(
                   () => {
+                    // Not a simple value, so replacing it would be a bad thing.
                     return clauseValue
                   },
                   (value) => {
+                    // Simple value of some kind.
                     if (value == null) {
+                      // Simple value is null, so replace it with the new content.
                       return elementToInsert
                     } else {
+                      // FIXME: We have a simple `JSXAttribute` value here which is not null/undefined.
+                      // Recent conversations have been about unifying attributes and arbitrary JSX elements,
+                      // which could result in this content being a valid child of any element.
                       return clauseValue
                     }
                   },
                   simpleValue,
                 )
               } else {
-                return clauseValue
+                if (isJSXFragment(clauseValue)) {
+                  // Existing fragment, so add it in as appropriate.
+                  let updatedChildren: Array<JSXElementChild>
+                  if (indexPosition == null) {
+                    updatedChildren = clauseValue.children.concat(elementToInsert)
+                  } else {
+                    updatedChildren = Utils.addToArrayWithFill(
+                      elementToInsert,
+                      clauseValue.children,
+                      indexPosition,
+                      makeE,
+                    )
+                  }
+                  return jsxFragment(clauseValue.uid, updatedChildren, clauseValue.longForm)
+                } else {
+                  // Something other than a fragment, so wrap that and the newly inserted element into a fragment.
+                  return jsxFragment(
+                    generateUidWithExistingComponents(projectContents),
+                    [clauseValue, elementToInsert],
+                    false,
+                  )
+                }
               }
             },
             parentElement,
