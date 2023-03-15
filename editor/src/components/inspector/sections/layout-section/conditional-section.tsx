@@ -34,6 +34,7 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import { usePropControlledStateV2 } from '../../common/inspector-utils'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
@@ -134,11 +135,9 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     'ConditionalSection condition expression',
   )
 
-  const [conditionExpression, setConditionExpression] = React.useState(originalConditionExpression)
-
-  React.useEffect(() => {
-    setConditionExpression(originalConditionExpression)
-  }, [originalConditionExpression])
+  const [conditionExpression, setConditionExpression] = usePropControlledStateV2(
+    originalConditionExpression,
+  )
 
   const setConditionOverride = React.useCallback(
     (value: boolean | null) => () => {
@@ -178,7 +177,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       return
     }
     dispatch([updateConditionalExpression(paths[0], expression)], 'everyone')
-  }, [paths, conditionExpression, originalConditionExpression, dispatch])
+  }, [paths, conditionExpression, setConditionExpression, originalConditionExpression, dispatch])
 
   function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
     setConditionExpression(e.target.value)
@@ -271,7 +270,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
             highlight
             spotlight
             onClick={replaceBranches()}
-            data-testId={ConditionalsControlSwitchBranches}
+            data-testid={ConditionalsControlSwitchBranches}
           >
             Switch branches
           </Button>
