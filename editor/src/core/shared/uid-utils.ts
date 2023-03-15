@@ -24,6 +24,7 @@ import {
   JSXTextBlock,
   isJSXTextBlock,
   jsxFragment,
+  jsxConditionalExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -447,6 +448,15 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
     return setUtopiaIDOnJSXElement(element, uid)
   } else if (isUtopiaJSXFragment(element)) {
     return jsxFragment(uid, element.children, element.longForm)
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      uid,
+      element.condition,
+      element.originalConditionString,
+      element.whenTrue,
+      element.whenFalse,
+      element.comments,
+    )
   } else {
     throw new Error(`Unable to set utopia id on ${element.type}`)
   }

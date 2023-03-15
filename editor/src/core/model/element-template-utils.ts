@@ -39,6 +39,7 @@ import {
   ChildOrAttribute,
   jsxAttributeValue,
   childOrBlockIsAttribute,
+  jsxConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
