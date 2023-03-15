@@ -225,7 +225,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               style={{ flex: 1 }}
               highlight
               onClick={replaceBranches()}
-              data-testid={ConditionalsControlSwitchBranches}
+              data-testId={ConditionalsControlSwitchBranches}
             >
               Switch branches
             </Button>
