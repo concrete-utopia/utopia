@@ -69,7 +69,6 @@ import {
   StringInputPropertyControl,
   VectorPropertyControl,
 } from './property-control-controls'
-import { ComponentInfoBox } from './component-info-box'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
@@ -79,11 +78,7 @@ import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import {
-  getFilePathForImportedComponent,
-  isAnimatedElement,
-  isImportedComponentNPM,
-} from '../../../../core/model/project-file-utils'
+import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 
@@ -835,10 +830,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       <InspectorSectionHeader>
         <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
           <Icons.Component color='primary' />
-          <InlineLink onClick={OpenFile}>
-            {/* {locationOfComponentInstance} */}
-            Component
-          </InlineLink>{' '}
+          <InlineLink onClick={OpenFile}>Component</InlineLink>{' '}
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
