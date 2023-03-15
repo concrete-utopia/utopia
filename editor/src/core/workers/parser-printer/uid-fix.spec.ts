@@ -1,4 +1,4 @@
-import { getUtopiaID } from '../../model/element-template-utils'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import {
   isJSXElement,

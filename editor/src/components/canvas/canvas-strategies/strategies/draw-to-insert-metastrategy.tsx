@@ -35,10 +35,6 @@ import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
@@ -160,7 +156,6 @@ export function drawToInsertStrategyFactory(
     return null
   }
   const insertionSubject = insertionSubjects[0]
-  const predictedElementPath = EP.appendToPath(targetParent, insertionSubject.uid)
   return {
     id: name,
     name: name,
@@ -175,12 +170,6 @@ export function drawToInsertStrategyFactory(
         control: ParentBounds,
         props: { targetParent: targetParent },
         key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: DragOutlineControl,
-        props: dragTargetsElementPaths([predictedElementPath]),
-        key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({

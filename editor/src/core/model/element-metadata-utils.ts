@@ -89,7 +89,6 @@ import {
   componentUsesProperty,
   elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
-  getUtopiaID,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -134,6 +133,7 @@ import {
   reorderConditionalChildPathTrees,
   ThenOrElse,
 } from './conditionals'
+import { getUtopiaID } from '../shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1986,11 +1986,22 @@ function fillSpyOnlyMetadata(
     ...spyElementsWithoutDomMetadata,
     ...Object.keys(conditionalsWithDefaultMetadata),
   ])
-  // Sort and then reverse these, so that lower level elements are handled ahead of their parents
+
+  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
+    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
+    return parentLayoutSystem == null
+  })
+
+  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
+  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
+  elementsWithoutIntrinsicSize.sort()
+  elementsWithoutIntrinsicSize.reverse()
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
+  elementsWithoutParentData.sort()
+  elementsWithoutParentData.reverse()
 
   const workingElements: ElementInstanceMetadataMap = {}
 
@@ -2033,11 +2044,6 @@ function fillSpyOnlyMetadata(
     }
   })
 
-  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
-    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
-    return parentLayoutSystem == null
-  })
-
   fastForEach(elementsWithoutParentData, (pathStr) => {
     const spyElem = fromSpy[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
@@ -2065,6 +2071,7 @@ function fillSpyOnlyMetadata(
     const immediateParentBoundsFromChildren = childrenFromWorking.map(
       (c) => c.specialSizeMeasurements.immediateParentBounds,
     )
+    const positionForChildren = childrenFromWorking.map((c) => c.specialSizeMeasurements.position)
 
     workingElements[pathStr] = {
       ...spyElem,
@@ -2080,6 +2087,9 @@ function fillSpyOnlyMetadata(
         immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
           ? immediateParentBoundsFromChildren[0]
           : spyElem.specialSizeMeasurements.immediateParentBounds,
+        position: allElemsEqual(positionForChildren)
+          ? positionForChildren[0]
+          : spyElem.specialSizeMeasurements.position,
       },
     }
   })

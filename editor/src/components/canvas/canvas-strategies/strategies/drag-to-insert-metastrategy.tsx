@@ -31,10 +31,6 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsFrame,
-} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
@@ -56,6 +52,10 @@ import { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
+import {
+  DragOutlineControl,
+  dragTargetsFrame,
+} from '../../controls/select-mode/drag-outline-control'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -181,15 +181,15 @@ function dragToInsertStrategyFactory(
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: DragOutlineControl,
-        props: dragTargetsFrame(nonImageInsertionSubjectsWithFrames.map((s) => s.frame)),
-        key: 'ghost-outline-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
         control: FlexReparentTargetIndicator,
         props: {},
         key: 'flex-reparent-target-indicator',
+        show: 'visible-only-while-active',
+      }),
+      controlWithProps({
+        control: DragOutlineControl,
+        props: dragTargetsFrame(nonImageInsertionSubjectsWithFrames.map((s) => s.frame)),
+        key: 'ghost-outline-control',
         show: 'visible-only-while-active',
       }),
     ],
