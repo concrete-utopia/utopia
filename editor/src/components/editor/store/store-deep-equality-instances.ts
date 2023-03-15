@@ -579,16 +579,16 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
 
 export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
   combine3EqualityCalls(
-    (hint) => hint.displayAtEntry,
+    (hint) => hint.displayAtElementPath,
     nullableDeepEquality(NavigatorEntryKeepDeepEquality),
-    (hint) => hint.moveToEntry,
+    (hint) => hint.moveToElementPath,
     nullableDeepEquality(NavigatorEntryKeepDeepEquality),
     (hint) => hint.type,
     createCallWithTripleEquals(),
     (displayAtElementPath, moveToElementPath, type) => {
       return {
-        displayAtEntry: displayAtElementPath,
-        moveToEntry: moveToElementPath,
+        displayAtElementPath: displayAtElementPath,
+        moveToElementPath: moveToElementPath,
         type: type,
       }
     },

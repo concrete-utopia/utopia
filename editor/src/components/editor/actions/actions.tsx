@@ -407,10 +407,6 @@ import {
   isRegularNavigatorEntry,
   NavigatorEntry,
   regularNavigatorEntryOptic,
-  ConditionalClauseNavigatorEntry,
-  ConditionalClause,
-  ReparentTargetParent,
-  reparentTargetFromNavigatorEntry,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -493,10 +489,15 @@ import { collapseTextElements } from '../../../components/text-editor/text-handl
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
+import { set, toArrayOf, unsafeGet } from '../../../core/shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
+import {
+  conditionalWhenFalseOptic,
+  conditionalWhenTrueOptic,
+  forElementOptic,
+  jsxConditionalExpressionOptic,
+} from '../../../core/model/common-optics'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -813,7 +814,7 @@ export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
   indexPosition: IndexPosition,
-  newParent: ReparentTargetParent<ElementPath> | null,
+  newParentPath: ElementPath | null,
   editor: EditorModel,
 ): {
   editor: EditorModel
@@ -830,7 +831,7 @@ export function editorMoveMultiSelectedTemplates(
       editor.nodeModules.files,
       editor.canvas.openFile?.filename,
       pathToReparent(target),
-      newParent,
+      newParentPath,
       'on-complete', // TODO make sure this is the right pick here
     )
     if (outcomeResult == null) {
@@ -995,8 +996,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     navigator: {
       minimised: currentEditor.navigator.minimised,
       dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
+        displayAtElementPath: null,
+        moveToElementPath: null,
         type: null,
       },
       collapsedViews: poppedEditor.navigator.collapsedViews,
@@ -1751,7 +1752,7 @@ export const UPDATE_FNS = {
     const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
 
     function reparentToIndexPosition(
-      newParentPath: ReparentTargetParent<ElementPath>,
+      newParentPath: ElementPath,
       indexPosition: IndexPosition,
     ): EditorModel {
       const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
@@ -1801,10 +1802,55 @@ export const UPDATE_FNS = {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
           switch (dropTarget.target.type) {
-            case 'REGULAR':
+            case 'REGULAR': {
+              const newParentPath: ElementPath | null = dropTarget.target.elementPath
+              return reparentToIndexPosition(newParentPath, absolute(0))
+            }
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(dropTarget.target)
-              return reparentToIndexPosition(newParent, absolute(0))
+              throw new Error(`Currently not implemented.`)
+              /*
+              const getConditionalOptic: Optic<EditorState, JSXConditionalExpression> =
+                compose2Optics(
+                  forElementOptic(dropTarget.target.elementPath),
+                  jsxConditionalExpressionOptic,
+                )
+              // If this fails, then somehow the element has moved.
+              const conditional = unsafeGet(getConditionalOptic, editor)
+              const clauseValue =
+                dropTarget.target.clause === 'then' ? conditional.whenTrue : conditional.whenFalse
+              // If the value within the clause is null or undefined, then swap the
+              // value into this "slot".
+              // Otherwise if the value is a fragment, put it into the fragment.
+              // If it's not a fragment, wrap both the existing and reparented values into a fragment.
+              const toClauseOptic = compose2Optics(
+                getConditionalOptic,
+                dropTarget.target.clause === 'then'
+                  ? conditionalWhenTrueOptic
+                  : conditionalWhenFalseOptic,
+              )
+              if (childOrBlockIsAttribute(clauseValue)) {
+                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
+                return foldEither(
+                  () => {
+                    return editor
+                  },
+                  (value) => {
+                    if (value == null) {
+                      return set(
+                        toClauseOptic,
+                        unsafeGet(forElementOptic(toReparent[0]), editor),
+                        editor,
+                      )
+                    } else {
+                      return editor
+                    }
+                  },
+                  simpleValue,
+                )
+              } else {
+                return editor
+              }
+              */
             }
             case 'SYNTHETIC': {
               // Find the containing conditional clause, which should be an immediate parent,
