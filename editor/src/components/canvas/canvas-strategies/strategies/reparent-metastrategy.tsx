@@ -85,14 +85,14 @@ export function getApplicableReparentFactories(
         }
       }
       case 'REPARENT_AS_STATIC': {
-        const fitness = result.isFallback ? 2 : 3
-
-        const parentLayouSystems = MetadataUtils.findLayoutSystemForChildren(
+        const parentLayoutSystems = MetadataUtils.findLayoutSystemForChildren(
           canvasState.startingMetadata,
           result.target.newParent,
         )
+        const targetParentDisplayType = parentLayoutSystems.at(0) === 'flex' ? 'flex' : 'flow'
 
-        const targetParentDisplayType = parentLayouSystems.at(0) === 'flex' ? 'flex' : 'flow'
+        // We likely never want flow insertion or re-parenting to be the default
+        const fitness = targetParentDisplayType === 'flow' ? 1 : result.isFallback ? 2 : 3
 
         return {
           targetParent: result.target.newParent,
