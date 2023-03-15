@@ -3,11 +3,15 @@ import * as EP from '../shared/element-path'
 import {
   ChildOrAttribute,
   childOrBlockIsChild,
+  isJSXConditionalExpression,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../shared/element-template'
 import { ElementPathTree } from '../shared/element-path-tree'
-import { getUtopiaID } from './element-template-utils'
 import { assertNever } from '../shared/utils'
+import { getUtopiaID } from '../shared/uid-utils'
+import { Optic } from '../shared/optics/optics'
+import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 
 export type ThenOrElse = 'then' | 'else'
 
@@ -68,3 +72,12 @@ export function reorderConditionalChildPathTrees(
     return result
   }
 }
+
+export const jsxConditionalExpressionOptic: Optic<JSXElementChild, JSXConditionalExpression> =
+  fromTypeGuard(isJSXConditionalExpression)
+
+export const conditionalWhenTrueOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
+  fromField('whenTrue')
+
+export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
+  fromField('whenFalse')

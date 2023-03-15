@@ -3,13 +3,7 @@ import {
   modifyUnderlyingForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../components/editor/store/editor-state'
-import {
-  ChildOrAttribute,
-  isJSXConditionalExpression,
-  JSXConditionalExpression,
-  JSXElementChild,
-} from '../shared/element-template'
-import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
+import { JSXElementChild } from '../shared/element-template'
 import { Optic, traversal } from '../shared/optics/optics'
 import { ElementPath } from '../shared/project-file-types'
 
@@ -27,12 +21,3 @@ export function forElementOptic(target: ElementPath): Optic<EditorState, JSXElem
   }
   return traversal(from, update)
 }
-
-export const jsxConditionalExpressionOptic: Optic<JSXElementChild, JSXConditionalExpression> =
-  fromTypeGuard(isJSXConditionalExpression)
-
-export const conditionalWhenTrueOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
-  fromField('whenTrue')
-
-export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
-  fromField('whenFalse')

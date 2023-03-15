@@ -19,10 +19,9 @@ import {
   StaticElementPathPart,
 } from '../../shared/project-file-types'
 import * as EP from '../../shared/element-path'
-import { setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
+import { getUtopiaID, setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
 import {
   findJSXElementChildAtPath,
-  getUtopiaID,
   transformJSXComponentAtElementPath,
 } from '../../model/element-template-utils'
 import {
