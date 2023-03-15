@@ -2422,6 +2422,7 @@ export const UPDATE_FNS = {
                 return jsxConditionalExpression(
                   newUID,
                   jsxAttributeValue(true, emptyComments),
+                  'true',
                   jsxAttributeValue(null, emptyComments),
                   jsxAttributeValue(null, emptyComments),
                   emptyComments,
@@ -5501,6 +5502,7 @@ export const UPDATE_FNS = {
         return jsxConditionalExpression(
           element.uid,
           element.condition,
+          element.originalConditionString,
           element.whenFalse,
           element.whenTrue,
           element.comments,
