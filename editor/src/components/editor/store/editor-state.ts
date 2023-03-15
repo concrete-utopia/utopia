@@ -23,7 +23,6 @@ import {
   insertJSXElementChild,
   removeJSXElementChild,
   transformJSXComponentAtPath,
-  getUtopiaID,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
 } from '../../../core/model/element-template-utils'
@@ -190,6 +189,12 @@ import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  ConditionalClause,
+  dynamicReparentTargetParentToStaticReparentTargetParent,
+  ReparentTargetParent,
+} from './reparent-target'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -603,8 +608,8 @@ export const DefaultTheme: ThemeSetting = 'system'
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
 export interface DropTargetHint {
-  displayAtElementPath: NavigatorEntry | null
-  moveToElementPath: NavigatorEntry | null
+  displayAtEntry: NavigatorEntry | null
+  moveToEntry: NavigatorEntry | null
   type: DropTargetType
 }
 
@@ -1965,12 +1970,15 @@ export function removeElementAtPath(
 export function insertElementAtPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ElementPath | null,
+  targetParent: ReparentTargetParent<ElementPath> | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = targetParent == null ? null : EP.dynamicPathToStaticPath(targetParent)
+  const staticTarget =
+    targetParent == null
+      ? null
+      : dynamicReparentTargetParentToStaticReparentTargetParent(targetParent)
   return insertJSXElementChild(
     projectContents,
     openFile,
@@ -2104,10 +2112,8 @@ export function regularNavigatorEntriesEqual(
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
 
-export interface ConditionalClauseNavigatorEntry {
+export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
   type: 'CONDITIONAL_CLAUSE'
-  elementPath: ElementPath
-  clause: ThenOrElse
 }
 
 export function conditionalClauseNavigatorEntry(
@@ -2225,6 +2231,26 @@ export const conditionalClauseNavigatorEntryOptic: Optic<
   NavigatorEntry,
   ConditionalClauseNavigatorEntry
 > = fromTypeGuard(isConditionalClauseNavigatorEntry)
+
+export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is SyntheticNavigatorEntry {
+  return entry.type === 'SYNTHETIC'
+}
+
+export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
+  fromTypeGuard(isSyntheticNavigatorEntry)
+
+export function reparentTargetFromNavigatorEntry(
+  navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
+): ReparentTargetParent<ElementPath> {
+  switch (navigatorEntry.type) {
+    case 'REGULAR':
+      return navigatorEntry.elementPath
+    case 'CONDITIONAL_CLAUSE':
+      return navigatorEntry
+    default:
+      assertNever(navigatorEntry)
+  }
+}
 
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
@@ -2459,8 +2485,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     navigator: {
       minimised: false,
       dropTargetHint: {
-        displayAtElementPath: null,
-        moveToElementPath: null,
+        displayAtEntry: null,
+        moveToEntry: null,
         type: null,
       },
       collapsedViews: [],
@@ -2795,8 +2821,8 @@ export function editorModelFromPersistentModel(
     saveError: false,
     navigator: {
       dropTargetHint: {
-        displayAtElementPath: null,
-        moveToElementPath: null,
+        displayAtEntry: null,
+        moveToEntry: null,
         type: null,
       },
       collapsedViews: [],

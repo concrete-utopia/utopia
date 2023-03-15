@@ -44,13 +44,11 @@ import {
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
-  getUtopiaID,
   guaranteeUniqueUids,
-  setUtopiaID,
   isSceneElement,
   getZIndexOfElement,
 } from '../../core/model/element-template-utils'
-import { generateUID } from '../../core/shared/uid-utils'
+import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,

@@ -11,7 +11,7 @@ import { DragSelection } from './navigator-item/navigator-item-dnd-container'
 import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
-import { createDragSelections } from '../../templates/editor-navigator'
+import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
 import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
@@ -20,7 +20,11 @@ import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { css } from '@emotion/react'
-import { isRegularNavigatorEntry, navigatorEntryToKey } from '../editor/store/editor-state'
+import {
+  isRegularNavigatorEntry,
+  NavigatorEntry,
+  navigatorEntryToKey,
+} from '../editor/store/editor-state'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -33,19 +37,18 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     'Item visibleNavigatorTargets',
   )
   const editorSliceRef = useRefEditorState((store) => {
-    const dragSelections = createDragSelections(
-      store.derived.navigatorTargets,
+    const currentlySelectedNavigatorEntries = getSelectedNavigatorEntries(
       store.editor.selectedViews,
     )
     return {
       selectedViews: store.editor.selectedViews,
       navigatorTargets: store.derived.navigatorTargets,
-      dragSelections: dragSelections,
+      currentlySelectedNavigatorEntries: currentlySelectedNavigatorEntries,
     }
   })
 
-  const getDragSelections = React.useCallback((): Array<DragSelection> => {
-    return editorSliceRef.current.dragSelections
+  const getCurrentlySelectedNavigatorEntries = React.useCallback((): Array<NavigatorEntry> => {
+    return editorSliceRef.current.currentlySelectedNavigatorEntries
   }, [editorSliceRef])
 
   // Used to determine the views that will be selected by starting with the last selected item
@@ -102,7 +105,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       index={index}
       targetComponentKey={componentKey}
       navigatorEntry={targetEntry}
-      getDragSelections={getDragSelections}
+      getCurrentlySelectedEntries={getCurrentlySelectedNavigatorEntries}
       getSelectedViewsInRange={getSelectedViewsInRange}
       windowStyle={deepKeptStyle}
     />
