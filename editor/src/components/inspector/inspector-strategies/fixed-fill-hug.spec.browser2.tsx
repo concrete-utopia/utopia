@@ -723,12 +723,12 @@ async function setSelectedElementsToFill(editor: EditorRenderResult, axis: Axis)
 }
 
 const projectWithWidth = (flexDirection: FlexDirection) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -752,19 +752,19 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 
 `
 
 const projectWithHeight = (flexDirection: FlexDirection) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -788,18 +788,18 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
 
 const projectWithChildSetToHorizontalFill = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -820,18 +820,18 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
 
 const projectWithChildSetToVerticalFill = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -853,18 +853,18 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
 
 const projectWithChildSetToFixed = (flexDirection: FlexDirection) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='33d'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -888,7 +888,7 @@ export var storyboard = (
         }}
         data-uid='744'
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
@@ -896,12 +896,12 @@ export var storyboard = (
 const projectWithChildSetToHugContents = (
   flexDirection: FlexDirection,
 ) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         height: 751,
@@ -945,7 +945,7 @@ export var storyboard = (
           data-uid='741'
         />
       </div>
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
@@ -1004,7 +1004,7 @@ export var storyboard = (
 `
 
 const projectWithChildInFlowLayout = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
@@ -1056,10 +1056,10 @@ export var storyboard = (
 const absoluteProjectWithInjectedStyle = (stylePropsAsString: string) =>
   formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         position: 'absolute',
@@ -1074,17 +1074,17 @@ export var storyboard = (
         data-testid='child'
         style={{${stylePropsAsString}}}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )`)
 
 const flexProjectWithInjectedStyle = (stylePropsAsString: string) =>
   formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         position: 'absolute',
@@ -1100,7 +1100,7 @@ export var storyboard = (
         data-testid='child'
         style={{${stylePropsAsString}}}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )`)
 
