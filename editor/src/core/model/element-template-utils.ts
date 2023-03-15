@@ -65,8 +65,13 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
-import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
-import { conditionalWhenFalseOptic, conditionalWhenTrueOptic } from './common-optics'
+import {
+  conditionalWhenFalseOptic,
+  conditionalWhenTrueOptic,
+  getConditionalClausePath,
+  ThenOrElse,
+  thenOrElsePathPart,
+} from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import { foldEither } from '../shared/either'
 import {

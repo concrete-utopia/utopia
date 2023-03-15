@@ -18,7 +18,7 @@ import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
-import { FileChecksums } from './editor/store/editor-state'
+import type { FileChecksums } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
 
 export interface AssetFileWithFileName {
