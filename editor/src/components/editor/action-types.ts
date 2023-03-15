@@ -811,6 +811,12 @@ export interface SetConditionalOverriddenCondition {
   condition: boolean | null
 }
 
+export interface UpdateConditionalExpression {
+  action: 'UPDATE_CONIDTIONAL_EXPRESSION'
+  target: ElementPath
+  expression: string
+}
+
 export interface AddImports {
   action: 'ADD_IMPORTS'
   target: ElementPath
@@ -1289,6 +1295,7 @@ export type EditorAction =
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
   | SwitchConditionalBranches
+  | UpdateConditionalExpression
 
 export type DispatchPriority =
   | 'everyone'

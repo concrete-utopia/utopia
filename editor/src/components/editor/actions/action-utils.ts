@@ -194,6 +194,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_COLOR_SWATCHES':
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
     case 'SWITCH_CONDITIONAL_BRANCHES':
+    case 'UPDATE_CONIDTIONAL_EXPRESSION':
       return false
     case 'SAVE_ASSET':
       return (

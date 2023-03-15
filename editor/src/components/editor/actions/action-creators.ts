@@ -229,6 +229,7 @@ import type {
   MergeWithPrevUndo,
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
+  UpdateConditionalExpression,
 } from '../action-types'
 import { EditorModes, insertionSubject, Mode } from '../editor-modes'
 import type {
@@ -1758,6 +1759,17 @@ export function setConditionalOverriddenCondition(
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,
     condition: condition,
+  }
+}
+
+export function updateConditionalExpression(
+  target: ElementPath,
+  expression: string,
+): UpdateConditionalExpression {
+  return {
+    action: 'UPDATE_CONIDTIONAL_EXPRESSION',
+    target: target,
+    expression: expression,
   }
 }
 

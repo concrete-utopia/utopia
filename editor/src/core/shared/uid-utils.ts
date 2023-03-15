@@ -19,6 +19,7 @@ import {
   JSXFragment,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  jsxConditionalExpression,
   ElementInstanceMetadata,
   JSXArbitraryBlock,
   JSXTextBlock,
@@ -169,6 +170,15 @@ export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): 
       uid,
       setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
       element.children,
+    )
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      uid,
+      element.condition,
+      element.originalConditionString,
+      element.whenTrue,
+      element.whenFalse,
+      element.comments,
     )
   } else {
     // TODO: Do other cases need this?
