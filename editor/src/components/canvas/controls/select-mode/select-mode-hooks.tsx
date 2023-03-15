@@ -178,36 +178,6 @@ function filterNonSelectableElements(
   )
 }
 
-function collectSelectableSiblings(
-  componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
-  childrenSelectable: boolean,
-  lockedElements: LockedElements,
-): Array<ElementPath> {
-  let siblingsChildrenAndAncestors: Array<ElementPath> = []
-  Utils.fastForEach(selectedViews, (view) => {
-    function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
-      Utils.fastForEach(paths, (ancestor) => {
-        const children = MetadataUtils.getImmediateChildrenPathsUnordered(
-          componentMetadata,
-          ancestor,
-        )
-
-        siblingsChildrenAndAncestors.push(ancestor)
-        siblingsChildrenAndAncestors.push(...children)
-      })
-    }
-
-    const allPaths = childrenSelectable
-      ? EP.allPathsForLastPart(view)
-      : EP.allPathsForLastPart(EP.parentPath(view))
-
-    addChildrenAndUnfurledFocusedComponents(allPaths)
-  })
-
-  return replaceNonSelectablePaths(siblingsChildrenAndAncestors, componentMetadata, lockedElements)
-}
-
 function replaceNonSelectablePaths(
   selectablePaths: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
@@ -282,32 +252,23 @@ export function getSelectableViews(
   childrenSelectable: boolean,
   lockedElements: LockedElements,
 ): ElementPath[] {
-  let candidateViews: Array<ElementPath>
-
-  if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
-  } else {
-    const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(componentMetadata)
-    const selectableRoots = replaceNonSelectablePaths(allRoots, componentMetadata, lockedElements)
-    const siblings = collectSelectableSiblings(
-      componentMetadata,
-      selectedViews,
-      childrenSelectable,
-      lockedElements,
-    )
-
-    const selectableViews = [...selectableRoots, ...siblings]
-    const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
-
-    candidateViews = uniqueSelectableViews
-  }
+  const candidateSelectableViews = getCandidateSelectableViews(
+    componentMetadata,
+    selectedViews,
+    allElementsDirectlySelectable,
+    childrenSelectable,
+    lockedElements,
+  )
 
   const nonSelectableElements = [
     ...hiddenInstances,
     ...getAllLockedElementPaths(componentMetadata, lockedElements),
   ]
 
-  const selectableElements = filterNonSelectableElements(nonSelectableElements, candidateViews)
+  const selectableElements = filterNonSelectableElements(
+    nonSelectableElements,
+    candidateSelectableViews,
+  )
   if (isFeatureEnabled('Fragment support')) {
     return selectableElements
   }
@@ -315,6 +276,41 @@ export function getSelectableViews(
   return selectableElements.filter((p) => {
     return !MetadataUtils.isElementPathFragmentFromMetadata(componentMetadata, p)
   })
+}
+
+function getCandidateSelectableViews(
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  allElementsDirectlySelectable: boolean,
+  childrenSelectable: boolean,
+  lockedElements: LockedElements,
+): ElementPath[] {
+  if (allElementsDirectlySelectable) {
+    return MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
+  } else {
+    const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(componentMetadata)
+    const allAncestors = selectedViews.flatMap((path) =>
+      EP.allPathsForLastPart(EP.parentPath(path)),
+    )
+    const allAncestorsWithAllSiblings = allAncestors.flatMap((path) =>
+      MetadataUtils.getImmediateChildrenPathsUnordered(componentMetadata, path),
+    )
+    const children = childrenSelectable
+      ? selectedViews.flatMap((path) =>
+          MetadataUtils.getImmediateChildrenPathsUnordered(componentMetadata, path),
+        )
+      : []
+
+    const allPotentiallySelectableViews = [...allRoots, ...allAncestorsWithAllSiblings, ...children]
+    const selectableViews = replaceNonSelectablePaths(
+      allPotentiallySelectableViews,
+      componentMetadata,
+      lockedElements,
+    )
+    const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
+
+    return uniqueSelectableViews
+  }
 }
 
 export function useFindValidTarget(): (
