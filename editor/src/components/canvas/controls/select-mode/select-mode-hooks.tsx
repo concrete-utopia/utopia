@@ -184,41 +184,17 @@ function collectSelectableSiblings(
   childrenSelectable: boolean,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
-  let siblings: Array<ElementPath> = []
+  let siblingsChildrenAndAncestors: Array<ElementPath> = []
   Utils.fastForEach(selectedViews, (view) => {
     function addChildrenAndUnfurledFocusedComponents(paths: Array<ElementPath>) {
       Utils.fastForEach(paths, (ancestor) => {
-        const { children, unfurledComponents } =
-          MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponentsUnordered(
-            ancestor,
-            componentMetadata,
-          )
+        const children = MetadataUtils.getImmediateChildrenPathsUnordered(
+          componentMetadata,
+          ancestor,
+        )
 
-        siblings.push(ancestor)
-
-        const ancestorChildren = [...children, ...unfurledComponents]
-        fastForEach(ancestorChildren, (child) => {
-          siblings.push(child)
-
-          const isLocked = lockedElements.simpleLock.some((path) => EP.pathsEqual(path, child))
-          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
-            componentMetadata,
-            child,
-          )
-          const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
-            componentMetadata,
-            child,
-          )
-
-          // If this element is locked we want to recurse the children
-          if (
-            isLocked ||
-            (!isFeatureEnabled('Fragment support') && isFragment) ||
-            (!isFeatureEnabled('Conditional support') && isConditional)
-          ) {
-            addChildrenAndUnfurledFocusedComponents([child])
-          }
-        })
+        siblingsChildrenAndAncestors.push(ancestor)
+        siblingsChildrenAndAncestors.push(...children)
       })
     }
 
@@ -228,7 +204,60 @@ function collectSelectableSiblings(
 
     addChildrenAndUnfurledFocusedComponents(allPaths)
   })
-  return siblings
+
+  return replaceNonSelectablePaths(siblingsChildrenAndAncestors, componentMetadata, lockedElements)
+}
+
+function replaceNonSelectablePaths(
+  selectablePaths: Array<ElementPath>,
+  componentMetadata: ElementInstanceMetadataMap,
+  lockedElements: LockedElements,
+): Array<ElementPath> {
+  let updatedSelectablePaths: Array<ElementPath> = []
+  Utils.fastForEach(selectablePaths, (selectablePath) => {
+    const isLocked = lockedElements.simpleLock.some((lockedPath) =>
+      EP.pathsEqual(lockedPath, selectablePath),
+    )
+    const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
+      componentMetadata,
+      selectablePath,
+    )
+    const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
+      componentMetadata,
+      selectablePath,
+    )
+    const isRootPath = EP.isRootElementOfInstance(selectablePath)
+
+    const mustReplaceWithChildren =
+      isLocked ||
+      (!isFeatureEnabled('Fragment support') && isFragment) ||
+      (!isFeatureEnabled('Conditional support') && isConditional)
+    const shouldAttemptToReplaceWithChildren = isRootPath
+
+    // If this element is locked we want to recurse the children
+    if (mustReplaceWithChildren || shouldAttemptToReplaceWithChildren) {
+      const childrenPaths = MetadataUtils.getImmediateChildrenPathsUnordered(
+        componentMetadata,
+        selectablePath,
+      )
+      const childrenPathsWithLockedPathsReplaced = replaceNonSelectablePaths(
+        childrenPaths,
+        componentMetadata,
+        lockedElements,
+      )
+
+      if (childrenPathsWithLockedPathsReplaced.length > 0) {
+        updatedSelectablePaths.push(...childrenPathsWithLockedPathsReplaced)
+      } else if (!mustReplaceWithChildren) {
+        // In certain cases we want to keep this path selectable if it has no children
+        updatedSelectablePaths.push(selectablePath)
+      }
+    } else {
+      updatedSelectablePaths.push(selectablePath)
+    }
+  })
+
+  return updatedSelectablePaths
 }
 
 function getAllLockedElementPaths(
@@ -259,6 +288,7 @@ export function getSelectableViews(
     candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
     const allRoots = MetadataUtils.getAllCanvasSelectablePathsUnordered(componentMetadata)
+    const selectableRoots = replaceNonSelectablePaths(allRoots, componentMetadata, lockedElements)
     const siblings = collectSelectableSiblings(
       componentMetadata,
       selectedViews,
@@ -266,7 +296,7 @@ export function getSelectableViews(
       lockedElements,
     )
 
-    const selectableViews = [...allRoots, ...siblings]
+    const selectableViews = [...selectableRoots, ...siblings]
     const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
 
     candidateViews = uniqueSelectableViews

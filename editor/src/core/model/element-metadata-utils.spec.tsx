@@ -851,10 +851,13 @@ describe('getting the root paths', () => {
     expect(actualResult).toEqual(expectedResult)
   })
 
-  it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
+  it('getAllCanvasSelectablePathsUnordered returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
     const actualResult = MetadataUtils.getAllCanvasSelectablePathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
-      testComponentRoot1.elementPath,
+      testComponentMetadataChild1.elementPath,
+      testComponentMetadataChild2.elementPath,
+      testComponentMetadataChild3.elementPath,
+      testComponentSceneChildElement.elementPath,
       testStoryboardChildElement.elementPath,
     ]
     expect(actualResult).toEqual(expectedResult)
