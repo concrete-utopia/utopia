@@ -1,31 +1,34 @@
 import { v4 as UUID } from 'uuid'
+import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
+import { mapDropNulls } from './array-utils'
+import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
+import * as EP from './element-path'
 import {
+  childOrBlockIsChild,
+  ElementInstanceMetadata,
+  emptyComments,
+  getJSXAttribute,
+  isJSXArbitraryBlock,
+  isJSXAttributeValue,
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXFragment,
+  isJSXTextBlock,
+  JSXArbitraryBlock,
   JSXAttributes,
   jsxAttributeValue,
-  JSXElement,
-  JSXElementChild,
-  isJSXElement,
-  isJSXAttributeValue,
-  isJSXArbitraryBlock,
-  setJSXAttributesAttribute,
-  getJSXAttribute,
-  TopLevelElement,
-  jsxElement,
-  emptyComments,
-  JSXElementLike,
-  childOrBlockIsChild,
-  isJSXFragment,
-  JSXFragment,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
   jsxConditionalExpression,
-  ElementInstanceMetadata,
-  JSXArbitraryBlock,
-  JSXTextBlock,
-  isJSXTextBlock,
+  JSXElement,
+  jsxElement,
+  JSXElementChild,
+  JSXElementLike,
+  JSXFragment,
   jsxFragment,
-  jsxConditionalExpression,
+  JSXTextBlock,
+  setJSXAttributesAttribute,
+  TopLevelElement,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -33,13 +36,9 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attributes'
-import * as PP from './property-path'
-import * as EP from './element-path'
 import { objectMap } from './object-utils'
-import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
-import { mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
+import * as PP from './property-path'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
