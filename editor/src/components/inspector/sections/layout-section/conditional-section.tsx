@@ -10,9 +10,9 @@ import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
-  JSXAttribute,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { codeStyle } from '../../../../third-party/react-error-overlay/components/CodeBlock'
 import { unless } from '../../../../utils/react-conditionals'
 import {
   Button,
@@ -22,12 +22,14 @@ import {
   InspectorSectionIcons,
   InspectorSubsectionHeader,
   SquareButton,
+  StringInput,
   useColorTheme,
 } from '../../../../uuiui'
 import { EditorAction } from '../../../editor/action-types'
 import {
   setConditionalOverriddenCondition,
   switchConditionalBranches,
+  updateConditionalExpression,
 } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -126,11 +128,17 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     'ConditionalSection condition override',
   )
 
-  const conditionExpression = useEditorState(
+  const originalConditionExpression = useEditorState(
     Substores.metadata,
     (store) => conditionExpressionSelector(store, paths),
     'ConditionalSection condition expression',
   )
+
+  const [conditionExpression, setConditionExpression] = React.useState(originalConditionExpression)
+
+  React.useEffect(() => {
+    setConditionExpression(originalConditionExpression)
+  }, [originalConditionExpression])
 
   const setConditionOverride = React.useCallback(
     (value: boolean | null) => () => {
@@ -160,7 +168,34 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     [dispatch, paths],
   )
 
-  if (conditionOverride === 'not-conditional' || conditionExpression === 'not-conditional') {
+  const onUpdateExpression = React.useCallback(() => {
+    if (paths.length !== 1) {
+      return
+    }
+    let expression = conditionExpression
+    if (conditionExpression.trim().length === 0) {
+      setConditionExpression(originalConditionExpression)
+      return
+    }
+    dispatch([updateConditionalExpression(paths[0], expression)], 'everyone')
+  }, [paths, conditionExpression, originalConditionExpression, dispatch])
+
+  function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setConditionExpression(e.target.value)
+  }
+
+  function onExpressionKeyUp(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.nativeEvent.stopImmediatePropagation()
+      e.preventDefault()
+      onUpdateExpression()
+    }
+  }
+
+  if (
+    conditionOverride === 'not-conditional' ||
+    originalConditionExpression === 'not-conditional'
+  ) {
     return null
   }
 
@@ -205,31 +240,41 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
         )}
       </InspectorSubsectionHeader>
       {unless(
-        conditionExpression === 'multiselect',
+        originalConditionExpression === 'multiselect',
         <UIGridRow
           padded={true}
-          variant='<---1fr--->|------172px-------|'
+          variant='<-auto-><----------1fr--------->'
           style={{
             color: conditionOverride != null ? colorTheme.brandNeonPink.value : 'inherit',
           }}
         >
           Condition
-          <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-            <span
-              style={{ flex: 1, textAlign: 'center' }}
-              data-testId={ConditionalsControlSectionExpressionTestId}
-            >
-              {conditionExpression}
-            </span>
-            <Button
-              style={{ flex: 1 }}
-              highlight
-              onClick={replaceBranches()}
-              data-testId={ConditionalsControlSwitchBranches}
-            >
-              Switch branches
-            </Button>
-          </FlexRow>
+          <StringInput
+            testId={ConditionalsControlSectionExpressionTestId}
+            value={conditionExpression}
+            onChange={onExpressionChange}
+            onKeyUp={onExpressionKeyUp}
+            onBlur={onUpdateExpression}
+            css={{
+              ...codeStyle,
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
+          />
+        </UIGridRow>,
+      )}
+      {unless(
+        originalConditionExpression === 'multiselect',
+        <UIGridRow padded={true} variant='<-------------1fr------------->'>
+          <Button
+            style={{ flex: 1 }}
+            highlight
+            spotlight
+            onClick={replaceBranches()}
+            data-testId={ConditionalsControlSwitchBranches}
+          >
+            Switch branches
+          </Button>
         </UIGridRow>,
       )}
       <UIGridRow

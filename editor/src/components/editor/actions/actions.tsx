@@ -68,6 +68,7 @@ import {
   isJSXElement,
   isJSXFragment,
   isPartOfJSXAttributeValue,
+  jsxAttributeOtherJavaScript,
   JSXAttributes,
   jsxAttributesFromMap,
   jsxAttributeValue,
@@ -335,6 +336,7 @@ import {
   CopyProperties,
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
+  UpdateConditionalExpression,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -4550,6 +4552,35 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+    )
+  },
+  UPDATE_CONDITIONAL_EXPRESSION: (
+    action: UpdateConditionalExpression,
+    editor: EditorModel,
+  ): EditorModel => {
+    return modifyOpenJsxElementOrConditionalAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+
+        return {
+          ...element,
+          condition: jsxAttributeOtherJavaScript(
+            action.expression,
+            action.expression,
+            [],
+            null,
+            {},
+          ),
+          originalConditionString: action.expression,
+        }
+      },
+      editor,
+      RevisionsState.ParsedAheadNeedsReparsing,
+      // reparse needed because the new condition might be
+      // referencing variables from the outer scope
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
