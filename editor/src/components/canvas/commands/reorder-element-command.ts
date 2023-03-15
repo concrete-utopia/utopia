@@ -52,8 +52,8 @@ export const runReorderElement: CommandFunction<ReorderElement> = (
   )
   return {
     editorStatePatches: [patch],
-    commandDescription: `Reorder Element ${EP.toUid(command.target)} to new index ${
-      command.indexPosition
-    }`,
+    commandDescription: `Reorder Element ${EP.toUid(command.target)} to new index ${JSON.stringify(
+      command.indexPosition,
+    )}`,
   }
 }

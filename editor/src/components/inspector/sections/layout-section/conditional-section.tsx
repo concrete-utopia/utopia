@@ -38,6 +38,7 @@ export const ConditionalsControlSectionOpenTestId = 'conditionals-control-sectio
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
 export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
+export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
 export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=branches'
 
 type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
@@ -111,7 +112,7 @@ const conditionExpressionSelector = createCachedSelector(
 
     const element = elements[0]
 
-    return jsxAttributeToString(element.element.condition)
+    return element.element.originalConditionString
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
@@ -214,12 +215,17 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
         >
           Condition
           <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-            <span style={{ flex: 1, textAlign: 'center' }}>{conditionExpression}</span>
+            <span
+              style={{ flex: 1, textAlign: 'center' }}
+              data-testId={ConditionalsControlSectionExpressionTestId}
+            >
+              {conditionExpression}
+            </span>
             <Button
               style={{ flex: 1 }}
               highlight
               onClick={replaceBranches()}
-              data-testid={ConditionalsControlSwitchBranches}
+              data-testId={ConditionalsControlSwitchBranches}
             >
               Switch branches
             </Button>
@@ -256,18 +262,3 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     </React.Fragment>
   )
 })
-
-function jsxAttributeToString(attribute: JSXAttribute): string {
-  switch (attribute.type) {
-    case 'ATTRIBUTE_VALUE':
-      if (typeof attribute.value === 'string') {
-        return attribute.value
-      } else {
-        return attribute.value.toString()
-      }
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return attribute.javascript
-    default:
-      return 'Not supported yet'
-  }
-}

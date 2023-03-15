@@ -8,7 +8,7 @@ import {
   jsxElement,
   jsxElementName,
 } from '../../../core/shared/element-template'
-import { findJSXElementChildAtPath, getUtopiaID } from '../../../core/model/element-template-utils'
+import { findJSXElementChildAtPath } from '../../../core/model/element-template-utils'
 import {
   directory,
   getUtopiaJSXComponentsFromSuccess,
@@ -95,6 +95,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { cssNumber } from '../../inspector/common/css-utils'
 import { testStaticElementPath } from '../../../core/shared/element-path.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 
 const chaiExpect = Chai.expect
 
