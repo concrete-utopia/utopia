@@ -1421,10 +1421,11 @@ export function snapPoint(
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
+  const anyElementContentAffecting = selectedViews.some((elementPath) =>
+    treatElementAsContentAffecting(jsxMetadata, allElementProps, elementPath),
+  )
   const shouldSnap =
-    enableSnapping &&
-    (treatElementAsContentAffecting(jsxMetadata, allElementProps, selectedViews[0]) || // TODO
-      !anythingPinnedAndNotAbsolutePositioned)
+    enableSnapping && (anyElementContentAffecting || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
