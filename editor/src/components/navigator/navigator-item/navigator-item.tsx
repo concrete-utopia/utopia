@@ -35,7 +35,7 @@ import {
   JSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
-import { getConditionalClausePath, ThenOrElse } from '../../../core/model/conditionals'
+import { getConditionalClausePath, ConditionalCase } from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
@@ -305,11 +305,15 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
-      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue, 'then')
+      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue, 'true-case')
       return !EP.pathsEqual(elementPath, trueClausePath)
     }
     // when the condition is false, then the 'else' branch is not hidden
-    const falseClausePath = getConditionalClausePath(parentPath, conditional.whenFalse, 'else')
+    const falseClausePath = getConditionalClausePath(
+      parentPath,
+      conditional.whenFalse,
+      'false-case',
+    )
     return !EP.pathsEqual(elementPath, falseClausePath)
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
@@ -332,13 +336,13 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
     return (
       matchesOverriddenBranch(elementPath, parentPath, {
         clause: conditionalParent.whenTrue,
-        branch: 'then',
+        branch: 'true-case',
         wantOverride: true,
         parentOverride: parentOverride,
       }) ||
       matchesOverriddenBranch(elementPath, parentPath, {
         clause: conditionalParent.whenFalse,
-        branch: 'else',
+        branch: 'false-case',
         wantOverride: false,
         parentOverride: parentOverride,
       })
@@ -699,7 +703,7 @@ function matchesOverriddenBranch(
   parentPath: ElementPath,
   params: {
     clause: ChildOrAttribute
-    branch: ThenOrElse
+    branch: ConditionalCase
     wantOverride: boolean
     parentOverride: boolean
   },

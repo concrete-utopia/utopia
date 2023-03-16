@@ -957,17 +957,16 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
 
-    // !!!! Do I misunderstand something?? shouldn't the then-case and else-case return the true-root and false-root here?? these tests fail now...
     const elementAtTrueBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
     )
     expect(elementAtTrueBranch).not.toBeNull()
     expect(getUtopiaID(elementAtTrueBranch!)).toEqual('ternary-true-root')
 
     const elementAtFalseBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
     )
     expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
@@ -1001,8 +1000,8 @@ describe('findJSXElementChildAtPath', () => {
     ])
 
     expectElementFoundNull(projectFile, [
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
     ])
   })
 
@@ -1039,13 +1038,13 @@ describe('findJSXElementChildAtPath', () => {
 
     const elementAtTrueBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
     )
     expect(elementAtTrueBranch).toBeNull()
 
     const elementAtFalseBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
     )
     expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')

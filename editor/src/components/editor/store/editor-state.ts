@@ -184,16 +184,11 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ThenOrElse } from '../../../core/model/conditionals'
+import { ConditionalCase } from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import {
-  ConditionalClause,
-  dynamicReparentTargetParentToStaticReparentTargetParent,
-  ReparentTargetParent,
-} from './reparent-target'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
@@ -2112,13 +2107,65 @@ export function regularNavigatorEntriesEqual(
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
 
+export interface ConditionalClause<P extends ElementPath> {
+  elementPath: P
+  clause: ConditionalCase
+}
+
+export function conditionalClause<P extends ElementPath>(
+  elementPath: P,
+  clause: ConditionalCase,
+): ConditionalClause<P> {
+  return {
+    elementPath: elementPath,
+    clause: clause,
+  }
+}
+
+export type ReparentTargetParent<P extends ElementPath> = P | ConditionalClause<P>
+
+export function reparentTargetParentIsConditionalClause<P extends ElementPath>(
+  reparentTargetParent: ReparentTargetParent<P>,
+): reparentTargetParent is ConditionalClause<P> {
+  return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
+}
+
+export function reparentTargetParentIsElementPath<P extends ElementPath>(
+  reparentTargetParent: ReparentTargetParent<P>,
+): reparentTargetParent is P {
+  return !reparentTargetParentIsConditionalClause(reparentTargetParent)
+}
+
+export function getElementPathFromReparentTargetParent<P extends ElementPath>(
+  reparentTargetParent: ReparentTargetParent<P>,
+): P {
+  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
+    return reparentTargetParent.elementPath
+  } else {
+    return reparentTargetParent
+  }
+}
+
+export function dynamicReparentTargetParentToStaticReparentTargetParent(
+  reparentTargetParent: ReparentTargetParent<ElementPath>,
+): ReparentTargetParent<StaticElementPath> {
+  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
+    return conditionalClause(
+      EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
+      reparentTargetParent.clause,
+    )
+  } else {
+    return EP.dynamicPathToStaticPath(reparentTargetParent)
+  }
+}
+
 export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
   type: 'CONDITIONAL_CLAUSE'
 }
 
 export function conditionalClauseNavigatorEntry(
   elementPath: ElementPath,
-  clause: ThenOrElse,
+  clause: ConditionalCase,
 ): ConditionalClauseNavigatorEntry {
   return {
     type: 'CONDITIONAL_CLAUSE',
