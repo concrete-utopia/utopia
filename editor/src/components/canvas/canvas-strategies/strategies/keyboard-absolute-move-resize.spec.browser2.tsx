@@ -214,6 +214,38 @@ describe('Keyboard Absolute Resize E2E', () => {
       height: 101,
     })
   })
+  it('Pressing Shift + Cmd + ArrowLeft 3 times, then pressing Shift + Cmd + ArrowRight once', async () => {
+    const width = 5
+    const {
+      expectElementWidthOnScreen,
+      expectElementPropertiesInPrintedCode,
+      getCanvasGuidelines,
+    } = await setupTest({
+      left: 10,
+      top: 100,
+      width: width,
+      height: 101,
+    })
+
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+
+    expectElementWidthOnScreen(-width)
+    expect(getCanvasGuidelines()).toEqual([])
+
+    await pressKey('ArrowRight', { modifiers: shiftCmdModifier })
+    await cmdKeyUp()
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 10,
+      top: 100,
+      width: 10,
+      height: 101,
+    })
+  })
 })
 
 describe('Keyboard switching back and forth between absolute move and absolute resize', () => {
