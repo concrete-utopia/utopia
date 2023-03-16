@@ -46,7 +46,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 import {
   canvasPoint,
   CanvasPoint,
@@ -159,7 +159,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         return emptyStrategyApplicationResult
       }
 
-      const filteredSelectedElements = getDragTargets(selectedElements)
+      const filteredSelectedElements = flattenSelection(selectedElements)
       const originalBoundingBox = getMultiselectBounds(
         canvasState.startingMetadata,
         filteredSelectedElements,
@@ -368,7 +368,7 @@ function paddingValueIndicatorProps(
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
 ): FloatingIndicatorProps | null {
-  const filteredSelectedElements = getDragTargets([selectedElement])
+  const filteredSelectedElements = flattenSelection([selectedElement])
 
   if (
     interactionSession == null ||
