@@ -20,7 +20,6 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 import { navigatorDepth } from './navigator-utils'
 import { compose3Optics, Optic } from '../../core/shared/optics/optics'
@@ -31,6 +30,7 @@ import {
   conditionalWhenFalseOptic,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
+import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -136,33 +136,36 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional1
           [].length === 0 ? (
+            // @utopia/uid=conditional2
+            [].length === 0 ? (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='then-then-div'
+                data-testid='then-then-div'
+              />
+            ) : null
+          ) : (
             <div
               style={{
                 height: 150,
-                width: 150,
                 position: 'absolute',
                 left: 154,
                 top: 134,
-                backgroundColor: 'lightblue',
               }}
-              data-uid='then-then-div'
-              data-testid='then-then-div'
+              data-uid='else-div'
+              data-testid='else-div'
             />
-          ) : null
-        ) : (
-          <div
-            style={{
-              height: 150,
-              position: 'absolute',
-              left: 154,
-              top: 134,
-            }}
-            data-uid='else-div'
-            data-testid='else-div'
-          />
-        )}
+          )}
         <div
           style={{
             height: 150,
@@ -209,23 +212,26 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional1
           [].length === 0 ? (
-            <>
-              <div
-                style={{
-                  height: 150,
-                  width: 150,
-                  position: 'absolute',
-                  left: 154,
-                  top: 134,
-                  backgroundColor: 'lightblue',
-                }}
-                data-uid='then-then-div'
-                data-testid='then-then-div'
-              />
-            </>
-          ) : null
+            // @utopia/uid=conditional2
+            [].length === 0 ? (
+              <>
+                <div
+                  style={{
+                    height: 150,
+                    width: 150,
+                    position: 'absolute',
+                    left: 154,
+                    top: 134,
+                    backgroundColor: 'lightblue',
+                  }}
+                  data-uid='then-then-div'
+                  data-testid='then-then-div'
+                />
+              </>
+            ) : null
         ) : (
           <div
             style={{
@@ -284,21 +290,24 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional1
           [].length === 0 ? (
-            <div
-              style={{
-                height: 150,
-                width: 150,
-                position: 'absolute',
-                left: 154,
-                top: 134,
-                backgroundColor: 'lightblue',
-              }}
-              data-uid='then-then-div'
-              data-testid='then-then-div'
-            />
-          ) : null
+            // @utopia/uid=conditional2
+            [].length === 0 ? (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='then-then-div'
+                data-testid='then-then-div'
+              />
+            ) : null
         ) : (
           <>
             <div
@@ -359,20 +368,24 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
-          [].length === 0 ? null : null
-        ) : (
-          <div
-            style={{
-              height: 150,
-              position: 'absolute',
-              left: 154,
-              top: 134,
-            }}
-            data-uid='else-div'
-            data-testid='else-div'
-          />
-        )}
+        {
+          // @utopia/uid=conditional1
+          [].length === 0 ? (
+            // @utopia/uid=conditional2
+            [].length === 0 ? null : null
+          ) : (
+            <div
+              style={{
+                height: 150,
+                position: 'absolute',
+                left: 154,
+                top: 134,
+              }}
+              data-uid='else-div'
+              data-testid='else-div'
+            />
+          )
+        }
         <div
           style={{
             height: 150,
@@ -417,14 +430,6 @@ describe('conditionals in the navigator', () => {
       'skip5',
       'skip6',
       'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
       'fragment',
     ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -521,25 +526,7 @@ describe('conditionals in the navigator', () => {
   })
 
   it('dragging into a non-empty active clause with a fragment wrapper, inserts into a wrapper', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'fragment',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'skip14',
-      'conditional1',
-      'conditional2',
-    ])
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'skip4', 'skip5', 'fragment'])
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeWithExistingFragment(),
       'await-first-dom-report',
@@ -646,16 +633,8 @@ describe('conditionals in the navigator', () => {
       'skip3',
       'skip4',
       'skip5',
-      'skip6',
       'skip7',
       'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
       'fragment',
     ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -758,16 +737,7 @@ describe('conditionals in the navigator', () => {
       'skip5',
       'skip6',
       'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
       'fragment',
-      'skip13',
-      'skip14',
-      'conditional1',
-      'conditional2',
     ])
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeWithExistingInactiveFragment(),
@@ -867,19 +837,6 @@ describe('conditionals in the navigator', () => {
   })
 
   it('dragging into an empty active clause, takes the place of the empty value', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeEmptyActive(),
       'await-first-dom-report',
@@ -974,23 +931,6 @@ describe('conditionals in the navigator', () => {
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
   it('dragging into an empty inactive clause, takes the place of the empty value', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -1081,25 +1021,7 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
-
   it('dragging out of an inactive clause, replaces with null', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -1201,25 +1123,7 @@ describe('conditionals in the navigator', () => {
       regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
-
   it('dragging out of an active clause, replaces with null', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -1308,7 +1212,6 @@ describe('conditionals in the navigator', () => {
       regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
-
   xit('dragging into child of an active clause, works as it would without the conditional', () => {
     // TODO: Fill this out.
   })
