@@ -36,6 +36,7 @@ import {
   jsxAttributeValue,
   childOrBlockIsAttribute,
   jsxConditionalExpression,
+  jsxFragment,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -552,7 +553,7 @@ export function insertJSXElementChild(
         ) {
           // Determine which clause of the conditional we want to modify.
           const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'false-case'
+            targetParentIncludingStoryboardRoot.clause === 'true-case'
               ? conditionalWhenTrueOptic
               : conditionalWhenFalseOptic
           // Update the clause if it currently holds a null value.
