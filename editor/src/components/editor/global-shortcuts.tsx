@@ -890,7 +890,7 @@ export function handleKeyDown(
             elementPath,
           )
 
-          if (contentAffectingType === 'fragment') {
+          if (contentAffectingType === 'fragment' || contentAffectingType === 'conditional') {
             return []
           }
 

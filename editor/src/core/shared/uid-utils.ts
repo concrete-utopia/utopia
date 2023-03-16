@@ -1,29 +1,34 @@
 import { v4 as UUID } from 'uuid'
+import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
+import { mapDropNulls } from './array-utils'
+import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
+import * as EP from './element-path'
 import {
+  childOrBlockIsChild,
+  ElementInstanceMetadata,
+  emptyComments,
+  getJSXAttribute,
+  isJSXArbitraryBlock,
+  isJSXAttributeValue,
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXFragment,
+  isJSXTextBlock,
+  JSXArbitraryBlock,
   JSXAttributes,
   jsxAttributeValue,
-  JSXElement,
-  JSXElementChild,
-  isJSXElement,
-  isJSXAttributeValue,
-  isJSXArbitraryBlock,
-  setJSXAttributesAttribute,
-  getJSXAttribute,
-  TopLevelElement,
-  jsxElement,
-  emptyComments,
-  JSXElementLike,
-  childOrBlockIsChild,
-  isJSXFragment,
-  JSXFragment,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
-  ElementInstanceMetadata,
-  JSXArbitraryBlock,
-  JSXTextBlock,
-  isJSXTextBlock,
+  jsxConditionalExpression,
+  JSXElement,
+  jsxElement,
+  JSXElementChild,
+  JSXElementLike,
+  JSXFragment,
   jsxFragment,
+  JSXTextBlock,
+  setJSXAttributesAttribute,
+  TopLevelElement,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -31,13 +36,9 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attributes'
-import * as PP from './property-path'
-import * as EP from './element-path'
 import { objectMap } from './object-utils'
-import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
-import { mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
+import * as PP from './property-path'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -168,6 +169,15 @@ export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): 
       uid,
       setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
       element.children,
+    )
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      uid,
+      element.condition,
+      element.originalConditionString,
+      element.whenTrue,
+      element.whenFalse,
+      element.comments,
     )
   } else {
     // TODO: Do other cases need this?
@@ -447,6 +457,15 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
     return setUtopiaIDOnJSXElement(element, uid)
   } else if (isUtopiaJSXFragment(element)) {
     return jsxFragment(uid, element.children, element.longForm)
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      uid,
+      element.condition,
+      element.originalConditionString,
+      element.whenTrue,
+      element.whenFalse,
+      element.comments,
+    )
   } else {
     throw new Error(`Unable to set utopia id on ${element.type}`)
   }

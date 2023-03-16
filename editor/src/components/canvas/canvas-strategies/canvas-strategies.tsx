@@ -488,6 +488,19 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
   }
 }
 
+export function isKeyboardAbsoluteStrategy(currentStrategy: string | null): boolean {
+  if (currentStrategy == null) {
+    return false
+  }
+  switch (currentStrategy) {
+    case 'KEYBOARD_ABSOLUTE_RESIZE':
+    case 'KEYBOARD_ABSOLUTE_MOVE':
+      return true
+    default:
+      return false
+  }
+}
+
 export function interactionInProgress(interactionSession: InteractionSession | null): boolean {
   if (interactionSession == null) {
     return false

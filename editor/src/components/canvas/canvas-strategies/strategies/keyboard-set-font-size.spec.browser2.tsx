@@ -257,12 +257,12 @@ export var storyboard = (
 `
 
 const projectWithHierarchy = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       style={{
         width: 700,
         height: 759,
@@ -300,8 +300,8 @@ export var storyboard = (
         }}
         data-uid='f30'
       />
-    </Scene>
-    <Scene
+    </div>
+    <div
       style={{
         width: 744,
         height: 1133,
@@ -313,7 +313,7 @@ export var storyboard = (
       data-uid='2c5'
     >
       <App style={{}} data-uid='a28' />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `

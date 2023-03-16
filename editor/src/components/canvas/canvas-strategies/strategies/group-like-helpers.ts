@@ -66,7 +66,7 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-export const AllContentAffectingTypes = ['fragment', 'sizeless-div'] as const
+export const AllContentAffectingTypes = ['fragment', 'sizeless-div', 'conditional'] as const
 export type ContentAffectingType = typeof AllContentAffectingTypes[number] // <- this gives us the union type of the Array's entries
 
 export function getElementContentAffectingType(
@@ -78,15 +78,12 @@ export function getElementContentAffectingType(
 
   const elementProps = allElementProps[EP.toString(path)]
 
-  if (
-    elementMetadata?.element != null &&
-    foldEither(
-      () => false,
-      (e) => isJSXFragment(e),
-      elementMetadata.element,
-    )
-  ) {
+  if (MetadataUtils.isFragmentFromMetadata(elementMetadata)) {
     return 'fragment'
+  }
+
+  if (MetadataUtils.isConditionalFromMetadata(elementMetadata)) {
+    return 'conditional'
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {

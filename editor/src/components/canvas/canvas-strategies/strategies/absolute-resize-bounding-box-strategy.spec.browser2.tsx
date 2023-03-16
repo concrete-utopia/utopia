@@ -51,6 +51,9 @@ import {
   SizeLabelTestId,
   ResizePointTestId,
 } from '../../controls/select-mode/absolute-resize-control'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -1525,81 +1528,123 @@ describe('double click on resize corner', () => {
   })
 })
 
-describe('Absolute Resize Group-like behaviors', () => {
-  async function makeResizeInGrupProject(targets: Array<ElementPath>): Promise<string> {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            contain: 'layout',
-          }}
-          data-uid='aaa'
-        >
-          <div data-uid='bbb' data-testid='bbb'>
-            <View
-              style={{
-                backgroundColor: '#aaaaaa33',
-                contain: 'layout',
-                position: 'absolute',
-                width: 80,
-                height: 100,
-                left: 40,
-                top: 50,
-              }}
-              data-uid='ccc'
-              data-testid='ccc'
-            />
-            <View
-              style={{
-                backgroundColor: '#aaaaaa33',
-                contain: 'layout',
-                position: 'absolute',
-                width: 130,
-                height: 120,
-                left: 170,
-                top: 70,
-              }}
-              data-uid='ddd'
-            />
-          </div>
+async function makeResizeInGroupProject(
+  type: ContentAffectingType,
+  targets: Array<ElementPath>,
+): Promise<string> {
+  FOR_TESTS_setNextGeneratedUids([
+    'skip1',
+    'skip2',
+    'skip3',
+    'skip4',
+    'skip5',
+    'skip6',
+    'skip7',
+    'skip8',
+    'skip9',
+    'skip10',
+    'children-affecting',
+  ])
+
+  const renderResult = await renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+      >
+        ${getOpeningGroupLikeTag(type)}
           <View
             style={{
               backgroundColor: '#aaaaaa33',
+              contain: 'layout',
               position: 'absolute',
-              width: 40,
-              height: 40,
-              left: 30,
-              top: 330,
+              width: 80,
+              height: 100,
+              left: 40,
+              top: 50,
             }}
-            data-uid='xxx'
+            data-uid='ccc'
+            data-testid='ccc'
           />
-        </div>
-      `),
-      'await-first-dom-report',
-    )
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              position: 'absolute',
+              width: 130,
+              height: 120,
+              left: 170,
+              top: 70,
+            }}
+            data-uid='ddd'
+          />
+          ${getClosingGroupLikeTag(type)}
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            width: 40,
+            height: 40,
+            left: 30,
+            top: 330,
+          }}
+          data-uid='xxx'
+        />
+      </div>
+    `),
+    'await-first-dom-report',
+  )
 
-    const dragDelta = windowPoint({ x: -30, y: -30 })
+  await renderResult.getDispatchFollowUpActionsFinished()
 
-    await renderResult.dispatch([selectComponents(targets, false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
-    await renderResult.getDispatchFollowUpActionsFinished()
+  const initialCode = getPrintedUiJsCode(renderResult.getEditorState())
 
-    const result = getPrintedUiJsCode(renderResult.getEditorState())
-    renderResult.renderedDOM.unmount()
-    return result
-  }
+  const dragDelta = windowPoint({ x: -30, y: -30 })
 
-  it('resizing a group is the same as multiselect resizing the children', async () => {
-    const groupResizeResult = await makeResizeInGrupProject([
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-    ])
-    const multiselectResult = await makeResizeInGrupProject([
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
-    ])
+  await renderResult.dispatch([selectComponents(targets, false)], true)
+  await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+  await renderResult.getDispatchFollowUpActionsFinished()
 
-    expect(groupResizeResult).toEqual(multiselectResult)
+  const result = getPrintedUiJsCode(renderResult.getEditorState())
+  renderResult.renderedDOM.unmount()
+
+  // make sure something actually changed in the project
+  expect(result).not.toEqual(initialCode)
+
+  return result
+}
+
+describe('Absolute Resize Group-like behaviors', () => {
+  setFeatureForBrowserTests('Fragment support', true)
+  setFeatureForBrowserTests('Conditional support', true)
+
+  AllContentAffectingTypes.forEach((type) => {
+    describe(`group-like ${type} element`, () => {
+      it('resizing a group is the same as multiselect resizing the children', async () => {
+        const groupResizeResult = await makeResizeInGroupProject(type, [
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting']),
+        ])
+        const multiselectResult = await makeResizeInGroupProject(type, [
+          EP.appendNewElementPath(TestScenePath, [
+            'aaa',
+            'children-affecting',
+            'inner-fragment',
+            'ccc',
+          ]),
+          EP.appendNewElementPath(TestScenePath, [
+            'aaa',
+            'children-affecting',
+            'inner-fragment',
+            'ddd',
+          ]),
+        ])
+
+        expect(groupResizeResult).toEqual(multiselectResult)
+      })
+    })
   })
 })
