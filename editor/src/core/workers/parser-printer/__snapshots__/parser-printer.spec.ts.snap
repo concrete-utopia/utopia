@@ -588,26 +588,26 @@ Object {
     },
   ],
   "highlightBounds": Object {
-    "7dd": Object {
-      "endCol": 34,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "7dd",
-    },
-    "aa0": Object {
-      "endCol": 34,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "aa0",
-    },
     "aaa": Object {
       "endCol": 56,
       "endLine": 5,
       "startCol": 33,
       "startLine": 5,
       "uid": "aaa",
+    },
+    "abc": Object {
+      "endCol": 34,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "abc",
+    },
+    "f82": Object {
+      "endCol": 34,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "f82",
     },
   },
   "imports": Object {
@@ -724,7 +724,7 @@ const b = (n) => n > 0 ? n : a(10)
         },
         "originalConditionString": "n > 0",
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uid": "7dd",
+        "uid": "f82",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "b",
@@ -920,7 +920,7 @@ const b = (n) => n > 0 ? n : a(10)
         },
         "originalConditionString": "n > 0",
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uid": "aa0",
+        "uid": "abc",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "a",
