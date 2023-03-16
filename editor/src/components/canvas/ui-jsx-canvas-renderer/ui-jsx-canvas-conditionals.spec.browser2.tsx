@@ -89,7 +89,7 @@ describe('a project with conditionals', () => {
       'regular-storyboard/scene/app:app-root/conditional1',
       'conditional-clause-storyboard/scene/app:app-root/conditional1-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
       'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/false-case-attribute',
