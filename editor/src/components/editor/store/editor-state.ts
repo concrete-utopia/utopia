@@ -23,7 +23,6 @@ import {
   insertJSXElementChild,
   removeJSXElementChild,
   transformJSXComponentAtPath,
-  getUtopiaID,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
 } from '../../../core/model/element-template-utils'
@@ -190,6 +189,12 @@ import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  ConditionalClause,
+  dynamicReparentTargetParentToStaticReparentTargetParent,
+  ReparentTargetParent,
+} from './reparent-target'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2105,58 +2110,6 @@ export function regularNavigatorEntriesEqual(
   second: RegularNavigatorEntry,
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
-}
-
-export interface ConditionalClause<P extends ElementPath> {
-  elementPath: P
-  clause: ThenOrElse
-}
-
-export function conditionalClause<P extends ElementPath>(
-  elementPath: P,
-  clause: ThenOrElse,
-): ConditionalClause<P> {
-  return {
-    elementPath: elementPath,
-    clause: clause,
-  }
-}
-
-export type ReparentTargetParent<P extends ElementPath> = P | ConditionalClause<P>
-
-export function reparentTargetParentIsConditionalClause<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is ConditionalClause<P> {
-  return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
-}
-
-export function reparentTargetParentIsElementPath<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is P {
-  return !reparentTargetParentIsConditionalClause(reparentTargetParent)
-}
-
-export function getElementPathFromReparentTargetParent<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): P {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return reparentTargetParent.elementPath
-  } else {
-    return reparentTargetParent
-  }
-}
-
-export function dynamicReparentTargetParentToStaticReparentTargetParent(
-  reparentTargetParent: ReparentTargetParent<ElementPath>,
-): ReparentTargetParent<StaticElementPath> {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return conditionalClause(
-      EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
-      reparentTargetParent.clause,
-    )
-  } else {
-    return EP.dynamicPathToStaticPath(reparentTargetParent)
-  }
 }
 
 export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {

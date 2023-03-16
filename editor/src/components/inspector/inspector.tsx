@@ -72,7 +72,10 @@ import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
-import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
+import {
+  isKeyboardAbsoluteStrategy,
+  isStrategyActive,
+} from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -231,7 +234,10 @@ export function shouldInspectorUpdate(
   strategyState: StrategyState,
   elementsToRerender: ElementsToRerender,
 ): boolean {
-  return !isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements'
+  return (
+    (!isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements') ||
+    isKeyboardAbsoluteStrategy(strategyState.currentStrategy)
+  )
 }
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {

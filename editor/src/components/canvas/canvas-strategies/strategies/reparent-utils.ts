@@ -4,12 +4,7 @@ import {
   emptyImports,
   mergeImports,
 } from '../../../../core/workers/common/project-file-utils'
-import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetParentIsElementPath,
-  withUnderlyingTarget,
-} from '../../../editor/store/editor-state'
+import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
@@ -33,10 +28,7 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { CSSCursor } from '../../canvas-types'
 import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-paths-command'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import {
-  generateUidWithExistingComponents,
-  getUtopiaID,
-} from '../../../../core/model/element-template-utils'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
 import {
   CustomStrategyState,
@@ -47,6 +39,12 @@ import { duplicateElement } from '../../commands/duplicate-element-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsElementPath,
+} from '../../../../components/editor/store/reparent-target'
+import { getUtopiaID } from '../../../../core/shared/uid-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>

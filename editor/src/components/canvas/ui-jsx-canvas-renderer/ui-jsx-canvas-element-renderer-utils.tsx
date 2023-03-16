@@ -1,6 +1,5 @@
 import React from 'react'
 import { MapLike } from 'typescript'
-import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
@@ -47,7 +46,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { addFakeSpyEntry, buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { createIndexedUid, getUtopiaID } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -480,15 +479,6 @@ function renderJSXElement(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
 ): React.ReactElement {
-  let elementProps = { key: key, ...passthroughProps }
-  if (isHidden(hiddenInstances, elementPath)) {
-    elementProps = hideElement(elementProps)
-  }
-  if (elementIsDisplayNone(displayNoneInstances, elementPath)) {
-    elementProps = displayNoneElement(elementProps)
-  }
-  elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
-
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
     return renderCoreElement(
@@ -548,6 +538,18 @@ function renderJSXElement(
 
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
+
+  let elementProps = { key: key, ...passthroughProps }
+  if (!elementIsFragment) {
+    if (isHidden(hiddenInstances, elementPath)) {
+      elementProps = hideElement(elementProps)
+    }
+    if (elementIsDisplayNone(displayNoneInstances, elementPath)) {
+      elementProps = displayNoneElement(elementProps)
+    }
+    elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
+  }
+
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps

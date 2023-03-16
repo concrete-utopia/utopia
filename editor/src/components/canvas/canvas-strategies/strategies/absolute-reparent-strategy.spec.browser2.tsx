@@ -1,3 +1,26 @@
+import * as Prettier from 'prettier/standalone'
+import { PrettierConfig } from 'utopia-vscode-common'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import * as EP from '../../../../core/shared/element-path'
+import {
+  canvasVector,
+  offsetRect,
+  windowPoint,
+  WindowPoint,
+} from '../../../../core/shared/math-utils'
+import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/meta-actions'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { CSSCursor } from '../../canvas-types'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
@@ -7,28 +30,8 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import {
-  canvasVector,
-  offsetRect,
-  windowPoint,
-  WindowPoint,
-} from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier/standalone'
-import {
-  BakedInStoryboardVariableName,
-  BakedInStoryboardUID,
-} from '../../../../core/model/scene-utils'
-import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
-import { CSSCursor } from '../../canvas-types'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/meta-actions'
-import * as EP from '../../../../core/shared/element-path'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ContentAffectingType, AllContentAffectingTypes } from './group-like-helpers'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -987,13 +990,21 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 })
 
+function getRegularNavigatorTargets(entries: Array<NavigatorEntry>): Array<string> {
+  return entries
+    .filter((t) => t.type === 'REGULAR')
+    .map((t) => t.elementPath)
+    .map(EP.toString)
+}
+
 describe('children-affecting reparent tests', () => {
   setFeatureForBrowserTests('Fragment support', true)
-  AllContentAffectingTypes.forEach((divOrFragment) => {
-    describe(`Absolute reparent with children-affecting element ${divOrFragment} in the mix`, () => {
+  setFeatureForBrowserTests('Conditional support', true)
+  AllContentAffectingTypes.forEach((type) => {
+    describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
       it('cannot reparent into a children-affecting div', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(divOrFragment),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1011,15 +1022,17 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of children-affecting
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
@@ -1028,7 +1041,7 @@ describe('children-affecting reparent tests', () => {
 
       it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(divOrFragment),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1047,7 +1060,7 @@ describe('children-affecting reparent tests', () => {
 
       it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(divOrFragment),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1057,14 +1070,16 @@ describe('children-affecting reparent tests', () => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         // no reparent have happened
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
@@ -1074,7 +1089,7 @@ describe('children-affecting reparent tests', () => {
 
       it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(divOrFragment),
+          testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
@@ -1083,14 +1098,16 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <child-1 is not the direct child of bbb
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
@@ -1099,21 +1116,21 @@ describe('children-affecting reparent tests', () => {
       })
     })
 
-    it(`reparenting the children-affecting ${divOrFragment} to an absolute parent works`, async () => {
+    it(`reparenting the children-affecting ${type} to an absolute parent works`, async () => {
       const renderResult = await renderTestEditorWithCode(
-        testProjectWithUnstyledDivOrFragment(divOrFragment),
+        testProjectWithUnstyledDivOrFragment(type),
         'await-first-dom-report',
       )
 
       const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
         EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
         ),
         renderResult.getEditorState().editor.jsxMetadata,
       )
       const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
         EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
         ),
         renderResult.getEditorState().editor.jsxMetadata,
       )
@@ -1128,8 +1145,9 @@ describe('children-affecting reparent tests', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-        'utopia-storyboard-uid',
+      expect(
+        getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+      ).toEqual([
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
@@ -1138,8 +1156,9 @@ describe('children-affecting reparent tests', () => {
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting', // <- the fragment-like children-affecting element has been reparented to otherparent, yay!
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-2',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
       ])
 
       const propsOfFragment =
@@ -1147,17 +1166,23 @@ describe('children-affecting reparent tests', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
         ]
       // the fragment-like element continues to have no style prop
-      expect(propsOfFragment.style).not.toBeDefined()
+      expect(propsOfFragment?.style == null).toBeTruthy()
+      const propsOfInnerFragment =
+        renderResult.getEditorState().editor.allElementProps[
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+        ]
+      // the inner fragment-like element continues to have no style prop
+      expect(propsOfInnerFragment?.style == null).toBeTruthy()
 
       const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
         EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
         ),
         renderResult.getEditorState().editor.jsxMetadata,
       )
       const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
         EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/child-2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
         ),
         renderResult.getEditorState().editor.jsxMetadata,
       )
@@ -1172,31 +1197,25 @@ describe('children-affecting reparent tests', () => {
   })
 })
 
-function getOpeningTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'>`
-    case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
-function getClosingTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `</div>`
-    case 'fragment':
-      return `</React.Fragment>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
 function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
+  if (type === 'conditional') {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'inner-fragment',
+      'skip8',
+      'skip9',
+      'skip10',
+      'children-affecting',
+    ])
+  } else {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+  }
+
   return makeTestProjectCodeWithSnippet(`
       <div
         style={{
@@ -1217,7 +1236,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
           }}
           data-uid='bbb'
         >
-          ${getOpeningTag(type)}
+          ${getOpeningGroupLikeTag(type)}
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1242,7 +1261,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
               data-uid='child-2'
               data-testid='child-2'
             />
-          ${getClosingTag(type)}
+          ${getClosingGroupLikeTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',

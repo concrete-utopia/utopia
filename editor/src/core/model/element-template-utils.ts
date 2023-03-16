@@ -39,6 +39,7 @@ import {
   ChildOrAttribute,
   jsxAttributeValue,
   childOrBlockIsAttribute,
+  jsxConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -52,6 +53,7 @@ import {
   fixUtopiaElement,
   generateMockNextGeneratedUID,
   generateUID,
+  getUtopiaID,
   getUtopiaIDFromJSXElement,
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
@@ -64,15 +66,20 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
-import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
+import {
+  conditionalWhenFalseOptic,
+  conditionalWhenTrueOptic,
+  getConditionalClausePath,
+  ThenOrElse,
+  thenOrElsePathPart,
+} from './conditionals'
+import { modify } from '../shared/optics/optic-utilities'
+import { foldEither } from '../shared/either'
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
   reparentTargetParentIsConditionalClause,
-} from '../../components/editor/store/editor-state'
-import { conditionalWhenFalseOptic, conditionalWhenTrueOptic } from './common-optics'
-import { modify } from '../shared/optics/optic-utilities'
-import { foldEither } from '../shared/either'
+} from '../../components/editor/store/reparent-target'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -169,64 +176,6 @@ export function isSceneElement(
   } else {
     return false
   }
-}
-
-// THIS IS SUPER UGLY, DO NOT USE OUTSIDE OF FILE
-function isUtopiaJSXElement(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXElement {
-  return isJSXElement(element as any)
-}
-
-function isUtopiaJSXArbitraryBlock(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXArbitraryBlock {
-  return isJSXArbitraryBlock(element as any)
-}
-
-function isUtopiaJSXTextBlock(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXTextBlock {
-  return isJSXTextBlock(element as any)
-}
-
-function isUtopiaJSXFragment(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXFragment {
-  return isJSXFragment(element as any)
-}
-
-function isElementInstanceMetadata(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is ElementInstanceMetadata {
-  return (element as any).elementPath != null
-}
-
-export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
-  if (isUtopiaJSXElement(element)) {
-    return setUtopiaIDOnJSXElement(element, uid)
-  } else if (isUtopiaJSXFragment(element)) {
-    return jsxFragment(uid, element.children, element.longForm)
-  } else {
-    throw new Error(`Unable to set utopia id on ${element.type}`)
-  }
-}
-
-export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata): string {
-  if (isUtopiaJSXElement(element)) {
-    return getUtopiaIDFromJSXElement(element)
-  } else if (isUtopiaJSXArbitraryBlock(element)) {
-    return element.uniqueID
-  } else if (isUtopiaJSXTextBlock(element)) {
-    return element.uniqueID
-  } else if (isElementInstanceMetadata(element)) {
-    return EP.toUid(element.elementPath)
-  } else if (isJSXFragment(element)) {
-    return element.uid
-  } else if (isJSXConditionalExpression(element)) {
-    return element.uid
-  }
-  throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
 
 export function transformJSXComponentAtPath(
