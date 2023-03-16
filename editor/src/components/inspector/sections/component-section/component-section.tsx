@@ -845,7 +845,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         sectionExpanded,
         <React.Fragment>
           {/* Information about the component as a whole */}
-          {/* <ComponentInfoBox /> */}
+
           {/* List of component props with controls */}
           {propertyControlsAndTargets.map((controlsAndTargets) => (
             <PropertyControlsSection
