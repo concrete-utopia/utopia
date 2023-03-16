@@ -25,13 +25,12 @@ import { setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 import { navigatorDepth } from './navigator-utils'
 import { compose3Optics, Optic } from '../../core/shared/optics/optics'
 import { ChildOrAttribute } from '../../core/shared/element-template'
-import {
-  forElementOptic,
-  jsxConditionalExpressionOptic,
-  conditionalWhenFalseOptic,
-} from '../../core/model/common-optics'
+import { forElementOptic } from '../../core/model/common-optics'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { MOCK_NEXT_GENERATED_UIDS, MOCK_NEXT_GENERATED_UIDS_IDX } from '../../core/shared/uid-utils'
+import {
+  conditionalWhenFalseOptic,
+  jsxConditionalExpressionOptic,
+} from '../../core/model/conditionals'
 
 function dragElement(
   renderResult: EditorRenderResult,

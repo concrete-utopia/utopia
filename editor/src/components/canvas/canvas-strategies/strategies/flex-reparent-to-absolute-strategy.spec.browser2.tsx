@@ -1,3 +1,16 @@
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../../core/model/scene-utils'
+import * as EP from '../../../../core/shared/element-path'
+import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
+import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/meta-actions'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
   formatTestProjectCode,
@@ -6,19 +19,8 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { act } from '@testing-library/react'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import {
-  BakedInStoryboardVariableName,
-  BakedInStoryboardUID,
-} from '../../../../core/model/scene-utils'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/meta-actions'
-import * as EP from '../../../../core/shared/element-path'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -260,8 +262,17 @@ describe('Flex Reparent To Absolute Strategy', () => {
   })
 })
 
+function getRegularNavigatorTargets(entries: Array<NavigatorEntry>): Array<string> {
+  return entries
+    .filter((t) => t.type === 'REGULAR')
+    .map((t) => t.elementPath)
+    .map(EP.toString)
+}
+
 describe('Flex Reparent to Absolute – children affecting elements', () => {
   setFeatureForBrowserTests('Fragment support', true)
+  setFeatureForBrowserTests('Conditional support', true)
+
   AllContentAffectingTypes.forEach((type) => {
     describe(`– ${type} parents`, () => {
       it('reparents regular child from a children-affecting flex parent to absolute', async () => {
@@ -292,8 +303,9 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -302,7 +314,8 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/flexchild1', // <- flexChild1 is successfully reparented
           'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
           'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/flexchild2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent/children-affecting/inner-fragment/flexchild2',
         ])
       })
 
@@ -353,48 +366,63 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-          'utopia-storyboard-uid',
+        expect(
+          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
+        ).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:container',
           'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
           'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/flexchild1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/flexchild2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting', // <- the children-affecting element have been properly reparented
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/absolutechild/children-affecting/inner-fragment/flexchild2',
           'utopia-storyboard-uid/scene-aaa/app-entity:container/flexparent',
         ])
+
+        const propsOfFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
+          ]
+        // the fragment-like element continues to have no style prop
+        expect(propsOfFragment?.style == null).toBeTruthy()
+        const propsOfInnerFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
+          ]
+        // the inner fragment-like element continues to have no style prop
+        expect(propsOfInnerFragment?.style == null).toBeTruthy()
       })
     })
   })
 })
 
-function getOpeningTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'>`
-    case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
-function getClosingTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `</div>`
-    case 'fragment':
-      return `</React.Fragment>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
 function fragmentTestCode(type: ContentAffectingType) {
+  if (type === 'conditional') {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'inner-fragment',
+      'inner-fragment-2',
+      'skip8',
+      'skip10',
+      'children-affecting',
+    ])
+  } else {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'inner-fragment',
+      'skip3',
+      'children-affecting',
+    ])
+  }
+
   return `
   <div
     style={{
@@ -444,7 +472,7 @@ function fragmentTestCode(type: ContentAffectingType) {
       data-uid='flexparent'
       data-testid='flexparent'
     >
-      ${getOpeningTag(type)}
+      ${getOpeningGroupLikeTag(type)}
         <div
           style={{
             width: 100,
@@ -463,7 +491,7 @@ function fragmentTestCode(type: ContentAffectingType) {
           data-uid='flexchild2'
           data-testid='flexchild2'
         />
-      ${getClosingTag(type)}
+      ${getClosingGroupLikeTag(type)}
     </div>
   </div>
 `

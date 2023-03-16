@@ -13,7 +13,6 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
-  getUtopiaID,
   getZIndexOfElement,
   transformJSXComponentAtElementPath,
   transformJSXComponentAtPath,
@@ -68,6 +67,7 @@ import {
   isJSXElement,
   isJSXFragment,
   isPartOfJSXAttributeValue,
+  jsxAttributeOtherJavaScript,
   JSXAttributes,
   jsxAttributesFromMap,
   jsxAttributeValue,
@@ -335,6 +335,7 @@ import {
   CopyProperties,
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
+  UpdateConditionalExpression,
 } from '../action-types'
 import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
@@ -408,8 +409,6 @@ import {
   NavigatorEntry,
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
-  ConditionalClause,
-  ReparentTargetParent,
   reparentTargetFromNavigatorEntry,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -425,7 +424,7 @@ import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import { fixUtopiaElement } from '../../../core/shared/uid-utils'
+import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -497,6 +496,7 @@ import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
+import { ReparentTargetParent } from '../store/reparent-target'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2376,6 +2376,7 @@ export const UPDATE_FNS = {
                 return jsxConditionalExpression(
                   newUID,
                   jsxAttributeValue(true, emptyComments),
+                  'true',
                   jsxAttributeValue(null, emptyComments),
                   jsxAttributeValue(null, emptyComments),
                   emptyComments,
@@ -4505,6 +4506,35 @@ export const UPDATE_FNS = {
       editor,
     )
   },
+  UPDATE_CONDITIONAL_EXPRESSION: (
+    action: UpdateConditionalExpression,
+    editor: EditorModel,
+  ): EditorModel => {
+    return modifyOpenJsxElementOrConditionalAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+
+        return {
+          ...element,
+          condition: jsxAttributeOtherJavaScript(
+            action.expression,
+            action.expression,
+            [],
+            null,
+            {},
+          ),
+          originalConditionString: action.expression,
+        }
+      },
+      editor,
+      RevisionsState.ParsedAheadNeedsReparsing,
+      // reparse needed because the new condition might be
+      // referencing variables from the outer scope
+    )
+  },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
     return modifyUnderlyingTargetElement(
       action.target,
@@ -5455,6 +5485,7 @@ export const UPDATE_FNS = {
         return jsxConditionalExpression(
           element.uid,
           element.condition,
+          element.originalConditionString,
           element.whenFalse,
           element.whenTrue,
           element.comments,

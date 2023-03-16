@@ -87,11 +87,10 @@ import {
   exportVariables,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
-import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
+import { getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
-import { getUtopiaID } from '../../model/element-template-utils'
 import { emptySet } from '../../shared/set-utils'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> =

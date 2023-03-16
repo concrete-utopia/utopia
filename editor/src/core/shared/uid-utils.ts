@@ -1,24 +1,34 @@
 import { v4 as UUID } from 'uuid'
+import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
+import { mapDropNulls } from './array-utils'
+import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
+import * as EP from './element-path'
 import {
+  childOrBlockIsChild,
+  ElementInstanceMetadata,
+  emptyComments,
+  getJSXAttribute,
+  isJSXArbitraryBlock,
+  isJSXAttributeValue,
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXFragment,
+  isJSXTextBlock,
+  JSXArbitraryBlock,
   JSXAttributes,
   jsxAttributeValue,
-  JSXElement,
-  JSXElementChild,
-  isJSXElement,
-  isJSXAttributeValue,
-  isJSXArbitraryBlock,
-  setJSXAttributesAttribute,
-  getJSXAttribute,
-  TopLevelElement,
-  jsxElement,
-  emptyComments,
-  JSXElementLike,
-  childOrBlockIsChild,
-  isJSXFragment,
-  JSXFragment,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
+  jsxConditionalExpression,
+  JSXElement,
+  jsxElement,
+  JSXElementChild,
+  JSXElementLike,
+  JSXFragment,
+  jsxFragment,
+  JSXTextBlock,
+  setJSXAttributesAttribute,
+  TopLevelElement,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -26,13 +36,9 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attributes'
-import * as PP from './property-path'
-import * as EP from './element-path'
 import { objectMap } from './object-utils'
-import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
-import { mapDropNulls } from './array-utils'
 import { ElementPath } from './project-file-types'
+import * as PP from './property-path'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -163,6 +169,15 @@ export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): 
       uid,
       setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
       element.children,
+    )
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      uid,
+      element.condition,
+      element.originalConditionString,
+      element.whenTrue,
+      element.whenFalse,
+      element.comments,
     )
   } else {
     // TODO: Do other cases need this?
@@ -404,4 +419,71 @@ export function findElementWithUID(
     case 'IMPORT_STATEMENT':
       return null
   }
+}
+
+// THIS IS SUPER UGLY, DO NOT USE OUTSIDE OF FILE
+function isUtopiaJSXElement(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXElement {
+  return isJSXElement(element as any)
+}
+
+function isUtopiaJSXArbitraryBlock(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXArbitraryBlock {
+  return isJSXArbitraryBlock(element as any)
+}
+
+function isUtopiaJSXTextBlock(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXTextBlock {
+  return isJSXTextBlock(element as any)
+}
+
+function isUtopiaJSXFragment(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSXFragment {
+  return isJSXFragment(element as any)
+}
+
+function isElementInstanceMetadata(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is ElementInstanceMetadata {
+  return (element as any).elementPath != null
+}
+
+export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
+  if (isUtopiaJSXElement(element)) {
+    return setUtopiaIDOnJSXElement(element, uid)
+  } else if (isUtopiaJSXFragment(element)) {
+    return jsxFragment(uid, element.children, element.longForm)
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      uid,
+      element.condition,
+      element.originalConditionString,
+      element.whenTrue,
+      element.whenFalse,
+      element.comments,
+    )
+  } else {
+    throw new Error(`Unable to set utopia id on ${element.type}`)
+  }
+}
+
+export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata): string {
+  if (isUtopiaJSXElement(element)) {
+    return getUtopiaIDFromJSXElement(element)
+  } else if (isUtopiaJSXArbitraryBlock(element)) {
+    return element.uniqueID
+  } else if (isUtopiaJSXTextBlock(element)) {
+    return element.uniqueID
+  } else if (isElementInstanceMetadata(element)) {
+    return EP.toUid(element.elementPath)
+  } else if (isJSXFragment(element)) {
+    return element.uid
+  } else if (isJSXConditionalExpression(element)) {
+    return element.uid
+  }
+  throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }

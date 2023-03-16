@@ -1,16 +1,17 @@
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsConditionalClause,
+} from '../../../components/editor/store/reparent-target'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import {
-  ConditionalClause,
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  getElementPathFromReparentTargetParent,
   insertElementAtPath,
   removeElementAtPath,
-  ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 

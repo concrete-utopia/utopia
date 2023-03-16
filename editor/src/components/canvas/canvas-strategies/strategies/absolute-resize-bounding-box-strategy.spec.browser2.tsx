@@ -51,6 +51,9 @@ import {
   SizeLabelTestId,
   ResizePointTestId,
 } from '../../controls/select-mode/absolute-resize-control'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -388,6 +391,61 @@ export var storyboard = (
     >
       hello there
     </div>
+  </Storyboard>
+)
+`
+
+const projectForMultiSelectResize = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 146,
+        top: 118,
+        width: 305,
+        height: 233,
+      }}
+      data-uid='one'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 213,
+        top: 377,
+        width: 178,
+        height: 179,
+      }}
+      data-uid='two'
+    />
+    <div
+      style={{
+        backgroundColor: '#00acff',
+        position: 'absolute',
+        left: 759,
+        top: 155,
+        width: 228,
+        height: 254,
+      }}
+      data-uid='horizontal'
+      data-testid='horizontal'
+    />
+    <div
+      style={{
+        backgroundColor: '#2b8f65',
+        position: 'absolute',
+        left: 70,
+        top: 779,
+        width: 267,
+        height: 275,
+      }}
+      data-uid='vertical'
+      data-testid='vertical'
+    />
   </Storyboard>
 )
 `
@@ -1183,6 +1241,113 @@ export var storyboard = (
     expect(supportsStyleRect.width).toEqual(100)
     expect(supportsStyleRect.height).toEqual(100)
   })
+  describe('snap lines', () => {
+    it('horizontal snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      const canvasControl = editor.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
+      )
+
+      const resizeCornerBounds = canvasControl.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: resizeCornerBounds.x + 2,
+        y: resizeCornerBounds.y + 2,
+      })
+
+      await mouseDragFromPointWithDelta(
+        canvasControl,
+        startPoint,
+        { x: 0, y: -147 },
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(1)
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+            ).toEqual('YAxisGuideline')
+          },
+        },
+      )
+    })
+    it('vertical snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      const canvasControl = editor.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
+      )
+
+      const resizeCornerBounds = canvasControl.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: resizeCornerBounds.x + 2,
+        y: resizeCornerBounds.y + 2,
+      })
+
+      await mouseDragFromPointWithDelta(
+        canvasControl,
+        startPoint,
+        { x: -114, y: 0 },
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(1)
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+            ).toEqual('XAxisGuideline')
+          },
+        },
+      )
+    })
+    it('both vertical and horizontal snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      const canvasControl = editor.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
+      )
+
+      const resizeCornerBounds = canvasControl.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: resizeCornerBounds.x + 2,
+        y: resizeCornerBounds.y + 2,
+      })
+
+      await mouseDragFromPointWithDelta(
+        canvasControl,
+        startPoint,
+        { x: -114, y: -147 },
+        {
+          modifiers: emptyModifiers,
+          midDragCallback: async () => {
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(2)
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+            ).toEqual('XAxisGuideline')
+            expect(
+              editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+            ).toEqual('YAxisGuideline')
+          },
+        },
+      )
+    })
+  })
 })
 
 describe('Absolute Resize Strategy Canvas Controls', () => {
@@ -1363,81 +1528,123 @@ describe('double click on resize corner', () => {
   })
 })
 
-describe('Absolute Resize Group-like behaviors', () => {
-  async function makeResizeInGrupProject(targets: Array<ElementPath>): Promise<string> {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            contain: 'layout',
-          }}
-          data-uid='aaa'
-        >
-          <div data-uid='bbb' data-testid='bbb'>
-            <View
-              style={{
-                backgroundColor: '#aaaaaa33',
-                contain: 'layout',
-                position: 'absolute',
-                width: 80,
-                height: 100,
-                left: 40,
-                top: 50,
-              }}
-              data-uid='ccc'
-              data-testid='ccc'
-            />
-            <View
-              style={{
-                backgroundColor: '#aaaaaa33',
-                contain: 'layout',
-                position: 'absolute',
-                width: 130,
-                height: 120,
-                left: 170,
-                top: 70,
-              }}
-              data-uid='ddd'
-            />
-          </div>
+async function makeResizeInGroupProject(
+  type: ContentAffectingType,
+  targets: Array<ElementPath>,
+): Promise<string> {
+  FOR_TESTS_setNextGeneratedUids([
+    'skip1',
+    'skip2',
+    'skip3',
+    'skip4',
+    'skip5',
+    'skip6',
+    'skip7',
+    'skip8',
+    'skip9',
+    'skip10',
+    'children-affecting',
+  ])
+
+  const renderResult = await renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+      >
+        ${getOpeningGroupLikeTag(type)}
           <View
             style={{
               backgroundColor: '#aaaaaa33',
+              contain: 'layout',
               position: 'absolute',
-              width: 40,
-              height: 40,
-              left: 30,
-              top: 330,
+              width: 80,
+              height: 100,
+              left: 40,
+              top: 50,
             }}
-            data-uid='xxx'
+            data-uid='ccc'
+            data-testid='ccc'
           />
-        </div>
-      `),
-      'await-first-dom-report',
-    )
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              position: 'absolute',
+              width: 130,
+              height: 120,
+              left: 170,
+              top: 70,
+            }}
+            data-uid='ddd'
+          />
+          ${getClosingGroupLikeTag(type)}
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            width: 40,
+            height: 40,
+            left: 30,
+            top: 330,
+          }}
+          data-uid='xxx'
+        />
+      </div>
+    `),
+    'await-first-dom-report',
+  )
 
-    const dragDelta = windowPoint({ x: -30, y: -30 })
+  await renderResult.getDispatchFollowUpActionsFinished()
 
-    await renderResult.dispatch([selectComponents(targets, false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
-    await renderResult.getDispatchFollowUpActionsFinished()
+  const initialCode = getPrintedUiJsCode(renderResult.getEditorState())
 
-    const result = getPrintedUiJsCode(renderResult.getEditorState())
-    renderResult.renderedDOM.unmount()
-    return result
-  }
+  const dragDelta = windowPoint({ x: -30, y: -30 })
 
-  it('resizing a group is the same as multiselect resizing the children', async () => {
-    const groupResizeResult = await makeResizeInGrupProject([
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-    ])
-    const multiselectResult = await makeResizeInGrupProject([
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
-    ])
+  await renderResult.dispatch([selectComponents(targets, false)], true)
+  await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+  await renderResult.getDispatchFollowUpActionsFinished()
 
-    expect(groupResizeResult).toEqual(multiselectResult)
+  const result = getPrintedUiJsCode(renderResult.getEditorState())
+  renderResult.renderedDOM.unmount()
+
+  // make sure something actually changed in the project
+  expect(result).not.toEqual(initialCode)
+
+  return result
+}
+
+describe('Absolute Resize Group-like behaviors', () => {
+  setFeatureForBrowserTests('Fragment support', true)
+  setFeatureForBrowserTests('Conditional support', true)
+
+  AllContentAffectingTypes.forEach((type) => {
+    describe(`group-like ${type} element`, () => {
+      it('resizing a group is the same as multiselect resizing the children', async () => {
+        const groupResizeResult = await makeResizeInGroupProject(type, [
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting']),
+        ])
+        const multiselectResult = await makeResizeInGroupProject(type, [
+          EP.appendNewElementPath(TestScenePath, [
+            'aaa',
+            'children-affecting',
+            'inner-fragment',
+            'ccc',
+          ]),
+          EP.appendNewElementPath(TestScenePath, [
+            'aaa',
+            'children-affecting',
+            'inner-fragment',
+            'ddd',
+          ]),
+        ])
+
+        expect(groupResizeResult).toEqual(multiselectResult)
+      })
+    })
   })
 })

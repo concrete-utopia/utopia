@@ -19,7 +19,6 @@ import {
   componentHonoursPropsSize,
   componentUsesProperty,
   findJSXElementChildAtPath,
-  getUtopiaID,
   guaranteeUniqueUids,
   rearrangeJsxChildren,
   removeJSXElementChild,
@@ -51,6 +50,7 @@ import {
 import { getComponentsFromTopLevelElements } from './project-file-utils'
 import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
+import { getUtopiaID } from '../shared/uid-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {

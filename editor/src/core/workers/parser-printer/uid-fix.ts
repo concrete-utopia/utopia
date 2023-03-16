@@ -1,6 +1,8 @@
 import {
+  childOrBlockIsChild,
   ElementsWithin,
   isJSXArbitraryBlock,
+  isJSXConditionalExpression,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
@@ -17,10 +19,9 @@ import {
   StaticElementPathPart,
 } from '../../shared/project-file-types'
 import * as EP from '../../shared/element-path'
-import { setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
+import { getUtopiaID, setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
 import {
   findJSXElementChildAtPath,
-  getUtopiaID,
   transformJSXComponentAtElementPath,
 } from '../../model/element-template-utils'
 import {
@@ -260,6 +261,21 @@ function compareAndWalkElements(
       )
     } else if (isJSXTextBlock(oldElement) && isJSXTextBlock(newElement)) {
       return true
+    } else if (isJSXConditionalExpression(oldElement) && isJSXConditionalExpression(newElement)) {
+      const oldUID = getUtopiaID(oldElement)
+      const newUid = getUtopiaID(newElement)
+      const path = EP.appendToElementPath(pathSoFar, newUid)
+      const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
+      onElement(oldUID, newUid, oldPathToRestore, path)
+      const whenTrue =
+        childOrBlockIsChild(oldElement.whenTrue) && childOrBlockIsChild(newElement.whenTrue)
+          ? compareAndWalkElements(oldElement.whenTrue, newElement.whenTrue, path, onElement)
+          : false
+      const whenFalse =
+        childOrBlockIsChild(oldElement.whenFalse) && childOrBlockIsChild(newElement.whenFalse)
+          ? compareAndWalkElements(oldElement.whenFalse, newElement.whenFalse, path, onElement)
+          : false
+      return whenTrue && whenFalse
     }
   }
 

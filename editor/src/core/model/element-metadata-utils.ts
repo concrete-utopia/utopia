@@ -89,7 +89,6 @@ import {
   componentUsesProperty,
   elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
-  getUtopiaID,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -134,6 +133,7 @@ import {
   reorderConditionalChildPathTrees,
   ConditionalCase,
 } from './conditionals'
+import { getUtopiaID } from '../shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -672,30 +672,44 @@ export const MetadataUtils = {
     }
     return null
   },
-  getAllStoryboardChildrenUnordered(
-    metadata: ElementInstanceMetadataMap,
-  ): ElementInstanceMetadata[] {
-    const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
-    return storyboardMetadata == null
-      ? []
-      : MetadataUtils.getImmediateChildrenUnordered(metadata, storyboardMetadata.elementPath)
-  },
   getAllStoryboardChildrenPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
       : MetadataUtils.getImmediateChildrenPathsUnordered(metadata, storyboardMetadata.elementPath)
   },
-  getAllCanvasRootPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
-    const rootScenesAndElements = MetadataUtils.getAllStoryboardChildrenUnordered(metadata)
-    return flatMapArray<ElementInstanceMetadata, ElementPath>((root) => {
-      const rootElements = MetadataUtils.getRootViewPathsUnordered(metadata, root.elementPath)
-      if (rootElements.length > 0) {
-        return rootElements
+  getAllCanvasSelectablePathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
+    // 1) Get the storyboard children
+    const allPaths = objectValues(metadata).map((m) => m.elementPath)
+    const storyboardChildren = allPaths.filter(EP.isStoryboardChild)
+
+    // 2) Skip over any Scenes with children at this level
+    const withScenesSkipped = flatMapArray((path) => {
+      if (MetadataUtils.targetIsScene(metadata, path)) {
+        const sceneChildren = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+        return sceneChildren.length > 0 ? sceneChildren : [path]
       } else {
-        return [root.elementPath]
+        return [path]
       }
-    }, rootScenesAndElements)
+    }, storyboardChildren)
+
+    // 3) Replace (focused) component instances at this level with their root paths and children
+    const rootPaths = allPaths.filter(EP.isRootElementOfInstance)
+    const withComponentInstancesReplaced = flatMapArray((path) => {
+      const rootPath = rootPaths.find((rp) => EP.isRootElementOf(rp, path))
+      if (rootPath == null) {
+        return [path]
+      } else {
+        const componentChildren = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+
+        // 4) Replace any root paths with their children
+        const rootPathChildren = MetadataUtils.getChildrenPathsUnordered(metadata, rootPath)
+        const rootPathOrRootChildren = rootPathChildren.length > 0 ? rootPathChildren : [rootPath]
+        return [...rootPathOrRootChildren, ...componentChildren]
+      }
+    }, withScenesSkipped)
+
+    return withComponentInstancesReplaced
   },
   getAllPaths: memoize(
     (metadata: ElementInstanceMetadataMap): ElementPath[] => {
@@ -798,6 +812,10 @@ export const MetadataUtils = {
   },
   isSpan(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'span')
+  },
+  targetIsScene(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    return elementMetadata != null && isSceneFromMetadata(elementMetadata)
   },
   overflows(allElementProps: AllElementProps, path: ElementPath): boolean {
     const elementProps = allElementProps[EP.toString(path)] ?? {}
@@ -1978,6 +1996,8 @@ function fillSpyOnlyMetadata(
   // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
+  elementsWithoutIntrinsicSize.sort()
+  elementsWithoutIntrinsicSize.reverse()
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
   elementsWithoutParentData.sort()

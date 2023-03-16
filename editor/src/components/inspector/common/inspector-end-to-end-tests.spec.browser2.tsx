@@ -43,6 +43,7 @@ import {
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
   ConditionalsControlSectionCloseTestId,
+  ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranches,
   ConditionalsControlToggleFalseTestId,
@@ -2161,8 +2162,6 @@ describe('inspector tests with real metadata', () => {
           await renderResult.dispatch([selectComponents([targetPath], false)], false)
         })
 
-        // await wait(300000)
-
         const control = await getControl(t.controlTestID, renderResult.renderedDOM)
 
         // Check the controls show when hovering
@@ -2617,6 +2616,93 @@ describe('inspector tests with real metadata', () => {
           `),
         )
       }
+    })
+    it('displays the condition', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'skip7',
+        'skip8',
+        'conditional',
+      ])
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {[].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      const expressionElement = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlSectionExpressionTestId,
+      )
+      expect((expressionElement as HTMLInputElement).value).toEqual('[].length === 0')
+    })
+    it('allows changing the expression', async () => {
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'skip7',
+        'skip8',
+        'conditional',
+      ])
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {[].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await setControlValue(
+        ConditionalsControlSectionExpressionTestId,
+        '40 + 2 < 42',
+        renderResult.renderedDOM,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId('ccc')).not.toBeNull()
+
+      const expressionElement = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlSectionExpressionTestId,
+      )
+      expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
     })
   })
 })
