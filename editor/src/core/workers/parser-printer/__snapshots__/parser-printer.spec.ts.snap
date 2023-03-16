@@ -682,6 +682,10 @@ Object {
       "rootElement": Object {
         "comments": Object {
           "leadingComments": Array [],
+          "questionTokenComments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "trailingComments": Array [],
         },
         "condition": Object {
@@ -874,6 +878,10 @@ const b = (n) => n > 0 ? n : a(10)
       "rootElement": Object {
         "comments": Object {
           "leadingComments": Array [],
+          "questionTokenComments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "trailingComments": Array [],
         },
         "condition": Object {
