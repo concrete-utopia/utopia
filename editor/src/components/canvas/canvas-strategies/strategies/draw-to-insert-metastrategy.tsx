@@ -1,5 +1,5 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { LayoutHelpers, TopLeftWidthHeight } from '../../../../core/layout/layout-helpers'
+import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
   MetadataUtils,
@@ -60,12 +60,11 @@ import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
-import { omit } from '../../../../core/shared/object-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/layout-helpers-new'
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
-import { DefaultTextWidth } from '../../../editor/defaults'
+import { MaxContent } from '../../../inspector/inspector-common'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -232,9 +231,7 @@ export function drawToInsertStrategyFactory(
               ])
             }
           } else if (strategyLifecycle === 'end-interaction') {
-            const defaultSizeType = insertionSubject.textEdit
-              ? 'text-edit-only-width'
-              : 'default-size'
+            const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
             const insertionCommand = getInsertionCommands(
               insertionSubject,
               interactionSession,
@@ -301,7 +298,7 @@ function getInsertionCommands(
   subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
-  sizing: 'zero-size' | 'default-size' | 'text-edit-only-width',
+  sizing: 'zero-size' | 'default-size' | 'hug',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
     interactionSession.interactionData.type === 'DRAG' &&
@@ -338,21 +335,18 @@ function getInsertionCommands(
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
       frame: frame,
     }
-  } else if (
-    interactionSession.interactionData.type === 'DRAG' &&
-    sizing === 'text-edit-only-width'
-  ) {
+  } else if (interactionSession.interactionData.type === 'DRAG' && sizing === 'hug') {
     const pointOnCanvas = interactionSession.interactionData.dragStart
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
       y: pointOnCanvas.y,
-      width: DefaultTextWidth,
+      width: 0,
       height: 0,
     })
 
-    const updatedAttributesWithPosition = getStyleAttributesForPartialFrame(
+    const updatedAttributesWithPosition = getStyleAttributesForFixedPositionAndSizeHug(
       subject,
-      omit(['height'], frame),
+      frame,
     )
 
     const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
@@ -416,27 +410,28 @@ function getStyleAttributesForFrameInAbsolutePosition(
   )
 }
 
-function getStyleAttributesForPartialFrame(
+function getStyleAttributesForFixedPositionAndSizeHug(
   subject: InsertionSubject,
-  frame: Partial<CanvasRectangle>,
+  frame: CanvasRectangle,
 ): JSXAttributes {
-  const frameToPinnedProp = {
-    left: frame.x,
-    top: frame.y,
-    width: frame.width,
-    height: frame.height,
-  }
-  const propsToSet: Array<ValueAtPath> = mapDropNulls((pinnedProp) => {
-    const value = frameToPinnedProp[pinnedProp]
-    if (value != null) {
-      return {
-        path: stylePropPathMappingFn(pinnedProp, ['style']),
-        value: jsxAttributeValue(value, emptyComments),
-      }
-    } else {
-      return null
-    }
-  }, Object.keys(frameToPinnedProp) as Array<keyof TopLeftWidthHeight>)
+  const propsToSet: Array<ValueAtPath> = [
+    {
+      path: stylePropPathMappingFn('left', ['style']),
+      value: jsxAttributeValue(frame.x, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('top', ['style']),
+      value: jsxAttributeValue(frame.y, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('width', ['style']),
+      value: jsxAttributeValue(MaxContent, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('height', ['style']),
+      value: jsxAttributeValue(MaxContent, emptyComments),
+    },
+  ]
 
   const layoutProps = setJSXValuesAtPaths(subject.element.props, propsToSet)
   // Assign the new properties
