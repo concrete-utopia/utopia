@@ -702,7 +702,7 @@ function getConditionalFlag(element: JSXConditionalExpression) {
   if (!isUtopiaCommentFlagConditional(flag)) {
     return null
   }
-  return flag?.value ?? null
+  return flag.value
 }
 
 function matchesOverriddenBranch(

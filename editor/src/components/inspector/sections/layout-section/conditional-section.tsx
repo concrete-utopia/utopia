@@ -75,7 +75,7 @@ const conditionOverrideSelector = createCachedSelector(
     elements.forEach((element) => {
       const flag = findUtopiaCommentFlag(element.comments, 'conditional')
       if (isUtopiaCommentFlagConditional(flag)) {
-        conditions.add(flag?.value ?? null)
+        conditions.add(flag.value)
       }
     })
 
