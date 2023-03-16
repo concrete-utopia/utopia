@@ -101,6 +101,7 @@ import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import { isEmptyString } from '../../shared/string-utils'
+import { mergeComments } from '../../shared/comment-flags'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -1648,6 +1649,7 @@ function getUIDBasedOnElement(
   elementName: JSXElementName | string | null,
   props: JSXAttributes | JSXAttribute,
   alreadyExistingUIDs: Set<string>,
+  comments: ParsedComments = emptyComments,
 ): string {
   const cleansedProps = Array.isArray(props)
     ? clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
@@ -1657,7 +1659,7 @@ function getUIDBasedOnElement(
     name: elementName,
     props: cleansedProps,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = generateConsistentUID(alreadyExistingUIDs, hash, comments)
   alreadyExistingUIDs.add(uid)
   return uid
 }
@@ -1670,7 +1672,13 @@ function forciblyUpdateDataUID(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): UpdateUIDResult {
-  const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
+  const uid = getUIDBasedOnElement(
+    sourceFile,
+    elementName,
+    props,
+    alreadyExistingUIDs,
+    mergeComments(props.map((p) => p.comments)),
+  )
   const updatedProps = setJSXAttributesAttribute(
     props,
     'data-uid',
@@ -1818,6 +1826,31 @@ export function parseOutJSXElements(
         }, possibleConditional)
       }
 
+      function getConditionalExpressionComments(
+        expression: TS.ConditionalExpression,
+      ): ParsedComments {
+        return {
+          leadingComments: getLeadingComments(sourceText, expression.condition),
+          trailingComments: getTrailingComments(sourceText, expression),
+          questionTokenComments: {
+            leadingComments: getTrailingComments(sourceText, expression.condition),
+            trailingComments: [],
+          },
+        }
+      }
+
+      function getConditionalElementComments(elem: TS.JsxExpression): ParsedComments {
+        if (elem.expression == null || !TS.isConditionalExpression(elem.expression)) {
+          return emptyComments
+        }
+        const comments = getConditionalExpressionComments(elem.expression)
+        const childrenOfExpression = elem.getChildren(sourceFile)
+        const lastChild = childrenOfExpression[childrenOfExpression.length - 1]
+        comments.trailingComments.push(...getLeadingComments(sourceText, lastChild))
+
+        return comments
+      }
+
       for (const elem of toParse) {
         switch (elem.kind) {
           case TS.SyntaxKind.JsxFragment:
@@ -1832,7 +1865,10 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.ConditionalExpression: {
-            const possibleCondition = handleConditionalExpression(elem, emptyComments)
+            const possibleCondition = handleConditionalExpression(
+              elem,
+              getConditionalExpressionComments(elem),
+            )
             if (isLeft(possibleCondition)) {
               return possibleCondition
             } else {
@@ -1845,25 +1881,10 @@ export function parseOutJSXElements(
               left('Expression fallback.')
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
-              const leadingComments = [...getLeadingComments(sourceText, elem.expression.condition)]
-
-              const questionTokenComments = {
-                leadingComments: [...getTrailingComments(sourceText, elem.expression.condition)],
-                trailingComments: [],
-              }
-
-              const childrenOfExpression = elem.getChildren(sourceFile)
-              const lastChild = childrenOfExpression[childrenOfExpression.length - 1]
-              const trailingComments = [
-                ...getTrailingComments(sourceText, elem.expression),
-                ...getLeadingComments(sourceText, lastChild),
-              ]
-
-              parseResult = handleConditionalExpression(elem.expression, {
-                leadingComments: leadingComments,
-                trailingComments: trailingComments,
-                questionTokenComments: questionTokenComments,
-              })
+              parseResult = handleConditionalExpression(
+                elem.expression,
+                getConditionalElementComments(elem),
+              )
             }
             // Fallback to arbitrary block parsing.
             if (isLeft(parseResult)) {
@@ -2092,11 +2113,17 @@ export function parseOutJSXElements(
       WithParserMetadata<SuccessfullyParsedElement>
     >(
       (condition, whenTrue, whenFalse) => {
-        const uid = getUIDBasedOnElement(sourceFile, null, condition.value, alreadyExistingUIDs)
+        const uid = getUIDBasedOnElement(
+          sourceFile,
+          null,
+          condition.value,
+          alreadyExistingUIDs,
+          comments,
+        )
         const conditionalExpression = jsxConditionalExpression(
           uid,
           condition.value,
-          expression.condition.getFullText(sourceFile).trim(),
+          expression.condition.getText(sourceFile).trim(), // getText does not include comments
           whenTrue.value,
           whenFalse.value,
           comments,

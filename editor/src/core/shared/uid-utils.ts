@@ -1,6 +1,7 @@
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
+import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
@@ -27,6 +28,7 @@ import {
   JSXFragment,
   jsxFragment,
   JSXTextBlock,
+  ParsedComments,
   setJSXAttributesAttribute,
   TopLevelElement,
 } from './element-template'
@@ -42,6 +44,7 @@ import * as PP from './property-path'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
+export const COMMENT_FLAG_UIDS: { current: Set<string> } = { current: new Set<string>() }
 
 export function generateMockNextGeneratedUID(): string | null {
   if (
@@ -91,7 +94,18 @@ const atoz = [
 export function generateConsistentUID(
   existingIDs: Set<string>,
   possibleStartingValue: string,
+  comments: ParsedComments = emptyComments,
 ): string {
+  const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
+  if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
+    const { value } = commentFlag
+    COMMENT_FLAG_UIDS.current.add(value)
+    return value
+  }
+  if (COMMENT_FLAG_UIDS.current.has(possibleStartingValue)) {
+    return possibleStartingValue
+  }
+
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     if (possibleStartingValue.length >= 3) {

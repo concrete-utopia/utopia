@@ -20,7 +20,6 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 import { navigatorDepth } from './navigator-utils'
 import { compose3Optics, Optic } from '../../core/shared/optics/optics'
@@ -136,33 +135,36 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional1
           [].length === 0 ? (
+            // @utopia/uid=conditional2
+            [].length === 0 ? (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='then-then-div'
+                data-testid='then-then-div'
+              />
+            ) : null
+          ) : (
             <div
               style={{
                 height: 150,
-                width: 150,
                 position: 'absolute',
                 left: 154,
                 top: 134,
-                backgroundColor: 'lightblue',
               }}
-              data-uid='then-then-div'
-              data-testid='then-then-div'
+              data-uid='else-div'
+              data-testid='else-div'
             />
-          ) : null
-        ) : (
-          <div
-            style={{
-              height: 150,
-              position: 'absolute',
-              left: 154,
-              top: 134,
-            }}
-            data-uid='else-div'
-            data-testid='else-div'
-          />
-        )}
+          )}
         <div
           style={{
             height: 150,
@@ -209,20 +211,24 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
-          [].length === 0 ? null : null
-        ) : (
-          <div
-            style={{
-              height: 150,
-              position: 'absolute',
-              left: 154,
-              top: 134,
-            }}
-            data-uid='else-div'
-            data-testid='else-div'
-          />
-        )}
+        {
+          // @utopia/uid=conditional1
+          [].length === 0 ? (
+            // @utopia/uid=conditional2
+            [].length === 0 ? null : null
+          ) : (
+            <div
+              style={{
+                height: 150,
+                position: 'absolute',
+                left: 154,
+                top: 134,
+              }}
+              data-uid='else-div'
+              data-testid='else-div'
+            />
+          )
+        }
         <div
           style={{
             height: 150,
@@ -262,19 +268,6 @@ describe('conditionals in the navigator', () => {
     // TODO: Fill this out.
   })
   it('dragging into an empty active clause, takes the place of the empty value', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeEmptyActive(),
       'await-first-dom-report',
@@ -369,23 +362,6 @@ describe('conditionals in the navigator', () => {
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
   it('dragging into an empty inactive clause, takes the place of the empty value', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -476,25 +452,7 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-else
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
-
   it('dragging out of an inactive clause, replaces with null', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -596,25 +554,7 @@ describe('conditionals in the navigator', () => {
       regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
-
   it('dragging out of an active clause, replaces with null', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
-    ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     expect(
@@ -703,7 +643,6 @@ describe('conditionals in the navigator', () => {
       regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
-
   xit('dragging into child of an active clause, works as it would without the conditional', () => {
     // TODO: Fill this out.
   })
