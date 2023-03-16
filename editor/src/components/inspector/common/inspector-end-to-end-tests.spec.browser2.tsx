@@ -2457,7 +2457,6 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional1
                 // @utopia/conditional=true
-                // @utopia/uid=conditional1
                 true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
@@ -2465,7 +2464,6 @@ describe('inspector tests with real metadata', () => {
                 )
               }
               {
-                // @utopia/uid=conditional2
                 // @utopia/uid=conditional2
                 true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
@@ -2502,7 +2500,6 @@ describe('inspector tests with real metadata', () => {
             {
               // @utopia/uid=conditional1
               // @utopia/conditional=false
-              // @utopia/uid=conditional1
               true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
@@ -2512,7 +2509,6 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional2
                 // @utopia/conditional=false
-                // @utopia/uid=conditional2
                 true ? (
                   <div data-uid='ddd' data-testid='ddd'>baz</div>
                   ) : (
@@ -2542,7 +2538,6 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional1
                 // @utopia/conditional=true
-                // @utopia/uid=conditional1
                 true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
@@ -2552,7 +2547,6 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional2
                 // @utopia/conditional=true
-                // @utopia/uid=conditional2
                 true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
               ) : (
@@ -2580,14 +2574,12 @@ describe('inspector tests with real metadata', () => {
             <div data-uid='aaa'>
               {
                 // @utopia/uid=conditional1
-                // @utopia/uid=conditional1
                 true ? (
                 <div data-uid='bbb' data-testid='bbb'>foo</div>
               ) : (
                 <div data-uid='ccc' data-testid='ccc'>bar</div>
               )}
               {
-                // @utopia/uid=conditional2
                 // @utopia/uid=conditional2
                 true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>

@@ -96,7 +96,7 @@ export function findUtopiaCommentFlag(
   return commentConds.length > 0 ? commentConds[0] : null
 }
 
-function allComments(comments: ParsedComments | null): Comment[] {
+export function allComments(comments: ParsedComments | null): Comment[] {
   if (comments == null) {
     return []
   }

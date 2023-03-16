@@ -49,7 +49,6 @@ describe('conditionals', () => {
             <div data-uid='aaa'>
               {
                 // @utopia/uid=conditional
-                // @utopia/uid=conditional
                 true ? null : (
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 )
@@ -85,7 +84,6 @@ describe('conditionals', () => {
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
-                // @utopia/uid=conditional
                 // @utopia/uid=conditional
                 true ? null : 'there'
               }
