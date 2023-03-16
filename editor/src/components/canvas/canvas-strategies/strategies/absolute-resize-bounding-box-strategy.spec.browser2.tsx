@@ -322,6 +322,28 @@ async function doDblClickTest(
   return div
 }
 
+async function doSnapDrag(
+  editor: EditorRenderResult,
+  delta: { x: number; y: number },
+  edgePosition: EdgePosition,
+  callback: () => Promise<void>,
+) {
+  const canvasControl = editor.renderedDOM.getByTestId(
+    `resize-control-${edgePosition.x}-${edgePosition.y}`,
+  )
+
+  const resizeCornerBounds = canvasControl.getBoundingClientRect()
+  const startPoint = windowPoint({
+    x: resizeCornerBounds.x + 2,
+    y: resizeCornerBounds.y + 2,
+  })
+
+  await mouseDragFromPointWithDelta(canvasControl, startPoint, delta, {
+    modifiers: emptyModifiers,
+    midDragCallback: callback,
+  })
+}
+
 const projectForEdgeDblClick = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -1329,32 +1351,12 @@ export var storyboard = (
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
 
-      const canvasControl = editor.renderedDOM.getByTestId(
-        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
-      )
-
-      const resizeCornerBounds = canvasControl.getBoundingClientRect()
-      const startPoint = windowPoint({
-        x: resizeCornerBounds.x + 2,
-        y: resizeCornerBounds.y + 2,
+      await doSnapDrag(editor, { x: 0, y: -147 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(1)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('YAxisGuideline')
       })
-
-      await mouseDragFromPointWithDelta(
-        canvasControl,
-        startPoint,
-        { x: 0, y: -147 },
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-            ).toEqual(1)
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-            ).toEqual('YAxisGuideline')
-          },
-        },
-      )
     })
     it('vertical snap lines are shown when resizing a multiselection', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1362,33 +1364,12 @@ export var storyboard = (
         'await-first-dom-report',
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
-
-      const canvasControl = editor.renderedDOM.getByTestId(
-        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
-      )
-
-      const resizeCornerBounds = canvasControl.getBoundingClientRect()
-      const startPoint = windowPoint({
-        x: resizeCornerBounds.x + 2,
-        y: resizeCornerBounds.y + 2,
+      await doSnapDrag(editor, { x: -114, y: 0 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(1)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('XAxisGuideline')
       })
-
-      await mouseDragFromPointWithDelta(
-        canvasControl,
-        startPoint,
-        { x: -114, y: 0 },
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-            ).toEqual(1)
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-            ).toEqual('XAxisGuideline')
-          },
-        },
-      )
     })
     it('both vertical and horizontal snap lines are shown when resizing a multiselection', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1396,36 +1377,15 @@ export var storyboard = (
         'await-first-dom-report',
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
-
-      const canvasControl = editor.renderedDOM.getByTestId(
-        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
-      )
-
-      const resizeCornerBounds = canvasControl.getBoundingClientRect()
-      const startPoint = windowPoint({
-        x: resizeCornerBounds.x + 2,
-        y: resizeCornerBounds.y + 2,
+      await doSnapDrag(editor, { x: -114, y: -147 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(2)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('XAxisGuideline')
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+        ).toEqual('YAxisGuideline')
       })
-
-      await mouseDragFromPointWithDelta(
-        canvasControl,
-        startPoint,
-        { x: -114, y: -147 },
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-            ).toEqual(2)
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-            ).toEqual('XAxisGuideline')
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
-            ).toEqual('YAxisGuideline')
-          },
-        },
-      )
     })
 
     describe('groups', () => {
@@ -1436,33 +1396,14 @@ export var storyboard = (
           'await-first-dom-report',
         )
         await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
-
-        const canvasControl = editor.renderedDOM.getByTestId(
-          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
-        )
-
-        const resizeCornerBounds = canvasControl.getBoundingClientRect()
-        const startPoint = windowPoint({
-          x: resizeCornerBounds.x + 2,
-          y: resizeCornerBounds.y + 2,
+        await doSnapDrag(editor, { x: -121, y: 0 }, EdgePositionBottomLeft, async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+          ).toEqual('XAxisGuideline')
         })
-
-        await mouseDragFromPointWithDelta(
-          canvasControl,
-          startPoint,
-          { x: -121, y: 0 },
-          {
-            modifiers: emptyModifiers,
-            midDragCallback: async () => {
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-              ).toEqual(1)
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-              ).toEqual('XAxisGuideline')
-            },
-          },
-        )
       })
       it('horizontal snap lines are shown when resizing a fragment', async () => {
         const editor = await renderTestEditorWithCode(
@@ -1470,33 +1411,14 @@ export var storyboard = (
           'await-first-dom-report',
         )
         await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
-
-        const canvasControl = editor.renderedDOM.getByTestId(
-          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
-        )
-
-        const resizeCornerBounds = canvasControl.getBoundingClientRect()
-        const startPoint = windowPoint({
-          x: resizeCornerBounds.x + 2,
-          y: resizeCornerBounds.y + 2,
+        await doSnapDrag(editor, { x: -10, y: 40 }, EdgePositionBottomLeft, async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+          ).toEqual('YAxisGuideline')
         })
-
-        await mouseDragFromPointWithDelta(
-          canvasControl,
-          startPoint,
-          { x: 0, y: 39 },
-          {
-            modifiers: emptyModifiers,
-            midDragCallback: async () => {
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-              ).toEqual(1)
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-              ).toEqual('XAxisGuideline')
-            },
-          },
-        )
       })
       it('both snap lines are shown when resizing a fragment', async () => {
         const editor = await renderTestEditorWithCode(
@@ -1504,70 +1426,66 @@ export var storyboard = (
           'await-first-dom-report',
         )
         await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
-
-        const canvasControl = editor.renderedDOM.getByTestId(
-          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
-        )
-
-        const resizeCornerBounds = canvasControl.getBoundingClientRect()
-        const startPoint = windowPoint({
-          x: resizeCornerBounds.x + 2,
-          y: resizeCornerBounds.y + 2,
+        await doSnapDrag(editor, { x: -121, y: 39 }, EdgePositionBottomLeft, async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            2,
+          )
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+          ).toEqual('XAxisGuideline')
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+          ).toEqual('YAxisGuideline')
         })
-
-        await mouseDragFromPointWithDelta(
-          canvasControl,
-          startPoint,
-          { x: -121, y: 39 },
-          {
-            modifiers: emptyModifiers,
-            midDragCallback: async () => {
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-              ).toEqual(2)
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-              ).toEqual('XAxisGuideline')
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-              ).toEqual('YAxisGuideline')
-            },
-          },
-        )
       })
+
       it('vertical snap lines are shown when resizing a sizeless div', async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroupsForResize,
           'await-first-dom-report',
         )
         await selectComponentsForTest(editor, [EP.fromString('sb/group')])
-
-        const canvasControl = editor.renderedDOM.getByTestId(
-          `resize-control-${EdgePositionBottomLeft.x}-${EdgePositionBottomLeft.y}`,
-        )
-
-        const resizeCornerBounds = canvasControl.getBoundingClientRect()
-        const startPoint = windowPoint({
-          x: resizeCornerBounds.x + 2,
-          y: resizeCornerBounds.y + 2,
+        await doSnapDrag(editor, { x: -61, y: 0 }, EdgePositionBottomLeft, async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+          ).toEqual('XAxisGuideline')
         })
-
-        await mouseDragFromPointWithDelta(
-          canvasControl,
-          startPoint,
-          { x: -61, y: 0 },
-          {
-            modifiers: emptyModifiers,
-            midDragCallback: async () => {
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-              ).toEqual(1)
-              expect(
-                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-              ).toEqual('YAxisGuideline')
-            },
-          },
+      })
+      it('horizontal snap lines are shown when resizing a sizeless div', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupsForResize,
+          'await-first-dom-report',
         )
+        await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+        await doSnapDrag(editor, { x: 0, y: -40 }, EdgePositionTopLeft, async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+          ).toEqual('YAxisGuideline')
+        })
+      })
+      it('both snap lines are shown when resizing a sizeless div', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupsForResize,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+        await doSnapDrag(editor, { x: -61, y: -40 }, EdgePositionTopLeft, async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            2,
+          )
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+          ).toEqual('XAxisGuideline')
+          expect(
+            editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+          ).toEqual('YAxisGuideline')
+        })
       })
     })
   })
