@@ -13,7 +13,8 @@ import {
   roundRectangleToNearestWhole,
   segmentIntersection,
 } from '../../../core/shared/math-utils'
-import { useColorTheme } from '../../../uuiui'
+import { bold, useColorTheme } from '../../../uuiui'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import {
   Substores,
   useEditorState,

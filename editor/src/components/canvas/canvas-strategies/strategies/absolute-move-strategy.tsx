@@ -22,7 +22,7 @@ export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const targets = getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget))
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   const isApplicable =

@@ -73,7 +73,6 @@ import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { fireEvent } from '@testing-library/react'
 import { FeatureName, isFeatureEnabled, setFeatureEnabled } from './feature-switches'
-import { ContentAffectingType } from '../components/canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../core/shared/uid-utils'
 
 export function delay(time: number): Promise<void> {
