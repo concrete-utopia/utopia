@@ -1649,7 +1649,6 @@ function getUIDBasedOnElement(
   elementName: JSXElementName | string | null,
   props: JSXAttributes | JSXAttribute,
   alreadyExistingUIDs: Set<string>,
-  comments: ParsedComments = emptyComments,
 ): string {
   const cleansedProps = Array.isArray(props)
     ? clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
@@ -1659,7 +1658,7 @@ function getUIDBasedOnElement(
     name: elementName,
     props: cleansedProps,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash, comments)
+  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
   alreadyExistingUIDs.add(uid)
   return uid
 }
@@ -1672,13 +1671,7 @@ function forciblyUpdateDataUID(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): UpdateUIDResult {
-  const uid = getUIDBasedOnElement(
-    sourceFile,
-    elementName,
-    props,
-    alreadyExistingUIDs,
-    mergeComments(props.map((p) => p.comments)),
-  )
+  const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
   const updatedProps = setJSXAttributesAttribute(
     props,
     'data-uid',
@@ -1698,18 +1691,17 @@ function forciblyUpdateDataUID(
   }
 }
 
-function createJSXElementOrFragmentAllocatingUID(
+function makeNewUIDFromOriginatingElement(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
   name: JSXElementName | null, // if name is null we create a fragment
   props: JSXAttributes,
-  children: JSXElementChildren,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-  imports: Imports,
-): WithParserMetadata<SuccessfullyParsedElement> {
-  const dataUIDAttribute = parseUID(props)
-  const { uid: newUID, attributes: updatedProps } = foldEither(
+  comments: ParsedComments = emptyComments,
+) {
+  const dataUIDAttribute = parseUID(props, comments)
+  return foldEither(
     (_) => {
       return forciblyUpdateDataUID(
         sourceFile,
@@ -1748,6 +1740,26 @@ function createJSXElementOrFragmentAllocatingUID(
       }
     },
     dataUIDAttribute,
+  )
+}
+
+function createJSXElementOrFragmentAllocatingUID(
+  sourceFile: TS.SourceFile,
+  originatingElement: TS.Node,
+  name: JSXElementName | null, // if name is null we create a fragment
+  props: JSXAttributes,
+  children: JSXElementChildren,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  imports: Imports,
+): WithParserMetadata<SuccessfullyParsedElement> {
+  const { uid: newUID, attributes: updatedProps } = makeNewUIDFromOriginatingElement(
+    sourceFile,
+    originatingElement,
+    name,
+    props,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
   )
 
   const startPosition = TS.getLineAndCharacterOfPosition(
@@ -2113,10 +2125,12 @@ export function parseOutJSXElements(
       WithParserMetadata<SuccessfullyParsedElement>
     >(
       (condition, whenTrue, whenFalse) => {
-        const uid = getUIDBasedOnElement(
+        const { uid, attributes } = makeNewUIDFromOriginatingElement(
           sourceFile,
+          expression,
           null,
-          condition.value,
+          [jsxAttributesEntry('condition', condition.value, emptyComments)],
+          existingHighlightBounds,
           alreadyExistingUIDs,
           comments,
         )
@@ -2128,13 +2142,9 @@ export function parseOutJSXElements(
           whenFalse.value,
           comments,
         )
-        highlightBounds = {
-          ...highlightBounds,
-          [uid]: buildHighlightBounds(sourceFile, expression, uid),
-        }
         return withParserMetadata(
           successfullyParsedElement(sourceFile, expression, conditionalExpression),
-          highlightBounds,
+          attributes.highlightBounds,
           propsUsed,
           definedElsewhere,
         )

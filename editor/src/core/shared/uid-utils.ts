@@ -94,14 +94,7 @@ const atoz = [
 export function generateConsistentUID(
   existingIDs: Set<string>,
   possibleStartingValue: string,
-  comments: ParsedComments = emptyComments,
 ): string {
-  const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
-  if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
-    const { value } = commentFlag
-    COMMENT_FLAG_UIDS.current.add(value)
-    return value
-  }
   if (COMMENT_FLAG_UIDS.current.has(possibleStartingValue)) {
     return possibleStartingValue
   }
@@ -199,7 +192,17 @@ export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): 
   }
 }
 
-export function parseUID(attributes: JSXAttributes): Either<string, string> {
+export function parseUID(
+  attributes: JSXAttributes,
+  comments: ParsedComments,
+): Either<string, string> {
+  const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
+  if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
+    const { value } = commentFlag
+    COMMENT_FLAG_UIDS.current.add(value)
+    return right(value)
+  }
+
   const uidAttribute = getModifiableJSXAttributeAtPath(attributes, UtopiaIDPropertyPath)
   const uidValue = flatMapEither(jsxSimpleAttributeToValue, uidAttribute)
   return flatMapEither((uid) => {
