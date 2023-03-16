@@ -57,7 +57,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
+import { applyMoveCommon, flattenSelection } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import {
@@ -74,7 +74,7 @@ export function convertToAbsoluteAndMoveStrategy(
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
   const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
-  const filteredSelectedElements = getDragTargets(targets)
+  const filteredSelectedElements = flattenSelection(targets)
   if (
     filteredSelectedElements.length === 0 ||
     !filteredSelectedElements.every((element) => {
@@ -247,7 +247,7 @@ export function getEscapeHatchCommands(
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const selectedElements = getDragTargets(_selectedElements)
+  const selectedElements = flattenSelection(_selectedElements)
   if (selectedElements.length === 0) {
     return { commands: [], intendedBounds: [] }
   }

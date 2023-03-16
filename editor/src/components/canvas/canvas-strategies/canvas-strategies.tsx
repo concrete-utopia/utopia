@@ -45,7 +45,7 @@ import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
-import { getDragTargets } from './strategies/shared-move-strategies-helpers'
+import { flattenSelection } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
@@ -119,7 +119,7 @@ const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStr
     interactionSession: InteractionSession | null,
     customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
-    const selectedElements = getDragTargets(
+    const selectedElements = flattenSelection(
       getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
     )
 

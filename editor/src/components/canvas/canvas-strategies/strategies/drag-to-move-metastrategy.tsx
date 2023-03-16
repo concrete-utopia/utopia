@@ -24,7 +24,7 @@ import { flexReorderStrategy } from './flex-reorder-strategy'
 import { flowReorderStrategy } from './flow-reorder-strategy'
 import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 import * as EP from '../../../../core/shared/element-path'
 
 type MoveStrategyFactory = (
@@ -45,7 +45,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
-  const selectedElements = getDragTargets(
+  const selectedElements = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
 

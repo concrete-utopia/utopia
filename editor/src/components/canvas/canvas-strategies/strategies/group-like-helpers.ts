@@ -10,14 +10,14 @@ import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function retargetStrategyToChildrenOfContentAffectingElements(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  const targetsWithoutDescedants = getDragTargets(targets)
+  const targetsWithoutDescedants = flattenSelection(targets)
 
   return replaceContentAffectingPathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,

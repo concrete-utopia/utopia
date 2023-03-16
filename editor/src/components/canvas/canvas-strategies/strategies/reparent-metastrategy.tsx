@@ -30,7 +30,7 @@ import {
   ReparentTarget,
 } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 interface ReparentFactoryAndDetails {
   targetParent: ElementPath
@@ -180,7 +180,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ) => {
-  const reparentSubjects = getDragTargets(
+  const reparentSubjects = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
 
