@@ -12,7 +12,14 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { canvasPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  getRegularNavigatorTargets,
+} from './group-like-helpers.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 
 const TestProject = (direction: string) => `
 <div
@@ -46,7 +53,20 @@ const TestProject = (direction: string) => `
   />
 </div>`
 
-const TestProjectWithFragment = (direction: string) => `
+const TestProjectWithFragment = (type: ContentAffectingType, direction: string) => {
+  FOR_TESTS_setNextGeneratedUids([
+    'skip1',
+    'skip2',
+    'skip3',
+    'skip4',
+    'skip5',
+    'skip6',
+    'skip7',
+    'skip8',
+    'skip9',
+    'children-affecting',
+  ])
+  return `
 <div
   data-uid='aaa'
   style={{ display: 'flex', gap: 10, flexDirection: '${direction}' }}
@@ -60,10 +80,10 @@ const TestProjectWithFragment = (direction: string) => `
       backgroundColor: 'green',
     }}
   />
-  <>
+  ${getOpeningGroupLikeTag(type)}
     <div
-      data-uid='child-1'
-      data-testid='child-1'
+      data-uid='fragment-child-1'
+      data-testid='fragment-child-1'
       style={{
         width: 50,
         height: 50,
@@ -71,15 +91,15 @@ const TestProjectWithFragment = (direction: string) => `
       }}
     />
     <div
-      data-uid='child-2'
-      data-testid='child-2'
+      data-uid='fragment-child-2'
+      data-testid='fragment-child-2'
       style={{
         width: 50,
         height: 50,
         backgroundColor: 'purple',
       }}
     />
-  </>
+    ${getClosingGroupLikeTag(type)}
   <div
     data-uid='child-3'
     data-testid='child-3'
@@ -90,6 +110,7 @@ const TestProjectWithFragment = (direction: string) => `
     }}
   />
 </div>`
+}
 
 const TestProjectAbsoluteSibling = `
 <div
@@ -183,383 +204,19 @@ const TestProjectWithFragmentAbsoluteSibling = `
 </div>
 `
 describe('Flex Reorder Strategy', () => {
-  it('does not activate when drag threshold is not reached', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject('row')),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
-    await mouseDragFromPointWithDelta(
-      canvasControlsLayer,
-      startPoint,
-      canvasPoint({ x: 1, y: 1 }),
-      {
-        modifiers: emptyModifiers,
-      },
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(TestProject('row')),
-    )
-  })
-  it('works with normal direction', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject('row')),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(
-      canvasControlsLayer,
-      startPoint,
-      canvasPoint({ x: 62, y: 0 }),
-      {
-        modifiers: emptyModifiers,
-        midDragCallback: async () => {
-          expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-            'FLEX_REORDER',
-          )
-          expect(
-            renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-          ).toEqual(2)
-        },
-      },
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-      <div
-        data-uid='aaa'
-        style={{ display: 'flex', gap: 10, flexDirection: 'row' }}
-      >
-        <div
-          data-uid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-2'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'purple',
-          }}
-        />
-        <div
-          data-uid='child-1'
-          data-testid='child-1'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'blue',
-          }}
-        />
-      </div>`),
-    )
-  })
-  it('excludes absolute siblings', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProjectAbsoluteSibling),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(
-      canvasControlsLayer,
-      startPoint,
-      canvasPoint({ x: 62, y: 0 }),
-      {
-        modifiers: emptyModifiers,
-        midDragCallback: async () => {
-          expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-            'FLEX_REORDER',
-          )
-          expect(
-            renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-          ).toEqual(3)
-        },
-      },
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-      <div
-        data-uid='aaa'
-        style={{ display: 'flex', gap: 10 }}
-      >
-        <div
-          data-uid='absolute-child'
-          style={{
-            position: 'absolute',
-            top: 100,
-            left: 50,
-            width: 50,
-            height: 50,
-            backgroundColor: 'yellow',
-          }}
-        />
-        <div
-          data-uid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-2'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'purple',
-          }}
-        />
-        <div
-          data-uid='child-1'
-          data-testid='child-1'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'blue',
-          }}
-        />
-      </div>`),
-    )
-  })
-  it('works with reverse direction', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject('row-reverse')),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(
-      canvasControlsLayer,
-      startPoint,
-      canvasPoint({ x: 62, y: 0 }),
-      {
-        modifiers: emptyModifiers,
-        midDragCallback: async () => {
-          expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-            'FLEX_REORDER',
-          )
-          expect(
-            renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-          ).toEqual(0)
-        },
-      },
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-      <div
-        data-uid='aaa'
-        style={{
-          display: 'flex',
-          gap: 10,
-          flexDirection: 'row-reverse',
-        }}
-      >
-        <div
-          data-uid='child-1'
-          data-testid='child-1'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'blue',
-          }}
-        />
-        <div
-          data-uid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-2'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'purple',
-          }}
-        />
-      </div>`),
-    )
-  })
-
-  describe('flex reorder, with a fragment as a sibling', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
-    it('works with normal direction', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row')),
-        'await-first-dom-report',
-      )
-
-      const targetElement = renderResult.renderedDOM.getByTestId('child-3')
-      const targetElementBounds = targetElement.getBoundingClientRect()
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-      await mouseDragFromPointWithDelta(
-        canvasControlsLayer,
-        startPoint,
-        canvasPoint({ x: -20, y: 0 }),
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-              'FLEX_REORDER',
-            )
-          },
-        },
-      )
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-        'utopia-storyboard-uid',
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
-      ])
-    })
-    it('excludes absolute siblings', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
-        'await-first-dom-report',
-      )
-
-      const targetElement = renderResult.renderedDOM.getByTestId('child-3')
-      const targetElementBounds = targetElement.getBoundingClientRect()
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-      await mouseDragFromPointWithDelta(
-        canvasControlsLayer,
-        startPoint,
-        canvasPoint({ x: -20, y: 0 }),
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-              'FLEX_REORDER',
-            )
-          },
-        },
-      )
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-
-      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-        'utopia-storyboard-uid',
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
-      ])
-    })
-
-    it('works with reverse direction', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row-reverse')),
-        'await-first-dom-report',
-      )
-
-      const targetElement = renderResult.renderedDOM.getByTestId('child-3')
-      const targetElementBounds = targetElement.getBoundingClientRect()
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-      await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-
-      await mouseDragFromPointWithDelta(
-        canvasControlsLayer,
-        startPoint,
-        canvasPoint({ x: 100, y: 0 }),
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
-              'FLEX_REORDER',
-            )
-          },
-        },
-      )
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-        'utopia-storyboard-uid',
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment, despite the drag delta pointing to the right
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
-      ])
-    })
-  })
-
-  xdescribe('projects with fragments, with fragments support enabled', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
+  describe('normal reorder scenarios', () => {
     it('does not activate when drag threshold is not reached', async () => {
       const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row')),
+        makeTestProjectCodeWithSnippet(TestProject('row')),
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
       const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
       await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-      await pressKey('Escape')
       await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
       await mouseDragFromPointWithDelta(
         canvasControlsLayer,
@@ -572,22 +229,21 @@ describe('Flex Reorder Strategy', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row')),
+        makeTestProjectCodeWithSnippet(TestProject('row')),
       )
     })
     it('works with normal direction', async () => {
       const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row')),
+        makeTestProjectCodeWithSnippet(TestProject('row')),
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
       const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
       await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-      await pressKey('Escape')
       await mouseDragFromPointWithDelta(
         canvasControlsLayer,
         startPoint,
@@ -642,17 +298,16 @@ describe('Flex Reorder Strategy', () => {
     })
     it('excludes absolute siblings', async () => {
       const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
+        makeTestProjectCodeWithSnippet(TestProjectAbsoluteSibling),
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
       const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
       await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-      await pressKey('Escape')
       await mouseDragFromPointWithDelta(
         canvasControlsLayer,
         startPoint,
@@ -719,17 +374,16 @@ describe('Flex Reorder Strategy', () => {
     })
     it('works with reverse direction', async () => {
       const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment('row-reverse')),
+        makeTestProjectCodeWithSnippet(TestProject('row-reverse')),
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
       const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
       await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-      await pressKey('Escape')
       await mouseDragFromPointWithDelta(
         canvasControlsLayer,
         startPoint,
@@ -785,6 +439,441 @@ describe('Flex Reorder Strategy', () => {
         />
       </div>`),
       )
+    })
+  })
+
+  describe('flex reorder, with a group-like element as a sibling', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+    setFeatureForBrowserTests('Conditional support', true)
+    ;(['conditional'] as const).forEach((type) => {
+      describe(`– group-like element ${type} –`, () => {
+        it('works with normal direction', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row')),
+            'await-first-dom-report',
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 starts out as the last element
+          ])
+
+          const targetElement = renderResult.renderedDOM.getByTestId('child-3')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: -20, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-2',
+          ])
+        })
+
+        xit('excludes absolute siblings', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('child-3')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: -20, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+            'utopia-storyboard-uid',
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+          ])
+        })
+
+        it('works with reverse direction', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row-reverse')),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('child-3')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: 100, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+            'utopia-storyboard-uid',
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment, despite the drag delta pointing to the right
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+          ])
+        })
+      })
+    })
+  })
+
+  xdescribe('projects with fragments, with fragments support enabled', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+    setFeatureForBrowserTests('Conditional support', true)
+
+    AllContentAffectingTypes.forEach((type) => {
+      describe(`– group-like element ${type} – `, () => {
+        it('does not activate when drag threshold is not reached', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row')),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await pressKey('Escape')
+          await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: emptyModifiers })
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: 1, y: 1 }),
+            {
+              modifiers: emptyModifiers,
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row')),
+          )
+        })
+
+        it('dragging the group-like element reorders the entire element', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row')),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await pressKey('Escape')
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: 62, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+                expect(
+                  renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+                ).toEqual(2)
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{ display: 'flex', gap: 10, flexDirection: 'row' }}
+        >
+          <div
+            data-uid='child-0'
+            data-testid='child-0'
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: 'green',
+            }}
+          />
+          <div
+            data-uid='child-3'
+            data-testid='child-3'
+            style={{
+              width: 50,
+              height: 50,
+              backgroundColor: 'yellow',
+            }}
+          />
+          ${getOpeningGroupLikeTag(type)}
+            <div
+              data-uid='fragment-child-1'
+              data-testid='fragment-child-1'
+              style={{
+                width: 50,
+                height: 50,
+                backgroundColor: 'blue',
+              }}
+            />
+            <div
+              data-uid='fragment-child-2'
+              data-testid='fragment-child-2'
+              style={{
+                width: 50,
+                height: 50,
+                backgroundColor: 'purple',
+              }}
+            />
+          ${getClosingGroupLikeTag(type)}
+        </div>`),
+          )
+        })
+
+        it('excludes absolute siblings', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await pressKey('Escape')
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: 62, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+                expect(
+                  renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+                ).toEqual(3)
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{ display: 'flex', gap: 10 }}
+      >
+        <div
+          data-uid='absolute-child'
+          style={{
+            position: 'absolute',
+            top: 100,
+            left: 50,
+            width: 50,
+            height: 50,
+            backgroundColor: 'yellow',
+          }}
+        />
+        <div
+          data-uid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-2'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+        <div
+          data-uid='child-1'
+          data-testid='child-1'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'blue',
+          }}
+        />
+      </div>`),
+          )
+        })
+        it('works with reverse direction', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row-reverse')),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await pressKey('Escape')
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: 62, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+                expect(
+                  renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+                ).toEqual(0)
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          display: 'flex',
+          gap: 10,
+          flexDirection: 'row-reverse',
+        }}
+      >
+        <div
+          data-uid='child-1'
+          data-testid='child-1'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'blue',
+          }}
+        />
+        <div
+          data-uid='child-0'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'green',
+          }}
+        />
+        <div
+          data-uid='child-2'
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: 'purple',
+          }}
+        />
+      </div>`),
+          )
+        })
+      })
     })
   })
 })
