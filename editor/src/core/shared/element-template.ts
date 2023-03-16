@@ -1099,10 +1099,10 @@ function fixJSXConditionalExpressionCondition(
     ...condition,
     comments: {
       ...fixBaseComments(condition.comments, flatComments),
-      questionTokenComments: fixBaseComments(
-        condition.comments.questionTokenComments ?? emptyComments,
-        flatComments,
-      ),
+      questionTokenComments:
+        condition.comments.questionTokenComments != null
+          ? fixBaseComments(condition.comments.questionTokenComments, flatComments)
+          : undefined,
     },
   }
 }
