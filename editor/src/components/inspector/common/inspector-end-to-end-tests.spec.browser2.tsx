@@ -2595,7 +2595,8 @@ describe('inspector tests with real metadata', () => {
       const startSnippet = `
       <div data-uid='aaa'>
         {
-          [].length === 0 /* @utopia/uid=conditional */ ? (
+          // @utopia/uid=conditional
+          [].length === 0 ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2622,11 +2623,13 @@ describe('inspector tests with real metadata', () => {
     it('allows changing the expression', async () => {
       const startSnippet = `
       <div data-uid='aaa'>
-        {[].length === 0 /* @utopia/uid=conditional */ ? (
-          <div data-uid='bbb' data-testid='bbb'>foo</div>
-        ) : (
-          <div data-uid='ccc' data-testid='ccc'>bar</div>
-        )}
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
       </div>
       `
       const renderResult = await renderTestEditorWithCode(

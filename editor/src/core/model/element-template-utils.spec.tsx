@@ -928,7 +928,9 @@ describe('findJSXElementChildAtPath', () => {
         <div style={{ ...props.style }} data-uid='aaa'>
           <div data-uid='parent' >
             <div data-uid='child-d' />
-            {true /* @utopia/uid=conditional-1 */ ? 
+            {
+              // @utopia/uid=conditional-1
+              true ? 
               (
                 <div data-uid='ternary-true-root'>
                   <div data-uid='ternary-true-child' />
@@ -977,7 +979,9 @@ describe('findJSXElementChildAtPath', () => {
         <div style={{ ...props.style }} data-uid='aaa'>
           <div data-uid='parent' >
             <div data-uid='child-d' />
-            {true /* @utopia/uid=conditional-1 */? 
+            {
+              // @utopia/uid=conditional-1
+              true ? 
               (
                 "hello"
               ) : (
@@ -1009,7 +1013,9 @@ describe('findJSXElementChildAtPath', () => {
         <div style={{ ...props.style }} data-uid='aaa'>
           <div data-uid='parent' >
             <div data-uid='child-d' />
-            {true /* @utopia/uid=conditional-1 */ ? 
+            {
+              // @utopia/uid=conditional-1
+              true ? 
               (
                 "hello"
               ) : (

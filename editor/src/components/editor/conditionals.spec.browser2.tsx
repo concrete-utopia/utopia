@@ -97,7 +97,8 @@ describe('conditionals', () => {
       const startSnippet = `
         <div data-uid='aaa'>
         {
-          [].length === 0 /* @utopia/uid=conditional */ ? (
+          // @utopia/uid=conditional
+          [].length === 0 ? (
             <div data-uid='bbb' data-testid='bbb'>foo</div>
           ) : (
             <div data-uid='ccc' data-testid='ccc'>bar</div>
