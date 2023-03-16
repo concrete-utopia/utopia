@@ -55,6 +55,7 @@ import {
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import { isRight } from '../../../../core/shared/either'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -1367,6 +1368,8 @@ export var storyboard = (
 
     describe('groups', () => {
       setFeatureForBrowserTests('Fragment support', true)
+      setFeatureForBrowserTests('Conditional support', true)
+
       AllContentAffectingTypes.forEach((type) => {
         describe(`– ${type} parents`, () => {
           it('vertical snap lines are shown', async () => {
@@ -1374,7 +1377,18 @@ export var storyboard = (
               projectWithGroupsForResize(type),
               'await-first-dom-report',
             )
-            await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
             await doSnapDrag(editor, { x: -121, y: 0 }, EdgePositionBottomLeft, async () => {
               expect(
                 editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
@@ -1389,7 +1403,18 @@ export var storyboard = (
               projectWithGroupsForResize(type),
               'await-first-dom-report',
             )
-            await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
             await doSnapDrag(editor, { x: -10, y: 453 }, EdgePositionBottomLeft, async () => {
               expect(
                 editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
@@ -1404,7 +1429,18 @@ export var storyboard = (
               projectWithGroupsForResize(type),
               'await-first-dom-report',
             )
-            await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
             await doSnapDrag(editor, { x: -121, y: 453 }, EdgePositionBottomLeft, async () => {
               expect(
                 editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
