@@ -189,11 +189,6 @@ import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import {
-  ConditionalClause,
-  dynamicReparentTargetParentToStaticReparentTargetParent,
-  ReparentTargetParent,
-} from './reparent-target'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 
 const ObjectPathImmutable: any = OPI
