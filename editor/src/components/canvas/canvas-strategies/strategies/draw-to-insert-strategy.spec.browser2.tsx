@@ -712,9 +712,11 @@ describe('Inserting into absolute', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,   
                 width: 40,
                 height: 50,
-                contain: 'layout',
               }}
               data-uid='ddd'
             />
@@ -790,9 +792,11 @@ describe('Inserting into absolute', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: -50,
+                top: -50,            
                 width: 100,
                 height: 100,
-                contain: 'layout',
               }}
               data-uid='ddd'
             />
@@ -968,7 +972,7 @@ describe('Inserting into absolute', () => {
   })
 })
 
-describe('Forced inserting into Static', () => {
+describe('Inserting into Static', () => {
   const inputCode = makeTestProjectCodeWithSnippet(`
     <div
       data-uid='aaa'
@@ -1001,7 +1005,7 @@ describe('Forced inserting into Static', () => {
     </div>
   `)
 
-  it('By default, it inserts as static into a flow parent', async () => {
+  it('By default, it inserts as absolute into a flow parent', async () => {
     const renderResult = await setupInsertTest(inputCode)
     await enterInsertModeFromInsertMenu(renderResult)
 
@@ -1054,9 +1058,11 @@ describe('Forced inserting into Static', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 5,
+                top: 15,
                 width: 20,
                 height: 20,
-                contain: 'layout',
               }}
               data-uid='ddd'
             />
@@ -1103,7 +1109,7 @@ describe('Forced inserting into Static', () => {
 
     await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       midDragCallback: async () => {
-        await pressKey('2') // this should select the 'Draw to Insert (Abs, Forced)' strategy
+        await pressKey('2') // this should select the 'Draw to Insert (Flow)' strategy
       },
     })
 
@@ -1134,11 +1140,9 @@ describe('Forced inserting into Static', () => {
           <div
             style={{
               backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 5,
-              top: 15,
               width: 20,
               height: 20,
+              contain: 'layout',
             }}
             data-uid='ddd'
           />
