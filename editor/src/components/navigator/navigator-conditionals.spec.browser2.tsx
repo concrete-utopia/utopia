@@ -30,6 +30,7 @@ import {
   conditionalWhenFalseOptic,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
+import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -211,23 +212,26 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional1
           [].length === 0 ? (
-            <>
-              <div
-                style={{
-                  height: 150,
-                  width: 150,
-                  position: 'absolute',
-                  left: 154,
-                  top: 134,
-                  backgroundColor: 'lightblue',
-                }}
-                data-uid='then-then-div'
-                data-testid='then-then-div'
-              />
-            </>
-          ) : null
+            // @utopia/uid=conditional2
+            [].length === 0 ? (
+              <>
+                <div
+                  style={{
+                    height: 150,
+                    width: 150,
+                    position: 'absolute',
+                    left: 154,
+                    top: 134,
+                    backgroundColor: 'lightblue',
+                  }}
+                  data-uid='then-then-div'
+                  data-testid='then-then-div'
+                />
+              </>
+            ) : null
         ) : (
           <div
             style={{
@@ -286,21 +290,24 @@ export var ${BakedInStoryboardVariableName} = (
         data-uid='containing-div'
         data-testid='containing-div'
       >
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional1
           [].length === 0 ? (
-            <div
-              style={{
-                height: 150,
-                width: 150,
-                position: 'absolute',
-                left: 154,
-                top: 134,
-                backgroundColor: 'lightblue',
-              }}
-              data-uid='then-then-div'
-              data-testid='then-then-div'
-            />
-          ) : null
+            // @utopia/uid=conditional2
+            [].length === 0 ? (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='then-then-div'
+                data-testid='then-then-div'
+              />
+            ) : null
         ) : (
           <>
             <div
@@ -423,14 +430,6 @@ describe('conditionals in the navigator', () => {
       'skip5',
       'skip6',
       'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
       'fragment',
     ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -527,25 +526,7 @@ describe('conditionals in the navigator', () => {
   })
 
   it('dragging into a non-empty active clause with a fragment wrapper, inserts into a wrapper', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'skip3',
-      'skip4',
-      'skip5',
-      'skip6',
-      'skip7',
-      'skip8',
-      'skip9',
-      'fragment',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'skip14',
-      'conditional1',
-      'conditional2',
-    ])
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'skip4', 'skip5', 'fragment'])
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeWithExistingFragment(),
       'await-first-dom-report',
@@ -652,16 +633,8 @@ describe('conditionals in the navigator', () => {
       'skip3',
       'skip4',
       'skip5',
-      'skip6',
       'skip7',
       'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
-      'skip13',
-      'conditional1',
-      'conditional2',
       'fragment',
     ])
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -764,16 +737,7 @@ describe('conditionals in the navigator', () => {
       'skip5',
       'skip6',
       'skip7',
-      'skip8',
-      'skip9',
-      'skip10',
-      'skip11',
-      'skip12',
       'fragment',
-      'skip13',
-      'skip14',
-      'conditional1',
-      'conditional2',
     ])
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeWithExistingInactiveFragment(),
