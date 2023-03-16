@@ -32,7 +32,7 @@ import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function baseReparentAsStaticStrategy(
   reparentTarget: ReparentTarget,
@@ -45,7 +45,7 @@ export function baseReparentAsStaticStrategy(
     customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    const filteredSelectedElements = getDragTargets(selectedElements)
+    const filteredSelectedElements = flattenSelection(selectedElements)
     if (
       filteredSelectedElements.length !== 1 ||
       interactionSession == null ||
@@ -128,7 +128,7 @@ function applyStaticReparent(
   reparentResult: ReparentTarget,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const filteredSelectedElements = flattenSelection(selectedElements)
 
   return ifAllowedToReparent(
     canvasState,

@@ -15,19 +15,21 @@ import { retargetStrategyToChildrenOfContentAffectingElements } from './group-li
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
-  getDragTargets,
+  flattenSelection,
 } from './shared-move-strategies-helpers'
 
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const targets = getDragTargets(getTargetPathsFromInteractionTarget(canvasState.interactionTarget))
+  const targets = flattenSelection(
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+  )
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   const isApplicable =
     retargetedTargets.length > 0 &&
-    getDragTargets(retargetedTargets).every((element) => {
+    flattenSelection(retargetedTargets).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,

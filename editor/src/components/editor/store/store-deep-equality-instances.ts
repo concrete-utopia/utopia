@@ -489,7 +489,7 @@ import {
   RepositoryEntryPermissions,
 } from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ThenOrElse } from '../../../core/model/conditionals'
+import { ConditionalCase } from '../../../core/model/conditionals'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -538,7 +538,7 @@ export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCa
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.clause,
-    createCallWithTripleEquals<ThenOrElse>(),
+    createCallWithTripleEquals<ConditionalCase>(),
     conditionalClauseNavigatorEntry,
   )
 

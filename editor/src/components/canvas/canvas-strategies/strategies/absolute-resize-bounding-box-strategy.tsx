@@ -58,7 +58,7 @@ import {
   supportsAbsoluteResize,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
-import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
@@ -66,10 +66,10 @@ export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedTargets = getDragTargets(
+  const selectedTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const retargetedTargets = getDragTargets(
+  const retargetedTargets = flattenSelection(
     retargetStrategyToChildrenOfContentAffectingElements(canvasState),
   )
 
