@@ -44,7 +44,6 @@ import * as PP from './property-path'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
-export const COMMENT_FLAG_UIDS: { current: Set<string> } = { current: new Set<string>() }
 
 export function generateMockNextGeneratedUID(): string | null {
   if (
@@ -95,10 +94,6 @@ export function generateConsistentUID(
   existingIDs: Set<string>,
   possibleStartingValue: string,
 ): string {
-  if (COMMENT_FLAG_UIDS.current.has(possibleStartingValue)) {
-    return possibleStartingValue
-  }
-
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     if (possibleStartingValue.length >= 3) {
@@ -199,7 +194,6 @@ export function parseUID(
   const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
   if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
     const { value } = commentFlag
-    COMMENT_FLAG_UIDS.current.add(value)
     return right(value)
   }
 
@@ -274,7 +268,7 @@ export function fixUtopiaElement(
   function fixJSXConditionalExpression(
     conditional: JSXConditionalExpression,
   ): JSXConditionalExpression {
-    const fixedUID = uniqueIDs.concat(conditional.uid).includes(conditional.uid)
+    const fixedUID = uniqueIDs.includes(conditional.uid)
       ? generateConsistentUID(new Set(uniqueIDs), conditional.uid)
       : conditional.uid
     uniqueIDs.push(fixedUID)
