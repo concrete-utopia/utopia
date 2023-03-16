@@ -830,7 +830,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       <InspectorSectionHeader>
         <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
           <Icons.Component color='primary' />
-          <InlineLink onClick={OpenFile}>Component</InlineLink>{' '}
+          <InlineLink onClick={OpenFile}>Component</InlineLink>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
@@ -844,9 +844,6 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       {when(
         sectionExpanded,
         <React.Fragment>
-          {/* Information about the component as a whole */}
-
-          {/* List of component props with controls */}
           {propertyControlsAndTargets.map((controlsAndTargets) => (
             <PropertyControlsSection
               key={EP.toString(controlsAndTargets.targets[0])}
