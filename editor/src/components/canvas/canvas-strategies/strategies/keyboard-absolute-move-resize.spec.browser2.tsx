@@ -19,6 +19,7 @@ import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
+import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
 
 const defaultBBBProperties = {
   left: 0,
@@ -231,7 +232,7 @@ describe('Keyboard Absolute Resize E2E', () => {
     await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
     await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
 
-    expectElementWidthOnScreen(-width)
+    expectElementWidthOnScreen(-width + ResizeMinimumValue) // the expected size is the min value
     expect(getCanvasGuidelines()).toEqual([])
 
     await pressKey('ArrowRight', { modifiers: shiftCmdModifier })
@@ -242,7 +243,7 @@ describe('Keyboard Absolute Resize E2E', () => {
     await expectElementPropertiesInPrintedCode({
       left: 10,
       top: 100,
-      width: 10,
+      width: 11,
       height: 101,
     })
   })

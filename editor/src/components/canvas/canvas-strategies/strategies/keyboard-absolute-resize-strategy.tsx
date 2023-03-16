@@ -112,6 +112,8 @@ function getFitness(interactionSession: InteractionSession | null): number {
   return 0
 }
 
+export const ResizeMinimumValue = 1
+
 export function keyboardAbsoluteResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -145,8 +147,8 @@ export function keyboardAbsoluteResizeStrategy(
           canvasRectangle(zeroRectangle)
         const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
         const maxNegativeMovement = canvasVector({
-          x: -originalFrame.width,
-          y: -originalFrame.height,
+          x: -originalFrame.width + ResizeMinimumValue,
+          y: -originalFrame.height + ResizeMinimumValue,
         })
         const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses, maxNegativeMovement)
 
