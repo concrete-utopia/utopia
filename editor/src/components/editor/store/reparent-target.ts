@@ -1,15 +1,15 @@
-import type { ThenOrElse } from '../../../core/model/conditionals'
 import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
+import { ConditionalCase } from '../../../core/model/conditionals'
 
 export interface ConditionalClause<P extends ElementPath> {
   elementPath: P
-  clause: ThenOrElse
+  clause: ConditionalCase
 }
 
 export function conditionalClause<P extends ElementPath>(
   elementPath: P,
-  clause: ThenOrElse,
+  clause: ConditionalCase,
 ): ConditionalClause<P> {
   return {
     elementPath: elementPath,

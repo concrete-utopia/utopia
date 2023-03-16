@@ -131,7 +131,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   getConditionalClausePath,
   reorderConditionalChildPathTrees,
-  ThenOrElse,
+  ConditionalCase,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 
