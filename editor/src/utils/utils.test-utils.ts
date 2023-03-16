@@ -74,6 +74,7 @@ import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { fireEvent } from '@testing-library/react'
 import { FeatureName, isFeatureEnabled, setFeatureEnabled } from './feature-switches'
+import { ContentAffectingType } from '../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -491,4 +492,28 @@ export function setFeatureForUnitTests(featureName: FeatureName, newValue: boole
   afterEach(() => {
     setFeatureEnabled(featureName, originalFSValue)
   })
+}
+
+export function getOpeningTag(type: ContentAffectingType): string {
+  switch (type) {
+    case 'sizeless-div':
+      return `<div data-uid='children-affecting' data-testid='children-affecting'>`
+    case 'fragment':
+      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
+    default:
+      const _exhaustiveCheck: never = type
+      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+  }
+}
+
+export function getClosingTag(type: ContentAffectingType): string {
+  switch (type) {
+    case 'sizeless-div':
+      return `</div>`
+    case 'fragment':
+      return `</React.Fragment>`
+    default:
+      const _exhaustiveCheck: never = type
+      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
+  }
 }

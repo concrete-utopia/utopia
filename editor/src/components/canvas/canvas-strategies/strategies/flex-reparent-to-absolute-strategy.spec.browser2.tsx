@@ -15,7 +15,12 @@ import {
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
+import {
+  getClosingTag,
+  getOpeningTag,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import * as EP from '../../../../core/shared/element-path'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
@@ -369,30 +374,6 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
     })
   })
 })
-
-function getOpeningTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'>`
-    case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
-
-function getClosingTag(type: ContentAffectingType): string {
-  switch (type) {
-    case 'sizeless-div':
-      return `</div>`
-    case 'fragment':
-      return `</React.Fragment>`
-    default:
-      const _exhaustiveCheck: never = type
-      throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
-  }
-}
 
 function fragmentTestCode(type: ContentAffectingType) {
   return `
