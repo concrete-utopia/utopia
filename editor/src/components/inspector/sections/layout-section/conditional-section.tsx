@@ -37,7 +37,9 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import { ControlStatus, getControlStyles } from '../../common/control-status'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
+import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
@@ -90,6 +92,17 @@ const conditionOverrideSelector = createCachedSelector(
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
+const conditionOverrideToControlStatus = (conditionOverride: ConditionOverride): ControlStatus => {
+  // TODO: we don't have multiselect support yet, that is why mixed is here
+  if (conditionOverride === 'not-conditional' || conditionOverride === 'mixed') {
+    return 'off'
+  }
+  if (conditionOverride === 'not-overridden') {
+    return 'simple'
+  }
+  return 'overridden'
+}
+
 const conditionExpressionSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
@@ -124,6 +137,19 @@ const conditionExpressionSelector = createCachedSelector(
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
+const OverrideControlOptions: Array<OptionChainOption<boolean>> = [
+  {
+    tooltip: 'True',
+    label: 'True',
+    value: true,
+  },
+  {
+    tooltip: 'False',
+    label: 'False',
+    value: false,
+  },
+]
+
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
@@ -156,21 +182,18 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   )
 
   const toggleConditionOverride = React.useCallback(
-    (whichButton: boolean) => () => {
+    (whichButton: boolean) => {
       const newCond = whichButton === conditionOverride ? null : whichButton
       setConditionOverride(newCond)()
     },
     [conditionOverride, setConditionOverride],
   )
 
-  const replaceBranches = React.useCallback(
-    () => () => {
-      const actions: EditorAction[] = paths.map((path) => switchConditionalBranches(path))
+  const replaceBranches = React.useCallback(() => {
+    const actions: EditorAction[] = paths.map((path) => switchConditionalBranches(path))
 
-      dispatch(actions)
-    },
-    [dispatch, paths],
-  )
+    dispatch(actions)
+  }, [dispatch, paths])
 
   const onUpdateExpression = React.useCallback(() => {
     if (paths.length !== 1) {
@@ -202,6 +225,9 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   ) {
     return null
   }
+
+  const controlStatus = conditionOverrideToControlStatus(conditionOverride)
+  const controlStyles = getControlStyles(controlStatus)
 
   return (
     <React.Fragment>
@@ -274,7 +300,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
             style={{ flex: 1 }}
             highlight
             spotlight
-            onClick={replaceBranches()}
+            onClick={replaceBranches}
             data-testid={ConditionalsControlSwitchBranches}
           >
             Switch branches
@@ -288,24 +314,16 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       >
         Override
         <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-          <Button
-            style={{ flex: 1 }}
-            spotlight={conditionOverride === true}
-            highlight
-            onClick={toggleConditionOverride(true)}
-            data-testid={ConditionalsControlToggleTrueTestId}
-          >
-            True
-          </Button>
-          <Button
-            style={{ flex: 1 }}
-            spotlight={conditionOverride === false}
-            highlight
-            onClick={toggleConditionOverride(false)}
-            data-testid={ConditionalsControlToggleFalseTestId}
-          >
-            False
-          </Button>
+          <OptionChainControl
+            id={'conditional-override-control'}
+            key={'conditional-override-control'}
+            testId={'conditional-override-control'}
+            onSubmitValue={toggleConditionOverride}
+            value={conditionOverride}
+            options={OverrideControlOptions}
+            controlStatus={controlStatus}
+            controlStyles={controlStyles}
+          />
         </FlexRow>
       </UIGridRow>
     </React.Fragment>
