@@ -150,7 +150,7 @@ describe('conditionals', () => {
       return {
         importsToAdd: {},
         originalElementPath: EP.appendNewElementPath(TestScenePath, ['000']),
-        element: makeDiv('ddd', 'HELLO'),
+        element: element,
       }
     }
     const tests: {
@@ -160,7 +160,7 @@ describe('conditionals', () => {
       want: string
     }[] = [
       {
-        name: 'element (true branch)',
+        name: 'into element (true branch)',
         code: `
           <div data-uid='aaa'>
             {
@@ -191,7 +191,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'element (false branch)',
+        name: 'into element (false branch)',
         code: `
           <div data-uid='aaa'>
             {
@@ -222,7 +222,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'null',
+        name: 'into null',
         code: `
           <div data-uid='aaa'>
             {
@@ -250,7 +250,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'fragment',
+        name: 'into fragment',
         code: `
           <div data-uid='aaa'>
             {
@@ -285,7 +285,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'empty fragment',
+        name: 'into empty fragment',
         code: `
           <div data-uid='aaa'>
             {
@@ -315,7 +315,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'attribute (string)',
+        name: 'into attribute (string)',
         code: `
           <div data-uid='aaa'>
             {
@@ -345,7 +345,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'attribute (number)',
+        name: 'into attribute (number)',
         code: `
           <div data-uid='aaa'>
             {
@@ -375,7 +375,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'attribute (function)',
+        name: 'into attribute (function)',
         code: `
           <div data-uid='aaa'>
             {
@@ -406,7 +406,7 @@ describe('conditionals', () => {
         `,
       },
       {
-        name: 'attribute (expression)',
+        name: 'into attribute (expression)',
         code: `
           <div data-uid='aaa'>
             {
@@ -436,9 +436,44 @@ describe('conditionals', () => {
           </div>
         `,
       },
+      {
+        name: 'multiple elements',
+        code: `
+          <div data-uid='aaa'>
+            {
+              // @utopia/uid=conditional
+              true ? (
+                <div data-uid='bbb' data-testid='bbb'>bar</div>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>baz</div>
+              )
+            }
+          </div>
+        `,
+        paste: [
+          makeElementPaste(makeDiv('ddd', 'HELLO')),
+          makeElementPaste(makeDiv('eee', 'THERE')),
+        ],
+        want: `
+          <div data-uid='aaa'>
+            {
+              // @utopia/uid=conditional
+              true ? (
+                <>
+                  <div data-uid='bbb' data-testid='bbb'>bar</div>
+                  <div data-uid='ddd'>HELLO</div>
+                  <div data-uid='eee'>THERE</div>
+                </>
+              ) : (
+                <div data-uid='ccc' data-testid='ccc'>baz</div>
+              )
+            }
+          </div>
+        `,
+      },
     ]
     tests.forEach((t) => {
-      it(`paste into ${t.name}`, async () => {
+      it(`paste ${t.name}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(t.code),
           'await-first-dom-report',
