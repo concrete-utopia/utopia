@@ -3,6 +3,7 @@ import * as EP from '../shared/element-path'
 import {
   ChildOrAttribute,
   childOrBlockIsChild,
+  ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
@@ -11,6 +12,7 @@ import { ElementPathTree } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
+import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
@@ -84,3 +86,54 @@ export const conditionalWhenTrueOptic: Optic<JSXConditionalExpression, ChildOrAt
 
 export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
   fromField('whenFalse')
+
+export function getConditionalCase(
+  elementPath: ElementPath,
+  parent: JSXConditionalExpression,
+  parentMetadata: ElementInstanceMetadata | null,
+  parentPath: ElementPath,
+): ConditionalCase | 'not-a-conditional' {
+  if (parentMetadata == null || parentMetadata.conditionalValue === 'not-a-conditional') {
+    return 'not-a-conditional'
+  }
+  const parentOverride = getConditionalFlag(parent)
+  if (parentOverride == null) {
+    return parentMetadata.conditionalValue ? 'true-case' : 'false-case'
+  }
+  if (
+    matchesOverriddenConditionalBranch(elementPath, parentPath, {
+      clause: parent.whenTrue,
+      branch: 'true-case',
+      wantOverride: true,
+      parentOverride: parentOverride,
+    })
+  ) {
+    return 'true-case'
+  }
+  return 'false-case'
+}
+
+export function getConditionalFlag(element: JSXConditionalExpression): boolean | null {
+  const flag = findUtopiaCommentFlag(element.comments, 'conditional')
+  if (!isUtopiaCommentFlagConditional(flag)) {
+    return null
+  }
+  return flag.value
+}
+
+export function matchesOverriddenConditionalBranch(
+  elementPath: ElementPath,
+  parentPath: ElementPath,
+  params: {
+    clause: ChildOrAttribute
+    branch: ConditionalCase
+    wantOverride: boolean
+    parentOverride: boolean
+  },
+): boolean {
+  const { clause, branch, wantOverride, parentOverride } = params
+  return (
+    wantOverride === parentOverride &&
+    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause, branch))
+  )
+}

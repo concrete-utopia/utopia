@@ -2246,6 +2246,7 @@ export const UPDATE_FNS = {
           action.jsxElement,
           utopiaComponents,
           null,
+          editor.spyMetadata,
         )
 
         const uid = getUtopiaID(action.jsxElement)
@@ -2456,6 +2457,7 @@ export const UPDATE_FNS = {
                         }),
                         indexInParent,
                       ),
+                      editor.spyMetadata,
                     )
                   }
                 } else {
@@ -2489,6 +2491,7 @@ export const UPDATE_FNS = {
                       }),
                       indexInParent,
                     ),
+                    editor.spyMetadata,
                   )
                 } else {
                   const staticTarget = EP.dynamicPathToStaticPath(
@@ -2644,6 +2647,7 @@ export const UPDATE_FNS = {
                     }),
                     indexInParent,
                   ),
+                  editor.spyMetadata,
                 )
               } else {
                 const staticTarget = EP.dynamicPathToStaticPath(
@@ -3094,8 +3098,16 @@ export const UPDATE_FNS = {
           const pastedElementIsConditional =
             MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
+          const parent = MetadataUtils.findElementByElementPath(
+            action.targetOriginalContextMetadata,
+            action.pasteInto,
+          )
+
           const continueWithPaste =
-            pastedElementIsAbsolute || pastedElementIsFlex || pastedElementIsConditional
+            pastedElementIsAbsolute ||
+            pastedElementIsFlex ||
+            pastedElementIsConditional ||
+            MetadataUtils.isConditionalFromMetadata(parent)
 
           if (!continueWithPaste) {
             return workingEditorState
@@ -5135,6 +5147,7 @@ export const UPDATE_FNS = {
             element,
             withMaybeUpdatedParent,
             action.indexPosition,
+            editor.spyMetadata,
           )
 
           const newPath = EP.appendToPath(action.targetParent, newUID)
