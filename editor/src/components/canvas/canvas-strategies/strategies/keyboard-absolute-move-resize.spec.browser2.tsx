@@ -19,6 +19,7 @@ import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
+import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
 
 const defaultBBBProperties = {
   left: 0,
@@ -211,6 +212,38 @@ describe('Keyboard Absolute Resize E2E', () => {
       left: 10,
       top: 100,
       width: 30,
+      height: 101,
+    })
+  })
+  it('Pressing Shift + Cmd + ArrowLeft 3 times, then pressing Shift + Cmd + ArrowRight once', async () => {
+    const width = 5
+    const {
+      expectElementWidthOnScreen,
+      expectElementPropertiesInPrintedCode,
+      getCanvasGuidelines,
+    } = await setupTest({
+      left: 10,
+      top: 100,
+      width: width,
+      height: 101,
+    })
+
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+
+    expectElementWidthOnScreen(-width + ResizeMinimumValue) // the expected size is the min value
+    expect(getCanvasGuidelines()).toEqual([])
+
+    await pressKey('ArrowRight', { modifiers: shiftCmdModifier })
+    await cmdKeyUp()
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 10,
+      top: 100,
+      width: 11,
       height: 101,
     })
   })
