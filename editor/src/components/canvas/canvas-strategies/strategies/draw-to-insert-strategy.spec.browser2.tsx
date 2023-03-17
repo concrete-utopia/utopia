@@ -31,6 +31,7 @@ import {
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
 import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
+import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -196,7 +197,126 @@ describe('Inserting into absolute', () => {
     </div>
   `)
 
-  it('Should honour the initial target when dragging to insert', async () => {
+  describe('Inserting into simple target', () => {
+    async function runInsertTest(
+      dragDelta: { x: number; y: number },
+      modifiers: Modifiers,
+      expectedSize: { width: number; height: number },
+    ) {
+      const renderResult = await setupInsertTest(inputCode)
+      await enterInsertModeFromInsertMenu(renderResult)
+
+      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: targetElementBounds.x + 5,
+        y: targetElementBounds.y + 5,
+      })
+      const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: startPoint.x + dragDelta.x,
+        y: startPoint.y + dragDelta.y,
+      })
+
+      // Move before starting dragging
+      await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+      // Highlight should show the candidate parent
+      expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+      // Drag from inside bbb to inside ccc
+      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+        modifiers: modifiers,
+      })
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // Check that the inserted element is a child of bbb
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='aaa'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+              position: 'relative',
+            }}
+          >
+            <div
+              data-uid='bbb'
+              data-testid='bbb'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 380,
+                height: 180,
+                backgroundColor: '#d3d3d3',
+              }}
+            >
+              <div              
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: ${expectedSize.width},
+                  height: ${expectedSize.height},
+                }}
+                data-uid='ddd'
+              />
+            </div>
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 200,
+                width: 380,
+                height: 190,
+                backgroundColor: '#FF0000',
+              }}
+            />
+          </div>
+        `),
+      )
+    }
+
+    it('Should honour the initial target when dragging to insert', async () => {
+      const xDelta = 20
+      const yDelta = 300
+      await runInsertTest({ x: xDelta, y: yDelta }, emptyModifiers, {
+        width: xDelta,
+        height: yDelta,
+      })
+    })
+
+    it('Should lock aspect ratio to 1:1 when holding shift and dragging vertically', async () => {
+      const xDelta = 20
+      const yDelta = 300
+
+      // The result should be the same regardless of which dimension of the drag is the larger
+      await runInsertTest({ x: xDelta, y: yDelta }, shiftModifier, {
+        width: yDelta,
+        height: yDelta,
+      })
+    })
+
+    it('Should lock aspect ratio to 1:1 when holding shift and dragging horizontally', async () => {
+      const xDelta = 300
+      const yDelta = 20
+
+      // The result should be the same regardless of which dimension of the drag is the larger
+      await runInsertTest({ x: xDelta, y: yDelta }, shiftModifier, {
+        width: xDelta,
+        height: xDelta,
+      })
+    })
+  })
+
+  it('Should lock aspect ratio to 1:1 when holding shift', async () => {
     const renderResult = await setupInsertTest(inputCode)
     await enterInsertModeFromInsertMenu(renderResult)
 
@@ -220,7 +340,9 @@ describe('Inserting into absolute', () => {
     expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
     // Drag from inside bbb to inside ccc
-    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+    await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+      modifiers: shiftModifier,
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -254,7 +376,7 @@ describe('Inserting into absolute', () => {
                 position: 'absolute',
                 left: 5,
                 top: 5,
-                width: 20,
+                width: 300,
                 height: 300,
               }}
               data-uid='ddd'

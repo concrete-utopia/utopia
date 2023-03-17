@@ -119,7 +119,11 @@ export function getLockedAspectRatio(
   }
 
   if (anySelectedElementAspectRatioLocked || modifiers.shift) {
-    return originalBoundingBox.width / (originalBoundingBox.height ?? 1)
+    if (originalBoundingBox.width === 0 || originalBoundingBox.height === 0) {
+      return 1
+    } else {
+      return originalBoundingBox.width / originalBoundingBox.height
+    }
   }
 
   return null
