@@ -683,13 +683,17 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- children-affecting moves right of child-3
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
           ])
+        })
+
+        it('dragging root fragment of conditional reparents the conditional itself', () => {
+          expect('implemented').toEqual('done')
         })
 
         it('excludes absolute siblings', async () => {
