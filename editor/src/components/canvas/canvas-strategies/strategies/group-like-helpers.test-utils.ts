@@ -1,3 +1,5 @@
+import * as EP from '../../../../core/shared/element-path'
+import { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { ContentAffectingType } from './group-like-helpers'
 
 export const GroupLikeElementUid = 'children-affecting'
@@ -28,4 +30,12 @@ export function getClosingGroupLikeTag(type: ContentAffectingType): string {
       const _exhaustiveCheck: never = type
       throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)
   }
+}
+
+export function getRegularNavigatorTargets(renderResult: EditorRenderResult): Array<string> {
+  return renderResult
+    .getEditorState()
+    .derived.navigatorTargets.filter((t) => t.type === 'REGULAR')
+    .map((t) => t.elementPath)
+    .map(EP.toString)
 }
