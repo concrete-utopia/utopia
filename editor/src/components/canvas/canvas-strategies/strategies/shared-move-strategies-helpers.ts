@@ -79,7 +79,7 @@ export const getAdjustMoveCommands =
     commands: Array<AdjustCssLengthProperty>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
-    const filteredSelectedElements = getDragTargets(targets)
+    const filteredSelectedElements = flattenSelection(targets)
     let commands: Array<AdjustCssLengthProperty> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
@@ -97,6 +97,7 @@ export const getAdjustMoveCommands =
   }
 
 export function applyMoveCommon(
+  originalTargets: Array<ElementPath>,
   targets: Array<ElementPath>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
@@ -131,7 +132,8 @@ export function applyMoveCommon(
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         canvasState.startingMetadata,
-        targetsForSnapping,
+        canvasState.startingAllElementProps,
+        originalTargets,
       )
 
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
@@ -294,14 +296,14 @@ export function getFileOfElement(
   )
 }
 
-export const getDragTargets = memoize(getDragTargetsInner, {
+export const flattenSelection = memoize(flattenSelectionInner, {
   maxSize: 1,
   equals: is,
 })
 
 // No need to include descendants in multiselection when dragging
 // Note: this maybe slow when there are lot of selected views
-function getDragTargetsInner(selectedViews: Array<ElementPath>): Array<ElementPath> {
+function flattenSelectionInner(selectedViews: Array<ElementPath>): Array<ElementPath> {
   const filteredTargets = selectedViews.filter((view) =>
     selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
   )

@@ -34,7 +34,10 @@ import {
   isJSXConditionalExpression,
   JSXConditionalExpression,
 } from '../../../core/shared/element-template'
-import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
+import {
+  findUtopiaCommentFlag,
+  isUtopiaCommentFlagConditional,
+} from '../../../core/shared/comment-flags'
 import { getConditionalClausePath, ConditionalCase } from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { navigatorDepth } from '../navigator-utils'
@@ -695,7 +698,11 @@ function asConditional(element: ElementInstanceMetadata | null): JSXConditionalE
 }
 
 function getConditionalFlag(element: JSXConditionalExpression) {
-  return findUtopiaCommentFlag(element.comments, 'conditional')?.value ?? null
+  const flag = findUtopiaCommentFlag(element.comments, 'conditional')
+  if (!isUtopiaCommentFlagConditional(flag)) {
+    return null
+  }
+  return flag.value
 }
 
 function matchesOverriddenBranch(

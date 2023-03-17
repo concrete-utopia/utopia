@@ -31,7 +31,11 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
-import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  getRegularNavigatorTargets,
+} from './group-like-helpers.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -990,13 +994,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 })
 
-function getRegularNavigatorTargets(entries: Array<NavigatorEntry>): Array<string> {
-  return entries
-    .filter((t) => t.type === 'REGULAR')
-    .map((t) => t.elementPath)
-    .map(EP.toString)
-}
-
 describe('children-affecting reparent tests', () => {
   setFeatureForBrowserTests('Fragment support', true)
   setFeatureForBrowserTests('Conditional support', true)
@@ -1022,9 +1019,7 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
-        ).toEqual([
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
@@ -1070,9 +1065,7 @@ describe('children-affecting reparent tests', () => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         // no reparent have happened
-        expect(
-          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
-        ).toEqual([
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
@@ -1098,9 +1091,7 @@ describe('children-affecting reparent tests', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
-        ).toEqual([
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
@@ -1145,9 +1136,7 @@ describe('children-affecting reparent tests', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(
-        getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
-      ).toEqual([
+      expect(getRegularNavigatorTargets(renderResult)).toEqual([
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
         'utopia-storyboard-uid/scene-aaa/app-entity:aaa',

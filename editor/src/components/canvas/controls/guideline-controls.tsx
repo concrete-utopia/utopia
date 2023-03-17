@@ -10,7 +10,6 @@ import {
   CanvasSegment,
   isInfinityRectangle,
   rectanglesEqual,
-  roundRectangleToNearestWhole,
   segmentIntersection,
 } from '../../../core/shared/math-utils'
 import { bold, useColorTheme } from '../../../uuiui'

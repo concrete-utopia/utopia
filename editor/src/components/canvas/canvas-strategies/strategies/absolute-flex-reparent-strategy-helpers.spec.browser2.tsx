@@ -13,6 +13,7 @@ import {
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseMoveToPoint,
+  pressKey,
 } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -31,6 +32,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   includeMouseUp: boolean,
+  midDragCallback?: () => Promise<void>,
 ): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -45,6 +47,7 @@ async function dragElement(
   if (includeMouseUp) {
     await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       modifiers: modifiers,
+      midDragCallback: midDragCallback,
     })
   } else {
     await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
@@ -219,9 +222,11 @@ describe('Unified Reparent Fitness Function Tests', () => {
           <div
             style={{
               backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 120,
+              top: 0,
               width: 200,
               height: 200,
-              contain: 'layout',
             }}
             data-uid='ccc'
             data-testid='ccc'
@@ -1240,7 +1245,7 @@ describe('Target parents with flow layout', () => {
   })
 
   describe('Reparent to Flow', () => {
-    it('if target parent is not a contianing block', async () => {
+    it('if target parent is not a containing block', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
           <div
@@ -1290,6 +1295,7 @@ describe('Target parents with flow layout', () => {
         dragDelta,
         emptyModifiers,
         true,
+        () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1415,6 +1421,7 @@ describe('Target parents with flow layout', () => {
         dragDelta,
         emptyModifiers,
         true,
+        () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1541,6 +1548,7 @@ describe('Target parents with flow layout', () => {
         dragDelta,
         cmdModifier,
         true,
+        () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -2646,6 +2654,8 @@ describe('Reparent indicators', () => {
       false,
     )
 
+    await pressKey('2') // Switch to flow reparenting strategy
+
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(renderResult.getEditorState().editor.displayNoneInstances).toEqual([
@@ -2741,6 +2751,8 @@ describe('Reparent indicators', () => {
       emptyModifiers,
       false,
     )
+
+    await pressKey('2') // Switch to flow reparenting strategy
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
