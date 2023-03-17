@@ -397,36 +397,37 @@ export function useDelayedEditorState<T>(
    * but when a drag threshold passes before the timer ends it shows up without delay
    */
 
+  const actualValue = React.useRef<T | null>(null)
   const [delayedValue, setDelayedValue] = React.useState<T | null>(null)
   const [timer, setTimer] = React.useState<number | null>(null)
 
-  const immediateCallback = React.useCallback(
-    (currentValue: T | null) => {
-      setDelayedValue(currentValue)
-      if (timer != null) {
-        window.clearTimeout(timer)
-        setTimer(null)
-      }
-    },
-    [timer, setTimer, setDelayedValue],
-  )
+  const setDelayedValueToActualValue = React.useCallback(() => {
+    setDelayedValue(actualValue.current)
+    if (timer != null) {
+      window.clearTimeout(timer)
+      setTimer(null)
+    }
+  }, [timer, setTimer, setDelayedValue])
 
   const callback = React.useCallback(
     ({ value: currentValue, immediate }: { value: T | null; immediate: boolean }) => {
-      const shouldDelay =
-        !immediate && currentValue != null && delayedValue == null && timer == null
+      actualValue.current = currentValue
+
+      const shouldDelay = !immediate && currentValue != null && delayedValue == null
       if (shouldDelay) {
-        setTimer(
-          window.setTimeout(() => {
-            setDelayedValue(currentValue)
-            setTimer(null)
-          }, ControlDelay),
-        )
+        if (timer == null) {
+          setTimer(
+            window.setTimeout(() => {
+              setDelayedValueToActualValue()
+              setTimer(null)
+            }, ControlDelay),
+          )
+        }
       } else {
-        immediateCallback(currentValue)
+        setDelayedValueToActualValue()
       }
     },
-    [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
+    [setDelayedValueToActualValue, delayedValue, timer, setTimer],
   )
 
   useSelectorWithCallback(
