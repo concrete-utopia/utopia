@@ -292,7 +292,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     )
   })
 
-  it('Absolute to absolute as a fallback can be accessed by using the strategy selector', async () => {
+  it('Absolute to static can be accessed by using the strategy selector', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
@@ -397,12 +397,10 @@ describe('Fallback Absolute Reparent Strategies', () => {
       >
         <div
           style={{
-            position: 'absolute',
-            left: 100,
-            top: 0,
             width: 100,
             height: 100,
             backgroundColor: 'yellow',
+            contain: 'layout',
           }}
           data-uid='absolutechild'
           data-testid='absolutechild'
@@ -413,7 +411,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     )
   })
 
-  it('Absolute to forced absolute is not the default choice', async () => {
+  it('Absolute to forced absolute is the default choice', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
@@ -509,10 +507,12 @@ describe('Fallback Absolute Reparent Strategies', () => {
       >
         <div
           style={{
+            position: 'absolute',
+            left: 100,
+            top: 0,        
             width: 100,
             height: 100,
             backgroundColor: 'yellow',
-            contain: 'layout',
           }}
           data-uid='absolutechild'
           data-testid='absolutechild'
@@ -637,7 +637,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
       </div>`),
     )
   })
-  it('Flex to forced absolute is not the default choice', async () => {
+  it('Flex to forced absolute is the default choice', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
@@ -692,6 +692,9 @@ describe('Fallback Absolute Reparent Strategies', () => {
               width: 100,
               height: 100,
               backgroundColor: 'teal',
+              position: 'absolute',
+              left: 75,
+              top: 200,
             }}
             data-uid='flexchild1'
             data-testid='flexchild1'
@@ -802,10 +805,16 @@ describe('Fallback Absolute Reparent Strategies', () => {
     }
 
     const dragDelta = windowPoint({
-      x: zeroSizeParentTargetCenter.x - draggedElementRectCenter.x - 2, // TODO BALAZS remove these -2's once this is fixed https://github.com/concrete-utopia/utopia/issues/2739
-      y: zeroSizeParentTargetCenter.y - draggedElementRectCenter.y - 2,
+      x: zeroSizeParentTargetCenter.x - draggedElementRectCenter.x,
+      y: zeroSizeParentTargetCenter.y - draggedElementRectCenter.y,
     })
-    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier)
+    await dragElement(
+      renderResult,
+      'ccc',
+      dragDelta,
+      cmdModifier,
+      () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting before mouseup, as that won't be the default here
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

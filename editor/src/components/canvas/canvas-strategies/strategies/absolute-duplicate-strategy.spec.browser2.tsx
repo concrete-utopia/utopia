@@ -6,10 +6,7 @@ import {
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import {
-  FOR_TESTS_setNextGeneratedUid,
-  FOR_TESTS_setNextGeneratedUids,
-} from '../../../../core/model/element-template-utils.test-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
