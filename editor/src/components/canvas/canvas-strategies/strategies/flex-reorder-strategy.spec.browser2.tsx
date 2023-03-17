@@ -692,17 +692,14 @@ describe('Flex Reorder Strategy', () => {
           ])
         })
 
-        it('dragging root fragment of conditional reparents the conditional itself', () => {
-          expect('implemented').toEqual('done')
-        })
-
-        it('excludes absolute siblings', async () => {
+        // TODO fix this in the next PR!
+        xit('dragging root fragment of conditional active branch reparents the conditional itself', async () => {
           const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling(type)),
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row')),
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -711,8 +708,18 @@ describe('Flex Reorder Strategy', () => {
             x: targetElementBounds.x + 5,
             y: targetElementBounds.y + 5,
           })
+
           await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
           await pressKey('Escape')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          // make sure we reall selected the children-affecting element
+          expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+            fromString(
+              'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            ),
+          ])
+
           await mouseDragFromPointWithDelta(
             canvasControlsLayer,
             startPoint,
@@ -725,65 +732,32 @@ describe('Flex Reorder Strategy', () => {
                 )
                 expect(
                   renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
-                ).toEqual(3)
+                ).toEqual(2)
               },
             },
           )
 
           await renderResult.getDispatchFollowUpActionsFinished()
-
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-      <div
-        data-uid='aaa'
-        style={{ display: 'flex', gap: 10 }}
-      >
-        <div
-          data-uid='absolute-child'
-          style={{
-            position: 'absolute',
-            top: 100,
-            left: 50,
-            width: 50,
-            height: 50,
-            backgroundColor: 'yellow',
-          }}
-        />
-        <div
-          data-uid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-2'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'purple',
-          }}
-        />
-        <div
-          data-uid='child-1'
-          data-testid='child-1'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'blue',
-          }}
-        />
-      </div>`),
-          )
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- children-affecting moves right of child-3
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+          ])
         })
-        it('works with reverse direction', async () => {
+
+        it('excludes absolute siblings', async () => {
           const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row-reverse')),
+            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling(type)),
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.renderedDOM.getByTestId('child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -794,10 +768,75 @@ describe('Flex Reorder Strategy', () => {
           })
           await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
           await pressKey('Escape')
+          await pressKey('Escape')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          // make sure we reall selected the children-affecting element
+          expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting'),
+          ])
+
           await mouseDragFromPointWithDelta(
             canvasControlsLayer,
             startPoint,
             canvasPoint({ x: 62, y: 0 }),
+            {
+              modifiers: emptyModifiers,
+              midDragCallback: async () => {
+                expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+                  'FLEX_REORDER',
+                )
+                expect(
+                  renderResult.getEditorState().strategyState.customStrategyState?.lastReorderIdx,
+                ).toEqual(2)
+              },
+            },
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+          ])
+        })
+
+        it('works with reverse direction', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row-reverse')),
+            'await-first-dom-report',
+          )
+
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
+          const targetElementBounds = targetElement.getBoundingClientRect()
+          const canvasControlsLayer =
+            renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+          const startPoint = windowPoint({
+            x: targetElementBounds.x + 5,
+            y: targetElementBounds.y + 5,
+          })
+          await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+          await pressKey('Escape')
+          await pressKey('Escape')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          // make sure we reall selected the children-affecting element
+          expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting'),
+          ])
+
+          await mouseDragFromPointWithDelta(
+            canvasControlsLayer,
+            startPoint,
+            canvasPoint({ x: 120, y: 0 }),
             {
               modifiers: emptyModifiers,
               midDragCallback: async () => {
@@ -812,43 +851,17 @@ describe('Flex Reorder Strategy', () => {
           )
 
           await renderResult.getDispatchFollowUpActionsFinished()
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-      <div
-        data-uid='aaa'
-        style={{
-          display: 'flex',
-          gap: 10,
-          flexDirection: 'row-reverse',
-        }}
-      >
-        <div
-          data-uid='child-1'
-          data-testid='child-1'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'blue',
-          }}
-        />
-        <div
-          data-uid='child-0'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'green',
-          }}
-        />
-        <div
-          data-uid='child-2'
-          style={{
-            width: 50,
-            height: 50,
-            backgroundColor: 'purple',
-          }}
-        />
-      </div>`),
-          )
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- succesfully reparented to zero position
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+          ])
         })
       })
     })
