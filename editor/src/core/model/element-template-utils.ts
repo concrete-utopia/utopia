@@ -35,8 +35,10 @@ import {
   ChildOrAttribute,
   jsxAttributeValue,
   childOrBlockIsAttribute,
-  jsxConditionalExpression,
   jsxFragment,
+  jsxTextBlock,
+  jsxArbitraryBlock,
+  ElementInstanceMetadataMap,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -65,6 +67,8 @@ import {
   ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
+  getConditionalCase,
+  getConditionalCasePath,
   getConditionalClausePath,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
@@ -533,6 +537,7 @@ export function insertJSXElementChild(
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
+  spyMetadata: ElementInstanceMetadataMap,
 ): Array<UtopiaJSXComponent> {
   const makeE = () => {
     // TODO delete me
@@ -543,92 +548,149 @@ export function insertJSXElementChild(
   if (targetParentIncludingStoryboardRoot == null) {
     return components
   } else {
-    return transformJSXComponentAtPath(
-      components,
-      getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot),
-      (parentElement) => {
-        if (
-          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
-          isJSXConditionalExpression(parentElement)
-        ) {
-          // Determine which clause of the conditional we want to modify.
-          const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'true-case'
-              ? conditionalWhenTrueOptic
-              : conditionalWhenFalseOptic
-          // Update the clause if it currently holds a null value.
-          return modify(
-            toClauseOptic,
-            (clauseValue) => {
-              if (childOrBlockIsAttribute(clauseValue)) {
-                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
-                return foldEither(
-                  () => {
-                    // Not a simple value, so replacing it would be a bad thing.
-                    return clauseValue
-                  },
-                  (value) => {
-                    // Simple value of some kind.
-                    if (value == null) {
-                      // Simple value is null, so replace it with the new content.
-                      return elementToInsert
-                    } else {
-                      // FIXME: We have a simple `JSXAttribute` value here which is not null/undefined.
-                      // Recent conversations have been about unifying attributes and arbitrary JSX elements,
-                      // which could result in this content being a valid child of any element.
-                      return clauseValue
-                    }
-                  },
-                  simpleValue,
-                )
-              } else {
-                if (isJSXFragment(clauseValue)) {
-                  // Existing fragment, so add it in as appropriate.
-                  let updatedChildren: Array<JSXElementChild>
-                  if (indexPosition == null) {
-                    updatedChildren = clauseValue.children.concat(elementToInsert)
+    const parentPath = getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot)
+    return transformJSXComponentAtPath(components, parentPath, (parentElement) => {
+      if (
+        reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
+        isJSXConditionalExpression(parentElement)
+      ) {
+        // Determine which clause of the conditional we want to modify.
+        const toClauseOptic =
+          targetParentIncludingStoryboardRoot.clause === 'true-case'
+            ? conditionalWhenTrueOptic
+            : conditionalWhenFalseOptic
+        // Update the clause if it currently holds a null value.
+        return modify(
+          toClauseOptic,
+          (clauseValue) => {
+            if (childOrBlockIsAttribute(clauseValue)) {
+              const simpleValue = jsxSimpleAttributeToValue(clauseValue)
+              return foldEither(
+                () => {
+                  // Not a simple value, so replacing it would be a bad thing.
+                  return clauseValue
+                },
+                (value) => {
+                  // Simple value of some kind.
+                  if (value == null) {
+                    // Simple value is null, so replace it with the new content.
+                    return elementToInsert
                   } else {
-                    updatedChildren = Utils.addToArrayWithFill(
-                      elementToInsert,
-                      clauseValue.children,
-                      indexPosition,
-                      makeE,
-                    )
+                    // FIXME: We have a simple `JSXAttribute` value here which is not null/undefined.
+                    // Recent conversations have been about unifying attributes and arbitrary JSX elements,
+                    // which could result in this content being a valid child of any element.
+                    return clauseValue
                   }
-                  return jsxFragment(clauseValue.uid, updatedChildren, clauseValue.longForm)
+                },
+                simpleValue,
+              )
+            } else {
+              if (isJSXFragment(clauseValue)) {
+                // Existing fragment, so add it in as appropriate.
+                let updatedChildren: Array<JSXElementChild>
+                if (indexPosition == null) {
+                  updatedChildren = clauseValue.children.concat(elementToInsert)
                 } else {
-                  // Something other than a fragment, so wrap that and the newly inserted element into a fragment.
-                  return jsxFragment(
-                    generateUidWithExistingComponents(projectContents),
-                    [clauseValue, elementToInsert],
-                    false,
+                  updatedChildren = Utils.addToArrayWithFill(
+                    elementToInsert,
+                    clauseValue.children,
+                    indexPosition,
+                    makeE,
                   )
                 }
+                return jsxFragment(clauseValue.uid, updatedChildren, clauseValue.longForm)
+              } else {
+                // Something other than a fragment, so wrap that and the newly inserted element into a fragment.
+                return jsxFragment(
+                  generateUidWithExistingComponents(projectContents),
+                  [clauseValue, elementToInsert],
+                  false,
+                )
               }
-            },
-            parentElement,
-          )
-        } else if (isJSXElementLike(parentElement)) {
-          let updatedChildren: Array<JSXElementChild>
-          if (indexPosition == null) {
-            updatedChildren = parentElement.children.concat(elementToInsert)
-          } else {
-            updatedChildren = Utils.addToArrayWithFill(
-              elementToInsert,
-              parentElement.children,
-              indexPosition,
-              makeE,
-            )
-          }
-          return {
-            ...parentElement,
-            children: updatedChildren,
-          }
+            }
+          },
+          parentElement,
+        )
+      } else if (isJSXElementLike(parentElement)) {
+        let updatedChildren: Array<JSXElementChild>
+        if (indexPosition == null) {
+          updatedChildren = parentElement.children.concat(elementToInsert)
         } else {
-          return parentElement
+          updatedChildren = Utils.addToArrayWithFill(
+            elementToInsert,
+            parentElement.children,
+            indexPosition,
+            makeE,
+          )
         }
-      },
-    )
+        return {
+          ...parentElement,
+          children: updatedChildren,
+        }
+      } else if (isJSXConditionalExpression(parentElement)) {
+        function getNewBranch(branch: ChildOrAttribute): ChildOrAttribute {
+          switch (branch.type) {
+            case 'ATTRIBUTE_VALUE':
+              if (branch.value === null) {
+                return elementToInsert
+              }
+              return jsxFragment(
+                generateUidWithExistingComponents(projectContents),
+                [jsxTextBlock(`${branch.value}`), elementToInsert],
+                false,
+              )
+            case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+              return jsxFragment(
+                generateUidWithExistingComponents(projectContents),
+                [
+                  jsxArbitraryBlock(
+                    branch.javascript,
+                    branch.javascript,
+                    branch.transpiledJavascript,
+                    branch.definedElsewhere,
+                    branch.sourceMap,
+                    branch.elementsWithin,
+                  ),
+                  elementToInsert,
+                ],
+                false,
+              )
+            case 'ATTRIBUTE_FUNCTION_CALL':
+            case 'ATTRIBUTE_NESTED_ARRAY':
+            case 'ATTRIBUTE_NESTED_OBJECT':
+              return branch
+            case 'JSX_FRAGMENT':
+              return { ...branch, children: [...branch.children, elementToInsert] }
+            case 'JSX_ELEMENT':
+            case 'JSX_ARBITRARY_BLOCK':
+            case 'JSX_TEXT_BLOCK':
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              return jsxFragment(
+                generateUidWithExistingComponents(projectContents),
+                [branch, elementToInsert],
+                false,
+              )
+            default:
+              assertNever(branch)
+          }
+        }
+
+        const isTrueCase =
+          getConditionalCase(
+            getConditionalCasePath(parentPath, 'true-case'),
+            parentElement,
+            spyMetadata[EP.toString(parentPath)] ?? null,
+            parentPath,
+          ) === 'true-case'
+        const branch = getNewBranch(isTrueCase ? parentElement.whenTrue : parentElement.whenFalse)
+
+        return isTrueCase
+          ? { ...parentElement, whenTrue: branch }
+          : { ...parentElement, whenFalse: branch }
+      } else {
+        return parentElement
+      }
+    })
   }
 }
 

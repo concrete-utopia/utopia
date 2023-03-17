@@ -1915,6 +1915,7 @@ export function addNewScene(model: EditorState, newSceneElement: JSXElement): Ed
         model.canvas.openFile?.filename ?? null,
         components,
         newSceneElement,
+        model.spyMetadata,
       ),
     model,
   )
@@ -1925,6 +1926,7 @@ export function addSceneToJSXComponents(
   openFile: string | null,
   components: UtopiaJSXComponent[],
   newSceneElement: JSXElement,
+  spyMetadata: ElementInstanceMetadataMap,
 ): UtopiaJSXComponent[] {
   const storyoardComponentRootElement = components.find(
     (c) => c.name === BakedInStoryboardVariableName,
@@ -1942,6 +1944,7 @@ export function addSceneToJSXComponents(
       newSceneElement,
       components,
       null,
+      spyMetadata,
     )
   } else {
     return components
@@ -1969,6 +1972,7 @@ export function insertElementAtPath(
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
+  spyMetadata: ElementInstanceMetadataMap,
 ): Array<UtopiaJSXComponent> {
   const staticTarget =
     targetParent == null
@@ -1981,6 +1985,7 @@ export function insertElementAtPath(
     elementToInsert,
     components,
     indexPosition,
+    spyMetadata,
   )
 }
 
