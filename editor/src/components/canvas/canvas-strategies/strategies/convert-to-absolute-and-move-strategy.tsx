@@ -78,7 +78,7 @@ export function convertToAbsoluteAndMoveStrategy(
   )
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
-  // TODO before merge fix for selection length > 1 !!!!!
+  // TODO next PR fix for selection length > 1 !!!!!
   if (originalTargets.length !== 1 || retargetedTargets.length !== 1) {
     return null
   }
@@ -98,10 +98,10 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets[0]) // TODO before merge fix for selection length > 1 !!!!!
+  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets[0]) // TODO next PR fix for selection length > 1 !!!!!
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
-    // TODO before merge fix for selection length > 1 !!!!!
+    // TODO next PR fix for selection length > 1 !!!!!
     canvasState.startingMetadata,
     originalTargets[0],
   )
