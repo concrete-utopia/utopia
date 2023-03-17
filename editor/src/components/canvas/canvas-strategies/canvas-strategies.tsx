@@ -411,17 +411,17 @@ export function useDelayedEditorState<T>(
     [timer, setTimer, setDelayedValue],
   )
 
-  const maybeDelayedCallback = React.useCallback(
-    (currentValue: T | null) => {
-      if (currentValue != null && delayedValue == null) {
-        if (timer == null) {
-          setTimer(
-            window.setTimeout(() => {
-              setDelayedValue(currentValue)
-              setTimer(null)
-            }, ControlDelay),
-          )
-        }
+  const callback = React.useCallback(
+    ({ value: currentValue, immediate }: { value: T | null; immediate: boolean }) => {
+      const shouldDelay =
+        !immediate && currentValue != null && delayedValue == null && timer == null
+      if (shouldDelay) {
+        setTimer(
+          window.setTimeout(() => {
+            setDelayedValue(currentValue)
+            setTimer(null)
+          }, ControlDelay),
+        )
       } else {
         immediateCallback(currentValue)
       }
@@ -429,20 +429,16 @@ export function useDelayedEditorState<T>(
     [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
   )
 
-  useSelectorWithCallback(Substores.fullStore, selector, maybeDelayedCallback, selectorName)
   useSelectorWithCallback(
     Substores.fullStore,
     (store) => {
-      if (
+      const immediate =
         store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
         store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
-      ) {
-        return selector(store)
-      } else {
-        return null
-      }
+
+      return { value: selector(store), immediate: immediate }
     },
-    immediateCallback,
+    callback,
     selectorName,
   )
 
