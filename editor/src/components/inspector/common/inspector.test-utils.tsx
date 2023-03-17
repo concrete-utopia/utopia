@@ -2,7 +2,7 @@ import { produce } from 'immer'
 import React from 'react'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { emptyComments, jsxAttributeValue, JSXElement } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue, JSXElement } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
 import type {
@@ -115,7 +115,7 @@ export function editPropOfSelectedView(
         const updatedAttributes = setJSXValueAtPath(
           element.props,
           path,
-          jsxAttributeValue(newValue, emptyComments),
+          jsExpressionValue(newValue, emptyComments),
         )
         if (isRight(updatedAttributes)) {
           return {

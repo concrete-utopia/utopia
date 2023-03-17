@@ -10,7 +10,7 @@ import {
   ArbitraryJSBlock,
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isUtopiaJSXComponent,
   JSXArbitraryBlock,
   jsxArbitraryBlock,
@@ -19,18 +19,18 @@ import {
   JSXArraySpread,
   jsxArrayValue,
   JSXArrayValue,
-  JSXAttribute,
-  JSXAttributeFunctionCall,
-  jsxAttributeFunctionCall,
-  JSXAttributeNestedArray,
-  jsxAttributeNestedArray,
-  JSXAttributeNestedObject,
-  jsxAttributeNestedObject,
-  JSXAttributeOtherJavaScript,
-  jsxAttributeOtherJavaScript,
+  JSExpression,
+  JSExpressionFunctionCall,
+  jsExpressionFunctionCall,
+  JSExpressionNestedArray,
+  jsExpressionNestedArray,
+  JSExpressionNestedObject,
+  jsExpressionNestedObject,
+  JSExpressionOtherJavaScript,
+  jsExpressionOtherJavaScript,
   JSXAttributes,
-  JSXAttributeValue,
-  jsxAttributeValue,
+  JSExpressionValue,
+  jsExpressionValue,
   JSXElement,
   jsxElement,
   JSXElementChild,
@@ -429,7 +429,7 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
   return FastCheck.constant(jsxArbitraryBlock('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}))
 }
 
-export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> {
+export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> {
   function validKey(key: string): boolean {
     // Exclude these characters from object keys.
     return !key.includes('"') && !key.includes("'")
@@ -446,12 +446,12 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> 
   }
   const valueArbitrary = FastCheck.jsonObject(2).filter(checkValue)
   return FastCheck.tuple(valueArbitrary, arbitraryMultiLineComments()).map(([value, comments]) =>
-    jsxAttributeValue(value, comments),
+    jsExpressionValue(value, comments),
   )
 }
 
-export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOtherJavaScript> {
-  return FastCheck.constant(jsxAttributeOtherJavaScript('1 + 2', '1 + 2', [], null, {}))
+export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSExpressionOtherJavaScript> {
+  return FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}))
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
@@ -475,11 +475,11 @@ export function jsxArrayElementArbitrary(depth: number): Arbitrary<JSXArrayEleme
 
 export function jsxAttributeNestedArrayArbitrary(
   depth: number,
-): Arbitrary<JSXAttributeNestedArray> {
+): Arbitrary<JSExpressionNestedArray> {
   return FastCheck.tuple(
     FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3),
     arbitraryMultiLineComments(),
-  ).map(([array, comments]) => jsxAttributeNestedArray(array, comments))
+  ).map(([array, comments]) => jsExpressionNestedArray(array, comments))
 }
 
 export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXPropertyAssignment> {
@@ -505,32 +505,32 @@ export function jsxPropertyArbitrary(depth: number): Arbitrary<JSXProperty> {
 
 export function jsxAttributeNestedObjectArbitrary(
   depth: number,
-): Arbitrary<JSXAttributeNestedObject> {
+): Arbitrary<JSExpressionNestedObject> {
   return FastCheck.tuple(
     FastCheck.array(jsxPropertyArbitrary(depth - 1), 3),
     arbitraryMultiLineComments(),
-  ).map(([values, comments]) => jsxAttributeNestedObject(values, comments))
+  ).map(([values, comments]) => jsExpressionNestedObject(values, comments))
 }
 
 export function jsxAttributeFunctionCallArbitrary(
   depth: number,
-): Arbitrary<JSXAttributeFunctionCall> {
+): Arbitrary<JSExpressionFunctionCall> {
   return FastCheck.tuple(
     lowercaseStringArbitrary(),
     FastCheck.array(jsxAttributeArbitrary(depth - 1), 3),
   ).map(([functionName, functionArguments]) => {
-    return jsxAttributeFunctionCall(functionName, functionArguments)
+    return jsExpressionFunctionCall(functionName, functionArguments)
   })
 }
 
-export function jsxAttributeArbitrary(depth: number): Arbitrary<JSXAttribute> {
+export function jsxAttributeArbitrary(depth: number): Arbitrary<JSExpression> {
   if (depth <= 1) {
-    return FastCheck.oneof<JSXAttribute>(
+    return FastCheck.oneof<JSExpression>(
       jsxAttributeValueArbitrary(),
       jsxAttributeOtherJavaScriptArbitrary(),
     )
   } else {
-    return FastCheck.oneof<JSXAttribute>(
+    return FastCheck.oneof<JSExpression>(
       jsxAttributeValueArbitrary(),
       jsxAttributeOtherJavaScriptArbitrary(),
       jsxAttributeNestedArrayArbitrary(depth),
@@ -710,7 +710,7 @@ function walkElements(
       break
     case 'JSX_TEXT_BLOCK':
       break
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       fastForEach(Object.keys(jsxElementChild.elementsWithin), (elementWithinKey) => {
         const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
         walkElements(innerElement, walkWith)
@@ -722,12 +722,25 @@ function walkElements(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      if (childOrBlockIsChild(jsxElementChild.whenTrue)) {
-        walkElements(jsxElementChild.whenTrue, walkWith)
-      }
-      if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
-        walkElements(jsxElementChild.whenFalse, walkWith)
-      }
+      walkElements(jsxElementChild.whenTrue, walkWith)
+      walkElements(jsxElementChild.whenFalse, walkWith)
+      break
+    case 'ATTRIBUTE_VALUE':
+      break
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      fastForEach(jsxElementChild.content, (contentElement) => {
+        walkElements(contentElement.value, walkWith)
+      })
+      break
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      fastForEach(jsxElementChild.content, (contentElement) => {
+        walkElements(contentElement.value, walkWith)
+      })
+      break
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      fastForEach(jsxElementChild.parameters, (param) => {
+        walkElements(param, walkWith)
+      })
       break
     default:
       const _exhaustiveCheck: never = jsxElementChild
@@ -748,7 +761,7 @@ function walkAllJSXElementChilds(
       break
     case 'JSX_TEXT_BLOCK':
       break
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       fastForEach(Object.keys(jsxElementChild.elementsWithin), (elementWithinKey) => {
         const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
         walkAllJSXElementChilds(innerElement, walkWith)
@@ -766,6 +779,23 @@ function walkAllJSXElementChilds(
       if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
         walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
       }
+      break
+    case 'ATTRIBUTE_VALUE':
+      break
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      fastForEach(jsxElementChild.content, (contentElement) => {
+        walkAllJSXElementChilds(contentElement.value, walkWith)
+      })
+      break
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      fastForEach(jsxElementChild.content, (contentElement) => {
+        walkAllJSXElementChilds(contentElement.value, walkWith)
+      })
+      break
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      fastForEach(jsxElementChild.parameters, (param) => {
+        walkAllJSXElementChilds(param, walkWith)
+      })
       break
     default:
       const _exhaustiveCheck: never = jsxElementChild
@@ -828,7 +858,7 @@ function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
 
 export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementChild): void {
   walkAllJSXElementChilds(jsxElementChild, (element) => {
-    if (isJSXArbitraryBlock(element)) {
+    if (isJSExpressionOtherJavaScript(element)) {
       const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
 
       Babel.transform(element.javascript, {

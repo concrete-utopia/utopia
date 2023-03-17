@@ -67,11 +67,11 @@ import {
   isJSXElement,
   isJSXFragment,
   isPartOfJSXAttributeValue,
-  jsxAttributeOtherJavaScript,
+  jsExpressionOtherJavaScript,
   JSXAttributes,
   jsxAttributesFromMap,
-  jsxAttributeValue,
-  JSXAttributeValue,
+  jsExpressionValue,
+  JSExpressionValue,
   jsxConditionalExpression,
   JSXConditionalExpression,
   JSXElement,
@@ -636,7 +636,7 @@ function switchAndUpdateFrames(
           return setJSXValueAtPath(
             attributes,
             styleDisplayPath,
-            jsxAttributeValue('flex', emptyComments),
+            jsExpressionValue('flex', emptyComments),
           )
         },
       )
@@ -675,7 +675,7 @@ function switchAndUpdateFrames(
           return setJSXValueAtPath(
             attributes,
             stylePropPathMappingFn('position', propertyTarget),
-            jsxAttributeValue('absolute', emptyComments),
+            jsExpressionValue('absolute', emptyComments),
           )
         },
       )
@@ -2176,7 +2176,7 @@ export const UPDATE_FNS = {
       propsTransform = (props) => unsetJSXValueAtPath(props, PathForSceneDataLabel)
     } else {
       propsTransform = (props) =>
-        setJSXValueAtPath(props, PathForSceneDataLabel, jsxAttributeValue(name, emptyComments))
+        setJSXValueAtPath(props, PathForSceneDataLabel, jsExpressionValue(name, emptyComments))
     }
     return modifyOpenJsxElementAtPath(
       target,
@@ -2360,7 +2360,7 @@ export const UPDATE_FNS = {
                 setJSXValueAtPath(
                   elementToWrapWith.props,
                   PP.create('style', 'position'), // todo make it optional
-                  jsxAttributeValue(position, emptyComments),
+                  jsExpressionValue(position, emptyComments),
                 ),
               ),
             }
@@ -2375,10 +2375,10 @@ export const UPDATE_FNS = {
               case 'conditional':
                 return jsxConditionalExpression(
                   newUID,
-                  jsxAttributeValue(true, emptyComments),
+                  jsExpressionValue(true, emptyComments),
                   'true',
-                  jsxAttributeValue(null, emptyComments),
-                  jsxAttributeValue(null, emptyComments),
+                  jsExpressionValue(null, emptyComments),
+                  jsExpressionValue(null, emptyComments),
                   emptyComments,
                 )
               default:
@@ -3184,7 +3184,7 @@ export const UPDATE_FNS = {
       const target = editor.selectedViews[0]
       const styleProps = editor._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
       const styleClipboardData = Object.keys(styleProps).map((name) =>
-        valueAtPath(PP.create('style', name), jsxAttributeValue(styleProps[name], emptyComments)),
+        valueAtPath(PP.create('style', name), jsExpressionValue(styleProps[name], emptyComments)),
       )
       return {
         ...editor,
@@ -3503,7 +3503,7 @@ export const UPDATE_FNS = {
     const height = Utils.pathOr(undefined, ['imageDetails', 'imageSize', 'height'], action)
 
     const imageURL = imagePathURL(assetFilename)
-    const imageAttribute = jsxAttributeValue(imageURL, emptyComments)
+    const imageAttribute = jsExpressionValue(imageURL, emptyComments)
 
     const newUID = generateUidWithExistingComponents(editor.projectContents)
     const openUIJSFile = getOpenUIJSFileKey(editor)
@@ -3519,7 +3519,7 @@ export const UPDATE_FNS = {
             if (isJSXElement(element)) {
               const srcAttribute = getJSXAttribute(element.props, 'src')
               if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
-                const srcValue: JSXAttributeValue<any> = srcAttribute
+                const srcValue: JSExpressionValue<any> = srcAttribute
                 if (
                   typeof srcValue.value === 'string' &&
                   srcValue.value.startsWith(imageWithoutHashURL)
@@ -3612,11 +3612,11 @@ export const UPDATE_FNS = {
             jsxElementName('img', []),
             newUID,
             jsxAttributesFromMap({
-              alt: jsxAttributeValue('', emptyComments),
+              alt: jsExpressionValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({ width: width, height: height }, emptyComments),
-              'data-uid': jsxAttributeValue(newUID, emptyComments),
-              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
+              style: jsExpressionValue({ width: width, height: height }, emptyComments),
+              'data-uid': jsExpressionValue(newUID, emptyComments),
+              [AspectRatioLockedProp]: jsExpressionValue(true, emptyComments),
             }),
             [],
           )
@@ -3648,19 +3648,19 @@ export const UPDATE_FNS = {
             jsxElementName('img', []),
             newUID,
             jsxAttributesFromMap({
-              alt: jsxAttributeValue('', emptyComments),
+              alt: jsExpressionValue('', emptyComments),
               src: imageAttribute,
               style: MetadataUtils.isFlexLayoutedContainer(
                 MetadataUtils.findElementByElementPath(editor.jsxMetadata, parent),
               )
-                ? jsxAttributeValue(
+                ? jsExpressionValue(
                     {
                       width: relativeFrame.width,
                       height: relativeFrame.height,
                     },
                     emptyComments,
                   )
-                : jsxAttributeValue(
+                : jsExpressionValue(
                     {
                       position: 'absolute',
                       left: relativeFrame.x,
@@ -3670,8 +3670,8 @@ export const UPDATE_FNS = {
                     },
                     emptyComments,
                   ),
-              'data-uid': jsxAttributeValue(newUID, emptyComments),
-              [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
+              'data-uid': jsExpressionValue(newUID, emptyComments),
+              [AspectRatioLockedProp]: jsExpressionValue(true, emptyComments),
             }),
             [],
           )
@@ -3707,25 +3707,25 @@ export const UPDATE_FNS = {
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
       const newUID = generateUidWithExistingComponents(editor.projectContents)
       const imageURL = imagePathURL(action.imagePath)
-      const imageSrcAttribute = jsxAttributeValue(imageURL, emptyComments)
+      const imageSrcAttribute = jsExpressionValue(imageURL, emptyComments)
       const width = Utils.optionalMap((w) => w / 2, possiblyAnImage.width)
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
         newUID,
         jsxAttributesFromMap({
-          alt: jsxAttributeValue('', emptyComments),
+          alt: jsExpressionValue('', emptyComments),
           src: imageSrcAttribute,
-          style: jsxAttributeValue(
+          style: jsExpressionValue(
             {
               width: width,
               height: height,
             },
             emptyComments,
           ),
-          'data-uid': jsxAttributeValue(newUID, emptyComments),
-          'data-label': jsxAttributeValue('Image', emptyComments),
-          [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
+          'data-uid': jsExpressionValue(newUID, emptyComments),
+          'data-label': jsExpressionValue('Image', emptyComments),
+          [AspectRatioLockedProp]: jsExpressionValue(true, emptyComments),
         }),
         [],
       )
@@ -4422,7 +4422,7 @@ export const UPDATE_FNS = {
           const setResult = setJSXValueAtPath(
             attributesWithUnsetKey.value,
             newPropertyPath,
-            jsxAttributeValue(originalValue.value, emptyComments),
+            jsExpressionValue(originalValue.value, emptyComments),
           )
           return setResult
         } else {
@@ -4519,7 +4519,7 @@ export const UPDATE_FNS = {
 
         return {
           ...element,
-          condition: jsxAttributeOtherJavaScript(
+          condition: jsExpressionOtherJavaScript(
             action.expression,
             action.expression,
             [],
@@ -4556,7 +4556,7 @@ export const UPDATE_FNS = {
         const path = PP.create(AspectRatioLockedProp)
         const updatedProps = action.locked
           ? eitherToMaybe(
-              setJSXValueAtPath(element.props, path, jsxAttributeValue(true, emptyComments)),
+              setJSXValueAtPath(element.props, path, jsExpressionValue(true, emptyComments)),
             )
           : deleteJSXAttribute(element.props, AspectRatioLockedProp)
         return {
@@ -4583,7 +4583,7 @@ export const UPDATE_FNS = {
     const projectContent = action.image
     const parent = arrayToMaybe(editor.highlightedViews)
     const newUID = generateUidWithExistingComponents(editor.projectContents)
-    const imageAttribute = jsxAttributeValue(imagePathURL(action.path), emptyComments)
+    const imageAttribute = jsExpressionValue(imagePathURL(action.path), emptyComments)
     const size: Size = {
       width: projectContent.width ?? 100,
       height: projectContent.height ?? 100,
@@ -4602,9 +4602,9 @@ export const UPDATE_FNS = {
       jsxElementName('img', []),
       newUID,
       jsxAttributesFromMap({
-        alt: jsxAttributeValue('', emptyComments),
+        alt: jsExpressionValue('', emptyComments),
         src: imageAttribute,
-        style: jsxAttributeValue(
+        style: jsExpressionValue(
           {
             position: 'absolute',
             left: parentShiftX + frame.x,
@@ -4614,8 +4614,8 @@ export const UPDATE_FNS = {
           },
           emptyComments,
         ),
-        'data-uid': jsxAttributeValue(newUID, emptyComments),
-        [AspectRatioLockedProp]: jsxAttributeValue(true, emptyComments),
+        'data-uid': jsExpressionValue(newUID, emptyComments),
+        [AspectRatioLockedProp]: jsExpressionValue(true, emptyComments),
       }),
       [],
     )
@@ -5083,7 +5083,7 @@ export const UPDATE_FNS = {
             setJSXValueAtPath(
               action.toInsert.element.props,
               PP.create(UTOPIA_UID_KEY),
-              jsxAttributeValue(newUID, emptyComments),
+              jsExpressionValue(newUID, emptyComments),
             ),
             `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
           )
@@ -5091,10 +5091,10 @@ export const UPDATE_FNS = {
           let props = propsWithUid
           if (action.styleProps === 'add-size') {
             const sizesToSet: Array<ValueAtPath> = [
-              { path: PP.create('style', 'width'), value: jsxAttributeValue(100, emptyComments) },
+              { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
               {
                 path: PP.create('style', 'height'),
-                value: jsxAttributeValue(100, emptyComments),
+                value: jsExpressionValue(100, emptyComments),
               },
             ]
             const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)

@@ -5,7 +5,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
 } from '../../../core/shared/element-template'
 import {
@@ -158,7 +158,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
     const propsToUpdate: Array<ValueAtPath> = [
       {
         path: command.property,
-        value: jsxAttributeValue(newValue, emptyComments),
+        value: jsExpressionValue(newValue, emptyComments),
       },
     ]
 

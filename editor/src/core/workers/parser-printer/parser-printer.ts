@@ -40,7 +40,7 @@ import {
   isOmittedParam,
   isRegularParam,
   isUtopiaJSXComponent,
-  JSXAttribute,
+  JSExpression,
   JSXElementChild,
   JSXElementName,
   omittedParam,
@@ -50,7 +50,7 @@ import {
   UtopiaJSXComponent,
   utopiaJSXComponent,
   propNamesForParam,
-  JSXAttributeOtherJavaScript,
+  JSExpressionOtherJavaScript,
   jsxElementName,
   Comment,
   singleLineComment,
@@ -140,7 +140,7 @@ import { v4 as UUID } from 'uuid'
 
 function buildPropertyCallingFunction(
   functionName: string,
-  parameters: JSXAttribute[],
+  parameters: JSExpression[],
 ): TS.Expression {
   return TS.createCall(
     TS.createPropertyAccess(TS.createIdentifier('UtopiaUtils'), TS.createIdentifier(functionName)),
@@ -149,7 +149,7 @@ function buildPropertyCallingFunction(
   )
 }
 
-function getJSXAttributeComments(attribute: JSXAttribute): ParsedComments {
+function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -182,7 +182,7 @@ function rawCodeToExpressionStatement(
   }
 }
 
-function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
+function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
   function createExpression(): TS.Expression {
     switch (attribute.type) {
       case 'ATTRIBUTE_VALUE':
@@ -383,7 +383,8 @@ function jsxElementToExpression(
   | TS.JsxText
   | TS.JsxExpression
   | TS.JsxFragment
-  | TS.ConditionalExpression {
+  | TS.ConditionalExpression
+  | TS.Expression {
   switch (element.type) {
     case 'JSX_ELEMENT': {
       let attribsArray: Array<TS.JsxAttributeLike> = []
@@ -445,7 +446,7 @@ function jsxElementToExpression(
         )
       }
     }
-    case 'JSX_ARBITRARY_BLOCK': {
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
       let rawCode: string = element.javascript // Fallback for the case where the code is simply a comment
       if (maybeExpressionStatement != null) {
@@ -516,6 +517,11 @@ function jsxElementToExpression(
 
       return node
     }
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return jsxAttributeToExpression(element)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -528,10 +534,16 @@ function jsxElementToJSXExpression(
   stripUIDs: boolean,
 ): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
   const expression = jsxElementToExpression(element, imports, stripUIDs)
-  if (TS.isConditionalExpression(expression)) {
-    return TS.createJsxExpression(undefined, expression)
-  } else {
+  if (
+    TS.isJsxElement(expression) ||
+    TS.isJsxSelfClosingElement(expression) ||
+    TS.isJsxText(expression) ||
+    TS.isJsxExpression(expression) ||
+    TS.isJsxFragment(expression)
+  ) {
     return expression
+  } else {
+    return TS.createJsxExpression(undefined, expression)
   }
 }
 
@@ -724,7 +736,7 @@ function printParam(param: Param): TS.ParameterDeclaration {
 }
 
 function printBindingExpression(
-  defaultExpression: JSXAttributeOtherJavaScript | null,
+  defaultExpression: JSExpressionOtherJavaScript | null,
 ): TS.Expression | undefined {
   if (defaultExpression == null) {
     return undefined
@@ -1754,7 +1766,7 @@ function parseParam(
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
     string,
-    WithParserMetadata<JSXAttributeOtherJavaScript | undefined>
+    WithParserMetadata<JSExpressionOtherJavaScript | undefined>
   > = param.initializer == null
     ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
     : parseAttributeOtherJavaScript(
@@ -1795,7 +1807,7 @@ function parseParam(
 
 function parseBindingName(
   elem: TS.BindingName,
-  expression: WithParserMetadata<JSXAttributeOtherJavaScript | undefined>,
+  expression: WithParserMetadata<JSExpressionOtherJavaScript | undefined>,
   file: TS.SourceFile,
   sourceText: string,
   filename: string,

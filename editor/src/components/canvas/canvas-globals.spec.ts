@@ -2,7 +2,7 @@ import { right } from '../../core/shared/either'
 import {
   emptyComments,
   jsxAttributesEntry,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElementWithoutUID,
 } from '../../core/shared/element-template'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
@@ -31,7 +31,7 @@ const cardComponentDescriptor: ComponentDescriptor = {
       insertMenuLabel: 'Card Default',
       elementToInsert: jsxElementWithoutUID(
         'Card',
-        [jsxAttributesEntry('title', jsxAttributeValue('Default', emptyComments), emptyComments)],
+        [jsxAttributesEntry('title', jsExpressionValue('Default', emptyComments), emptyComments)],
         [],
       ),
       importsToAdd: {
@@ -73,8 +73,8 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
       elementToInsert: jsxElementWithoutUID(
         'Card',
         [
-          jsxAttributesEntry('title', jsxAttributeValue('Default', emptyComments), emptyComments),
-          jsxAttributesEntry('border', jsxAttributeValue('shiny', emptyComments), emptyComments),
+          jsxAttributesEntry('title', jsExpressionValue('Default', emptyComments), emptyComments),
+          jsxAttributesEntry('border', jsExpressionValue('shiny', emptyComments), emptyComments),
         ],
         [],
       ),
@@ -110,7 +110,7 @@ const selectorComponentDescriptor: ComponentDescriptor = {
         [
           jsxAttributesEntry(
             'value',
-            jsxAttributeValue(`'FileNotFound'`, emptyComments),
+            jsExpressionValue(`'FileNotFound'`, emptyComments),
             emptyComments,
           ),
         ],

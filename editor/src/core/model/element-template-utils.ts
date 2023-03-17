@@ -6,7 +6,7 @@ import {
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
@@ -21,7 +21,7 @@ import {
   Param,
   JSXAttributes,
   JSXAttributesPart,
-  JSXAttribute,
+  JSExpression,
   JSXArrayElement,
   JSXProperty,
   isSpreadAssignment,
@@ -33,7 +33,7 @@ import {
   childOrBlockIsChild,
   emptyComments,
   ChildOrAttribute,
-  jsxAttributeValue,
+  jsExpressionValue,
   childOrBlockIsAttribute,
   jsxConditionalExpression,
 } from '../shared/element-template'
@@ -229,7 +229,7 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
+    } else if (isJSExpressionOtherJavaScript(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
         const updatedChildren = Object.values(element.elementsWithin).reduce(
@@ -364,7 +364,10 @@ export function findJSXElementChildAtPath(
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element) && firstUIDOrIndex in element.elementsWithin) {
+    } else if (
+      isJSExpressionOtherJavaScript(element) &&
+      firstUIDOrIndex in element.elementsWithin
+    ) {
       const elementWithin = element.elementsWithin[firstUIDOrIndex]
       const withinResult = findAtPathInner(elementWithin, workingPath)
       if (withinResult != null) {
@@ -501,7 +504,7 @@ export function removeJSXElementChild(
         'false-case',
       )
 
-      const nullAttribute = jsxAttributeValue(null, emptyComments)
+      const nullAttribute = jsExpressionValue(null, emptyComments)
 
       return {
         ...parentElement,
@@ -636,7 +639,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.length > 0 &&
     elements.every((element) => {
       switch (element.type) {
-        case 'JSX_ARBITRARY_BLOCK':
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
@@ -645,6 +648,18 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
           return allElementsAndChildrenAreText(element.children)
         case 'JSX_TEXT_BLOCK':
           return textBlockIsNonEmpty(element)
+        case 'ATTRIBUTE_VALUE':
+          return typeof element.value === 'string'
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return element.content.every((contentElement) => {
+            return elementOnlyHasTextChildren(contentElement.value)
+          })
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return element.content.every((contentElement) => {
+            return elementOnlyHasTextChildren(contentElement.value)
+          })
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return allElementsAndChildrenAreText(element.parameters)
         default:
           assertNever(element)
       }
@@ -654,7 +669,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe we the current branch only includes text children???
       return false // We can't possibly know at this point
     case 'JSX_ELEMENT':
@@ -666,6 +681,18 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
       return allElementsAndChildrenAreText(element.children)
     case 'JSX_TEXT_BLOCK':
       return textBlockIsNonEmpty(element)
+    case 'ATTRIBUTE_VALUE':
+      return typeof element.value === 'string'
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return element.content.every((contentElement) => {
+        return elementOnlyHasTextChildren(contentElement.value)
+      })
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return element.content.every((contentElement) => {
+        return elementOnlyHasTextChildren(contentElement.value)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return allElementsAndChildrenAreText(element.parameters)
     default:
       assertNever(element)
   }
@@ -907,7 +934,7 @@ export function elementUsesProperty(
       })
       const fromAttributes = attributesUseProperty(element.props, propsParam, property)
       return fromChildren || fromAttributes
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(element.originalJavascript, propsParam, property)
     case 'JSX_TEXT_BLOCK':
       return false
@@ -923,6 +950,20 @@ export function elementUsesProperty(
         (childOrBlockIsChild(element.whenFalse) &&
           elementUsesProperty(element.whenFalse, propsParam, property))
       )
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return element.content.some((child) => {
+        return elementUsesProperty(child.value, propsParam, property)
+      })
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return element.content.some((child) => {
+        return elementUsesProperty(child.value, propsParam, property)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return element.parameters.some((param) => {
+        return elementUsesProperty(param, propsParam, property)
+      })
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -954,7 +995,7 @@ export function jsxPropertyUsesProperty(
 }
 
 export function attributeUsesProperty(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   propsParam: Param,
   property: string,
 ): boolean {

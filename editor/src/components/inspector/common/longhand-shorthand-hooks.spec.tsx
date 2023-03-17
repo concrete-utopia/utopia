@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react'
 import {
   ComputedStyle,
   emptyComments,
-  jsxAttributeValue,
+  jsExpressionValue,
   StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
 import { cssNumber, ParsedPropertiesKeys } from './css-utils'
@@ -299,7 +299,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(100, emptyComments),
+            jsExpressionValue(100, emptyComments),
           ),
         ],
       ],
@@ -322,7 +322,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'padding'),
-            jsxAttributeValue('8px 8px 8px 50px', emptyComments),
+            jsExpressionValue('8px 8px 8px 50px', emptyComments),
           ),
         ],
       ],
@@ -345,7 +345,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingRight'),
-            jsxAttributeValue(5, emptyComments),
+            jsExpressionValue(5, emptyComments),
           ),
         ],
       ],
@@ -368,7 +368,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(8, emptyComments),
+            jsExpressionValue(8, emptyComments),
           ),
         ],
       ],
@@ -391,7 +391,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(8, emptyComments),
+            jsExpressionValue(8, emptyComments),
           ),
         ],
       ],
@@ -415,7 +415,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(16, emptyComments),
+            jsExpressionValue(16, emptyComments),
           ),
         ],
       ],
@@ -439,7 +439,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'padding'),
-            jsxAttributeValue('4px 8px 4px 18px', emptyComments),
+            jsExpressionValue('4px 8px 4px 18px', emptyComments),
           ),
         ],
       ],
@@ -483,17 +483,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingTop'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingRight'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingBottom'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
         ],
       ],
@@ -518,7 +518,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(undefined, emptyComments),
+            jsExpressionValue(undefined, emptyComments),
           ),
         ],
       ],
@@ -544,17 +544,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingTop'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingRight'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingBottom'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
         ],
       ],
@@ -580,17 +580,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingTop'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingRight'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingBottom'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
         ],
       ],
@@ -615,7 +615,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(undefined, emptyComments),
+            jsExpressionValue(undefined, emptyComments),
           ),
         ],
       ],
@@ -640,7 +640,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingLeft'),
-            jsxAttributeValue(undefined, emptyComments),
+            jsExpressionValue(undefined, emptyComments),
           ),
         ],
       ],
@@ -666,17 +666,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingTop'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingRight'),
-            jsxAttributeValue(25, emptyComments),
+            jsExpressionValue(25, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingBottom'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
         ],
       ],
@@ -702,17 +702,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingTop'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingRight'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create('style', 'paddingBottom'),
-            jsxAttributeValue(10, emptyComments),
+            jsExpressionValue(10, emptyComments),
           ),
         ],
       ],

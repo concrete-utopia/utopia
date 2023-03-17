@@ -117,7 +117,7 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   jsxElement,
 } from '../../core/shared/element-template'
@@ -749,7 +749,7 @@ export function handleKeyDown(
                 EditorActions.setProperty(
                   view,
                   PP.create('style', 'backgroundColor'),
-                  jsxAttributeValue(sRGBHex, emptyComments),
+                  jsExpressionValue(sRGBHex, emptyComments),
                 ),
               ),
             ),
@@ -1103,8 +1103,8 @@ function detectBestWrapperElement(
   }
 
   const props = jsxAttributesFromMap({
-    'data-uid': jsxAttributeValue(uid, emptyComments),
-    style: jsxAttributeValue(style, emptyComments),
+    'data-uid': jsExpressionValue(uid, emptyComments),
+    style: jsExpressionValue(style, emptyComments),
   })
 
   return {

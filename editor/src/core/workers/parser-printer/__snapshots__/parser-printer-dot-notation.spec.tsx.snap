@@ -145,7 +145,7 @@ export var storyboard = (props) => {
           "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"bbb\\", {
   callerThis: this
 });",
-          "type": "JSX_ARBITRARY_BLOCK",
+          "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
           "uniqueID": "",
         },
       ],

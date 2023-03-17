@@ -30,7 +30,7 @@ import {
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
@@ -364,7 +364,7 @@ export function switchPinnedChildToFlex(
   let propsToAdd: Array<ValueAtPath> = [
     {
       path: stylePropPathMappingFn('position', propertyTarget),
-      value: jsxAttributeValue('relative', emptyComments),
+      value: jsExpressionValue('relative', emptyComments),
     },
   ]
 
@@ -390,19 +390,19 @@ export function switchPinnedChildToFlex(
       if (flexBasis != null) {
         propsToAdd.push({
           path: stylePropPathMappingFn('flexBasis', propertyTarget),
-          value: jsxAttributeValue(flexBasis, emptyComments),
+          value: jsExpressionValue(flexBasis, emptyComments),
         })
       }
       if (width != null) {
         propsToAdd.push({
           path: stylePropPathMappingFn('width', propertyTarget),
-          value: jsxAttributeValue(width, emptyComments),
+          value: jsExpressionValue(width, emptyComments),
         })
       }
       if (height != null) {
         propsToAdd.push({
           path: stylePropPathMappingFn('height', propertyTarget),
-          value: jsxAttributeValue(height, emptyComments),
+          value: jsExpressionValue(height, emptyComments),
         })
       }
     })
@@ -795,19 +795,19 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
   const propsToAdd: Array<ValueAtPath> = [
     {
       path: stylePropPathMappingFn('left', propertyTarget),
-      value: jsxAttributeValue(left, emptyComments),
+      value: jsExpressionValue(left, emptyComments),
     },
     {
       path: stylePropPathMappingFn('top', propertyTarget),
-      value: jsxAttributeValue(top, emptyComments),
+      value: jsExpressionValue(top, emptyComments),
     },
     {
       path: stylePropPathMappingFn('width', propertyTarget),
-      value: jsxAttributeValue(width, emptyComments),
+      value: jsExpressionValue(width, emptyComments),
     },
     {
       path: stylePropPathMappingFn('height', propertyTarget),
-      value: jsxAttributeValue(height, emptyComments),
+      value: jsExpressionValue(height, emptyComments),
     },
   ]
 
@@ -845,23 +845,23 @@ function removeFlexAndAddPinnedPropsToComponent(
   const propsToAdd: Array<ValueAtPath> = [
     {
       path: stylePropPathMappingFn('left', propertyTarget),
-      value: jsxAttributeValue(left, emptyComments),
+      value: jsExpressionValue(left, emptyComments),
     },
     {
       path: stylePropPathMappingFn('top', propertyTarget),
-      value: jsxAttributeValue(top, emptyComments),
+      value: jsExpressionValue(top, emptyComments),
     },
     {
       path: stylePropPathMappingFn('width', propertyTarget),
-      value: jsxAttributeValue(width, emptyComments),
+      value: jsExpressionValue(width, emptyComments),
     },
     {
       path: stylePropPathMappingFn('height', propertyTarget),
-      value: jsxAttributeValue(height, emptyComments),
+      value: jsExpressionValue(height, emptyComments),
     },
     {
       path: stylePropPathMappingFn('position', propertyTarget),
-      value: jsxAttributeValue('absolute', emptyComments),
+      value: jsExpressionValue('absolute', emptyComments),
     },
   ]
   const propsToRemove: Array<StyleLayoutProp> = ['flexBasis']
@@ -898,19 +898,19 @@ function changePinsToDefaultOnComponent(
   const propsToAdd: Array<ValueAtPath> = [
     {
       path: stylePropPathMappingFn('left', propertyTarget),
-      value: jsxAttributeValue(left, emptyComments),
+      value: jsExpressionValue(left, emptyComments),
     },
     {
       path: stylePropPathMappingFn('top', propertyTarget),
-      value: jsxAttributeValue(top, emptyComments),
+      value: jsExpressionValue(top, emptyComments),
     },
     {
       path: stylePropPathMappingFn('width', propertyTarget),
-      value: jsxAttributeValue(width, emptyComments),
+      value: jsExpressionValue(width, emptyComments),
     },
     {
       path: stylePropPathMappingFn('height', propertyTarget),
-      value: jsxAttributeValue(height, emptyComments),
+      value: jsExpressionValue(height, emptyComments),
     },
   ]
   const propsToRemove: Array<StyleLayoutProp> = ['bottom', 'right']
@@ -983,7 +983,7 @@ export function roundAttributeLayoutValues(
               const withValueSet = setJSXValueAtPath(
                 workingAttributes,
                 propertyToRound,
-                jsxAttributeValue(rounded, emptyComments),
+                jsExpressionValue(rounded, emptyComments),
               )
               // Should we (unexpectedly) be unable to set the value, default the result.
               return defaultEither(workingAttributes, withValueSet)

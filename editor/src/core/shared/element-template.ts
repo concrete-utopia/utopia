@@ -113,16 +113,22 @@ export interface WithComments {
   comments: ParsedComments
 }
 
-export interface JSXAttributeValue<T> extends WithComments {
+export interface JSExpressionValue<T> extends WithComments {
   type: 'ATTRIBUTE_VALUE'
+  uniqueID: string
   value: T
 }
 
-export function jsxAttributeValue<T>(value: T, comments: ParsedComments): JSXAttributeValue<T> {
+export function jsExpressionValue<T>(
+  value: T,
+  comments: ParsedComments,
+  uniqueID: string = UUID(),
+): JSExpressionValue<T> {
   return {
     type: 'ATTRIBUTE_VALUE',
     value: value,
     comments: comments,
+    uniqueID: uniqueID,
   }
 }
 
@@ -159,8 +165,9 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-export interface JSXAttributeOtherJavaScript {
+export interface JSExpressionOtherJavaScript {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
+  originalJavascript: string
   javascript: string
   transpiledJavascript: string
   definedElsewhere: Array<string>
@@ -169,31 +176,33 @@ export interface JSXAttributeOtherJavaScript {
   elementsWithin: ElementsWithin
 }
 
-export function jsxAttributeOtherJavaScript(
+export function jsExpressionOtherJavaScript(
   javascript: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
-): JSXAttributeOtherJavaScript {
+  uniqueID: string = UUID(),
+): JSExpressionOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+    originalJavascript: javascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uniqueID: UUID(),
+    uniqueID: uniqueID,
     elementsWithin: elementsWithin,
   }
 }
 
 export interface JSXSpreadAssignment extends WithComments {
   type: 'SPREAD_ASSIGNMENT'
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export function jsxSpreadAssignment(
-  value: JSXAttribute,
+  value: JSExpression,
   comments: ParsedComments,
 ): JSXSpreadAssignment {
   return {
@@ -206,13 +215,13 @@ export function jsxSpreadAssignment(
 export interface JSXPropertyAssignment extends WithComments {
   type: 'PROPERTY_ASSIGNMENT'
   key: string
-  value: JSXAttribute
+  value: JSExpression
   keyComments: ParsedComments
 }
 
 export function jsxPropertyAssignment(
   key: string,
-  value: JSXAttribute,
+  value: JSExpression,
   comments: ParsedComments,
   keyComments: ParsedComments,
 ): JSXPropertyAssignment {
@@ -235,41 +244,46 @@ export function isPropertyAssignment(property: JSXProperty): property is JSXProp
   return property.type === 'PROPERTY_ASSIGNMENT'
 }
 
-export interface JSXAttributeNestedObject extends WithComments {
+export interface JSExpressionNestedObject extends WithComments {
   type: 'ATTRIBUTE_NESTED_OBJECT'
   content: Array<JSXProperty>
+  uniqueID: string
 }
 
-export function jsxAttributeNestedObject(
+export function jsExpressionNestedObject(
   content: Array<JSXProperty>,
   comments: ParsedComments,
-): JSXAttributeNestedObject {
+  uniqueID: string = UUID(),
+): JSExpressionNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
     content: content,
     comments: comments,
+    uniqueID: uniqueID,
   }
 }
 
 export function jsxAttributeNestedObjectSimple(
   content: Array<JSXAttributesEntry>,
   comments: ParsedComments,
-): JSXAttributeNestedObject {
+  uniqueID: string = UUID(),
+): JSExpressionNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
     content: content.map((elem) =>
       jsxPropertyAssignment(elem.key, elem.value, emptyComments, emptyComments),
     ),
     comments: comments,
+    uniqueID: uniqueID,
   }
 }
 
 export interface JSXArrayValue extends WithComments {
   type: 'ARRAY_VALUE'
-  value: JSXAttribute
+  value: JSExpression
 }
 
-export function jsxArrayValue(value: JSXAttribute, comments: ParsedComments): JSXArrayValue {
+export function jsxArrayValue(value: JSExpression, comments: ParsedComments): JSXArrayValue {
   return {
     type: 'ARRAY_VALUE',
     value: value,
@@ -279,10 +293,10 @@ export function jsxArrayValue(value: JSXAttribute, comments: ParsedComments): JS
 
 export interface JSXArraySpread extends WithComments {
   type: 'ARRAY_SPREAD'
-  value: JSXAttribute
+  value: JSExpression
 }
 
-export function jsxArraySpread(value: JSXAttribute, comments: ParsedComments): JSXArraySpread {
+export function jsxArraySpread(value: JSExpression, comments: ParsedComments): JSXArraySpread {
   return {
     type: 'ARRAY_SPREAD',
     value: value,
@@ -300,58 +314,64 @@ export function isArraySpread(elem: JSXArrayElement): elem is JSXArraySpread {
   return elem.type === 'ARRAY_SPREAD'
 }
 
-export interface JSXAttributeNestedArray extends WithComments {
+export interface JSExpressionNestedArray extends WithComments {
   type: 'ATTRIBUTE_NESTED_ARRAY'
   content: Array<JSXArrayElement>
+  uniqueID: string
 }
 
-export function jsxAttributeNestedArray(
+export function jsExpressionNestedArray(
   content: Array<JSXArrayElement>,
   comments: ParsedComments,
-): JSXAttributeNestedArray {
+  uniqueID: string = UUID(),
+): JSExpressionNestedArray {
   return {
     type: 'ATTRIBUTE_NESTED_ARRAY',
     content: content,
     comments: comments,
+    uniqueID: uniqueID,
   }
 }
 
 export function jsxAttributeNestedArraySimple(
-  content: Array<JSXAttribute>,
-): JSXAttributeNestedArray {
-  return jsxAttributeNestedArray(
+  content: Array<JSExpression>,
+): JSExpressionNestedArray {
+  return jsExpressionNestedArray(
     content.map((value) => jsxArrayValue(value, emptyComments)),
     emptyComments,
   )
 }
 
-export interface JSXAttributeFunctionCall {
+export interface JSExpressionFunctionCall {
   type: 'ATTRIBUTE_FUNCTION_CALL'
   functionName: string
-  parameters: Array<JSXAttribute>
+  parameters: Array<JSExpression>
+  uniqueID: string
 }
 
-export function jsxAttributeFunctionCall(
+export function jsExpressionFunctionCall(
   functionName: string,
-  parameters: Array<JSXAttribute>,
-): JSXAttributeFunctionCall {
+  parameters: Array<JSExpression>,
+  uniqueID: string = UUID(),
+): JSExpressionFunctionCall {
   return {
     type: 'ATTRIBUTE_FUNCTION_CALL',
     functionName: functionName,
     parameters: parameters,
+    uniqueID: uniqueID,
   }
 }
 
-export type JSXAttribute =
-  | JSXAttributeValue<any>
-  | JSXAttributeOtherJavaScript
-  | JSXAttributeNestedArray
-  | JSXAttributeNestedObject
-  | JSXAttributeFunctionCall
+export type JSExpression =
+  | JSExpressionValue<any>
+  | JSExpressionOtherJavaScript
+  | JSExpressionNestedArray
+  | JSExpressionNestedObject
+  | JSExpressionFunctionCall
 
 export function clearJSXAttributeOtherJavaScriptUniqueIDs(
-  attribute: JSXAttributeOtherJavaScript,
-): JSXAttributeOtherJavaScript {
+  attribute: JSExpressionOtherJavaScript,
+): JSExpressionOtherJavaScript {
   const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
   return {
     ...attribute,
@@ -381,7 +401,7 @@ export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttr
   })
 }
 
-export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribute {
+export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -415,9 +435,9 @@ export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribu
         }
       }
       if (isSimpleArray) {
-        return jsxAttributeValue(simpleArray, attribute.comments)
+        return jsExpressionValue(simpleArray, attribute.comments)
       } else {
-        return jsxAttributeNestedArray(notSoSimpleArray, attribute.comments)
+        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments)
       }
     case 'ATTRIBUTE_NESTED_OBJECT':
       let simpleObject: MapLike<unknown> = {}
@@ -462,9 +482,9 @@ export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribu
         }
       }
       if (isSimpleObject) {
-        return jsxAttributeValue(simpleObject, attribute.comments)
+        return jsExpressionValue(simpleObject, attribute.comments)
       } else {
-        return jsxAttributeNestedObject(notSoSimpleObject, attribute.comments)
+        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments)
       }
     default:
       const _exhaustiveCheck: never = attribute
@@ -472,14 +492,14 @@ export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribu
   }
 }
 
-export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
+export function clearAttributeUniqueIDs(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
-      return attribute
+      return jsExpressionValue(attribute.value, attribute.comments, '')
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSXAttributeOtherJavaScriptUniqueIDs(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
-      return jsxAttributeNestedArray(
+      return jsExpressionNestedArray(
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
@@ -492,14 +512,16 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
           }
         }),
         attribute.comments,
+        '',
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return jsxAttributeFunctionCall(
+      return jsExpressionFunctionCall(
         attribute.functionName,
         attribute.parameters.map(clearAttributeUniqueIDs),
+        '',
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return jsxAttributeNestedObject(
+      return jsExpressionNestedObject(
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
@@ -517,6 +539,7 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
           }
         }),
         attribute.comments,
+        '',
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -525,22 +548,22 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
 }
 
 export function clearJSXAttributeOtherJavaScriptSourceMaps(
-  attribute: JSXAttributeOtherJavaScript,
-): JSXAttributeOtherJavaScript {
+  attribute: JSExpressionOtherJavaScript,
+): JSExpressionOtherJavaScript {
   return {
     ...attribute,
     sourceMap: null,
   }
 }
 
-export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute {
+export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSXAttributeOtherJavaScriptSourceMaps(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
-      return jsxAttributeNestedArray(
+      return jsExpressionNestedArray(
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
@@ -555,12 +578,12 @@ export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute 
         emptyComments,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return jsxAttributeFunctionCall(
+      return jsExpressionFunctionCall(
         attribute.functionName,
         attribute.parameters.map(clearAttributeSourceMaps),
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return jsxAttributeNestedObject(
+      return jsExpressionNestedObject(
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
@@ -586,38 +609,38 @@ export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute 
 }
 
 export function isJSXAttributeValue(
-  attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSXAttributeValue<any> {
+  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
+): attribute is JSExpressionValue<any> {
   return attribute != null && attribute.type === 'ATTRIBUTE_VALUE'
 }
 
 export function isPartOfJSXAttributeValue(
-  attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
+  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
 ): attribute is PartOfJSXAttributeValue {
   return attribute != null && attribute.type === 'PART_OF_ATTRIBUTE_VALUE'
 }
 
 export function isJSXAttributeOtherJavaScript(
   attribute: ModifiableAttribute,
-): attribute is JSXAttributeOtherJavaScript {
+): attribute is JSExpressionOtherJavaScript {
   return attribute != null && attribute.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
 export function isJSXAttributeFunctionCall(
-  attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSXAttributeFunctionCall {
+  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
+): attribute is JSExpressionFunctionCall {
   return attribute != null && attribute.type === 'ATTRIBUTE_FUNCTION_CALL'
 }
 
 export function isJSXAttributeNestedArray(
-  attribute: JSXAttribute | PartOfJSXAttributeValue,
-): attribute is JSXAttributeNestedArray {
+  attribute: JSExpression | PartOfJSXAttributeValue,
+): attribute is JSExpressionNestedArray {
   return attribute != null && attribute.type === 'ATTRIBUTE_NESTED_ARRAY'
 }
 
 export function isJSXAttributeNestedObject(
-  attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSXAttributeNestedObject {
+  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
+): attribute is JSExpressionNestedObject {
   return attribute != null && attribute.type === 'ATTRIBUTE_NESTED_OBJECT'
 }
 
@@ -626,8 +649,8 @@ export function isJSXAttributeNotFound(attribute: unknown): attribute is JSXAttr
 }
 
 export function isRegularJSXAttribute(
-  attribute: JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSXAttribute {
+  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
+): attribute is JSExpression {
   return (
     attribute != null && !isPartOfJSXAttributeValue(attribute) && !isJSXAttributeNotFound(attribute)
   )
@@ -636,12 +659,12 @@ export function isRegularJSXAttribute(
 export interface JSXAttributesEntry extends WithComments {
   type: 'JSX_ATTRIBUTES_ENTRY'
   key: string
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export function jsxAttributesEntry(
   key: string,
-  value: JSXAttribute,
+  value: JSExpression,
   comments: ParsedComments,
 ): JSXAttributesEntry {
   return {
@@ -653,16 +676,16 @@ export function jsxAttributesEntry(
 }
 
 export function simpleAttribute(key: string, value: unknown): JSXAttributesEntry {
-  return jsxAttributesEntry(key, jsxAttributeValue(value, emptyComments), emptyComments)
+  return jsxAttributesEntry(key, jsExpressionValue(value, emptyComments), emptyComments)
 }
 
 export interface JSXAttributesSpread extends WithComments {
   type: 'JSX_ATTRIBUTES_SPREAD'
-  spreadValue: JSXAttribute
+  spreadValue: JSExpression
 }
 
 export function jsxAttributesSpread(
-  spreadValue: JSXAttribute,
+  spreadValue: JSExpression,
   comments: ParsedComments,
 ): JSXAttributesSpread {
   return {
@@ -684,13 +707,13 @@ export function isJSXAttributesSpread(part: JSXAttributesPart): part is JSXAttri
 
 export type JSXAttributes = Array<JSXAttributesPart>
 
-export function jsxAttributesFromMap(map: MapLike<JSXAttribute>): Array<JSXAttributesEntry> {
+export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttributesEntry> {
   return Object.keys(map).map((objectKey) => {
     return jsxAttributesEntry(objectKey, map[objectKey], emptyComments)
   })
 }
 
-export function getJSXAttribute(attributes: JSXAttributes, key: string): JSXAttribute | null {
+export function getJSXAttribute(attributes: JSXAttributes, key: string): JSExpression | null {
   for (const attrPart of reverse(attributes)) {
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
@@ -736,7 +759,7 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
 export function setJSXAttributesAttribute(
   attributes: JSXAttributes,
   key: string,
-  value: JSXAttribute,
+  value: JSExpression,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
   const simplifiedValue = simplifyAttributeIfPossible(value)
@@ -767,7 +790,7 @@ export function setJSXAttributesAttribute(
   return result
 }
 
-export function attributeReferencesElsewhere(attribute: JSXAttribute): boolean {
+export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
@@ -807,7 +830,7 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   switch (element.type) {
     case 'JSX_ELEMENT':
       return element.props.some(jsxAttributesPartReferencesElsewhere)
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return element.definedElsewhere.length > 0
     case 'JSX_TEXT_BLOCK':
       return false
@@ -818,13 +841,25 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
         (childOrBlockIsChild(element.whenTrue) && elementReferencesElsewhere(element.whenTrue)) ||
         (childOrBlockIsChild(element.whenFalse) && elementReferencesElsewhere(element.whenFalse))
       )
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return element.content.some((contentPart) => {
+        return elementReferencesElsewhere(contentPart.value)
+      })
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return element.content.some((contentPart) => {
+        return elementReferencesElsewhere(contentPart.value)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return element.parameters.some(elementReferencesElsewhere)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
   }
 }
 
-export function getDefinedElsewhereFromAttribute(attribute: JSXAttribute): Array<string> {
+export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   if (isJSXAttributeOtherJavaScript(attribute)) {
     return attribute.definedElsewhere
   } else if (isJSXAttributeNestedObject(attribute)) {
@@ -857,7 +892,7 @@ export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Ar
 export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
   const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
   return element.children.reduce((working, child) => {
-    if (isJSXArbitraryBlock(child)) {
+    if (isJSExpressionOtherJavaScript(child)) {
       return addAllUniquely(working, child.definedElsewhere)
     } else if (isJSXElement(child)) {
       return addAllUniquely(working, getDefinedElsewhereFromElement(child))
@@ -989,16 +1024,7 @@ export interface JSXElementWithoutUID {
 
 export type ElementsWithin = { [uid: string]: JSXElement }
 
-export interface JSXArbitraryBlock {
-  type: 'JSX_ARBITRARY_BLOCK'
-  originalJavascript: string
-  javascript: string
-  transpiledJavascript: string
-  definedElsewhere: Array<string>
-  sourceMap: RawSourceMap | null
-  uniqueID: string
-  elementsWithin: ElementsWithin
-}
+export type JSXArbitraryBlock = JSExpression
 
 export function jsxArbitraryBlock(
   originalJavascript: string,
@@ -1009,7 +1035,7 @@ export function jsxArbitraryBlock(
   elementsWithin: ElementsWithin,
 ): JSXArbitraryBlock {
   return {
-    type: 'JSX_ARBITRARY_BLOCK',
+    type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     originalJavascript: originalJavascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
@@ -1059,7 +1085,7 @@ export type JSXElementLike = JSXElement | JSXFragment
 export interface JSXConditionalExpression extends WithComments {
   type: 'JSX_CONDITIONAL_EXPRESSION'
   uid: string
-  condition: JSXAttribute
+  condition: JSExpression
   originalConditionString: string
   whenTrue: ChildOrAttribute
   whenFalse: ChildOrAttribute
@@ -1067,7 +1093,7 @@ export interface JSXConditionalExpression extends WithComments {
 
 export function jsxConditionalExpression(
   uid: string,
-  condition: JSXAttribute,
+  condition: JSExpression,
   originalConditionString: string,
   whenTrue: ChildOrAttribute,
   whenFalse: ChildOrAttribute,
@@ -1095,8 +1121,10 @@ export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
 }
 
-export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArbitraryBlock {
-  return element.type === 'JSX_ARBITRARY_BLOCK'
+export function isJSExpressionOtherJavaScript(
+  element: JSXElementChild,
+): element is JSExpressionOtherJavaScript {
+  return element.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
 export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {
@@ -1136,7 +1164,7 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       props: updatedProps,
       children: updatedChildren,
     }
-  } else if (isJSXArbitraryBlock(element)) {
+  } else if (isJSExpressionOtherJavaScript(element)) {
     const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, element.elementsWithin)
     return {
       ...element,
@@ -1195,7 +1223,7 @@ export function jsxTestElement(
   return jsxElement(
     name,
     uid,
-    setJSXAttributesAttribute(props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    setJSXAttributesAttribute(props, 'data-uid', jsExpressionValue(uid, emptyComments)),
     children,
   )
 }
@@ -1286,12 +1314,12 @@ export function unparsedCode(rawCode: string): UnparsedCode {
 export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
-  defaultExpression: JSXAttributeOtherJavaScript | null
+  defaultExpression: JSExpressionOtherJavaScript | null
 }
 
 export function regularParam(
   paramName: string,
-  defaultExpression: JSXAttributeOtherJavaScript | null,
+  defaultExpression: JSExpressionOtherJavaScript | null,
 ): RegularParam {
   return {
     type: 'REGULAR_PARAM',
@@ -1303,13 +1331,13 @@ export function regularParam(
 export interface DestructuredParamPart {
   propertyName: string | undefined
   param: Param
-  defaultExpression: JSXAttributeOtherJavaScript | null
+  defaultExpression: JSExpressionOtherJavaScript | null
 }
 
 export function destructuredParamPart(
   propertyName: string | undefined,
   param: Param,
-  defaultExpression: JSXAttributeOtherJavaScript | null,
+  defaultExpression: JSExpressionOtherJavaScript | null,
 ): DestructuredParamPart {
   return {
     propertyName: propertyName,
@@ -1896,7 +1924,7 @@ export function walkElement(
     case 'JSX_TEXT_BLOCK':
       forEach(element, parentPath, depth)
       break
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       forEach(element, parentPath, depth)
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>
         walkElement(element.elementsWithin[childKey], parentPath, depth + 1, forEach),
@@ -1906,6 +1934,23 @@ export function walkElement(
       forEach(element, parentPath, depth)
       walkChildOrAttribute(element.whenTrue, parentPath, depth + 1, forEach)
       walkChildOrAttribute(element.whenFalse, parentPath, depth + 1, forEach)
+      break
+    case 'ATTRIBUTE_VALUE':
+      break
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      fastForEach(element.content, (elem) => {
+        forEach(elem.value, parentPath, depth + 1)
+      })
+      break
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      fastForEach(element.content, (elem) => {
+        forEach(elem.value, parentPath, depth + 1)
+      })
+      break
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      fastForEach(element.parameters, (elem) => {
+        forEach(elem, parentPath, depth + 1)
+      })
       break
     default:
       const _exhaustiveCheck: never = element
@@ -1945,32 +1990,16 @@ export function getElementsByUIDFromTopLevelElements(
   return result
 }
 
-export type ChildOrAttribute = JSXElementChild | JSXAttribute
+export type ChildOrAttribute = JSXElementChild
 
 export function childOrBlockIsChild(
   childOrBlock: ChildOrAttribute,
 ): childOrBlock is JSXElementChild {
-  switch (childOrBlock.type) {
-    case 'JSX_CONDITIONAL_EXPRESSION':
-    case 'JSX_ELEMENT':
-    case 'JSX_ARBITRARY_BLOCK':
-    case 'JSX_TEXT_BLOCK':
-    case 'JSX_FRAGMENT':
-      return true
-    case 'ATTRIBUTE_VALUE':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return false
-    default:
-      const _exhaustiveCheck: never = childOrBlock
-      throw new Error(`Unhandled type ${JSON.stringify(childOrBlock)}`)
-  }
+  return true
 }
 
 export function childOrBlockIsAttribute(
   childOrBlock: ChildOrAttribute,
-): childOrBlock is JSXAttribute {
+): childOrBlock is JSExpression {
   return !childOrBlockIsChild(childOrBlock)
 }

@@ -412,7 +412,7 @@ export var storyboard = (
               "version": 3,
             },
             "transpiledJavascript": "return b(5);",
-            "type": "JSX_ARBITRARY_BLOCK",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uniqueID": "",
           },
           Object {
@@ -485,7 +485,7 @@ export var storyboard = (
               "version": 3,
             },
             "transpiledJavascript": "return a(5);",
-            "type": "JSX_ARBITRARY_BLOCK",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uniqueID": "",
           },
         ],

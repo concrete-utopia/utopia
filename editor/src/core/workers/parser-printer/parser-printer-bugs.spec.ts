@@ -4,7 +4,7 @@ import {
   isUtopiaJSXComponent,
   JSXAttributes,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
@@ -44,11 +44,11 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_ARBITRARY_BLOCK
+            ATTRIBUTE_OTHER_JAVASCRIPT
               JSX_ELEMENT - div - bbb
-                JSX_ARBITRARY_BLOCK
+                ATTRIBUTE_OTHER_JAVASCRIPT
                 JSX_TEXT_BLOCK
-                JSX_ARBITRARY_BLOCK"
+                ATTRIBUTE_OTHER_JAVASCRIPT"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -56,7 +56,7 @@ export var App = props => {
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
       )
       const aaaJSXArbBlock = aaaElement?.children[0]
-      if (aaaJSXArbBlock?.type === 'JSX_ARBITRARY_BLOCK') {
+      if (aaaJSXArbBlock?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
         expect(aaaJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
           Array [
             "cake",
@@ -65,7 +65,7 @@ export var App = props => {
           ]
         `)
       } else {
-        throw new Error('Was not a JSX_ARBITRARY_BLOCK as expected.')
+        throw new Error('Was not a ATTRIBUTE_OTHER_JAVASCRIPT as expected.')
       }
 
       const bbbElement = findJSXElementAtStaticPath(
@@ -73,14 +73,14 @@ export var App = props => {
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa', 'bbb']])),
       )
       const bbbJSXArbBlock = bbbElement?.children[2]
-      if (bbbJSXArbBlock?.type === 'JSX_ARBITRARY_BLOCK') {
+      if (bbbJSXArbBlock?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
         expect(bbbJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
           Array [
             "cake",
           ]
         `)
       } else {
-        throw new Error('Was not a JSX_ARBITRARY_BLOCK as expected.')
+        throw new Error('Was not a ATTRIBUTE_OTHER_JAVASCRIPT as expected.')
       }
     } else {
       throw new Error(JSON.stringify(parsedCode))
@@ -116,14 +116,14 @@ export var App = props => {
       if (topComponent != null) {
         if (isJSXElement(topComponent.rootElement)) {
           const expectedProps: JSXAttributes = jsxAttributesFromMap({
-            style: jsxAttributeValue(
+            style: jsExpressionValue(
               {
                 backgroundColor: 'green',
                 position: 'absolute',
               },
               emptyComments,
             ),
-            'data-uid': jsxAttributeValue('xxx', emptyComments),
+            'data-uid': jsExpressionValue('xxx', emptyComments),
           })
           expect(topComponent.rootElement.props).toEqual(expectedProps)
         } else {
@@ -177,7 +177,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_ARBITRARY_BLOCK
+          ATTRIBUTE_OTHER_JAVASCRIPT
             JSX_ELEMENT - Card - card"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
@@ -189,7 +189,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_ARBITRARY_BLOCK
+          ATTRIBUTE_OTHER_JAVASCRIPT
             JSX_ELEMENT - Card - card"
     `)
   })

@@ -19,7 +19,7 @@ import {
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../../core/shared/atom-with-pub-sub'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
   getTailwindOptionForClassName,
@@ -212,7 +212,7 @@ export const ClassNameSelect = React.memo(
                     EditorActions.setPropTransient(
                       targets[0],
                       PP.create('className'),
-                      jsxAttributeValue(newClassNameString, emptyComments),
+                      jsExpressionValue(newClassNameString, emptyComments),
                     ),
                   ],
                   'canvas',
@@ -242,7 +242,7 @@ export const ClassNameSelect = React.memo(
               EditorActions.setProp_UNSAFE(
                 elementPath,
                 PP.create('className'),
-                jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
+                jsExpressionValue(newValue.map((value) => value.value).join(' '), emptyComments),
               ),
               EditorActions.clearTransientProps(),
             ],

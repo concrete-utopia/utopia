@@ -19,7 +19,7 @@ import {
   JSXAttributes,
   jsxAttributesEntry,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElementName,
   jsxElementWithoutUID,
   parsedComments,

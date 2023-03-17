@@ -11,7 +11,7 @@ import {
   UtopiaJSXComponent,
   isJSXElement,
   emptyJsxMetadata,
-  JSXAttribute,
+  JSExpression,
   walkElements,
   JSXAttributes,
   isJSXConditionalExpression,
@@ -815,12 +815,12 @@ export function editorStateCanvasTextEditor(
 
 export interface EditorStateCanvasTransientProperty {
   elementPath: ElementPath
-  attributesToUpdate: { [key: string]: JSXAttribute }
+  attributesToUpdate: { [key: string]: JSExpression }
 }
 
 export function editorStateCanvasTransientProperty(
   elementPath: ElementPath,
-  attributesToUpdate: { [key: string]: JSXAttribute },
+  attributesToUpdate: { [key: string]: JSExpression },
 ): EditorStateCanvasTransientProperty {
   return {
     elementPath: elementPath,

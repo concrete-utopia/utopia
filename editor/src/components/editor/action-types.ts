@@ -1,5 +1,5 @@
 import {
-  JSXAttribute,
+  JSExpression,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
@@ -198,7 +198,7 @@ export type SetProperty = {
   action: 'SET_PROPERTY'
   element: ElementPath
   property: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export type SetCanvasFrames = {
@@ -756,14 +756,14 @@ export interface SetProp {
   action: 'SET_PROP'
   target: ElementPath
   propertyPath: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export interface SetPropWithElementPath {
   action: 'SET_PROP_WITH_ELEMENT_PATH'
   target: StaticElementPathPart
   propertyPath: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export interface SetFilebrowserRenamingTarget {
@@ -1029,7 +1029,7 @@ export interface SetPropTransient {
   action: 'SET_PROP_TRANSIENT'
   target: ElementPath
   propertyPath: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export interface ClearTransientProps {

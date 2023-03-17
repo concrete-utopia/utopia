@@ -8,7 +8,7 @@ import {
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
-import { emptyComments, jsxAttributeValue } from '../shared/element-template'
+import { emptyComments, jsExpressionValue } from '../shared/element-template'
 
 jest.mock('../../components/canvas/controls/outline-utils', () => ({
   isZeroSizedElement: () => false, // in test environment elements have no size
@@ -45,7 +45,7 @@ describe('React Render Count Tests -', () => {
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create('style', 'opacity'),
-          jsxAttributeValue(0.3, emptyComments),
+          jsExpressionValue(0.3, emptyComments),
         ),
       ],
       true,
@@ -101,7 +101,7 @@ describe('React Render Count Tests -', () => {
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create('style', 'opacity'),
-          jsxAttributeValue(0.3, emptyComments),
+          jsExpressionValue(0.3, emptyComments),
         ),
       ],
       true,

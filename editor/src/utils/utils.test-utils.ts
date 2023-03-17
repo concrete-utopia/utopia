@@ -27,7 +27,7 @@ import {
   getDefinedElsewhereFromAttributes,
   jsxElement,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   getJSXElementNameAsString,
   JSXElement,
   walkElements,
@@ -237,7 +237,7 @@ export function createFakeMetadataForComponents(
             component.name ?? 'default',
             componentUID,
             jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue(componentUID, emptyComments),
+              'data-uid': jsExpressionValue(componentUID, emptyComments),
             }),
             [],
           ),

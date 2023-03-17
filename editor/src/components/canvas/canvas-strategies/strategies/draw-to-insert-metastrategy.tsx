@@ -13,7 +13,7 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -417,19 +417,19 @@ function getStyleAttributesForFixedPositionAndSizeHug(
   const propsToSet: Array<ValueAtPath> = [
     {
       path: stylePropPathMappingFn('left', ['style']),
-      value: jsxAttributeValue(frame.x, emptyComments),
+      value: jsExpressionValue(frame.x, emptyComments),
     },
     {
       path: stylePropPathMappingFn('top', ['style']),
-      value: jsxAttributeValue(frame.y, emptyComments),
+      value: jsExpressionValue(frame.y, emptyComments),
     },
     {
       path: stylePropPathMappingFn('width', ['style']),
-      value: jsxAttributeValue(MaxContent, emptyComments),
+      value: jsExpressionValue(MaxContent, emptyComments),
     },
     {
       path: stylePropPathMappingFn('height', ['style']),
-      value: jsxAttributeValue(MaxContent, emptyComments),
+      value: jsExpressionValue(MaxContent, emptyComments),
     },
   ]
 

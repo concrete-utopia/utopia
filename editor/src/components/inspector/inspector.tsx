@@ -7,9 +7,9 @@ import {
 import { isRight, right } from '../../core/shared/either'
 import {
   isJSXElement,
-  JSXAttribute,
+  JSExpression,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   ComputedStyle,
   StyleAttributeMetadata,
@@ -562,7 +562,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
       const newPath = [...(parent?.path ?? []), label]
       const newPropertyPath = PP.createFromArray(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
+        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsExpressionValue({}, emptyComments)),
       )
       dispatch(actions, 'everyone')
       setSelectedTarget(newPath)
@@ -669,7 +669,7 @@ export const InspectorContextProvider = React.memo<{
   )
 
   const onSubmitValueForHooks = React.useCallback(
-    (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
+    (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)
@@ -705,7 +705,7 @@ export const InspectorContextProvider = React.memo<{
   )
 
   const collectActionsToSubmitValue = React.useCallback(
-    (newValue: JSXAttribute, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+    (newValue: JSExpression, path: PropertyPath, transient: boolean): Array<EditorAction> => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)

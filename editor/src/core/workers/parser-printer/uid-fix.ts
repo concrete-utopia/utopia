@@ -1,7 +1,7 @@
 import {
   childOrBlockIsChild,
   ElementsWithin,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXElementLike,
@@ -252,7 +252,10 @@ function compareAndWalkElements(
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
       return walkElementChildren(path, oldElement.children, newElement.children, onElement)
-    } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
+    } else if (
+      isJSExpressionOtherJavaScript(oldElement) &&
+      isJSExpressionOtherJavaScript(newElement)
+    ) {
       return walkElementsWithin(
         pathSoFar,
         oldElement.elementsWithin,

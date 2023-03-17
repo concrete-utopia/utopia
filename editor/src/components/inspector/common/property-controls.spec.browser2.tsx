@@ -13,7 +13,7 @@ import {
   emptyComments,
   getJSXAttribute,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 
 function exampleProject(): string {
@@ -172,7 +172,7 @@ describe('Automatically derived property controls', () => {
         throw new Error("The 'cards' attribute does not exist.")
       } else {
         expect(cardsAttribute).toEqual(
-          jsxAttributeValue(
+          jsExpressionValue(
             [
               { hello: 'bello', n: 1 },
               { hello: 'yes', n: 5 },

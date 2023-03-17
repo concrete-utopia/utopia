@@ -1,6 +1,6 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
-import { jsxAttributeValue, emptyComments } from '../../../../../core/shared/element-template'
+import { jsExpressionValue, emptyComments } from '../../../../../core/shared/element-template'
 import { create } from '../../../../../core/shared/property-path'
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
@@ -492,7 +492,7 @@ export const BackgroundPicker: React.FunctionComponent<
             setProperty(
               view,
               create('style', 'backgroundColor'),
-              jsxAttributeValue(sRGBHex, emptyComments),
+              jsExpressionValue(sRGBHex, emptyComments),
             ),
           ),
         )

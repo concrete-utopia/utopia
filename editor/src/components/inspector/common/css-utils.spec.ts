@@ -1,10 +1,10 @@
 import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
   emptyComments,
-  jsxAttributeFunctionCall,
+  jsExpressionFunctionCall,
   jsxAttributeNestedObjectSimple,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxTestElement,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
@@ -74,7 +74,7 @@ describe('toggleStyleProp', () => {
     const element = jsxTestElement(
       'View',
       jsxAttributesFromMap({
-        style: jsxAttributeValue(
+        style: jsExpressionValue(
           {
             backgroundColor: 'red',
           },
@@ -89,8 +89,8 @@ describe('toggleStyleProp', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-              jsxAttributeValue('red', emptyComments),
+            backgroundColor: jsExpressionFunctionCall(disabledFunctionName, [
+              jsExpressionValue('red', emptyComments),
             ]),
           }),
           emptyComments,
@@ -108,8 +108,8 @@ describe('toggleStyleProp', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-              jsxAttributeValue('red', emptyComments),
+            backgroundColor: jsExpressionFunctionCall(disabledFunctionName, [
+              jsExpressionValue('red', emptyComments),
             ]),
           }),
           emptyComments,
@@ -121,7 +121,7 @@ describe('toggleStyleProp', () => {
     const expectedElement = jsxTestElement(
       'View',
       jsxAttributesFromMap({
-        style: jsxAttributeValue(
+        style: jsExpressionValue(
           {
             backgroundColor: 'red',
           },
@@ -140,7 +140,7 @@ describe('toggleStyleProp', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            backgroundColor: jsxAttributeValue('red', emptyComments),
+            backgroundColor: jsExpressionValue('red', emptyComments),
           }),
           emptyComments,
         ),
@@ -153,8 +153,8 @@ describe('toggleStyleProp', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-              jsxAttributeValue('red', emptyComments),
+            backgroundColor: jsExpressionFunctionCall(disabledFunctionName, [
+              jsExpressionValue('red', emptyComments),
             ]),
           }),
           emptyComments,
@@ -169,19 +169,19 @@ describe('toggleStyleProp', () => {
 
 describe('toggleSimple', () => {
   it('disables the attribute', () => {
-    const attribute = jsxAttributeValue('colorValue', emptyComments)
-    const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeValue('colorValue', emptyComments),
+    const attribute = jsExpressionValue('colorValue', emptyComments)
+    const expectedAttribute = jsExpressionFunctionCall(disabledFunctionName, [
+      jsExpressionValue('colorValue', emptyComments),
     ])
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
   })
 
   it('enables the attribute', () => {
-    const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeValue('colorValue', emptyComments),
+    const attribute = jsExpressionFunctionCall(disabledFunctionName, [
+      jsExpressionValue('colorValue', emptyComments),
     ])
-    const expectedAttribute = jsxAttributeValue('colorValue', emptyComments)
+    const expectedAttribute = jsExpressionValue('colorValue', emptyComments)
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
   })
@@ -189,17 +189,17 @@ describe('toggleSimple', () => {
   it('disables a nested object attribute', () => {
     const attribute = jsxAttributeNestedObjectSimple(
       jsxAttributesFromMap({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-          jsxAttributeValue('hello', emptyComments),
+        aParameter: jsExpressionFunctionCall('aHelperFunction', [
+          jsExpressionValue('hello', emptyComments),
         ]),
       }),
       emptyComments,
     )
-    const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
+    const expectedAttribute = jsExpressionFunctionCall(disabledFunctionName, [
       jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
-          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-            jsxAttributeValue('hello', emptyComments),
+          aParameter: jsExpressionFunctionCall('aHelperFunction', [
+            jsExpressionValue('hello', emptyComments),
           ]),
         }),
         emptyComments,
@@ -210,11 +210,11 @@ describe('toggleSimple', () => {
   })
 
   it('enables a nested object attribute', () => {
-    const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
+    const attribute = jsExpressionFunctionCall(disabledFunctionName, [
       jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
-          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-            jsxAttributeValue('hello', emptyComments),
+          aParameter: jsExpressionFunctionCall('aHelperFunction', [
+            jsExpressionValue('hello', emptyComments),
           ]),
         }),
         emptyComments,
@@ -222,8 +222,8 @@ describe('toggleSimple', () => {
     ])
     const expectedAttribute = jsxAttributeNestedObjectSimple(
       jsxAttributesFromMap({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-          jsxAttributeValue('hello', emptyComments),
+        aParameter: jsExpressionFunctionCall('aHelperFunction', [
+          jsExpressionValue('hello', emptyComments),
         ]),
       }),
       emptyComments,

@@ -4,7 +4,7 @@ import {
   emptyComments,
   isJSXElement,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   jsxElementName,
 } from '../../../core/shared/element-template'
@@ -666,7 +666,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
       'TestView',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
@@ -747,7 +747,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
       'TestView',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, null, {

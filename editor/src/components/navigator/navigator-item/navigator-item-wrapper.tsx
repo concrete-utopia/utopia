@@ -125,7 +125,7 @@ function getNavigatorEntryLabel(
         switch (navigatorEntry.childOrAttribute.type) {
           case 'JSX_ELEMENT':
             return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
-          case 'JSX_ARBITRARY_BLOCK':
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
             return '(code)'
           case 'JSX_TEXT_BLOCK':
             return navigatorEntry.childOrAttribute.text
@@ -133,6 +133,14 @@ function getNavigatorEntryLabel(
             return 'Fragment'
           case 'JSX_CONDITIONAL_EXPRESSION':
             return 'Conditional'
+          case 'ATTRIBUTE_VALUE':
+            return `${navigatorEntry.childOrAttribute.value}`
+          case 'ATTRIBUTE_NESTED_ARRAY':
+            return '(code)'
+          case 'ATTRIBUTE_NESTED_OBJECT':
+            return '(code)'
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            return '(code)'
           default:
             throw assertNever(navigatorEntry.childOrAttribute)
         }

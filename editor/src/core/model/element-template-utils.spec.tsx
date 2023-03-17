@@ -1,9 +1,9 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementAtPathHasMatchingUID*", "expectElementFoundNull"] }] */
 
 import {
-  jsxAttributeValue,
+  jsExpressionValue,
   isJSXAttributeValue,
-  jsxAttributeFunctionCall,
+  jsExpressionFunctionCall,
   UtopiaJSXComponent,
   JSXElement,
   jsxElement,
@@ -58,13 +58,13 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
         [],
       ),
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
         [],
       ),
     ]
@@ -72,10 +72,10 @@ describe('guaranteeUniqueUids', () => {
 
     const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments))
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child1UID).not.toEqual(jsxAttributeValue('aaa', emptyComments))
+    expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments))
   })
 
   it('if an element has an existing value, it will be replaced', () => {
@@ -83,13 +83,13 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
         [],
       ),
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
         [],
       ),
     ]
@@ -100,15 +100,15 @@ describe('guaranteeUniqueUids', () => {
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
-    expect(child1UID).not.toEqual(jsxAttributeValue('aab', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments))
+    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
     const exampleElement = jsxElement(
       'View',
       '',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('someFunction', []) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionFunctionCall('someFunction', []) }),
       [],
     )
     const fixedElements = guaranteeUniqueUids([exampleElement], [])
@@ -132,7 +132,7 @@ describe('getUtopiaID', () => {
     const element = jsxElement(
       'View',
       'hello',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('hello', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('hello', emptyComments) }),
       [],
     )
     const id = getUtopiaID(element as JSXElement)
@@ -153,8 +153,8 @@ describe('removeJSXElementChild', () => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsxAttributeValue('aaa', emptyComments),
-          prop1: jsxAttributeValue(5, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+          prop1: jsExpressionValue(5, emptyComments),
         }),
         [],
       ),
@@ -173,29 +173,29 @@ describe('removeJSXElementChild', () => {
         'View',
         'aab',
         jsxAttributesFromMap({
-          'data-uid': jsxAttributeValue('aab', emptyComments),
-          prop2: jsxAttributeValue(15, emptyComments),
+          'data-uid': jsExpressionValue('aab', emptyComments),
+          prop2: jsExpressionValue(15, emptyComments),
         }),
         [
           jsxElement(
             'View',
             'aac',
-            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aac', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aac', emptyComments) }),
             [],
           ),
           jsxElement(
             'View',
             'aad',
             jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue('aad', emptyComments),
-              prop3: jsxAttributeValue(100, emptyComments),
+              'data-uid': jsExpressionValue('aad', emptyComments),
+              prop3: jsExpressionValue(100, emptyComments),
             }),
             [],
           ),
           jsxElement(
             'View',
             'aae',
-            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aae', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aae', emptyComments) }),
             [],
           ),
         ],

@@ -2,8 +2,8 @@ import { ImportType, NormalisedFrame } from 'utopia-api/core'
 import {
   ArbitraryJSBlock,
   ImportStatement,
-  JSXAttribute,
-  JSXAttributeOtherJavaScript,
+  JSExpression,
+  JSExpressionOtherJavaScript,
   TopLevelElement,
 } from './element-template'
 import { ErrorMessage } from './error-messages'
