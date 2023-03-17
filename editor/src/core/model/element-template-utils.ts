@@ -628,67 +628,65 @@ export function insertJSXElementChild(
           children: updatedChildren,
         }
       } else if (isJSXConditionalExpression(parentElement)) {
-        const trueCase = getConditionalCasePath(parentPath, 'true-case')
-        const parentMetadata = spyMetadata[EP.toString(parentPath)] ?? null
-        const isTrueCase =
-          getConditionalCase(trueCase, parentElement, parentMetadata, parentPath) === 'true-case'
-        let branch = isTrueCase ? { ...parentElement.whenTrue } : { ...parentElement.whenFalse }
-        switch (branch.type) {
-          case 'ATTRIBUTE_VALUE':
-            if (branch.value === null) {
-              branch = { ...elementToInsert }
-            } else {
-              branch = jsxFragment(
+        function getNewBranch(branch: ChildOrAttribute): ChildOrAttribute {
+          switch (branch.type) {
+            case 'ATTRIBUTE_VALUE':
+              if (branch.value === null) {
+                return elementToInsert
+              }
+              return jsxFragment(
                 generateUidWithExistingComponents(projectContents),
                 [jsxTextBlock(`${branch.value}`), elementToInsert],
                 false,
               )
-            }
-            break
-          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-            branch = jsxFragment(
-              generateUidWithExistingComponents(projectContents),
-              [
-                jsxArbitraryBlock(
-                  branch.javascript,
-                  branch.javascript,
-                  branch.transpiledJavascript,
-                  branch.definedElsewhere,
-                  branch.sourceMap,
-                  branch.elementsWithin,
-                ),
-                elementToInsert,
-              ],
-              false,
-            )
-            break
-          case 'ATTRIBUTE_FUNCTION_CALL':
-          case 'ATTRIBUTE_NESTED_ARRAY':
-          case 'ATTRIBUTE_NESTED_OBJECT':
-            break
-          case 'JSX_FRAGMENT':
-            branch.children = [...branch.children, elementToInsert]
-            break
-          case 'JSX_ELEMENT':
-          case 'JSX_ARBITRARY_BLOCK':
-          case 'JSX_TEXT_BLOCK':
-          case 'JSX_CONDITIONAL_EXPRESSION':
-            branch = jsxFragment(
-              generateUidWithExistingComponents(projectContents),
-              [branch, elementToInsert],
-              false,
-            )
-            break
-          default:
-            assertNever(branch)
+            case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+              return jsxFragment(
+                generateUidWithExistingComponents(projectContents),
+                [
+                  jsxArbitraryBlock(
+                    branch.javascript,
+                    branch.javascript,
+                    branch.transpiledJavascript,
+                    branch.definedElsewhere,
+                    branch.sourceMap,
+                    branch.elementsWithin,
+                  ),
+                  elementToInsert,
+                ],
+                false,
+              )
+            case 'ATTRIBUTE_FUNCTION_CALL':
+            case 'ATTRIBUTE_NESTED_ARRAY':
+            case 'ATTRIBUTE_NESTED_OBJECT':
+              return branch
+            case 'JSX_FRAGMENT':
+              return { ...branch, children: [...branch.children, elementToInsert] }
+            case 'JSX_ELEMENT':
+            case 'JSX_ARBITRARY_BLOCK':
+            case 'JSX_TEXT_BLOCK':
+            case 'JSX_CONDITIONAL_EXPRESSION':
+              return jsxFragment(
+                generateUidWithExistingComponents(projectContents),
+                [branch, elementToInsert],
+                false,
+              )
+            default:
+              assertNever(branch)
+          }
         }
-        const withNewElement = { ...parentElement }
-        if (isTrueCase) {
-          withNewElement.whenTrue = branch
-        } else {
-          withNewElement.whenFalse = branch
-        }
-        return withNewElement
+
+        const isTrueCase =
+          getConditionalCase(
+            getConditionalCasePath(parentPath, 'true-case'),
+            parentElement,
+            spyMetadata[EP.toString(parentPath)] ?? null,
+            parentPath,
+          ) === 'true-case'
+        const branch = getNewBranch(isTrueCase ? parentElement.whenTrue : parentElement.whenFalse)
+
+        return isTrueCase
+          ? { ...parentElement, whenTrue: branch }
+          : { ...parentElement, whenFalse: branch }
       } else {
         return parentElement
       }
