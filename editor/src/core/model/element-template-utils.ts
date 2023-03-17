@@ -78,7 +78,6 @@ import {
   ReparentTargetParent,
   reparentTargetParentIsConditionalClause,
 } from '../../components/editor/store/reparent-target'
-import { MetadataUtils } from './element-metadata-utils'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -630,7 +629,7 @@ export function insertJSXElementChild(
         }
       } else if (isJSXConditionalExpression(parentElement)) {
         const trueCase = getConditionalCasePath(parentPath, 'true-case')
-        const parentMetadata = MetadataUtils.findElementByElementPath(spyMetadata, parentPath)
+        const parentMetadata = spyMetadata[EP.toString(parentPath)] ?? null
         const isTrueCase =
           getConditionalCase(trueCase, parentElement, parentMetadata, parentPath) === 'true-case'
         let branch = isTrueCase ? { ...parentElement.whenTrue } : { ...parentElement.whenFalse }
