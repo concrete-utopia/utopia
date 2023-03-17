@@ -18,8 +18,13 @@ import {
   getOpeningGroupLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  AllContentAffectingNonDomElementTypes,
+  AllContentAffectingTypes,
+  ContentAffectingType,
+} from './group-like-helpers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import { fromString } from '../../../../core/shared/element-path'
 
 const TestProject = (direction: string) => `
 <div
@@ -53,19 +58,7 @@ const TestProject = (direction: string) => `
   />
 </div>`
 
-const TestProjectWithFragment = (type: ContentAffectingType, direction: string) => {
-  FOR_TESTS_setNextGeneratedUids([
-    'skip1',
-    'skip2',
-    'skip3',
-    'skip4',
-    'skip5',
-    'skip6',
-    'skip7',
-    'skip8',
-    'skip9',
-    'children-affecting',
-  ])
+function TestProjectWithFragment(type: ContentAffectingType, direction: string) {
   return `
 <div
   data-uid='aaa'
@@ -156,7 +149,8 @@ const TestProjectAbsoluteSibling = `
 </div>
 `
 
-const TestProjectWithFragmentAbsoluteSibling = `
+function TestProjectWithFragmentAbsoluteSibling(type: ContentAffectingType): string {
+  return `
 <div
   data-uid='aaa'
   style={{ display: 'flex', gap: 10 }}
@@ -172,10 +166,10 @@ const TestProjectWithFragmentAbsoluteSibling = `
       backgroundColor: 'yellow',
     }}
   />
-  <>
+  ${getOpeningGroupLikeTag(type)}
     <div
-      data-uid='child-1'
-      data-testid='child-1'
+      data-uid='fragment-child-1'
+      data-testid='fragment-child-1'
       style={{
         width: 50,
         height: 50,
@@ -183,15 +177,15 @@ const TestProjectWithFragmentAbsoluteSibling = `
       }}
     />
     <div
-      data-uid='child-2'
-      data-testid='child-2'
+      data-uid='fragment-child-2'
+      data-testid='fragment-child-2'
       style={{
         width: 50,
         height: 50,
         backgroundColor: 'purple',
       }}
     />
-  </>
+  ${getClosingGroupLikeTag(type)}
   <div
     data-uid='child-3'
       data-testid='child-3'
@@ -203,6 +197,8 @@ const TestProjectWithFragmentAbsoluteSibling = `
   />
 </div>
 `
+}
+
 describe('Flex Reorder Strategy', () => {
   describe('normal reorder scenarios', () => {
     it('does not activate when drag threshold is not reached', async () => {
@@ -445,7 +441,8 @@ describe('Flex Reorder Strategy', () => {
   describe('flex reorder, with a group-like element as a sibling', () => {
     setFeatureForBrowserTests('Fragment support', true)
     setFeatureForBrowserTests('Conditional support', true)
-    ;(['conditional'] as const).forEach((type) => {
+
+    AllContentAffectingTypes.forEach((type) => {
       describe(`– group-like element ${type} –`, () => {
         it('works with normal direction', async () => {
           const renderResult = await renderTestEditorWithCode(
@@ -459,10 +456,10 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 starts out as the last element
           ])
 
@@ -497,16 +494,16 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/chi/inner-fragment/fragment-child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
           ])
         })
 
-        xit('excludes absolute siblings', async () => {
+        it('excludes absolute siblings', async () => {
           const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
+            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling(type)),
             'await-first-dom-report',
           )
 
@@ -520,6 +517,7 @@ describe('Flex Reorder Strategy', () => {
             y: targetElementBounds.y + 5,
           })
           await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+
           await mouseDragFromPointWithDelta(
             canvasControlsLayer,
             startPoint,
@@ -536,16 +534,16 @@ describe('Flex Reorder Strategy', () => {
 
           await renderResult.getDispatchFollowUpActionsFinished()
 
-          expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-            'utopia-storyboard-uid',
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
             'utopia-storyboard-uid/scene-aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
           ])
         })
 
@@ -581,27 +579,28 @@ describe('Flex Reorder Strategy', () => {
           )
 
           await renderResult.getDispatchFollowUpActionsFinished()
-          expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-            'utopia-storyboard-uid',
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
             'utopia-storyboard-uid/scene-aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-0',
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 moves to the left of the fragment, despite the drag delta pointing to the right
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-1',
-            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/38e/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
           ])
         })
       })
     })
   })
 
-  xdescribe('projects with fragments, with fragments support enabled', () => {
+  describe('projects with fragments, with fragments support enabled', () => {
     setFeatureForBrowserTests('Fragment support', true)
     setFeatureForBrowserTests('Conditional support', true)
 
-    AllContentAffectingTypes.forEach((type) => {
+    // we only run this test for non-dom elements, as a sizeless div in flex layout acts weird
+    AllContentAffectingNonDomElementTypes.forEach((type) => {
       describe(`– group-like element ${type} – `, () => {
         it('does not activate when drag threshold is not reached', async () => {
           const renderResult = await renderTestEditorWithCode(
@@ -651,8 +650,17 @@ describe('Flex Reorder Strategy', () => {
             x: targetElementBounds.x + 5,
             y: targetElementBounds.y + 5,
           })
+
           await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
           await pressKey('Escape')
+          await pressKey('Escape')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          // make sure we reall selected the children-affecting element
+          expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+            fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting'),
+          ])
+
           await mouseDragFromPointWithDelta(
             canvasControlsLayer,
             startPoint,
@@ -671,57 +679,22 @@ describe('Flex Reorder Strategy', () => {
           )
 
           await renderResult.getDispatchFollowUpActionsFinished()
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-            makeTestProjectCodeWithSnippet(`
-        <div
-          data-uid='aaa'
-          style={{ display: 'flex', gap: 10, flexDirection: 'row' }}
-        >
-          <div
-            data-uid='child-0'
-            data-testid='child-0'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'green',
-            }}
-          />
-          <div
-            data-uid='child-3'
-            data-testid='child-3'
-            style={{
-              width: 50,
-              height: 50,
-              backgroundColor: 'yellow',
-            }}
-          />
-          ${getOpeningGroupLikeTag(type)}
-            <div
-              data-uid='fragment-child-1'
-              data-testid='fragment-child-1'
-              style={{
-                width: 50,
-                height: 50,
-                backgroundColor: 'blue',
-              }}
-            />
-            <div
-              data-uid='fragment-child-2'
-              data-testid='fragment-child-2'
-              style={{
-                width: 50,
-                height: 50,
-                backgroundColor: 'purple',
-              }}
-            />
-          ${getClosingGroupLikeTag(type)}
-        </div>`),
-          )
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/absolute-child',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting', // <- children-affecting moves right of child-3
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/children-affecting/inner-fragment/fragment-child-2',
+          ])
         })
 
         it('excludes absolute siblings', async () => {
           const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling),
+            makeTestProjectCodeWithSnippet(TestProjectWithFragmentAbsoluteSibling(type)),
             'await-first-dom-report',
           )
 

@@ -66,7 +66,11 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-export const AllContentAffectingTypes = ['fragment', 'sizeless-div', 'conditional'] as const
+export const AllContentAffectingNonDomElementTypes = ['fragment', 'conditional'] as const
+export const AllContentAffectingTypes = [
+  ...AllContentAffectingNonDomElementTypes,
+  'sizeless-div',
+] as const
 export type ContentAffectingType = typeof AllContentAffectingTypes[number] // <- this gives us the union type of the Array's entries
 
 export function getElementContentAffectingType(
