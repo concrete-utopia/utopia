@@ -3098,8 +3098,8 @@ export const UPDATE_FNS = {
           const pastedElementIsConditional =
             MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
-          const parent = MetadataUtils.findElementByElementPath(
-            action.targetOriginalContextMetadata,
+          const pasteIntoParent = MetadataUtils.findElementByElementPath(
+            editor.jsxMetadata,
             action.pasteInto,
           )
 
@@ -3107,7 +3107,7 @@ export const UPDATE_FNS = {
             pastedElementIsAbsolute ||
             pastedElementIsFlex ||
             pastedElementIsConditional ||
-            MetadataUtils.isConditionalFromMetadata(parent)
+            MetadataUtils.isConditionalFromMetadata(pasteIntoParent)
 
           if (!continueWithPaste) {
             return workingEditorState
