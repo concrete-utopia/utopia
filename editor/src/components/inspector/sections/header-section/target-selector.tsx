@@ -102,9 +102,9 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
     <FlexColumn
       style={{
         position: 'relative',
-        paddingTop: '8px',
         userSelect: 'none',
         WebkitUserSelect: 'none',
+        borderTop: '1px solid var(--utopitheme-bg4)',
       }}
     >
       <TargetListHeader
