@@ -22,7 +22,7 @@ import { treatElementAsContentAffecting } from './group-like-helpers'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { placeholderCloneCommands } from './reparent-utils'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
   reparentTarget: ReparentTarget,
@@ -60,7 +60,7 @@ export function baseFlexReparentToAbsoluteStrategy(
       ],
       fitness: fitness,
       apply: (strategyLifecycle) => {
-        const filteredSelectedElements = getDragTargets(selectedElements)
+        const filteredSelectedElements = flattenSelection(selectedElements)
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,

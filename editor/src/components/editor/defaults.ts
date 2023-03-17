@@ -178,7 +178,6 @@ export function defaultSpanElement(uid: string): JSXElement {
     [],
   )
 }
-export const DefaultTextWidth = 200
 
 export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(

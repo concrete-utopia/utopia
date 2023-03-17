@@ -848,7 +848,8 @@ function textSpan(text: string, extraStyleProps?: { [prop: string]: string }): s
     wordBreak: 'break-word',
     left: 51,
     top: 41,
-    width: 200,
+    width: 'max-content',
+    height: 'max-content',
     ...extraStyleProps,
   }
   return `

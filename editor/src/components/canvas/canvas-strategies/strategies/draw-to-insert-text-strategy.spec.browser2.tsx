@@ -132,7 +132,8 @@ describe('draw-to-insert text', () => {
                     wordBreak: 'break-word',
                     left: 389,
                     top: 101,
-                    width: 200,
+                    width: 'max-content',
+                    height: 'max-content',
                   }}
                   data-uid='${newElementUID}'
                 >Utopia</span>

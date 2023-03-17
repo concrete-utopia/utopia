@@ -3,7 +3,6 @@ import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { directory } from '../../../core/model/project-file-utils'
 import {
   BakedInStoryboardUID,
@@ -2189,20 +2188,11 @@ describe('inspector tests with real metadata', () => {
     before(() => setFeatureEnabled('Conditional support', true))
     after(() => setFeatureEnabled('Conditional support', false))
     it('toggles conditional branch', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2233,6 +2223,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 // @utopia/conditional=true
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2258,6 +2249,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 // @utopia/conditional=false
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2283,6 +2275,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 // @utopia/conditional=true
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2306,6 +2299,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
@@ -2318,20 +2312,11 @@ describe('inspector tests with real metadata', () => {
       }
     })
     it('switches conditional branches', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2359,7 +2344,9 @@ describe('inspector tests with real metadata', () => {
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
-            {[].length === 0 ? (
+            {
+              // @utopia/uid=conditional
+              [].length === 0 ? (
               <div data-uid='ccc' data-testid='ccc'>bar</div>
             ) : (
               <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2370,20 +2357,10 @@ describe('inspector tests with real metadata', () => {
       }
     })
     it('rearranges comments so that the conditional flag is at the top', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
         {
+          // @utopia/uid=conditional
           // hello
           [].length === 0 /*inside*/ ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2417,6 +2394,7 @@ describe('inspector tests with real metadata', () => {
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 // hello
                 // @utopia/conditional=false
                 [].length === 0 /*inside*/ ? (
@@ -2431,33 +2409,18 @@ describe('inspector tests with real metadata', () => {
       )
     })
     it('toggles multiple conditional branches', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'skip9',
-        'skip10',
-        'skip11',
-        'skip12',
-        'skip13',
-        'skip14',
-        'skip15',
-        'conditional1',
-        'conditional2',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
-          {true ? (
+          {
+            // @utopia/uid=conditional1
+            true ? (
             <div data-uid='bbb' data-testid='bbb'>foo</div>
           ) : (
             <div data-uid='ccc' data-testid='ccc'>bar</div>
           )}
-          {true ? (
+          {
+            // @utopia/uid=conditional2
+            true ? (
             <div data-uid='ddd' data-testid='ddd'>baz</div>
           ) : (
             <div data-uid='eee' data-testid='eee'>qux</div>
@@ -2492,6 +2455,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional1
                 // @utopia/conditional=true
                 true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2499,7 +2463,9 @@ describe('inspector tests with real metadata', () => {
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 )
               }
-              {true ? (
+              {
+                // @utopia/uid=conditional2
+                true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
               ) : (
                 <div data-uid='eee' data-testid='eee'>qux</div>
@@ -2532,6 +2498,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
             {
+              // @utopia/uid=conditional1
               // @utopia/conditional=false
               true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2540,6 +2507,7 @@ describe('inspector tests with real metadata', () => {
                 )
               }
               {
+                // @utopia/uid=conditional2
                 // @utopia/conditional=false
                 true ? (
                   <div data-uid='ddd' data-testid='ddd'>baz</div>
@@ -2568,6 +2536,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional1
                 // @utopia/conditional=true
                 true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2576,6 +2545,7 @@ describe('inspector tests with real metadata', () => {
                 )
               }
               {
+                // @utopia/uid=conditional2
                 // @utopia/conditional=true
                 true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
@@ -2602,12 +2572,16 @@ describe('inspector tests with real metadata', () => {
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
-              {true ? (
+              {
+                // @utopia/uid=conditional1
+                true ? (
                 <div data-uid='bbb' data-testid='bbb'>foo</div>
               ) : (
                 <div data-uid='ccc' data-testid='ccc'>bar</div>
               )}
-              {true ? (
+              {
+                // @utopia/uid=conditional2
+                true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
               ) : (
                 <div data-uid='eee' data-testid='eee'>qux</div>
@@ -2618,20 +2592,11 @@ describe('inspector tests with real metadata', () => {
       }
     })
     it('displays the condition', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
       <div data-uid='aaa'>
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2656,24 +2621,15 @@ describe('inspector tests with real metadata', () => {
       expect((expressionElement as HTMLInputElement).value).toEqual('[].length === 0')
     })
     it('allows changing the expression', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
       <div data-uid='aaa'>
-        {[].length === 0 ? (
-          <div data-uid='bbb' data-testid='bbb'>foo</div>
-        ) : (
-          <div data-uid='ccc' data-testid='ccc'>bar</div>
-        )}
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
       </div>
       `
       const renderResult = await renderTestEditorWithCode(

@@ -15,7 +15,7 @@ import { retargetStrategyToChildrenOfContentAffectingElements } from './group-li
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
-  getDragTargets,
+  flattenSelection,
 } from './shared-move-strategies-helpers'
 
 export function absoluteMoveStrategy(
@@ -26,7 +26,7 @@ export function absoluteMoveStrategy(
 
   const isApplicable =
     targets.length > 0 &&
-    getDragTargets(targets).every((element) => {
+    flattenSelection(targets).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,

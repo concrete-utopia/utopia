@@ -1,6 +1,7 @@
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
+import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
@@ -27,6 +28,7 @@ import {
   JSXFragment,
   jsxFragment,
   JSXTextBlock,
+  ParsedComments,
   setJSXAttributesAttribute,
   TopLevelElement,
 } from './element-template'
@@ -185,7 +187,16 @@ export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): 
   }
 }
 
-export function parseUID(attributes: JSXAttributes): Either<string, string> {
+export function parseUID(
+  attributes: JSXAttributes,
+  comments: ParsedComments,
+): Either<string, string> {
+  const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
+  if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
+    const { value } = commentFlag
+    return right(value)
+  }
+
   const uidAttribute = getModifiableJSXAttributeAtPath(attributes, UtopiaIDPropertyPath)
   const uidValue = flatMapEither(jsxSimpleAttributeToValue, uidAttribute)
   return flatMapEither((uid) => {
@@ -257,7 +268,7 @@ export function fixUtopiaElement(
   function fixJSXConditionalExpression(
     conditional: JSXConditionalExpression,
   ): JSXConditionalExpression {
-    const fixedUID = uniqueIDs.concat(conditional.uid).includes(conditional.uid)
+    const fixedUID = uniqueIDs.includes(conditional.uid)
       ? generateConsistentUID(new Set(uniqueIDs), conditional.uid)
       : conditional.uid
     uniqueIDs.push(fixedUID)

@@ -923,13 +923,14 @@ describe('findJSXElementChildAtPath', () => {
   })
 
   it('conditional expressions', () => {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'skip4', 'skip5', 'conditional-1'])
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
           <div data-uid='parent' >
             <div data-uid='child-d' />
-            {true ? 
+            {
+              // @utopia/uid=conditional-1
+              true ? 
               (
                 <div data-uid='ternary-true-root'>
                   <div data-uid='ternary-true-child' />
@@ -957,30 +958,30 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
 
-    // !!!! Do I misunderstand something?? shouldn't the then-case and else-case return the true-root and false-root here?? these tests fail now...
     const elementAtTrueBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
     )
     expect(elementAtTrueBranch).not.toBeNull()
     expect(getUtopiaID(elementAtTrueBranch!)).toEqual('ternary-true-root')
 
     const elementAtFalseBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
     )
     expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 
   it('conditional expressions with branches that are JSXAttribute', () => {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'conditional-1'])
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
           <div data-uid='parent' >
             <div data-uid='child-d' />
-            {true ? 
+            {
+              // @utopia/uid=conditional-1
+              true ? 
               (
                 "hello"
               ) : (
@@ -1001,19 +1002,20 @@ describe('findJSXElementChildAtPath', () => {
     ])
 
     expectElementFoundNull(projectFile, [
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
     ])
   })
 
   it('conditional expressions with branches that are mixed JSXAttribute and JSXElementChild', () => {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'conditional-1'])
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
         <div style={{ ...props.style }} data-uid='aaa'>
           <div data-uid='parent' >
             <div data-uid='child-d' />
-            {true ? 
+            {
+              // @utopia/uid=conditional-1
+              true ? 
               (
                 "hello"
               ) : (
@@ -1039,13 +1041,13 @@ describe('findJSXElementChildAtPath', () => {
 
     const elementAtTrueBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/then-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
     )
     expect(elementAtTrueBranch).toBeNull()
 
     const elementAtFalseBranch = findElement(
       projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/else-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
     )
     expect(elementAtFalseBranch).not.toBeNull()
     expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')

@@ -23,7 +23,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 import {
   replaceContentAffectingPathsWithTheirChildrenRecursive,
   treatElementAsContentAffecting,
@@ -46,7 +46,7 @@ export function absoluteDuplicateStrategy(
   }
 
   const isDragging = interactionSession.interactionData.drag != null
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const filteredSelectedElements = flattenSelection(selectedElements)
 
   if (!isApplicable(canvasState, filteredSelectedElements)) {
     return null

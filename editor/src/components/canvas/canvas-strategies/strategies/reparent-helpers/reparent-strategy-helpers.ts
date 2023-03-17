@@ -15,7 +15,7 @@ import {
   flowParentAbsoluteOrStatic,
   getReparentTargetUnified,
 } from './reparent-strategy-parent-lookup'
-import { getDragTargets } from '../shared-move-strategies-helpers'
+import { flattenSelection } from '../shared-move-strategies-helpers'
 import { Direction } from '../../../../inspector/common/css-utils'
 
 export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
@@ -156,7 +156,7 @@ export function reparentSubjectsForInteractionTarget(
       return newReparentSubjects(interactionTarget.subjects[0].defaultSize)
     case 'TARGET_PATHS':
       return existingReparentSubjects(
-        getDragTargets(getTargetPathsFromInteractionTarget(interactionTarget)),
+        flattenSelection(getTargetPathsFromInteractionTarget(interactionTarget)),
       )
     default:
       const _exhaustiveCheck: never = interactionTarget

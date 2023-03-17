@@ -5,14 +5,12 @@ import {
 } from '../../components/assets'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
-  ElementInstanceMetadata,
   ElementsWithin,
   isJSXArbitraryBlock,
   isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
   isUtopiaJSXComponent,
-  JSXArbitraryBlock,
   JSXElement,
   JSXElementChild,
   JSXTextBlock,
@@ -31,8 +29,6 @@ import {
   jsxElementName,
   jsxElementNameEquals,
   isJSXElementLike,
-  JSXFragment,
-  jsxFragment,
   isJSXConditionalExpression,
   childOrBlockIsChild,
   emptyComments,
@@ -40,6 +36,7 @@ import {
   jsxAttributeValue,
   childOrBlockIsAttribute,
   jsxConditionalExpression,
+  jsxFragment,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -54,8 +51,6 @@ import {
   generateMockNextGeneratedUID,
   generateUID,
   getUtopiaID,
-  getUtopiaIDFromJSXElement,
-  setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
@@ -67,11 +62,10 @@ import {
 } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import {
+  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
-  ThenOrElse,
-  thenOrElsePathPart,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import { foldEither } from '../shared/either'
@@ -385,10 +379,10 @@ export function findJSXElementChildAtPath(
       } else {
         function elementOrNullFromClause(
           clause: ChildOrAttribute,
-          branch: ThenOrElse,
+          branch: ConditionalCase,
         ): JSXElementChild | null {
-          // handle the special cased then-case / else-case path element first
-          if (tailPath.length === 1 && tailPath[0] === thenOrElsePathPart(branch)) {
+          // handle the special cased true-case / false-case path element first
+          if (tailPath.length === 1 && tailPath[0] === branch) {
             // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
             return childOrBlockIsAttribute(clause) ? null : clause
           }
@@ -401,8 +395,8 @@ export function findJSXElementChildAtPath(
           return null
         }
         return (
-          elementOrNullFromClause(element.whenTrue, 'then') ??
-          elementOrNullFromClause(element.whenFalse, 'else')
+          elementOrNullFromClause(element.whenTrue, 'true-case') ??
+          elementOrNullFromClause(element.whenFalse, 'false-case')
         )
       }
     }
@@ -501,15 +495,19 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
-      const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
+      const falseCasePath = getConditionalClausePath(
+        parentPath,
+        parentElement.whenFalse,
+        'false-case',
+      )
 
       const nullAttribute = jsxAttributeValue(null, emptyComments)
 
       return {
         ...parentElement,
-        whenTrue: EP.pathsEqual(thenPath, target) ? nullAttribute : parentElement.whenTrue,
-        whenFalse: EP.pathsEqual(elsePath, target) ? nullAttribute : parentElement.whenFalse,
+        whenTrue: EP.pathsEqual(trueCasePath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(falseCasePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement
@@ -555,7 +553,7 @@ export function insertJSXElementChild(
         ) {
           // Determine which clause of the conditional we want to modify.
           const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'then'
+            targetParentIncludingStoryboardRoot.clause === 'true-case'
               ? conditionalWhenTrueOptic
               : conditionalWhenFalseOptic
           // Update the clause if it currently holds a null value.
@@ -566,19 +564,46 @@ export function insertJSXElementChild(
                 const simpleValue = jsxSimpleAttributeToValue(clauseValue)
                 return foldEither(
                   () => {
+                    // Not a simple value, so replacing it would be a bad thing.
                     return clauseValue
                   },
                   (value) => {
+                    // Simple value of some kind.
                     if (value == null) {
+                      // Simple value is null, so replace it with the new content.
                       return elementToInsert
                     } else {
+                      // FIXME: We have a simple `JSXAttribute` value here which is not null/undefined.
+                      // Recent conversations have been about unifying attributes and arbitrary JSX elements,
+                      // which could result in this content being a valid child of any element.
                       return clauseValue
                     }
                   },
                   simpleValue,
                 )
               } else {
-                return clauseValue
+                if (isJSXFragment(clauseValue)) {
+                  // Existing fragment, so add it in as appropriate.
+                  let updatedChildren: Array<JSXElementChild>
+                  if (indexPosition == null) {
+                    updatedChildren = clauseValue.children.concat(elementToInsert)
+                  } else {
+                    updatedChildren = Utils.addToArrayWithFill(
+                      elementToInsert,
+                      clauseValue.children,
+                      indexPosition,
+                      makeE,
+                    )
+                  }
+                  return jsxFragment(clauseValue.uid, updatedChildren, clauseValue.longForm)
+                } else {
+                  // Something other than a fragment, so wrap that and the newly inserted element into a fragment.
+                  return jsxFragment(
+                    generateUidWithExistingComponents(projectContents),
+                    [clauseValue, elementToInsert],
+                    false,
+                  )
+                }
               }
             },
             parentElement,

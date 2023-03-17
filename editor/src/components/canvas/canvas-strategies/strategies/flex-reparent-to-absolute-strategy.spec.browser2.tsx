@@ -402,9 +402,6 @@ function fragmentTestCode(type: ContentAffectingType) {
       'skip6',
       'inner-fragment',
       'inner-fragment-2',
-      'skip8',
-      'skip10',
-      'children-affecting',
     ])
   } else {
     FOR_TESTS_setNextGeneratedUids([

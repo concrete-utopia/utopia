@@ -1,7 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import { act } from '@testing-library/react'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import { isJSXConditionalExpression } from '../../core/shared/element-template'
@@ -19,20 +18,10 @@ describe('conditionals', () => {
   after(() => setFeatureEnabled('Conditional support', false))
   describe('deletion', () => {
     it('replaces a branch with null', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
         {
+          // @utopia/uid=conditional
           true ? (
             <div data-uid='bbb' data-testid='bbb'>foo</div>
           ) : (
@@ -59,6 +48,7 @@ describe('conditionals', () => {
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 true ? null : (
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 )
@@ -68,10 +58,10 @@ describe('conditionals', () => {
       )
     })
     it('replaces a text string branch with null', async () => {
-      FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'skip3', 'skip4', 'conditional'])
       const startSnippet = `
         <div data-uid='aaa'>
         {
+          // @utopia/uid=conditional
           true ? 'hello' : 'there'
         }
         </div>
@@ -81,7 +71,7 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'then-case'])
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'true-case'])
       await act(async () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
@@ -94,6 +84,7 @@ describe('conditionals', () => {
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 true ? null : 'there'
               }
             </div>
@@ -103,20 +94,10 @@ describe('conditionals', () => {
   })
   describe('expressions', () => {
     it('stores the string expression', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'conditional',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
         {
+          // @utopia/uid=conditional
           [].length === 0 ? (
             <div data-uid='bbb' data-testid='bbb'>foo</div>
           ) : (
