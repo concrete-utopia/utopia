@@ -73,11 +73,18 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
-  const filteredSelectedElements = flattenSelection(targets)
+  const originalTargets = flattenSelection(
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+  )
+  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+
+  // TODO next PR fix for selection length > 1 !!!!!
+  if (originalTargets.length !== 1 || retargetedTargets.length !== 1) {
+    return null
+  }
+
   if (
-    filteredSelectedElements.length === 0 ||
-    !filteredSelectedElements.every((element) => {
+    !retargetedTargets.every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,
@@ -91,10 +98,13 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const target = filteredSelectedElements[0]
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
+  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets[0]) // TODO next PR fix for selection length > 1 !!!!!
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
-  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
+  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
+    // TODO next PR fix for selection length > 1 !!!!!
+    canvasState.startingMetadata,
+    originalTargets[0],
+  )
 
   const autoLayoutSiblingsControl = hasAutoLayoutSiblings
     ? [
@@ -113,13 +123,13 @@ export function convertToAbsoluteAndMoveStrategy(
     controlsToRender: [
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ImmediateParentBounds,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -146,7 +156,7 @@ export function convertToAbsoluteAndMoveStrategy(
           )
         }
         const absoluteMoveApplyResult = applyMoveCommon(
-          filteredSelectedElements,
+          retargetedTargets,
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle contentAffecting elements
           canvasState,
           interactionSession,

@@ -1111,6 +1111,7 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
@@ -1120,7 +1121,6 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/false-case-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/false-case-attribute
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
   it('dragging out of an active clause, replaces with null', async () => {
@@ -1200,6 +1200,7 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
@@ -1209,7 +1210,6 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/false-case-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
   xit('dragging into child of an active clause, works as it would without the conditional', () => {
