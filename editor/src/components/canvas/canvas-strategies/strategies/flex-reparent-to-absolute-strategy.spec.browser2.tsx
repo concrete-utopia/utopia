@@ -6,10 +6,7 @@ import {
 import * as EP from '../../../../core/shared/element-path'
 import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/meta-actions'
 import { NavigatorEntry } from '../../../editor/store/editor-state'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -19,6 +16,9 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/meta-actions'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import {
   getClosingGroupLikeTag,
