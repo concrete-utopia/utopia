@@ -41,6 +41,7 @@ export const runReorderElement: CommandFunction<ReorderElement> = (
         components,
         command.target,
         command.indexPosition,
+        editorState.spyMetadata,
       )
       return getPatchForComponentChange(
         success.topLevelElements,
