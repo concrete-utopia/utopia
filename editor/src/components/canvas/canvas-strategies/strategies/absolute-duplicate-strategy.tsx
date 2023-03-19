@@ -58,7 +58,7 @@ export function absoluteDuplicateStrategy(
     controlsToRender: [
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
+        props: { targets: filteredSelectedElements }, // ???
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
