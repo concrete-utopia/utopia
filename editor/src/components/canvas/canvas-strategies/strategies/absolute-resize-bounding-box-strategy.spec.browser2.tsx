@@ -56,6 +56,7 @@ import { AllContentAffectingTypes, ContentAffectingType } from './group-like-hel
 import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
+import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -1474,20 +1475,26 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-outlines-control')
+    const parentOutlineControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
+      ImmediateParentOutlinesTestId([]),
+    )
     expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-bounds-control')
+    const parentBoundsControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
+      ImmediateParentOutlinesTestId([]),
+    )
     expect(parentBoundsControlBeforeDrag).toBeNull()
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
-    const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
+    const parentOutlineControl = renderResult.renderedDOM.getByTestId(
+      ImmediateParentOutlinesTestId([target]),
+    )
     expect(parentOutlineControl).toBeDefined()
-    const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
+    const parentBoundsControl = renderResult.renderedDOM.getByTestId(
+      ImmediateParentOutlinesTestId([target]),
+    )
     expect(parentBoundsControl).toBeDefined()
   })
   it('snap guidelines are visible when an absolute positioned element(bbb) is resized and snaps to its sibling (ccc)', async () => {

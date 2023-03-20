@@ -24,6 +24,7 @@ import {
   mouseMoveToPoint,
   mouseUpAtPoint,
 } from '../../event-helpers.test-utils'
+import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 
 async function dragElement(
   canvasControlsLayer: HTMLElement,
@@ -829,12 +830,16 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-outlines-control')
+    const parentOutlineControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
+      ImmediateParentOutlinesTestId([]),
+    )
     expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-bounds-control')
+    const parentBoundsControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
+      ImmediateParentOutlinesTestId([]),
+    )
     expect(parentBoundsControlBeforeDrag).toBeNull()
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     const targetElement = renderResult.renderedDOM.getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -847,9 +852,13 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       windowPoint({ x: 5, y: 5 }),
       emptyModifiers,
       async () => {
-        const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
+        const parentOutlineControl = renderResult.renderedDOM.getByTestId(
+          ImmediateParentOutlinesTestId([target]),
+        )
         expect(parentOutlineControl).toBeDefined()
-        const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
+        const parentBoundsControl = renderResult.renderedDOM.getByTestId(
+          ImmediateParentOutlinesTestId([target]),
+        )
         expect(parentBoundsControl).toBeDefined()
       },
     )
