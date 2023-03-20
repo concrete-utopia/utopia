@@ -12,6 +12,9 @@ import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const ImmediateParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
+  `${targetPaths.map(EP.toString).sort()}-immediate-parent-outlines-control`
+
+export const ParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
   `${targetPaths.map(EP.toString).sort()}-parent-outlines-control`
 
 interface ImmediateParentOutlinesProps {
@@ -84,7 +87,7 @@ export const ParentOutlines = controlForStrategyMemoized(
 
     return parentFrame == null || isInfinityRectangle(parentFrame)
       ? null
-      : drawOutlines(parentFrame, scale, colorTheme, ImmediateParentOutlinesTestId([targetParent]))
+      : drawOutlines(parentFrame, scale, colorTheme, ParentOutlinesTestId([targetParent]))
   },
 )
 

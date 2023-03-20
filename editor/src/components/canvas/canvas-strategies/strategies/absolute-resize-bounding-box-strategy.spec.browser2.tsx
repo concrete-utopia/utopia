@@ -31,6 +31,8 @@ import {
   EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
+  expectElementWithTestIdNotToBeRendered,
+  expectElementWithTestIdToBeRendered,
   selectComponentsForTest,
   setFeatureForBrowserTests,
   wait,
@@ -56,7 +58,7 @@ import { AllContentAffectingTypes, ContentAffectingType } from './group-like-hel
 import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
-import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
+import { ImmediateParentOutlinesTestId, ParentOutlinesTestId } from '../../controls/parent-outlines'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -605,6 +607,8 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Resize Strategy', () => {
   it('the size label is not shown when an empty fragment is selected', async () => {
@@ -1475,27 +1479,15 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
-      ImmediateParentOutlinesTestId([]),
-    )
-    expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
-      ImmediateParentOutlinesTestId([]),
-    )
-    expect(parentBoundsControlBeforeDrag).toBeNull()
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ParentOutlinesTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
-    const parentOutlineControl = renderResult.renderedDOM.getByTestId(
-      ImmediateParentOutlinesTestId([target]),
-    )
-    expect(parentOutlineControl).toBeDefined()
-    const parentBoundsControl = renderResult.renderedDOM.getByTestId(
-      ImmediateParentOutlinesTestId([target]),
-    )
-    expect(parentBoundsControl).toBeDefined()
+    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+    expectElementWithTestIdToBeRendered(renderResult, ParentOutlinesTestId([target]))
   })
   it('snap guidelines are visible when an absolute positioned element(bbb) is resized and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(

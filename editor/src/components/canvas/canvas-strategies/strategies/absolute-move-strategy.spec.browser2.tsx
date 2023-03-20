@@ -24,7 +24,11 @@ import {
   mouseMoveToPoint,
   mouseUpAtPoint,
 } from '../../event-helpers.test-utils'
-import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
+import { ImmediateParentOutlinesTestId, ParentOutlinesTestId } from '../../controls/parent-outlines'
+import {
+  expectElementWithTestIdNotToBeRendered,
+  expectElementWithTestIdToBeRendered,
+} from '../../../../utils/utils.test-utils'
 
 async function dragElement(
   canvasControlsLayer: HTMLElement,
@@ -143,6 +147,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 function positioningFromCss(css: CSSStyleDeclaration) {
   return { left: css.left, top: css.top }
 }
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Move Strategy', () => {
   it('moves component instances that honour the position properties', async () => {
@@ -830,14 +836,8 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
-      ImmediateParentOutlinesTestId([]),
-    )
-    expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag = renderResult.renderedDOM.queryByTestId(
-      ImmediateParentOutlinesTestId([]),
-    )
-    expect(parentBoundsControlBeforeDrag).toBeNull()
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ParentOutlinesTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
@@ -852,14 +852,8 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       windowPoint({ x: 5, y: 5 }),
       emptyModifiers,
       async () => {
-        const parentOutlineControl = renderResult.renderedDOM.getByTestId(
-          ImmediateParentOutlinesTestId([target]),
-        )
-        expect(parentOutlineControl).toBeDefined()
-        const parentBoundsControl = renderResult.renderedDOM.getByTestId(
-          ImmediateParentOutlinesTestId([target]),
-        )
-        expect(parentBoundsControl).toBeDefined()
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, ParentOutlinesTestId([target]))
       },
     )
   })
