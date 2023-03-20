@@ -45,6 +45,7 @@ import {
 } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import { ConditionalOverrideControlTestId } from '../controls/conditional-override-control'
+import { getOptionControlTestId } from '../controls/option-chain-control'
 import {
   ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
@@ -56,6 +57,15 @@ async function getControl(
 ): Promise<HTMLInputElement> {
   return (await renderedDOM.findByTestId(controlTestId)) as HTMLInputElement
 }
+
+const ConditionalOverrideControlTrueTestId = getOptionControlTestId(
+  ConditionalOverrideControlTestId,
+  'true',
+)
+const ConditionalOverrideControlFalseTestId = getOptionControlTestId(
+  ConditionalOverrideControlTestId,
+  'false',
+)
 
 async function getControlValue(controlTestId: string, renderedDOM: RenderResult): Promise<string> {
   const control = await getControl(controlTestId, renderedDOM)
@@ -2217,7 +2227,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          `${ConditionalOverrideControlTestId}-false`,
+          getOptionControlTestId(ConditionalOverrideControlTestId, 'false'),
           [targetPath],
         )
 
@@ -2243,7 +2253,7 @@ describe('inspector tests with real metadata', () => {
 
       // toggle to true
       {
-        await clickButtonAndSelectTarget(renderResult, `${ConditionalOverrideControlTestId}-true`, [
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlTrueTestId, [
           targetPath,
         ])
 
@@ -2339,7 +2349,7 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      await clickButtonAndSelectTarget(renderResult, `${ConditionalOverrideControlTestId}-false`, [
+      await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlFalseTestId, [
         targetPath,
       ])
 
@@ -2442,7 +2452,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          `${ConditionalOverrideControlTestId}-false`,
+          ConditionalOverrideControlFalseTestId,
           bothConditionals,
         )
 
@@ -2480,7 +2490,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          `${ConditionalOverrideControlTestId}-true`,
+          ConditionalOverrideControlTrueTestId,
           bothConditionals,
         )
 
