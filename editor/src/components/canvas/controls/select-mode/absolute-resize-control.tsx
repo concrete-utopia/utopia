@@ -45,9 +45,20 @@ interface AbsoluteResizeControlProps {
 }
 
 export const SizeLabelTestId = 'SizeLabelTestId'
+export const SmallElementSize = 20
+
+function shouldUseSmallElementResizeControl(size: number, scale: number): boolean {
+  return size <= SmallElementSize / scale
+}
 
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
+    const scale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'AbsoluteResizeControl scale',
+    )
+
     const controlRef = useBoundingBox(targets, (ref, boundingBox) => {
       if (isZeroSizedElement(boundingBox)) {
         ref.current.style.display = 'none'
@@ -61,19 +72,51 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     })
 
     const leftRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.width, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const width = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = `${-lineSize / 2}px`
+      const offsetTop = `0px`
+
+      ref.current.style.width = `${width}px`
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.height = boundingBox.height + 'px'
     })
     const topRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.height, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const height = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = `0px`
+      const offsetTop = `${-lineSize / 2}px`
+
       ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = height + 'px'
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
     })
     const rightRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.width, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const width = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = isSmallElement ? `0px` : `${-lineSize / 2}px`
+      const offsetTop = `0px`
+
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.left = boundingBox.width + 'px'
+      ref.current.style.width = width + 'px'
       ref.current.style.height = boundingBox.height + 'px'
     })
 
     const bottomRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.height, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const height = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = `0px`
+      const offsetTop = isSmallElement ? `0px` : `${-lineSize / 2}px`
+
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.top = boundingBox.height + 'px'
       ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = height + 'px'
     })
 
     const topLeftRef = useBoundingBox(targets, NO_OP)
@@ -286,23 +329,15 @@ const ResizeEdge = React.memo(
       )
     }, [dispatch, metadataRef, props.direction, selectedElementsRef])
 
-    const lineSize = ResizeMouseAreaSize / scale
-    const width = props.direction === 'horizontal' ? undefined : lineSize
-    const height = props.direction === 'vertical' ? undefined : lineSize
-    const offsetLeft = props.direction === 'horizontal' ? `0px` : `${-lineSize / 2}px`
-    const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
         onDoubleClick={onEdgeDblClick}
         ref={ref}
         style={{
           position: 'absolute',
-          width: width,
-          height: height,
           backgroundColor: 'transparent',
           cursor: props.cursor,
           pointerEvents: 'initial',
-          transform: `translate(${offsetLeft}, ${offsetTop})`,
         }}
         onMouseDown={onEdgeMouseDown}
         onMouseMove={onMouseMove}
