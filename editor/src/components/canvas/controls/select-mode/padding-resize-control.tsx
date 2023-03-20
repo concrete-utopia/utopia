@@ -70,7 +70,7 @@ const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
 const PaddingResizeControlHitAreaPaddingMainSide = 5
-const PaddingResizeControlHitAreaPaddingUnaffectedSide = 2
+const PaddingResizeControlHitAreaPaddingUnaffectedSide = 1
 
 type StoreSelector<T> = (s: CanvasSubstate) => T
 
