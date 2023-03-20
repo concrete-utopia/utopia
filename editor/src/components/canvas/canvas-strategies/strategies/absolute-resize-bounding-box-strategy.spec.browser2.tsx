@@ -51,6 +51,7 @@ import { MaxContent } from '../../../inspector/inspector-common'
 import {
   SizeLabelTestId,
   ResizePointTestId,
+  SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
@@ -1755,5 +1756,118 @@ describe('Absolute Resize Group-like behaviors', () => {
         expect(groupResizeResult).toEqual(multiselectResult)
       })
     })
+  })
+})
+
+describe('Absolute Resize Control', () => {
+  it('Resize control is placed on small elements outside of the draggable frame area', async () => {
+    const width = SmallElementSize
+    const height = SmallElementSize
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('5px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('5px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('5px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('5px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+  })
+  it('Resize control on non-small elements extend into the draggable frame area', async () => {
+    const width = SmallElementSize + 1
+    const height = SmallElementSize + 1
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('10px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('10px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('10px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('10px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
   })
 })
