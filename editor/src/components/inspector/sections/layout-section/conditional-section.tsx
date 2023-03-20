@@ -39,7 +39,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { ControlStatus, getControlStyles } from '../../common/control-status'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
-import { OptionChainControl, OptionChainOption } from '../../controls/option-chain-control'
+import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
@@ -49,7 +49,7 @@ export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle
 export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
 export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=branches'
 
-type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
+export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-conditional'
 
 const conditionOverrideSelector = createCachedSelector(
@@ -137,19 +137,6 @@ const conditionExpressionSelector = createCachedSelector(
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
-const OverrideControlOptions: Array<OptionChainOption<boolean>> = [
-  {
-    tooltip: 'True',
-    label: 'True',
-    value: true,
-  },
-  {
-    tooltip: 'False',
-    label: 'False',
-    value: false,
-  },
-]
-
 export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
@@ -171,7 +158,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   )
 
   const setConditionOverride = React.useCallback(
-    (value: boolean | null) => () => {
+    (value: boolean | null) => {
       const actions: EditorAction[] = paths.map((path) =>
         setConditionalOverriddenCondition(path, value),
       )
@@ -179,14 +166,6 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       dispatch(actions)
     },
     [dispatch, paths],
-  )
-
-  const toggleConditionOverride = React.useCallback(
-    (whichButton: boolean) => {
-      const newCond = whichButton === conditionOverride ? null : whichButton
-      setConditionOverride(newCond)()
-    },
-    [conditionOverride, setConditionOverride],
   )
 
   const replaceBranches = React.useCallback(() => {
@@ -251,33 +230,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
           <span>Conditional</span>
         </FlexRow>
-        {conditionOverride != 'not-overridden' ? (
-          <SquareButton
-            highlight
-            onClick={setConditionOverride(null)}
-            data-testid={ConditionalsControlSectionCloseTestId}
-          >
-            <FunctionIcons.Delete />
-          </SquareButton>
-        ) : (
-          <SquareButton
-            highlight
-            onClick={setConditionOverride(true)}
-            data-testid={ConditionalsControlSectionOpenTestId}
-          >
-            <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
-          </SquareButton>
-        )}
       </InspectorSubsectionHeader>
       {unless(
         originalConditionExpression === 'multiselect',
-        <UIGridRow
-          padded={true}
-          variant='<-auto-><----------1fr--------->'
-          style={{
-            color: conditionOverride != null ? colorTheme.brandNeonPink.value : 'inherit',
-          }}
-        >
+        <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
           Condition
           <StringInput
             testId={ConditionalsControlSectionExpressionTestId}
@@ -307,25 +263,12 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           </Button>
         </UIGridRow>,
       )}
-      <UIGridRow
-        padded={true}
-        variant='<---1fr--->|------172px-------|'
-        style={{ color: conditionOverride != null ? colorTheme.brandNeonPink.value : 'inherit' }}
-      >
-        Override
-        <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-          <OptionChainControl
-            id={'conditional-override-control'}
-            key={'conditional-override-control'}
-            testId={'conditional-override-control'}
-            onSubmitValue={toggleConditionOverride}
-            value={conditionOverride}
-            options={OverrideControlOptions}
-            controlStatus={controlStatus}
-            controlStyles={controlStyles}
-          />
-        </FlexRow>
-      </UIGridRow>
+      <ConditionalOverrideControl
+        controlStatus={controlStatus}
+        controlStyles={controlStyles}
+        setConditionOverride={setConditionOverride}
+        conditionOverride={conditionOverride}
+      />
     </React.Fragment>
   )
 })

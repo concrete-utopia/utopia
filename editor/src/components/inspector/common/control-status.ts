@@ -11,6 +11,7 @@ import { isLeft, isRight, Either } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { ParsedPropertiesKeys } from './css-utils'
 import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import { IcnColor } from '../../../uuiui'
 
 export interface ControlStyles {
   fontStyle: string
@@ -32,6 +33,7 @@ export interface ControlStyles {
   railColor: string
   showContent: boolean
   unsettable: boolean
+  iconColor: IcnColor
 }
 
 export type ControlStatus =
@@ -137,6 +139,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     let unknown = false
     let showContent = true
     let unsettable = true
+    let iconColor: IcnColor = 'main'
 
     switch (status) {
       case 'simple':
@@ -226,6 +229,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         trackColor = colorTheme.primary.value
         strokePrimaryColor = colorTheme.primary.value
         showContent = true
+        iconColor = 'error'
         break
       default:
         break
@@ -251,6 +255,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       showContent,
       unknown,
       unsettable,
+      iconColor,
     }
   },
 )
