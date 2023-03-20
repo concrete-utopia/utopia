@@ -98,7 +98,7 @@ function drawOutlines(
   testId: string,
 ) {
   return (
-    <CanvasOffsetWrapper key={`parent-outlines`}>
+    <CanvasOffsetWrapper key={testId}>
       <div
         style={{
           position: 'absolute',

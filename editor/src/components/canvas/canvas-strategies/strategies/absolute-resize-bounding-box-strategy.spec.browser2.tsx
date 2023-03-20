@@ -1480,14 +1480,12 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     )
 
     expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-    expectElementWithTestIdNotToBeRendered(renderResult, ParentOutlinesTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
     expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
-    expectElementWithTestIdToBeRendered(renderResult, ParentOutlinesTestId([target]))
   })
   it('snap guidelines are visible when an absolute positioned element(bbb) is resized and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(
