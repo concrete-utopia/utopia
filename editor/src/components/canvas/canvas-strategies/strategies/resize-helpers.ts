@@ -16,6 +16,7 @@ import {
   canvasRectangle,
   CanvasRectangle,
   distance,
+  defaultIfNaN,
   offsetPoint,
   pointDifference,
   rectFromTwoPoints,
@@ -119,7 +120,8 @@ export function getLockedAspectRatio(
   }
 
   if (anySelectedElementAspectRatioLocked || modifiers.shift) {
-    return originalBoundingBox.width / (originalBoundingBox.height ?? 1)
+    const rawAspectRatio = originalBoundingBox.width / originalBoundingBox.height
+    return defaultIfNaN(rawAspectRatio, 1)
   }
 
   return null

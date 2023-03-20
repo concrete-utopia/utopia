@@ -942,9 +942,11 @@ export function forceNotNaN(n: number, errorMessage?: string): number {
   }
 }
 
-export function nanToZero(n: number): number {
+export const nanToZero = (n: number) => defaultIfNaN(n, 0)
+
+export function defaultIfNaN(n: number, defaultValue: number): number {
   if (isNaN(n)) {
-    return 0
+    return defaultValue
   } else {
     return n
   }
