@@ -492,3 +492,17 @@ export function setFeatureForUnitTests(featureName: FeatureName, newValue: boole
     setFeatureEnabled(featureName, originalFSValue)
   })
 }
+
+function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTMLElement[] {
+  return editor.renderedDOM.queryAllByTestId(testId)
+}
+
+export const expectElementWithTestIdToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(1)
+
+export const expectElementWithTestIdNotToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)
