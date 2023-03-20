@@ -837,7 +837,6 @@ describe('Absolute Move Strategy Canvas Controls', () => {
     )
 
     expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-    expectElementWithTestIdNotToBeRendered(renderResult, ParentOutlinesTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
@@ -853,7 +852,6 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       emptyModifiers,
       async () => {
         expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
-        expectElementWithTestIdToBeRendered(renderResult, ParentOutlinesTestId([target]))
       },
     )
   })

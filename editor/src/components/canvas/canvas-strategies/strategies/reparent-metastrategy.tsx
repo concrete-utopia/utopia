@@ -190,7 +190,6 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ) => {
   const reparentSubjects = flattenSelection(
-    // ???
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
 
