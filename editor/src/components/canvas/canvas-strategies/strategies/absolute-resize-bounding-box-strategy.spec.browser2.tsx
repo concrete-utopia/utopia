@@ -56,7 +56,11 @@ import {
   AbsoluteResizeControlTestId,
 } from '../../controls/select-mode/absolute-resize-control'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
-import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId, ParentOutlinesTestId } from '../../controls/parent-outlines'
@@ -1493,6 +1497,48 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
     expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
   })
+
+  describe('when a content-affecting element is resized the parent outlines become visible', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+    setFeatureForBrowserTests('Conditional support', true)
+
+    AllContentAffectingTypes.forEach((type) => {
+      it(`resizing a ${type}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 170, bottom: 240 }} data-uid='container'>
+            ${getOpeningGroupLikeTag(type)}
+              <div
+                style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+                data-uid='bbb'
+                data-testid='bbb'
+              />
+              ${getClosingGroupLikeTag(type)}
+          </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+
+        const target = EP.appendNewElementPath(TestScenePath, ['container', GroupLikeElementUid])
+        await startDragUsingActions(
+          renderResult,
+          target,
+          EdgePositionLeft,
+          canvasPoint({ x: 5, y: 5 }),
+        )
+
+        await wait(ControlDelay + 10)
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+      })
+    })
+  })
+
   it('snap guidelines are visible when an absolute positioned element(bbb) is resized and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
