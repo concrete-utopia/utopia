@@ -500,16 +500,13 @@ export interface WrapInView {
   targets: ElementPath[]
   layoutSystem: SettableLayoutSystem
   newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith:
-    | { element: JSXElement; importsToAdd: Imports }
-    | 'default-empty-div'
-    | 'conditional'
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
 }
 
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports }
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'conditional'
 }
 
 export interface OpenFloatingInsertMenu {

@@ -93,7 +93,10 @@ export function getConditionalCase(
   parentMetadata: ElementInstanceMetadata | null,
   parentPath: ElementPath,
 ): ConditionalCase | 'not-a-conditional' {
-  if (parentMetadata == null || parentMetadata.conditionalValue === 'not-a-conditional') {
+  if (parentMetadata == null) {
+    return 'true-case'
+  }
+  if (parentMetadata.conditionalValue === 'not-a-conditional') {
     return 'not-a-conditional'
   }
   const parentOverride = getConditionalFlag(parent)

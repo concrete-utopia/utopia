@@ -1171,7 +1171,26 @@ interface ElementWithUid {
 }
 
 export function isElementWithUid(element: unknown): element is ElementWithUid {
-  return (element as ElementWithUid).uid != null
+  const cast = element as ElementWithUid
+  return cast.uid != null && typeof cast.uid === 'string'
+}
+
+interface ElementWithAttributesProps {
+  props: JSXAttributes
+}
+
+export function isElementWithAttributesProps(
+  element: unknown,
+): element is ElementWithAttributesProps {
+  const cast = element as ElementWithAttributesProps
+  return (
+    cast.props != null &&
+    Array.isArray(cast.props) &&
+    cast.props.every(
+      (prop) =>
+        typeof prop === 'object' && (isJSXAttributesEntry(prop) || isJSXAttributesSpread(prop)),
+    )
+  )
 }
 
 export type JSXElementChildren = Array<JSXElementChild>

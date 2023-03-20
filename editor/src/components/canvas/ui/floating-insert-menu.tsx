@@ -485,7 +485,7 @@ export var FloatingMenu = React.memo(() => {
     const selectedViews = selectedViewsref.current
     switch (floatingMenuState.insertMenuMode) {
       case 'wrap':
-        actionsToDispatch = [wrapInView(selectedViews, 'conditional')]
+        actionsToDispatch = [wrapInElement(selectedViews, 'conditional')]
         break
       case 'insert':
       case 'convert':
