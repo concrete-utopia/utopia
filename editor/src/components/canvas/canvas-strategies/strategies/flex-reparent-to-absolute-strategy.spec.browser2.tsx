@@ -6,10 +6,7 @@ import {
 import * as EP from '../../../../core/shared/element-path'
 import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
-import { selectComponents } from '../../../editor/actions/meta-actions'
 import { NavigatorEntry } from '../../../editor/store/editor-state'
-import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -19,8 +16,15 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import { selectComponents } from '../../../editor/actions/meta-actions'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
-import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  getRegularNavigatorTargets,
+} from './group-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -262,13 +266,6 @@ describe('Flex Reparent To Absolute Strategy', () => {
   })
 })
 
-function getRegularNavigatorTargets(entries: Array<NavigatorEntry>): Array<string> {
-  return entries
-    .filter((t) => t.type === 'REGULAR')
-    .map((t) => t.elementPath)
-    .map(EP.toString)
-}
-
 describe('Flex Reparent to Absolute – children affecting elements', () => {
   setFeatureForBrowserTests('Fragment support', true)
   setFeatureForBrowserTests('Conditional support', true)
@@ -303,9 +300,7 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
-        ).toEqual([
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -366,9 +361,7 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(
-          getRegularNavigatorTargets(renderResult.getEditorState().derived.navigatorTargets),
-        ).toEqual([
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -409,9 +402,6 @@ function fragmentTestCode(type: ContentAffectingType) {
       'skip6',
       'inner-fragment',
       'inner-fragment-2',
-      'skip8',
-      'skip10',
-      'children-affecting',
     ])
   } else {
     FOR_TESTS_setNextGeneratedUids([

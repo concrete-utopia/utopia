@@ -1,5 +1,4 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { toString } from '../../../../core/shared/element-path'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
@@ -79,6 +78,7 @@ export function absoluteMoveStrategy(
           interactionSession?.interactionData.drag != null
         ) {
           return applyMoveCommon(
+            targets,
             retargetedTargets,
             canvasState,
             interactionSession,

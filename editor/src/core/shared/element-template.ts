@@ -28,6 +28,7 @@ import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
+import { allComments } from './comment-flags'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -111,6 +112,10 @@ export function isSingleLineComment(comment: Comment): comment is SingleLineComm
 
 export interface WithComments {
   comments: ParsedComments
+}
+
+export function isWithComments(e: unknown): e is WithComments {
+  return (e as WithComments).comments != null
 }
 
 export interface JSXAttributeValue<T> extends WithComments {
@@ -1065,6 +1070,43 @@ export interface JSXConditionalExpression extends WithComments {
   whenFalse: ChildOrAttribute
 }
 
+function fixBaseComments(comments: ParsedComments, parentComments: Comment[]): ParsedComments {
+  function commentIsNotIncluded(comment: Comment) {
+    return !parentComments.some(
+      (other) =>
+        other.comment === comment.comment &&
+        other.rawText === comment.rawText &&
+        other.pos === comment.pos,
+    )
+  }
+  return {
+    leadingComments: comments.leadingComments.filter(commentIsNotIncluded),
+    trailingComments: comments.trailingComments.filter(commentIsNotIncluded),
+  }
+}
+
+function fixJSXConditionalExpressionCondition(
+  condition: JSXAttribute,
+  comments: ParsedComments,
+): JSXAttribute {
+  if (!isWithComments(condition)) {
+    return condition
+  }
+
+  const flatComments = allComments(comments)
+
+  return {
+    ...condition,
+    comments: {
+      ...fixBaseComments(condition.comments, flatComments),
+      questionTokenComments:
+        condition.comments.questionTokenComments != null
+          ? fixBaseComments(condition.comments.questionTokenComments, flatComments)
+          : undefined,
+    },
+  }
+}
+
 export function jsxConditionalExpression(
   uid: string,
   condition: JSXAttribute,
@@ -1077,7 +1119,7 @@ export function jsxConditionalExpression(
     type: 'JSX_CONDITIONAL_EXPRESSION',
     uid: uid,
     originalConditionString: originalConditionString,
-    condition: condition,
+    condition: fixJSXConditionalExpressionCondition(condition, comments), // remove any duplicate comments shared with the element
     whenTrue: whenTrue,
     whenFalse: whenFalse,
     comments: comments,
@@ -1115,6 +1157,13 @@ export function isJSXConditionalExpression(
 
 export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
+}
+
+type UtopiaElement = JSXElement | JSXFragment | JSXConditionalExpression
+
+// A utopia element can be either a HTML DOM element or a React-only exotic element (ie the Fragment) or a Utopia-only element, aka Elefant (ie the Conditional Expression)
+export function isUtopiaElement(element: JSXElementChild): element is UtopiaElement {
+  return isJSXElementLike(element) || isJSXConditionalExpression(element)
 }
 
 interface ElementWithUid {

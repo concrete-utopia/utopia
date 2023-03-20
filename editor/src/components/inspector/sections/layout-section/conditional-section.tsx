@@ -4,7 +4,10 @@ import createCachedSelector from 're-reselect'
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
+import {
+  findUtopiaCommentFlag,
+  isUtopiaCommentFlagConditional,
+} from '../../../../core/shared/comment-flags'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
@@ -71,7 +74,9 @@ const conditionOverrideSelector = createCachedSelector(
     let conditions = new Set<boolean | null>()
     elements.forEach((element) => {
       const flag = findUtopiaCommentFlag(element.comments, 'conditional')
-      conditions.add(flag?.value ?? null)
+      if (isUtopiaCommentFlagConditional(flag)) {
+        conditions.add(flag.value)
+      }
     })
 
     switch (conditions.size) {

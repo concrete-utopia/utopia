@@ -1,8 +1,6 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import * as EP from '../../../core/shared/element-path'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 
 const appFilePath = '/src/app.js'
@@ -21,13 +19,16 @@ export var App = (props) => {
         height: '100%'
       }}
     >
-      {[0, 1].length > 1 ? (
-        [0, 1].length === 2 ? (
-          <div data-uid='div-inside-conditionals' />
-        ) : null
-      ) : (
-        5
-      )}
+      {
+        // @utopia/uid=conditional1
+        [0, 1].length > 1 ? (
+            // @utopia/uid=conditional2
+            [0, 1].length === 2 ? (
+            <div data-uid='div-inside-conditionals' />
+          ) : null
+        ) : (
+          5
+        )}
     </div>
   )
 }
@@ -65,20 +66,6 @@ async function createAndRenderProject() {
 describe('a project with conditionals', () => {
   setFeatureForBrowserTests('Conditional support', true)
   it('fills the content of the navigator', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'mock1',
-      'mock2',
-      'mock3',
-      'mock4',
-      'conditional1',
-      'conditional2',
-      'mock1',
-      'mock2',
-      'mock3',
-      'mock4',
-      'conditional1',
-      'conditional2',
-    ])
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
     const pathStrings = navigatorTargets.map(navigatorEntryToKey)

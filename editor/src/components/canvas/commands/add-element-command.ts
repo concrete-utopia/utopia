@@ -53,6 +53,7 @@ export const runAddElement: CommandFunction<AddElement> = (
         command.element,
         componentsNewParent,
         null,
+        editorState.spyMetadata,
       )
 
       const editorStatePatchNewParentFile = getPatchForComponentChange(

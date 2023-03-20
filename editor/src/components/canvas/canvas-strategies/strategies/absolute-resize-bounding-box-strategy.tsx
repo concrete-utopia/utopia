@@ -72,6 +72,7 @@ export function absoluteResizeBoundingBoxStrategy(
   const retargetedTargets = flattenSelection(
     retargetStrategyToChildrenOfContentAffectingElements(canvasState),
   )
+
   if (
     retargetedTargets.length === 0 ||
     !retargetedTargets.every((element) => {
@@ -87,7 +88,7 @@ export function absoluteResizeBoundingBoxStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets },
+        props: { targets: retargetedTargets },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
@@ -198,15 +199,16 @@ export function absoluteResizeBoundingBoxStrategy(
                   elementParentFlexDirection,
                   edgePosition,
                 ),
-                setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
                 pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
               ]
             })
+
             return strategyApplicationResult([
               ...commandsForSelectedElements,
+              setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(targets),
+              setElementsToRerenderCommand(retargetedTargets),
             ])
           }
         } else {

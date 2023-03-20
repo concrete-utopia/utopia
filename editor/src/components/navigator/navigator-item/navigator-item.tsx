@@ -29,13 +29,15 @@ import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { when } from '../../../utils/react-conditionals'
 import { isLeft } from '../../../core/shared/either'
 import {
-  ChildOrAttribute,
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
 } from '../../../core/shared/element-template'
-import { findUtopiaCommentFlag } from '../../../core/shared/comment-flags'
-import { getConditionalClausePath, ConditionalCase } from '../../../core/model/conditionals'
+import {
+  getConditionalClausePath,
+  getConditionalFlag,
+  matchesOverriddenConditionalBranch,
+} from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
@@ -334,13 +336,13 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
     }
 
     return (
-      matchesOverriddenBranch(elementPath, parentPath, {
+      matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenTrue,
         branch: 'true-case',
         wantOverride: true,
         parentOverride: parentOverride,
       }) ||
-      matchesOverriddenBranch(elementPath, parentPath, {
+      matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenFalse,
         branch: 'false-case',
         wantOverride: false,
@@ -692,25 +694,4 @@ function asConditional(element: ElementInstanceMetadata | null): JSXConditionalE
     return null
   }
   return element.element.value
-}
-
-function getConditionalFlag(element: JSXConditionalExpression) {
-  return findUtopiaCommentFlag(element.comments, 'conditional')?.value ?? null
-}
-
-function matchesOverriddenBranch(
-  elementPath: ElementPath,
-  parentPath: ElementPath,
-  params: {
-    clause: ChildOrAttribute
-    branch: ConditionalCase
-    wantOverride: boolean
-    parentOverride: boolean
-  },
-): boolean {
-  const { clause, branch, wantOverride, parentOverride } = params
-  return (
-    wantOverride === parentOverride &&
-    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause, branch))
-  )
 }
