@@ -12,7 +12,7 @@ interface GrouplikeTagOptions {
 
 const DefaultGrouplikeTagOptions: GrouplikeTagOptions = {
   stripTestId: false,
-  stripUids: true,
+  stripUids: false,
 }
 
 export function getOpeningGroupLikeTag(
