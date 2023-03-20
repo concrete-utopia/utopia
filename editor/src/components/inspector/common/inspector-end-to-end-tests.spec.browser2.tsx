@@ -18,7 +18,11 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  wait,
+} from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
@@ -40,13 +44,11 @@ import {
   updateFromCodeEditor,
 } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
+import { ConditionalOverrideControlTestId } from '../controls/conditional-override-control'
 import {
-  ConditionalsControlSectionCloseTestId,
   ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranches,
-  ConditionalsControlToggleFalseTestId,
-  ConditionalsControlToggleTrueTestId,
 } from '../sections/layout-section/conditional-section'
 async function getControl(
   controlTestId: string,
@@ -2187,7 +2189,7 @@ describe('inspector tests with real metadata', () => {
   describe('conditionals', () => {
     before(() => setFeatureEnabled('Conditional support', true))
     after(() => setFeatureEnabled('Conditional support', false))
-    it('toggles conditional branch', async () => {
+    it('overrides conditional branch', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
         {
@@ -2211,36 +2213,13 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      // open the section in the inspector
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionOpenTestId, [
-          targetPath,
-        ])
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=conditional
-                // @utopia/conditional=true
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
       // toggle to false
       {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
-          targetPath,
-        ])
+        await clickButtonAndSelectTarget(
+          renderResult,
+          `${ConditionalOverrideControlTestId}-false`,
+          [targetPath],
+        )
 
         expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
         expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
@@ -2264,7 +2243,7 @@ describe('inspector tests with real metadata', () => {
 
       // toggle to true
       {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleTrueTestId, [
+        await clickButtonAndSelectTarget(renderResult, `${ConditionalOverrideControlTestId}-true`, [
           targetPath,
         ])
 
@@ -2277,29 +2256,6 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional
                 // @utopia/conditional=true
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
-      // close the inspector section
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionCloseTestId, [
-          targetPath,
-        ])
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=conditional
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
@@ -2383,7 +2339,7 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
+      await clickButtonAndSelectTarget(renderResult, `${ConditionalOverrideControlTestId}-false`, [
         targetPath,
       ])
 
@@ -2408,7 +2364,8 @@ describe('inspector tests with real metadata', () => {
          `),
       )
     })
-    it('toggles multiple conditional branches', async () => {
+    // Conditional section should not be closeable, so no UI currently to override multiple conditionals at the same time
+    xit('toggles multiple conditional branches', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
           {
@@ -2485,7 +2442,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          ConditionalsControlToggleFalseTestId,
+          `${ConditionalOverrideControlTestId}-false`,
           bothConditionals,
         )
 
@@ -2523,7 +2480,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          ConditionalsControlToggleTrueTestId,
+          `${ConditionalOverrideControlTestId}-true`,
           bothConditionals,
         )
 
@@ -2547,40 +2504,6 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional2
                 // @utopia/conditional=true
-                true ? (
-                <div data-uid='ddd' data-testid='ddd'>baz</div>
-              ) : (
-                <div data-uid='eee' data-testid='eee'>qux</div>
-              )}
-            </div>
-          `),
-        )
-      }
-
-      // close the inspector section
-      {
-        await clickButtonAndSelectTarget(
-          renderResult,
-          ConditionalsControlSectionCloseTestId,
-          bothConditionals,
-        )
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/uid=conditional1
-                true ? (
-                <div data-uid='bbb' data-testid='bbb'>foo</div>
-              ) : (
-                <div data-uid='ccc' data-testid='ccc'>bar</div>
-              )}
-              {
-                // @utopia/uid=conditional2
                 true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
               ) : (

@@ -71,6 +71,7 @@ export const OptionChainControl: React.FunctionComponent<
             {...props}
             css={optionCSS}
             key={'option-' + index}
+            testId={`${props.testId}-${option.label?.toLowerCase()}`}
             DEPRECATED_controlOptions={{
               tooltip: option.tooltip,
               icon: option.icon,

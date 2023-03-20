@@ -44,8 +44,6 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
-export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
-export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
 export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
 export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=branches'
 
