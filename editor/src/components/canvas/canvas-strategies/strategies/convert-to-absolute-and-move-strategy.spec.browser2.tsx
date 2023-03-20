@@ -14,13 +14,17 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { localRectangle, LocalRectangle } from '../../../../core/shared/math-utils'
 import { fastForEach } from '../../../../core/shared/utils'
-import { runEscapeHatch, setFocusedElement } from '../../../editor/actions/action-creators'
+import {
+  runEscapeHatch,
+  selectComponents,
+  setFocusedElement,
+} from '../../../editor/actions/action-creators'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { mapArrayToDictionary } from '../../../../core/shared/array-utils'
+import { cartesianProduct, mapArrayToDictionary } from '../../../../core/shared/array-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { keyDown, mouseDownAtPoint, mouseMoveToPoint } from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
@@ -709,85 +713,64 @@ describe('Convert to absolute/escape hatch', () => {
     expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
   })
 
-  it('becomes the active strategy when dragging flow elements out of sibling bounds', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flow')),
-      'await-first-dom-report',
-    )
+  cartesianProduct(['flex', 'flow'] as const, ['single-select', 'multiselect'] as const).forEach(
+    ([parentLayoutSystem, multiselect]) => {
+      it(`becomes the active strategy when dragging ${parentLayoutSystem} elements out of sibling bounds`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flow')),
+          'await-first-dom-report',
+        )
 
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child1')
-    const elementBounds = element.getBoundingClientRect()
+        await renderResult.dispatch(
+          [
+            selectComponents(
+              multiselect === 'multiselect'
+                ? [
+                    EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child1`),
+                    EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child2`),
+                  ]
+                : [EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child1`)],
+              false,
+            ),
+          ],
+          true,
+        )
 
-    await mouseDownAtPoint(
-      canvasControlsLayer,
-      {
-        x: elementBounds.x + 10,
-        y: elementBounds.y + 10,
-      },
-      { modifiers: cmdModifier },
-    )
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const element = renderResult.renderedDOM.getByTestId('child1')
+        const elementBounds = element.getBoundingClientRect()
 
-    // Drag without going outside the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 50,
-      y: elementBounds.y + 10,
-    })
+        await mouseDownAtPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 10,
+            y: elementBounds.y + 10,
+          },
+          { modifiers: cmdModifier },
+        )
 
-    const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(midDragStrategy).not.toBeNull()
-    expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+        // Drag without going outside the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 50,
+          y: elementBounds.y + 10,
+        })
 
-    // Now drag until we have passed the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 110,
-      y: elementBounds.y + 10,
-    })
+        const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(midDragStrategy).not.toBeNull()
+        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
 
-    const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(endDragStrategy).not.toBeNull()
-    expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
-  })
+        // Now drag until we have passed the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        })
 
-  it('becomes the active strategy when dragging flex elements out of sibling bounds', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flex')),
-      'await-first-dom-report',
-    )
-
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child1')
-    const elementBounds = element.getBoundingClientRect()
-
-    await mouseDownAtPoint(
-      canvasControlsLayer,
-      {
-        x: elementBounds.x + 10,
-        y: elementBounds.y + 10,
-      },
-      { modifiers: cmdModifier },
-    )
-
-    // Drag without going outside the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 50,
-      y: elementBounds.y + 10,
-    })
-
-    const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(midDragStrategy).not.toBeNull()
-    expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
-
-    // Now drag until we have passed the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 110,
-      y: elementBounds.y + 10,
-    })
-
-    const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(endDragStrategy).not.toBeNull()
-    expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
-  })
+        const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(endDragStrategy).not.toBeNull()
+        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      })
+    },
+  )
 })
 
 function codeForDragToEscapeHatchProject(flowOrFlex: 'flow' | 'flex'): string {
