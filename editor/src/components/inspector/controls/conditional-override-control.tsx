@@ -46,7 +46,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
       variant='<---1fr--->|------172px-------|'
       style={{ color: props.controlStyles.mainColor }}
     >
-      Override
+      Result
       {when(
         controlStatus === 'overridden',
         <Tooltip title={'Override'}>
