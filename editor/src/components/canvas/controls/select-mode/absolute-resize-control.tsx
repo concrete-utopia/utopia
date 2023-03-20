@@ -41,6 +41,7 @@ interface AbsoluteResizeControlProps {
 }
 
 export const SizeLabelTestId = 'SizeLabelTestId'
+export const SmallElementSize = 20
 
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
@@ -63,93 +64,47 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     })
 
     const leftRef = useBoundingBox(targets, (ref, boundingBox) => {
-      if (boundingBox.width <= 20) {
-        const lineSize = ResizeMouseAreaSize / scale
-        const width = lineSize / 2
-        const offsetLeft = `${-lineSize / 2}px`
-        const offsetTop = `0px`
+      const lineSize = ResizeMouseAreaSize / scale
+      const width = boundingBox.width <= SmallElementSize ? lineSize / 2 : lineSize
+      const offsetLeft = `${-lineSize / 2}px`
+      const offsetTop = `0px`
 
-        ref.current.style.width = `${width}px`
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-        ref.current.style.height = boundingBox.height + 'px'
-      } else {
-        const lineSize = ResizeMouseAreaSize / scale
-        const width = lineSize
-        const offsetLeft = `${-lineSize / 2}px`
-        const offsetTop = `0px`
-
-        ref.current.style.width = `${width}px`
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-        ref.current.style.height = boundingBox.height + 'px'
-      }
+      ref.current.style.width = `${width}px`
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
+      ref.current.style.height = boundingBox.height + 'px'
     })
     const topRef = useBoundingBox(targets, (ref, boundingBox) => {
-      if (boundingBox.height <= 20) {
-        const lineSize = ResizeMouseAreaSize / scale
-        const height = lineSize / 2
-        const offsetLeft = `0px`
-        const offsetTop = `${-lineSize / 2}px`
+      const lineSize = ResizeMouseAreaSize / scale
+      const height = boundingBox.height <= SmallElementSize ? lineSize / 2 : lineSize
+      const offsetLeft = `0px`
+      const offsetTop = `${-lineSize / 2}px`
 
-        ref.current.style.width = boundingBox.width + 'px'
-        ref.current.style.height = height + 'px'
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-      } else {
-        const lineSize = ResizeMouseAreaSize / scale
-        const height = lineSize
-        const offsetLeft = `0px`
-        const offsetTop = `${-lineSize / 2}px`
-
-        ref.current.style.width = boundingBox.width + 'px'
-        ref.current.style.height = height + 'px'
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-      }
+      ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = height + 'px'
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
     })
     const rightRef = useBoundingBox(targets, (ref, boundingBox) => {
-      if (boundingBox.width <= 20) {
-        const lineSize = ResizeMouseAreaSize / scale
-        const width = lineSize / 2
-        const offsetLeft = `0px`
-        const offsetTop = `0px`
+      const lineSize = ResizeMouseAreaSize / scale
+      const width = boundingBox.width <= SmallElementSize ? lineSize / 2 : lineSize
+      const offsetLeft = boundingBox.width <= SmallElementSize ? `0px` : `${-lineSize / 2}px`
+      const offsetTop = `0px`
 
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-        ref.current.style.left = boundingBox.width + 'px'
-        ref.current.style.width = width + 'px'
-        ref.current.style.height = boundingBox.height + 'px'
-      } else {
-        const lineSize = ResizeMouseAreaSize / scale
-        const width = lineSize
-        const offsetLeft = `${-lineSize / 2}px`
-        const offsetTop = `0px`
-
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-        ref.current.style.left = boundingBox.width + 'px'
-        ref.current.style.width = width + 'px'
-        ref.current.style.height = boundingBox.height + 'px'
-      }
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
+      ref.current.style.left = boundingBox.width + 'px'
+      ref.current.style.width = width + 'px'
+      ref.current.style.height = boundingBox.height + 'px'
     })
 
     const bottomRef = useBoundingBox(targets, (ref, boundingBox) => {
-      if (boundingBox.height <= 20) {
-        const lineSize = ResizeMouseAreaSize / scale
-        const height = lineSize / 2
-        const offsetLeft = `0px`
-        const offsetTop = `0px`
+      const lineSize = ResizeMouseAreaSize / scale
+      const height = boundingBox.height <= SmallElementSize ? lineSize / 2 : lineSize
+      const offsetLeft = `0px`
+      const offsetTop = boundingBox.height <= SmallElementSize ? `0px` : `${-lineSize / 2}px`
 
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-        ref.current.style.top = boundingBox.height + 'px'
-        ref.current.style.width = boundingBox.width + 'px'
-        ref.current.style.height = height + 'px'
-      } else {
-        const lineSize = ResizeMouseAreaSize / scale
-        const height = lineSize
-        const offsetLeft = `0px`
-        const offsetTop = `${-lineSize / 2}px`
-
-        ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
-        ref.current.style.top = boundingBox.height + 'px'
-        ref.current.style.width = boundingBox.width + 'px'
-        ref.current.style.height = height + 'px'
-      }
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
+      ref.current.style.top = boundingBox.height + 'px'
+      ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = height + 'px'
     })
 
     const topLeftRef = useBoundingBox(targets, NO_OP)
