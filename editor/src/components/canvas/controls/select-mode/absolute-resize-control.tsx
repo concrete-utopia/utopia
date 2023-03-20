@@ -43,6 +43,10 @@ interface AbsoluteResizeControlProps {
 export const SizeLabelTestId = 'SizeLabelTestId'
 export const SmallElementSize = 20
 
+function shouldUseSmallElementResizeControl(size: number, scale: number): boolean {
+  return size <= SmallElementSize / scale
+}
+
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
     const scale = useEditorState(
@@ -64,8 +68,9 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     })
 
     const leftRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.width, scale)
       const lineSize = ResizeMouseAreaSize / scale
-      const width = boundingBox.width <= SmallElementSize ? lineSize / 2 : lineSize
+      const width = isSmallElement ? lineSize / 2 : lineSize
       const offsetLeft = `${-lineSize / 2}px`
       const offsetTop = `0px`
 
@@ -74,8 +79,9 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       ref.current.style.height = boundingBox.height + 'px'
     })
     const topRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.height, scale)
       const lineSize = ResizeMouseAreaSize / scale
-      const height = boundingBox.height <= SmallElementSize ? lineSize / 2 : lineSize
+      const height = isSmallElement ? lineSize / 2 : lineSize
       const offsetLeft = `0px`
       const offsetTop = `${-lineSize / 2}px`
 
@@ -84,9 +90,10 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
     })
     const rightRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.width, scale)
       const lineSize = ResizeMouseAreaSize / scale
-      const width = boundingBox.width <= SmallElementSize ? lineSize / 2 : lineSize
-      const offsetLeft = boundingBox.width <= SmallElementSize ? `0px` : `${-lineSize / 2}px`
+      const width = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = isSmallElement ? `0px` : `${-lineSize / 2}px`
       const offsetTop = `0px`
 
       ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
@@ -96,10 +103,11 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     })
 
     const bottomRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.height, scale)
       const lineSize = ResizeMouseAreaSize / scale
-      const height = boundingBox.height <= SmallElementSize ? lineSize / 2 : lineSize
+      const height = isSmallElement ? lineSize / 2 : lineSize
       const offsetLeft = `0px`
-      const offsetTop = boundingBox.height <= SmallElementSize ? `0px` : `${-lineSize / 2}px`
+      const offsetTop = isSmallElement ? `0px` : `${-lineSize / 2}px`
 
       ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.top = boundingBox.height + 'px'
