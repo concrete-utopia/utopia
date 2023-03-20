@@ -1171,8 +1171,7 @@ interface ElementWithUid {
 }
 
 export function isElementWithUid(element: unknown): element is ElementWithUid {
-  const cast = element as ElementWithUid
-  return cast.uid != null && typeof cast.uid === 'string'
+  return (element as ElementWithUid).uid != null
 }
 
 export type JSXElementChildren = Array<JSXElementChild>
