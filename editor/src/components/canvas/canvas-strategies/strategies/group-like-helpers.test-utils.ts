@@ -2,14 +2,16 @@ import * as EP from '../../../../core/shared/element-path'
 import { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { ContentAffectingType } from './group-like-helpers'
 
+export const GroupLikeElementUid = 'children-affecting'
+
 export function getOpeningGroupLikeTag(type: ContentAffectingType): string {
   switch (type) {
     case 'sizeless-div':
-      return `<div data-uid='children-affecting' data-testid='children-affecting'><React.Fragment data-uid='inner-fragment'>`
+      return `<div data-uid='${GroupLikeElementUid}' data-testid='${GroupLikeElementUid}'><React.Fragment data-uid='inner-fragment'>`
     case 'fragment':
-      return `<React.Fragment data-uid='children-affecting' data-testid='children-affecting'><React.Fragment data-uid='inner-fragment'>`
+      return `<React.Fragment data-uid='${GroupLikeElementUid}' data-testid='${GroupLikeElementUid}'><React.Fragment data-uid='inner-fragment'>`
     case 'conditional':
-      return `{ true /* @utopia/uid=children-affecting */ ? ( <React.Fragment data-uid='inner-fragment'>`
+      return `{ true /* @utopia/uid=${GroupLikeElementUid} */ ? ( <React.Fragment data-uid='inner-fragment'>`
     default:
       const _exhaustiveCheck: never = type
       throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)

@@ -1,8 +1,17 @@
 import { fromString } from '../../../../core/shared/element-path'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 
 describe('adjust font weight with the keyboard', () => {
   describe('no font weight specified', () => {
@@ -150,11 +159,17 @@ describe('adjust font weight with the keyboard', () => {
   })
 
   describe('retargets to group children', () => {
-    it('sets font weight', async () => {
-      it('increase font weight', async () => {
-        const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
+    setFeatureForBrowserTests('Fragment support', true)
+    setFeatureForBrowserTests('Conditional support', true)
 
-        await selectComponentsForTest(editor, [fromString('sb/fragment')])
+    AllContentAffectingTypes.forEach((type) => {
+      it(`sets font weight in ${type}`, async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [fromString(`sb/${GroupLikeElementUid}`)])
         await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
         await editor.getDispatchFollowUpActionsFinished()
 
@@ -185,11 +200,11 @@ async function doTestWithDelta(
   editor: EditorRenderResult,
   delta: { decreaseBy: number; increaseBy: number },
 ) {
-  for (let i = 0; i < delta.increaseBy; i++) {
+  for await (const _ of Array(delta.increaseBy)) {
     await pressKey('.', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
-  for (let i = 0; i < delta.decreaseBy; i++) {
+  for await (const _ of Array(delta.decreaseBy)) {
     await pressKey(',', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
@@ -245,12 +260,12 @@ export var storyboard = (
 )
 `
 
-const projectWithFragment = `import * as React from 'react'
+const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    <React.Fragment data-uid='fragment'>
+    ${getOpeningGroupLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -279,7 +294,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-    </React.Fragment>
+    ${getClosingGroupLikeTag(type)}
   </Storyboard>
 )
 `
