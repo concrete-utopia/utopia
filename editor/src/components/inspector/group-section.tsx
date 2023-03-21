@@ -254,17 +254,10 @@ const selectedElementGrouplikeTypeSelector = createSelector(
   (store: MetadataSubstate) => store.editor.allElementProps,
   selectedViewsSelector,
   (metadata, allElementProps, selectedViews) => {
-    if (selectedViews.length === 0) {
+    if (selectedViews.length !== 1) {
       return null
     }
-    const allTypes = selectedViews.map((elementPath) =>
-      getElementContentAffectingType(metadata, allElementProps, elementPath),
-    )
-    const allElementsGrouplike = allTypes.every((t) => t != null)
-    if (!allElementsGrouplike) {
-      return null
-    }
-    return allTypes[0]
+    return getElementContentAffectingType(metadata, allElementProps, selectedViews[0])
   },
 )
 
@@ -280,6 +273,12 @@ export const GroupSection = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    selectedViewsSelector,
+    'GroupSection selectedViews',
+  )
 
   const selectedElementGrouplikeType = useEditorState(
     Substores.metadata,
@@ -338,6 +337,10 @@ export const GroupSection = React.memo(() => {
     },
     [currentValue.value, dispatch, metadataRef, selectedViewsRef],
   )
+
+  if (selectedViews.length !== 1) {
+    return null
+  }
 
   return (
     <FlexColumn>
