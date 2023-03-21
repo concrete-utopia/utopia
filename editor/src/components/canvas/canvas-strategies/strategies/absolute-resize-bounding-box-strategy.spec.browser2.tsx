@@ -28,6 +28,7 @@ import {
   EdgePositionRight,
   EdgePositionBottom,
   EdgePositionTop,
+  EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
   selectComponentsForTest,
@@ -50,10 +51,12 @@ import { MaxContent } from '../../../inspector/inspector-common'
 import {
   SizeLabelTestId,
   ResizePointTestId,
+  SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import { isRight } from '../../../../core/shared/either'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -324,6 +327,28 @@ async function doDblClickTest(
   return div
 }
 
+async function doSnapDrag(
+  editor: EditorRenderResult,
+  delta: { x: number; y: number },
+  edgePosition: EdgePosition,
+  callback: () => Promise<void>,
+) {
+  const canvasControl = editor.renderedDOM.getByTestId(
+    `resize-control-${edgePosition.x}-${edgePosition.y}`,
+  )
+
+  const resizeCornerBounds = canvasControl.getBoundingClientRect()
+  const startPoint = windowPoint({
+    x: resizeCornerBounds.x + 2,
+    y: resizeCornerBounds.y + 2,
+  })
+
+  await mouseDragFromPointWithDelta(canvasControl, startPoint, delta, {
+    modifiers: emptyModifiers,
+    midDragCallback: callback,
+  })
+}
+
 const projectForEdgeDblClick = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -445,6 +470,62 @@ export var storyboard = (
       }}
       data-uid='vertical'
       data-testid='vertical'
+    />
+  </Storyboard>
+)
+`
+
+const projectWithGroupsForResize = (type: ContentAffectingType) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    ${getOpeningGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#00acff',
+          position: 'absolute',
+          left: 379.5,
+          top: 94.5,
+          width: 163,
+          height: 184,
+        }}
+        data-uid='aac'
+        data-label='eee'
+      />
+      <div
+        style={{
+          backgroundColor: '#ff0001',
+          position: 'absolute',
+          left: 980.5,
+          top: 62.5,
+          width: 306,
+          height: 239,
+        }}
+        data-uid='aad'
+        data-label='eee'
+      />
+      ${getClosingGroupLikeTag(type)}
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 258.5,
+        top: -193,
+        width: 243,
+        height: 195,
+      }}
+      data-uid='98d'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -431,
+        top: 754.5,
+        width: 447,
+        height: 266,
+      }}
+      data-uid='5ce'
     />
   </Storyboard>
 )
@@ -1249,32 +1330,12 @@ export var storyboard = (
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
 
-      const canvasControl = editor.renderedDOM.getByTestId(
-        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
-      )
-
-      const resizeCornerBounds = canvasControl.getBoundingClientRect()
-      const startPoint = windowPoint({
-        x: resizeCornerBounds.x + 2,
-        y: resizeCornerBounds.y + 2,
+      await doSnapDrag(editor, { x: 0, y: -147 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(1)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('YAxisGuideline')
       })
-
-      await mouseDragFromPointWithDelta(
-        canvasControl,
-        startPoint,
-        { x: 0, y: -147 },
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-            ).toEqual(1)
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-            ).toEqual('YAxisGuideline')
-          },
-        },
-      )
     })
     it('vertical snap lines are shown when resizing a multiselection', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1282,33 +1343,12 @@ export var storyboard = (
         'await-first-dom-report',
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
-
-      const canvasControl = editor.renderedDOM.getByTestId(
-        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
-      )
-
-      const resizeCornerBounds = canvasControl.getBoundingClientRect()
-      const startPoint = windowPoint({
-        x: resizeCornerBounds.x + 2,
-        y: resizeCornerBounds.y + 2,
+      await doSnapDrag(editor, { x: -114, y: 0 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(1)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('XAxisGuideline')
       })
-
-      await mouseDragFromPointWithDelta(
-        canvasControl,
-        startPoint,
-        { x: -114, y: 0 },
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-            ).toEqual(1)
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-            ).toEqual('XAxisGuideline')
-          },
-        },
-      )
     })
     it('both vertical and horizontal snap lines are shown when resizing a multiselection', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1316,36 +1356,106 @@ export var storyboard = (
         'await-first-dom-report',
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
-
-      const canvasControl = editor.renderedDOM.getByTestId(
-        `resize-control-${EdgePositionBottomRight.x}-${EdgePositionBottomRight.y}`,
-      )
-
-      const resizeCornerBounds = canvasControl.getBoundingClientRect()
-      const startPoint = windowPoint({
-        x: resizeCornerBounds.x + 2,
-        y: resizeCornerBounds.y + 2,
+      await doSnapDrag(editor, { x: -114, y: -147 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(2)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('XAxisGuideline')
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+        ).toEqual('YAxisGuideline')
       })
+    })
 
-      await mouseDragFromPointWithDelta(
-        canvasControl,
-        startPoint,
-        { x: -114, y: -147 },
-        {
-          modifiers: emptyModifiers,
-          midDragCallback: async () => {
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
-            ).toEqual(2)
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
-            ).toEqual('XAxisGuideline')
-            expect(
-              editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
-            ).toEqual('YAxisGuideline')
-          },
-        },
-      )
+    describe('groups', () => {
+      setFeatureForBrowserTests('Fragment support', true)
+      setFeatureForBrowserTests('Conditional support', true)
+
+      AllContentAffectingTypes.forEach((type) => {
+        describe(`– ${type} parents`, () => {
+          it('vertical snap lines are shown', async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithGroupsForResize(type),
+              'await-first-dom-report',
+            )
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
+            await doSnapDrag(editor, { x: -121, y: 0 }, EdgePositionBottomLeft, async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+            })
+          })
+          it('horizontal snap lines are shown', async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithGroupsForResize(type),
+              'await-first-dom-report',
+            )
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
+            await doSnapDrag(editor, { x: -10, y: 453 }, EdgePositionBottomLeft, async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('YAxisGuideline')
+            })
+          })
+          it('both snap lines are shown', async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithGroupsForResize(type),
+              'await-first-dom-report',
+            )
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
+            await doSnapDrag(editor, { x: -121, y: 453 }, EdgePositionBottomLeft, async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(2)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+              ).toEqual('YAxisGuideline')
+            })
+          })
+        })
+      })
     })
   })
 })
@@ -1646,5 +1756,118 @@ describe('Absolute Resize Group-like behaviors', () => {
         expect(groupResizeResult).toEqual(multiselectResult)
       })
     })
+  })
+})
+
+describe('Absolute Resize Control', () => {
+  it('Resize control is placed on small elements outside of the draggable frame area', async () => {
+    const width = SmallElementSize
+    const height = SmallElementSize
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('5px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('5px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('5px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('5px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+  })
+  it('Resize control on non-small elements extend into the draggable frame area', async () => {
+    const width = SmallElementSize + 1
+    const height = SmallElementSize + 1
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('10px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('10px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('10px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('10px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
   })
 })

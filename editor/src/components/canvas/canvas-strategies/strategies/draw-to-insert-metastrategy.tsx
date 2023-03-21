@@ -115,7 +115,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   }, applicableReparentFactories)
 }
 
-function getDrawToInsertStrategyName(
+export function getDrawToInsertStrategyName(
   strategyType: ReparentStrategy,
   parentDisplayType: 'flex' | 'flow',
 ) {

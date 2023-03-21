@@ -175,6 +175,7 @@ import { uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
+import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -498,6 +499,7 @@ export function updateFramesOfScenesAndComponents(
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
+                  workingEditorState.spyMetadata,
                 )
                 return {
                   ...success,
@@ -1095,6 +1097,7 @@ export function collectGuidelines(
 
   let guidelines: Array<GuidelineWithRelevantPoints> = collectParentAndSiblingGuidelines(
     metadata,
+    allElementProps,
     selectedViews,
   )
 
@@ -1417,7 +1420,11 @@ export function snapPoint(
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
-  const shouldSnap = enableSnapping && !anythingPinnedAndNotAbsolutePositioned
+  const anyElementContentAffecting = selectedViews.some((elementPath) =>
+    treatElementAsContentAffecting(jsxMetadata, allElementProps, elementPath),
+  )
+  const shouldSnap =
+    enableSnapping && (anyElementContentAffecting || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
@@ -2141,6 +2148,7 @@ function editorReparentNoStyleChange(
               updatedUnderlyingElement,
               updatedUtopiaComponents,
               indexPosition,
+              editor.spyMetadata,
             )
 
             return {
@@ -2263,6 +2271,7 @@ export function moveTemplate(
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
+                    workingEditorState.spyMetadata,
                   )
 
                   return {
@@ -2491,6 +2500,7 @@ function produceMoveTransientCanvasState(
 
   const moveGuidelines = collectParentAndSiblingGuidelines(
     workingEditorState.jsxMetadata,
+    workingEditorState.allElementProps,
     selectedViews,
   ).map((g) => g.guideline)
 
@@ -2766,6 +2776,7 @@ export function duplicate(
               newElement,
               utopiaComponents,
               position(),
+              editor.spyMetadata,
             )
 
             newSelectedViews.push(newPath)
@@ -2812,6 +2823,7 @@ export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
+  spyMetadata: ElementInstanceMetadataMap,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2837,6 +2849,7 @@ export function reorderComponent(
       jsxElement,
       workingComponents,
       adjustedIndexPosition,
+      spyMetadata,
     )
   }
 

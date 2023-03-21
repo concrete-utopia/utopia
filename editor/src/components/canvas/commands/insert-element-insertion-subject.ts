@@ -64,6 +64,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         subject.element,
         utopiaComponents,
         null,
+        editor.spyMetadata,
       )
 
       const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)

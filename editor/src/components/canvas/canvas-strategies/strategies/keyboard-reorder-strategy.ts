@@ -35,7 +35,7 @@ export function keyboardReorderStrategy(
     return null
   }
   const target = selectedElements[0]
-  const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target).map(
+  const siblings = MetadataUtils.getSiblingsOrdered(canvasState.startingMetadata, target).map(
     (element) => element.elementPath,
   )
   const elementMetadata = MetadataUtils.findElementByElementPath(

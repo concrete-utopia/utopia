@@ -19,6 +19,13 @@ import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
+import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
 
 const defaultBBBProperties = {
   left: 0,
@@ -156,20 +163,27 @@ describe('Keyboard Absolute Move E2E', () => {
 
   describe('retargets to group children', () => {
     setFeatureForBrowserTests('Fragment support', true)
-    it('moves children', async () => {
-      const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
-      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+    setFeatureForBrowserTests('Conditional support', true)
 
-      await pressArrowRightHoldingShift3x()
-      await editor.getDispatchFollowUpActionsFinished()
+    AllContentAffectingTypes.forEach((type) => {
+      it(`moves children of ${type}`, async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
 
-      const aaa = editor.renderedDOM.getByTestId('aaa')
-      const bbb = editor.renderedDOM.getByTestId('bbb')
+        await pressArrowRightHoldingShift3x()
+        await editor.getDispatchFollowUpActionsFinished()
 
-      expect(aaa.style.top).toEqual('210px')
-      expect(aaa.style.left).toEqual('38px')
-      expect(bbb.style.top).toEqual('8px')
-      expect(bbb.style.left).toEqual('38px')
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.top).toEqual('210px')
+        expect(aaa.style.left).toEqual('38px')
+        expect(bbb.style.top).toEqual('8px')
+        expect(bbb.style.left).toEqual('38px')
+      })
     })
   })
 })
@@ -214,6 +228,38 @@ describe('Keyboard Absolute Resize E2E', () => {
       height: 101,
     })
   })
+  it('Pressing Shift + Cmd + ArrowLeft 3 times, then pressing Shift + Cmd + ArrowRight once', async () => {
+    const width = 5
+    const {
+      expectElementWidthOnScreen,
+      expectElementPropertiesInPrintedCode,
+      getCanvasGuidelines,
+    } = await setupTest({
+      left: 10,
+      top: 100,
+      width: width,
+      height: 101,
+    })
+
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+    await pressKey('ArrowLeft', { modifiers: shiftCmdModifier })
+
+    expectElementWidthOnScreen(-width + ResizeMinimumValue) // the expected size is the min value
+    expect(getCanvasGuidelines()).toEqual([])
+
+    await pressKey('ArrowRight', { modifiers: shiftCmdModifier })
+    await cmdKeyUp()
+
+    // tick the clock so useClearKeyboardInteraction is fired
+    clock.current.tick(KeyboardInteractionTimeout)
+    await expectElementPropertiesInPrintedCode({
+      left: 10,
+      top: 100,
+      width: 11,
+      height: 101,
+    })
+  })
 })
 
 describe('Keyboard switching back and forth between absolute move and absolute resize', () => {
@@ -249,24 +295,31 @@ describe('Keyboard switching back and forth between absolute move and absolute r
 
   describe('retargets to group children', () => {
     setFeatureForBrowserTests('Fragment support', true)
-    it('resizes children', async () => {
-      const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
-      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+    setFeatureForBrowserTests('Conditional support', true)
 
-      await keyDownArrowRightHoldingCmd3x()
-      await editor.getDispatchFollowUpActionsFinished()
+    AllContentAffectingTypes.forEach((type) => {
+      it(`resizes children of ${type}`, async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
 
-      const aaa = editor.renderedDOM.getByTestId('aaa')
-      const bbb = editor.renderedDOM.getByTestId('bbb')
+        await keyDownArrowRightHoldingCmd3x()
+        await editor.getDispatchFollowUpActionsFinished()
 
-      expect(aaa.style.top).toEqual('210px')
-      expect(aaa.style.left).toEqual('8px')
-      expect(aaa.style.width).toEqual('76px')
-      expect(aaa.style.height).toEqual('109px')
-      expect(bbb.style.top).toEqual('8px')
-      expect(bbb.style.left).toEqual('8px')
-      expect(bbb.style.width).toEqual('210px')
-      expect(bbb.style.height).toEqual('202px')
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.top).toEqual('210px')
+        expect(aaa.style.left).toEqual('8px')
+        expect(aaa.style.width).toEqual('76px')
+        expect(aaa.style.height).toEqual('109px')
+        expect(bbb.style.top).toEqual('8px')
+        expect(bbb.style.left).toEqual('8px')
+        expect(bbb.style.width).toEqual('210px')
+        expect(bbb.style.height).toEqual('202px')
+      })
     })
   })
 })
@@ -749,12 +802,12 @@ export var storyboard = (
   return result
 }
 
-const projectWithFragment = `import * as React from 'react'
+const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    <React.Fragment data-uid='fragment'>
+    ${getOpeningGroupLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -783,7 +836,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-    </React.Fragment>
+      ${getClosingGroupLikeTag(type)}
   </Storyboard>
 )
 `

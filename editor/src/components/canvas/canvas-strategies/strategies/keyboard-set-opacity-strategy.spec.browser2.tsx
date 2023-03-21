@@ -6,6 +6,12 @@ import {
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 
 describe('adjust opacity with the keyboard', () => {
   describe('no opacity specified', () => {
@@ -110,20 +116,26 @@ describe('adjust opacity with the keyboard', () => {
 
   describe('retargets to group children', () => {
     setFeatureForBrowserTests('Fragment support', true)
+    setFeatureForBrowserTests('Conditional support', true)
 
-    it('applies opacity', async () => {
-      const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
-      await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+    AllContentAffectingTypes.forEach((type) => {
+      it(`applies opacity to ${type}`, async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
 
-      await pressKey('3')
-      await pressKey('0')
-      await editor.getDispatchFollowUpActionsFinished()
+        await pressKey('3')
+        await pressKey('0')
+        await editor.getDispatchFollowUpActionsFinished()
 
-      const aaa = editor.renderedDOM.getByTestId('aaa')
-      const bbb = editor.renderedDOM.getByTestId('bbb')
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
 
-      expect(aaa.style.opacity).toEqual('0.3')
-      expect(bbb.style.opacity).toEqual('0.3')
+        expect(aaa.style.opacity).toEqual('0.3')
+        expect(bbb.style.opacity).toEqual('0.3')
+      })
     })
   })
 })
@@ -165,12 +177,12 @@ export var storyboard = (
 )
 `
 
-const projectWithFragment = `import * as React from 'react'
+const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    <React.Fragment data-uid='fragment'>
+    ${getOpeningGroupLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -199,7 +211,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-    </React.Fragment>
+    ${getClosingGroupLikeTag(type)}
   </Storyboard>
 )
 `
