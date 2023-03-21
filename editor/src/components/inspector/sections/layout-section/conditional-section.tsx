@@ -22,11 +22,8 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexRow,
-  FunctionIcons,
-  Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
-  SquareButton,
   StringInput,
   useColorTheme,
   UtopiaStyles,

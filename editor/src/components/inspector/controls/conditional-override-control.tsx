@@ -22,11 +22,13 @@ const OverrideControlOptions: Array<OptionChainOption<boolean>> = [
     tooltip: 'True',
     label: 'True',
     value: true,
+    forceCallOnSubmitValue: true,
   },
   {
     tooltip: 'False',
     label: 'False',
     value: false,
+    forceCallOnSubmitValue: true,
   },
 ]
 
