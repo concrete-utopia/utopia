@@ -1,10 +1,18 @@
+import { CSSProperties } from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  emptyComments,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
+  jsxElement,
+  JSXElement,
+} from '../../../../core/shared/element-template'
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../../core/shared/project-file-types'
+import { defaultUnstyledDivElement } from '../../../editor/defaults'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
   getTargetPathsFromInteractionTarget,
@@ -122,4 +130,44 @@ export function treatElementAsContentAffecting(
   path: ElementPath,
 ): boolean {
   return getElementContentAffectingType(metadata, allElementProps, path) != null
+}
+
+export function detectBestWrapperElement(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  makeUid: () => string,
+): { element: JSXElement; importsToAdd: Imports; style: CSSProperties } {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  const uid = makeUid()
+  if (
+    element == null ||
+    element.specialSizeMeasurements.parentFlexDirection == null ||
+    element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
+  ) {
+    return { element: defaultUnstyledDivElement(uid), importsToAdd: {}, style: {} }
+  }
+
+  const style: CSSProperties = {
+    display: 'flex',
+    flexDirection: element.specialSizeMeasurements.parentFlexDirection,
+    contain: 'layout',
+  }
+
+  if (
+    element.specialSizeMeasurements.parentFlexGap != null &&
+    element.specialSizeMeasurements.parentFlexGap !== 0
+  ) {
+    style.gap = element.specialSizeMeasurements.parentFlexGap
+  }
+
+  const props = jsxAttributesFromMap({
+    'data-uid': jsxAttributeValue(uid, emptyComments),
+    style: jsxAttributeValue(style, emptyComments),
+  })
+
+  return {
+    element: jsxElement('div', uid, props, []),
+    importsToAdd: {},
+    style: style,
+  }
 }

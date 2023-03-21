@@ -1900,6 +1900,28 @@ export const MetadataUtils = {
     }
     return flexDirections[0]
   },
+  getChildrenBoundingBox(
+    metadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath,
+  ): CanvasRectangle | null {
+    const children = MetadataUtils.getChildrenUnordered(metadata, elementPath)
+    const childrenFrames = mapDropNulls((child) => nullIfInfinity(child.globalFrame), children)
+    const childrenBoundingBox = boundingRectangleArray(childrenFrames)
+    return childrenBoundingBox
+  },
+  getChildrenOffset(
+    metadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath,
+  ): { top: number; left: number } | null {
+    const children = MetadataUtils.getChildrenUnordered(metadata, elementPath)
+    const childrenFrames = mapDropNulls((child) => nullIfInfinity(child.globalFrame), children)
+    if (childrenFrames.length === 0) {
+      return null
+    }
+    const top = childrenFrames.reduce((acc, val) => Math.min(acc, val.y), childrenFrames[0].y)
+    const left = childrenFrames.reduce((acc, val) => Math.min(acc, val.x), childrenFrames[0].x)
+    return { top, left }
+  },
 }
 
 function fillSpyOnlyMetadata(

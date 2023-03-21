@@ -142,7 +142,10 @@ import {
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  detectBestWrapperElement,
+  getElementContentAffectingType,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -1072,43 +1075,4 @@ function addCreateHoverInteractionActionToSwitchModeAction(
       createHoverInteractionViaMouse(mousePoint, modifiers, boundingArea(), 'zero-drag-permitted'),
     ),
   ]
-}
-
-function detectBestWrapperElement(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-  makeUid: () => string,
-): { element: JSXElement; importsToAdd: Imports } {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const uid = makeUid()
-  if (
-    element == null ||
-    element.specialSizeMeasurements.parentFlexDirection == null ||
-    element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
-  ) {
-    return { element: defaultUnstyledDivElement(uid), importsToAdd: {} }
-  }
-
-  const style: CSSProperties = {
-    display: 'flex',
-    flexDirection: element.specialSizeMeasurements.parentFlexDirection,
-    contain: 'layout',
-  }
-
-  if (
-    element.specialSizeMeasurements.parentFlexGap != null &&
-    element.specialSizeMeasurements.parentFlexGap !== 0
-  ) {
-    style.gap = element.specialSizeMeasurements.parentFlexGap
-  }
-
-  const props = jsxAttributesFromMap({
-    'data-uid': jsxAttributeValue(uid, emptyComments),
-    style: jsxAttributeValue(style, emptyComments),
-  })
-
-  return {
-    element: jsxElement('div', uid, props, []),
-    importsToAdd: {},
-  }
 }
