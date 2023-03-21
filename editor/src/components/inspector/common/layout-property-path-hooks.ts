@@ -47,7 +47,8 @@ import { CSSNumber, cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { MaxContent } from '../inspector-common'
+import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const HorizontalPropPreferenceHug: Array<LayoutPinnedProp> = ['width', 'left', 'right']
@@ -277,36 +278,12 @@ export function usePinToggling(): UsePinTogglingResult {
   const elementFrames = useEditorState(
     Substores.fullStore,
     (store): ReadonlyArray<Frame> => {
-      const jsxElements = selectedViewsRef.current.map((path) => {
-        const rootComponents = getJSXComponentsAndImportsForPathFromState(
-          path,
-          store.editor,
-          store.derived,
-        ).components
-        return findElementAtPath(path, rootComponents)
-      })
+      const selectedElementsMetadata = mapDropNulls(
+        (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+        selectedViewsRef.current,
+      )
 
-      return jsxElements.map((elem) => {
-        if (elem != null && isJSXElement(elem)) {
-          return LayoutPinnedProps.reduce<Frame>((working, point) => {
-            const value = getLayoutLengthValueOrKeyword(
-              point,
-              eitherRight(elem.props),
-              propertyTarget,
-            )
-            if (isLeft(value)) {
-              return working
-            } else {
-              return {
-                ...working,
-                [point]: value.value,
-              }
-            }
-          }, {})
-        } else {
-          return {}
-        }
-      })
+      return selectedElementsMetadata.map((element) => getFramePointsFromMetadata(element))
     },
     'usePinToggling elementFrames',
     fastDeepEqual,

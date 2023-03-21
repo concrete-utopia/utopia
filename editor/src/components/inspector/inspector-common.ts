@@ -19,7 +19,7 @@ import {
   parseCSSNumber,
 } from './common/css-utils'
 import { assertNever } from '../../core/shared/utils'
-import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
+import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { CSSProperties } from 'react'
@@ -41,6 +41,9 @@ import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
+import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
+import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
+import { Frame } from 'utopia-api/core'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -772,4 +775,43 @@ export function setParentToFixedIfHugCommands(
       parentInstance.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
   ]
+}
+
+export function getFramePointsFromMetadata(elementMetadata: ElementInstanceMetadata): Frame {
+  if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+    const jsxElement = elementMetadata.element.value
+    return LayoutPinnedProps.reduce<Frame>((working, point) => {
+      const value = getLayoutLengthValueOrKeyword(point, right(jsxElement.props), ['style'])
+      if (isLeft(value)) {
+        return working
+      } else {
+        return {
+          ...working,
+          [point]: value.value,
+        }
+      }
+    }, {})
+  } else {
+    return {}
+  }
+}
+
+export function removeExtraPinsWhenSettingSize(
+  axis: Axis,
+  elementMetadata: ElementInstanceMetadata | null,
+): Array<CanvasCommand> {
+  if (elementMetadata == null) {
+    return []
+  }
+  const framePinValues = getFramePointsFromMetadata(elementMetadata)
+  if (axis === 'horizontal') {
+    if (framePinValues.right != null && framePinValues.left != null) {
+      return [deleteProperties('always', elementMetadata.elementPath, [styleP('right')])]
+    }
+  } else {
+    if (framePinValues.top != null && framePinValues.bottom != null) {
+      return [deleteProperties('always', elementMetadata.elementPath, [styleP('bottom')])]
+    }
+  }
+  return []
 }
