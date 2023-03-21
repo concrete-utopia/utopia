@@ -35,10 +35,10 @@ import {
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
-  findUtopiaCommentFlag,
-  isUtopiaCommentFlagConditional,
-} from '../../../core/shared/comment-flags'
-import { getConditionalClausePath, ConditionalCase } from '../../../core/model/conditionals'
+  getConditionalClausePath,
+  getConditionalFlag,
+  matchesOverriddenConditionalBranch,
+} from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
@@ -291,7 +291,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
     if (parent == null) {
       return false
     }
-    const originalConditionValue = parent.conditionalValue
+    const originalConditionValue = parent.conditionValue
     if (originalConditionValue === 'not-a-conditional') {
       return false
     }
@@ -337,13 +337,13 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
     }
 
     return (
-      matchesOverriddenBranch(elementPath, parentPath, {
+      matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenTrue,
         branch: 'true-case',
         wantOverride: true,
         parentOverride: parentOverride,
       }) ||
-      matchesOverriddenBranch(elementPath, parentPath, {
+      matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenFalse,
         branch: 'false-case',
         wantOverride: false,
@@ -695,29 +695,4 @@ function asConditional(element: ElementInstanceMetadata | null): JSXConditionalE
     return null
   }
   return element.element.value
-}
-
-function getConditionalFlag(element: JSXConditionalExpression) {
-  const flag = findUtopiaCommentFlag(element.comments, 'conditional')
-  if (!isUtopiaCommentFlagConditional(flag)) {
-    return null
-  }
-  return flag.value
-}
-
-function matchesOverriddenBranch(
-  elementPath: ElementPath,
-  parentPath: ElementPath,
-  params: {
-    clause: JSXElementChild
-    branch: ConditionalCase
-    wantOverride: boolean
-    parentOverride: boolean
-  },
-): boolean {
-  const { clause, branch, wantOverride, parentOverride } = params
-  return (
-    wantOverride === parentOverride &&
-    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause, branch))
-  )
 }

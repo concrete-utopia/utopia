@@ -498,6 +498,7 @@ export function updateFramesOfScenesAndComponents(
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
+                  workingEditorState.spyMetadata,
                 )
                 return {
                   ...success,
@@ -2146,6 +2147,7 @@ function editorReparentNoStyleChange(
               updatedUnderlyingElement,
               updatedUtopiaComponents,
               indexPosition,
+              editor.spyMetadata,
             )
 
             return {
@@ -2268,6 +2270,7 @@ export function moveTemplate(
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
+                    workingEditorState.spyMetadata,
                   )
 
                   return {
@@ -2772,6 +2775,7 @@ export function duplicate(
               newElement,
               utopiaComponents,
               position(),
+              editor.spyMetadata,
             )
 
             newSelectedViews.push(newPath)
@@ -2818,6 +2822,7 @@ export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
+  spyMetadata: ElementInstanceMetadataMap,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2843,6 +2848,7 @@ export function reorderComponent(
       jsxElement,
       workingComponents,
       adjustedIndexPosition,
+      spyMetadata,
     )
   }
 

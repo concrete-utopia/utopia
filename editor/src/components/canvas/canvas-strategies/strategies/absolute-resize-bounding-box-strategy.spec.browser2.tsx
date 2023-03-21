@@ -31,6 +31,8 @@ import {
   EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
+  expectElementWithTestIdNotToBeRendered,
+  expectElementWithTestIdToBeRendered,
   selectComponentsForTest,
   setFeatureForBrowserTests,
   wait,
@@ -51,11 +53,19 @@ import { MaxContent } from '../../../inspector/inspector-common'
 import {
   SizeLabelTestId,
   ResizePointTestId,
+  AbsoluteResizeControlTestId,
+  SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
 import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
-import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
+import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
+import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -604,6 +614,8 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Resize Strategy', () => {
   it('the size label is not shown when an empty fragment is selected', async () => {
@@ -1474,22 +1486,60 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-outlines-control')
-    expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-bounds-control')
-    expect(parentBoundsControlBeforeDrag).toBeNull()
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
-    const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
-    expect(parentOutlineControl).toBeDefined()
-    const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
-    expect(parentBoundsControl).toBeDefined()
+    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+    expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
   })
+
+  describe('when a content-affecting element is resized the parent outlines become visible', () => {
+    setFeatureForBrowserTests('Fragment support', true)
+    setFeatureForBrowserTests('Conditional support', true)
+
+    AllContentAffectingTypes.forEach((type) => {
+      it(`resizing a ${type}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 170, bottom: 240 }} data-uid='container'>
+            ${getOpeningGroupLikeTag(type)}
+              <div
+                style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+                data-uid='bbb'
+                data-testid='bbb'
+              />
+              ${getClosingGroupLikeTag(type)}
+          </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+
+        const target = EP.appendNewElementPath(TestScenePath, ['container', GroupLikeElementUid])
+        await startDragUsingActions(
+          renderResult,
+          target,
+          EdgePositionLeft,
+          canvasPoint({ x: 5, y: 5 }),
+        )
+
+        await wait(ControlDelay + 10)
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+      })
+    })
+  })
+
   it('snap guidelines are visible when an absolute positioned element(bbb) is resized and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1755,5 +1805,118 @@ describe('Absolute Resize Group-like behaviors', () => {
         expect(groupResizeResult).toEqual(multiselectResult)
       })
     })
+  })
+})
+
+describe('Absolute Resize Control', () => {
+  it('Resize control is placed on small elements outside of the draggable frame area', async () => {
+    const width = SmallElementSize
+    const height = SmallElementSize
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('5px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('5px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('5px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('5px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+  })
+  it('Resize control on non-small elements extend into the draggable frame area', async () => {
+    const width = SmallElementSize + 1
+    const height = SmallElementSize + 1
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('10px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('10px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('10px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('10px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
   })
 })

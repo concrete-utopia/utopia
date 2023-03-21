@@ -94,7 +94,7 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
-export type ComponentElementToInsert = JSXElementWithoutUID | 'conditional'
+export type ComponentElementToInsert = JSXElementWithoutUID | 'conditional' | 'fragment'
 
 export interface ComponentInfo {
   insertMenuLabel: string

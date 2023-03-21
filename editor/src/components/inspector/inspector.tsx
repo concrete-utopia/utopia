@@ -350,6 +350,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
+          {when(
+            isFeatureEnabled('Conditional support'),
+            <ConditionalSection paths={selectedViews} />,
+          )}
           <TargetSelectorSection
             targets={props.targets}
             selectedTargetPath={props.selectedTargetPath}
@@ -358,17 +362,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <FlexSection />
-          <SizingSection />
           <PositionSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
             toggleAspectRatioLock={toggleAspectRatioLock}
           />
-          {when(
-            isFeatureEnabled('Conditional support'),
-            <ConditionalSection paths={selectedViews} />,
-          )}
+          <SizingSection />
+          <FlexSection />
           <StyleSection />
           <WarningSubsection />
           <ImgSection />

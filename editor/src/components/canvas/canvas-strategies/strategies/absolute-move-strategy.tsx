@@ -22,7 +22,7 @@ export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const targets = flattenSelection(
+  const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
@@ -50,13 +50,13 @@ export function absoluteMoveStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: targets },
+          props: { targets: originalTargets },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: targets },
+          props: { targets: originalTargets },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -78,7 +78,7 @@ export function absoluteMoveStrategy(
           interactionSession?.interactionData.drag != null
         ) {
           return applyMoveCommon(
-            targets,
+            originalTargets,
             retargetedTargets,
             canvasState,
             interactionSession,

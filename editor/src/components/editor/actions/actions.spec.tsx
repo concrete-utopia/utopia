@@ -869,7 +869,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
-    conditionalValue: 'not-a-conditional',
+    conditionValue: 'not-a-conditional',
   }
 
   const childElementProps: ElementProps = {
@@ -893,7 +893,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
-    conditionalValue: 'not-a-conditional',
+    conditionValue: 'not-a-conditional',
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {

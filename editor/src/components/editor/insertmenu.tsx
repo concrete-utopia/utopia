@@ -240,11 +240,11 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              if (component.element === 'conditional') {
+              if (component.element === 'conditional' || component.element === 'fragment') {
                 return null
               }
               const insertItemOnMouseDown = (event: React.MouseEvent) => {
-                if (component.element === 'conditional') {
+                if (component.element === 'conditional' || component.element === 'fragment') {
                   return
                 }
 

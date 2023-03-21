@@ -12,6 +12,11 @@ export interface OptionChainOption<T> {
   icon?: IcnProps
   label?: string
   tooltip?: string
+  forceCallOnSubmitValue?: boolean // Call the onSubmitValue again even when the control is already on that value
+}
+
+export function getOptionControlTestId(testIdPrefix: string, postfix: string): string {
+  return `${testIdPrefix}-${postfix}`
 }
 
 // TODO come up with a typed OptionChainControl types!
@@ -71,6 +76,10 @@ export const OptionChainControl: React.FunctionComponent<
             {...props}
             css={optionCSS}
             key={'option-' + index}
+            testId={getOptionControlTestId(
+              props.testId,
+              option.label?.toLowerCase() ?? index.toString(),
+            )}
             DEPRECATED_controlOptions={{
               tooltip: option.tooltip,
               icon: option.icon,
@@ -79,7 +88,7 @@ export const OptionChainControl: React.FunctionComponent<
             value={props.value === option.value}
             // eslint-disable-next-line react/jsx-no-bind
             onSubmitValue={(value: boolean) => {
-              if (value) {
+              if (value || option.forceCallOnSubmitValue) {
                 props.onSubmitValue(option.value)
               }
             }}

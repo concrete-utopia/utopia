@@ -11,6 +11,12 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
+export const ImmediateParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
+  `${targetPaths.map(EP.toString).sort()}-immediate-parent-outlines-control`
+
+export const ParentOutlinesTestId = (targetPaths: Array<ElementPath>): string =>
+  `${targetPaths.map(EP.toString).sort()}-parent-outlines-control`
+
 interface ImmediateParentOutlinesProps {
   targets: Array<ElementPath>
 }
@@ -51,7 +57,7 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
 
     return parentFrame == null || isInfinityRectangle(parentFrame)
       ? null
-      : drawOutlines(parentFrame, scale, colorTheme)
+      : drawOutlines(parentFrame, scale, colorTheme, ImmediateParentOutlinesTestId(targets))
   },
 )
 
@@ -81,13 +87,18 @@ export const ParentOutlines = controlForStrategyMemoized(
 
     return parentFrame == null || isInfinityRectangle(parentFrame)
       ? null
-      : drawOutlines(parentFrame, scale, colorTheme)
+      : drawOutlines(parentFrame, scale, colorTheme, ParentOutlinesTestId([targetParent]))
   },
 )
 
-function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: ThemeObject) {
+function drawOutlines(
+  parentFrame: CanvasRectangle,
+  scale: number,
+  colorTheme: ThemeObject,
+  testId: string,
+) {
   return (
-    <CanvasOffsetWrapper key={`parent-outlines`}>
+    <CanvasOffsetWrapper key={testId}>
       <div
         style={{
           position: 'absolute',
@@ -100,7 +111,7 @@ function drawOutlines(parentFrame: CanvasRectangle, scale: number, colorTheme: T
           outlineWidth: 1 / scale,
           pointerEvents: 'none',
         }}
-        data-testid='parent-outlines-control'
+        data-testid={testId}
       />
     </CanvasOffsetWrapper>
   )

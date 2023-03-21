@@ -9,8 +9,10 @@ import {
   JSXElementLike,
   isJSXElement,
   JSXElementChild,
-  ConditionalValue,
   isJSXArbitraryBlock,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
+  ConditionValue,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -26,7 +28,7 @@ export function addFakeSpyEntry(
   elementOrAttribute: JSXElementChild,
   filePath: string,
   imports: Imports,
-  conditionalValue: ConditionalValue,
+  conditionValue: ConditionValue,
 ): void {
   let element: Either<string, JSXElementChild>
   if (isJSXArbitraryBlock(elementOrAttribute)) {
@@ -73,7 +75,7 @@ export function addFakeSpyEntry(
       },
       element,
     ),
-    conditionalValue: conditionalValue,
+    conditionValue: conditionValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -118,7 +120,7 @@ export function buildSpyWrappedElement(
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
-      conditionalValue: 'not-a-conditional',
+      conditionValue: 'not-a-conditional',
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

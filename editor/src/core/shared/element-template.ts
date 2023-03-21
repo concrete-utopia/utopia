@@ -1753,7 +1753,7 @@ export function createNotImported(path: string, variableName: string): ImportInf
   return sameFileOrigin(path, variableName)
 }
 
-export type ConditionalValue = boolean | 'not-a-conditional'
+export type ConditionValue = boolean | 'not-a-conditional'
 
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
@@ -1767,7 +1767,7 @@ export interface ElementInstanceMetadata {
   attributeMetadatada: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
-  conditionalValue: ConditionalValue
+  conditionValue: ConditionValue
 }
 
 export function elementInstanceMetadata(
@@ -1782,7 +1782,7 @@ export function elementInstanceMetadata(
   attributeMetadatada: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
-  conditionalValue: ConditionalValue,
+  conditionValue: ConditionValue,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -1796,7 +1796,7 @@ export function elementInstanceMetadata(
     attributeMetadatada: attributeMetadatada,
     label: label,
     importInfo: importInfo,
-    conditionalValue: conditionalValue,
+    conditionValue: conditionValue,
   }
 }
 

@@ -19,6 +19,7 @@ export type IcnColor =
   | 'on-light-main'
   | 'darkgray'
   | 'black'
+  | 'overridden'
 
 export type IcnResultingColor =
   | 'white'
@@ -51,6 +52,7 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'warning':
         return 'orange'
       case 'error':
+      case 'overridden':
         return 'red'
       case 'component':
         return 'purple'

@@ -53,7 +53,7 @@ import {
   emptyAttributeMetadatada,
   DetectedLayoutSystem,
   JSXConditionalExpression,
-  ConditionalValue,
+  ConditionValue,
   isJSXElementLike,
   JSXElementLike,
 } from '../shared/element-template'
@@ -1853,11 +1853,11 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
-  getConditionalValueFromMetadata(element: ElementInstanceMetadata | null): ConditionalValue {
+  getConditionValueFromMetadata(element: ElementInstanceMetadata | null): ConditionValue {
     if (!this.isConditionalFromMetadata(element)) {
       return 'not-a-conditional'
     }
-    return element?.conditionalValue ?? 'not-a-conditional'
+    return element?.conditionValue ?? 'not-a-conditional'
   },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,

@@ -66,7 +66,7 @@ export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedTargets = flattenSelection(
+  const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = flattenSelection(
@@ -88,25 +88,25 @@ export function absoluteResizeBoundingBoxStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets: retargetedTargets },
+        props: { targets: originalTargets },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
-        props: { targets: retargetedTargets },
+        props: { targets: originalTargets },
         key: 'zero-size-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: selectedTargets },
+        props: { targets: originalTargets },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ImmediateParentBounds,
-        props: { targets: selectedTargets },
+        props: { targets: originalTargets },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -147,7 +147,7 @@ export function absoluteResizeBoundingBoxStrategy(
               centerBased,
             )
             const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-              selectedTargets,
+              originalTargets,
               canvasState.startingMetadata,
               edgePosition,
               newBoundingBox,
