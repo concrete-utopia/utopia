@@ -290,7 +290,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
     if (parent == null) {
       return false
     }
-    const originalConditionValue = parent.conditionalValue
+    const originalConditionValue = parent.conditionValue
     if (originalConditionValue === 'not-a-conditional') {
       return false
     }

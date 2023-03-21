@@ -39,6 +39,7 @@ import {
   jsxTextBlock,
   jsxArbitraryBlock,
   ElementInstanceMetadataMap,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -675,13 +676,21 @@ export function insertJSXElementChild(
           }
         }
 
-        const isTrueCase =
-          getConditionalCase(
+        function getIsTrueCase(conditional: JSXConditionalExpression): boolean {
+          const spyParentMetadata = spyMetadata[EP.toString(parentPath)] ?? null
+          if (spyParentMetadata == null) {
+            return true
+          }
+          const conditionalCase = getConditionalCase(
             getConditionalCasePath(parentPath, 'true-case'),
-            parentElement,
-            spyMetadata[EP.toString(parentPath)] ?? null,
+            conditional,
+            spyParentMetadata,
             parentPath,
-          ) === 'true-case'
+          )
+          return conditionalCase === 'true-case'
+        }
+        const isTrueCase = getIsTrueCase(parentElement)
+
         const branch = getNewBranch(isTrueCase ? parentElement.whenTrue : parentElement.whenFalse)
 
         return isTrueCase

@@ -11,7 +11,7 @@ import {
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
-  ConditionalValue,
+  ConditionValue,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
@@ -121,14 +121,14 @@ const conditionValueSelector = createCachedSelector(
   (
     jsxMetadata: ElementInstanceMetadataMap,
     paths: ElementPath[],
-  ): ConditionalValue | 'multiselect' => {
+  ): ConditionValue | 'multiselect' => {
     const element = getConditionalMetadata(jsxMetadata, paths)
 
     if (element === 'not-a-conditional' || element === 'multiselect') {
       return element
     }
 
-    return element.metadata.conditionalValue
+    return element.metadata.conditionValue
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 

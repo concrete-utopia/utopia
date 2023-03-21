@@ -50,15 +50,18 @@ export const ConditionalOverrideControl: React.FunctionComponent<
       style={{ color: props.controlStyles.mainColor }}
     >
       Result
-      {when(
-        controlStatus === 'overridden',
-        <Tooltip title={'Override'}>
-          <SquareButton onClick={disableOverride} testId={ConditionalOverrideControlDisableTestId}>
-            {getPinIcon(controlStatus, controlStyles)}
-          </SquareButton>
-        </Tooltip>,
-      )}
       <FlexRow style={{ flexGrow: 1, gap: 4 }}>
+        {when(
+          controlStatus === 'overridden',
+          <Tooltip title={'Override'}>
+            <SquareButton
+              onClick={disableOverride}
+              testId={ConditionalOverrideControlDisableTestId}
+            >
+              {getPinIcon(controlStatus, controlStyles)}
+            </SquareButton>
+          </Tooltip>,
+        )}
         <OptionChainControl
           id={'conditional-override-control'}
           testId={ConditionalOverrideControlTestIdPrefix}

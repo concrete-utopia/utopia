@@ -102,6 +102,16 @@ export function insertableComponentGroupConditionals(): InsertableComponentGroup
   }
 }
 
+export interface InsertableComponentGroupFragment {
+  type: 'FRAGMENT_GROUP'
+}
+
+export function insertableComponentGroupFragment(): InsertableComponentGroupFragment {
+  return {
+    type: 'FRAGMENT_GROUP',
+  }
+}
+
 export interface InsertableComponentGroupProjectComponent {
   type: 'PROJECT_COMPONENT_GROUP'
   path: string
@@ -138,6 +148,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupProjectComponent
   | InsertableComponentGroupProjectDependency
   | InsertableComponentGroupConditionals
+  | InsertableComponentGroupFragment
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -164,6 +175,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return insertableType.path
     case 'CONDITIONALS_GROUP':
       return 'Conditionals'
+    case 'FRAGMENT_GROUP':
+      return 'Fragment'
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
@@ -175,13 +188,12 @@ export function getInsertableGroupPackageStatus(
 ): PackageStatus {
   switch (insertableType.type) {
     case 'HTML_GROUP':
+    case 'PROJECT_COMPONENT_GROUP':
+    case 'CONDITIONALS_GROUP':
+    case 'FRAGMENT_GROUP':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
-    case 'PROJECT_COMPONENT_GROUP':
-      return 'loaded'
-    case 'CONDITIONALS_GROUP':
-      return 'loaded'
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
@@ -323,6 +335,19 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
       {
         insertMenuLabel: 'Conditional',
         elementToInsert: 'conditional',
+        importsToAdd: {},
+      },
+    ],
+  },
+}
+
+const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
+  fragment: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Fragment',
+        elementToInsert: 'fragment',
         importsToAdd: {},
       },
     ],
@@ -509,6 +534,9 @@ export function getComponentGroups(
     insertableComponentGroupConditionals(),
     conditionalElementsDescriptors,
   )
+
+  // Add fragment group.
+  addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {

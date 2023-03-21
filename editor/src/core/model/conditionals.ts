@@ -90,15 +90,15 @@ export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, ChildOrA
 export function getConditionalCase(
   elementPath: ElementPath,
   parent: JSXConditionalExpression,
-  parentMetadata: ElementInstanceMetadata | null,
+  spyParentMetadata: ElementInstanceMetadata,
   parentPath: ElementPath,
 ): ConditionalCase | 'not-a-conditional' {
-  if (parentMetadata == null || parentMetadata.conditionalValue === 'not-a-conditional') {
+  if (spyParentMetadata.conditionValue === 'not-a-conditional') {
     return 'not-a-conditional'
   }
   const parentOverride = getConditionalFlag(parent)
   if (parentOverride == null) {
-    return parentMetadata.conditionalValue ? 'true-case' : 'false-case'
+    return spyParentMetadata.conditionValue ? 'true-case' : 'false-case'
   }
   if (
     matchesOverriddenConditionalBranch(elementPath, parentPath, {

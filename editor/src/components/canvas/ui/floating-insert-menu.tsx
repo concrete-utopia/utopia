@@ -44,8 +44,10 @@ import {
 import {
   emptyComments,
   jsxAttributeValue,
+  jsxConditionalExpression,
   jsxElement,
   JSXElementName,
+  jsxFragment,
   jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
@@ -63,6 +65,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -485,7 +488,19 @@ export var FloatingMenu = React.memo(() => {
     const selectedViews = selectedViewsref.current
     switch (floatingMenuState.insertMenuMode) {
       case 'wrap':
-        actionsToDispatch = [wrapInView(selectedViews, 'conditional')]
+        actionsToDispatch = [
+          wrapInElement(selectedViews, {
+            element: jsxConditionalExpression(
+              generateUidWithExistingComponents(projectContentsRef.current),
+              jsxAttributeValue(true, emptyComments),
+              'true',
+              jsxAttributeValue(null, emptyComments),
+              jsxAttributeValue(null, emptyComments),
+              emptyComments,
+            ),
+            importsToAdd: emptyImports(),
+          }),
+        ]
         break
       case 'insert':
       case 'convert':
@@ -495,11 +510,40 @@ export var FloatingMenu = React.memo(() => {
         assertNever(floatingMenuState)
     }
     return actionsToDispatch
-  }, [floatingMenuState, selectedViewsref])
+  }, [floatingMenuState, selectedViewsref, projectContentsRef])
+
+  const onChangeFragment = React.useCallback((): Array<EditorAction> => {
+    let actionsToDispatch: Array<EditorAction> = []
+    const selectedViews = selectedViewsref.current
+    switch (floatingMenuState.insertMenuMode) {
+      case 'wrap':
+        actionsToDispatch = [
+          wrapInElement(selectedViews, {
+            element: jsxFragment(
+              generateUidWithExistingComponents(projectContentsRef.current),
+              [],
+              false,
+            ),
+            importsToAdd: emptyImports(),
+          }),
+        ]
+        break
+      case 'insert':
+      case 'convert':
+      case 'closed':
+        break
+      default:
+        assertNever(floatingMenuState)
+    }
+    return actionsToDispatch
+  }, [floatingMenuState, selectedViewsref, projectContentsRef])
 
   const onChangeElement = React.useCallback(
     (pickedInsertableComponent: InsertMenuItemValue): Array<EditorAction> => {
-      if (pickedInsertableComponent.element === 'conditional') {
+      if (
+        pickedInsertableComponent.element === 'conditional' ||
+        pickedInsertableComponent.element === 'fragment'
+      ) {
         return []
       }
       const selectedViews = selectedViewsref.current
@@ -602,15 +646,23 @@ export var FloatingMenu = React.memo(() => {
       if (value != null && !Array.isArray(value)) {
         const pickedInsertableComponent = (value as InsertMenuItem).value
 
-        const actionsToDispatch =
-          pickedInsertableComponent.element === 'conditional'
-            ? onChangeConditional()
-            : onChangeElement(pickedInsertableComponent)
+        function getActionsToDispatch() {
+          switch (pickedInsertableComponent.element) {
+            case 'conditional':
+              return onChangeConditional()
+            case 'fragment':
+              return onChangeFragment()
+            default:
+              return onChangeElement(pickedInsertableComponent)
+          }
+        }
+
+        const actionsToDispatch = getActionsToDispatch()
 
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [onChangeConditional, onChangeElement, dispatch],
+    [onChangeFragment, onChangeConditional, onChangeElement, dispatch],
   )
 
   useHandleCloseOnESCOrEnter(
