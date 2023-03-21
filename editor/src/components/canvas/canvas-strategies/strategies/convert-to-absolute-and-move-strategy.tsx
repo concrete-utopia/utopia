@@ -129,7 +129,12 @@ export function convertToAbsoluteAndMoveStrategy(
       }),
       ...autoLayoutSiblingsControl,
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
+    fitness: getFitness(
+      interactionSession,
+      hasAutoLayoutSiblings,
+      autoLayoutSiblingsBounds,
+      originalTargets.length > 1,
+    ),
     apply: () => {
       if (
         interactionSession != null &&
@@ -190,6 +195,7 @@ function getFitness(
   interactionSession: InteractionSession | null,
   hasAutoLayoutSiblings: boolean,
   autoLayoutSiblingsBounds: CanvasRectangle | null,
+  multipleTargets: boolean,
 ): number {
   if (
     interactionSession != null &&
@@ -206,7 +212,11 @@ function getFitness(
     }
 
     if (!hasAutoLayoutSiblings) {
-      return BaseWeight
+      if (multipleTargets) {
+        // multi-selection should require a spacebar press to activate
+        return BaseWeight
+      }
+      return DragConversionWeight
     }
 
     const pointOnCanvas = offsetPoint(
