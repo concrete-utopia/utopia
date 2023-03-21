@@ -172,7 +172,7 @@ import {
   childOrBlockIsChild,
   childOrBlockIsAttribute,
   ChildOrAttribute,
-  ConditionalValue,
+  ConditionValue,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -1538,8 +1538,8 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
   createCallWithShallowEquals()
 
-const ConditionalValueKeepDeepEquality: KeepDeepEqualityCall<ConditionalValue> = unionDeepEquality(
-  createCallWithTripleEquals<ConditionalValue>(),
+const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = unionDeepEquality(
+  createCallWithTripleEquals<ConditionValue>(),
   BooleanKeepDeepEquality,
   (p): p is 'not-a-conditional' => p === 'not-a-conditional',
   (p): p is boolean => typeof p === 'boolean',
@@ -1569,8 +1569,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.importInfo,
     nullableDeepEquality(ImportInfoKeepDeepEquality),
-    (metadata) => metadata.conditionalValue,
-    ConditionalValueKeepDeepEquality,
+    (metadata) => metadata.conditionValue,
+    ConditionValueKeepDeepEquality,
     elementInstanceMetadata,
   )
 
