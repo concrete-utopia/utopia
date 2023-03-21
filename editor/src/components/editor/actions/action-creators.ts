@@ -9,6 +9,8 @@ import type {
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
   JSXElementChild,
+  JSXConditionalExpression,
+  JSXFragment,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -772,7 +774,10 @@ export function wrapInView(
 
 export function wrapInElement(
   targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'conditional',
+  whatToWrapWith: {
+    element: JSXElement | JSXConditionalExpression | JSXFragment
+    importsToAdd: Imports
+  },
 ): WrapInElement {
   return {
     action: 'WRAP_IN_ELEMENT',

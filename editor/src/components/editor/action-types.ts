@@ -5,6 +5,8 @@ import {
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
   JSXElementChild,
+  JSXConditionalExpression,
+  JSXFragment,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
@@ -506,7 +508,10 @@ export interface WrapInView {
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'conditional'
+  whatToWrapWith: {
+    element: JSXElement | JSXConditionalExpression | JSXFragment
+    importsToAdd: Imports
+  }
 }
 
 export interface OpenFloatingInsertMenu {

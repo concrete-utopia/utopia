@@ -2491,10 +2491,7 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        const newUID =
-          action.whatToWrapWith === 'conditional'
-            ? generateUidWithExistingComponents(editor.projectContents)
-            : action.whatToWrapWith.element.uid
+        const newUID = action.whatToWrapWith.element.uid
 
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
@@ -2543,48 +2540,52 @@ export const UPDATE_FNS = {
             targetSuccess.filePath,
             editor,
             (parseSuccess) => {
-              const elementToInsert: JSXElement | JSXConditionalExpression =
-                action.whatToWrapWith === 'conditional'
-                  ? jsxConditionalExpression(
-                      newUID,
-                      jsxAttributeValue(true, emptyComments),
-                      'true',
-                      jsxAttributeValue(null, emptyComments),
-                      jsxAttributeValue(null, emptyComments),
-                      emptyComments,
-                    )
-                  : action.whatToWrapWith.element
+              const elementToInsert = action.whatToWrapWith.element
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               let withTargetAdded: Array<UtopiaJSXComponent>
 
+              function withInsertedElement() {
+                return insertElementAtPath(
+                  editor.projectContents,
+                  editor.canvas.openFile?.filename ?? null,
+                  parentPath,
+                  elementToInsert,
+                  utopiaJSXComponents,
+                  optionalMap(
+                    (index) => ({
+                      type: 'before',
+                      index: index,
+                    }),
+                    indexInParent,
+                  ),
+                  editor.spyMetadata,
+                )
+              }
+
+              function pathsToBeWrappedInFragment(): ElementPath[] {
+                const elements: ElementPath[] = action.targets.filter((path) => {
+                  return !action.targets
+                    .filter((otherPath) => !EP.pathsEqual(otherPath, path))
+                    .some((otherPath) => EP.isDescendantOf(path, otherPath))
+                })
+                const parents = new Set<ElementPath>()
+                elements.forEach((e) => parents.add(EP.parentPath(e)))
+                if (parents.size !== 1) {
+                  return []
+                }
+                return elements
+              }
+
+              function getSingleElement(path: ElementPath): JSXElementChild | null {
+                const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+                if (metadata == null || isLeft(metadata.element)) {
+                  return null
+                }
+                return metadata.element.value
+              }
+
               if (isJSXConditionalExpression(elementToInsert)) {
-                function getSingleElement(path: ElementPath): JSXElementChild | null {
-                  const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-                  if (metadata == null || isLeft(metadata.element)) {
-                    return null
-                  }
-                  const value = { ...metadata.element.value }
-                  if (isElementWithUid(value)) {
-                    value.uid = generateUidWithExistingComponents(editor.projectContents)
-                  }
-                  return value
-                }
-
-                function pathsToBeWrappedInFragment(): ElementPath[] {
-                  const elements: ElementPath[] = action.targets.filter((path) => {
-                    return !action.targets
-                      .filter((otherPath) => !EP.pathsEqual(otherPath, path))
-                      .some((otherPath) => EP.isDescendantOf(path, otherPath))
-                  })
-                  const parents = new Set<ElementPath>()
-                  elements.forEach((e) => parents.add(EP.parentPath(e)))
-                  if (parents.size !== 1) {
-                    return []
-                  }
-                  return elements
-                }
-
                 // if the selection is a single element, put it directly into the true branch.
                 // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
                 const branch: JSXElementChild | JSXFragment | null =
@@ -2595,45 +2596,23 @@ export const UPDATE_FNS = {
                         mapDropNulls(getSingleElement, pathsToBeWrappedInFragment()),
                         false,
                       )
-
                 if (branch != null) {
                   if (isJSXFragment(branch) && branch.children.length === 0) {
                     // nothing to do
                     return parseSuccess
                   }
-                  withTargetAdded = insertElementAtPath(
-                    editor.projectContents,
-                    editor.canvas.openFile?.filename ?? null,
-                    parentPath,
-                    elementToInsert,
-                    utopiaJSXComponents,
-                    optionalMap(
-                      (index) => ({
-                        type: 'before',
-                        index: index,
-                      }),
-                      indexInParent,
-                    ),
-                    editor.spyMetadata,
-                  )
+                  withTargetAdded = withInsertedElement()
                 }
+              } else if (isJSXFragment(elementToInsert)) {
+                const children = mapDropNulls(getSingleElement, pathsToBeWrappedInFragment())
+                if (children.length === 0) {
+                  // nothing to do
+                  return parseSuccess
+                }
+                withTargetAdded = withInsertedElement()
               } else {
                 if (targetThatIsRootElementOfCommonParent == null) {
-                  withTargetAdded = insertElementAtPath(
-                    editor.projectContents,
-                    editor.canvas.openFile?.filename ?? null,
-                    parentPath,
-                    elementToInsert,
-                    utopiaJSXComponents,
-                    optionalMap(
-                      (index) => ({
-                        type: 'before',
-                        index: index,
-                      }),
-                      indexInParent,
-                    ),
-                    editor.spyMetadata,
-                  )
+                  withTargetAdded = withInsertedElement()
                 } else {
                   const staticTarget = EP.dynamicPathToStaticPath(
                     targetThatIsRootElementOfCommonParent,
@@ -2654,10 +2633,7 @@ export const UPDATE_FNS = {
                 ? EP.appendNewElementPath(parentPath, newUID)
                 : EP.appendToPath(parentPath, newUID)
 
-              const importsToAdd: Imports =
-                action.whatToWrapWith === 'conditional'
-                  ? emptyImports()
-                  : action.whatToWrapWith.importsToAdd
+              const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
 
               return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
                 return {
@@ -5073,7 +5049,7 @@ export const UPDATE_FNS = {
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
-          if (action.toInsert.element === 'conditional') {
+          if (action.toInsert.element === 'conditional' || action.toInsert.element === 'fragment') {
             return success
           }
 
