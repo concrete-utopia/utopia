@@ -14,6 +14,10 @@ export interface OptionChainOption<T> {
   tooltip?: string
 }
 
+export function getOptionControlTestId(testIdPrefix: string, postfix: string): string {
+  return `${testIdPrefix}-${postfix}`
+}
+
 // TODO come up with a typed OptionChainControl types!
 export const OptionChainControl: React.FunctionComponent<
   React.PropsWithChildren<DEPRECATEDControlProps<any>>
@@ -71,6 +75,10 @@ export const OptionChainControl: React.FunctionComponent<
             {...props}
             css={optionCSS}
             key={'option-' + index}
+            testId={getOptionControlTestId(
+              props.testId,
+              option.label?.toLowerCase() ?? index.toString(),
+            )}
             DEPRECATED_controlOptions={{
               tooltip: option.tooltip,
               icon: option.icon,

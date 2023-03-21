@@ -342,7 +342,7 @@ function createFakeMetadataForJSXElement(
       attributeMetadatada: emptyAttributeMetadatada,
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
-      conditionalValue: 'not-a-conditional',
+      conditionValue: 'not-a-conditional',
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -377,7 +377,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
-    conditionalValue: 'not-a-conditional',
+    conditionValue: 'not-a-conditional',
   }
 }
 
@@ -492,3 +492,17 @@ export function setFeatureForUnitTests(featureName: FeatureName, newValue: boole
     setFeatureEnabled(featureName, originalFSValue)
   })
 }
+
+function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTMLElement[] {
+  return editor.renderedDOM.queryAllByTestId(testId)
+}
+
+export const expectElementWithTestIdToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(1)
+
+export const expectElementWithTestIdNotToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)

@@ -3,15 +3,33 @@ import { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { ContentAffectingType } from './group-like-helpers'
 
 export const GroupLikeElementUid = 'children-affecting'
+export const InnerFragmentId = 'inner-fragment'
 
-export function getOpeningGroupLikeTag(type: ContentAffectingType): string {
+interface GrouplikeTagOptions {
+  stripTestId: boolean
+  stripUids: boolean
+}
+
+const DefaultGrouplikeTagOptions: GrouplikeTagOptions = {
+  stripTestId: false,
+  stripUids: false,
+}
+
+export function getOpeningGroupLikeTag(
+  type: ContentAffectingType,
+  options: Partial<GrouplikeTagOptions> = DefaultGrouplikeTagOptions,
+): string {
+  const outerDataUid = options.stripUids === true ? '' : `data-uid='${GroupLikeElementUid}'`
+  const outerTestId = options.stripTestId === true ? '' : `data-testid='${GroupLikeElementUid}'`
+  const innerDataUid = options.stripUids === true ? '' : `data-uid='${InnerFragmentId}'`
+
   switch (type) {
     case 'sizeless-div':
-      return `<div data-uid='${GroupLikeElementUid}' data-testid='${GroupLikeElementUid}'><React.Fragment data-uid='inner-fragment'>`
+      return `<div ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
     case 'fragment':
-      return `<React.Fragment data-uid='${GroupLikeElementUid}' data-testid='${GroupLikeElementUid}'><React.Fragment data-uid='inner-fragment'>`
+      return `<React.Fragment ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
     case 'conditional':
-      return `{ true /* @utopia/uid=${GroupLikeElementUid} */ ? ( <React.Fragment data-uid='inner-fragment'>`
+      return `{ true /* @utopia/uid=${GroupLikeElementUid} */ ? ( <React.Fragment ${innerDataUid}>`
     default:
       const _exhaustiveCheck: never = type
       throw new Error(`Unhandled ContentAffectingType ${JSON.stringify(type)}.`)

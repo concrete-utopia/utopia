@@ -93,12 +93,12 @@ export function getConditionalCase(
   spyParentMetadata: ElementInstanceMetadata,
   parentPath: ElementPath,
 ): ConditionalCase | 'not-a-conditional' {
-  if (spyParentMetadata.conditionalValue === 'not-a-conditional') {
+  if (spyParentMetadata.conditionValue === 'not-a-conditional') {
     return 'not-a-conditional'
   }
   const parentOverride = getConditionalFlag(parent)
   if (parentOverride == null) {
-    return spyParentMetadata.conditionalValue ? 'true-case' : 'false-case'
+    return spyParentMetadata.conditionValue ? 'true-case' : 'false-case'
   }
   if (
     matchesOverriddenConditionalBranch(elementPath, parentPath, {

@@ -37,17 +37,17 @@ import {
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import { ControlStatus, getControlStyles } from '../../common/control-status'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
+import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
-export const ConditionalsControlToggleTrueTestId = 'conditionals-control-toggle-true'
-export const ConditionalsControlToggleFalseTestId = 'conditionals-control-toggle-false'
 export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
 export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=branches'
 
-type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
+export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-conditional'
 
 const conditionOverrideSelector = createCachedSelector(
@@ -90,6 +90,17 @@ const conditionOverrideSelector = createCachedSelector(
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
+const conditionOverrideToControlStatus = (conditionOverride: ConditionOverride): ControlStatus => {
+  // TODO: we don't have multiselect support yet, that is why mixed is here
+  if (conditionOverride === 'not-conditional' || conditionOverride === 'mixed') {
+    return 'off'
+  }
+  if (conditionOverride === 'not-overridden') {
+    return 'simple'
+  }
+  return 'overridden'
+}
+
 const conditionExpressionSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
@@ -106,7 +117,7 @@ const conditionExpressionSelector = createCachedSelector(
 
       return {
         element: elementMetadata.element.value,
-        conditionValue: elementMetadata.conditionalValue,
+        conditionValue: elementMetadata.conditionValue,
       }
     }, paths)
 
@@ -145,7 +156,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   )
 
   const setConditionOverride = React.useCallback(
-    (value: boolean | null) => () => {
+    (value: boolean | null) => {
       const actions: EditorAction[] = paths.map((path) =>
         setConditionalOverriddenCondition(path, value),
       )
@@ -155,22 +166,11 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     [dispatch, paths],
   )
 
-  const toggleConditionOverride = React.useCallback(
-    (whichButton: boolean) => () => {
-      const newCond = whichButton === conditionOverride ? null : whichButton
-      setConditionOverride(newCond)()
-    },
-    [conditionOverride, setConditionOverride],
-  )
+  const replaceBranches = React.useCallback(() => {
+    const actions: EditorAction[] = paths.map((path) => switchConditionalBranches(path))
 
-  const replaceBranches = React.useCallback(
-    () => () => {
-      const actions: EditorAction[] = paths.map((path) => switchConditionalBranches(path))
-
-      dispatch(actions)
-    },
-    [dispatch, paths],
-  )
+    dispatch(actions)
+  }, [dispatch, paths])
 
   const onUpdateExpression = React.useCallback(() => {
     if (paths.length !== 1) {
@@ -203,6 +203,9 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     return null
   }
 
+  const controlStatus = conditionOverrideToControlStatus(conditionOverride)
+  const controlStyles = getControlStyles(controlStatus)
+
   return (
     <React.Fragment>
       <InspectorSubsectionHeader
@@ -225,33 +228,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
           <span>Conditional</span>
         </FlexRow>
-        {conditionOverride != 'not-overridden' ? (
-          <SquareButton
-            highlight
-            onClick={setConditionOverride(null)}
-            data-testid={ConditionalsControlSectionCloseTestId}
-          >
-            <FunctionIcons.Delete />
-          </SquareButton>
-        ) : (
-          <SquareButton
-            highlight
-            onClick={setConditionOverride(true)}
-            data-testid={ConditionalsControlSectionOpenTestId}
-          >
-            <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
-          </SquareButton>
-        )}
       </InspectorSubsectionHeader>
       {unless(
         originalConditionExpression === 'multiselect',
-        <UIGridRow
-          padded={true}
-          variant='<-auto-><----------1fr--------->'
-          style={{
-            color: conditionOverride != null ? colorTheme.brandNeonPink.value : 'inherit',
-          }}
-        >
+        <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
           Condition
           <StringInput
             testId={ConditionalsControlSectionExpressionTestId}
@@ -274,40 +254,19 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
             style={{ flex: 1 }}
             highlight
             spotlight
-            onClick={replaceBranches()}
+            onClick={replaceBranches}
             data-testid={ConditionalsControlSwitchBranches}
           >
             Switch branches
           </Button>
         </UIGridRow>,
       )}
-      <UIGridRow
-        padded={true}
-        variant='<---1fr--->|------172px-------|'
-        style={{ color: conditionOverride != null ? colorTheme.brandNeonPink.value : 'inherit' }}
-      >
-        Override
-        <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-          <Button
-            style={{ flex: 1 }}
-            spotlight={conditionOverride === true}
-            highlight
-            onClick={toggleConditionOverride(true)}
-            data-testid={ConditionalsControlToggleTrueTestId}
-          >
-            True
-          </Button>
-          <Button
-            style={{ flex: 1 }}
-            spotlight={conditionOverride === false}
-            highlight
-            onClick={toggleConditionOverride(false)}
-            data-testid={ConditionalsControlToggleFalseTestId}
-          >
-            False
-          </Button>
-        </FlexRow>
-      </UIGridRow>
+      <ConditionalOverrideControl
+        controlStatus={controlStatus}
+        controlStyles={controlStyles}
+        setConditionOverride={setConditionOverride}
+        conditionOverride={conditionOverride}
+      />
     </React.Fragment>
   )
 })

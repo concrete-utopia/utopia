@@ -75,6 +75,7 @@ export const OptionControl: React.FunctionComponent<
         placement={'top'}
       >
         <label
+          data-testid={props.testId}
           css={{
             // If just an option control:
             boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
