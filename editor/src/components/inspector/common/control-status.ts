@@ -229,7 +229,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         trackColor = colorTheme.primary.value
         strokePrimaryColor = colorTheme.primary.value
         showContent = true
-        iconColor = 'error'
+        iconColor = 'overridden'
         break
       default:
         break
