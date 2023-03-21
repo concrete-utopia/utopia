@@ -117,7 +117,7 @@ const conditionExpressionSelector = createCachedSelector(
 
       return {
         element: elementMetadata.element.value,
-        conditionValue: elementMetadata.conditionalValue,
+        conditionValue: elementMetadata.conditionValue,
       }
     }, paths)
 
