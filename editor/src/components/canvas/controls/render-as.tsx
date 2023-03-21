@@ -6,7 +6,11 @@ import * as EP from '../../../core/shared/element-path'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { PopupList } from '../../../uuiui'
-import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/element-template'
+import {
+  isJSXElement,
+  JSXElementName,
+  jsxElementNameEquals,
+} from '../../../core/shared/element-template'
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
 import { Imports } from '../../../core/shared/project-file-types'
 import {
@@ -48,7 +52,7 @@ export const RenderAsRow = React.memo(() => {
   const onSelect = React.useCallback(
     (selectOption: SelectOption) => {
       const value: InsertableComponent = selectOption.value
-      if (value.element === 'conditional' || value.element === 'fragment') {
+      if (!isJSXElement(value.element)) {
         return
       }
       onElementTypeChange(value.element.name, value.importsToAdd)
@@ -101,11 +105,7 @@ export const RenderAsRow = React.memo(() => {
       for (const selectOptionGroup of insertableComponents) {
         for (const selectOption of selectOptionGroup.options ?? []) {
           const insertableComponent: InsertableComponent = selectOption.value
-          if (
-            insertableComponent != null &&
-            insertableComponent.element !== 'conditional' &&
-            insertableComponent.element !== 'fragment'
-          ) {
+          if (insertableComponent != null && isJSXElement(insertableComponent.element)) {
             if (jsxElementNameEquals(insertableComponent.element.name, nameToSearchFor)) {
               return selectOption
             }

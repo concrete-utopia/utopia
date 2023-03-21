@@ -986,11 +986,11 @@ export interface JSXElement {
   uid: string
 }
 
-export interface JSXElementWithoutUID {
-  name: JSXElementName
-  props: JSXAttributes
-  children: JSXElementChildren
-}
+export type JSXElementWithoutUID = Omit<JSXElement, 'uid'>
+
+export type JSXConditionalExpressionWithoutUID = Omit<JSXConditionalExpression, 'uid'>
+
+export type JSXFragmentWithoutUID = Omit<JSXFragment, 'uid'>
 
 export type ElementsWithin = { [uid: string]: JSXElement }
 
@@ -1133,19 +1133,23 @@ export type JSXElementChild =
   | JSXFragment
   | JSXConditionalExpression
 
-export function isJSXElement(element: JSXElementChild): element is JSXElement {
+export type WithJSXElementChildType = Pick<JSXElementChild, 'type'>
+
+export function isJSXElement(element: WithJSXElementChildType): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
 }
 
-export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArbitraryBlock {
+export function isJSXArbitraryBlock(
+  element: WithJSXElementChildType,
+): element is JSXArbitraryBlock {
   return element.type === 'JSX_ARBITRARY_BLOCK'
 }
 
-export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {
+export function isJSXTextBlock(element: WithJSXElementChildType): element is JSXTextBlock {
   return element.type === 'JSX_TEXT_BLOCK'
 }
 
-export function isJSXFragment(element: JSXElementChild): element is JSXFragment {
+export function isJSXFragment(element: WithJSXElementChildType): element is JSXFragment {
   return element.type === 'JSX_FRAGMENT'
 }
 
@@ -1155,7 +1159,7 @@ export function isJSXConditionalExpression(
   return element.type === 'JSX_CONDITIONAL_EXPRESSION'
 }
 
-export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
+export function isJSXElementLike(element: WithJSXElementChildType): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
 }
 
@@ -1255,9 +1259,38 @@ export function jsxElementWithoutUID(
   children: JSXElementChildren,
 ): JSXElementWithoutUID {
   return {
+    type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     props: props,
     children: children,
+  }
+}
+
+export function jsxConditionalExpressionWithoutUID(
+  condition: JSXAttribute,
+  originalConditionString: string,
+  whenTrue: ChildOrAttribute,
+  whenFalse: ChildOrAttribute,
+  comments: ParsedComments,
+): JSXConditionalExpressionWithoutUID {
+  return {
+    type: 'JSX_CONDITIONAL_EXPRESSION',
+    condition: condition,
+    originalConditionString: originalConditionString,
+    whenTrue: whenTrue,
+    whenFalse: whenFalse,
+    comments: comments,
+  }
+}
+
+export function jsxFragmentWithoutUID(
+  children: JSXElementChildren,
+  longForm: boolean,
+): JSXFragmentWithoutUID {
+  return {
+    type: 'JSX_FRAGMENT',
+    children: children,
+    longForm: longForm,
   }
 }
 

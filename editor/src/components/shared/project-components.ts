@@ -20,8 +20,10 @@ import {
   jsxAttributesEntry,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  jsxConditionalExpressionWithoutUID,
   jsxElementName,
   jsxElementWithoutUID,
+  jsxFragmentWithoutUID,
   parsedComments,
   simpleAttribute,
 } from '../../core/shared/element-template'
@@ -334,7 +336,13 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Conditional',
-        elementToInsert: 'conditional',
+        elementToInsert: jsxConditionalExpressionWithoutUID(
+          jsxAttributeValue(true, emptyComments),
+          'true',
+          jsxAttributeValue(null, emptyComments),
+          jsxAttributeValue(null, emptyComments),
+          emptyComments,
+        ),
         importsToAdd: {},
       },
     ],
@@ -347,7 +355,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Fragment',
-        elementToInsert: 'fragment',
+        elementToInsert: jsxFragmentWithoutUID([], false),
         importsToAdd: {},
       },
     ],

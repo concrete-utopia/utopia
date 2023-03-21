@@ -13,6 +13,7 @@ import {
   JSXAttributesPart,
   isJSXAttributesEntry,
   getJSXAttribute,
+  isJSXElement,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -240,11 +241,11 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              if (component.element === 'conditional' || component.element === 'fragment') {
+              if (!isJSXElement(component.element)) {
                 return null
               }
               const insertItemOnMouseDown = (event: React.MouseEvent) => {
-                if (component.element === 'conditional' || component.element === 'fragment') {
+                if (!isJSXElement(component.element)) {
                   return
                 }
 

@@ -43,11 +43,12 @@ import {
 } from '../../../core/model/element-template-utils'
 import {
   emptyComments,
+  isJSXElement,
   jsxAttributeValue,
-  jsxConditionalExpression,
+  JSXConditionalExpressionWithoutUID,
   jsxElement,
   JSXElementName,
-  jsxFragment,
+  JSXFragmentWithoutUID,
   jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
@@ -483,67 +484,37 @@ export var FloatingMenu = React.memo(() => {
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
   const [preserveVisualPositionForWrap, setPreserveVisualPositionForWrap] = React.useState(false)
 
-  const onChangeConditional = React.useCallback((): Array<EditorAction> => {
-    let actionsToDispatch: Array<EditorAction> = []
-    const selectedViews = selectedViewsref.current
-    switch (floatingMenuState.insertMenuMode) {
-      case 'wrap':
-        actionsToDispatch = [
-          wrapInElement(selectedViews, {
-            element: jsxConditionalExpression(
-              generateUidWithExistingComponents(projectContentsRef.current),
-              jsxAttributeValue(true, emptyComments),
-              'true',
-              jsxAttributeValue(null, emptyComments),
-              jsxAttributeValue(null, emptyComments),
-              emptyComments,
-            ),
-            importsToAdd: emptyImports(),
-          }),
-        ]
-        break
-      case 'insert':
-      case 'convert':
-      case 'closed':
-        break
-      default:
-        assertNever(floatingMenuState)
-    }
-    return actionsToDispatch
-  }, [floatingMenuState, selectedViewsref, projectContentsRef])
-
-  const onChangeFragment = React.useCallback((): Array<EditorAction> => {
-    let actionsToDispatch: Array<EditorAction> = []
-    const selectedViews = selectedViewsref.current
-    switch (floatingMenuState.insertMenuMode) {
-      case 'wrap':
-        actionsToDispatch = [
-          wrapInElement(selectedViews, {
-            element: jsxFragment(
-              generateUidWithExistingComponents(projectContentsRef.current),
-              [],
-              false,
-            ),
-            importsToAdd: emptyImports(),
-          }),
-        ]
-        break
-      case 'insert':
-      case 'convert':
-      case 'closed':
-        break
-      default:
-        assertNever(floatingMenuState)
-    }
-    return actionsToDispatch
-  }, [floatingMenuState, selectedViewsref, projectContentsRef])
+  const onChangeConditionalOrFragment = React.useCallback(
+    (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
+      let actionsToDispatch: Array<EditorAction> = []
+      const selectedViews = selectedViewsref.current
+      switch (floatingMenuState.insertMenuMode) {
+        case 'wrap':
+          actionsToDispatch = [
+            wrapInElement(selectedViews, {
+              element: {
+                ...element,
+                uid: generateUidWithExistingComponents(projectContentsRef.current),
+              },
+              importsToAdd: emptyImports(),
+            }),
+          ]
+          break
+        case 'insert':
+        case 'convert':
+        case 'closed':
+          break
+        default:
+          assertNever(floatingMenuState)
+      }
+      return actionsToDispatch
+    },
+    [floatingMenuState, selectedViewsref, projectContentsRef],
+  )
 
   const onChangeElement = React.useCallback(
     (pickedInsertableComponent: InsertMenuItemValue): Array<EditorAction> => {
-      if (
-        pickedInsertableComponent.element === 'conditional' ||
-        pickedInsertableComponent.element === 'fragment'
-      ) {
+      if (!isJSXElement(pickedInsertableComponent.element)) {
         return []
       }
       const selectedViews = selectedViewsref.current
@@ -647,11 +618,10 @@ export var FloatingMenu = React.memo(() => {
         const pickedInsertableComponent = (value as InsertMenuItem).value
 
         function getActionsToDispatch() {
-          switch (pickedInsertableComponent.element) {
-            case 'conditional':
-              return onChangeConditional()
-            case 'fragment':
-              return onChangeFragment()
+          switch (pickedInsertableComponent.element.type) {
+            case 'JSX_CONDITIONAL_EXPRESSION':
+            case 'JSX_FRAGMENT':
+              return onChangeConditionalOrFragment(pickedInsertableComponent.element)
             default:
               return onChangeElement(pickedInsertableComponent)
           }
@@ -662,7 +632,7 @@ export var FloatingMenu = React.memo(() => {
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [onChangeFragment, onChangeConditional, onChangeElement, dispatch],
+    [onChangeConditionalOrFragment, onChangeElement, dispatch],
   )
 
   useHandleCloseOnESCOrEnter(
