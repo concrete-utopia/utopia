@@ -2226,6 +2226,30 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
+      // check the status of the override buttons
+      {
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because the condition is true and there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "simple" because there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+      }
+
       // override to false
       {
         await clickButtonAndSelectTarget(
@@ -2251,6 +2275,25 @@ describe('inspector tests with real metadata', () => {
               }
             </div>
           `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `false` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('false')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
         )
       }
 
@@ -2278,6 +2321,27 @@ describe('inspector tests with real metadata', () => {
             </div>
           `),
         )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
       }
 
       // disable override
@@ -2302,6 +2366,27 @@ describe('inspector tests with real metadata', () => {
               }
             </div>
           `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because the condition is true and there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "simple" because there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
         )
       }
     })
