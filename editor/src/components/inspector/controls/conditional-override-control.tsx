@@ -7,7 +7,8 @@ import { ConditionOverride } from '../sections/layout-section/conditional-sectio
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { OptionChainControl, OptionChainOption } from './option-chain-control'
 
-export const ConditionalOverrideControlTestId = 'conditionals-control-toggle'
+export const ConditionalOverrideControlTestIdPrefix = 'conditional-override-control'
+export const ConditionalOverrideControlDisableTestId = 'conditional-override-control-disable'
 
 export interface ConditionalOverrideControlProps extends ButtonProps {
   controlStatus: ControlStatus
@@ -50,7 +51,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
       {when(
         controlStatus === 'overridden',
         <Tooltip title={'Override'}>
-          <SquareButton onClick={disableOverride}>
+          <SquareButton onClick={disableOverride} testId={ConditionalOverrideControlDisableTestId}>
             {getPinIcon(controlStatus, controlStyles)}
           </SquareButton>
         </Tooltip>,
@@ -58,7 +59,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
       <FlexRow style={{ flexGrow: 1, gap: 4 }}>
         <OptionChainControl
           id={'conditional-override-control'}
-          testId={ConditionalOverrideControlTestId}
+          testId={ConditionalOverrideControlTestIdPrefix}
           key={'conditional-override-control'}
           onSubmitValue={props.setConditionOverride}
           value={props.conditionOverride}

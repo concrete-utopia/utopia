@@ -44,7 +44,10 @@ import {
   updateFromCodeEditor,
 } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
-import { ConditionalOverrideControlTestId } from '../controls/conditional-override-control'
+import {
+  ConditionalOverrideControlDisableTestId,
+  ConditionalOverrideControlTestIdPrefix,
+} from '../controls/conditional-override-control'
 import { getOptionControlTestId } from '../controls/option-chain-control'
 import {
   ConditionalsControlSectionExpressionTestId,
@@ -59,11 +62,11 @@ async function getControl(
 }
 
 const ConditionalOverrideControlTrueTestId = getOptionControlTestId(
-  ConditionalOverrideControlTestId,
+  ConditionalOverrideControlTestIdPrefix,
   'true',
 )
 const ConditionalOverrideControlFalseTestId = getOptionControlTestId(
-  ConditionalOverrideControlTestId,
+  ConditionalOverrideControlTestIdPrefix,
   'false',
 )
 
@@ -2223,11 +2226,11 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      // toggle to false
+      // override to false
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          getOptionControlTestId(ConditionalOverrideControlTestId, 'false'),
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
           [targetPath],
         )
 
@@ -2251,7 +2254,7 @@ describe('inspector tests with real metadata', () => {
         )
       }
 
-      // toggle to true
+      // override to true
       {
         await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlTrueTestId, [
           targetPath,
@@ -2266,6 +2269,31 @@ describe('inspector tests with real metadata', () => {
               {
                 // @utopia/uid=conditional
                 // @utopia/conditional=true
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      }
+
+      // disable override
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlDisableTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/uid=conditional
                 [].length === 0 ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
                 ) : (
