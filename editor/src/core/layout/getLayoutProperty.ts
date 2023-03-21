@@ -2,8 +2,9 @@
 
 import { Either, flatMapEither, foldEither, right } from '../shared/either'
 import { getSimpleAttributeAtPath, PropsOrJSXAttributes } from '../model/element-metadata-utils'
-import { StyleLayoutProp } from './layout-helpers-new'
+import { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
 import { cssParsers, ParsedCSSProperties } from '../../components/inspector/common/css-utils'
+import { MaxContent } from '../../components/inspector/inspector-common'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
 
 export function getLayoutProperty<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
@@ -35,4 +36,32 @@ export function getLayoutPropertyOr<P extends StyleLayoutProp, T = ParsedCSSProp
     (val) => (val === undefined ? orValue : val),
     layoutProperty,
   )
+}
+
+export function getLayoutLengthValueOrKeyword<
+  P extends LayoutPinnedProp,
+  T = ParsedCSSProperties[P],
+>(
+  layoutProp: P,
+  propsOrAttributes: PropsOrJSXAttributes,
+  propertyTarget: ReadonlyArray<string>,
+): Either<string, T | typeof MaxContent | undefined> {
+  const path = stylePropPathMappingFn(layoutProp, propertyTarget)
+  if (layoutProp === 'width' || layoutProp === 'height') {
+    const lengthPercentParser = cssParsers[layoutProp] as (value: unknown) => Either<string, T>
+    function applyParser(value: any): Either<string, T | typeof MaxContent | undefined> {
+      if (value === undefined) {
+        return right(undefined)
+      } else {
+        if (value === MaxContent) {
+          return right(value)
+        } else {
+          return lengthPercentParser(value)
+        }
+      }
+    }
+    return flatMapEither(applyParser, getSimpleAttributeAtPath(propsOrAttributes, path))
+  } else {
+    return getLayoutProperty(layoutProp, propsOrAttributes, propertyTarget)
+  }
 }

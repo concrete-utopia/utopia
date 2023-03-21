@@ -10,7 +10,7 @@ import {
   valueToUseForPin,
   VerticalFramePoints,
 } from 'utopia-api/core'
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { getLayoutLengthValueOrKeyword } from '../../../core/layout/getLayoutProperty'
 import {
   framePointForPinnedProp,
   HorizontalLayoutPinnedProps,
@@ -47,9 +47,12 @@ import { CSSNumber, cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { MaxContent } from '../inspector-common'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
+const HorizontalPropPreferenceHug: Array<LayoutPinnedProp> = ['width', 'left', 'right']
 const VerticalPropPreference: Array<LayoutPinnedProp> = ['top', 'height', 'bottom']
+const VerticalPropPreferenceHug: Array<LayoutPinnedProp> = ['height', 'top', 'bottom']
 
 function allPinsMatch(point: FramePoint, framesToCheck: readonly Frame[]): boolean {
   const firstFrame = framesToCheck[0]
@@ -170,7 +173,9 @@ export function changePin(
 
           pointsToKeep = [newFrameProp, otherHorizontalProp, ...VerticalLayoutPinnedProps]
         } else {
-          const pinToKeep = HorizontalPropPreference.find((p) => frame[p] != null)
+          const HorizontalPreference: Array<LayoutPinnedProp> =
+            frame.width === MaxContent ? HorizontalPropPreferenceHug : HorizontalPropPreference
+          const pinToKeep = HorizontalPreference.find((p) => frame[p] != null)
           pointsToKeep = Utils.maybeToArray(pinToKeep).concat([
             newFrameProp,
             ...VerticalLayoutPinnedProps,
@@ -194,7 +199,9 @@ export function changePin(
 
           pointsToKeep = [newFrameProp, otherVerticalProp, ...HorizontalLayoutPinnedProps]
         } else {
-          const pinToKeep = VerticalPropPreference.find((p) => frame[p] != null)
+          const VerticalPreference: Array<LayoutPinnedProp> =
+            frame.height === MaxContent ? VerticalPropPreferenceHug : VerticalPropPreference
+          const pinToKeep = VerticalPreference.find((p) => frame[p] != null)
           pointsToKeep = Utils.maybeToArray(pinToKeep).concat([
             newFrameProp,
             ...HorizontalLayoutPinnedProps,
@@ -282,7 +289,11 @@ export function usePinToggling(): UsePinTogglingResult {
       return jsxElements.map((elem) => {
         if (elem != null && isJSXElement(elem)) {
           return LayoutPinnedProps.reduce<Frame>((working, point) => {
-            const value = getLayoutProperty(point, eitherRight(elem.props), propertyTarget)
+            const value = getLayoutLengthValueOrKeyword(
+              point,
+              eitherRight(elem.props),
+              propertyTarget,
+            )
             if (isLeft(value)) {
               return working
             } else {
