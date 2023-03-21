@@ -11,6 +11,7 @@ import { isLeft, isRight, Either } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { ParsedPropertiesKeys } from './css-utils'
 import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import { IcnColor } from '../../../uuiui'
 
 export interface ControlStyles {
   fontStyle: string
@@ -32,6 +33,7 @@ export interface ControlStyles {
   railColor: string
   showContent: boolean
   unsettable: boolean
+  iconColor: IcnColor
 }
 
 export type ControlStatus =
@@ -45,6 +47,7 @@ export type ControlStatus =
   | 'detected-fromcss' // this single-selected element's property is detected from measurement, and we know it comes from a CSS Stylesheet (might be via Emotion)
   | 'detected' // this single-selected element's property is detected from measurement
   | 'trivial-default' // this single-selected element's property is detected from measurement and we think its not important to show it to the user
+  | 'overridden' // this single-selected element's property is overridden with a fixed value (using standard utopia comments)
   | 'multiselect-identical-simple' // all elements in this multi-selection have this property 'simple', with identical values
   | 'multiselect-simple-unknown-css' // at least one element in the multiselection is 'unknown-css', and the rest are 'simple' or 'unset'
   | 'multiselect-identical-unset' // all elements in this multi-selection have this property either 'simple' or 'unset', with identical values
@@ -67,6 +70,7 @@ const AllControlStatuses: Array<ControlStatus> = [
   'detected-fromcss',
   'detected',
   'trivial-default',
+  'overridden',
   'multiselect-identical-simple',
   'multiselect-simple-unknown-css',
   'multiselect-identical-unset',
@@ -92,6 +96,7 @@ export function isControlledStatus(controlStatus: ControlStatus): boolean {
     case 'unoverwritable':
     case 'detected':
     case 'detected-fromcss':
+    case 'overridden':
     case 'multiselect-identical-simple':
     case 'multiselect-simple-unknown-css':
     case 'multiselect-identical-unset':
@@ -134,6 +139,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     let unknown = false
     let showContent = true
     let unsettable = true
+    let iconColor: IcnColor = 'main'
 
     switch (status) {
       case 'simple':
@@ -215,6 +221,16 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         showContent = true
         unsettable = false
         break
+      case 'overridden':
+        interactive = true
+        mainColor = colorTheme.brandNeonPink.value
+        borderColor = colorTheme.brandNeonPink.value
+        secondaryColor = colorTheme.primary.value
+        trackColor = colorTheme.primary.value
+        strokePrimaryColor = colorTheme.primary.value
+        showContent = true
+        iconColor = 'overridden'
+        break
       default:
         break
     }
@@ -239,6 +255,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       showContent,
       unknown,
       unsettable,
+      iconColor,
     }
   },
 )
