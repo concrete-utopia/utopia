@@ -675,13 +675,16 @@ export function insertJSXElementChild(
           }
         }
 
+        const spyParentMetadata = spyMetadata[EP.toString(parentPath)] ?? null
         const isTrueCase =
-          getConditionalCase(
-            getConditionalCasePath(parentPath, 'true-case'),
-            parentElement,
-            spyMetadata[EP.toString(parentPath)] ?? null,
-            parentPath,
-          ) === 'true-case'
+          spyParentMetadata == null
+            ? true
+            : getConditionalCase(
+                getConditionalCasePath(parentPath, 'true-case'),
+                parentElement,
+                spyParentMetadata,
+                parentPath,
+              ) === 'true-case'
         const branch = getNewBranch(isTrueCase ? parentElement.whenTrue : parentElement.whenFalse)
 
         return isTrueCase

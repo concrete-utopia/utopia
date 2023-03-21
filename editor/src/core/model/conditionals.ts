@@ -90,12 +90,9 @@ export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, ChildOrA
 export function getConditionalCase(
   elementPath: ElementPath,
   parent: JSXConditionalExpression,
-  spyParentMetadata: ElementInstanceMetadata | null,
+  spyParentMetadata: ElementInstanceMetadata,
   parentPath: ElementPath,
 ): ConditionalCase | 'not-a-conditional' {
-  if (spyParentMetadata == null) {
-    return 'true-case'
-  }
   if (spyParentMetadata.conditionalValue === 'not-a-conditional') {
     return 'not-a-conditional'
   }
