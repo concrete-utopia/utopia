@@ -2,6 +2,7 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
+import { ConditionalCase, getConditionalClausePath } from '../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -11,6 +12,7 @@ import {
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
+  ChildOrAttribute,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
 } from '../../../../core/shared/element-template'
@@ -19,11 +21,8 @@ import { unless } from '../../../../utils/react-conditionals'
 import {
   Button,
   FlexRow,
-  FunctionIcons,
-  Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
-  SquareButton,
   StringInput,
   useColorTheme,
   UtopiaStyles,
@@ -35,8 +34,15 @@ import {
   updateConditionalExpression,
 } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
+import {
+  getNavigatorEntryLabel,
+  labelSelector,
+} from '../../../navigator/navigator-item/navigator-item-wrapper'
+import { getNavigatorTargets } from '../../../navigator/navigator-utils'
 import { ControlStatus, getControlStyles } from '../../common/control-status'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
 import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
@@ -49,6 +55,47 @@ export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=br
 
 export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-conditional'
+
+const branchesSelector = createCachedSelector(
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (_store: MetadataSubstate, paths: ElementPath[]) => paths,
+  (jsxMetadata, paths): { true: NavigatorEntry | null; false: NavigatorEntry | null } | null => {
+    if (paths.length !== 1) {
+      return null
+    }
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, paths[0])
+    if (
+      elementMetadata == null ||
+      isLeft(elementMetadata.element) ||
+      !isJSXConditionalExpression(elementMetadata.element.value)
+    ) {
+      return null
+    }
+
+    const conditional = elementMetadata.element.value
+
+    const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
+
+    function getNavigatorEntry(
+      clause: ChildOrAttribute,
+      conditionalCase: ConditionalCase,
+    ): NavigatorEntry | null {
+      return (
+        navigatorEntries.find((entry) =>
+          EP.pathsEqual(
+            entry.elementPath,
+            getConditionalClausePath(paths[0], clause, conditionalCase),
+          ),
+        ) ?? null
+      )
+    }
+
+    return {
+      true: getNavigatorEntry(conditional.whenTrue, 'true-case'),
+      false: getNavigatorEntry(conditional.whenFalse, 'false-case'),
+    }
+  },
+)((_, paths) => paths.map(EP.toString).join(','))
 
 const conditionOverrideSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
@@ -196,6 +243,29 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     }
   }
 
+  const branchNavigatorEntries = useEditorState(
+    Substores.metadata,
+    (store) => branchesSelector(store, paths),
+    'ConditionalSection branches',
+  )
+
+  const branchLabels = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return {
+        true:
+          branchNavigatorEntries?.true != null
+            ? labelSelector(store, branchNavigatorEntries.true)
+            : null,
+        false:
+          branchNavigatorEntries?.false != null
+            ? labelSelector(store, branchNavigatorEntries.false)
+            : null,
+      }
+    },
+    'NavigatorItemWrapper labelSelector',
+  )
+
   if (
     conditionOverride === 'not-conditional' ||
     originalConditionExpression === 'not-conditional'
@@ -247,6 +317,16 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           />
         </UIGridRow>,
       )}
+      <BranchRow
+        label={branchLabels.true ?? null}
+        navigatorEntry={branchNavigatorEntries?.true ?? null}
+        conditionalCase='true-case'
+      />
+      <BranchRow
+        label={branchLabels.false ?? null}
+        navigatorEntry={branchNavigatorEntries?.false ?? null}
+        conditionalCase='false-case'
+      />
       {unless(
         originalConditionExpression === 'multiselect',
         <UIGridRow padded={true} variant='<-------------1fr------------->'>
@@ -270,3 +350,44 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     </React.Fragment>
   )
 })
+
+const BranchRow = ({
+  label,
+  navigatorEntry,
+  conditionalCase,
+}: {
+  label: string | null
+  navigatorEntry: NavigatorEntry | null
+  conditionalCase: ConditionalCase
+}) => {
+  const colorTheme = useColorTheme()
+
+  if (label == null || navigatorEntry == null) {
+    return null
+  }
+
+  return (
+    <UIGridRow padded={true} variant='|--67px--|<--------1fr-------->'>
+      <div>{conditionalCase === 'true-case' ? 'True' : 'False'}</div>
+      <div
+        style={{
+          borderRadius: 2,
+          padding: '4px 0px',
+          background: colorTheme.bg3.value,
+          display: 'flex',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
+        <LayoutIcon
+          key={`layout-type-${label}`}
+          navigatorEntry={navigatorEntry}
+          color='main'
+          warningText={null}
+        />
+        {getNavigatorEntryLabel(navigatorEntry, label)}
+      </div>
+    </UIGridRow>
+  )
+}
