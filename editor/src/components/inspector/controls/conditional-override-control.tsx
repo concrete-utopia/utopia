@@ -1,5 +1,5 @@
 import React from 'react'
-import { ConditionalValue } from '../../../core/shared/element-template'
+import { ConditionValue } from '../../../core/shared/element-template'
 import { when } from '../../../utils/react-conditionals'
 import { ButtonProps, FlexRow, Icons, Tooltip } from '../../../uuiui'
 import { SquareButton } from '../../titlebar/buttons'
@@ -13,7 +13,7 @@ export const ConditionalOverrideControlDisableTestId = 'conditional-override-con
 export interface ConditionalOverrideControlProps extends ButtonProps {
   controlStatus: ControlStatus
   controlStyles: ControlStyles
-  conditionValue: ConditionalValue
+  conditionValue: ConditionValue
   setConditionOverride: (override: boolean | null) => void
 }
 
