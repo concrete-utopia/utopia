@@ -32,7 +32,7 @@ import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { getFullFrame } from '../../frame'
+import { FullFrame, getFullFrame } from '../../frame'
 import {
   InspectorInfo,
   useInspectorLayoutInfo,
@@ -119,16 +119,17 @@ export function changePin(
   lastHorizontalProp: LayoutPinnedProp | null,
   lastVerticalProp: LayoutPinnedProp | null,
 ): ChangePinResult {
-  const otherHorizontalProp: LayoutPinnedProp | null = getLastSetPinOrNull(
+  const lastSetHorizontalProp: LayoutPinnedProp | null = getLastSetPinOrNull(
     lastHorizontalProp,
     pinsInfo,
   )
-  const otherVerticalProp: LayoutPinnedProp | null = getLastSetPinOrNull(lastVerticalProp, pinsInfo)
+  const lastSetVerticalProp: LayoutPinnedProp | null = getLastSetPinOrNull(
+    lastVerticalProp,
+    pinsInfo,
+  )
 
   const newFramePoint = framePointForPinnedProp(newFrameProp)
   const pinInfoForProp = pinsInfo[newFrameProp]
-  const otherHorizontalPin = Utils.optionalMap(framePointForPinnedProp, otherHorizontalProp)
-  const otherVerticalPin = Utils.optionalMap(framePointForPinnedProp, otherVerticalProp)
   const toggleToRelative =
     pinInfoForProp.propertyStatus.identical &&
     pinInfoForProp.value != null &&
@@ -151,71 +152,28 @@ export function changePin(
     }
     const fullFrame = getFullFrame(localFrame)
 
-    const pinExists = frame[newFramePoint] != null
-
-    let pointsToDelete: Array<LayoutPinnedProp> = []
-    if (!pinExists) {
-      let pointsToKeep: Array<LayoutPinnedProp>
-      if (isHorizontalPin) {
-        if (otherHorizontalPin != null && otherHorizontalProp != null) {
-          if (frame[otherHorizontalPin] == null) {
-            const missingPinValue = valueToUseForPin(
-              otherHorizontalPin,
-              fullFrame[otherHorizontalPin],
-              false,
-              parentFrame,
-            )
-            pinsToSet.push({
-              path: path,
-              pin: otherHorizontalProp,
-              value: missingPinValue,
-            })
-          }
-
-          pointsToKeep = [newFrameProp, otherHorizontalProp, ...VerticalLayoutPinnedProps]
-        } else {
-          const HorizontalPreference: Array<LayoutPinnedProp> =
-            frame.width === MaxContent ? HorizontalPropPreferenceHug : HorizontalPropPreference
-          const pinToKeep = HorizontalPreference.find((p) => frame[p] != null)
-          pointsToKeep = Utils.maybeToArray(pinToKeep).concat([
-            newFrameProp,
-            ...VerticalLayoutPinnedProps,
-          ])
-        }
-      } else {
-        if (otherVerticalPin != null && otherVerticalProp != null) {
-          if (frame[otherVerticalPin] == null) {
-            const missingPinValue = valueToUseForPin(
-              otherVerticalPin,
-              fullFrame[otherVerticalPin],
-              false,
-              parentFrame,
-            )
-            pinsToSet.push({
-              path: path,
-              pin: otherVerticalProp,
-              value: missingPinValue,
-            })
-          }
-
-          pointsToKeep = [newFrameProp, otherVerticalProp, ...HorizontalLayoutPinnedProps]
-        } else {
-          const VerticalPreference: Array<LayoutPinnedProp> =
-            frame.height === MaxContent ? VerticalPropPreferenceHug : VerticalPropPreference
-          const pinToKeep = VerticalPreference.find((p) => frame[p] != null)
-          pointsToKeep = Utils.maybeToArray(pinToKeep).concat([
-            newFrameProp,
-            ...HorizontalLayoutPinnedProps,
-          ])
-        }
-      }
-
-      Utils.fastForEach(LayoutPinnedProps, (framePoint) => {
-        if (!pointsToKeep.includes(framePoint) && frame[framePoint] !== undefined) {
-          pointsToDelete.push(framePoint)
-        }
+    const pointsToAdd = getPinsToAdd(
+      newFrameProp,
+      path,
+      frame,
+      fullFrame,
+      parentFrame,
+      lastSetHorizontalProp,
+      lastSetVerticalProp,
+    )
+    if (pointsToAdd != null) {
+      pinsToSet.push({
+        path: path,
+        pin: pointsToAdd.pin,
+        value: pointsToAdd.value,
       })
     }
+    const pointsToDelete = getPinsToDelete(
+      newFrameProp,
+      frame,
+      lastSetHorizontalProp,
+      lastSetVerticalProp,
+    )
 
     const absoluteValue = fullFrame[newFramePoint]
     const newPinValue = valueToUseForPin(
@@ -244,6 +202,107 @@ export function changePin(
     pinsToUnset,
     shouldSetHorizontalPin: isHorizontalPin,
   }
+}
+
+function getPinsToAdd(
+  newFrameProp: LayoutPinnedProp,
+  path: ElementPath,
+  frame: Frame,
+  fullFrame: FullFrame,
+  parentFrame: LocalRectangle,
+  lastSetHorizontalProp: LayoutPinnedProp | null,
+  lastSetVerticalProp: LayoutPinnedProp | null,
+): PinToSet | null {
+  const newFramePoint = framePointForPinnedProp(newFrameProp)
+  const pinExists = frame[newFramePoint] != null
+  const isHorizontalPin = isHorizontalPoint(newFramePoint)
+  const lastSetHorizontalPin = Utils.optionalMap(framePointForPinnedProp, lastSetHorizontalProp)
+  const lastSetVerticalPin = Utils.optionalMap(framePointForPinnedProp, lastSetVerticalProp)
+
+  if (!pinExists) {
+    if (isHorizontalPin) {
+      if (lastSetHorizontalPin != null && lastSetHorizontalProp != null) {
+        if (frame[lastSetHorizontalPin] == null) {
+          const missingPinValue = valueToUseForPin(
+            lastSetHorizontalPin,
+            fullFrame[lastSetHorizontalPin],
+            false,
+            parentFrame,
+          )
+          return {
+            path: path,
+            pin: lastSetHorizontalProp,
+            value: missingPinValue,
+          }
+        }
+      }
+    } else {
+      if (lastSetVerticalPin != null && lastSetVerticalProp != null) {
+        if (frame[lastSetVerticalPin] == null) {
+          const missingPinValue = valueToUseForPin(
+            lastSetVerticalPin,
+            fullFrame[lastSetVerticalPin],
+            false,
+            parentFrame,
+          )
+          return {
+            path: path,
+            pin: lastSetVerticalProp,
+            value: missingPinValue,
+          }
+        }
+      }
+    }
+  }
+  return null
+}
+
+export function getPinsToDelete(
+  newFrameProp: LayoutPinnedProp,
+  frame: Frame,
+  lastSetHorizontalProp: LayoutPinnedProp | null,
+  lastSetVerticalProp: LayoutPinnedProp | null,
+): Array<LayoutPinnedProp> {
+  const newFramePoint = framePointForPinnedProp(newFrameProp)
+  const pinExists = frame[newFramePoint] != null
+  const isHorizontalPin = isHorizontalPoint(newFramePoint)
+
+  let pointsToDelete: Array<LayoutPinnedProp> = []
+  if (!pinExists) {
+    let pointsToKeep: Array<LayoutPinnedProp>
+    if (isHorizontalPin) {
+      if (lastSetHorizontalProp != null) {
+        pointsToKeep = [newFrameProp, lastSetHorizontalProp, ...VerticalLayoutPinnedProps]
+      } else {
+        const HorizontalPreference: Array<LayoutPinnedProp> =
+          frame.width === MaxContent ? HorizontalPropPreferenceHug : HorizontalPropPreference
+        const pinToKeep = HorizontalPreference.find((p) => frame[p] != null)
+        pointsToKeep = Utils.maybeToArray(pinToKeep).concat([
+          newFrameProp,
+          ...VerticalLayoutPinnedProps,
+        ])
+      }
+    } else {
+      if (lastSetVerticalProp != null) {
+        pointsToKeep = [newFrameProp, lastSetVerticalProp, ...HorizontalLayoutPinnedProps]
+      } else {
+        const VerticalPreference: Array<LayoutPinnedProp> =
+          frame.height === MaxContent ? VerticalPropPreferenceHug : VerticalPropPreference
+        const pinToKeep = VerticalPreference.find((p) => frame[p] != null)
+        pointsToKeep = Utils.maybeToArray(pinToKeep).concat([
+          newFrameProp,
+          ...HorizontalLayoutPinnedProps,
+        ])
+      }
+    }
+
+    Utils.fastForEach(LayoutPinnedProps, (framePoint) => {
+      if (!pointsToKeep.includes(framePoint) && frame[framePoint] !== undefined) {
+        pointsToDelete.push(framePoint)
+      }
+    })
+  }
+  return pointsToDelete
 }
 
 export interface FramePinInfo {

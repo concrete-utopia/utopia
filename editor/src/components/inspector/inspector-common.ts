@@ -44,6 +44,7 @@ import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
 import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
 import { Frame } from 'utopia-api/core'
+import { getPinsToDelete } from './common/layout-property-path-hooks'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -804,14 +805,10 @@ export function removeExtraPinsWhenSettingSize(
     return []
   }
   const framePinValues = getFramePointsFromMetadata(elementMetadata)
-  if (axis === 'horizontal') {
-    if (framePinValues.right != null && framePinValues.left != null) {
-      return [deleteProperties('always', elementMetadata.elementPath, [styleP('right')])]
-    }
-  } else {
-    if (framePinValues.top != null && framePinValues.bottom != null) {
-      return [deleteProperties('always', elementMetadata.elementPath, [styleP('bottom')])]
-    }
-  }
-  return []
+  const newFrameProp = axis === 'horizontal' ? 'width' : 'height'
+  const pinsToDelete = getPinsToDelete(newFrameProp, framePinValues, null, null)
+
+  return pinsToDelete.map((frameProp) =>
+    deleteProperties('always', elementMetadata.elementPath, [styleP(frameProp)]),
+  )
 }
