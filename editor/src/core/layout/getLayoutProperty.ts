@@ -4,7 +4,6 @@ import { Either, flatMapEither, foldEither, right } from '../shared/either'
 import { getSimpleAttributeAtPath, PropsOrJSXAttributes } from '../model/element-metadata-utils'
 import { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
 import { cssParsers, ParsedCSSProperties } from '../../components/inspector/common/css-utils'
-import { MaxContent } from '../../components/inspector/inspector-common'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
 
 export function getLayoutProperty<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
@@ -38,6 +37,7 @@ export function getLayoutPropertyOr<P extends StyleLayoutProp, T = ParsedCSSProp
   )
 }
 
+const MaxContent = 'max-content'
 export function getLayoutLengthValueOrKeyword<
   P extends LayoutPinnedProp,
   T = ParsedCSSProperties[P],
