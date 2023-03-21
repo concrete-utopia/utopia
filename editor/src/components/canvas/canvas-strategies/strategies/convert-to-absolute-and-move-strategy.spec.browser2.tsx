@@ -796,6 +796,66 @@ describe('Convert to absolute/escape hatch', () => {
       expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
     }),
   )
+  ;(['flex', 'flow'] as const).forEach((parentLayoutSystem) =>
+    it(`does become the active strategy when dragging for single selection in ${parentLayoutSystem} parent`, async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject(parentLayoutSystem)),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [
+          selectComponents(
+            [
+              EP.fromString(
+                `utopia-storyboard-uid/scene-aaa/app-entity:container/child3/grandchild`,
+              ),
+            ],
+            false,
+          ),
+        ],
+        true,
+      )
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child1')
+      const elementBounds = element.getBoundingClientRect()
+
+      await mouseDownAtPoint(
+        canvasControlsLayer,
+        {
+          x: elementBounds.x + 10,
+          y: elementBounds.y + 10,
+        },
+        { modifiers: cmdModifier },
+      )
+
+      // Drag without going outside the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 50,
+        y: elementBounds.y + 10,
+      })
+
+      const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(midDragStrategy).not.toBeNull()
+      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // Now drag until we have passed the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 110,
+        y: elementBounds.y + 10,
+      })
+
+      const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(endDragStrategy).not.toBeNull()
+      expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // pressing space keeps the strategy active
+      keyDown('Space')
+      const keydownStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    }),
+  )
 
   cartesianProduct(['flex', 'flow'] as const, ['single-select', 'multiselect'] as const).forEach(
     ([parentLayoutSystem, multiselect]) => {
