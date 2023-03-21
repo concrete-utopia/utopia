@@ -1,9 +1,9 @@
 import React from 'react'
+import { ConditionalValue } from '../../../core/shared/element-template'
 import { when } from '../../../utils/react-conditionals'
 import { ButtonProps, FlexRow, Icons, Tooltip } from '../../../uuiui'
 import { SquareButton } from '../../titlebar/buttons'
 import { ControlStatus, ControlStyles } from '../common/control-status'
-import { ConditionOverride } from '../sections/layout-section/conditional-section'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { OptionChainControl, OptionChainOption } from './option-chain-control'
 
@@ -13,7 +13,7 @@ export const ConditionalOverrideControlDisableTestId = 'conditional-override-con
 export interface ConditionalOverrideControlProps extends ButtonProps {
   controlStatus: ControlStatus
   controlStyles: ControlStyles
-  conditionOverride: ConditionOverride
+  conditionValue: ConditionalValue
   setConditionOverride: (override: boolean | null) => void
 }
 
@@ -62,7 +62,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
           testId={ConditionalOverrideControlTestIdPrefix}
           key={'conditional-override-control'}
           onSubmitValue={props.setConditionOverride}
-          value={props.conditionOverride}
+          value={props.conditionValue}
           options={OverrideControlOptions}
           controlStatus={controlStatus}
           controlStyles={controlStyles}
