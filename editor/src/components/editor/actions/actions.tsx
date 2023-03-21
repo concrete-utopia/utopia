@@ -2577,7 +2577,7 @@ export const UPDATE_FNS = {
                 return elements
               }
 
-              function getSingleElement(path: ElementPath): JSXElementChild | null {
+              function getTargetElement(path: ElementPath): JSXElementChild | null {
                 const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
                 if (metadata == null || isLeft(metadata.element)) {
                   return null
@@ -2590,10 +2590,10 @@ export const UPDATE_FNS = {
                 // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
                 const branch: JSXElementChild | JSXFragment | null =
                   action.targets.length === 1
-                    ? getSingleElement(action.targets[0])
+                    ? getTargetElement(action.targets[0])
                     : jsxFragment(
                         generateUidWithExistingComponents(editor.projectContents),
-                        mapDropNulls(getSingleElement, pathsToBeWrappedInFragment()),
+                        mapDropNulls(getTargetElement, pathsToBeWrappedInFragment()),
                         false,
                       )
                 if (branch != null) {
@@ -2604,7 +2604,7 @@ export const UPDATE_FNS = {
                   withTargetAdded = withInsertedElement()
                 }
               } else if (isJSXFragment(elementToInsert)) {
-                const children = mapDropNulls(getSingleElement, pathsToBeWrappedInFragment())
+                const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
                 if (children.length === 0) {
                   // nothing to do
                   return parseSuccess
