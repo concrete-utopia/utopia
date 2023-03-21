@@ -168,12 +168,6 @@ export function changePin(
         value: pointsToAdd.value,
       })
     }
-    const pointsToDelete = getPinsToDelete(
-      newFrameProp,
-      frame,
-      lastSetHorizontalProp,
-      lastSetVerticalProp,
-    )
 
     const absoluteValue = fullFrame[newFramePoint]
     const newPinValue = valueToUseForPin(
@@ -188,6 +182,13 @@ export function changePin(
       pin: newFrameProp,
       value: newPinValue,
     })
+
+    const pointsToDelete = getPinsToDelete(
+      newFrameProp,
+      frame,
+      lastSetHorizontalProp,
+      lastSetVerticalProp,
+    )
 
     Utils.fastForEach(pointsToDelete, (pointToDelete) => {
       pinsToUnset.push({
