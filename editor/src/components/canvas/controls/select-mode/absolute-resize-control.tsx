@@ -1,5 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -35,6 +36,9 @@ import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
+
+export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
+  `${targets.map(EP.toString).sort()}-absolute-resize-control`
 
 interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
@@ -136,6 +140,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     return (
       <CanvasOffsetWrapper>
         <div
+          data-testid={AbsoluteResizeControlTestId(targets)}
           ref={controlRef}
           style={{
             position: 'absolute',
