@@ -25,18 +25,15 @@ import {
   JSXArrayElement,
   JSXProperty,
   isSpreadAssignment,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   jsxElementName,
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
-  childOrBlockIsChild,
   emptyComments,
-  ChildOrAttribute,
   jsExpressionValue,
-  childOrBlockIsAttribute,
-  jsxConditionalExpression,
   jsxFragment,
+  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -107,12 +104,8 @@ function getAllUniqueUidsInner(
       uniqueIDs.add(element.uid)
     } else if (isJSXConditionalExpression(element)) {
       uniqueIDs.add(element.uid)
-      if (childOrBlockIsChild(element.whenTrue)) {
-        extractUid(element.whenTrue)
-      }
-      if (childOrBlockIsChild(element.whenFalse)) {
-        extractUid(element.whenFalse)
-      }
+      extractUid(element.whenTrue)
+      extractUid(element.whenFalse)
     }
   }
 
@@ -165,7 +158,7 @@ export function isSceneElement(
   projectContents: ProjectContentTreeRoot,
 ): boolean {
   const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
@@ -272,12 +265,8 @@ function transformAtPathOptionally(
       }
     } else if (isJSXConditionalExpression(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
-        const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
-          ? findAndTransformAtPathInner(element.whenTrue, tailPath)
-          : null
-        const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
-          ? findAndTransformAtPathInner(element.whenFalse, tailPath)
-          : null
+        const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
+        const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
           return {
             ...element,
@@ -292,10 +281,7 @@ function transformAtPathOptionally(
         }
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (
-        childOrBlockIsChild(element.whenTrue) &&
-        getUtopiaID(element.whenTrue) === firstUIDOrIndex
-      ) {
+      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -304,10 +290,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (
-        childOrBlockIsChild(element.whenFalse) &&
-        getUtopiaID(element.whenFalse) === firstUIDOrIndex
-      ) {
+      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -381,21 +364,17 @@ export function findJSXElementChildAtPath(
         return element
       } else {
         function elementOrNullFromClause(
-          clause: ChildOrAttribute,
+          clause: JSXElementChild,
           branch: ConditionalCase,
         ): JSXElementChild | null {
           // handle the special cased true-case / false-case path element first
           if (tailPath.length === 1 && tailPath[0] === branch) {
             // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
-            return childOrBlockIsAttribute(clause) ? null : clause
+            return clause
           }
 
-          if (childOrBlockIsChild(clause)) {
-            // if it's a child, get its inner element
-            return findAtPathInner(clause, tailPath)
-          }
-
-          return null
+          // if it's a child, get its inner element
+          return findAtPathInner(clause, tailPath)
         }
         return (
           elementOrNullFromClause(element.whenTrue, 'true-case') ??
@@ -563,7 +542,7 @@ export function insertJSXElementChild(
           return modify(
             toClauseOptic,
             (clauseValue) => {
-              if (childOrBlockIsAttribute(clauseValue)) {
+              if (isJSXArbitraryBlock(clauseValue)) {
                 const simpleValue = jsxSimpleAttributeToValue(clauseValue)
                 return foldEither(
                   () => {
@@ -821,7 +800,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
           return styleAttribute.content.some((attributePart) => {
             if (isSpreadAssignment(attributePart)) {
               const spreadPart = attributePart.value
-              if (isJSXAttributeOtherJavaScript(spreadPart)) {
+              if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                 return (
                   spreadPart.definedElsewhere.includes(boundParam.paramName) &&
                   spreadPart.transpiledJavascript.includes(`${boundParam.paramName}.style`)
@@ -864,7 +843,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
                 return styleAttribute.content.some((attributePart) => {
                   if (isSpreadAssignment(attributePart)) {
                     const spreadPart = attributePart.value
-                    if (isJSXAttributeOtherJavaScript(spreadPart)) {
+                    if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                       return (
                         spreadPart.definedElsewhere.includes(propertyToLookFor) &&
                         spreadPart.transpiledJavascript.includes(propertyToLookFor)
@@ -973,10 +952,8 @@ export function elementUsesProperty(
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
         attributeUsesProperty(element.condition, propsParam, property) ||
-        (childOrBlockIsChild(element.whenTrue) &&
-          elementUsesProperty(element.whenTrue, propsParam, property)) ||
-        (childOrBlockIsChild(element.whenFalse) &&
-          elementUsesProperty(element.whenFalse, propsParam, property))
+        elementUsesProperty(element.whenTrue, propsParam, property) ||
+        elementUsesProperty(element.whenFalse, propsParam, property)
       )
     case 'ATTRIBUTE_VALUE':
       return false

@@ -589,18 +589,20 @@ export function codeFile(
   )
 }
 
-export function isTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
-  return projectFile != null && projectFile.type === 'TEXT_FILE'
+export function isTextFile(projectFile: ProjectFile): projectFile is TextFile {
+  return projectFile.type === 'TEXT_FILE'
 }
 
 export function isParsedTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
-  return isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
+  return (
+    projectFile != null && isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
+  )
 }
 
 export function getParsedContentsFromTextFile(
   projectFile: ProjectFile | null,
 ): ParseSuccess | null {
-  if (!isTextFile(projectFile)) {
+  if (projectFile == null || !isTextFile(projectFile)) {
     return null
   }
   if (!isParseSuccess(projectFile.fileContents.parsed)) {

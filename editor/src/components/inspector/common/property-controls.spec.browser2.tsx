@@ -10,6 +10,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import {
+  clearExpressionUniqueIDs,
   emptyComments,
   getJSXAttribute,
   isJSXElement,
@@ -171,7 +172,7 @@ describe('Automatically derived property controls', () => {
       if (cardsAttribute == null) {
         throw new Error("The 'cards' attribute does not exist.")
       } else {
-        expect(cardsAttribute).toEqual(
+        expect(clearExpressionUniqueIDs(cardsAttribute)).toEqual(
           jsExpressionValue(
             [
               { hello: 'bello', n: 1 },
@@ -179,6 +180,7 @@ describe('Automatically derived property controls', () => {
               { hello: 'abc', n: 50 },
             ],
             emptyComments,
+            '',
           ),
         )
       }

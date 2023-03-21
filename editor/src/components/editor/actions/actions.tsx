@@ -52,7 +52,6 @@ import {
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
-  childOrBlockIsAttribute,
   Comment,
   deleteJSXAttribute,
   DetectedLayoutSystem,
@@ -66,7 +65,7 @@ import {
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
-  isPartOfJSXAttributeValue,
+  modifiableAttributeIsPartOfAttributeValue,
   jsExpressionOtherJavaScript,
   JSXAttributes,
   jsxAttributesFromMap,
@@ -86,6 +85,7 @@ import {
   singleLineComment,
   UtopiaJSXComponent,
   walkElements,
+  modifiableAttributeIsAttributeValue,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -3965,9 +3965,10 @@ export const UPDATE_FNS = {
     // Ensure dependencies are updated if the `package.json` file has been changed.
     if (action.filePath === '/package.json' && isTextFile(updatedFile)) {
       const packageJson = packageJsonFileFromProjectContents(editor.projectContents)
-      const currentDeps = isTextFile(packageJson)
-        ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
-        : null
+      const currentDeps =
+        packageJson != null && isTextFile(packageJson)
+          ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
+          : null
       void refreshDependencies(
         dispatch,
         updatedFile.fileContents.code,
@@ -4417,7 +4418,10 @@ export const UPDATE_FNS = {
       const newPropertyPath = PP.createFromArray(action.value)
       const originalValue = getJSXAttributeAtPath(props, originalPropertyPath).attribute
       const attributesWithUnsetKey = unsetJSXValueAtPath(props, originalPropertyPath)
-      if (isJSXAttributeValue(originalValue) || isPartOfJSXAttributeValue(originalValue)) {
+      if (
+        modifiableAttributeIsAttributeValue(originalValue) ||
+        modifiableAttributeIsPartOfAttributeValue(originalValue)
+      ) {
         if (isRight(attributesWithUnsetKey)) {
           const setResult = setJSXValueAtPath(
             attributesWithUnsetKey.value,

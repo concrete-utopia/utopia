@@ -29,10 +29,10 @@ import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { when } from '../../../utils/react-conditionals'
 import { isLeft } from '../../../core/shared/either'
 import {
-  ChildOrAttribute,
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   findUtopiaCommentFlag,
@@ -709,7 +709,7 @@ function matchesOverriddenBranch(
   elementPath: ElementPath,
   parentPath: ElementPath,
   params: {
-    clause: ChildOrAttribute
+    clause: JSXElementChild
     branch: ConditionalCase
     wantOverride: boolean
     parentOverride: boolean

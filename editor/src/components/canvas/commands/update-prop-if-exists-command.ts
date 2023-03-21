@@ -2,7 +2,7 @@ import { foldEither, isRight } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsAttributeNotFound,
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
@@ -48,7 +48,7 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
       if (isJSXElement(element)) {
         return foldEither(
           () => false,
-          (value) => !isJSXAttributeNotFound(value),
+          (value) => !modifiableAttributeIsAttributeNotFound(value),
           getModifiableJSXAttributeAtPath(element.props, command.property),
         )
       } else {

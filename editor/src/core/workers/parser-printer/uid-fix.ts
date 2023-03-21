@@ -1,5 +1,4 @@
 import {
-  childOrBlockIsChild,
   ElementsWithin,
   isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
@@ -270,14 +269,18 @@ function compareAndWalkElements(
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
-      const whenTrue =
-        childOrBlockIsChild(oldElement.whenTrue) && childOrBlockIsChild(newElement.whenTrue)
-          ? compareAndWalkElements(oldElement.whenTrue, newElement.whenTrue, path, onElement)
-          : false
-      const whenFalse =
-        childOrBlockIsChild(oldElement.whenFalse) && childOrBlockIsChild(newElement.whenFalse)
-          ? compareAndWalkElements(oldElement.whenFalse, newElement.whenFalse, path, onElement)
-          : false
+      const whenTrue = compareAndWalkElements(
+        oldElement.whenTrue,
+        newElement.whenTrue,
+        path,
+        onElement,
+      )
+      const whenFalse = compareAndWalkElements(
+        oldElement.whenFalse,
+        newElement.whenFalse,
+        path,
+        onElement,
+      )
       return whenTrue && whenFalse
     }
   }

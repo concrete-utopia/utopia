@@ -40,7 +40,6 @@ import {
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
-  childOrBlockIsChild,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -2874,7 +2873,11 @@ export function getParseSuccessOrTransientForFilePath(
   transientFilesState: TransientFilesState | null,
 ): GetParseSuccessOrTransientResult {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+  if (
+    projectFile != null &&
+    isTextFile(projectFile) &&
+    isParseSuccess(projectFile.fileContents.parsed)
+  ) {
     const parseSuccess = projectFile.fileContents.parsed
     const targetTransientFileState: TransientFileState | null =
       transientFilesState == null ? null : transientFilesState[filePath] ?? null
@@ -3056,21 +3059,19 @@ export function getValidElementPathsFromElement(
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
     fastForEach([element.whenTrue, element.whenFalse], (e) => {
-      if (childOrBlockIsChild(e)) {
-        paths.push(
-          ...getValidElementPathsFromElement(
-            focusedElementPath,
-            e,
-            path,
-            projectContents,
-            filePath,
-            false,
-            false,
-            transientFilesState,
-            resolve,
-          ),
-        )
-      }
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          path,
+          projectContents,
+          filePath,
+          false,
+          false,
+          transientFilesState,
+          resolve,
+        ),
+      )
     })
     return paths
   } else {

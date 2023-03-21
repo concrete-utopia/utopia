@@ -18,8 +18,8 @@ import {
   jsxArrayValue,
   jsExpressionValue,
   jsExpressionOtherJavaScript,
-  isJSXAttributeOtherJavaScript,
-  clearAttributeUniqueIDs,
+  modifiableAttributeIsAttributeOtherJavaScript,
+  clearExpressionUniqueIDs,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
   jsxPropertyAssignment,
@@ -47,8 +47,8 @@ function runBaseTestSuite<T>(
 
   it('Prints a valid value', () => {
     const print = printerForPropertyControl(control)
-    const printedValue = clearAttributeUniqueIDs(print(validValue))
-    expect(printedValue).toEqual(clearAttributeUniqueIDs(wrappedValidValue))
+    const printedValue = clearExpressionUniqueIDs(print(validValue))
+    expect(printedValue).toEqual(clearExpressionUniqueIDs(wrappedValidValue))
   })
 
   it('Fails to unwrap and parse an invalid value', () => {

@@ -286,7 +286,7 @@ export function getStoryboardElementPath(
 ): StaticElementPath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
-    if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
       const possiblyStoryboard = getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed).find(
         (component) => component.name === BakedInStoryboardVariableName,
       )

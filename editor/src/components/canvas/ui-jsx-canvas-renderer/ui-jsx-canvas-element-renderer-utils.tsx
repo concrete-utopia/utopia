@@ -21,7 +21,7 @@ import {
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
-  childOrBlockIsChild,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -350,7 +350,9 @@ export function renderCoreElement(
         addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
       }
 
-      if (childOrBlockIsChild(actualElement)) {
+      if (isJSXArbitraryBlock(actualElement)) {
+        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+      } else {
         const childPath = optionalMap(
           (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
           elementPath,
@@ -380,8 +382,6 @@ export function renderCoreElement(
           highlightBounds,
           editedText,
         )
-      } else {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
       }
     }
     case 'ATTRIBUTE_VALUE':

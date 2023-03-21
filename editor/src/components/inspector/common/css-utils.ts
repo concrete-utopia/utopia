@@ -29,9 +29,9 @@ import {
 } from '../../../core/shared/either'
 import {
   emptyComments,
-  isJSXAttributeFunctionCall,
-  isJSXAttributeNotFound,
-  isPartOfJSXAttributeValue,
+  modifiableAttributeIsAttributeFunctionCall,
+  modifiableAttributeIsAttributeNotFound,
+  modifiableAttributeIsPartOfAttributeValue,
   isRegularJSXAttribute,
   JSExpression,
   jsExpressionFunctionCall,
@@ -3727,7 +3727,7 @@ function printLineHeight(
 }
 
 export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribute {
-  if (isJSXAttributeFunctionCall(attribute)) {
+  if (modifiableAttributeIsAttributeFunctionCall(attribute)) {
     const result = jsxFunctionAttributeToRawValue(attribute)
     if (isRight(result) && result.value.functionName === disabledFunctionName) {
       const params = result.value.parameters
@@ -3805,7 +3805,7 @@ export function toggleBackgroundLayers(styleAttribute: JSExpression): JSExpressi
   // If backgroundColor is set
   if (
     backgroundColorResult.remainingPath == null &&
-    !isJSXAttributeNotFound(backgroundColorResult.attribute)
+    !modifiableAttributeIsAttributeNotFound(backgroundColorResult.attribute)
   ) {
     const simpleBackgroundColor = jsxSimpleAttributeToValue(backgroundColorResult.attribute)
     if (isRight(simpleBackgroundColor) && typeof simpleBackgroundColor.value === 'string') {
@@ -3825,7 +3825,7 @@ export function toggleBackgroundLayers(styleAttribute: JSExpression): JSExpressi
           // If backgroundImage is also set…
           if (
             backgroundImageResult.remainingPath == null &&
-            !isJSXAttributeNotFound(backgroundImageResult.attribute)
+            !modifiableAttributeIsAttributeNotFound(backgroundImageResult.attribute)
           ) {
             // …set all of its values to the new value
             workingStyleProp = updateBackgroundImageLayersWithNewValues(
@@ -3843,7 +3843,7 @@ export function toggleBackgroundLayers(styleAttribute: JSExpression): JSExpressi
     // …but backgroundImage is set…
     if (
       backgroundImageResult.remainingPath == null &&
-      !isJSXAttributeNotFound(backgroundImageResult.attribute)
+      !modifiableAttributeIsAttributeNotFound(backgroundImageResult.attribute)
     ) {
       // …toggle backgroundImage
       workingStyleProp = updateBackgroundImageLayersWithNewValues(
@@ -3896,7 +3896,8 @@ export function toggleStylePropPath(
       const attributeValue = attributeResult.value
       const updatedAttribute = toggleFn(attributeValue)
       const props: Either<string, JSXAttributes> =
-        isJSXAttributeNotFound(updatedAttribute) || isPartOfJSXAttributeValue(updatedAttribute)
+        modifiableAttributeIsAttributeNotFound(updatedAttribute) ||
+        modifiableAttributeIsPartOfAttributeValue(updatedAttribute)
           ? left(`Unable to set value of type ${updatedAttribute.type}`)
           : setJSXValueAtPath(element.props, path, updatedAttribute)
       if (isLeft(props)) {

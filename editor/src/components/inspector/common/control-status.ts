@@ -2,9 +2,9 @@ import deepEqual from 'fast-deep-equal'
 //TODO: pass in colorTheme to utility functions to get rid of colorTheme here:
 import { colorTheme, UtopiaTheme } from '../../../uuiui/styles/theme'
 import {
-  isJSXAttributeNotFound,
-  isJSXAttributeValue,
-  isPartOfJSXAttributeValue,
+  modifiableAttributeIsAttributeNotFound,
+  modifiableAttributeIsAttributeValue,
+  modifiableAttributeIsPartOfAttributeValue,
 } from '../../../core/shared/element-template'
 import { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
 import { isLeft, isRight, Either } from '../../../core/shared/either'
@@ -329,11 +329,11 @@ function isSet(
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
-    if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
+    if (modifiableAttributeIsAttributeNotFound(modifiableAttributeResult.value)) {
       return spiedValue != null
     } else if (
-      isJSXAttributeValue(modifiableAttributeResult.value) ||
-      isPartOfJSXAttributeValue(modifiableAttributeResult.value)
+      modifiableAttributeIsAttributeValue(modifiableAttributeResult.value) ||
+      modifiableAttributeIsPartOfAttributeValue(modifiableAttributeResult.value)
     ) {
       return modifiableAttributeResult.value.value !== undefined
     } else {
@@ -349,11 +349,11 @@ function isControlled(
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
-    if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
+    if (modifiableAttributeIsAttributeNotFound(modifiableAttributeResult.value)) {
       return spiedValue != null
     } else if (
-      isJSXAttributeValue(modifiableAttributeResult.value) ||
-      isPartOfJSXAttributeValue(modifiableAttributeResult.value)
+      modifiableAttributeIsAttributeValue(modifiableAttributeResult.value) ||
+      modifiableAttributeIsPartOfAttributeValue(modifiableAttributeResult.value)
     ) {
       return false
     } else {

@@ -3,7 +3,7 @@ import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/u
 import {
   arbitraryJSBlock,
   isArbitraryJSBlock,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
   jsxArbitraryBlock,
@@ -4796,7 +4796,7 @@ export var App = props => {
         .find((p) => p.key === 'arbitrary'),
     )
 
-    if (arbitraryProp == null || !isJSXAttributeOtherJavaScript(arbitraryProp)) {
+    if (arbitraryProp == null || !modifiableAttributeIsAttributeOtherJavaScript(arbitraryProp)) {
       throw new Error(`expected <View /> to have an arbitrary js prop called props.arbitrary`)
     }
 

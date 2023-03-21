@@ -42,7 +42,7 @@ import {
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
 import {
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   JSExpression,
   jsxArrayValue,
   jsExpressionValue,
@@ -52,7 +52,7 @@ import {
   jsxPropertyAssignment,
   emptyComments,
   JSXArrayValue,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsAttributeNotFound,
 } from '../shared/element-template'
 import {
   ModifiableAttribute,
@@ -199,7 +199,7 @@ function unwrapAndParseObjectValues(objectControls: {
         const missingKey = foldEither(
           (_) => false,
           (attr) => {
-            return isJSXAttributeNotFound(attr)
+            return modifiableAttributeIsAttributeNotFound(attr)
           },
           valuesForKey.rawValue,
         )
@@ -238,7 +238,7 @@ function jsUnwrapper(
   rawValue: Either<string, ModifiableAttribute>,
   realValue: unknown,
 ): string | null {
-  if (isRight(rawValue) && isJSXAttributeOtherJavaScript(rawValue.value)) {
+  if (isRight(rawValue) && modifiableAttributeIsAttributeOtherJavaScript(rawValue.value)) {
     return rawValue.value.javascript
   } else {
     return null

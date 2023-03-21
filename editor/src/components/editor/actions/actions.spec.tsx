@@ -1080,7 +1080,7 @@ describe('INSERT_INSERTABLE', () => {
     )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1184,7 +1184,7 @@ describe('INSERT_INSERTABLE', () => {
     )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1287,7 +1287,7 @@ describe('INSERT_INSERTABLE', () => {
     )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1380,7 +1380,7 @@ describe('INSERT_INSERTABLE', () => {
     })
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1471,7 +1471,7 @@ describe('INSERT_INSERTABLE', () => {
     const action = insertInsertable(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(

@@ -8,12 +8,9 @@ import {
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
-  ChildOrAttribute,
   JSXElementChild,
-  childOrBlockIsChild,
-  isJSXConditionalExpression,
-  JSXConditionalExpression,
   ConditionalValue,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -26,15 +23,13 @@ import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 export function addFakeSpyEntry(
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
-  elementOrAttribute: ChildOrAttribute,
+  elementOrAttribute: JSXElementChild,
   filePath: string,
   imports: Imports,
   conditionalValue: ConditionalValue,
 ): void {
   let element: Either<string, JSXElementChild>
-  if (childOrBlockIsChild(elementOrAttribute)) {
-    element = right(elementOrAttribute)
-  } else {
+  if (isJSXArbitraryBlock(elementOrAttribute)) {
     const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
     element = left(
       foldEither(
@@ -51,6 +46,8 @@ export function addFakeSpyEntry(
         simpleAttributeValue,
       ),
     )
+  } else {
+    element = right(elementOrAttribute)
   }
   const instanceMetadata: ElementInstanceMetadata = {
     element: element,

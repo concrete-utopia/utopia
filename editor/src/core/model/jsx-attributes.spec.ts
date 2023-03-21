@@ -4,10 +4,10 @@ import { Either, forceRight, isLeft, isRight, right } from '../shared/either'
 import {
   emptyComments,
   getJSXAttributeForced,
-  isJSXAttributeFunctionCall,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsAttributeFunctionCall,
+  modifiableAttributeIsAttributeNotFound,
   isJSXAttributeValue,
-  isPartOfJSXAttributeValue,
+  modifiableAttributeIsPartOfAttributeValue,
   jsxArrayValue,
   jsExpressionFunctionCall,
   jsExpressionNestedArray,
@@ -23,6 +23,7 @@ import {
   jsxPropertyAssignment,
   jsxSpreadAssignment,
   simplifyAttributeIfPossible,
+  modifiableAttributeIsAttributeValue,
 } from '../shared/element-template'
 import {
   dropKeyFromNestedObject,
@@ -611,7 +612,11 @@ describe('getModifiableJSXAttributeAtPath', () => {
     if (isRight(backgroundColor)) {
       expect(backgroundColor).not.toBeUndefined()
       expect(backgroundColor).not.toBeNull()
-      if (backgroundColor != null && isJSXAttributeValue(backgroundColor.value)) {
+      if (
+        backgroundColor != null &&
+        backgroundColor.value != null &&
+        modifiableAttributeIsAttributeValue(backgroundColor.value)
+      ) {
         expect(backgroundColor.value.value).toEqual('red')
       } else {
         throw new Error('backgroundColor is not a JSXAttributeValue')
@@ -626,7 +631,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
     )
     expect(isRight(foundAttribute)).toBeTruthy()
     if (isRight(foundAttribute)) {
-      expect(isPartOfJSXAttributeValue(foundAttribute.value)).toBeTruthy()
+      expect(modifiableAttributeIsPartOfAttributeValue(foundAttribute.value)).toBeTruthy()
       expect((foundAttribute.value as any).value).toEqual('yes')
     }
 
@@ -636,7 +641,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
     )
     expect(isRight(missingAttribute)).toBeTruthy()
     if (isRight(missingAttribute)) {
-      expect(isJSXAttributeNotFound(missingAttribute.value)).toBeTruthy()
+      expect(modifiableAttributeIsAttributeNotFound(missingAttribute.value)).toBeTruthy()
     }
 
     const completelyMissingAttribute = getModifiableJSXAttributeAtPath(

@@ -32,7 +32,7 @@ import {
   getJSXAttribute,
   ImportInfo,
   isIntrinsicElement,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   isUtopiaJSXComponent,
   JSXElement,
   JSXElementWithoutUID,
@@ -406,7 +406,7 @@ export function normalisePathToUnderlyingTarget(
   elementPath: ElementPath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
-  if (isTextFile(currentFile)) {
+  if (currentFile != null && isTextFile(currentFile)) {
     if (isParseSuccess(currentFile.fileContents.parsed)) {
       const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
       const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
@@ -499,7 +499,7 @@ function lookupElementImport(
     ) {
       // Navigate around the scene with the special case handling.
       const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
-      if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
+      if (componentAttr != null && modifiableAttributeIsAttributeOtherJavaScript(componentAttr)) {
         return lookupElementImport(
           componentAttr.javascript,
           currentFilePath,

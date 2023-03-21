@@ -6,7 +6,6 @@ import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
 import {
-  childOrBlockIsChild,
   ElementInstanceMetadata,
   emptyComments,
   getJSXAttribute,
@@ -34,11 +33,11 @@ import {
   JSExpressionOtherJavaScript,
   JSExpressionValue,
   JSExpressionNestedArray,
-  isJSXAttributeNestedArray,
+  modifiableAttributeIsAttributeNestedArray,
   JSExpressionNestedObject,
-  isJSXAttributeNestedObject,
+  modifiableAttributeIsAttributeNestedObject,
   JSExpressionFunctionCall,
-  isJSXAttributeFunctionCall,
+  modifiableAttributeIsAttributeFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
   jsExpressionFunctionCall,
@@ -287,12 +286,8 @@ export function fixUtopiaElement(
     return {
       ...conditional,
       uid: fixedUID,
-      whenTrue: childOrBlockIsChild(conditional.whenTrue)
-        ? fixUtopiaElementInner(conditional.whenTrue)
-        : conditional.whenTrue,
-      whenFalse: childOrBlockIsChild(conditional.whenFalse)
-        ? fixUtopiaElementInner(conditional.whenFalse)
-        : conditional.whenFalse,
+      whenTrue: fixUtopiaElementInner(conditional.whenTrue),
+      whenFalse: fixUtopiaElementInner(conditional.whenFalse),
     }
   }
 
@@ -488,19 +483,19 @@ function isUtopiaJSExpressionValue(
 function isUtopiaJSExpressionNestedArray(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSExpressionNestedArray {
-  return isJSXAttributeNestedArray(element as any)
+  return modifiableAttributeIsAttributeNestedArray(element as any)
 }
 
 function isUtopiaJSExpressionNestedObject(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSExpressionNestedObject {
-  return isJSXAttributeNestedObject(element as any)
+  return modifiableAttributeIsAttributeNestedObject(element as any)
 }
 
 function isUtopiaJSExpressionFunctionCall(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is JSExpressionFunctionCall {
-  return isJSXAttributeFunctionCall(element as any)
+  return modifiableAttributeIsAttributeFunctionCall(element as any)
 }
 
 function isUtopiaJSXTextBlock(

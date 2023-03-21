@@ -61,7 +61,6 @@ import {
   emptyComments,
   ParsedComments,
   parsedComments,
-  childOrBlockIsChild,
   isJSXConditionalExpression,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
@@ -773,12 +772,8 @@ function walkAllJSXElementChilds(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      if (childOrBlockIsChild(jsxElementChild.whenTrue)) {
-        walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
-      }
-      if (childOrBlockIsChild(jsxElementChild.whenFalse)) {
-        walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
-      }
+      walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
+      walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
       break
     case 'ATTRIBUTE_VALUE':
       break

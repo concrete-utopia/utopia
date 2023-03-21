@@ -29,15 +29,15 @@ import {
   jsxPropertyAssignment,
   partOfJsxAttributeValue,
   PartOfJSXAttributeValue,
-  isPartOfJSXAttributeValue,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsPartOfAttributeValue,
+  modifiableAttributeIsAttributeNotFound,
   getJSXAttribute,
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   isJSXAttributeValue,
   simplifyAttributesIfPossible,
   ElementsWithin,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   emptyComments,
   jsxAttributeNestedArraySimple,
   JSXAttributesPart,
@@ -304,9 +304,9 @@ export function getModifiableJSXAttributeAtPathFromAttribute(
   attribute: ModifiableAttribute,
   path: PropertyPath,
 ): GetModifiableAttributeResult {
-  if (isJSXAttributeNotFound(attribute)) {
+  if (modifiableAttributeIsAttributeNotFound(attribute)) {
     return right(jsxAttributeNotFound())
-  } else if (isPartOfJSXAttributeValue(attribute)) {
+  } else if (modifiableAttributeIsPartOfAttributeValue(attribute)) {
     const pathElems = PP.getElements(path)
     if (ObjectPath.has(attribute.value, pathElems)) {
       const extractedValue = ObjectPath.get(attribute.value, pathElems)
@@ -889,7 +889,7 @@ function walkAttribute(
 export function getAccumulatedElementsWithin(attributes: JSXAttributes): ElementsWithin {
   let elementsWithinAccumulator: ElementsWithin = {}
   walkAttributes(attributes, (attribute, path) => {
-    if (isJSXAttributeOtherJavaScript(attribute)) {
+    if (modifiableAttributeIsAttributeOtherJavaScript(attribute)) {
       Object.assign(elementsWithinAccumulator, attribute.elementsWithin)
     }
   })

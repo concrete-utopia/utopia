@@ -80,10 +80,10 @@ import {
   isArraySpread,
   isArrayValue,
   isJSExpressionOtherJavaScript,
-  isJSXAttributeFunctionCall,
-  isJSXAttributeNestedArray,
-  isJSXAttributeNestedObject,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeFunctionCall,
+  modifiableAttributeIsAttributeNestedArray,
+  modifiableAttributeIsAttributeNestedObject,
+  modifiableAttributeIsAttributeOtherJavaScript,
   isJSXAttributeValue,
   isJSXElement,
   isJSXFragment,
@@ -169,9 +169,6 @@ import {
   sameFileOrigin,
   ImportedOrigin,
   importedOrigin,
-  childOrBlockIsChild,
-  childOrBlockIsAttribute,
-  ChildOrAttribute,
   ConditionalValue,
 } from '../../../core/shared/element-template'
 import {
@@ -513,18 +510,6 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
     transientCanvasState,
   )
 }
-export const ChildOrAttributeKeepDeepEquality: KeepDeepEqualityCall<ChildOrAttribute> = (
-  oldValue,
-  newValue,
-) => {
-  if (childOrBlockIsChild(oldValue) && childOrBlockIsChild(newValue)) {
-    return JSXElementChildKeepDeepEquality()(oldValue, newValue)
-  } else if (childOrBlockIsAttribute(oldValue) && childOrBlockIsAttribute(newValue)) {
-    return JSXAttributeKeepDeepEqualityCall(oldValue, newValue)
-  } else {
-    return keepDeepEqualityResult(newValue, false)
-  }
-}
 
 export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RegularNavigatorEntry> =
   combine1EqualityCall(
@@ -547,7 +532,7 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
-    ChildOrAttributeKeepDeepEquality,
+    JSXElementChildKeepDeepEquality(),
     syntheticNavigatorEntry,
   )
 
@@ -900,15 +885,24 @@ export const JSXAttributeKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
   if (isJSXAttributeValue(oldAttribute) && isJSXAttributeValue(newAttribute)) {
     return JSXAttributeValueKeepDeepEqualityCall(oldAttribute, newAttribute)
   } else if (
-    isJSXAttributeOtherJavaScript(oldAttribute) &&
-    isJSXAttributeOtherJavaScript(newAttribute)
+    modifiableAttributeIsAttributeOtherJavaScript(oldAttribute) &&
+    modifiableAttributeIsAttributeOtherJavaScript(newAttribute)
   ) {
     return JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSXAttributeNestedArray(oldAttribute) && isJSXAttributeNestedArray(newAttribute)) {
+  } else if (
+    modifiableAttributeIsAttributeNestedArray(oldAttribute) &&
+    modifiableAttributeIsAttributeNestedArray(newAttribute)
+  ) {
     return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSXAttributeNestedObject(oldAttribute) && isJSXAttributeNestedObject(newAttribute)) {
+  } else if (
+    modifiableAttributeIsAttributeNestedObject(oldAttribute) &&
+    modifiableAttributeIsAttributeNestedObject(newAttribute)
+  ) {
     return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSXAttributeFunctionCall(oldAttribute) && isJSXAttributeFunctionCall(newAttribute)) {
+  } else if (
+    modifiableAttributeIsAttributeFunctionCall(oldAttribute) &&
+    modifiableAttributeIsAttributeFunctionCall(newAttribute)
+  ) {
     return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldAttribute, newAttribute)
   } else {
     return keepDeepEqualityResult(newAttribute, false)
