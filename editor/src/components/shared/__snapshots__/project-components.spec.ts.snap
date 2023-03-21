@@ -433,6 +433,22 @@ Array [
     },
   },
   Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": "fragment",
+        "importsToAdd": Object {},
+        "name": "Fragment",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "FRAGMENT_GROUP",
+    },
+  },
+  Object {
     "insertableComponents": Array [],
     "source": Object {
       "dependencyName": "@heroicons/react",
@@ -873,6 +889,22 @@ Array [
     ],
     "source": Object {
       "type": "CONDITIONALS_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": "fragment",
+        "importsToAdd": Object {},
+        "name": "Fragment",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "FRAGMENT_GROUP",
     },
   },
   Object {
