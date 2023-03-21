@@ -78,11 +78,6 @@ export function convertToAbsoluteAndMoveStrategy(
   )
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
-  // TODO next PR fix for selection length > 1 !!!!!
-  if (originalTargets.length !== 1 || retargetedTargets.length !== 1) {
-    return null
-  }
-
   if (
     !retargetedTargets.every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -98,12 +93,11 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets[0]) // TODO next PR fix for selection length > 1 !!!!!
+  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets)
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
-    // TODO next PR fix for selection length > 1 !!!!!
     canvasState.startingMetadata,
-    originalTargets[0],
+    originalTargets,
   )
 
   const autoLayoutSiblingsControl = hasAutoLayoutSiblings
@@ -212,7 +206,7 @@ function getFitness(
     }
 
     if (!hasAutoLayoutSiblings) {
-      return DragConversionWeight
+      return BaseWeight
     }
 
     const pointOnCanvas = offsetPoint(
@@ -233,9 +227,9 @@ const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { 
 
 function getAutoLayoutSiblingsBoundsInner(
   jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
+  targets: Array<ElementPath>,
 ): CanvasRectangle | null {
-  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, target)
+  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, targets)
   const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
   return boundingRectangleArray(autoLayoutSiblingsFrames)
 }
@@ -244,9 +238,13 @@ const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 }
 
 function getAutoLayoutSiblingsInner(
   jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
+  targets: Array<ElementPath>,
 ): Array<ElementInstanceMetadata> {
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, target)
+  if (!targets.every((t) => EP.isSiblingOf(targets[0], t))) {
+    // this function only makes sense if the targets are siblings
+    return []
+  }
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, targets[0])
 }
 
 export function getEscapeHatchCommands(

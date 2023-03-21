@@ -12,7 +12,13 @@ import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { localRectangle, LocalRectangle } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  localRectangle,
+  LocalRectangle,
+  nullIfInfinity,
+  offsetRect,
+} from '../../../../core/shared/math-utils'
 import { fastForEach } from '../../../../core/shared/utils'
 import {
   runEscapeHatch,
@@ -26,9 +32,23 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cartesianProduct, mapArrayToDictionary } from '../../../../core/shared/array-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { keyDown, mouseDownAtPoint, mouseMoveToPoint } from '../../event-helpers.test-utils'
+import {
+  keyDown,
+  mouseDownAtPoint,
+  mouseMoveToPoint,
+  mouseUpAtPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
+import {
+  AllContentAffectingNonDomElementTypes,
+  AllContentAffectingTypes,
+  ContentAffectingType,
+  treatElementAsContentAffecting,
+} from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 
 const complexProject = () => {
   const code = `
@@ -605,6 +625,9 @@ describe('Convert to Absolute', () => {
 })
 
 describe('Convert to absolute/escape hatch', () => {
+  setFeatureForBrowserTests('Fragment support', true)
+  setFeatureForBrowserTests('Conditional support', true)
+
   it('becomes the active strategy while space is pressed', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -712,10 +735,71 @@ describe('Convert to absolute/escape hatch', () => {
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
     expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
   })
+  ;(['flex', 'flow'] as const).forEach((parentLayoutSystem) =>
+    it(`DOES NOT BECOME the active strategy when dragging for multiselection across the hierarchy for ${parentLayoutSystem} parent`, async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject(parentLayoutSystem)),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [
+          selectComponents(
+            [
+              EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child1`),
+              EP.fromString(
+                `utopia-storyboard-uid/scene-aaa/app-entity:container/child3/grandchild`,
+              ),
+            ],
+            false,
+          ),
+        ],
+        true,
+      )
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child1')
+      const elementBounds = element.getBoundingClientRect()
+
+      await mouseDownAtPoint(
+        canvasControlsLayer,
+        {
+          x: elementBounds.x + 10,
+          y: elementBounds.y + 10,
+        },
+        { modifiers: cmdModifier },
+      )
+
+      // Drag without going outside the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 50,
+        y: elementBounds.y + 10,
+      })
+
+      const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(midDragStrategy).not.toBeNull()
+      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // Now drag until we have passed the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 110,
+        y: elementBounds.y + 10,
+      })
+
+      const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(endDragStrategy).not.toBeNull()
+      expect(endDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // HOWEVER!!!! pressing space now makes the strategy active!!!!!!
+      keyDown('Space')
+      const keydownStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    }),
+  )
 
   cartesianProduct(['flex', 'flow'] as const, ['single-select', 'multiselect'] as const).forEach(
     ([parentLayoutSystem, multiselect]) => {
-      it(`becomes the active strategy when dragging ${parentLayoutSystem} elements out of sibling bounds`, async () => {
+      it(`dragging ${parentLayoutSystem} elements out of sibling bounds`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flow')),
           'await-first-dom-report',
@@ -771,6 +855,104 @@ describe('Convert to absolute/escape hatch', () => {
       })
     },
   )
+
+  cartesianProduct(['flex', 'flow'] as const, AllContentAffectingNonDomElementTypes).forEach(
+    ([parentLayoutSystem, type]) => {
+      it(`dragging group-like element ${type} out of sibling bounds in ${parentLayoutSystem} context`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(codeWithGroupLikeELementForEscapeHatch('flow', type)),
+          'await-first-dom-report',
+        )
+
+        const groupElementPath = EP.fromString(
+          `utopia-storyboard-uid/scene-aaa/app-entity:container/children-affecting`,
+        )
+        const child2 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child2'])
+        const child3 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child3'])
+
+        const jsxMetadataBefore = renderResult.getEditorState().editor.jsxMetadata
+        const child2OriginalBounds = nullIfInfinity(
+          MetadataUtils.findElementByElementPath(jsxMetadataBefore, child2)?.globalFrame,
+        )
+        const child3OriginalBounds = nullIfInfinity(
+          MetadataUtils.findElementByElementPath(jsxMetadataBefore, child3)?.globalFrame,
+        )
+
+        await renderResult.dispatch([selectComponents([groupElementPath], false)], true)
+
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const element = renderResult.renderedDOM.getByTestId('child2')
+        const elementBounds = element.getBoundingClientRect()
+
+        await mouseDownAtPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 10,
+            y: elementBounds.y + 10,
+          },
+          { modifiers: cmdModifier },
+        )
+
+        // Drag without going outside the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 50,
+          y: elementBounds.y + 10,
+        })
+
+        const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(midDragStrategy).not.toBeNull()
+        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+        // Now drag until we have passed the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        })
+
+        const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(endDragStrategy).not.toBeNull()
+        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+        await mouseUpAtPoint(canvasControlsLayer, {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        })
+
+        const jsxMetadataAfter = renderResult.getEditorState().editor.jsxMetadata
+        const allElementPropsAfter = renderResult.getEditorState().editor.allElementProps
+
+        expect(
+          treatElementAsContentAffecting(jsxMetadataAfter, allElementPropsAfter, groupElementPath),
+        ).toEqual(true) // make sure the original group-like element remained group-like
+
+        // check that the children became absolute
+        expect(
+          MetadataUtils.findElementByElementPath(jsxMetadataAfter, child2)?.specialSizeMeasurements
+            .position,
+        ).toEqual('absolute')
+        expect(
+          MetadataUtils.findElementByElementPath(jsxMetadataAfter, child3)?.specialSizeMeasurements
+            .position,
+        ).toEqual('absolute')
+
+        const child2ResultBounds = MetadataUtils.findElementByElementPath(
+          jsxMetadataAfter,
+          child2,
+        )?.globalFrame
+        const child3ResultBounds = MetadataUtils.findElementByElementPath(
+          jsxMetadataAfter,
+          child3,
+        )?.globalFrame
+
+        expect(offsetRect(child2OriginalBounds!, canvasPoint({ x: 100, y: 0 }))).toEqual(
+          child2ResultBounds,
+        )
+        expect(offsetRect(child3OriginalBounds!, canvasPoint({ x: 100, y: 0 }))).toEqual(
+          child3ResultBounds,
+        )
+      })
+    },
+  )
 })
 
 function codeForDragToEscapeHatchProject(flowOrFlex: 'flow' | 'flex'): string {
@@ -811,7 +993,66 @@ function codeForDragToEscapeHatchProject(flowOrFlex: 'flow' | 'flex'): string {
           contain: 'layout',
         }}
         data-uid='child3'
+      >
+        <div
+          style={{
+            backgroundColor: '#000088',
+            width: 50,
+            height: 50,
+            contain: 'layout',
+          }}
+          data-uid='grandchild'
+        />
+      </div>
+    </div>
+  `
+}
+
+function codeWithGroupLikeELementForEscapeHatch(
+  flowOrFlex: 'flow' | 'flex',
+  type: ContentAffectingType,
+): string {
+  return `
+    <div
+      style={{
+        width: 400,
+        height: 400,
+        ${flowOrFlex === 'flex' ? "display: 'flex'," : ''}
+        ${flowOrFlex === 'flex' ? "flexDirection: 'column'," : ''}
+      }}
+      data-uid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#FF0000',
+          width: 100,
+          height: 100,
+          contain: 'layout',
+        }}
+        data-uid='child1'
+        data-testid='child1'
       />
+      ${getOpeningGroupLikeTag(type)}
+        <div
+          style={{
+            backgroundColor: '#00FF00',
+            width: 100,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='child2'
+          data-testid='child2'
+        />
+        <div
+          style={{
+            backgroundColor: '#0000FF',
+            width: 100,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='child3'
+        />
+      ${getClosingGroupLikeTag(type)}
     </div>
   `
 }
