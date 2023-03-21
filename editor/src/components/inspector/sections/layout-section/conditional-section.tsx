@@ -59,7 +59,7 @@ export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=br
 export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-a-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-a-conditional'
 
-const branchesSelector = createCachedSelector(
+const branchNavigatorEntriesSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
   (jsxMetadata, paths): { true: NavigatorEntry | null; false: NavigatorEntry | null } | null => {
@@ -285,7 +285,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   const branchNavigatorEntries = useEditorState(
     Substores.metadata,
-    (store) => branchesSelector(store, paths),
+    (store) => branchNavigatorEntriesSelector(store, paths),
     'ConditionalSection branches',
   )
 
