@@ -143,7 +143,7 @@ export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
 }
 
 export function nullIfInfinity<C extends CoordinateMarker>(
-  r: MaybeInfinityRectangle<C> | null,
+  r: MaybeInfinityRectangle<C> | null | undefined,
 ): Rectangle<C> | null {
   return r == null || isInfinityRectangle(r) ? null : r
 }
