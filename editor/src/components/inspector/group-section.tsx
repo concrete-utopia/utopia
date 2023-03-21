@@ -42,6 +42,7 @@ import {
 import { setCssLengthProperty } from '../canvas/commands/set-css-length-command'
 import { styleP } from './inspector-common'
 import { cssNumber } from './common/css-utils'
+import { absolute } from '../../utils/utils'
 
 interface PositioningProps {
   width: number
@@ -60,6 +61,8 @@ type Wrapper =
 
 type WrapperType = Wrapper['type']
 
+// TODO: abstract out common code here
+
 function wrapInFragment(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
@@ -74,7 +77,12 @@ function wrapInFragment(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', parentPath, jsxFragment(uid, children, true)),
+    addElement(
+      'always',
+      parentPath,
+      jsxFragment(uid, children, true),
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
   ]
 }
 
@@ -93,10 +101,15 @@ function wrapInSizelessDiv(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', parentPath, {
-      ...element,
-      children: children,
-    }),
+    addElement(
+      'always',
+      parentPath,
+      {
+        ...element,
+        children: children,
+      },
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
   ]
 }
 
@@ -143,7 +156,12 @@ function wrapInDiv(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', parentPath, newElement),
+    addElement(
+      'always',
+      parentPath,
+      newElement,
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
     ...getChildFrameAdjustCommands(metadata, elementPath, canvasPoint({ x: left, y: top })),
   ]
 }

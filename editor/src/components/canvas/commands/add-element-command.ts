@@ -10,23 +10,27 @@ import * as EP from '../../../core/shared/element-path'
 import { JSXElementChild } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import { IndexPosition } from './../../../utils/utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
   parentPath: ElementPath
   element: JSXElementChild
+  indexPosition?: IndexPosition
 }
 
 export function addElement(
   whenToRun: WhenToRun,
   parentPath: ElementPath,
   element: JSXElementChild,
+  indexPosition?: IndexPosition,
 ): AddElement {
   return {
     whenToRun: whenToRun,
     type: 'ADD_ELEMENT',
     parentPath: parentPath,
     element: element,
+    indexPosition: indexPosition,
   }
 }
 
@@ -52,7 +56,7 @@ export const runAddElement: CommandFunction<AddElement> = (
         command.parentPath,
         command.element,
         componentsNewParent,
-        null,
+        command.indexPosition ?? null,
         editorState.spyMetadata,
       )
 

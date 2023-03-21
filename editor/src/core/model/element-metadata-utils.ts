@@ -1922,6 +1922,12 @@ export const MetadataUtils = {
     const left = childrenFrames.reduce((acc, val) => Math.min(acc, val.x), childrenFrames[0].x)
     return { top, left }
   },
+  getIndexInParent(metadata: ElementInstanceMetadataMap, elementPath: ElementPath): number {
+    const siblingPaths = MetadataUtils.getSiblingsOrdered(metadata, elementPath).map(
+      (instance) => instance.elementPath,
+    )
+    return siblingPaths.findIndex((path) => EP.pathsEqual(path, elementPath))
+  },
 }
 
 function fillSpyOnlyMetadata(
