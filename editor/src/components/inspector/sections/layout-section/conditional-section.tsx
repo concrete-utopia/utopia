@@ -54,15 +54,22 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
-export const ConditionalsControlSwitchBranches = 'conditionals-control-switch=branches'
+export const ConditionalsControlSwitchBranches = 'conditionals-control-switch-branches'
+export const ConditionalsControlBranchTrue = 'conditionals-control-branch-true'
+export const ConditionalsControlBranchFalse = 'conditionals-control-branch-false'
 
 export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-a-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-a-conditional'
 
+type BranchNavigatorEntries = {
+  true: NavigatorEntry | null
+  false: NavigatorEntry | null
+}
+
 const branchNavigatorEntriesSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
-  (jsxMetadata, paths): { true: NavigatorEntry | null; false: NavigatorEntry | null } | null => {
+  (jsxMetadata, paths): BranchNavigatorEntries | null => {
     if (paths.length !== 1) {
       return null
     }
@@ -271,6 +278,29 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
     dispatch([updateConditionalExpression(paths[0], expression)], 'everyone')
   }, [paths, conditionExpression, setConditionExpression, originalConditionExpression, dispatch])
 
+  const branchNavigatorEntries = useEditorState(
+    Substores.metadata,
+    (store) => branchNavigatorEntriesSelector(store, paths),
+    'ConditionalSection branches',
+  )
+
+  const branchLabels = useEditorState(
+    Substores.metadata,
+    (store) => {
+      function getLabel(entry: NavigatorEntry | null) {
+        if (entry == null) {
+          return null
+        }
+        return labelSelector(store, entry)
+      }
+      return {
+        true: getLabel(branchNavigatorEntries?.true ?? null),
+        false: getLabel(branchNavigatorEntries?.false ?? null),
+      }
+    },
+    'NavigatorItemWrapper labelSelector',
+  )
+
   function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
     setConditionExpression(e.target.value)
   }
@@ -282,29 +312,6 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       onUpdateExpression()
     }
   }
-
-  const branchNavigatorEntries = useEditorState(
-    Substores.metadata,
-    (store) => branchNavigatorEntriesSelector(store, paths),
-    'ConditionalSection branches',
-  )
-
-  const branchLabels = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return {
-        true:
-          branchNavigatorEntries?.true != null
-            ? labelSelector(store, branchNavigatorEntries.true)
-            : null,
-        false:
-          branchNavigatorEntries?.false != null
-            ? labelSelector(store, branchNavigatorEntries.false)
-            : null,
-      }
-    },
-    'NavigatorItemWrapper labelSelector',
-  )
 
   if (
     conditionOverride === 'not-a-conditional' ||
@@ -380,12 +387,12 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
         </React.Fragment>
       ) : null}
       <BranchRow
-        label={branchLabels.true ?? null}
+        label={branchLabels.true}
         navigatorEntry={branchNavigatorEntries?.true ?? null}
         conditionalCase='true-case'
       />
       <BranchRow
-        label={branchLabels.false ?? null}
+        label={branchLabels.false}
         navigatorEntry={branchNavigatorEntries?.false ?? null}
         conditionalCase='false-case'
       />
@@ -428,7 +435,15 @@ const BranchRow = ({
           color='main'
           warningText={null}
         />
-        {getNavigatorEntryLabel(navigatorEntry, label)}
+        <span
+          data-testid={
+            conditionalCase === 'true-case'
+              ? ConditionalsControlBranchTrue
+              : ConditionalsControlBranchFalse
+          }
+        >
+          {getNavigatorEntryLabel(navigatorEntry, label)}
+        </span>
       </div>
     </UIGridRow>
   )
