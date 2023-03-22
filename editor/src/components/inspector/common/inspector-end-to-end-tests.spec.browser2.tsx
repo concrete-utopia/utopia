@@ -2391,6 +2391,53 @@ describe('inspector tests with real metadata', () => {
           'simple',
         )
       }
+
+      // override to the current condition value
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlDisableTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+                  <div data-uid='aaa'>
+                    {
+                      // @utopia/uid=conditional
+                      // @utopia/conditional=true
+                      [].length === 0 ? (
+                        <div data-uid='bbb' data-testid='bbb'>foo</div>
+                      ) : (
+                        <div data-uid='ccc' data-testid='ccc'>bar</div>
+                      )
+                    }
+                  </div>
+                `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+      }
     })
     it('switches conditional branches', async () => {
       const startSnippet = `
