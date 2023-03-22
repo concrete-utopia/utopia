@@ -50,6 +50,8 @@ import {
 } from '../controls/conditional-override-control'
 import { getOptionControlTestId } from '../controls/option-chain-control'
 import {
+  ConditionalsControlBranchFalse,
+  ConditionalsControlBranchTrue,
   ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranches,
@@ -2226,6 +2228,30 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
+      // check the status of the override buttons
+      {
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because the condition is true and there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "simple" because there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+      }
+
       // override to false
       {
         await clickButtonAndSelectTarget(
@@ -2251,6 +2277,25 @@ describe('inspector tests with real metadata', () => {
               }
             </div>
           `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `false` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('false')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
         )
       }
 
@@ -2278,6 +2323,27 @@ describe('inspector tests with real metadata', () => {
             </div>
           `),
         )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
       }
 
       // disable override
@@ -2302,6 +2368,27 @@ describe('inspector tests with real metadata', () => {
               }
             </div>
           `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because the condition is true and there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "simple" because there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
         )
       }
     })
@@ -2620,6 +2707,38 @@ describe('inspector tests with real metadata', () => {
         ConditionalsControlSectionExpressionTestId,
       )
       expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
+    })
+    it('shows the branches in the inspector', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'><div>Another div</div></div>
+        ) : (
+          <h1 data-uid='ccc' data-testid='ccc'>hello there</h1>
+        )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      const branchElementTrue = renderResult.renderedDOM.getByTestId(ConditionalsControlBranchTrue)
+      const branchElementFalse = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlBranchFalse,
+      )
+
+      expect(branchElementTrue.innerText).toEqual('div')
+      expect(branchElementFalse.innerText).toEqual('h1')
     })
   })
 })
