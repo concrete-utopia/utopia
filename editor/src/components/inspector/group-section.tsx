@@ -9,6 +9,7 @@ import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import {
   detectBestWrapperElement,
   getElementContentAffectingType,
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
   treatElementAsContentAffecting,
 } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -135,19 +136,19 @@ function wrapInDiv(
   const { top, left, width, height } = positioningProps
 
   const props: Record<string, any> = { 'data-uid': jsxAttributeValue(uid, emptyComments) }
-  if (!isInFlowLayout) {
-    props.style = jsxAttributeValue(
-      {
-        ...style,
-        position: 'absolute',
-        top: top,
-        left: left,
-        width: width,
-        height: height,
-      },
-      emptyComments,
-    )
+  const newStyle = {
+    ...style,
+    width: width,
+    height: height,
   }
+
+  if (!isInFlowLayout) {
+    newStyle.position = 'absolute'
+    newStyle.top = top
+    newStyle.left = left
+  }
+
+  props.style = jsxAttributeValue(newStyle, emptyComments)
 
   const newElement: JSXElementChild = {
     ...element,
@@ -163,7 +164,12 @@ function wrapInDiv(
       newElement,
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
-    ...getChildFrameAdjustCommands(metadata, elementPath, canvasPoint({ x: left, y: top })),
+    ...getChildFrameAdjustCommands(
+      metadata,
+      allElementProps,
+      elementPath,
+      canvasPoint({ x: left, y: top }),
+    ),
   ]
 }
 
@@ -204,13 +210,15 @@ function wrapInElement(
     return []
   }
 
-  const aaaa = getChildFrameAdjustCommands(
-    metadata,
-    elementPath,
-    canvasPoint({ x: -parentFrame.x, y: -parentFrame.y }),
-  )
-
-  return [...wrapperCommands(), ...aaaa]
+  return [
+    ...wrapperCommands(),
+    ...getChildFrameAdjustCommands(
+      metadata,
+      allElementProps,
+      elementPath,
+      canvasPoint({ x: -parentFrame.x, y: -parentFrame.y }),
+    ),
+  ]
 }
 
 function getWrapperPositioningProps(
@@ -227,9 +235,15 @@ function getWrapperPositioningProps(
 
 function getChildFrameAdjustCommands(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
   parentOffset: CanvasPoint,
 ): CanvasCommand[] {
+  const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    metadata,
+    allElementProps,
+    MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+  )
   const childGlobalFrames = mapDropNulls((childPath): [LocalRectangle, ElementPath] | null => {
     const childInstance = MetadataUtils.findElementByElementPath(metadata, childPath)
     if (childInstance == null || !MetadataUtils.isPositionAbsolute(childInstance)) {
@@ -242,7 +256,7 @@ function getChildFrameAdjustCommands(
     }
 
     return [frame, childPath]
-  }, MetadataUtils.getChildrenPathsUnordered(metadata, elementPath))
+  }, childrenPaths)
 
   const adjustTopCommands: CanvasCommand[] = childGlobalFrames.map(([frame, targetPath]) =>
     setCssLengthProperty(
