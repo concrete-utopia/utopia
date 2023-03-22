@@ -16,6 +16,7 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { assertNever } from '../../core/shared/utils'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   emptyComments,
   isJSXElementLike,
@@ -225,9 +226,10 @@ function getWrapperPositioningProps(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): PositioningProps | null {
-  const frame = MetadataUtils.getChildrenBoundingBox(metadata, elementPath)
+  const frame = MetadataUtils.getChildrenGlobalBoundingBox(metadata, elementPath)
   const offset = MetadataUtils.getChildrenOffset(metadata, elementPath)
-  if (frame == null || offset == null) {
+  const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(elementPath, metadata)
+  if (frame == null || offset == null || localFrame == null) {
     return null
   }
   return { top: offset.top, left: offset.left, width: frame.width, height: frame.height }
@@ -287,7 +289,7 @@ function isElementInFlowLayout(
   elementPath: ElementPath,
 ): boolean {
   if (
-    EP.isStoryboardChild(elementPath) &&
+    // EP.isStoryboardChild(elementPath) &&
     treatElementAsContentAffecting(metadata, allElementProps, elementPath)
   ) {
     return false

@@ -1900,7 +1900,7 @@ export const MetadataUtils = {
     }
     return flexDirections[0]
   },
-  getChildrenBoundingBox(
+  getChildrenGlobalBoundingBox(
     metadata: ElementInstanceMetadataMap,
     elementPath: ElementPath,
   ): CanvasRectangle | null {
