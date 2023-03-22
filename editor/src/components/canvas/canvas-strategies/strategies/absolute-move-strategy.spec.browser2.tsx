@@ -869,9 +869,6 @@ describe('Absolute Move Strategy Canvas Controls', () => {
   })
 
   describe('when a content affecting element is moved, parent outlines become visible', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it(`moving a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(

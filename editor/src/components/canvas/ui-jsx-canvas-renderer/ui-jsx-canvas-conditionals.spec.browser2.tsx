@@ -64,7 +64,6 @@ async function createAndRenderProject() {
 }
 
 describe('a project with conditionals', () => {
-  setFeatureForBrowserTests('Conditional support', true)
   it('fills the content of the navigator', async () => {
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets

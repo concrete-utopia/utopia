@@ -1973,30 +1973,14 @@ export const UPDATE_FNS = {
       (path) => !EP.containsPath(path, newlySelectedPaths),
     )
 
-    const filteredNewlySelectedPaths = newlySelectedPaths.filter((path) => {
-      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(editor.jsxMetadata, path)
-      const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
-        editor.jsxMetadata,
-        path,
-      )
-      if (isFragment) {
-        return isFeatureEnabled('Fragment support')
-      }
-      if (isConditional) {
-        return isFeatureEnabled('Conditional support')
-      }
-
-      return true
-    })
-
     const updatedEditor: EditorModel = {
       ...editor,
       highlightedViews: newHighlightedViews,
-      selectedViews: filteredNewlySelectedPaths,
+      selectedViews: newlySelectedPaths,
       navigator:
-        filteredNewlySelectedPaths === editor.selectedViews
+        newlySelectedPaths === editor.selectedViews
           ? editor.navigator
-          : updateNavigatorCollapsedState(filteredNewlySelectedPaths, editor.navigator),
+          : updateNavigatorCollapsedState(newlySelectedPaths, editor.navigator),
       pasteTargetsToIgnore: [],
     }
 

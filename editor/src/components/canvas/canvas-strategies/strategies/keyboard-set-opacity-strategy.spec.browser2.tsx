@@ -115,9 +115,6 @@ describe('adjust opacity with the keyboard', () => {
   })
 
   describe('retargets to group children', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it(`applies opacity to ${type}`, async () => {
         const editor = await renderTestEditorWithCode(

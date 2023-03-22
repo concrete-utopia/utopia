@@ -734,9 +734,6 @@ describe('Keyboard Reorder Strategy', () => {
 
   AllContentAffectingTypes.forEach((type) => {
     describe('with children-affecting elements', () => {
-      setFeatureForBrowserTests('Fragment support', true)
-      setFeatureForBrowserTests('Conditional support', true)
-
       it(`pressing the arrow keys reorders in a flex layout, in a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(TestProjectWithFragment(type)),

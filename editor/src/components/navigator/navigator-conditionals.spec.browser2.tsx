@@ -419,8 +419,6 @@ function navigatorStructure(editorState: EditorState, deriveState: DerivedState)
 }
 
 describe('conditionals in the navigator', () => {
-  setFeatureForBrowserTests('Conditional support', true)
-  setFeatureForBrowserTests('Fragment support', true)
   it('dragging into a non-empty active clause, creates a fragment wrapper', async () => {
     FOR_TESTS_setNextGeneratedUids([
       'skip1',

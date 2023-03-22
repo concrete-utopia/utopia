@@ -365,9 +365,6 @@ describe('Flex Reparent To Flex Strategy', () => {
   })
 
   describe('with fragments', () => {
-    before(() => setFeatureEnabled('Fragment support', true))
-    after(() => setFeatureEnabled('Fragment support', false))
-
     it('reparents fragment to other flex parent', async () => {
       const renderResult = await renderTestEditorWithCode(
         TestProjectWithFragment,
