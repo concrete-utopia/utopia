@@ -6,6 +6,7 @@ import {
   jsxAttributesFromMap,
   jsExpressionValue,
   UtopiaJSXComponent,
+  clearAttributesUniqueIDs,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -115,17 +116,19 @@ export var App = props => {
       const topComponent = parsedPlainCode.topLevelElements.find(isUtopiaJSXComponent)
       if (topComponent != null) {
         if (isJSXElement(topComponent.rootElement)) {
-          const expectedProps: JSXAttributes = jsxAttributesFromMap({
-            style: jsExpressionValue(
-              {
-                backgroundColor: 'green',
-                position: 'absolute',
-              },
-              emptyComments,
-            ),
-            'data-uid': jsExpressionValue('xxx', emptyComments),
-          })
-          expect(topComponent.rootElement.props).toEqual(expectedProps)
+          const expectedProps: JSXAttributes = clearAttributesUniqueIDs(
+            jsxAttributesFromMap({
+              style: jsExpressionValue(
+                {
+                  backgroundColor: 'green',
+                  position: 'absolute',
+                },
+                emptyComments,
+              ),
+              'data-uid': jsExpressionValue('xxx', emptyComments),
+            }),
+          )
+          expect(clearAttributesUniqueIDs(topComponent.rootElement.props)).toEqual(expectedProps)
         } else {
           throw new Error('Root element not a JSX element.')
         }

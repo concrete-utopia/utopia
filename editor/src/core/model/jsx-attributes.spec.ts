@@ -1,6 +1,6 @@
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
-import { Either, forceRight, isLeft, isRight, right } from '../shared/either'
+import { Either, forceRight, isLeft, isRight, mapEither, right } from '../shared/either'
 import {
   emptyComments,
   getJSXAttributeForced,
@@ -24,6 +24,8 @@ import {
   jsxSpreadAssignment,
   simplifyAttributeIfPossible,
   modifiableAttributeIsAttributeValue,
+  clearExpressionUniqueIDs,
+  clearAttributesUniqueIDs,
 } from '../shared/element-template'
 import {
   dropKeyFromNestedObject,
@@ -432,26 +434,29 @@ describe('setJSXValueAtPath', () => {
       ),
     })
 
-    const result = setJSXValueAtPath(
-      attributes,
-      PP.create('style', 'paddingLeft'),
-      jsExpressionValue(100, emptyComments),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      setJSXValueAtPath(
+        attributes,
+        PP.create('style', 'paddingLeft'),
+        jsExpressionValue(100, emptyComments),
+      ),
     )
-    if (isLeft(result)) {
-      throw new Error(`result is LEFT`)
-    }
-
-    expect(result.value).toEqual(
-      jsxAttributesFromMap({
-        style: jsExpressionValue(
-          {
-            paddingLeft: 100,
-            padding: 5,
-          },
-          emptyComments,
-        ),
-      }),
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue(
+            {
+              paddingLeft: 100,
+              padding: 5,
+            },
+            emptyComments,
+          ),
+        }),
+      ),
     )
+    expect(actualValue).toEqual(expectedValue)
   })
 
   it('when setting an irregular duplicated property inside a JSX_ATTRIBUTE_NESTED_OBJECT, deduplicate it', () => {
@@ -487,26 +492,29 @@ describe('setJSXValueAtPath', () => {
       ),
     })
 
-    const result = setJSXValueAtPath(
-      attributes,
-      PP.create('style', 'paddingLeft'),
-      jsExpressionValue(100, emptyComments),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      setJSXValueAtPath(
+        attributes,
+        PP.create('style', 'paddingLeft'),
+        jsExpressionValue(100, emptyComments),
+      ),
     )
-    if (isLeft(result)) {
-      throw new Error(`result is LEFT`)
-    }
 
-    expect(result.value).toEqual(
-      jsxAttributesFromMap({
-        style: jsExpressionValue(
-          {
-            paddingLeft: 100,
-            padding: 5,
-          },
-          emptyComments,
-        ),
-      }),
+    const expectedValue = right(
+      clearAttributesUniqueIDs(
+        jsxAttributesFromMap({
+          style: jsExpressionValue(
+            {
+              paddingLeft: 100,
+              padding: 5,
+            },
+            emptyComments,
+          ),
+        }),
+      ),
     )
+    expect(actualValue).toEqual(expectedValue)
   })
 
   it('creates an array if the property path part is a number', () => {
@@ -698,12 +706,18 @@ describe('unsetJSXValueAtPath', () => {
       top: jsExpressionValue(0, emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('left'))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        top: jsExpressionValue(0, emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('left')),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          top: jsExpressionValue(0, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -712,12 +726,18 @@ describe('unsetJSXValueAtPath', () => {
       top: jsExpressionValue(0, emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('left'))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        top: jsExpressionValue(0, emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('left')),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          top: jsExpressionValue(0, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -726,12 +746,18 @@ describe('unsetJSXValueAtPath', () => {
       style: jsExpressionValue({ left: 0, top: 0 }, emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left'))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue({ top: 0 }, emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 'left')),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue({ top: 0 }, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -740,12 +766,18 @@ describe('unsetJSXValueAtPath', () => {
       style: jsExpressionValue({ top: 0 }, emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left'))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue({ top: 0 }, emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 'left')),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue({ top: 0 }, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -754,12 +786,18 @@ describe('unsetJSXValueAtPath', () => {
       style: jsExpressionValue([0, 1], emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue([0], emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 1)),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue([0], emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -768,12 +806,18 @@ describe('unsetJSXValueAtPath', () => {
       style: jsExpressionValue([0], emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue([0], emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 1)),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue([0], emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -797,12 +841,18 @@ describe('unsetJSXValueAtPath', () => {
       ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left'))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue({ top: { x: 1, y: 1 } }, emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 'left')),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue({ top: { x: 1, y: 1 } }, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -814,12 +864,18 @@ describe('unsetJSXValueAtPath', () => {
       ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 'left', 'x'))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue({ top: { x: 1, y: 1 } }, emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 'left', 'x')),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue({ top: { x: 1, y: 1 } }, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -831,12 +887,18 @@ describe('unsetJSXValueAtPath', () => {
       ]),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue([0], emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 1)),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue([0], emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -845,12 +907,18 @@ describe('unsetJSXValueAtPath', () => {
       style: jsxAttributeNestedArraySimple([jsExpressionValue(0, emptyComments)]),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(startingValue, PP.create('style', 1))
-    const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue([0], emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(startingValue, PP.create('style', 1)),
+    )
+    const expectedValue = mapEither(
+      clearAttributesUniqueIDs,
+      right(
+        jsxAttributesFromMap({
+          style: jsExpressionValue([0], emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -888,37 +956,42 @@ describe('unsetJSXValueAtPath', () => {
       backgroundColor: jsExpressionValue('red', emptyComments),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     })
-    const actualValue = unsetJSXValueAtPath(
-      startingValue,
-      PP.create('style', 'left', 1, 'stateEnabled', 0, 'lightSide', 'eleven'),
+    const actualValue = mapEither(
+      clearAttributesUniqueIDs,
+      unsetJSXValueAtPath(
+        startingValue,
+        PP.create('style', 'left', 1, 'stateEnabled', 0, 'lightSide', 'eleven'),
+      ),
     )
     const expectedValue = right(
-      jsxAttributesFromMap({
-        style: jsExpressionValue(
-          {
-            left: [
-              '29',
-              {
-                stateEnabled: [
-                  {
-                    lightSide: {
-                      ten: 10,
+      clearAttributesUniqueIDs(
+        jsxAttributesFromMap({
+          style: jsExpressionValue(
+            {
+              left: [
+                '29',
+                {
+                  stateEnabled: [
+                    {
+                      lightSide: {
+                        ten: 10,
+                      },
+                      darkSide: {
+                        twelve: 12,
+                        nine: 9,
+                      },
                     },
-                    darkSide: {
-                      twelve: 12,
-                      nine: 9,
-                    },
-                  },
-                ],
-              },
-            ],
-            top: { x: 1, y: 1 },
-          },
-          emptyComments,
-        ),
-        backgroundColor: jsExpressionValue('red', emptyComments),
-        'data-uid': jsExpressionValue('aaa', emptyComments),
-      }),
+                  ],
+                },
+              ],
+              top: { x: 1, y: 1 },
+            },
+            emptyComments,
+          ),
+          backgroundColor: jsExpressionValue('red', emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+      ),
     )
     expect(actualValue).toEqual(expectedValue)
   })
@@ -938,11 +1011,15 @@ describe('dropKeyFromNestedObject', () => {
       ],
       emptyComments,
     )
-    const expectedValue = jsExpressionNestedObject(
-      [jsxSpreadAssignment(jsExpressionValue(Substores.theme, emptyComments), emptyComments)],
-      emptyComments,
+    const expectedValue = clearExpressionUniqueIDs(
+      jsExpressionNestedObject(
+        [jsxSpreadAssignment(jsExpressionValue(Substores.theme, emptyComments), emptyComments)],
+        emptyComments,
+      ),
     )
-    const actualValue = dropKeyFromNestedObject(startingValue, 'backgroundColor')
+    const actualValue = clearExpressionUniqueIDs(
+      dropKeyFromNestedObject(startingValue, 'backgroundColor'),
+    )
     expect(actualValue).toEqual(expectedValue)
   })
 })
@@ -970,8 +1047,10 @@ describe('simplifyAttributeIfPossible', () => {
       ],
       emptyComments,
     )
-    const actualResult = simplifyAttributeIfPossible(array)
-    const expectedResult = jsExpressionValue([1, 'hat', { someKey: 'with a value' }], emptyComments)
+    const actualResult = clearExpressionUniqueIDs(simplifyAttributeIfPossible(array))
+    const expectedResult = clearExpressionUniqueIDs(
+      jsExpressionValue([1, 'hat', { someKey: 'with a value' }], emptyComments),
+    )
     expect(actualResult).toEqual(expectedResult)
   })
   it('simple value returns as is', () => {

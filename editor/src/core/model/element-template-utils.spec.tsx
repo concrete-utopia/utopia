@@ -13,6 +13,7 @@ import {
   getJSXAttribute,
   isJSXElement,
   emptyComments,
+  isJSXConditionalExpression,
 } from '../shared/element-template'
 import {
   componentHonoursPropsPosition,
@@ -39,7 +40,6 @@ import {
   modifyParseSuccessWithSimple,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
-import { ProjectContentFile } from '../../components/assets'
 import { ElementPath, ParseSuccess, StaticElementPath } from '../shared/project-file-types'
 import {
   dynamicPathToStaticPath,
@@ -49,7 +49,6 @@ import {
 } from '../shared/element-path'
 import { getComponentsFromTopLevelElements } from './project-file-utils'
 import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
-import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
 import { getUtopiaID } from '../shared/uid-utils'
 
 describe('guaranteeUniqueUids', () => {
@@ -58,13 +57,13 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
         [],
       ),
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
         [],
       ),
     ]
@@ -72,10 +71,10 @@ describe('guaranteeUniqueUids', () => {
 
     const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments))
+    expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
   })
 
   it('if an element has an existing value, it will be replaced', () => {
@@ -83,13 +82,13 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
         [],
       ),
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
         [],
       ),
     ]
@@ -100,8 +99,8 @@ describe('guaranteeUniqueUids', () => {
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments))
-    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
+    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments, 'aab'))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -765,7 +764,6 @@ describe('findJSXElementChildAtPath', () => {
 
   function expectElementAtPathHasMatchingUID(file: ParseSuccess, pathString: string) {
     const foundElement = findElement(file, pathString)
-
     expect(foundElement).not.toBeNull()
     expect(getUtopiaID(foundElement!)).toEqual(toUid(fromStringStatic(pathString)))
   }
@@ -957,20 +955,6 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
-
-    const elementAtTrueBranch = findElement(
-      projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
-    )
-    expect(elementAtTrueBranch).not.toBeNull()
-    expect(getUtopiaID(elementAtTrueBranch!)).toEqual('ternary-true-root')
-
-    const elementAtFalseBranch = findElement(
-      projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
-    )
-    expect(elementAtFalseBranch).not.toBeNull()
-    expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 
   it('conditional expressions with branches that are JSXAttribute', () => {
@@ -999,11 +983,8 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-    ])
-
-    expectElementFoundNull(projectFile, [
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/831',
     ])
   })
 
@@ -1035,21 +1016,9 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
-
-    const elementAtTrueBranch = findElement(
-      projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/true-case',
-    )
-    expect(elementAtTrueBranch).toBeNull()
-
-    const elementAtFalseBranch = findElement(
-      projectFile,
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false-case',
-    )
-    expect(elementAtFalseBranch).not.toBeNull()
-    expect(getUtopiaID(elementAtFalseBranch!)).toEqual('ternary-false-root')
   })
 })

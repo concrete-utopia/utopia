@@ -41,6 +41,7 @@ import {
   emptyComments,
   jsxAttributeNestedArraySimple,
   JSXAttributesPart,
+  clearExpressionUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
@@ -259,6 +260,19 @@ export function jsxAttributesToProps(
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
 
 export type ModifiableAttribute = JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound
+
+export function clearModifiableAttributeUniqueIDs(
+  modifiableAttribute: ModifiableAttribute,
+): ModifiableAttribute {
+  switch (modifiableAttribute.type) {
+    case 'PART_OF_ATTRIBUTE_VALUE':
+      return modifiableAttribute
+    case 'ATTRIBUTE_NOT_FOUND':
+      return modifiableAttribute
+    default:
+      return clearExpressionUniqueIDs(modifiableAttribute)
+  }
+}
 
 export type GetJSXAttributeResult = {
   attribute: ModifiableAttribute

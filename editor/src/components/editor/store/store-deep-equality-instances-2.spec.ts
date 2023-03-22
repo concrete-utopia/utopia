@@ -45,7 +45,7 @@ describe('JSXElementKeepDeepEquality', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -63,7 +63,7 @@ describe('JSXElementKeepDeepEquality', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -81,7 +81,7 @@ describe('JSXElementKeepDeepEquality', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -123,7 +123,7 @@ describe('ElementsWithinKeepDeepEqualityCall', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -797,7 +797,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
           propertyElements: ['style', 'backgroundColor'],
         },
       },
-      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
       children: [
         {
           type: 'JSX_TEXT_BLOCK',
@@ -844,7 +844,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
           propertyElements: ['style', 'backgroundColor'],
         },
       },
-      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
       children: [
         {
           type: 'JSX_TEXT_BLOCK',
@@ -891,7 +891,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
           propertyElements: ['style', 'backgroundColor'],
         },
       },
-      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments), emptyComments)],
+      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
       children: [
         {
           type: 'JSX_TEXT_BLOCK',

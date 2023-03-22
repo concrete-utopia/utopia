@@ -24,6 +24,7 @@ import {
   jsxElementWithoutUID,
   parsedComments,
   simpleAttribute,
+  clearJSXElementWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { size, Size } from '../../core/shared/math-utils'
@@ -79,6 +80,19 @@ export function insertableComponent(
     name: name,
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
+  }
+}
+
+export function clearInsertableComponentUniqueIDs(
+  insertableComponentToFix: InsertableComponent,
+): InsertableComponent {
+  const updatedElement =
+    typeof insertableComponentToFix.element === 'string'
+      ? insertableComponentToFix.element
+      : clearJSXElementWithoutUIDUniqueIDs(insertableComponentToFix.element)
+  return {
+    ...insertableComponentToFix,
+    element: updatedElement,
   }
 }
 
@@ -162,6 +176,17 @@ export function insertableComponentGroup(
   return {
     source: source,
     insertableComponents: insertableComponents,
+  }
+}
+
+export function clearInsertableComponentGroupUniqueIDs(
+  insertableGroup: InsertableComponentGroup,
+): InsertableComponentGroup {
+  return {
+    source: insertableGroup.source,
+    insertableComponents: insertableGroup.insertableComponents.map(
+      clearInsertableComponentUniqueIDs,
+    ),
   }
 }
 

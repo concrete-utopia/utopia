@@ -547,9 +547,9 @@ describe('ParsedCommentsKeepDeepEqualityCall', () => {
 })
 
 describe('JSXAttributeValueKeepDeepEqualityCall', () => {
-  const oldValue = jsExpressionValue('old', emptyComments)
-  const newSameValue = jsExpressionValue('old', emptyComments)
-  const newDifferentValue = jsExpressionValue('new', emptyComments)
+  const oldValue = jsExpressionValue('old', emptyComments, 'old')
+  const newSameValue = jsExpressionValue('old', emptyComments, 'old')
+  const newDifferentValue = jsExpressionValue('new', emptyComments, 'new')
 
   it('same reference returns the same reference', () => {
     const result = JSXAttributeValueKeepDeepEqualityCall(oldValue, oldValue)
@@ -599,7 +599,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'old',
+    uniqueID: 'new',
     elementsWithin: {},
   }
 
@@ -620,7 +620,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     expect(result.value.transpiledJavascript).toBe(oldValue.transpiledJavascript)
     expect(result.value.definedElsewhere).toBe(oldValue.definedElsewhere)
     expect(result.value.sourceMap).toBe(oldValue.sourceMap)
-    expect(result.value.uniqueID).toBe(oldValue.uniqueID)
+    expect(result.value.uniqueID).not.toBe(oldValue.uniqueID)
     expect(result.value.elementsWithin).toBe(oldValue.elementsWithin)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
@@ -628,9 +628,12 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
 })
 
 describe('JSXArrayValueKeepDeepEqualityCall', () => {
-  const oldValue = jsxArrayValue(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxArrayValue(jsExpressionValue('old', emptyComments), emptyComments)
-  const newDifferentValue = jsxArrayValue(jsExpressionValue('new', emptyComments), emptyComments)
+  const oldValue = jsxArrayValue(jsExpressionValue('old', emptyComments, 'old'), emptyComments)
+  const newSameValue = jsxArrayValue(jsExpressionValue('old', emptyComments, 'old'), emptyComments)
+  const newDifferentValue = jsxArrayValue(
+    jsExpressionValue('new', emptyComments, 'new'),
+    emptyComments,
+  )
 
   it('same reference returns the same reference', () => {
     const result = JSXArrayValueKeepDeepEqualityCall()(oldValue, oldValue)
@@ -659,9 +662,12 @@ describe('JSXArrayValueKeepDeepEqualityCall', () => {
 })
 
 describe('JSXArraySpreadKeepDeepEqualityCall', () => {
-  const oldValue = jsxArraySpread(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxArraySpread(jsExpressionValue('old', emptyComments), emptyComments)
-  const newDifferentValue = jsxArraySpread(jsExpressionValue('new', emptyComments), emptyComments)
+  const oldValue = jsxArraySpread(jsExpressionValue('old', emptyComments, 'old'), emptyComments)
+  const newSameValue = jsxArraySpread(jsExpressionValue('old', emptyComments, 'old'), emptyComments)
+  const newDifferentValue = jsxArraySpread(
+    jsExpressionValue('new', emptyComments, 'new'),
+    emptyComments,
+  )
 
   it('same reference returns the same reference', () => {
     const result = JSXArraySpreadKeepDeepEqualityCall()(oldValue, oldValue)
@@ -690,9 +696,12 @@ describe('JSXArraySpreadKeepDeepEqualityCall', () => {
 })
 
 describe('JSXArrayElementKeepDeepEqualityCall', () => {
-  const oldValue = jsxArrayValue(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxArrayValue(jsExpressionValue('old', emptyComments), emptyComments)
-  const newDifferentValue = jsxArrayValue(jsExpressionValue('new', emptyComments), emptyComments)
+  const oldValue = jsxArrayValue(jsExpressionValue('old', emptyComments, 'old'), emptyComments)
+  const newSameValue = jsxArrayValue(jsExpressionValue('old', emptyComments, 'old'), emptyComments)
+  const newDifferentValue = jsxArrayValue(
+    jsExpressionValue('new', emptyComments, 'new'),
+    emptyComments,
+  )
 
   it('same reference returns the same reference', () => {
     const result = JSXArrayElementKeepDeepEqualityCall()(oldValue, oldValue)
@@ -722,16 +731,19 @@ describe('JSXArrayElementKeepDeepEqualityCall', () => {
 
 describe('JSXAttributeNestedArrayKeepDeepEqualityCall', () => {
   const oldValue = jsExpressionNestedArray(
-    [jsxArrayValue(jsExpressionValue('old', emptyComments), emptyComments)],
+    [jsxArrayValue(jsExpressionValue('old', emptyComments, 'old'), emptyComments)],
     emptyComments,
+    'oldarray',
   )
   const newSameValue = jsExpressionNestedArray(
-    [jsxArrayValue(jsExpressionValue('old', emptyComments), emptyComments)],
+    [jsxArrayValue(jsExpressionValue('old', emptyComments, 'old'), emptyComments)],
     emptyComments,
+    'oldarray',
   )
   const newDifferentValue = jsExpressionNestedArray(
-    [jsxArrayValue(jsExpressionValue('new', emptyComments), emptyComments)],
+    [jsxArrayValue(jsExpressionValue('new', emptyComments, 'new'), emptyComments)],
     emptyComments,
+    'newarray',
   )
 
   it('same reference returns the same reference', () => {
@@ -761,10 +773,16 @@ describe('JSXAttributeNestedArrayKeepDeepEqualityCall', () => {
 })
 
 describe('JSXSpreadAssignmentKeepDeepEqualityCall', () => {
-  const oldValue = jsxSpreadAssignment(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxSpreadAssignment(jsExpressionValue('old', emptyComments), emptyComments)
+  const oldValue = jsxSpreadAssignment(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
+  const newSameValue = jsxSpreadAssignment(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
   const newDifferentValue = jsxSpreadAssignment(
-    jsExpressionValue('new', emptyComments),
+    jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
   )
 
@@ -797,19 +815,19 @@ describe('JSXSpreadAssignmentKeepDeepEqualityCall', () => {
 describe('JSXPropertyAssignmentKeepDeepEqualityCall', () => {
   const oldValue = jsxPropertyAssignment(
     'key',
-    jsExpressionValue('old', emptyComments),
+    jsExpressionValue('old', emptyComments, 'old'),
     emptyComments,
     emptyComments,
   )
   const newSameValue = jsxPropertyAssignment(
     'key',
-    jsExpressionValue('old', emptyComments),
+    jsExpressionValue('old', emptyComments, 'old'),
     emptyComments,
     emptyComments,
   )
   const newDifferentValue = jsxPropertyAssignment(
     'key',
-    jsExpressionValue('new', emptyComments),
+    jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
     emptyComments,
   )
@@ -843,10 +861,16 @@ describe('JSXPropertyAssignmentKeepDeepEqualityCall', () => {
 })
 
 describe('JSXPropertyKeepDeepEqualityCall', () => {
-  const oldValue = jsxSpreadAssignment(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxSpreadAssignment(jsExpressionValue('old', emptyComments), emptyComments)
+  const oldValue = jsxSpreadAssignment(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
+  const newSameValue = jsxSpreadAssignment(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
   const newDifferentValue = jsxSpreadAssignment(
-    jsExpressionValue('new', emptyComments),
+    jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
   )
 
@@ -878,16 +902,19 @@ describe('JSXPropertyKeepDeepEqualityCall', () => {
 
 describe('JSXAttributeNestedObjectKeepDeepEqualityCall', () => {
   const oldValue = jsExpressionNestedObject(
-    [jsxSpreadAssignment(jsExpressionValue('old', emptyComments), emptyComments)],
+    [jsxSpreadAssignment(jsExpressionValue('old', emptyComments, 'old'), emptyComments)],
     emptyComments,
+    'old',
   )
   const newSameValue = jsExpressionNestedObject(
-    [jsxSpreadAssignment(jsExpressionValue('old', emptyComments), emptyComments)],
+    [jsxSpreadAssignment(jsExpressionValue('old', emptyComments, 'old'), emptyComments)],
     emptyComments,
+    'old',
   )
   const newDifferentValue = jsExpressionNestedObject(
-    [jsxSpreadAssignment(jsExpressionValue('new', emptyComments), emptyComments)],
+    [jsxSpreadAssignment(jsExpressionValue('new', emptyComments, 'new'), emptyComments)],
     emptyComments,
+    'new',
   )
 
   it('same reference returns the same reference', () => {
@@ -917,11 +944,21 @@ describe('JSXAttributeNestedObjectKeepDeepEqualityCall', () => {
 })
 
 describe('JSXAttributeFunctionCallKeepDeepEqualityCall', () => {
-  const oldValue = jsExpressionFunctionCall('old', [jsExpressionValue('old', emptyComments)])
-  const newSameValue = jsExpressionFunctionCall('old', [jsExpressionValue('old', emptyComments)])
-  const newDifferentValue = jsExpressionFunctionCall('new', [
-    jsExpressionValue('old', emptyComments),
-  ])
+  const oldValue = jsExpressionFunctionCall(
+    'old',
+    [jsExpressionValue('old', emptyComments, 'old')],
+    'oldcall',
+  )
+  const newSameValue = jsExpressionFunctionCall(
+    'old',
+    [jsExpressionValue('old', emptyComments, 'old')],
+    'oldcall',
+  )
+  const newDifferentValue = jsExpressionFunctionCall(
+    'new',
+    [jsExpressionValue('old', emptyComments, 'old')],
+    'newcall',
+  )
 
   it('same reference returns the same reference', () => {
     const result = JSXAttributeFunctionCallKeepDeepEqualityCall()(oldValue, oldValue)
@@ -944,9 +981,9 @@ describe('JSXAttributeFunctionCallKeepDeepEqualityCall', () => {
 })
 
 describe('JSXAttributeKeepDeepEqualityCall', () => {
-  const oldValue = jsExpressionValue('old', emptyComments)
-  const newSameValue = jsExpressionValue('old', emptyComments)
-  const newDifferentValue = jsExpressionValue('new', emptyComments)
+  const oldValue = jsExpressionValue('old', emptyComments, 'old')
+  const newSameValue = jsExpressionValue('old', emptyComments, 'old')
+  const newDifferentValue = jsExpressionValue('new', emptyComments, 'new')
 
   it('same reference returns the same reference', () => {
     const result = JSXAttributeKeepDeepEqualityCall(oldValue, oldValue)
@@ -973,15 +1010,19 @@ describe('JSXAttributeKeepDeepEqualityCall', () => {
 })
 
 describe('JSXAttributesEntryDeepEqualityCall', () => {
-  const oldValue = jsxAttributesEntry('key', jsExpressionValue('old', emptyComments), emptyComments)
+  const oldValue = jsxAttributesEntry(
+    'key',
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
   const newSameValue = jsxAttributesEntry(
     'key',
-    jsExpressionValue('old', emptyComments),
+    jsExpressionValue('old', emptyComments, 'old'),
     emptyComments,
   )
   const newDifferentValue = jsxAttributesEntry(
     'key',
-    jsExpressionValue('new', emptyComments),
+    jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
   )
 
@@ -1012,10 +1053,16 @@ describe('JSXAttributesEntryDeepEqualityCall', () => {
 })
 
 describe('JSXAttributesSpreadDeepEqualityCall', () => {
-  const oldValue = jsxAttributesSpread(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxAttributesSpread(jsExpressionValue('old', emptyComments), emptyComments)
+  const oldValue = jsxAttributesSpread(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
+  const newSameValue = jsxAttributesSpread(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
   const newDifferentValue = jsxAttributesSpread(
-    jsExpressionValue('new', emptyComments),
+    jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
   )
 
@@ -1045,10 +1092,16 @@ describe('JSXAttributesSpreadDeepEqualityCall', () => {
 })
 
 describe('JSXAttributesPartDeepEqualityCall', () => {
-  const oldValue = jsxAttributesSpread(jsExpressionValue('old', emptyComments), emptyComments)
-  const newSameValue = jsxAttributesSpread(jsExpressionValue('old', emptyComments), emptyComments)
+  const oldValue = jsxAttributesSpread(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
+  const newSameValue = jsxAttributesSpread(
+    jsExpressionValue('old', emptyComments, 'old'),
+    emptyComments,
+  )
   const newDifferentValue = jsxAttributesSpread(
-    jsExpressionValue('new', emptyComments),
+    jsExpressionValue('new', emptyComments, 'new'),
     emptyComments,
   )
 
@@ -1072,10 +1125,14 @@ describe('JSXAttributesPartDeepEqualityCall', () => {
 })
 
 describe('JSXAttributesKeepDeepEqualityCall', () => {
-  const oldValue = [jsxAttributesSpread(jsExpressionValue('old', emptyComments), emptyComments)]
-  const newSameValue = [jsxAttributesSpread(jsExpressionValue('old', emptyComments), emptyComments)]
+  const oldValue = [
+    jsxAttributesSpread(jsExpressionValue('old', emptyComments, 'old'), emptyComments),
+  ]
+  const newSameValue = [
+    jsxAttributesSpread(jsExpressionValue('old', emptyComments, 'old'), emptyComments),
+  ]
   const newDifferentValue = [
-    jsxAttributesSpread(jsExpressionValue('new', emptyComments), emptyComments),
+    jsxAttributesSpread(jsExpressionValue('new', emptyComments, 'new'), emptyComments),
   ]
 
   it('same reference returns the same reference', () => {

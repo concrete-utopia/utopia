@@ -338,25 +338,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element) && getUtopiaID(element) === firstUIDOrIndex) {
-      const tailPath = workingPath.slice(1)
-      if (tailPath.length === 0) {
-        // this is the element we want
-        return element
-      } else {
-        // we will want to delve into the children
-        const children = element.children
-        for (const child of children) {
-          const childResult = findAtPathInner(child, tailPath)
-          if (childResult != null) {
-            return childResult
-          }
-        }
-      }
-    } else if (
-      isJSExpressionOtherJavaScript(element) &&
-      firstUIDOrIndex in element.elementsWithin
-    ) {
+    if (isJSExpressionOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
       const elementWithin = element.elementsWithin[firstUIDOrIndex]
       const withinResult = findAtPathInner(elementWithin, workingPath)
       if (withinResult != null) {
@@ -368,23 +350,27 @@ export function findJSXElementChildAtPath(
         // this is the element we want
         return element
       } else {
-        function elementOrNullFromClause(
-          clause: JSXElementChild,
-          branch: ConditionalCase,
-        ): JSXElementChild | null {
-          // handle the special cased true-case / false-case path element first
-          if (tailPath.length === 1 && tailPath[0] === branch) {
-            // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
-            return clause
-          }
-
-          // if it's a child, get its inner element
-          return findAtPathInner(clause, tailPath)
-        }
         return (
-          elementOrNullFromClause(element.whenTrue, 'true-case') ??
-          elementOrNullFromClause(element.whenFalse, 'false-case')
+          findAtPathInner(element.whenTrue, tailPath) ??
+          findAtPathInner(element.whenFalse, tailPath)
         )
+      }
+    } else if (getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        if (isJSXElementLike(element)) {
+          // we will want to delve into the children
+          const children = element.children
+          for (const child of children) {
+            const childResult = findAtPathInner(child, tailPath)
+            if (childResult != null) {
+              return childResult
+            }
+          }
+        }
       }
     }
     return null

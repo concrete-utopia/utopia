@@ -1035,6 +1035,16 @@ export interface JSXElementWithoutUID {
   children: JSXElementChildren
 }
 
+export function clearJSXElementWithoutUIDUniqueIDs(
+  element: JSXElementWithoutUID,
+): JSXElementWithoutUID {
+  return {
+    ...element,
+    props: clearAttributesUniqueIDs(element.props),
+    children: element.children.map(clearJSXElementUniqueIDs),
+  }
+}
+
 export type ElementsWithin = { [uid: string]: JSXElement }
 
 export type JSXArbitraryBlock = JSExpression

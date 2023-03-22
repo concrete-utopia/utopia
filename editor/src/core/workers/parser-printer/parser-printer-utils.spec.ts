@@ -52,18 +52,18 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'root',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('root', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('root', emptyComments, 'root') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa1') }),
             [],
           ),
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa2') }),
             [],
           ),
         ],
@@ -75,11 +75,11 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const child0 = Utils.path<JSXElement>(['rootElement', 'children', 0], fixedComponent)
     const child0UID = getJSXAttribute(child0?.props ?? [], 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa1'))
     expect(child0?.uid).toEqual('aaa')
     const child1 = Utils.path<JSXElement>(['rootElement', 'children', 1], fixedComponent)
     const child1UID = getJSXAttribute(child1?.props ?? [], 'data-uid')
-    expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments))
+    expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa2'))
     expect(child1?.uid).not.toEqual('aaa')
   })
 
@@ -94,7 +94,9 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionFunctionCall('someFunction', []) }),
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionFunctionCall('someFunction', [], 'someFunction'),
+        }),
         [],
       ),
       null,
@@ -126,18 +128,18 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'baa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'baa') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
             [],
           ),
           jsxElement(
             'View',
             'aab',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
             [],
           ),
         ],
@@ -163,12 +165,12 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'baa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'baa') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
             [],
           ),
           jsxElement('View', '', [], []),
@@ -195,23 +197,27 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       jsxElement(
         'View',
         'baa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('baa', emptyComments, 'baa') }),
         [
           jsxElement(
             'View',
             'aaa',
-            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
             [
               jsxElement(
                 'View',
                 'aab',
-                jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
+                jsxAttributesFromMap({
+                  'data-uid': jsExpressionValue('aab', emptyComments, 'aab'),
+                }),
                 [],
               ),
               jsxElement(
                 'View',
                 'aac',
-                jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aac', emptyComments) }),
+                jsxAttributesFromMap({
+                  'data-uid': jsExpressionValue('aac', emptyComments, 'aac'),
+                }),
                 [],
               ),
             ],

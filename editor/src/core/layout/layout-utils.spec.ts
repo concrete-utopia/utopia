@@ -6,6 +6,7 @@ import {
   jsxPropertyAssignment,
   jsxAttributesFromMap,
   emptyComments,
+  clearAttributesUniqueIDs,
 } from '../shared/element-template'
 import { roundAttributeLayoutValues } from './layout-utils'
 
@@ -22,18 +23,22 @@ describe('roundAttributeLayoutValues', () => {
         emptyComments,
       ),
     })
-    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
-    const expectedResult: JSXAttributes = jsxAttributesFromMap({
-      style: jsExpressionValue(
-        {
-          left: 0,
-          top: '0%',
-          width: 141,
-          height: '65.5%',
-        },
-        emptyComments,
-      ),
-    })
+    const actualResult = clearAttributesUniqueIDs(
+      roundAttributeLayoutValues(styleStringInArray, attributes),
+    )
+    const expectedResult: JSXAttributes = clearAttributesUniqueIDs(
+      jsxAttributesFromMap({
+        style: jsExpressionValue(
+          {
+            left: 0,
+            top: '0%',
+            width: 141,
+            height: '65.5%',
+          },
+          emptyComments,
+        ),
+      }),
+    )
     expect(actualResult).toEqual(expectedResult)
   })
   it('rounds values within a nested attribute object', () => {
@@ -68,28 +73,36 @@ describe('roundAttributeLayoutValues', () => {
         emptyComments,
       ),
     })
-    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
-    const expectedResult: JSXAttributes = jsxAttributesFromMap({
-      style: jsExpressionValue(
-        {
-          left: 0,
-          top: '0%',
-          width: 141,
-          height: '65.5%',
-        },
-        emptyComments,
-      ),
-    })
+    const actualResult = clearAttributesUniqueIDs(
+      roundAttributeLayoutValues(styleStringInArray, attributes),
+    )
+    const expectedResult: JSXAttributes = clearAttributesUniqueIDs(
+      jsxAttributesFromMap({
+        style: jsExpressionValue(
+          {
+            left: 0,
+            top: '0%',
+            width: 141,
+            height: '65.5%',
+          },
+          emptyComments,
+        ),
+      }),
+    )
     expect(actualResult).toEqual(expectedResult)
   })
   it('does not round irrelevant values', () => {
     const attributes: JSXAttributes = jsxAttributesFromMap({
       sizeOfHat: jsExpressionValue(123.456, emptyComments),
     })
-    const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
-    const expectedResult: JSXAttributes = jsxAttributesFromMap({
-      sizeOfHat: jsExpressionValue(123.456, emptyComments),
-    })
+    const actualResult = clearAttributesUniqueIDs(
+      roundAttributeLayoutValues(styleStringInArray, attributes),
+    )
+    const expectedResult: JSXAttributes = clearAttributesUniqueIDs(
+      jsxAttributesFromMap({
+        sizeOfHat: jsExpressionValue(123.456, emptyComments),
+      }),
+    )
     expect(actualResult).toEqual(expectedResult)
   })
   it('keeps the same value if no rounding is necessary', () => {
@@ -104,6 +117,7 @@ describe('roundAttributeLayoutValues', () => {
         emptyComments,
       ),
     })
+
     const actualResult = roundAttributeLayoutValues(styleStringInArray, attributes)
     expect(actualResult).toBe(attributes)
   })

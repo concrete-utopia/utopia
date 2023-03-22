@@ -692,11 +692,13 @@ export function JSXAttributeValueValueKeepDeepEqualityCall(
 }
 
 export const JSXAttributeValueKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpressionValue<any>> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (attribute) => attribute.value,
     JSXAttributeValueValueKeepDeepEqualityCall,
     (attribute) => attribute.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (attribute) => attribute.uniqueID,
+    createCallWithTripleEquals<string>(),
     jsExpressionValue,
   )
 
@@ -813,11 +815,13 @@ export function JSXArrayElementKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXA
 }
 
 export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionNestedArray> {
-  return combine2EqualityCalls(
+  return combine3EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXArrayElementKeepDeepEqualityCall()),
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (attribute) => attribute.uniqueID,
+    createCallWithTripleEquals<string>(),
     jsExpressionNestedArray,
   )
 }
@@ -859,21 +863,25 @@ export function JSXPropertyKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXPrope
 }
 
 export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionNestedObject> {
-  return combine2EqualityCalls(
+  return combine3EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXPropertyKeepDeepEqualityCall()),
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (value) => value.uniqueID,
+    createCallWithTripleEquals<string>(),
     jsExpressionNestedObject,
   )
 }
 
 export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionFunctionCall> {
-  return combine2EqualityCalls(
+  return combine3EqualityCalls(
     (value) => value.functionName,
     createCallWithTripleEquals(),
     (value) => value.parameters,
     arrayDeepEquality(JSXAttributeKeepDeepEqualityCall),
+    (value) => value.uniqueID,
+    createCallWithTripleEquals<string>(),
     jsExpressionFunctionCall,
   )
 }
