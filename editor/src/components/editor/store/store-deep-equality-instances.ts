@@ -173,6 +173,7 @@ import {
   childOrBlockIsAttribute,
   ChildOrAttribute,
   ConditionValue,
+  JSXConditionalExpressionWithoutUID,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -2784,8 +2785,8 @@ export const ComponentElementToInsertKeepDeepEquality: KeepDeepEqualityCall<Comp
   unionDeepEquality(
     createCallWithTripleEquals<ComponentElementToInsert>(),
     JSXElementWithoutUIDKeepDeepEquality(),
-    (p): p is 'conditional' => p === 'conditional',
-    (p): p is JSXElementWithoutUID => (p as JSXElementWithoutUID).name != null,
+    (p): p is JSXConditionalExpressionWithoutUID => p.type === 'JSX_CONDITIONAL_EXPRESSION',
+    (p): p is JSXElementWithoutUID => isJSXElement(p),
   )
 
 export const ComponentInfoKeepDeepEquality: KeepDeepEqualityCall<ComponentInfo> =
