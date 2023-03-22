@@ -621,8 +621,10 @@ export var FloatingMenu = React.memo(() => {
             case 'JSX_CONDITIONAL_EXPRESSION':
             case 'JSX_FRAGMENT':
               return onChangeConditionalOrFragment(pickedInsertableComponent.element)
-            default:
+            case 'JSX_ELEMENT':
               return onChangeElement(pickedInsertableComponent)
+            default:
+              assertNever(pickedInsertableComponent.element)
           }
         }
 
