@@ -125,14 +125,19 @@ function wrapInDiv(
 ): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
+  const offset = MetadataUtils.getChildrenOffset(metadata, elementPath)
+
+  if (
+    instance == null ||
+    isLeft(instance.element) ||
+    !isJSXElementLike(instance.element.value) ||
+    offset == null
+  ) {
     return []
   }
 
   const { children, uid } = instance.element.value
   const { element, style } = detectBestWrapperElement(metadata, elementPath, () => uid)
-
-  const isInFlowLayout = isElementInFlowLayout(metadata, allElementProps, elementPath)
 
   const { top, left, width, height } = positioningProps
 
@@ -143,10 +148,12 @@ function wrapInDiv(
     height: height,
   }
 
+  const isInFlowLayout = isElementInFlowLayout(metadata, allElementProps, elementPath)
+
   if (!isInFlowLayout) {
     newStyle.position = 'absolute'
-    newStyle.top = top
-    newStyle.left = left
+    newStyle.top = offset.top
+    newStyle.left = offset.left
   }
 
   props.style = jsxAttributeValue(newStyle, emptyComments)
@@ -228,10 +235,11 @@ function getWrapperPositioningProps(
 ): PositioningProps | null {
   const frame = MetadataUtils.getChildrenGlobalBoundingBox(metadata, elementPath)
   const offset = MetadataUtils.getChildrenOffset(metadata, elementPath)
-  const localFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(elementPath, metadata)
-  if (frame == null || offset == null || localFrame == null) {
+
+  if (frame == null || offset == null) {
     return null
   }
+
   return { top: offset.top, left: offset.left, width: frame.width, height: frame.height }
 }
 
@@ -283,13 +291,24 @@ function getChildFrameAdjustCommands(
   return [...adjustTopCommands, ...adjustLeftCommands]
 }
 
+function isStoryboardOrGroupChild(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): boolean {
+  if (treatElementAsContentAffecting(metadata, allElementProps, elementPath)) {
+    return isStoryboardOrGroupChild(metadata, allElementProps, EP.parentPath(elementPath))
+  }
+  return EP.isStoryboardChild(elementPath)
+}
+
 function isElementInFlowLayout(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): boolean {
   if (
-    // EP.isStoryboardChild(elementPath) &&
+    isStoryboardOrGroupChild(metadata, allElementProps, elementPath) ||
     treatElementAsContentAffecting(metadata, allElementProps, elementPath)
   ) {
     return false

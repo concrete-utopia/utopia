@@ -8,6 +8,8 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { groupSectionOption, WrapperType } from '../inspector/group-section'
 
+// problem: doing stuff in a sized div
+
 const projectWithSizedDiv = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -16,11 +18,11 @@ export var storyboard = (
     <div
       data-uid='group'
       style={{
+        width: 299,
+        height: 343,
         position: 'absolute',
         top: 106,
         left: 135.5,
-        width: 299,
-        height: 343,
       }}
     >
       <div
