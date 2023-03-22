@@ -1029,11 +1029,11 @@ export interface JSXElement {
   uid: string
 }
 
-export interface JSXElementWithoutUID {
-  name: JSXElementName
-  props: JSXAttributes
-  children: JSXElementChildren
-}
+export type JSXElementWithoutUID = Omit<JSXElement, 'uid'>
+
+export type JSXConditionalExpressionWithoutUID = Omit<JSXConditionalExpression, 'uid'>
+
+export type JSXFragmentWithoutUID = Omit<JSXFragment, 'uid'>
 
 export function clearJSXElementWithoutUIDUniqueIDs(
   element: JSXElementWithoutUID,
@@ -1042,6 +1042,26 @@ export function clearJSXElementWithoutUIDUniqueIDs(
     ...element,
     props: clearAttributesUniqueIDs(element.props),
     children: element.children.map(clearJSXElementUniqueIDs),
+  }
+}
+
+export function clearJSXConditionalExpressionWithoutUIDUniqueIDs(
+  conditional: JSXConditionalExpressionWithoutUID,
+): JSXConditionalExpressionWithoutUID {
+  return {
+    ...conditional,
+    condition: clearExpressionUniqueIDs(conditional.condition),
+    whenTrue: clearJSXElementUniqueIDs(conditional.whenTrue),
+    whenFalse: clearJSXElementUniqueIDs(conditional.whenFalse),
+  }
+}
+
+export function clearJSXFragmentWithoutUIDUniqueIDs(
+  fragment: JSXFragmentWithoutUID,
+): JSXFragmentWithoutUID {
+  return {
+    ...fragment,
+    children: fragment.children.map(clearJSXElementUniqueIDs),
   }
 }
 
@@ -1329,9 +1349,38 @@ export function jsxElementWithoutUID(
   children: JSXElementChildren,
 ): JSXElementWithoutUID {
   return {
+    type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     props: props,
     children: children,
+  }
+}
+
+export function jsxConditionalExpressionWithoutUID(
+  condition: JSExpression,
+  originalConditionString: string,
+  whenTrue: JSXElementChild,
+  whenFalse: JSXElementChild,
+  comments: ParsedComments,
+): JSXConditionalExpressionWithoutUID {
+  return {
+    type: 'JSX_CONDITIONAL_EXPRESSION',
+    condition: condition,
+    originalConditionString: originalConditionString,
+    whenTrue: whenTrue,
+    whenFalse: whenFalse,
+    comments: comments,
+  }
+}
+
+export function jsxFragmentWithoutUID(
+  children: JSXElementChildren,
+  longForm: boolean,
+): JSXFragmentWithoutUID {
+  return {
+    type: 'JSX_FRAGMENT',
+    children: children,
+    longForm: longForm,
   }
 }
 

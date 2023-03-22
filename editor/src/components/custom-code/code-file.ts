@@ -22,7 +22,7 @@ import {
   EvaluationCache,
   getCurriedEditorRequireFn,
 } from '../../core/es-modules/package-manager/package-manager'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot, treeToContents } from '../assets'
@@ -34,9 +34,15 @@ import {
   isIntrinsicElement,
   modifiableAttributeIsAttributeOtherJavaScript,
   isUtopiaJSXComponent,
+  JSXConditionalExpressionWithoutUID,
   JSXElement,
   JSXElementWithoutUID,
+  JSXFragmentWithoutUID,
   UtopiaJSXComponent,
+  clearJSXElementUniqueIDs,
+  clearJSXElementWithoutUIDUniqueIDs,
+  clearJSXFragmentWithoutUIDUniqueIDs,
+  clearJSXConditionalExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
@@ -94,7 +100,25 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
-export type ComponentElementToInsert = JSXElementWithoutUID | 'conditional' | 'fragment'
+export type ComponentElementToInsert =
+  | JSXElementWithoutUID
+  | JSXConditionalExpressionWithoutUID
+  | JSXFragmentWithoutUID
+
+export function clearComponentElementToInsertUniqueIDs(
+  toInsert: ComponentElementToInsert,
+): ComponentElementToInsert {
+  switch (toInsert.type) {
+    case 'JSX_ELEMENT':
+      return clearJSXElementWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return clearJSXConditionalExpressionWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_FRAGMENT':
+      return clearJSXFragmentWithoutUIDUniqueIDs(toInsert)
+    default:
+      assertNever(toInsert)
+  }
+}
 
 export interface ComponentInfo {
   insertMenuLabel: string

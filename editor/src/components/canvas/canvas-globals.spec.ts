@@ -225,6 +225,7 @@ describe('validateControlsToCheck', () => {
                           },
                         },
                       ],
+                      "type": "JSX_ELEMENT",
                     },
                     "importsToAdd": Object {
                       "/src/card": Object {
@@ -390,6 +391,7 @@ describe('validateControlsToCheck', () => {
                             },
                           },
                         ],
+                        "type": "JSX_ELEMENT",
                       },
                       "importsToAdd": Object {
                         "/src/card": Object {
@@ -472,6 +474,7 @@ describe('validateControlsToCheck', () => {
                           },
                         },
                       ],
+                      "type": "JSX_ELEMENT",
                     },
                     "importsToAdd": Object {
                       "/src/selector": Object {
@@ -578,6 +581,7 @@ describe('validateControlsToCheck', () => {
                           },
                         },
                       ],
+                      "type": "JSX_ELEMENT",
                     },
                     "importsToAdd": Object {
                       "/src/card": Object {
@@ -655,6 +659,7 @@ describe('validateControlsToCheck', () => {
                           },
                         },
                       ],
+                      "type": "JSX_ELEMENT",
                     },
                     "importsToAdd": Object {
                       "/src/card": Object {
@@ -708,6 +713,7 @@ describe('validateControlsToCheck', () => {
                           },
                         },
                       ],
+                      "type": "JSX_ELEMENT",
                     },
                     "importsToAdd": Object {
                       "/src/card": Object {
