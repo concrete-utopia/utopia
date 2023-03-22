@@ -50,6 +50,7 @@ import { AllElementProps } from '../editor/store/editor-state'
 import {
   getChildrenOffsetFromGlobalFrame,
   getChildrenOffsets,
+  isDescendantOfGroups,
   isStoryboardOrGroupChild,
 } from './group-section-utils'
 
@@ -94,10 +95,16 @@ function wrapInFragment(
     ),
   ]
 
-  const isCurrentWrapperGrouplike = isStoryboardOrGroupChild(metadata, allElementProps, elementPath)
+  const isCurrentElementContentAffecting = treatElementAsContentAffecting(
+    metadata,
+    allElementProps,
+    elementPath,
+  )
+
+  const storyboardOrGroupChild = isStoryboardOrGroupChild(metadata, allElementProps, elementPath)
 
   // if current wrapper is grouplike, children won't need adjusting since positions are not affected
-  if (isCurrentWrapperGrouplike) {
+  if (!storyboardOrGroupChild && isCurrentElementContentAffecting) {
     return commands
   }
 
@@ -144,10 +151,16 @@ function wrapInSizelessDiv(
     ),
   ]
 
-  const isCurrentWrapperGrouplike = isStoryboardOrGroupChild(metadata, allElementProps, elementPath)
+  const isCurrentElementContentAffecting = treatElementAsContentAffecting(
+    metadata,
+    allElementProps,
+    elementPath,
+  )
+
+  const storyboardOrGroupChild = isStoryboardOrGroupChild(metadata, allElementProps, elementPath)
 
   // if current wrapper is grouplike, children won't need adjusting since positions are not affected
-  if (isCurrentWrapperGrouplike) {
+  if (!storyboardOrGroupChild && isCurrentElementContentAffecting) {
     return commands
   }
 
@@ -197,9 +210,13 @@ function wrapInDiv(
     height: height,
   }
 
-  const isInFlowLayout = isElementInFlowLayout(metadata, allElementProps, elementPath)
+  const storyboardOrGroupChild = isDescendantOfGroups(
+    metadata,
+    allElementProps,
+    EP.parentPath(elementPath),
+  )
 
-  if (!isInFlowLayout) {
+  if (storyboardOrGroupChild || EP.isStoryboardChild(elementPath)) {
     newStyle.position = 'absolute'
     newStyle.top = offset.top
     newStyle.left = offset.left
@@ -290,22 +307,6 @@ function getChildFrameAdjustCommands(
   )
 
   return [...adjustTopCommands, ...adjustLeftCommands]
-}
-
-function isElementInFlowLayout(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  elementPath: ElementPath,
-): boolean {
-  if (
-    isStoryboardOrGroupChild(metadata, allElementProps, elementPath) ||
-    treatElementAsContentAffecting(metadata, allElementProps, elementPath)
-  ) {
-    return false
-  }
-  return MetadataUtils.isPositionedByFlow(
-    MetadataUtils.findElementByElementPath(metadata, elementPath),
-  )
 }
 
 const simpleControlStyles = getControlStyles('simple')

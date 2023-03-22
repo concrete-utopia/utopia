@@ -40,11 +40,25 @@ export function isStoryboardOrGroupChild(
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): boolean {
-  if (
-    EP.isStoryboardChild(elementPath) ||
-    treatElementAsContentAffecting(metadata, allElementProps, elementPath)
-  ) {
+  if (EP.isStoryboardPath(elementPath) || EP.isStoryboardChild(elementPath)) {
+    return true
+  }
+
+  if (treatElementAsContentAffecting(metadata, allElementProps, elementPath)) {
     return isStoryboardOrGroupChild(metadata, allElementProps, EP.parentPath(elementPath))
   }
-  return EP.isStoryboardChild(elementPath)
+
+  return false
+}
+
+export function isDescendantOfGroups(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): boolean {
+  if (treatElementAsContentAffecting(metadata, allElementProps, elementPath)) {
+    return isDescendantOfGroups(metadata, allElementProps, EP.parentPath(elementPath))
+  }
+
+  return false
 }
