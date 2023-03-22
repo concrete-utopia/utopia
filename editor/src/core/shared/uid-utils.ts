@@ -42,6 +42,9 @@ import {
   jsExpressionNestedObject,
   jsExpressionFunctionCall,
   jsExpressionOtherJavaScript,
+  JSExpression,
+  JSXArrayElement,
+  JSXProperty,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -52,6 +55,7 @@ import {
 import { objectMap } from './object-utils'
 import { ElementPath } from './project-file-types'
 import * as PP from './property-path'
+import { assertNever } from './utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -175,29 +179,6 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   }
 }
 
-export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): JSXElementChild {
-  if (isJSXElement(element)) {
-    return jsxElement(
-      element.name,
-      uid,
-      setJSXAttributesAttribute(element.props, 'data-uid', jsExpressionValue(uid, emptyComments)),
-      element.children,
-    )
-  } else if (isJSXConditionalExpression(element)) {
-    return jsxConditionalExpression(
-      uid,
-      element.condition,
-      element.originalConditionString,
-      element.whenTrue,
-      element.whenFalse,
-      element.comments,
-    )
-  } else {
-    // TODO: Do other cases need this?
-    return element
-  }
-}
-
 export function parseUID(
   attributes: JSXAttributes,
   comments: ParsedComments,
@@ -263,12 +244,17 @@ export function fixUtopiaElement(
     }
   }
 
+  function addAndMaybeUpdateUID(currentUID: string): string {
+    const fixedUID = uniqueIDs.includes(currentUID)
+      ? generateConsistentUID(new Set(uniqueIDs), currentUID)
+      : currentUID
+    uniqueIDs.push(fixedUID)
+    return fixedUID
+  }
+
   function fixJSXFragment(fragment: JSXFragment): JSXFragment {
     const fixedChildren = fragment.children.map((child) => fixUtopiaElementInner(child))
-    const fixedUID = uniqueIDs.includes(fragment.uid)
-      ? generateConsistentUID(new Set(uniqueIDs), fragment.uid)
-      : fragment.uid
-    uniqueIDs.push(fixedUID)
+    const fixedUID = addAndMaybeUpdateUID(fragment.uid)
     return {
       ...fragment,
       uid: fixedUID,
@@ -279,10 +265,7 @@ export function fixUtopiaElement(
   function fixJSXConditionalExpression(
     conditional: JSXConditionalExpression,
   ): JSXConditionalExpression {
-    const fixedUID = uniqueIDs.includes(conditional.uid)
-      ? generateConsistentUID(new Set(uniqueIDs), conditional.uid)
-      : conditional.uid
-    uniqueIDs.push(fixedUID)
+    const fixedUID = addAndMaybeUpdateUID(conditional.uid)
     return {
       ...conditional,
       uid: fixedUID,
@@ -291,25 +274,129 @@ export function fixUtopiaElement(
     }
   }
 
-  function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
-    if (isJSXElement(element)) {
-      return fixJSXElement(element)
-    } else if (isJSXFragment(element)) {
-      return fixJSXFragment(element)
-    } else if (isJSXConditionalExpression(element)) {
-      return fixJSXConditionalExpression(element)
-    } else if (isJSExpressionOtherJavaScript(element)) {
-      const fixedElementsWithin = objectMap(fixJSXElement, element.elementsWithin)
-      if (shallowEqual(element.elementsWithin, fixedElementsWithin)) {
-        return element
-      } else {
+  function fixJSXTextBlock(textBlock: JSXTextBlock): JSXTextBlock {
+    const fixedUID = addAndMaybeUpdateUID(textBlock.uniqueID)
+    return {
+      ...textBlock,
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixJSFunctionCall(call: JSExpressionFunctionCall): JSExpressionFunctionCall {
+    const fixedUID = addAndMaybeUpdateUID(call.uniqueID)
+    return {
+      ...call,
+      uniqueID: fixedUID,
+      parameters: call.parameters.map(fixJSExpression),
+    }
+  }
+
+  function fixJSOtherJavaScript(
+    otherJavaScript: JSExpressionOtherJavaScript,
+  ): JSExpressionOtherJavaScript {
+    const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uniqueID)
+    return {
+      ...otherJavaScript,
+      uniqueID: fixedUID,
+      elementsWithin: objectMap(fixJSXElement, otherJavaScript.elementsWithin),
+    }
+  }
+
+  function fixJSXArrayElement(element: JSXArrayElement): JSXArrayElement {
+    switch (element.type) {
+      case 'ARRAY_VALUE':
         return {
           ...element,
-          elementsWithin: fixedElementsWithin,
+          value: fixJSExpression(element.value),
         }
-      }
-    } else {
-      return element
+      case 'ARRAY_SPREAD':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      default:
+        assertNever(element)
+    }
+  }
+
+  function fixJSXProperty(element: JSXProperty): JSXProperty {
+    switch (element.type) {
+      case 'PROPERTY_ASSIGNMENT':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      case 'SPREAD_ASSIGNMENT':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      default:
+        assertNever(element)
+    }
+  }
+
+  function fixJSExpression(value: JSExpression): JSExpression {
+    switch (value.type) {
+      case 'ATTRIBUTE_VALUE':
+        return fixJSExpressionValue(value)
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        return fixJSNestedArray(value)
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        return fixJSNestedObject(value)
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        return fixJSFunctionCall(value)
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        return fixJSOtherJavaScript(value)
+      default:
+        assertNever(value)
+    }
+  }
+
+  function fixJSExpressionValue(value: JSExpressionValue<any>): JSExpressionValue<any> {
+    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    return {
+      ...value,
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixJSNestedArray(value: JSExpressionNestedArray): JSExpressionNestedArray {
+    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    return {
+      ...value,
+      content: value.content.map(fixJSXArrayElement),
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixJSNestedObject(value: JSExpressionNestedObject): JSExpressionNestedObject {
+    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    return {
+      ...value,
+      content: value.content.map(fixJSXProperty),
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        return fixJSXElement(element)
+      case 'JSX_FRAGMENT':
+        return fixJSXFragment(element)
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return fixJSXConditionalExpression(element)
+      case 'JSX_TEXT_BLOCK':
+        return fixJSXTextBlock(element)
+      case 'ATTRIBUTE_VALUE':
+      case 'ATTRIBUTE_NESTED_ARRAY':
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        return fixJSExpression(element)
+      default:
+        assertNever(element)
     }
   }
 
@@ -518,7 +605,12 @@ function isElementInstanceMetadata(
 
 export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
   if (isUtopiaJSXElement(element)) {
-    return setUtopiaIDOnJSXElement(element, uid)
+    return jsxElement(
+      element.name,
+      uid,
+      setJSXAttributesAttribute(element.props, 'data-uid', jsExpressionValue(uid, emptyComments)),
+      element.children,
+    )
   } else if (isUtopiaJSXFragment(element)) {
     return jsxFragment(uid, element.children, element.longForm)
   } else if (isJSXConditionalExpression(element)) {

@@ -2,14 +2,10 @@ import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
-  isJSXElement,
   isJSXElementLike,
-  isJSXFragment,
   isJSXTextBlock,
-  isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
-  UtopiaJSXComponent,
 } from '../../shared/element-template'
 import {
   isParseSuccess,
@@ -18,7 +14,7 @@ import {
   StaticElementPathPart,
 } from '../../shared/project-file-types'
 import * as EP from '../../shared/element-path'
-import { getUtopiaID, setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
+import { getUtopiaID, setUtopiaID } from '../../shared/uid-utils'
 import {
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
@@ -28,7 +24,6 @@ import {
   getComponentsFromTopLevelElements,
 } from '../../model/project-file-utils'
 import { mapArrayToDictionary } from '../../shared/array-utils'
-import { fastForEach } from '../../shared/utils'
 
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
@@ -93,7 +88,7 @@ export function fixParseSuccessUIDs(
           workingComponents,
           mapping.pathToModify,
           (element) => {
-            return setUtopiaIDOnJSXElement(element, mapping.oldUID)
+            return setUtopiaID(element, mapping.oldUID)
           },
         )
       } else {
