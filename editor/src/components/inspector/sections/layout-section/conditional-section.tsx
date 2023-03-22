@@ -12,12 +12,12 @@ import {
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
-  ChildOrAttribute,
   ConditionValue,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { unless } from '../../../../utils/react-conditionals'
@@ -87,7 +87,7 @@ const branchNavigatorEntriesSelector = createCachedSelector(
     const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
 
     function getNavigatorEntry(
-      clause: ChildOrAttribute,
+      clause: JSXElementChild,
       conditionalCase: ConditionalCase,
     ): NavigatorEntry | null {
       return (
