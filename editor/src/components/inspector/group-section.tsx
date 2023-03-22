@@ -47,6 +47,11 @@ import { styleP } from './inspector-common'
 import { cssNumber } from './common/css-utils'
 import { absolute } from '../../utils/utils'
 import { AllElementProps } from '../editor/store/editor-state'
+import {
+  getChildrenOffsetFromGlobalFrame,
+  getChildrenOffsets,
+  isStoryboardOrGroupChild,
+} from './group-section-utils'
 
 interface PositioningProps {
   width: number
@@ -69,6 +74,7 @@ export type WrapperType = Wrapper['type']
 
 function wrapInFragment(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
@@ -78,8 +84,7 @@ function wrapInFragment(
   }
 
   const { children, uid } = instance.element.value
-
-  return [
+  const commands = [
     deleteElement('always', elementPath),
     addElement(
       'always',
@@ -88,10 +93,33 @@ function wrapInFragment(
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
   ]
+
+  const isCurrentWrapperGrouplike = isStoryboardOrGroupChild(metadata, allElementProps, elementPath)
+
+  // if current wrapper is grouplike, children won't need adjusting since positions are not affected
+  if (isCurrentWrapperGrouplike) {
+    return commands
+  }
+
+  const offset = instance.specialSizeMeasurements.offset
+
+  // however if current wrapper is not grouplike, children will have to be shifted by minus
+  // the offset of the current parent
+
+  return [
+    ...commands,
+    ...getChildFrameAdjustCommands(
+      metadata,
+      allElementProps,
+      elementPath,
+      canvasPoint({ x: -offset.x, y: -offset.y }),
+    ),
+  ]
 }
 
 function wrapInSizelessDiv(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
@@ -103,7 +131,7 @@ function wrapInSizelessDiv(
   const { children, uid } = instance.element.value
   const { element } = detectBestWrapperElement(metadata, elementPath, () => uid)
 
-  return [
+  const commands = [
     deleteElement('always', elementPath),
     addElement(
       'always',
@@ -113,6 +141,27 @@ function wrapInSizelessDiv(
         children: children,
       },
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
+  ]
+
+  const isCurrentWrapperGrouplike = isStoryboardOrGroupChild(metadata, allElementProps, elementPath)
+
+  // if current wrapper is grouplike, children won't need adjusting since positions are not affected
+  if (isCurrentWrapperGrouplike) {
+    return commands
+  }
+
+  // however if current wrapper is not grouplike, children will have to be shifted by minus
+  // the offset of the current parent
+
+  const offset = instance.specialSizeMeasurements.offset
+  return [
+    ...commands,
+    ...getChildFrameAdjustCommands(
+      metadata,
+      allElementProps,
+      elementPath,
+      canvasPoint({ x: -offset.x, y: -offset.y }),
     ),
   ]
 }
@@ -125,7 +174,7 @@ function wrapInDiv(
 ): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const offset = MetadataUtils.getChildrenOffset(metadata, elementPath)
+  const offset = getChildrenOffsets(metadata, elementPath)
 
   if (
     instance == null ||
@@ -139,7 +188,7 @@ function wrapInDiv(
   const { children, uid } = instance.element.value
   const { element, style } = detectBestWrapperElement(metadata, elementPath, () => uid)
 
-  const { top, left, width, height } = positioningProps
+  const { width, height } = positioningProps
 
   const props: Record<string, any> = { 'data-uid': jsxAttributeValue(uid, emptyComments) }
   const newStyle = {
@@ -176,55 +225,7 @@ function wrapInDiv(
       metadata,
       allElementProps,
       elementPath,
-      canvasPoint({ x: left, y: top }),
-    ),
-  ]
-}
-
-function wrapInElement(
-  wrapper: Wrapper,
-  originalWrapperType: WrapperType,
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const wrapperCommands = () => {
-    switch (wrapper.type) {
-      case 'div':
-        return wrapInDiv(metadata, allElementProps, elementPath, wrapper.props)
-      case 'fragment':
-        return wrapInFragment(metadata, elementPath)
-      case 'sizeless-div':
-        return wrapInSizelessDiv(metadata, elementPath)
-      default:
-        assertNever(wrapper)
-    }
-  }
-
-  if (originalWrapperType === 'fragment' || originalWrapperType === 'sizeless-div') {
-    return wrapperCommands()
-  }
-
-  if (wrapper.type === 'div') {
-    // NOOP
-    return []
-  }
-
-  // here we're converting from an absolutely positioned parent with offset to one
-  // that doesn't provide offsets for the children, so child frames have to be adjusted
-
-  const parentFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
-  if (parentFrame == null || isInfinityRectangle(parentFrame)) {
-    return []
-  }
-
-  return [
-    ...wrapperCommands(),
-    ...getChildFrameAdjustCommands(
-      metadata,
-      allElementProps,
-      elementPath,
-      canvasPoint({ x: -parentFrame.x, y: -parentFrame.y }),
+      canvasPoint({ x: offset.left, y: offset.top }),
     ),
   ]
 }
@@ -234,7 +235,7 @@ function getWrapperPositioningProps(
   elementPath: ElementPath,
 ): PositioningProps | null {
   const frame = MetadataUtils.getChildrenGlobalBoundingBox(metadata, elementPath)
-  const offset = MetadataUtils.getChildrenOffset(metadata, elementPath)
+  const offset = getChildrenOffsetFromGlobalFrame(metadata, elementPath)
 
   if (frame == null || offset == null) {
     return null
@@ -289,17 +290,6 @@ function getChildFrameAdjustCommands(
   )
 
   return [...adjustTopCommands, ...adjustLeftCommands]
-}
-
-function isStoryboardOrGroupChild(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  elementPath: ElementPath,
-): boolean {
-  if (treatElementAsContentAffecting(metadata, allElementProps, elementPath)) {
-    return isStoryboardOrGroupChild(metadata, allElementProps, EP.parentPath(elementPath))
-  }
-  return EP.isStoryboardChild(elementPath)
 }
 
 function isElementInFlowLayout(
@@ -384,37 +374,18 @@ export const GroupSection = React.memo(() => {
 
   const onChange = React.useCallback(
     ({ value }: SelectOption) => {
-      const originalMode = currentValue.value as WrapperType
       const mode = value as WrapperType
       const commands = selectedViewsRef.current.flatMap((elementPath) => {
         switch (mode) {
           case 'fragment':
-            return wrapInElement(
-              { type: 'fragment' },
-              originalMode,
-              metadataRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
+            return wrapInFragment(metadataRef.current, allElementPropsRef.current, elementPath)
           case 'sizeless-div':
-            return wrapInElement(
-              { type: 'sizeless-div' },
-              originalMode,
-              metadataRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
+            return wrapInSizelessDiv(metadataRef.current, allElementPropsRef.current, elementPath)
           case 'div':
             return (
               optionalMap(
                 (props) =>
-                  wrapInElement(
-                    { type: 'div', props: props },
-                    originalMode,
-                    metadataRef.current,
-                    allElementPropsRef.current,
-                    elementPath,
-                  ),
+                  wrapInDiv(metadataRef.current, allElementPropsRef.current, elementPath, props),
                 getWrapperPositioningProps(metadataRef.current, elementPath),
               ) ?? []
             )
@@ -424,7 +395,7 @@ export const GroupSection = React.memo(() => {
       })
       dispatch([applyCommandsAction(commands)])
     },
-    [allElementPropsRef, currentValue.value, dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   if (selectedViews.length !== 1) {
