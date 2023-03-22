@@ -34,8 +34,10 @@ import {
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
   isUtopiaJSXComponent,
+  JSXConditionalExpressionWithoutUID,
   JSXElement,
   JSXElementWithoutUID,
+  JSXFragmentWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
@@ -94,7 +96,10 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
-export type ComponentElementToInsert = JSXElementWithoutUID | 'conditional' | 'fragment'
+export type ComponentElementToInsert =
+  | JSXElementWithoutUID
+  | JSXConditionalExpressionWithoutUID
+  | JSXFragmentWithoutUID
 
 export interface ComponentInfo {
   insertMenuLabel: string

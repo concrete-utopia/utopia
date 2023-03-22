@@ -5049,7 +5049,7 @@ export const UPDATE_FNS = {
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
-          if (action.toInsert.element === 'conditional' || action.toInsert.element === 'fragment') {
+          if (action.toInsert.element.type !== 'JSX_ELEMENT') {
             return success
           }
 

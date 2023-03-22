@@ -15,6 +15,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {},
         "name": "App",
@@ -75,6 +76,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -100,6 +102,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -125,6 +128,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -150,6 +154,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -175,6 +180,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -200,6 +206,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -225,6 +232,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -335,6 +343,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -397,6 +406,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -420,7 +430,38 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": "conditional",
+        "element": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "condition": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": true,
+          },
+          "originalConditionString": "true",
+          "type": "JSX_CONDITIONAL_EXPRESSION",
+          "whenFalse": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": null,
+          },
+          "whenTrue": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": null,
+          },
+        },
         "importsToAdd": Object {},
         "name": "Conditional",
         "stylePropOptions": Array [
@@ -436,7 +477,11 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": "fragment",
+        "element": Object {
+          "children": Array [],
+          "longForm": false,
+          "type": "JSX_FRAGMENT",
+        },
         "importsToAdd": Object {},
         "name": "Fragment",
         "stylePropOptions": Array [
@@ -474,6 +519,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {},
         "name": "App",
@@ -534,6 +580,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -559,6 +606,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -584,6 +632,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -609,6 +658,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -634,6 +684,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -659,6 +710,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -684,6 +736,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -794,6 +847,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -856,6 +910,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -879,7 +934,38 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": "conditional",
+        "element": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "condition": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": true,
+          },
+          "originalConditionString": "true",
+          "type": "JSX_CONDITIONAL_EXPRESSION",
+          "whenFalse": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": null,
+          },
+          "whenTrue": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": null,
+          },
+        },
         "importsToAdd": Object {},
         "name": "Conditional",
         "stylePropOptions": Array [
@@ -895,7 +981,11 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": "fragment",
+        "element": Object {
+          "children": Array [],
+          "longForm": false,
+          "type": "JSX_FRAGMENT",
+        },
         "importsToAdd": Object {},
         "name": "Fragment",
         "stylePropOptions": Array [
@@ -920,6 +1010,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1084,6 +1175,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1119,6 +1211,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1203,6 +1296,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1415,6 +1509,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1499,6 +1594,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1679,6 +1775,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1749,6 +1846,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1803,6 +1901,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1840,6 +1939,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -2038,6 +2138,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
