@@ -18,11 +18,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  wait,
-} from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {

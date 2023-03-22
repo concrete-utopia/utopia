@@ -22,11 +22,14 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { unless } from '../../../../utils/react-conditionals'
 import {
-  Button,
+  FlexColumn,
   FlexRow,
+  Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
+  SquareButton,
   StringInput,
+  Tooltip,
   useColorTheme,
   UtopiaStyles,
 } from '../../../../uuiui'
@@ -365,17 +368,6 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               }}
             />
           </UIGridRow>
-          <UIGridRow padded={true} variant='<-------------1fr------------->'>
-            <Button
-              style={{ flex: 1 }}
-              highlight
-              spotlight
-              onClick={replaceBranches}
-              data-testid={ConditionalsControlSwitchBranches}
-            >
-              Switch branches
-            </Button>
-          </UIGridRow>
           {conditionValue !== 'multiselect' ? (
             <ConditionalOverrideControl
               controlStatus={controlStatus}
@@ -386,16 +378,25 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           ) : null}
         </React.Fragment>,
       )}
-      <BranchRow
-        label={branchLabels.true}
-        navigatorEntry={branchNavigatorEntries?.true ?? null}
-        conditionalCase='true-case'
-      />
-      <BranchRow
-        label={branchLabels.false}
-        navigatorEntry={branchNavigatorEntries?.false ?? null}
-        conditionalCase='false-case'
-      />
+      <FlexRow>
+        <FlexColumn style={{ flexGrow: 2 }}>
+          <BranchRow
+            label={branchLabels.true}
+            navigatorEntry={branchNavigatorEntries?.true ?? null}
+            conditionalCase='true-case'
+          />
+          <BranchRow
+            label={branchLabels.false}
+            navigatorEntry={branchNavigatorEntries?.false ?? null}
+            conditionalCase='false-case'
+          />
+        </FlexColumn>
+        <Tooltip title={'Switch branches'}>
+          <SquareButton onClick={replaceBranches} data-testid={ConditionalsControlSwitchBranches}>
+            <Icons.Flip category={'element'} width={18} height={18} />
+          </SquareButton>
+        </Tooltip>
+      </FlexRow>
     </React.Fragment>
   )
 })
