@@ -50,6 +50,8 @@ import {
 } from '../controls/conditional-override-control'
 import { getOptionControlTestId } from '../controls/option-chain-control'
 import {
+  ConditionalsControlBranchFalse,
+  ConditionalsControlBranchTrue,
   ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranches,
@@ -2705,6 +2707,38 @@ describe('inspector tests with real metadata', () => {
         ConditionalsControlSectionExpressionTestId,
       )
       expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
+    })
+    it('shows the branches in the inspector', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'><div>Another div</div></div>
+        ) : (
+          <h1 data-uid='ccc' data-testid='ccc'>hello there</h1>
+        )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      const branchElementTrue = renderResult.renderedDOM.getByTestId(ConditionalsControlBranchTrue)
+      const branchElementFalse = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlBranchFalse,
+      )
+
+      expect(branchElementTrue.innerText).toEqual('div')
+      expect(branchElementFalse.innerText).toEqual('h1')
     })
   })
 })
