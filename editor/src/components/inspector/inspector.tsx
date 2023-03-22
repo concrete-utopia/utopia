@@ -364,8 +364,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
           <GroupSection />
-          <FlexSection />
-          <SizingSection />
           <PositionSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
