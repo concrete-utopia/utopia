@@ -61,7 +61,7 @@ type Wrapper =
       props: PositioningProps
     }
 
-type WrapperType = Wrapper['type']
+export type WrapperType = Wrapper['type']
 
 // TODO: abstract out common code here
 
@@ -297,7 +297,7 @@ const selectedElementGrouplikeTypeSelector = createSelector(
   },
 )
 
-function optionForWrapperType(wrapperType: WrapperType): SelectOption {
+export function groupSectionOption(wrapperType: WrapperType): SelectOption {
   switch (wrapperType) {
     case 'div':
       return { value: 'div', label: 'Div' }
@@ -310,9 +310,9 @@ function optionForWrapperType(wrapperType: WrapperType): SelectOption {
   }
 }
 
-const FragmentOption = optionForWrapperType('fragment')
-const GroupOption = optionForWrapperType('sizeless-div')
-const DivOption = optionForWrapperType('div')
+const FragmentOption = groupSectionOption('fragment')
+const GroupOption = groupSectionOption('sizeless-div')
+const DivOption = groupSectionOption('div')
 
 const Options: Array<SelectOption> = [FragmentOption, GroupOption, DivOption]
 
