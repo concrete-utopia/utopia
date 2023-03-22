@@ -1,14 +1,13 @@
 import React from 'react'
 import { ConditionValue } from '../../../core/shared/element-template'
-import { when } from '../../../utils/react-conditionals'
-import { ButtonProps, FlexRow, Icons, Tooltip, useColorTheme } from '../../../uuiui'
+import { ButtonProps, FlexRow, Icons, Tooltip } from '../../../uuiui'
 import { SquareButton } from '../../titlebar/buttons'
 import { ControlStatus, ControlStyles } from '../common/control-status'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import { OptionChainControl, OptionChainOption } from './option-chain-control'
 
 export const ConditionalOverrideControlTestIdPrefix = 'conditional-override-control'
-export const ConditionalOverrideControlDisableTestId = 'conditional-override-control-disable'
+export const ConditionalOverrideControlToggleTestId = 'conditional-override-control-toggle'
 
 export interface ConditionalOverrideControlProps extends ButtonProps {
   controlStatus: ControlStatus
@@ -50,7 +49,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
       Result
       <FlexRow>
         <Tooltip title={'Override'}>
-          <SquareButton onClick={toggleOverride} testId={ConditionalOverrideControlDisableTestId}>
+          <SquareButton onClick={toggleOverride} testId={ConditionalOverrideControlToggleTestId}>
             {getPinIcon(controlStatus, controlStyles)}
           </SquareButton>
         </Tooltip>

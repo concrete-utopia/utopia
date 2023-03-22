@@ -18,11 +18,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  wait,
-} from '../../../utils/utils.test-utils'
+import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
@@ -45,16 +41,16 @@ import {
 } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
-  ConditionalOverrideControlDisableTestId,
+  ConditionalOverrideControlToggleTestId,
   ConditionalOverrideControlTestIdPrefix,
 } from '../controls/conditional-override-control'
 import { getOptionControlTestId } from '../controls/option-chain-control'
 import {
-  ConditionalsControlBranchFalse,
-  ConditionalsControlBranchTrue,
+  ConditionalsControlBranchFalseTestId,
+  ConditionalsControlBranchTrueTestId,
   ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
-  ConditionalsControlSwitchBranches,
+  ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
 async function getControl(
   controlTestId: string,
@@ -2348,7 +2344,7 @@ describe('inspector tests with real metadata', () => {
 
       // disable override
       {
-        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlDisableTestId, [
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlToggleTestId, [
           targetPath,
         ])
 
@@ -2394,7 +2390,7 @@ describe('inspector tests with real metadata', () => {
 
       // override to the current condition value
       {
-        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlDisableTestId, [
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlToggleTestId, [
           targetPath,
         ])
 
@@ -2465,7 +2461,7 @@ describe('inspector tests with real metadata', () => {
 
       // switch branches
       {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSwitchBranches, [
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSwitchBranchesTestId, [
           targetPath,
         ])
 
@@ -2779,9 +2775,11 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      const branchElementTrue = renderResult.renderedDOM.getByTestId(ConditionalsControlBranchTrue)
+      const branchElementTrue = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlBranchTrueTestId,
+      )
       const branchElementFalse = renderResult.renderedDOM.getByTestId(
-        ConditionalsControlBranchFalse,
+        ConditionalsControlBranchFalseTestId,
       )
 
       expect(branchElementTrue.innerText).toEqual('div')
