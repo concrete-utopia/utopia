@@ -159,9 +159,6 @@ describe('adjust font weight with the keyboard', () => {
   })
 
   describe('retargets to group children', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it(`sets font weight in ${type}`, async () => {
         const editor = await renderTestEditorWithCode(

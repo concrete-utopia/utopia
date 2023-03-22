@@ -467,8 +467,6 @@ describe('Select Mode Double Clicking With Fragments', () => {
   // elements. These are special cases because these fragments and their components
   // do not appear in the dom.
 
-  setFeatureForBrowserTests('Fragment support', true)
-
   it('One click to select child of Card Scene Root', async () => {
     FOR_TESTS_setNextGeneratedUids([
       'cardlistfragment',

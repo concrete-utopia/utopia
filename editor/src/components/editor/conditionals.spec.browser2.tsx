@@ -27,8 +27,6 @@ import {
 import { ElementPaste } from './action-types'
 
 describe('conditionals', () => {
-  before(() => setFeatureEnabled('Conditional support', true))
-  after(() => setFeatureEnabled('Conditional support', false))
   describe('deletion', () => {
     it('replaces a branch with null', async () => {
       const startSnippet = `

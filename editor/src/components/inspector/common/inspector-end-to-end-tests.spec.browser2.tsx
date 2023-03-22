@@ -2198,8 +2198,6 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('conditionals', () => {
-    before(() => setFeatureEnabled('Conditional support', true))
-    after(() => setFeatureEnabled('Conditional support', false))
     it('overrides conditional branch', async () => {
       const startSnippet = `
         <div data-uid='aaa'>

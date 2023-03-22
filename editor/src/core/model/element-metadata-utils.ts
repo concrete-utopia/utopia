@@ -1094,14 +1094,11 @@ export const MetadataUtils = {
         if (subTree != null) {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
-            (isFeatureEnabled('Fragment support') || !isFragment) &&
-            (isFeatureEnabled('Conditional support') || !isConditional) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
@@ -1115,7 +1112,7 @@ export const MetadataUtils = {
           let subTreeChildren: ElementPathTreeRoot = subTree.children
           // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
           // case for consistent ordering.
-          if (isFeatureEnabled('Conditional support') && isConditional) {
+          if (isConditional) {
             const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
             if (
               elementMetadata != null &&

@@ -1379,9 +1379,6 @@ export var storyboard = (
     })
 
     describe('groups', () => {
-      setFeatureForBrowserTests('Fragment support', true)
-      setFeatureForBrowserTests('Conditional support', true)
-
       AllContentAffectingTypes.forEach((type) => {
         describe(`– ${type} parents`, () => {
           it('vertical snap lines are shown', async () => {
@@ -1500,9 +1497,6 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
   })
 
   describe('when a content-affecting element is resized the parent outlines become visible', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it(`resizing a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
@@ -1778,9 +1772,6 @@ async function makeResizeInGroupProject(
 }
 
 describe('Absolute Resize Group-like behaviors', () => {
-  setFeatureForBrowserTests('Fragment support', true)
-  setFeatureForBrowserTests('Conditional support', true)
-
   AllContentAffectingTypes.forEach((type) => {
     describe(`group-like ${type} element`, () => {
       it('resizing a group is the same as multiselect resizing the children', async () => {

@@ -135,8 +135,6 @@ describe('Absolute Duplicate Strategy', () => {
   })
 
   describe('with content-affecting elements', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
     AllContentAffectingTypes.forEach((type) => {
       it(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(

@@ -752,8 +752,6 @@ function printCode(projectFile: ParseSuccess): string {
 }
 
 describe('findJSXElementChildAtPath', () => {
-  setFeatureForUnitTests('Conditional support', true)
-
   function findElement(file: ParseSuccess, pathString: string) {
     const path = fromStringStatic(pathString)
     const foundElement = findJSXElementChildAtPath(

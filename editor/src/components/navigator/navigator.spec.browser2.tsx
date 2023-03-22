@@ -1129,8 +1129,6 @@ describe('Navigator', () => {
   })
 
   describe('reparenting to children-affecting elements', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
     it('reparenting into fragment reparents to the correct index', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithGroupsAndNotGroups,
