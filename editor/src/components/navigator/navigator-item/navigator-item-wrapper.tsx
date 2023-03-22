@@ -74,7 +74,7 @@ const elementSupportsChildrenSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const labelSelector = createCachedSelector(
+export const labelSelector = createCachedSelector(
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (elementMetadata, allElementProps) => {
@@ -102,7 +102,7 @@ const noOfChildrenSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-function getNavigatorEntryLabel(
+export function getNavigatorEntryLabel(
   navigatorEntry: NavigatorEntry,
   labelForTheElement: string,
 ): string {
