@@ -349,24 +349,22 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       </InspectorSubsectionHeader>
       {unless(
         originalConditionExpression === 'multiselect',
-        <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
-          Condition
-          <StringInput
-            testId={ConditionalsControlSectionExpressionTestId}
-            value={conditionExpression}
-            onChange={onExpressionChange}
-            onKeyUp={onExpressionKeyUp}
-            onBlur={onUpdateExpression}
-            css={{
-              ...UtopiaStyles.fontStyles.monospaced,
-              textAlign: 'center',
-              fontWeight: 600,
-            }}
-          />
-        </UIGridRow>,
-      )}
-      {originalConditionExpression !== 'multiselect' && conditionValue !== 'multiselect' ? (
         <React.Fragment>
+          <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
+            Condition
+            <StringInput
+              testId={ConditionalsControlSectionExpressionTestId}
+              value={conditionExpression}
+              onChange={onExpressionChange}
+              onKeyUp={onExpressionKeyUp}
+              onBlur={onUpdateExpression}
+              css={{
+                ...UtopiaStyles.fontStyles.monospaced,
+                textAlign: 'center',
+                fontWeight: 600,
+              }}
+            />
+          </UIGridRow>
           <UIGridRow padded={true} variant='<-------------1fr------------->'>
             <Button
               style={{ flex: 1 }}
@@ -378,14 +376,16 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               Switch branches
             </Button>
           </UIGridRow>
-          <ConditionalOverrideControl
-            controlStatus={controlStatus}
-            controlStyles={controlStyles}
-            setConditionOverride={setConditionOverride}
-            conditionValue={conditionValue}
-          />
-        </React.Fragment>
-      ) : null}
+          {conditionValue !== 'multiselect' ? (
+            <ConditionalOverrideControl
+              controlStatus={controlStatus}
+              controlStyles={controlStyles}
+              setConditionOverride={setConditionOverride}
+              conditionValue={conditionValue}
+            />
+          ) : null}
+        </React.Fragment>,
+      )}
       <BranchRow
         label={branchLabels.true}
         navigatorEntry={branchNavigatorEntries?.true ?? null}
