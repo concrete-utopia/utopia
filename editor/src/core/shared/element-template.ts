@@ -1133,23 +1133,19 @@ export type JSXElementChild =
   | JSXFragment
   | JSXConditionalExpression
 
-export type WithJSXElementChildType = Pick<JSXElementChild, 'type'>
-
-export function isJSXElement(element: WithJSXElementChildType): element is JSXElement {
+export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
 }
 
-export function isJSXArbitraryBlock(
-  element: WithJSXElementChildType,
-): element is JSXArbitraryBlock {
+export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArbitraryBlock {
   return element.type === 'JSX_ARBITRARY_BLOCK'
 }
 
-export function isJSXTextBlock(element: WithJSXElementChildType): element is JSXTextBlock {
+export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {
   return element.type === 'JSX_TEXT_BLOCK'
 }
 
-export function isJSXFragment(element: WithJSXElementChildType): element is JSXFragment {
+export function isJSXFragment(element: JSXElementChild): element is JSXFragment {
   return element.type === 'JSX_FRAGMENT'
 }
 
@@ -1159,7 +1155,7 @@ export function isJSXConditionalExpression(
   return element.type === 'JSX_CONDITIONAL_EXPRESSION'
 }
 
-export function isJSXElementLike(element: WithJSXElementChildType): element is JSXElementLike {
+export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
 }
 

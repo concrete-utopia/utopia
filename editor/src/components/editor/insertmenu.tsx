@@ -13,7 +13,6 @@ import {
   JSXAttributesPart,
   isJSXAttributesEntry,
   getJSXAttribute,
-  isJSXElement,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -241,11 +240,11 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              if (!isJSXElement(component.element)) {
+              if (component.element.type != 'JSX_ELEMENT') {
                 return null
               }
               const insertItemOnMouseDown = (event: React.MouseEvent) => {
-                if (!isJSXElement(component.element)) {
+                if (component.element.type != 'JSX_ELEMENT') {
                   return
                 }
 

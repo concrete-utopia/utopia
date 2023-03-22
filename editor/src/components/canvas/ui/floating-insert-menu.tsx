@@ -43,7 +43,6 @@ import {
 } from '../../../core/model/element-template-utils'
 import {
   emptyComments,
-  isJSXElement,
   jsxAttributeValue,
   JSXConditionalExpressionWithoutUID,
   jsxElement,
@@ -514,7 +513,7 @@ export var FloatingMenu = React.memo(() => {
 
   const onChangeElement = React.useCallback(
     (pickedInsertableComponent: InsertMenuItemValue): Array<EditorAction> => {
-      if (!isJSXElement(pickedInsertableComponent.element)) {
+      if (pickedInsertableComponent.element.type !== 'JSX_ELEMENT') {
         return []
       }
       const selectedViews = selectedViewsref.current

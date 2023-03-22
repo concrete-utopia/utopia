@@ -2786,7 +2786,7 @@ export const ComponentElementToInsertKeepDeepEquality: KeepDeepEqualityCall<Comp
     createCallWithTripleEquals<ComponentElementToInsert>(),
     JSXElementWithoutUIDKeepDeepEquality(),
     (p): p is JSXConditionalExpressionWithoutUID => p.type === 'JSX_CONDITIONAL_EXPRESSION',
-    (p): p is JSXElementWithoutUID => isJSXElement(p),
+    (p): p is JSXElementWithoutUID => p.type === 'JSX_ELEMENT',
   )
 
 export const ComponentInfoKeepDeepEquality: KeepDeepEqualityCall<ComponentInfo> =
