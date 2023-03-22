@@ -45,7 +45,12 @@ export function keyboardReorderStrategy(
   const isFlexOrFlow =
     MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
       elementMetadata,
-    ) || MetadataUtils.isPositionedByFlow(elementMetadata)
+    ) ||
+    MetadataUtils.isPositionedByFlow(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      target,
+    )
 
   if (siblings.length <= 1 || !isReorderAllowed(siblings) || !isFlexOrFlow) {
     return null

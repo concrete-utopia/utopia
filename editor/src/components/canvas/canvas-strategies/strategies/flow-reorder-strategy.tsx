@@ -30,10 +30,6 @@ export function flowReorderStrategy(
     return null
   }
   const target = selectedElements[0]
-  const elementMetadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    target,
-  )
 
   const singleAxisAutolayoutDirection = singleAxisAutoLayoutSiblingDirections(
     target,
@@ -41,8 +37,16 @@ export function flowReorderStrategy(
   )
 
   if (
-    !MetadataUtils.isPositionedByFlow(elementMetadata) ||
-    !isValidFlowReorderTarget(target, canvasState.startingMetadata) ||
+    !MetadataUtils.isPositionedByFlow(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      target,
+    ) ||
+    !isValidFlowReorderTarget(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      target,
+    ) ||
     singleAxisAutolayoutDirection === 'non-single-axis-autolayout'
   ) {
     return null

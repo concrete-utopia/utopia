@@ -83,7 +83,11 @@ export function flexReorderStrategy(
               interactionSession,
               customStrategyState,
               reorderDirection,
-              MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout,
+              (metadata, _, path) =>
+                MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+                  path,
+                  metadata,
+                ),
             )
       },
     },

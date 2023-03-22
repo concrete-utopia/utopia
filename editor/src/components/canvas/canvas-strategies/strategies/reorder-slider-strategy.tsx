@@ -29,16 +29,18 @@ export function reorderSliderStategy(
     return null
   }
   const target = selectedElements[0]
-  const elementMetadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    target,
-  )
+
   const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target)
   const isAutoLayouted =
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
       canvasState.startingMetadata,
-    ) || MetadataUtils.isPositionedByFlow(elementMetadata)
+    ) ||
+    MetadataUtils.isPositionedByFlow(
+      canvasState.startingMetadata,
+      canvasState.startingAllElementProps,
+      target,
+    )
   const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
 
   if (siblings.length <= 1 || !isAutoLayouted || is1dLayout) {

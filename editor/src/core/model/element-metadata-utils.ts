@@ -134,6 +134,7 @@ import {
   ConditionalCase,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
+import { treatElementAsContentAffecting } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -303,8 +304,15 @@ export const MetadataUtils = {
   isPositionRelative(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'relative'
   },
-  isPositionedByFlow(instance: ElementInstanceMetadata | null): boolean {
-    if (instance === null) {
+  isPositionedByFlow(
+    metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
+    path: ElementPath,
+  ): boolean {
+    const instance = MetadataUtils.findElementByElementPath(metadata, path)
+    const isGroupOnStoryboard =
+      EP.isStoryboardChild(path) && treatElementAsContentAffecting(metadata, allElementProps, path)
+    if (instance === null || isGroupOnStoryboard) {
       return false
     }
 

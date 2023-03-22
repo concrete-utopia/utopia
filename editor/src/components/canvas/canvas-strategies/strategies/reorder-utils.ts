@@ -25,6 +25,7 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { AllElementProps } from '../../../editor/store/editor-state'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -41,7 +42,11 @@ export function applyReorderCommon(
   interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,
   direction: 'horizontal' | 'vertical',
-  isValidTarget: (path: ElementPath, metadata: ElementInstanceMetadataMap) => boolean,
+  isValidTarget: (
+    metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
+    path: ElementPath,
+  ) => boolean,
 ): StrategyApplicationResult {
   if (interactionSession.interactionData.type !== 'DRAG') {
     return emptyStrategyApplicationResult
@@ -72,7 +77,7 @@ export function applyReorderCommon(
       siblings,
       pointOnCanvas,
       direction,
-      isValidTarget,
+      (path, metadata) => isValidTarget(metadata, canvasState.startingAllElementProps, path),
     )
 
     const newIndexFound = newIndex > -1

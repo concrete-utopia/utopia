@@ -29,8 +29,9 @@ import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canva
 import { AllElementProps } from '../../../editor/store/editor-state'
 
 export function isValidFlowReorderTarget(
-  path: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  path: ElementPath,
 ): boolean {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
@@ -40,7 +41,7 @@ export function isValidFlowReorderTarget(
   } else if (elementMetadata?.specialSizeMeasurements.float !== 'none') {
     return false
   } else {
-    return MetadataUtils.isPositionedByFlow(elementMetadata)
+    return MetadataUtils.isPositionedByFlow(metadata, allElementProps, path)
   }
 }
 
