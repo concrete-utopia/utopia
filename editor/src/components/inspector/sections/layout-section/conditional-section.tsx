@@ -57,9 +57,9 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
-export const ConditionalsControlSwitchBranches = 'conditionals-control-switch-branches'
-export const ConditionalsControlBranchTrue = 'conditionals-control-branch-true'
-export const ConditionalsControlBranchFalse = 'conditionals-control-branch-false'
+export const ConditionalsControlSwitchBranchesTestId = 'conditionals-control-switch-branches'
+export const ConditionalsControlBranchTrueTestId = 'conditionals-control-branch-true'
+export const ConditionalsControlBranchFalseTestId = 'conditionals-control-branch-false'
 
 export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-a-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-a-conditional'
@@ -392,7 +392,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           />
         </FlexColumn>
         <Tooltip title={'Switch branches'}>
-          <SquareButton onClick={replaceBranches} data-testid={ConditionalsControlSwitchBranches}>
+          <SquareButton
+            onClick={replaceBranches}
+            data-testid={ConditionalsControlSwitchBranchesTestId}
+          >
             <Icons.Flip category={'element'} width={18} height={18} />
           </SquareButton>
         </Tooltip>
@@ -439,8 +442,8 @@ const BranchRow = ({
         <span
           data-testid={
             conditionalCase === 'true-case'
-              ? ConditionalsControlBranchTrue
-              : ConditionalsControlBranchFalse
+              ? ConditionalsControlBranchTrueTestId
+              : ConditionalsControlBranchFalseTestId
           }
         >
           {getNavigatorEntryLabel(navigatorEntry, label)}
