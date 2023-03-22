@@ -9,6 +9,7 @@ import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import {
   detectBestWrapperElement,
   getElementContentAffectingType,
+  treatElementAsContentAffecting,
 } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { assertNever } from '../../core/shared/utils'
@@ -43,6 +44,7 @@ import { setCssLengthProperty } from '../canvas/commands/set-css-length-command'
 import { styleP } from './inspector-common'
 import { cssNumber } from './common/css-utils'
 import { absolute } from '../../utils/utils'
+import { AllElementProps } from '../editor/store/editor-state'
 
 interface PositioningProps {
   width: number
@@ -115,6 +117,7 @@ function wrapInSizelessDiv(
 
 function wrapInDiv(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
   positioningProps: PositioningProps,
 ): CanvasCommand[] {
@@ -127,9 +130,7 @@ function wrapInDiv(
   const { children, uid } = instance.element.value
   const { element, style } = detectBestWrapperElement(metadata, elementPath, () => uid)
 
-  const isInFlowLayout = MetadataUtils.isPositionedByFlow(
-    MetadataUtils.findElementByElementPath(metadata, elementPath),
-  )
+  const isInFlowLayout = isElementInFlowLayout(metadata, allElementProps, elementPath)
 
   const { top, left, width, height } = positioningProps
 
@@ -170,12 +171,13 @@ function wrapInElement(
   wrapper: Wrapper,
   originalWrapperType: WrapperType,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const wrapperCommands = () => {
     switch (wrapper.type) {
       case 'div':
-        return wrapInDiv(metadata, elementPath, wrapper.props)
+        return wrapInDiv(metadata, allElementProps, elementPath, wrapper.props)
       case 'fragment':
         return wrapInFragment(metadata, elementPath)
       case 'sizeless-div':
@@ -265,6 +267,22 @@ function getChildFrameAdjustCommands(
   return [...adjustTopCommands, ...adjustLeftCommands]
 }
 
+function isElementInFlowLayout(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): boolean {
+  if (
+    EP.isStoryboardChild(elementPath) &&
+    treatElementAsContentAffecting(metadata, allElementProps, elementPath)
+  ) {
+    return false
+  }
+  return MetadataUtils.isPositionedByFlow(
+    MetadataUtils.findElementByElementPath(metadata, elementPath),
+  )
+}
+
 const simpleControlStyles = getControlStyles('simple')
 
 const selectedElementGrouplikeTypeSelector = createSelector(
@@ -279,9 +297,22 @@ const selectedElementGrouplikeTypeSelector = createSelector(
   },
 )
 
-const FragmentOption: SelectOption = { value: 'fragment', label: 'Fragment' }
-const GroupOption = { value: 'sizeless-div', label: 'Group' }
-const DivOption = { value: 'div', label: 'Div' }
+function optionForWrapperType(wrapperType: WrapperType): SelectOption {
+  switch (wrapperType) {
+    case 'div':
+      return { value: 'div', label: 'Div' }
+    case 'fragment':
+      return { value: 'fragment', label: 'Fragment' }
+    case 'sizeless-div':
+      return { value: 'sizeless-div', label: 'Group' }
+    default:
+      assertNever(wrapperType)
+  }
+}
+
+const FragmentOption = optionForWrapperType('fragment')
+const GroupOption = optionForWrapperType('sizeless-div')
+const DivOption = optionForWrapperType('div')
 
 const Options: Array<SelectOption> = [FragmentOption, GroupOption, DivOption]
 
@@ -291,6 +322,8 @@ export const GroupSection = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
@@ -325,6 +358,7 @@ export const GroupSection = React.memo(() => {
               { type: 'fragment' },
               originalMode,
               metadataRef.current,
+              allElementPropsRef.current,
               elementPath,
             )
           case 'sizeless-div':
@@ -332,6 +366,7 @@ export const GroupSection = React.memo(() => {
               { type: 'sizeless-div' },
               originalMode,
               metadataRef.current,
+              allElementPropsRef.current,
               elementPath,
             )
           case 'div':
@@ -342,6 +377,7 @@ export const GroupSection = React.memo(() => {
                     { type: 'div', props: props },
                     originalMode,
                     metadataRef.current,
+                    allElementPropsRef.current,
                     elementPath,
                   ),
                 getWrapperPositioningProps(metadataRef.current, elementPath),
@@ -353,7 +389,7 @@ export const GroupSection = React.memo(() => {
       })
       dispatch([applyCommandsAction(commands)])
     },
-    [currentValue.value, dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, currentValue.value, dispatch, metadataRef, selectedViewsRef],
   )
 
   if (selectedViews.length !== 1) {
