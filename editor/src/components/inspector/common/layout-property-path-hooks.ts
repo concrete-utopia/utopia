@@ -10,7 +10,6 @@ import {
   valueToUseForPin,
   VerticalFramePoints,
 } from 'utopia-api/core'
-import { getLayoutLengthValueOrKeyword } from '../../../core/layout/getLayoutProperty'
 import {
   framePointForPinnedProp,
   HorizontalLayoutPinnedProps,
