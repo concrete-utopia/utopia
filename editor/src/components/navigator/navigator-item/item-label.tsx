@@ -23,6 +23,7 @@ interface ItemLabelProps {
   suffix?: string
   inputVisible: boolean
   style?: CSSProperties
+  isConditional: boolean | null
 }
 
 interface ItemLabelState {
@@ -117,10 +118,12 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
         }}
       >
         {value}
-        {when(
-          this.props.target.type == 'CONDITIONAL_CLAUSE',
-          <Icons.PinFilled color={'overridden'} />,
-        )}
+        {this.props.isConditional == true && value == 'true' ? (
+          <Icons.PinFilled color={'overridden'} />
+        ) : null}
+        {this.props.isConditional == false && value == 'false' ? (
+          <Icons.PinFilled color={'overridden'} />
+        ) : null}
       </div>
     )
   }

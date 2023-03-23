@@ -656,6 +656,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? colorTheme.brandNeonPink.value
               : 'inherit',
         }}
+        isConditional={conditionalOverride}
       />
 
       {when(
