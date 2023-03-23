@@ -328,7 +328,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   const controlStyles = getControlStyles(controlStatus)
 
   return (
-    <React.Fragment>
+    <div style={{ paddingBottom: 8 }}>
       <InspectorSubsectionHeader
         css={{
           transition: 'color .1s ease-in-out',
@@ -353,7 +353,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       {unless(
         originalConditionExpression === 'multiselect',
         <React.Fragment>
-          <UIGridRow padded={true} variant='<--------1fr-------->|145px|'>
+          <UIGridRow padded={true} variant='<--------auto-------->|167px|'>
             Condition
             <StringInput
               testId={ConditionalsControlSectionExpressionTestId}
@@ -400,7 +400,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           </SquareButton>
         </Tooltip>
       </FlexRow>
-    </React.Fragment>
+    </div>
   )
 })
 
@@ -420,7 +420,7 @@ const BranchRow = ({
   }
 
   return (
-    <UIGridRow padded={true} variant='|--67px--|<--------1fr-------->'>
+    <UIGridRow padded={true} variant='<--------1fr-------->|145px|'>
       <div>{conditionalCase === 'true-case' ? 'True' : 'False'}</div>
       <div
         style={{
