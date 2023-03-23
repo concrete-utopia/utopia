@@ -53,6 +53,7 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'warning':
         return 'orange'
       case 'error':
+        return 'red'
       case 'overridden':
         return 'pink'
       case 'component':
@@ -80,6 +81,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'purple'
       case 'error':
         return 'red'
+      case 'overridden':
+        return 'pink'
       case 'warning':
         return 'orange'
       case 'on-highlight-main':

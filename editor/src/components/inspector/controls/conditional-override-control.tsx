@@ -70,6 +70,6 @@ function getPinIcon(controlStatus: ControlStatus, controlStyles: ControlStyles) 
   return controlStatus === 'overridden' ? (
     <Icons.PinFilled color={controlStyles.iconColor} />
   ) : (
-    <Icons.PinLeftFilled color={controlStyles.iconColor} />
+    <Icons.PinRightOutline color={controlStyles.iconColor} />
   )
 }

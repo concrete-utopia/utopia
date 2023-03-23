@@ -5,12 +5,13 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { renameComponent } from '../actions'
-import { StringInput, flexRowStyle } from '../../../uuiui'
+import { StringInput, flexRowStyle, colorTheme, Icons } from '../../../uuiui'
 import {
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
 } from '../../../components/editor/store/editor-state'
+import { when } from '../../../utils/react-conditionals'
 
 interface ItemLabelProps {
   testId: string
@@ -101,6 +102,10 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
           fontStyle: this.props.target.type == 'CONDITIONAL_CLAUSE' ? 'italic' : 'unset',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
         }}
         onDoubleClick={(event) => {
           if (!this.props.isDynamic && event.altKey && isRegularNavigatorEntry(this.props.target)) {
@@ -112,6 +117,10 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
         }}
       >
         {value}
+        {when(
+          this.props.target.type == 'CONDITIONAL_CLAUSE',
+          <Icons.PinFilled color={'overridden'} />,
+        )}
       </div>
     )
   }
