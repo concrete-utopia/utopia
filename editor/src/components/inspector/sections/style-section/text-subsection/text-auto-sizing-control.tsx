@@ -20,6 +20,8 @@ import {
 } from '../../../inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 
+export const TextAutoSizingTestId = 'textAutoSizing'
+
 export const TextAutoSizingControl = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
@@ -117,7 +119,7 @@ export const TextAutoSizingControl = React.memo(() => {
       <OptionChainControl
         id='textAutoSizing'
         key='textAutoSizing'
-        testId='textAutoSizing'
+        testId={TextAutoSizingTestId}
         controlStatus={controlStatus}
         controlStyles={controlStyles}
         onSubmitValue={onSubmitValue}
