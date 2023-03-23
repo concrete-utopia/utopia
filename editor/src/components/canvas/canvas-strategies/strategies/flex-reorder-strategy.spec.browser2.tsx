@@ -447,6 +447,10 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
+          if (type === 'display-contents') {
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual('')
+          }
+
           await renderResult.getDispatchFollowUpActionsFinished()
           expect(getRegularNavigatorTargets(renderResult)).toEqual([
             'utopia-storyboard-uid/scene-aaa',
@@ -470,6 +474,7 @@ describe('Flex Reorder Strategy', () => {
             y: targetElementBounds.y + 5,
           })
           await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+
           await mouseDragFromPointWithDelta(
             canvasControlsLayer,
             startPoint,

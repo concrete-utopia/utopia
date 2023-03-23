@@ -66,7 +66,11 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   return pathsWereReplaced ? updatedPaths : paths
 }
 
-export const AllContentAffectingNonDomElementTypes = ['fragment', 'conditional'] as const
+export const AllContentAffectingNonDomElementTypes = [
+  'fragment',
+  'conditional',
+  'display-contents',
+] as const
 export const AllContentAffectingTypes = [
   ...AllContentAffectingNonDomElementTypes,
   'sizeless-div',
@@ -93,6 +97,10 @@ export function getElementContentAffectingType(
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
     // for now, do not treat flex parents ever as content-affecting / group-like
     return null
+  }
+
+  if (MetadataUtils.isDisplayContentsContainer(metadata, path)) {
+    return 'display-contents'
   }
 
   if (EP.isStoryboardPath(path)) {

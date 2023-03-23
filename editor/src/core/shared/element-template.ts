@@ -1905,7 +1905,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   'flow',
   'flow',
   false,
-  'initial',
+  'initialzzzzzzzzzzzzzzz', // canary
   'static',
   sides(undefined, undefined, undefined, undefined),
   sides(undefined, undefined, undefined, undefined),

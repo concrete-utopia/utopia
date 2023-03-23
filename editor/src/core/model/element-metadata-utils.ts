@@ -1897,6 +1897,15 @@ export const MetadataUtils = {
     }
     return flexDirections[0]
   },
+  isDisplayContentsContainer(
+    metadata: ElementInstanceMetadataMap,
+    elementPath: ElementPath,
+  ): boolean {
+    return (
+      MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements
+        .display === 'contents'
+    )
+  },
 }
 
 function fillSpyOnlyMetadata(

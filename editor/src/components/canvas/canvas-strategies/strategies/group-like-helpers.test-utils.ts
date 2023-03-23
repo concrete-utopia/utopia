@@ -26,6 +26,8 @@ export function getOpeningGroupLikeTag(
   switch (type) {
     case 'sizeless-div':
       return `<div ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
+    case 'display-contents':
+      return `<div style={{ display: 'contents' }} ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
     case 'fragment':
       return `<React.Fragment ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
     case 'conditional':
@@ -38,6 +40,7 @@ export function getOpeningGroupLikeTag(
 
 export function getClosingGroupLikeTag(type: ContentAffectingType): string {
   switch (type) {
+    case 'display-contents':
     case 'sizeless-div':
       return `</React.Fragment></div>`
     case 'fragment':
