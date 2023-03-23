@@ -9,14 +9,12 @@ import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import {
   detectBestWrapperElement,
   getElementContentAffectingType,
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
   treatElementAsContentAffecting,
 } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { assertNever } from '../../core/shared/utils'
 import { getControlStyles, SelectOption } from '../../uuiui-deps'
 import {
-  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   emptyComments,
   isJSXElementLike,
@@ -35,31 +33,17 @@ import { addElement } from '../canvas/commands/add-element-command'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { mapDropNulls } from '../../core/shared/array-utils'
-import {
-  canvasPoint,
-  CanvasPoint,
-  isInfinityRectangle,
-  LocalRectangle,
-} from '../../core/shared/math-utils'
-import { setCssLengthProperty } from '../canvas/commands/set-css-length-command'
-import { styleP } from './inspector-common'
-import { cssNumber } from './common/css-utils'
+import { canvasPoint } from '../../core/shared/math-utils'
 import { absolute } from '../../utils/utils'
 import { AllElementProps } from '../editor/store/editor-state'
 import {
-  getChildrenOffsetFromGlobalFrame,
+  getChildFrameAdjustCommands,
   getChildrenOffsets,
+  getWrapperPositioningProps,
   isDescendantOfGroups,
   isStoryboardOrGroupChild,
+  PositioningProps,
 } from './group-section-utils'
-
-interface PositioningProps {
-  width: number
-  height: number
-  top: number
-  left: number
-}
 
 type Wrapper =
   | { type: 'fragment' }
@@ -187,7 +171,7 @@ function wrapInDiv(
 ): CanvasCommand[] {
   const parentPath = EP.parentPath(elementPath)
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const offset = getChildrenOffsets(metadata, elementPath)
+  const offset = getChildrenOffsets(metadata, allElementProps, elementPath)
 
   if (
     instance == null ||
@@ -210,11 +194,7 @@ function wrapInDiv(
     height: height,
   }
 
-  const storyboardOrGroupChild = isDescendantOfGroups(
-    metadata,
-    allElementProps,
-    EP.parentPath(elementPath),
-  )
+  const storyboardOrGroupChild = isDescendantOfGroups(metadata, allElementProps, elementPath)
 
   if (storyboardOrGroupChild || EP.isStoryboardChild(elementPath)) {
     newStyle.position = 'absolute'
@@ -245,68 +225,6 @@ function wrapInDiv(
       canvasPoint({ x: offset.left, y: offset.top }),
     ),
   ]
-}
-
-function getWrapperPositioningProps(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): PositioningProps | null {
-  const frame = MetadataUtils.getChildrenGlobalBoundingBox(metadata, elementPath)
-  const offset = getChildrenOffsetFromGlobalFrame(metadata, elementPath)
-
-  if (frame == null || offset == null) {
-    return null
-  }
-
-  return { top: offset.top, left: offset.left, width: frame.width, height: frame.height }
-}
-
-function getChildFrameAdjustCommands(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  elementPath: ElementPath,
-  parentOffset: CanvasPoint,
-): CanvasCommand[] {
-  const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
-    metadata,
-    allElementProps,
-    MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
-  )
-  const childGlobalFrames = mapDropNulls((childPath): [LocalRectangle, ElementPath] | null => {
-    const childInstance = MetadataUtils.findElementByElementPath(metadata, childPath)
-    if (childInstance == null || !MetadataUtils.isPositionAbsolute(childInstance)) {
-      return null
-    }
-
-    const frame = childInstance.localFrame
-    if (frame == null || isInfinityRectangle(frame)) {
-      return null
-    }
-
-    return [frame, childPath]
-  }, childrenPaths)
-
-  const adjustTopCommands: CanvasCommand[] = childGlobalFrames.map(([frame, targetPath]) =>
-    setCssLengthProperty(
-      'always',
-      targetPath,
-      styleP('top'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(frame.y - parentOffset.y, null) },
-      null,
-    ),
-  )
-
-  const adjustLeftCommands: CanvasCommand[] = childGlobalFrames.map(([frame, targetPath]) =>
-    setCssLengthProperty(
-      'always',
-      targetPath,
-      styleP('left'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(frame.x - parentOffset.x, null) },
-      null,
-    ),
-  )
-
-  return [...adjustTopCommands, ...adjustLeftCommands]
 }
 
 const simpleControlStyles = getControlStyles('simple')

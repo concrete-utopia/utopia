@@ -193,6 +193,93 @@ export var storyboard = (
 `)
   })
 
+  it('toggle from a fragment to a sized div, nested in a fragment', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <React.Fragment data-uid='outer-group'>
+            <React.Fragment data-uid='group'>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 591,
+                  top: 423,
+                  width: 157,
+                  height: 112,
+                }}
+                data-uid='f64'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 798,
+                  top: 464,
+                  width: 139,
+                  height: 138,
+                }}
+                data-uid='978'
+              />
+            </React.Fragment>
+          </React.Fragment>
+        </Storyboard>
+      )
+      `,
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/outer-group/group')])
+
+    await chooseWrapperType(editor, 'fragment', 'div')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <div
+        data-uid='group'
+        style={{
+          width: 346,
+          height: 179,
+          position: 'absolute',
+          top: 423,
+          left: 591,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 157,
+            height: 112,
+          }}
+          data-uid='f64'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 207,
+            top: 41,
+            width: 139,
+            height: 138,
+          }}
+          data-uid='978'
+        />
+      </div>
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+  })
+
   it('toggle from a fragment to a sized div, nested in a sized div', async () => {
     const editor = await renderTestEditorWithCode(
       nestedGroupsWithWrapperType('div', 'fragment'),
@@ -223,7 +310,13 @@ export var storyboard = (
     >
       <div
         data-uid='group'
-        style={{ width: 346, height: 179 }}
+        style={{
+          width: 346,
+          height: 179,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
       >
         <div
           style={{
