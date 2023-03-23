@@ -353,7 +353,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       {unless(
         originalConditionExpression === 'multiselect',
         <React.Fragment>
-          <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
+          <UIGridRow padded={true} variant='<--------1fr-------->|145px|'>
             Condition
             <StringInput
               testId={ConditionalsControlSectionExpressionTestId}

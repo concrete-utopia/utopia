@@ -71,6 +71,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '67px 1fr',
   },
+  '<--------1fr-------->|145px|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '1fr 145px',
+  },
 } as const
 
 export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> {
