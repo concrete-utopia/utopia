@@ -745,17 +745,10 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
     case 'JSX_TEXT_BLOCK':
       return textBlockIsNonEmpty(element)
     case 'ATTRIBUTE_VALUE':
-      return typeof element.value === 'string'
     case 'ATTRIBUTE_NESTED_ARRAY':
-      return element.content.every((contentElement) => {
-        return elementOnlyHasTextChildren(contentElement.value)
-      })
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return element.content.every((contentElement) => {
-        return elementOnlyHasTextChildren(contentElement.value)
-      })
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return allElementsAndChildrenAreText(element.parameters)
+      return false
     default:
       assertNever(element)
   }
