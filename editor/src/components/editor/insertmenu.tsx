@@ -5,7 +5,7 @@ import React from 'react'
 import {
   JSXElementName,
   jsxElementNameEquals,
-  jsxAttributeValue,
+  jsExpressionValue,
   setJSXAttributesAttribute,
   jsxElement,
   emptyComments,
@@ -264,7 +264,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   setJSXAttributesAttribute(
                     updatedPropsWithPosition,
                     'data-uid',
-                    jsxAttributeValue(newUID, emptyComments),
+                    jsExpressionValue(newUID, emptyComments),
                   ),
                   component.element.children,
                 )
@@ -341,12 +341,12 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
 }
 
 function addPositionAbsoluteToProps(props: JSXAttributes) {
-  const styleAttributes = getJSXAttribute(props, 'style') ?? jsxAttributeValue({}, emptyComments)
+  const styleAttributes = getJSXAttribute(props, 'style') ?? jsExpressionValue({}, emptyComments)
 
   const updatedStyleAttrs = setJSXValueInAttributeAtPath(
     styleAttributes,
     PP.fromString('position'),
-    jsxAttributeValue('absolute', emptyComments),
+    jsExpressionValue('absolute', emptyComments),
   )
 
   if (isLeft(updatedStyleAttrs)) {

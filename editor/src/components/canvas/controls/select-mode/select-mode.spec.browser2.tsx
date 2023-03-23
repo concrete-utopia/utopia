@@ -551,20 +551,14 @@ describe('Select Mode Double Clicking With Fragments', () => {
   })
 
   it('Single click and two double clicks will focus a generated Card', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'cardlistfragment',
-      'manuallistfragment',
-      'cardlistfragment',
-      'manuallistfragment',
-    ])
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                  // Skipped as it's the storyboard
       '/scene-CardList' +     // Skipped because we skip over Scenes
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
-      ':manuallistfragment' + // Skipped because we skip over root elements
+      ':38e' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/CardList-Card~~~1',  // <- First *and* Second double click, as the Second is required to focus it
+      '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
     )
 
     const renderResult = await renderTestEditorWithCode(
@@ -601,18 +595,12 @@ describe('Select Mode Double Clicking With Fragments', () => {
     checkSelectedPaths(renderResult, [desiredPaths[1]])
   })
   it('Single click and four double clicks will focus a generated Card and select the Button inside', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'cardlistfragment',
-      'manuallistfragment',
-      'cardlistfragment',
-      'manuallistfragment',
-    ])
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                  // Skipped as it's the storyboard
       '/scene-CardList' +     // Skipped because we skip over Scenes
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
-      ':manuallistfragment' + // Skipped because we skip over root elements
+      ':38e' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
       '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
       ':Card-Root' +          // Skipped because we skip over root elements

@@ -7,7 +7,7 @@ import {
 } from '../../canvas/ui-jsx.test-utils'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as PP from '../../../core/shared/property-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 
 describe('updating style properties keeps the original order', () => {
   it('element with different padding props', async () => {
@@ -33,7 +33,7 @@ describe('updating style properties keeps the original order', () => {
     const changePinProps = setProp_UNSAFE(
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       PP.create('style', 'paddingRight'),
-      jsxAttributeValue(30, emptyComments),
+      jsExpressionValue(30, emptyComments),
     )
 
     await renderResult.dispatch([changePinProps], true)

@@ -4,8 +4,8 @@ import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   emptyComments,
   isJSXAttributeValue,
-  JSXAttribute,
-  jsxAttributeValue,
+  JSExpression,
+  jsExpressionValue,
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'

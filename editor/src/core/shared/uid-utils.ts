@@ -6,11 +6,10 @@ import { getDOMAttribute } from './dom-utils'
 import { Either, flatMapEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
 import {
-  childOrBlockIsChild,
   ElementInstanceMetadata,
   emptyComments,
   getJSXAttribute,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
@@ -18,7 +17,7 @@ import {
   isJSXTextBlock,
   JSXArbitraryBlock,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXConditionalExpression,
   jsxConditionalExpression,
   JSXElement,
@@ -31,6 +30,21 @@ import {
   ParsedComments,
   setJSXAttributesAttribute,
   TopLevelElement,
+  JSExpressionOtherJavaScript,
+  JSExpressionValue,
+  JSExpressionNestedArray,
+  modifiableAttributeIsAttributeNestedArray,
+  JSExpressionNestedObject,
+  modifiableAttributeIsAttributeNestedObject,
+  JSExpressionFunctionCall,
+  modifiableAttributeIsAttributeFunctionCall,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
+  jsExpressionFunctionCall,
+  jsExpressionOtherJavaScript,
+  JSExpression,
+  JSXArrayElement,
+  JSXProperty,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -41,6 +55,7 @@ import {
 import { objectMap } from './object-utils'
 import { ElementPath } from './project-file-types'
 import * as PP from './property-path'
+import { assertNever } from './utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -164,29 +179,6 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
   }
 }
 
-export function setUtopiaIDOnJSXElement(element: JSXElementChild, uid: string): JSXElementChild {
-  if (isJSXElement(element)) {
-    return jsxElement(
-      element.name,
-      uid,
-      setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
-      element.children,
-    )
-  } else if (isJSXConditionalExpression(element)) {
-    return jsxConditionalExpression(
-      uid,
-      element.condition,
-      element.originalConditionString,
-      element.whenTrue,
-      element.whenFalse,
-      element.comments,
-    )
-  } else {
-    // TODO: Do other cases need this?
-    return element
-  }
-}
-
 export function parseUID(
   attributes: JSXAttributes,
   comments: ParsedComments,
@@ -230,7 +222,7 @@ export function fixUtopiaElement(
       const fixedProps = setJSXValueAtPath(
         element.props,
         UtopiaIDPropertyPath,
-        jsxAttributeValue(newUID, emptyComments),
+        jsExpressionValue(newUID, emptyComments),
       )
 
       if (isLeft(fixedProps)) {
@@ -252,12 +244,17 @@ export function fixUtopiaElement(
     }
   }
 
+  function addAndMaybeUpdateUID(currentUID: string): string {
+    const fixedUID = uniqueIDs.includes(currentUID)
+      ? generateConsistentUID(new Set(uniqueIDs), currentUID)
+      : currentUID
+    uniqueIDs.push(fixedUID)
+    return fixedUID
+  }
+
   function fixJSXFragment(fragment: JSXFragment): JSXFragment {
     const fixedChildren = fragment.children.map((child) => fixUtopiaElementInner(child))
-    const fixedUID = uniqueIDs.includes(fragment.uid)
-      ? generateConsistentUID(new Set(uniqueIDs), fragment.uid)
-      : fragment.uid
-    uniqueIDs.push(fixedUID)
+    const fixedUID = addAndMaybeUpdateUID(fragment.uid)
     return {
       ...fragment,
       uid: fixedUID,
@@ -268,41 +265,138 @@ export function fixUtopiaElement(
   function fixJSXConditionalExpression(
     conditional: JSXConditionalExpression,
   ): JSXConditionalExpression {
-    const fixedUID = uniqueIDs.includes(conditional.uid)
-      ? generateConsistentUID(new Set(uniqueIDs), conditional.uid)
-      : conditional.uid
-    uniqueIDs.push(fixedUID)
+    const fixedUID = addAndMaybeUpdateUID(conditional.uid)
     return {
       ...conditional,
       uid: fixedUID,
-      whenTrue: childOrBlockIsChild(conditional.whenTrue)
-        ? fixUtopiaElementInner(conditional.whenTrue)
-        : conditional.whenTrue,
-      whenFalse: childOrBlockIsChild(conditional.whenFalse)
-        ? fixUtopiaElementInner(conditional.whenFalse)
-        : conditional.whenFalse,
+      whenTrue: fixUtopiaElementInner(conditional.whenTrue),
+      whenFalse: fixUtopiaElementInner(conditional.whenFalse),
+    }
+  }
+
+  function fixJSXTextBlock(textBlock: JSXTextBlock): JSXTextBlock {
+    const fixedUID = addAndMaybeUpdateUID(textBlock.uniqueID)
+    return {
+      ...textBlock,
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixJSFunctionCall(call: JSExpressionFunctionCall): JSExpressionFunctionCall {
+    const fixedUID = addAndMaybeUpdateUID(call.uniqueID)
+    return {
+      ...call,
+      uniqueID: fixedUID,
+      parameters: call.parameters.map(fixJSExpression),
+    }
+  }
+
+  function fixJSOtherJavaScript(
+    otherJavaScript: JSExpressionOtherJavaScript,
+  ): JSExpressionOtherJavaScript {
+    const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uniqueID)
+    return {
+      ...otherJavaScript,
+      uniqueID: fixedUID,
+      elementsWithin: objectMap(fixJSXElement, otherJavaScript.elementsWithin),
+    }
+  }
+
+  function fixJSXArrayElement(element: JSXArrayElement): JSXArrayElement {
+    switch (element.type) {
+      case 'ARRAY_VALUE':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      case 'ARRAY_SPREAD':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      default:
+        assertNever(element)
+    }
+  }
+
+  function fixJSXProperty(element: JSXProperty): JSXProperty {
+    switch (element.type) {
+      case 'PROPERTY_ASSIGNMENT':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      case 'SPREAD_ASSIGNMENT':
+        return {
+          ...element,
+          value: fixJSExpression(element.value),
+        }
+      default:
+        assertNever(element)
+    }
+  }
+
+  function fixJSExpression(value: JSExpression): JSExpression {
+    switch (value.type) {
+      case 'ATTRIBUTE_VALUE':
+        return fixJSExpressionValue(value)
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        return fixJSNestedArray(value)
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        return fixJSNestedObject(value)
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        return fixJSFunctionCall(value)
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        return fixJSOtherJavaScript(value)
+      default:
+        assertNever(value)
+    }
+  }
+
+  function fixJSExpressionValue(value: JSExpressionValue<any>): JSExpressionValue<any> {
+    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    return {
+      ...value,
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixJSNestedArray(value: JSExpressionNestedArray): JSExpressionNestedArray {
+    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    return {
+      ...value,
+      content: value.content.map(fixJSXArrayElement),
+      uniqueID: fixedUID,
+    }
+  }
+
+  function fixJSNestedObject(value: JSExpressionNestedObject): JSExpressionNestedObject {
+    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    return {
+      ...value,
+      content: value.content.map(fixJSXProperty),
+      uniqueID: fixedUID,
     }
   }
 
   function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
-    if (isJSXElement(element)) {
-      return fixJSXElement(element)
-    } else if (isJSXFragment(element)) {
-      return fixJSXFragment(element)
-    } else if (isJSXConditionalExpression(element)) {
-      return fixJSXConditionalExpression(element)
-    } else if (isJSXArbitraryBlock(element)) {
-      const fixedElementsWithin = objectMap(fixJSXElement, element.elementsWithin)
-      if (shallowEqual(element.elementsWithin, fixedElementsWithin)) {
-        return element
-      } else {
-        return {
-          ...element,
-          elementsWithin: fixedElementsWithin,
-        }
-      }
-    } else {
-      return element
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        return fixJSXElement(element)
+      case 'JSX_FRAGMENT':
+        return fixJSXFragment(element)
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return fixJSXConditionalExpression(element)
+      case 'JSX_TEXT_BLOCK':
+        return fixJSXTextBlock(element)
+      case 'ATTRIBUTE_VALUE':
+      case 'ATTRIBUTE_NESTED_ARRAY':
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        return fixJSExpression(element)
+      default:
+        assertNever(element)
     }
   }
 
@@ -374,7 +468,7 @@ export function findElementWithUID(
         return null
       case 'JSX_TEXT_BLOCK':
         return null
-      case 'JSX_ARBITRARY_BLOCK':
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         if (targetUID in element.elementsWithin) {
           return element.elementsWithin[targetUID]
         }
@@ -386,16 +480,38 @@ export function findElementWithUID(
         }
         return null
       case 'JSX_CONDITIONAL_EXPRESSION':
-        if (childOrBlockIsChild(element.whenTrue)) {
-          const findResult = findForJSXElementChild(element.whenTrue)
-          if (findResult != null) {
-            return findResult
+        const findResultWhenTrue = findForJSXElementChild(element.whenTrue)
+        if (findResultWhenTrue != null) {
+          return findResultWhenTrue
+        }
+        const findResultWhenFalse = findForJSXElementChild(element.whenFalse)
+        if (findResultWhenFalse != null) {
+          return findResultWhenFalse
+        }
+        return null
+      case 'ATTRIBUTE_VALUE':
+        return null
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        for (const contentElement of element.content) {
+          const elementWithinResult = findForJSXElementChild(contentElement.value)
+          if (elementWithinResult != null) {
+            return elementWithinResult
           }
         }
-        if (childOrBlockIsChild(element.whenFalse)) {
-          const findResult = findForJSXElementChild(element.whenFalse)
-          if (findResult != null) {
-            return findResult
+        return null
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        for (const contentElement of element.content) {
+          const elementWithinResult = findForJSXElementChild(contentElement.value)
+          if (elementWithinResult != null) {
+            return elementWithinResult
+          }
+        }
+        return null
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        for (const parameter of element.parameters) {
+          const elementWithinResult = findForJSXElementChild(parameter)
+          if (elementWithinResult != null) {
+            return elementWithinResult
           }
         }
         return null
@@ -439,10 +555,34 @@ function isUtopiaJSXElement(
   return isJSXElement(element as any)
 }
 
-function isUtopiaJSXArbitraryBlock(
+function isUtopiaJSExpressionOtherJavaScript(
   element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXArbitraryBlock {
-  return isJSXArbitraryBlock(element as any)
+): element is JSExpressionOtherJavaScript {
+  return isJSExpressionOtherJavaScript(element as any)
+}
+
+function isUtopiaJSExpressionValue(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSExpressionValue<any> {
+  return isJSXAttributeValue(element as any)
+}
+
+function isUtopiaJSExpressionNestedArray(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSExpressionNestedArray {
+  return modifiableAttributeIsAttributeNestedArray(element as any)
+}
+
+function isUtopiaJSExpressionNestedObject(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSExpressionNestedObject {
+  return modifiableAttributeIsAttributeNestedObject(element as any)
+}
+
+function isUtopiaJSExpressionFunctionCall(
+  element: JSXElementChild | ElementInstanceMetadata,
+): element is JSExpressionFunctionCall {
+  return modifiableAttributeIsAttributeFunctionCall(element as any)
 }
 
 function isUtopiaJSXTextBlock(
@@ -465,7 +605,12 @@ function isElementInstanceMetadata(
 
 export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
   if (isUtopiaJSXElement(element)) {
-    return setUtopiaIDOnJSXElement(element, uid)
+    return jsxElement(
+      element.name,
+      uid,
+      setJSXAttributesAttribute(element.props, 'data-uid', jsExpressionValue(uid, emptyComments)),
+      element.children,
+    )
   } else if (isUtopiaJSXFragment(element)) {
     return jsxFragment(uid, element.children, element.longForm)
   } else if (isJSXConditionalExpression(element)) {
@@ -477,6 +622,23 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
       element.whenFalse,
       element.comments,
     )
+  } else if (isUtopiaJSExpressionValue(element)) {
+    return jsExpressionValue(element.value, element.comments, uid)
+  } else if (isUtopiaJSExpressionNestedArray(element)) {
+    return jsExpressionNestedArray(element.content, element.comments, uid)
+  } else if (isUtopiaJSExpressionNestedObject(element)) {
+    return jsExpressionNestedObject(element.content, element.comments, uid)
+  } else if (isUtopiaJSExpressionFunctionCall(element)) {
+    return jsExpressionFunctionCall(element.functionName, element.parameters, uid)
+  } else if (isUtopiaJSExpressionOtherJavaScript(element)) {
+    return jsExpressionOtherJavaScript(
+      element.javascript,
+      element.transpiledJavascript,
+      element.definedElsewhere,
+      element.sourceMap,
+      element.elementsWithin,
+      uid,
+    )
   } else {
     throw new Error(`Unable to set utopia id on ${element.type}`)
   }
@@ -485,7 +647,15 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
 export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata): string {
   if (isUtopiaJSXElement(element)) {
     return getUtopiaIDFromJSXElement(element)
-  } else if (isUtopiaJSXArbitraryBlock(element)) {
+  } else if (isUtopiaJSExpressionValue(element)) {
+    return element.uniqueID
+  } else if (isUtopiaJSExpressionNestedArray(element)) {
+    return element.uniqueID
+  } else if (isUtopiaJSExpressionNestedObject(element)) {
+    return element.uniqueID
+  } else if (isUtopiaJSExpressionFunctionCall(element)) {
+    return element.uniqueID
+  } else if (isUtopiaJSExpressionOtherJavaScript(element)) {
     return element.uniqueID
   } else if (isUtopiaJSXTextBlock(element)) {
     return element.uniqueID

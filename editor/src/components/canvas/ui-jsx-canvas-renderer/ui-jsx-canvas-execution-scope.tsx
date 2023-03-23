@@ -204,7 +204,7 @@ export function getCodeAndHighlightBoundsForFile(
   highlightBounds: HighlightBoundsForUids | null
 } {
   const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return {
       code: file.fileContents.code,
       highlightBounds: file.fileContents.parsed.highlightBounds,

@@ -3,7 +3,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { FlexDirection, FlexWrap } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { when } from '../../../utils/react-conditionals'
 import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
@@ -110,7 +110,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
             setProp_UNSAFE(
               parentTarget,
               stylePropPathMappingFn('flexDirection', styleStringInArray),
-              jsxAttributeValue(newValue, emptyComments),
+              jsExpressionValue(newValue, emptyComments),
             ),
           ],
           'canvas',
@@ -128,7 +128,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
             setProp_UNSAFE(
               parentTarget,
               stylePropPathMappingFn('alignItems', styleStringInArray),
-              jsxAttributeValue(option.value, emptyComments),
+              jsExpressionValue(option.value, emptyComments),
             ),
           ],
           'canvas',

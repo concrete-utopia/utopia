@@ -1,16 +1,11 @@
 import {
-  childOrBlockIsChild,
   ElementsWithin,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
-  isJSXElement,
   isJSXElementLike,
-  isJSXFragment,
   isJSXTextBlock,
-  isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
-  UtopiaJSXComponent,
 } from '../../shared/element-template'
 import {
   isParseSuccess,
@@ -19,7 +14,7 @@ import {
   StaticElementPathPart,
 } from '../../shared/project-file-types'
 import * as EP from '../../shared/element-path'
-import { getUtopiaID, setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
+import { getUtopiaID, setUtopiaID } from '../../shared/uid-utils'
 import {
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
@@ -29,7 +24,6 @@ import {
   getComponentsFromTopLevelElements,
 } from '../../model/project-file-utils'
 import { mapArrayToDictionary } from '../../shared/array-utils'
-import { fastForEach } from '../../shared/utils'
 
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
@@ -94,7 +88,7 @@ export function fixParseSuccessUIDs(
           workingComponents,
           mapping.pathToModify,
           (element) => {
-            return setUtopiaIDOnJSXElement(element, mapping.oldUID)
+            return setUtopiaID(element, mapping.oldUID)
           },
         )
       } else {
@@ -252,7 +246,10 @@ function compareAndWalkElements(
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
       return walkElementChildren(path, oldElement.children, newElement.children, onElement)
-    } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
+    } else if (
+      isJSExpressionOtherJavaScript(oldElement) &&
+      isJSExpressionOtherJavaScript(newElement)
+    ) {
       return walkElementsWithin(
         pathSoFar,
         oldElement.elementsWithin,
@@ -267,14 +264,18 @@ function compareAndWalkElements(
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
-      const whenTrue =
-        childOrBlockIsChild(oldElement.whenTrue) && childOrBlockIsChild(newElement.whenTrue)
-          ? compareAndWalkElements(oldElement.whenTrue, newElement.whenTrue, path, onElement)
-          : false
-      const whenFalse =
-        childOrBlockIsChild(oldElement.whenFalse) && childOrBlockIsChild(newElement.whenFalse)
-          ? compareAndWalkElements(oldElement.whenFalse, newElement.whenFalse, path, onElement)
-          : false
+      const whenTrue = compareAndWalkElements(
+        oldElement.whenTrue,
+        newElement.whenTrue,
+        path,
+        onElement,
+      )
+      const whenFalse = compareAndWalkElements(
+        oldElement.whenFalse,
+        newElement.whenFalse,
+        path,
+        onElement,
+      )
       return whenTrue && whenFalse
     }
   }

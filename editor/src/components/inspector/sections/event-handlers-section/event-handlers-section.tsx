@@ -1,6 +1,6 @@
 import React from 'react'
 import { forEachRight, isRight } from '../../../../core/shared/either'
-import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
+import { modifiableAttributeIsAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { forEachValue } from '../../../../core/shared/object-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
@@ -48,7 +48,7 @@ function useGetEventHandlerInfo(): EventHandlerValues {
     if (values.length === 1) {
       const eitherValue = values[0]
       forEachRight(eitherValue, (value) => {
-        if (isJSXAttributeOtherJavaScript(value)) {
+        if (modifiableAttributeIsAttributeOtherJavaScript(value)) {
           result[eventHandlerName] = value.javascript
         }
       })

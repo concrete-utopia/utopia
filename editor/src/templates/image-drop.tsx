@@ -25,7 +25,7 @@ import { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
 import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-utils'
 import { optionalMap } from '../core/shared/optional-utils'
-import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
@@ -322,7 +322,7 @@ function updateImageSrcsActions(
       : EditorActions.setProperty(
           fromString(path),
           PP.create('src'),
-          jsxAttributeValue(maybeImageUpdateData.path, emptyComments),
+          jsExpressionValue(maybeImageUpdateData.path, emptyComments),
         )
   }, Object.entries(allElementProps))
 }

@@ -12,7 +12,7 @@ import {
 import {
   emptyComments,
   isJSXConditionalExpression,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   JSXElement,
   setJSXAttributesAttribute,
@@ -65,7 +65,7 @@ describe('modifyUnderlyingTarget', () => {
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
-          jsxAttributeValue('a thing', emptyComments),
+          jsExpressionValue('a thing', emptyComments),
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
@@ -150,7 +150,7 @@ describe('modifyUnderlyingTarget', () => {
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
-          jsxAttributeValue('a thing', emptyComments),
+          jsExpressionValue('a thing', emptyComments),
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
@@ -204,7 +204,7 @@ describe('modifyUnderlyingTarget', () => {
           const updatedAttributes = setJSXAttributesAttribute(
             element.props,
             'data-thing',
-            jsxAttributeValue('a thing', emptyComments),
+            jsExpressionValue('a thing', emptyComments),
           )
           return jsxElement(element.name, element.uid, updatedAttributes, element.children)
         },
@@ -225,7 +225,7 @@ describe('modifyUnderlyingTarget', () => {
           const updatedAttributes = setJSXAttributesAttribute(
             element.props,
             'data-thing',
-            jsxAttributeValue('a thing', emptyComments),
+            jsExpressionValue('a thing', emptyComments),
           )
           return jsxElement(element.name, element.uid, updatedAttributes, element.children)
         },
@@ -252,7 +252,7 @@ describe('Revision state management', () => {
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
-          jsxAttributeValue('a thing', emptyComments),
+          jsExpressionValue('a thing', emptyComments),
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
@@ -275,7 +275,7 @@ describe('Revision state management', () => {
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
-          jsxAttributeValue('a thing', emptyComments),
+          jsExpressionValue('a thing', emptyComments),
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
@@ -297,7 +297,7 @@ describe('Revision state management', () => {
         const updatedAttributes = setJSXAttributesAttribute(
           element.props,
           'data-thing',
-          jsxAttributeValue('a thing', emptyComments),
+          jsExpressionValue('a thing', emptyComments),
         )
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },

@@ -1,7 +1,7 @@
 import { useSetAtom } from 'jotai'
 import React from 'react'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { emptyComments, jsxAttributeValue } from '../../../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { assertNever } from '../../../../../core/shared/utils'
@@ -237,7 +237,7 @@ const actionsForSplitChainedEvent =
       return setProp_UNSAFE(
         element,
         path,
-        jsxAttributeValue(
+        jsExpressionValue(
           normalizedValues.length === 1 && normalizedValues[0] != null
             ? printCSSNumber(normalizedValues[0], 'px')
             : mapDropNulls((v) => {

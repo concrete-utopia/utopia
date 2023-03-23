@@ -69,7 +69,7 @@ import {
   getJSXAttribute,
   StyleAttributeMetadata,
   StyleAttributeMetadataEntry,
-  JSXAttribute,
+  JSExpression,
 } from '../../../core/shared/element-template'
 import {
   getAllPathsFromAttributes,

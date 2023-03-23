@@ -4,7 +4,7 @@ import {
   emptyComments,
   JSXArbitraryBlock,
   jsxAttributesSpread,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   JSXTextBlock,
   JSXFragment,
@@ -26,7 +26,6 @@ import {
   DestructuredObjectParamKeepDeepEquality,
   DestructuredParamPartKeepDeepEquality,
   ElementsWithinKeepDeepEqualityCall,
-  JSXArbitraryBlockKeepDeepEquality,
   JSXElementChildArrayKeepDeepEquality,
   JSXElementChildKeepDeepEquality,
   JSXElementKeepDeepEquality,
@@ -46,7 +45,7 @@ describe('JSXElementKeepDeepEquality', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -64,7 +63,7 @@ describe('JSXElementKeepDeepEquality', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -82,7 +81,7 @@ describe('JSXElementKeepDeepEquality', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -124,7 +123,7 @@ describe('ElementsWithinKeepDeepEqualityCall', () => {
         propertyElements: ['style', 'backgroundColor'],
       },
     },
-    props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+    props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
     children: [
       {
         type: 'JSX_TEXT_BLOCK',
@@ -157,63 +156,6 @@ describe('ElementsWithinKeepDeepEqualityCall', () => {
   it('different but similar value handled appropriately', () => {
     const result = ElementsWithinKeepDeepEqualityCall()(oldValue, newDifferentValue)
     expect(result.value['new-uid']).toBe(oldValue['uid'])
-    expect(result.value).toEqual(newDifferentValue)
-    expect(result.areEqual).toEqual(false)
-  })
-})
-
-describe('JSXArbitraryBlockKeepDeepEquality', () => {
-  const oldValue: JSXArbitraryBlock = {
-    type: 'JSX_ARBITRARY_BLOCK',
-    originalJavascript: 'old',
-    javascript: 'old',
-    transpiledJavascript: 'old',
-    definedElsewhere: ['old'],
-    sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'old',
-    elementsWithin: {},
-  }
-  const newSameValue: JSXArbitraryBlock = {
-    type: 'JSX_ARBITRARY_BLOCK',
-    originalJavascript: 'old',
-    javascript: 'old',
-    transpiledJavascript: 'old',
-    definedElsewhere: ['old'],
-    sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'old',
-    elementsWithin: {},
-  }
-  const newDifferentValue: JSXArbitraryBlock = {
-    type: 'JSX_ARBITRARY_BLOCK',
-    originalJavascript: 'new',
-    javascript: 'old',
-    transpiledJavascript: 'old',
-    definedElsewhere: ['old'],
-    sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'old',
-    elementsWithin: {},
-  }
-
-  it('same reference returns the same reference', () => {
-    const result = JSXArbitraryBlockKeepDeepEquality(oldValue, oldValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('same value returns the same reference', () => {
-    const result = JSXArbitraryBlockKeepDeepEquality(oldValue, newSameValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('different but similar value handled appropriately', () => {
-    const result = JSXArbitraryBlockKeepDeepEquality(oldValue, newDifferentValue)
-    expect(result.value.type).toBe(oldValue.type)
-    expect(result.value.originalJavascript).toBe(newDifferentValue.originalJavascript)
-    expect(result.value.javascript).toBe(oldValue.javascript)
-    expect(result.value.transpiledJavascript).toBe(oldValue.transpiledJavascript)
-    expect(result.value.definedElsewhere).toBe(oldValue.definedElsewhere)
-    expect(result.value.sourceMap).toBe(oldValue.sourceMap)
-    expect(result.value.uniqueID).toBe(oldValue.uniqueID)
-    expect(result.value.elementsWithin).toBe(oldValue.elementsWithin)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })
@@ -855,7 +797,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
           propertyElements: ['style', 'backgroundColor'],
         },
       },
-      props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
       children: [
         {
           type: 'JSX_TEXT_BLOCK',
@@ -902,7 +844,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
           propertyElements: ['style', 'backgroundColor'],
         },
       },
-      props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
       children: [
         {
           type: 'JSX_TEXT_BLOCK',
@@ -949,7 +891,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
           propertyElements: ['style', 'backgroundColor'],
         },
       },
-      props: [jsxAttributesSpread(jsxAttributeValue('prop', emptyComments), emptyComments)],
+      props: [jsxAttributesSpread(jsExpressionValue('prop', emptyComments, 'prop'), emptyComments)],
       children: [
         {
           type: 'JSX_TEXT_BLOCK',

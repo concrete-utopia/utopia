@@ -2,7 +2,11 @@ import { syntaxParsers } from './css-parser-map'
 import { AssumedFlexDefaults, printFlexAsAttributeValue } from './css-parser-flex'
 import { right } from '../../core/shared/either'
 import { cssFlex, cssNumber } from '../../components/inspector/common/css-utils'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import {
+  clearExpressionUniqueIDs,
+  emptyComments,
+  jsExpressionValue,
+} from '../../core/shared/element-template'
 
 describe('parse flex css shorthand', () => {
   it("parses unitless number <'flex'> property as flexgrow, 1-value", () => {
@@ -49,27 +53,43 @@ describe('parse flex css shorthand', () => {
 
 describe('print flex css shorthand', () => {
   it('prints one value flex-grow', () => {
-    const printResult = printFlexAsAttributeValue(cssFlex(5, 1, cssNumber(0, null)))
-    expect(printResult).toEqual(jsxAttributeValue('5', emptyComments))
+    const printResult = clearExpressionUniqueIDs(
+      printFlexAsAttributeValue(cssFlex(5, 1, cssNumber(0, null))),
+    )
+    expect(printResult).toEqual(clearExpressionUniqueIDs(jsExpressionValue('5', emptyComments)))
   })
 
   it('does NOT print one value flexBasis, instead opts for three-value representation!', () => {
-    const printResult = printFlexAsAttributeValue(cssFlex(1, 1, cssNumber(5, 'px')))
-    expect(printResult).toEqual(jsxAttributeValue('1 1 5px', emptyComments))
+    const printResult = clearExpressionUniqueIDs(
+      printFlexAsAttributeValue(cssFlex(1, 1, cssNumber(5, 'px'))),
+    )
+    expect(printResult).toEqual(
+      clearExpressionUniqueIDs(jsExpressionValue('1 1 5px', emptyComments)),
+    )
   })
 
   it('two value flex-grow, flex-shrink', () => {
-    const printResult = printFlexAsAttributeValue(cssFlex(9, 4, cssNumber(0, null)))
-    expect(printResult).toEqual(jsxAttributeValue('9 4', emptyComments))
+    const printResult = clearExpressionUniqueIDs(
+      printFlexAsAttributeValue(cssFlex(9, 4, cssNumber(0, null))),
+    )
+    expect(printResult).toEqual(clearExpressionUniqueIDs(jsExpressionValue('9 4', emptyComments)))
   })
 
   it('does NOT print two value flex-grow, flex-basis, option for three value rep', () => {
-    const printResult = printFlexAsAttributeValue(cssFlex(9, 1, cssNumber(5, 'px')))
-    expect(printResult).toEqual(jsxAttributeValue('9 1 5px', emptyComments))
+    const printResult = clearExpressionUniqueIDs(
+      printFlexAsAttributeValue(cssFlex(9, 1, cssNumber(5, 'px'))),
+    )
+    expect(printResult).toEqual(
+      clearExpressionUniqueIDs(jsExpressionValue('9 1 5px', emptyComments)),
+    )
   })
 
   it('prints the full three value syntax', () => {
-    const printResult = printFlexAsAttributeValue(cssFlex(9, 4, cssNumber(5, 'px')))
-    expect(printResult).toEqual(jsxAttributeValue('9 4 5px', emptyComments))
+    const printResult = clearExpressionUniqueIDs(
+      printFlexAsAttributeValue(cssFlex(9, 4, cssNumber(5, 'px'))),
+    )
+    expect(printResult).toEqual(
+      clearExpressionUniqueIDs(jsExpressionValue('9 4 5px', emptyComments)),
+    )
   })
 })

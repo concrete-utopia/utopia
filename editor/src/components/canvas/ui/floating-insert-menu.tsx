@@ -43,7 +43,8 @@ import {
 } from '../../../core/model/element-template-utils'
 import {
   emptyComments,
-  jsxAttributeValue,
+  jsExpressionValue,
+  jsxConditionalExpression,
   JSXConditionalExpressionWithoutUID,
   jsxElement,
   JSXElementName,
@@ -528,7 +529,7 @@ export var FloatingMenu = React.memo(() => {
             setJSXAttributesAttribute(
               pickedInsertableComponent.element.props,
               'data-uid',
-              jsxAttributeValue(newUID, emptyComments),
+              jsExpressionValue(newUID, emptyComments),
             ),
             pickedInsertableComponent.element.children,
           )

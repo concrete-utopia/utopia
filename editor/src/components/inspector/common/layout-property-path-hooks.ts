@@ -24,7 +24,7 @@ import { isLeft, right as eitherRight } from '../../../core/shared/either'
 import {
   emptyComments,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import { isInfinityRectangle, LocalRectangle, zeroLocalRect } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -367,7 +367,7 @@ export function usePinToggling(): UsePinTogglingResult {
         setProp_UNSAFE(
           path,
           stylePropPathMappingFn(pin, propertyTarget),
-          jsxAttributeValue(value, emptyComments),
+          jsExpressionValue(value, emptyComments),
         ),
       )
 

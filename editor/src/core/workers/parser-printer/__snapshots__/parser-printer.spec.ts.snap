@@ -465,6 +465,7 @@ return { otherFn: otherFn };",
                     "trailingComments": Array [],
                   },
                   "type": "ATTRIBUTE_VALUE",
+                  "uniqueID": "",
                   "value": "aab",
                 },
               },
@@ -482,6 +483,7 @@ return { otherFn: otherFn };",
                   ],
                   "elementsWithin": Object {},
                   "javascript": "cakeFn(otherFn('b') + 2)",
+                  "originalJavascript": "cakeFn(otherFn('b') + 2)",
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAuBeA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
@@ -558,6 +560,7 @@ export var whatever = (props) => {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
+              "uniqueID": "",
               "value": "aaa",
             },
           },
@@ -588,26 +591,26 @@ Object {
     },
   ],
   "highlightBounds": Object {
+    "044": Object {
+      "endCol": 34,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "044",
+    },
+    "069": Object {
+      "endCol": 34,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "069",
+    },
     "aaa": Object {
       "endCol": 56,
       "endLine": 5,
       "startCol": 33,
       "startLine": 5,
       "uid": "aaa",
-    },
-    "abc": Object {
-      "endCol": 34,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "abc",
-    },
-    "f82": Object {
-      "endCol": 34,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "f82",
     },
   },
   "imports": Object {
@@ -694,6 +697,7 @@ Object {
           ],
           "elementsWithin": Object {},
           "javascript": "n > 0",
+          "originalJavascript": "n > 0",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAImBA,CAACC,GAAEC,CAAJC",
@@ -724,13 +728,14 @@ const b = (n) => n > 0 ? n : a(10)
         },
         "originalConditionString": "n > 0",
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uid": "f82",
+        "uid": "069",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "b",
           ],
           "elementsWithin": Object {},
           "javascript": "b(10)",
+          "originalJavascript": "b(10)",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAI+BA,CAACC,IAAFC",
@@ -764,6 +769,7 @@ const b = (n) => n > 0 ? n : a(10)
           ],
           "elementsWithin": Object {},
           "javascript": "n",
+          "originalJavascript": "n",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAI0BA",
@@ -840,6 +846,7 @@ const b = (n) => n > 0 ? n : a(10)
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
+              "uniqueID": "",
               "value": "aaa",
             },
           },
@@ -890,6 +897,7 @@ const b = (n) => n > 0 ? n : a(10)
           ],
           "elementsWithin": Object {},
           "javascript": "n > 0",
+          "originalJavascript": "n > 0",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAMmBA,CAACC,GAAEC,CAAJC",
@@ -920,13 +928,14 @@ const b = (n) => n > 0 ? n : a(10)
         },
         "originalConditionString": "n > 0",
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uid": "abc",
+        "uid": "044",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "a",
           ],
           "elementsWithin": Object {},
           "javascript": "a(10)",
+          "originalJavascript": "a(10)",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAM+BA,CAACC,IAAFC",
@@ -960,6 +969,7 @@ const b = (n) => n > 0 ? n : a(10)
           ],
           "elementsWithin": Object {},
           "javascript": "n",
+          "originalJavascript": "n",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAM0BA",
@@ -1261,7 +1271,7 @@ export var App = (props) => <View data-uid='bbb'>
             "transpiledJavascript": "return ({
   a: a
 });",
-            "type": "JSX_ARBITRARY_BLOCK",
+            "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
             "uniqueID": "",
           },
         ],
@@ -1285,6 +1295,7 @@ export var App = (props) => <View data-uid='bbb'>
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
+              "uniqueID": "",
               "value": "bbb",
             },
           },

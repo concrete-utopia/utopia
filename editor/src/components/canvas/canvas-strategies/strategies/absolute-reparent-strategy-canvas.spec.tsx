@@ -11,7 +11,7 @@ import {
   ElementInstanceMetadata,
   emptyComments,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   jsxElementName,
   SpecialSizeMeasurements,
@@ -89,7 +89,7 @@ function reparentElement(
           jsxElementName('div', []),
           'ccc',
           jsxAttributesFromMap({
-            style: jsxAttributeValue(
+            style: jsExpressionValue(
               {
                 position: 'absolute',
                 width: 20,
@@ -99,7 +99,7 @@ function reparentElement(
               },
               emptyComments,
             ),
-            'data-uid': jsxAttributeValue('ccc', emptyComments),
+            'data-uid': jsExpressionValue('ccc', emptyComments),
           }),
           [],
         ),

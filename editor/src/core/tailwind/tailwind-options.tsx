@@ -18,10 +18,11 @@ import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import {
-  isJSXAttributeNotFound,
+  modifiableAttributeIsAttributeNotFound,
   isJSXAttributeValue,
   isJSXElement,
   JSXElementChild,
+  modifiableAttributeIsAttributeValue,
 } from '../shared/element-template'
 import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
@@ -240,7 +241,11 @@ function getJSXElementForTarget(
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
   const projectFile = getContentsTreeFileFromString(projectContents, underlyingPath)
-  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+  if (
+    projectFile != null &&
+    isTextFile(projectFile) &&
+    isParseSuccess(projectFile.fileContents.parsed)
+  ) {
     return findElementAtPath(
       target,
       getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
@@ -260,7 +265,7 @@ function getClassNameAttribute(element: JSXElementChild | null): {
     const foundAttributeValue = flatMapEither(jsxSimpleAttributeToValue, foundAttribute)
     const isSettable = foldEither(
       () => false,
-      (r) => isJSXAttributeValue(r) || isJSXAttributeNotFound(r),
+      (r) => modifiableAttributeIsAttributeValue(r) || modifiableAttributeIsAttributeNotFound(r),
       foundAttribute,
     )
 

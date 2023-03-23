@@ -32,6 +32,7 @@ import {
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   getConditionalClausePath,
