@@ -659,7 +659,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       />
 
       {when(
-        conditionalOverride != null,
+        conditionalOverride != null && props.navigatorEntry.type != 'CONDITIONAL_CLAUSE',
         <div
           style={{
             marginLeft: 10,
