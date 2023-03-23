@@ -17,7 +17,7 @@ import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
 import { Sides, sides, LayoutSystem } from 'utopia-api/core'
-import { fastForEach, unknownObjectProperty } from './utils'
+import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
 import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
@@ -1230,13 +1230,21 @@ export function isJSExpressionOtherJavaScript(
 }
 
 export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArbitraryBlock {
-  return (
-    isJSExpressionValue(element) ||
-    isJSExpressionNestedArray(element) ||
-    isJSExpressionNestedObject(element) ||
-    isJSExpressionFunctionCall(element) ||
-    isJSExpressionOtherJavaScript(element)
-  )
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return false
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return true
+    default:
+      assertNever(element)
+  }
 }
 
 export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBlock {
