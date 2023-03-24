@@ -264,9 +264,6 @@ function useStyleFullyVisible(navigatorEntry: NavigatorEntry): boolean {
           isInsideFocusedComponent
         )
       }
-      if (isSyntheticNavigatorEntry(navigatorEntry)) {
-        return isJSXArbitraryBlock(navigatorEntry.childOrAttribute)
-      }
       return false
     },
     'NavigatorItem useStyleFullyVisible',
