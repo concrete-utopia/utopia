@@ -19,11 +19,8 @@ import {
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
-  syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
-import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
-import { jsxArbitraryBlock } from '../../core/shared/element-template'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
