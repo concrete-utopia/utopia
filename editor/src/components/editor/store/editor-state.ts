@@ -11,13 +11,12 @@ import {
   UtopiaJSXComponent,
   isJSXElement,
   emptyJsxMetadata,
-  JSXAttribute,
+  JSExpression,
   walkElements,
   JSXAttributes,
   isJSXConditionalExpression,
   JSXConditionalExpression,
-  ChildOrAttribute,
-  childOrBlockIsChild,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -815,12 +814,12 @@ export function editorStateCanvasTextEditor(
 
 export interface EditorStateCanvasTransientProperty {
   elementPath: ElementPath
-  attributesToUpdate: { [key: string]: JSXAttribute }
+  attributesToUpdate: { [key: string]: JSExpression }
 }
 
 export function editorStateCanvasTransientProperty(
   elementPath: ElementPath,
-  attributesToUpdate: { [key: string]: JSXAttribute },
+  attributesToUpdate: { [key: string]: JSExpression },
 ): EditorStateCanvasTransientProperty {
   return {
     elementPath: elementPath,
@@ -1554,7 +1553,7 @@ export function getOpenTextFileKey(model: EditorState): string | null {
     return null
   } else {
     const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
-    if (isTextFile(projectFile)) {
+    if (projectFile != null && isTextFile(projectFile)) {
       return openFilename
     } else {
       return null
@@ -1802,7 +1801,7 @@ function getImportedUtopiaJSXComponents(
   pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
   const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     let resolvedFilePaths: Array<string> = []
     for (const toImport of Object.keys(file.fileContents.parsed.imports)) {
       const resolveResult = resolve(filePath, toImport)
@@ -2189,12 +2188,12 @@ export function conditionalClauseNavigatorEntriesEqual(
 export interface SyntheticNavigatorEntry {
   type: 'SYNTHETIC'
   elementPath: ElementPath
-  childOrAttribute: ChildOrAttribute
+  childOrAttribute: JSXElementChild
 }
 
 export function syntheticNavigatorEntry(
   elementPath: ElementPath,
-  childOrAttribute: ChildOrAttribute,
+  childOrAttribute: JSXElementChild,
 ): SyntheticNavigatorEntry {
   return {
     type: 'SYNTHETIC',
@@ -2241,9 +2240,9 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
-        ? `element-${getUtopiaID(entry.childOrAttribute)}`
-        : `attribute`
+      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+        ? `attribute`
+        : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     default:
       assertNever(entry)
@@ -2257,9 +2256,9 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
-        ? `element_${getUtopiaID(entry.childOrAttribute)}`
-        : `attribute`
+      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+        ? `attribute`
+        : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
     default:
       assertNever(entry)
@@ -3247,7 +3246,7 @@ export function getHighlightBoundsForFile(
   fullPath: string,
 ): HighlightBoundsForUids | null {
   const file = getContentsTreeFileFromString(editor.projectContents, fullPath)
-  if (isTextFile(file)) {
+  if (file != null && isTextFile(file)) {
     if (isParseSuccess(file.fileContents.parsed)) {
       return getHighlightBoundsFromParseResult(file.fileContents.parsed)
     }
@@ -3318,7 +3317,7 @@ export function modifyParseSuccessAtPath(
   revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
-  if (isTextFile(projectFile)) {
+  if (projectFile != null && isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
     if (isParseSuccess(parsedFileContents)) {
       const updatedParseSuccess = modifyParseSuccess(parsedFileContents)

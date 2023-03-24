@@ -164,9 +164,6 @@ describe('adjust font size with the keyboard', () => {
   })
 
   describe('retargets to group children', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it('with no font size set', async () => {
         const editor = await renderTestEditorWithCode(

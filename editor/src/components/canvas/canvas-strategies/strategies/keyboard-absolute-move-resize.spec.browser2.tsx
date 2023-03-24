@@ -162,9 +162,6 @@ describe('Keyboard Absolute Move E2E', () => {
   })
 
   describe('retargets to group children', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it(`moves children of ${type}`, async () => {
         const editor = await renderTestEditorWithCode(
@@ -294,9 +291,6 @@ describe('Keyboard switching back and forth between absolute move and absolute r
   })
 
   describe('retargets to group children', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       it(`resizes children of ${type}`, async () => {
         const editor = await renderTestEditorWithCode(

@@ -12,21 +12,24 @@ import {
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
-  ChildOrAttribute,
   ConditionValue,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { unless } from '../../../../utils/react-conditionals'
 import {
-  Button,
+  FlexColumn,
   FlexRow,
+  Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
+  SquareButton,
   StringInput,
+  Tooltip,
   useColorTheme,
   UtopiaStyles,
 } from '../../../../uuiui'
@@ -54,9 +57,9 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 export const ConditionalsControlSectionOpenTestId = 'conditionals-control-section-open'
 export const ConditionalsControlSectionCloseTestId = 'conditionals-control-section-close'
 export const ConditionalsControlSectionExpressionTestId = 'conditionals-control-expression'
-export const ConditionalsControlSwitchBranches = 'conditionals-control-switch-branches'
-export const ConditionalsControlBranchTrue = 'conditionals-control-branch-true'
-export const ConditionalsControlBranchFalse = 'conditionals-control-branch-false'
+export const ConditionalsControlSwitchBranchesTestId = 'conditionals-control-switch-branches'
+export const ConditionalsControlBranchTrueTestId = 'conditionals-control-branch-true'
+export const ConditionalsControlBranchFalseTestId = 'conditionals-control-branch-false'
 
 export type ConditionOverride = boolean | 'mixed' | 'not-overridden' | 'not-a-conditional'
 type ConditionExpression = string | 'multiselect' | 'not-a-conditional'
@@ -87,7 +90,7 @@ const branchNavigatorEntriesSelector = createCachedSelector(
     const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
 
     function getNavigatorEntry(
-      clause: ChildOrAttribute,
+      clause: JSXElementChild,
       conditionalCase: ConditionalCase,
     ): NavigatorEntry | null {
       return (
@@ -365,17 +368,6 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               }}
             />
           </UIGridRow>
-          <UIGridRow padded={true} variant='<-------------1fr------------->'>
-            <Button
-              style={{ flex: 1 }}
-              highlight
-              spotlight
-              onClick={replaceBranches}
-              data-testid={ConditionalsControlSwitchBranches}
-            >
-              Switch branches
-            </Button>
-          </UIGridRow>
           {conditionValue !== 'multiselect' ? (
             <ConditionalOverrideControl
               controlStatus={controlStatus}
@@ -386,16 +378,28 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           ) : null}
         </React.Fragment>,
       )}
-      <BranchRow
-        label={branchLabels.true}
-        navigatorEntry={branchNavigatorEntries?.true ?? null}
-        conditionalCase='true-case'
-      />
-      <BranchRow
-        label={branchLabels.false}
-        navigatorEntry={branchNavigatorEntries?.false ?? null}
-        conditionalCase='false-case'
-      />
+      <FlexRow>
+        <FlexColumn style={{ flexGrow: 2 }}>
+          <BranchRow
+            label={branchLabels.true}
+            navigatorEntry={branchNavigatorEntries?.true ?? null}
+            conditionalCase='true-case'
+          />
+          <BranchRow
+            label={branchLabels.false}
+            navigatorEntry={branchNavigatorEntries?.false ?? null}
+            conditionalCase='false-case'
+          />
+        </FlexColumn>
+        <Tooltip title={'Switch branches'}>
+          <SquareButton
+            onClick={replaceBranches}
+            data-testid={ConditionalsControlSwitchBranchesTestId}
+          >
+            <Icons.Flip category={'element'} width={18} height={18} />
+          </SquareButton>
+        </Tooltip>
+      </FlexRow>
     </React.Fragment>
   )
 })
@@ -438,8 +442,8 @@ const BranchRow = ({
         <span
           data-testid={
             conditionalCase === 'true-case'
-              ? ConditionalsControlBranchTrue
-              : ConditionalsControlBranchFalse
+              ? ConditionalsControlBranchTrueTestId
+              : ConditionalsControlBranchFalseTestId
           }
         >
           {getNavigatorEntryLabel(navigatorEntry, label)}

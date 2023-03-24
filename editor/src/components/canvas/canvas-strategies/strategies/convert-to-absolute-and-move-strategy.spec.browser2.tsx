@@ -625,9 +625,6 @@ describe('Convert to Absolute', () => {
 })
 
 describe('Convert to absolute/escape hatch', () => {
-  setFeatureForBrowserTests('Fragment support', true)
-  setFeatureForBrowserTests('Conditional support', true)
-
   it('becomes the active strategy while space is pressed', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

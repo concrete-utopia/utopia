@@ -6,7 +6,7 @@ import {
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
@@ -21,21 +21,19 @@ import {
   Param,
   JSXAttributes,
   JSXAttributesPart,
-  JSXAttribute,
+  JSExpression,
   JSXArrayElement,
   JSXProperty,
   isSpreadAssignment,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   jsxElementName,
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
-  childOrBlockIsChild,
   emptyComments,
-  ChildOrAttribute,
-  jsxAttributeValue,
-  childOrBlockIsAttribute,
+  jsExpressionValue,
   jsxFragment,
+  isJSXArbitraryBlock,
   jsxTextBlock,
   jsxArbitraryBlock,
   ElementInstanceMetadataMap,
@@ -69,7 +67,6 @@ import {
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalCase,
-  getConditionalCasePath,
   getConditionalClausePath,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
@@ -112,12 +109,8 @@ function getAllUniqueUidsInner(
       uniqueIDs.add(element.uid)
     } else if (isJSXConditionalExpression(element)) {
       uniqueIDs.add(element.uid)
-      if (childOrBlockIsChild(element.whenTrue)) {
-        extractUid(element.whenTrue)
-      }
-      if (childOrBlockIsChild(element.whenFalse)) {
-        extractUid(element.whenFalse)
-      }
+      extractUid(element.whenTrue)
+      extractUid(element.whenFalse)
     }
   }
 
@@ -170,7 +163,7 @@ export function isSceneElement(
   projectContents: ProjectContentTreeRoot,
 ): boolean {
   const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
@@ -235,7 +228,7 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
+    } else if (isJSExpressionOtherJavaScript(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
         const updatedChildren = Object.values(element.elementsWithin).reduce(
@@ -277,12 +270,8 @@ function transformAtPathOptionally(
       }
     } else if (isJSXConditionalExpression(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
-        const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
-          ? findAndTransformAtPathInner(element.whenTrue, tailPath)
-          : null
-        const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
-          ? findAndTransformAtPathInner(element.whenFalse, tailPath)
-          : null
+        const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
+        const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
           return {
             ...element,
@@ -297,10 +286,7 @@ function transformAtPathOptionally(
         }
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (
-        childOrBlockIsChild(element.whenTrue) &&
-        getUtopiaID(element.whenTrue) === firstUIDOrIndex
-      ) {
+      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -309,10 +295,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (
-        childOrBlockIsChild(element.whenFalse) &&
-        getUtopiaID(element.whenFalse) === firstUIDOrIndex
-      ) {
+      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -355,22 +338,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element) && getUtopiaID(element) === firstUIDOrIndex) {
-      const tailPath = workingPath.slice(1)
-      if (tailPath.length === 0) {
-        // this is the element we want
-        return element
-      } else {
-        // we will want to delve into the children
-        const children = element.children
-        for (const child of children) {
-          const childResult = findAtPathInner(child, tailPath)
-          if (childResult != null) {
-            return childResult
-          }
-        }
-      }
-    } else if (isJSXArbitraryBlock(element) && firstUIDOrIndex in element.elementsWithin) {
+    if (isJSExpressionOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
       const elementWithin = element.elementsWithin[firstUIDOrIndex]
       const withinResult = findAtPathInner(elementWithin, workingPath)
       if (withinResult != null) {
@@ -382,27 +350,27 @@ export function findJSXElementChildAtPath(
         // this is the element we want
         return element
       } else {
-        function elementOrNullFromClause(
-          clause: ChildOrAttribute,
-          branch: ConditionalCase,
-        ): JSXElementChild | null {
-          // handle the special cased true-case / false-case path element first
-          if (tailPath.length === 1 && tailPath[0] === branch) {
-            // return null in case this is a JSXAttribute, since this function is looking for a JSXElementChild
-            return childOrBlockIsAttribute(clause) ? null : clause
-          }
-
-          if (childOrBlockIsChild(clause)) {
-            // if it's a child, get its inner element
-            return findAtPathInner(clause, tailPath)
-          }
-
-          return null
-        }
         return (
-          elementOrNullFromClause(element.whenTrue, 'true-case') ??
-          elementOrNullFromClause(element.whenFalse, 'false-case')
+          findAtPathInner(element.whenTrue, tailPath) ??
+          findAtPathInner(element.whenFalse, tailPath)
         )
+      }
+    } else if (getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        if (isJSXElementLike(element)) {
+          // we will want to delve into the children
+          const children = element.children
+          for (const child of children) {
+            const childResult = findAtPathInner(child, tailPath)
+            if (childResult != null) {
+              return childResult
+            }
+          }
+        }
       }
     }
     return null
@@ -507,7 +475,7 @@ export function removeJSXElementChild(
         'false-case',
       )
 
-      const nullAttribute = jsxAttributeValue(null, emptyComments)
+      const nullAttribute = jsExpressionValue(null, emptyComments)
 
       return {
         ...parentElement,
@@ -564,7 +532,7 @@ export function insertJSXElementChild(
         return modify(
           toClauseOptic,
           (clauseValue) => {
-            if (childOrBlockIsAttribute(clauseValue)) {
+            if (isJSXArbitraryBlock(clauseValue)) {
               const simpleValue = jsxSimpleAttributeToValue(clauseValue)
               return foldEither(
                 () => {
@@ -629,7 +597,7 @@ export function insertJSXElementChild(
           children: updatedChildren,
         }
       } else if (isJSXConditionalExpression(parentElement)) {
-        function getNewBranch(branch: ChildOrAttribute): ChildOrAttribute {
+        function getNewBranch(branch: JSXElementChild): JSXElementChild {
           switch (branch.type) {
             case 'ATTRIBUTE_VALUE':
               if (branch.value === null) {
@@ -663,7 +631,6 @@ export function insertJSXElementChild(
             case 'JSX_FRAGMENT':
               return { ...branch, children: [...branch.children, elementToInsert] }
             case 'JSX_ELEMENT':
-            case 'JSX_ARBITRARY_BLOCK':
             case 'JSX_TEXT_BLOCK':
             case 'JSX_CONDITIONAL_EXPRESSION':
               return jsxFragment(
@@ -682,7 +649,7 @@ export function insertJSXElementChild(
             return true
           }
           const conditionalCase = getConditionalCase(
-            getConditionalCasePath(parentPath, 'true-case'),
+            EP.appendToPath(parentPath, getUtopiaID(conditional.whenTrue)),
             conditional,
             spyParentMetadata,
             parentPath,
@@ -735,7 +702,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.length > 0 &&
     elements.every((element) => {
       switch (element.type) {
-        case 'JSX_ARBITRARY_BLOCK':
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
@@ -744,6 +711,18 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
           return allElementsAndChildrenAreText(element.children)
         case 'JSX_TEXT_BLOCK':
           return textBlockIsNonEmpty(element)
+        case 'ATTRIBUTE_VALUE':
+          return typeof element.value === 'string'
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return element.content.every((contentElement) => {
+            return elementOnlyHasTextChildren(contentElement.value)
+          })
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return element.content.every((contentElement) => {
+            return elementOnlyHasTextChildren(contentElement.value)
+          })
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return allElementsAndChildrenAreText(element.parameters)
         default:
           assertNever(element)
       }
@@ -753,7 +732,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe we the current branch only includes text children???
       return false // We can't possibly know at this point
     case 'JSX_ELEMENT':
@@ -765,6 +744,11 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
       return allElementsAndChildrenAreText(element.children)
     case 'JSX_TEXT_BLOCK':
       return textBlockIsNonEmpty(element)
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return false
     default:
       assertNever(element)
   }
@@ -865,7 +849,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
           return styleAttribute.content.some((attributePart) => {
             if (isSpreadAssignment(attributePart)) {
               const spreadPart = attributePart.value
-              if (isJSXAttributeOtherJavaScript(spreadPart)) {
+              if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                 return (
                   spreadPart.definedElsewhere.includes(boundParam.paramName) &&
                   spreadPart.transpiledJavascript.includes(`${boundParam.paramName}.style`)
@@ -908,7 +892,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
                 return styleAttribute.content.some((attributePart) => {
                   if (isSpreadAssignment(attributePart)) {
                     const spreadPart = attributePart.value
-                    if (isJSXAttributeOtherJavaScript(spreadPart)) {
+                    if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                       return (
                         spreadPart.definedElsewhere.includes(propertyToLookFor) &&
                         spreadPart.transpiledJavascript.includes(propertyToLookFor)
@@ -1006,7 +990,7 @@ export function elementUsesProperty(
       })
       const fromAttributes = attributesUseProperty(element.props, propsParam, property)
       return fromChildren || fromAttributes
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(element.originalJavascript, propsParam, property)
     case 'JSX_TEXT_BLOCK':
       return false
@@ -1017,11 +1001,23 @@ export function elementUsesProperty(
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
         attributeUsesProperty(element.condition, propsParam, property) ||
-        (childOrBlockIsChild(element.whenTrue) &&
-          elementUsesProperty(element.whenTrue, propsParam, property)) ||
-        (childOrBlockIsChild(element.whenFalse) &&
-          elementUsesProperty(element.whenFalse, propsParam, property))
+        elementUsesProperty(element.whenTrue, propsParam, property) ||
+        elementUsesProperty(element.whenFalse, propsParam, property)
       )
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return element.content.some((child) => {
+        return elementUsesProperty(child.value, propsParam, property)
+      })
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return element.content.some((child) => {
+        return elementUsesProperty(child.value, propsParam, property)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return element.parameters.some((param) => {
+        return elementUsesProperty(param, propsParam, property)
+      })
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -1053,7 +1049,7 @@ export function jsxPropertyUsesProperty(
 }
 
 export function attributeUsesProperty(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   propsParam: Param,
   property: string,
 ): boolean {

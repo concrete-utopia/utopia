@@ -2753,8 +2753,6 @@ async function drawToInsertTestMaybeAddsFlexGrow(
 
 describe('Conditionals support', () => {
   ;[true, false].forEach((enabled) => {
-    setFeatureForBrowserTests('Conditional support', enabled)
-
     describe(`with the Conditional feature switch ${enabled ? 'enabled' : 'disabled'}`, () => {
       const inputCode = makeTestProjectCodeWithSnippet(`
       <div

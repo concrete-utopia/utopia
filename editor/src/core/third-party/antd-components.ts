@@ -9,7 +9,7 @@ import {
   JSXAttributes,
   JSXAttributesEntry,
   jsxAttributesEntry,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElementName,
   jsxElementWithoutUID,
   simpleAttribute,

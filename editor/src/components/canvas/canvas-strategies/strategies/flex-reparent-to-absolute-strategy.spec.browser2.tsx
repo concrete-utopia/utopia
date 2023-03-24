@@ -267,9 +267,6 @@ describe('Flex Reparent To Absolute Strategy', () => {
 })
 
 describe('Flex Reparent to Absolute – children affecting elements', () => {
-  setFeatureForBrowserTests('Fragment support', true)
-  setFeatureForBrowserTests('Conditional support', true)
-
   AllContentAffectingTypes.forEach((type) => {
     describe(`– ${type} parents`, () => {
       it('reparents regular child from a children-affecting flex parent to absolute', async () => {

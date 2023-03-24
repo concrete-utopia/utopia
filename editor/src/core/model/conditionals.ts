@@ -1,8 +1,6 @@
 import { ElementPath } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import {
-  ChildOrAttribute,
-  childOrBlockIsChild,
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
@@ -16,24 +14,13 @@ import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
-export function getConditionalCasePath(
-  elementPath: ElementPath,
-  conditionalCase: ConditionalCase,
-): ElementPath {
-  return EP.appendToPath(elementPath, conditionalCase)
-}
-
 // Get the path for the clause (true case or false case) of a conditional.
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
-  conditionalClause: ChildOrAttribute,
+  conditionalClause: JSXElementChild,
   conditionalCase: ConditionalCase,
 ): ElementPath {
-  if (childOrBlockIsChild(conditionalClause)) {
-    return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
-  } else {
-    return getConditionalCasePath(conditionalPath, conditionalCase)
-  }
+  return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
 }
 
 // Ensure that the children of a conditional are the whenTrue clause followed
@@ -81,10 +68,10 @@ export function reorderConditionalChildPathTrees(
 export const jsxConditionalExpressionOptic: Optic<JSXElementChild, JSXConditionalExpression> =
   fromTypeGuard(isJSXConditionalExpression)
 
-export const conditionalWhenTrueOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
+export const conditionalWhenTrueOptic: Optic<JSXConditionalExpression, JSXElementChild> =
   fromField('whenTrue')
 
-export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, ChildOrAttribute> =
+export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, JSXElementChild> =
   fromField('whenFalse')
 
 export function getConditionalCase(
@@ -125,7 +112,7 @@ export function matchesOverriddenConditionalBranch(
   elementPath: ElementPath,
   parentPath: ElementPath,
   params: {
-    clause: ChildOrAttribute
+    clause: JSXElementChild
     branch: ConditionalCase
     wantOverride: boolean
     parentOverride: boolean

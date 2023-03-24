@@ -22,7 +22,7 @@ import {
 } from '../../core/model/element-metadata-utils'
 import {
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
@@ -31,7 +31,7 @@ import {
   ArbitraryJSBlock,
   TopLevelElement,
   getJSXElementNameAsString,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXFragment,
   isUtopiaJSXComponent,
   SettableLayoutSystem,
@@ -40,7 +40,6 @@ import {
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
-  childOrBlockIsChild,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -542,7 +541,7 @@ export function updateFramesOfScenesAndComponents(
             if (shouldUnsetDraggedProp) {
               propsToUnset.push(targetPropertyPath)
             } else {
-              const newAttributeValue = jsxAttributeValue(newAttributeNumericValue, emptyComments)
+              const newAttributeValue = jsExpressionValue(newAttributeNumericValue, emptyComments)
 
               propsToSet.push({
                 path: targetPropertyPath,
@@ -673,7 +672,7 @@ export function updateFramesOfScenesAndComponents(
                 }
                 propsToSet.push({
                   path: propPathToUpdate,
-                  value: jsxAttributeValue(valueToUse, emptyComments),
+                  value: jsExpressionValue(valueToUse, emptyComments),
                 })
               }
             })
@@ -860,7 +859,7 @@ function updateFrameValueForProp(
     if (existingProp == null) {
       return {
         path: stylePropPathMappingFn(framePoint, styleStringInArray),
-        value: jsxAttributeValue(delta, emptyComments),
+        value: jsExpressionValue(delta, emptyComments),
       }
     }
     const parsedProp = foldEither(
@@ -885,12 +884,12 @@ function updateFrameValueForProp(
         }
         return {
           path: stylePropPathMappingFn(framePoint, styleStringInArray),
-          value: jsxAttributeValue(valueToUse, emptyComments),
+          value: jsExpressionValue(valueToUse, emptyComments),
         }
       } else if (pinIsUnitlessOrPx) {
         return {
           path: stylePropPathMappingFn(framePoint, styleStringInArray),
-          value: jsxAttributeValue(parsedProp.value + delta, emptyComments),
+          value: jsExpressionValue(parsedProp.value + delta, emptyComments),
         }
       }
     }
@@ -2400,7 +2399,7 @@ function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPa
           const styleUpdated = setJSXValuesAtPaths(underlyingElement.props, [
             {
               path: PP.create('style', 'transition'),
-              value: jsxAttributeValue('none', emptyComments),
+              value: jsExpressionValue('none', emptyComments),
             },
           ])
           return foldEither(
@@ -2880,7 +2879,11 @@ export function getParseSuccessOrTransientForFilePath(
   transientFilesState: TransientFilesState | null,
 ): GetParseSuccessOrTransientResult {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+  if (
+    projectFile != null &&
+    isTextFile(projectFile) &&
+    isParseSuccess(projectFile.fileContents.parsed)
+  ) {
     const parseSuccess = projectFile.fileContents.parsed
     const targetTransientFileState: TransientFileState | null =
       transientFilesState == null ? null : transientFilesState[filePath] ?? null
@@ -3022,7 +3025,7 @@ export function getValidElementPathsFromElement(
     }
 
     return paths
-  } else if (isJSXArbitraryBlock(element)) {
+  } else if (isJSExpressionOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
     // are used at the same level at which they're defined.
@@ -3062,21 +3065,19 @@ export function getValidElementPathsFromElement(
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
     fastForEach([element.whenTrue, element.whenFalse], (e) => {
-      if (childOrBlockIsChild(e)) {
-        paths.push(
-          ...getValidElementPathsFromElement(
-            focusedElementPath,
-            e,
-            path,
-            projectContents,
-            filePath,
-            false,
-            false,
-            transientFilesState,
-            resolve,
-          ),
-        )
-      }
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          path,
+          projectContents,
+          filePath,
+          false,
+          false,
+          transientFilesState,
+          resolve,
+        ),
+      )
     })
     return paths
   } else {

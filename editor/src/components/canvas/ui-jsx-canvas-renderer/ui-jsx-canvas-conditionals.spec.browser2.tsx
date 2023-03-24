@@ -64,7 +64,6 @@ async function createAndRenderProject() {
 }
 
 describe('a project with conditionals', () => {
-  setFeatureForBrowserTests('Conditional support', true)
   it('fills the content of the navigator', async () => {
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
@@ -79,9 +78,9 @@ describe('a project with conditionals', () => {
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/false-case-attribute',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/60c-attribute',
       'conditional-clause-storyboard/scene/app:app-root/conditional1-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/false-case-attribute',
+      'synthetic-storyboard/scene/app:app-root/conditional1/30e-attribute',
     ])
   })
 })

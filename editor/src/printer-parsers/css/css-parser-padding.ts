@@ -8,8 +8,8 @@ import {
 import { Either, isRight, left, right } from '../../core/shared/either'
 import {
   emptyComments,
-  JSXAttributeValue,
-  jsxAttributeValue,
+  JSExpressionValue,
+  jsExpressionValue,
 } from '../../core/shared/element-template'
 import { getLexerPropertyMatches, parseLengthPercentage, parseCSSArray } from './css-parser-utils'
 
@@ -61,7 +61,7 @@ export const parsePadding = (value: unknown): Either<string, CSSPadding> => {
 
 export const printPaddingAsAttributeValue = (
   value: CSSPadding,
-): JSXAttributeValue<number | string> => {
+): JSExpressionValue<number | string> => {
   const paddingTop = printCSSNumberWithDefaultUnit(value.paddingTop, 'px')
   const paddingRight = printCSSNumberWithDefaultUnit(value.paddingRight, 'px')
   const paddingBottom = printCSSNumberWithDefaultUnit(value.paddingBottom, 'px')
@@ -69,16 +69,16 @@ export const printPaddingAsAttributeValue = (
 
   if (canUseOneValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = printCSSNumber(value.paddingTop, 'px')
-    return jsxAttributeValue(paddingValue, emptyComments)
+    return jsExpressionValue(paddingValue, emptyComments)
   } else if (canUseTwoValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft}`
-    return jsxAttributeValue(paddingValue, emptyComments)
+    return jsExpressionValue(paddingValue, emptyComments)
   } else if (canUseThreeValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft} ${paddingBottom}`
-    return jsxAttributeValue(paddingValue, emptyComments)
+    return jsExpressionValue(paddingValue, emptyComments)
   } else {
     const paddingValue = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`
-    return jsxAttributeValue(paddingValue, emptyComments)
+    return jsExpressionValue(paddingValue, emptyComments)
   }
 }
 

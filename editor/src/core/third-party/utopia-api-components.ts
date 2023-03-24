@@ -11,14 +11,14 @@ import {
 } from '../../components/editor/defaults'
 import {
   emptyComments,
-  JSXAttribute,
+  JSExpression,
   jsxAttributesEntry,
   jsxElementWithoutUID,
 } from '../shared/element-template'
 
 const BasicUtopiaComponentDescriptor = (
   name: string,
-  styleProp: JSXAttribute,
+  styleProp: JSExpression,
 ): ComponentDescriptor => {
   return {
     properties: {

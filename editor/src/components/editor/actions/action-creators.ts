@@ -3,7 +3,7 @@ import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
-  JSXAttribute,
+  JSExpression,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
@@ -304,7 +304,7 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
 export function setProperty(
   element: ElementPath,
   property: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetProperty {
   return {
     action: 'SET_PROPERTY',
@@ -1195,7 +1195,7 @@ export function saveDOMReport(
 export function setProp_UNSAFE(
   target: ElementPath,
   propertyPath: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetProp {
   return {
     action: 'SET_PROP',
@@ -1209,7 +1209,7 @@ export function setProp_UNSAFE(
 export function setPropWithElementPath_UNSAFE(
   target: StaticElementPathPart,
   propertyPath: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetPropWithElementPath {
   return {
     action: 'SET_PROP_WITH_ELEMENT_PATH',
@@ -1222,7 +1222,7 @@ export function setPropWithElementPath_UNSAFE(
 export function setPropTransient(
   target: ElementPath,
   propertyPath: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetPropTransient {
   return {
     action: 'SET_PROP_TRANSIENT',

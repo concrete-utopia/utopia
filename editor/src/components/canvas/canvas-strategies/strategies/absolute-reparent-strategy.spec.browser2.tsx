@@ -700,8 +700,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('with fragments support enabled', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
     it('reparents across from one fragment to within (not directly inside) another', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
@@ -819,8 +817,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('with fragments support disabled', () => {
-    setFeatureForBrowserTests('Fragment support', false)
-
     it('reparents across from one fragment to within (not directly inside) another', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
@@ -995,8 +991,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 })
 
 describe('children-affecting reparent tests', () => {
-  setFeatureForBrowserTests('Fragment support', true)
-  setFeatureForBrowserTests('Conditional support', true)
   AllContentAffectingTypes.forEach((type) => {
     describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
       it('cannot reparent into a children-affecting div', async () => {

@@ -597,8 +597,6 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
   })
 
   describe('with fragments as siblings', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
     it('simple dragging the element in a block reorders it', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(TestProjectBlockElementsWithFragment()),

@@ -8,9 +8,8 @@ import {
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
-  ChildOrAttribute,
   JSXElementChild,
-  childOrBlockIsChild,
+  isJSXArbitraryBlock,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   ConditionValue,
@@ -26,15 +25,13 @@ import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 export function addFakeSpyEntry(
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
-  elementOrAttribute: ChildOrAttribute,
+  elementOrAttribute: JSXElementChild,
   filePath: string,
   imports: Imports,
   conditionValue: ConditionValue,
 ): void {
   let element: Either<string, JSXElementChild>
-  if (childOrBlockIsChild(elementOrAttribute)) {
-    element = right(elementOrAttribute)
-  } else {
+  if (isJSXArbitraryBlock(elementOrAttribute)) {
     const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
     element = left(
       foldEither(
@@ -51,6 +48,8 @@ export function addFakeSpyEntry(
         simpleAttributeValue,
       ),
     )
+  } else {
+    element = right(elementOrAttribute)
   }
   const instanceMetadata: ElementInstanceMetadata = {
     element: element,
