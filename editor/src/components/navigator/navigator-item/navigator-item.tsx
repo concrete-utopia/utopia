@@ -15,6 +15,7 @@ import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   NavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
@@ -30,6 +31,7 @@ import { when } from '../../../utils/react-conditionals'
 import { isLeft } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  isJSXArbitraryBlock,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
@@ -261,9 +263,11 @@ function useStyleFullyVisible(navigatorEntry: NavigatorEntry): boolean {
           isFlexAncestorDirectionChange ||
           isInsideFocusedComponent
         )
-      } else {
-        return false
       }
+      if (isSyntheticNavigatorEntry(navigatorEntry)) {
+        return isJSXArbitraryBlock(navigatorEntry.childOrAttribute)
+      }
+      return false
     },
     'NavigatorItem useStyleFullyVisible',
   )

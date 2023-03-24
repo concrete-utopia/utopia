@@ -87,7 +87,6 @@ export function getNavigatorTargets(
     if (subTree != null) {
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       navigatorTargets.push(regularNavigatorEntry(path))
       if (
