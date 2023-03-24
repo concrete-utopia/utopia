@@ -20,7 +20,6 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 import { navigatorDepth } from './navigator-utils'
 import { compose3Optics, Optic } from '../../core/shared/optics/optics'
 import { forElementOptic } from '../../core/model/common-optics'
@@ -33,6 +32,9 @@ import {
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { JSXElementChild } from '../../core/shared/element-template'
 import { getUtopiaID } from '../../core/shared/uid-utils'
+import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import { pressKey } from '../canvas/event-helpers.test-utils'
+import { NavigatorItemTestId } from './navigator-item/navigator-item'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -1213,5 +1215,77 @@ describe('conditionals in the navigator', () => {
   })
   xit('dragging into child of an active clause, works as it would without the conditional', () => {
     // TODO: Fill this out.
+  })
+  it('can select and delete an inactive clause', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    // Determine the entry we want to select.
+    const elementPathToDelete = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
+    )
+    const elseDivElement = unsafeGet(
+      forElementOptic(elementPathToDelete),
+      renderResult.getEditorState().editor,
+    )
+
+    // Getting info relating to what element will be selected.
+    const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
+      NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(syntheticNavigatorEntry(elementPathToDelete, elseDivElement)),
+      ),
+    )
+    const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
+    const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
+
+    // Select the inactive entry in the navigator.
+    await act(async () => {
+      await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
+    expect(selectedViewPaths).toEqual([EP.toString(elementPathToDelete)])
+
+    // Delete the inactive entry.
+    await act(async () => {
+      await pressKey('delete')
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Need the underlying value in the clause to be able to construct the navigator entry.
+    const removedOriginalLocationOptic: Optic<EditorState, JSXElementChild> = compose3Optics(
+      forElementOptic(EP.parentPath(elementPathToDelete)),
+      jsxConditionalExpressionOptic,
+      conditionalWhenFalseOptic,
+    )
+    const removedOriginalLocation = unsafeGet(
+      removedOriginalLocationOptic,
+      renderResult.getEditorState().editor,
+    )
+    const removedOriginalUID = getUtopiaID(removedOriginalLocation)
+
+    if (getPrintedUiJsCode(renderResult.getEditorState()) === getProjectCode()) {
+      throw new Error(`Code is unchanged.`)
+    }
+
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
 })

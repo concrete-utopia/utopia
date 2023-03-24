@@ -43,6 +43,7 @@ import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook
 import { navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
+import { assertNever } from '../../../core/shared/utils'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -78,7 +79,7 @@ export interface NavigatorItemInnerProps {
 function selectItem(
   dispatch: EditorDispatch,
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
-  elementPath: ElementPath,
+  navigatorEntry: NavigatorEntry,
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
@@ -86,13 +87,13 @@ function selectItem(
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
+      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], true), 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
       dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
     } else {
-      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
+      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], false), 'leftpane')
     }
   }
 }
@@ -484,16 +485,9 @@ export const NavigatorItem: React.FunctionComponent<
   )
   const select = React.useCallback(
     (event: any) => {
-      selectItem(
-        dispatch,
-        getSelectedViewsInRange,
-        navigatorEntry.elementPath,
-        index,
-        selected,
-        event,
-      )
+      selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
     },
-    [dispatch, getSelectedViewsInRange, navigatorEntry.elementPath, index, selected],
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
