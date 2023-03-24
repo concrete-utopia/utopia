@@ -2044,9 +2044,7 @@ function fillSpyOnlyMetadata(
         : infinityLocalRectangle
 
     workingElements[pathStr] = {
-      ...spyElem,
-      specialSizeMeasurements:
-        fromDOM[pathStr]?.specialSizeMeasurements ?? spyElem.specialSizeMeasurements,
+      ...(fromDOM[pathStr] ?? spyElem),
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
     }
