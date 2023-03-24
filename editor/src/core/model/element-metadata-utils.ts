@@ -2045,6 +2045,8 @@ function fillSpyOnlyMetadata(
 
     workingElements[pathStr] = {
       ...spyElem,
+      specialSizeMeasurements:
+        fromDOM[pathStr]?.specialSizeMeasurements ?? spyElem.specialSizeMeasurements,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
     }

@@ -447,10 +447,6 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          if (type === 'display-contents') {
-            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual('')
-          }
-
           await renderResult.getDispatchFollowUpActionsFinished()
           expect(getRegularNavigatorTargets(renderResult)).toEqual([
             'utopia-storyboard-uid/scene-aaa',
