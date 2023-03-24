@@ -52,17 +52,17 @@ index 2d7da1aecf8..052f52383f0 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/package.json b/package.json
-index 2bca5115cac..fc490c7487f 100644
+index 2bca5115cac..dce7cb0cf6c 100644
 --- a/package.json
 +++ b/package.json
-@@ -202,6 +202,7 @@
-     "typescript-formatter": "7.1.0",
-     "underscore": "^1.12.1",
-     "util": "^0.12.4",
+@@ -77,6 +77,7 @@
+     "spdlog": "^0.13.0",
+     "sudo-prompt": "9.2.1",
+     "tas-client-umd": "0.1.4",
 +    "utopia-vscode-common": "file:../../utopia-vscode-common",
-     "vinyl": "^2.0.0",
-     "vinyl-fs": "^3.0.0",
-     "vscode-debugprotocol": "1.48.0",
+     "v8-inspect-profiler": "^0.0.22",
+     "vscode-nsfw": "2.1.8",
+     "vscode-oniguruma": "1.5.1",
 diff --git a/product.json b/product.json
 index 7b60eac641d..b37ebcd9f73 100644
 --- a/product.json
@@ -190,7 +190,7 @@ index 6148eb30092..6948ededa4a 100644
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/communication.ts b/src/vs/code/browser/workbench/communication.ts
 new file mode 100644
-index 00000000000..ea363904dca
+index 00000000000..2b05e70967e
 --- /dev/null
 +++ b/src/vs/code/browser/workbench/communication.ts
 @@ -0,0 +1,166 @@
@@ -286,7 +286,7 @@ index 00000000000..ea363904dca
 +      if (fsStat.type === 'FILE' && fsStat.sourceOfLastChange !== UtopiaFSUser) {
 +        void readFileAsUTF8(fsPath).then((fileContent) => {
 +          const filePath = fromFSPath(fsPath)
-+          window.postMessage(vsCodeFileChange(filePath,
++          window.top?.postMessage(vsCodeFileChange(filePath,
 +            fileContent), '*')
 +        })
 +      }
@@ -299,10 +299,10 @@ index 00000000000..ea363904dca
 +  }
 +  function onDeleted(fsPath: string): void {
 +    const filePath = fromFSPath(fsPath)
-+    window.postMessage(vsCodeFileDelete(filePath), '*')
++    window.top?.postMessage(vsCodeFileDelete(filePath), '*')
 +  }
 +  function onIndexedDBFailure(): void {
-+    window.postMessage(indexedDBFailure(), '*')
++    window.top?.postMessage(indexedDBFailure(), '*')
 +  }
 +
 +  void watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
@@ -324,7 +324,7 @@ index 00000000000..ea363904dca
 +      await writeProjectFile(projectFile)
 +    }
 +    await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-+      window.postMessage(fromVSCodeExtensionMessage(message), '*')
++      window.top?.postMessage(fromVSCodeExtensionMessage(message), '*')
 +    })
 +    await sendMessage(utopiaReady())
 +    await sendMessage(getUtopiaVSCodeConfig())
@@ -332,10 +332,10 @@ index 00000000000..ea363904dca
 +    if (openFilePath != null) {
 +      await sendMessage(openFileMessage(openFilePath))
 +    } else {
-+      window.postMessage(fromVSCodeExtensionMessage(clearLoadingScreen()), '*')
++      window.top?.postMessage(fromVSCodeExtensionMessage(clearLoadingScreen()), '*')
 +    }
 +    
-+    window.postMessage(vsCodeBridgeReady(), '*')
++    window.top?.postMessage(vsCodeBridgeReady(), '*')
 +  }
 +
 +  // Prevent multiple initialisations from driving over each other.
@@ -358,7 +358,7 @@ index 00000000000..ea363904dca
 +    }
 +  })
 +
-+  window.postMessage(messageListenersReady(), '*')
++  window.top?.postMessage(messageListenersReady(), '*')
 +}
 \ No newline at end of file
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts

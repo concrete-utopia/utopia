@@ -11,7 +11,7 @@ const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
   const projectID = props.projectID
   const baseIframeSrc = createIframeUrl(
     MONACO_EDITOR_IFRAME_BASE_URL,
-    'vscode-editor-outer-iframe/',
+    'vscode-editor-inner-iframe/',
   )
   const url = new URL(baseIframeSrc)
   url.searchParams.append('project_id', projectID)

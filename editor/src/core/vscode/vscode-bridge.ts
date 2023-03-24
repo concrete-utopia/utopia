@@ -170,67 +170,70 @@ function watchForChanges(dispatch: EditorDispatch): void {
 
 let currentInit: Promise<void> = Promise.resolve()
 
+const onMessage = (messageEvent: MessageEvent) => {
+  const { data } = messageEvent
+  if (isMessageListenersReady(data)) {
+    // console.log('Message Listeners Ready!')
+  }
+}
+
 export async function initVSCodeBridge(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
   openFilePath: string | null,
 ): Promise<void> {
-  // window.addEventListener('message', (messageEvent: MessageEvent) => {
-  //   const { data } = messageEvent
-  //   if (isMessageListenersReady(data)) {
-  //     console.log('Message Listeners Ready!')
+  window.removeEventListener('message', onMessage)
+  window.addEventListener('message', onMessage)
+  // let loadingScreenHidden = false
+  // async function innerInit(): Promise<void> {
+  //   dispatch([markVSCodeBridgeReady(false)], 'everyone')
+  //   if (isBrowserEnvironment) {
+  //     stopWatchingAll()
+  //     stopPollingMailbox()
+  //     await initializeFS(projectID, UtopiaFSUser)
+  //     await clearBothMailboxes()
+  //     await writeProjectContents(projectContents)
+  //     await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
+  //       switch (message.type) {
+  //         case 'EDITOR_CURSOR_POSITION_CHANGED':
+  //           dispatch(
+  //             [selectFromFileAndPosition(message.filePath, message.line, message.column)],
+  //             'everyone',
+  //           )
+  //           break
+  //         case 'UTOPIA_VSCODE_CONFIG_VALUES':
+  //           dispatch([updateConfigFromVSCode(message.config)], 'everyone')
+  //           break
+  //         case 'VSCODE_READY':
+  //           dispatch([sendCodeEditorInitialisation()], 'everyone')
+  //           break
+  //         case 'CLEAR_LOADING_SCREEN':
+  //           if (!loadingScreenHidden) {
+  //             loadingScreenHidden = true
+  //             dispatch([hideVSCodeLoadingScreen()], 'everyone')
+  //           }
+  //           break
+  //         default:
+  //           const _exhaustiveCheck: never = message
+  //           throw new Error(`Unhandled message type${JSON.stringify(message)}`)
+  //       }
+  //     })
+  //     await sendUtopiaReadyMessage()
+  //     await sendGetUtopiaVSCodeConfigMessage()
+  //     watchForChanges(dispatch)
+  //     if (openFilePath != null) {
+  //       await sendOpenFileMessage(openFilePath)
+  //     } else {
+  //       loadingScreenHidden = true
+  //       dispatch([hideVSCodeLoadingScreen()], 'everyone')
+  //     }
   //   }
-  // })
-  let loadingScreenHidden = false
-  async function innerInit(): Promise<void> {
-    dispatch([markVSCodeBridgeReady(false)], 'everyone')
-    if (isBrowserEnvironment) {
-      stopWatchingAll()
-      stopPollingMailbox()
-      await initializeFS(projectID, UtopiaFSUser)
-      await clearBothMailboxes()
-      await writeProjectContents(projectContents)
-      await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-        switch (message.type) {
-          case 'EDITOR_CURSOR_POSITION_CHANGED':
-            dispatch(
-              [selectFromFileAndPosition(message.filePath, message.line, message.column)],
-              'everyone',
-            )
-            break
-          case 'UTOPIA_VSCODE_CONFIG_VALUES':
-            dispatch([updateConfigFromVSCode(message.config)], 'everyone')
-            break
-          case 'VSCODE_READY':
-            dispatch([sendCodeEditorInitialisation()], 'everyone')
-            break
-          case 'CLEAR_LOADING_SCREEN':
-            if (!loadingScreenHidden) {
-              loadingScreenHidden = true
-              dispatch([hideVSCodeLoadingScreen()], 'everyone')
-            }
-            break
-          default:
-            const _exhaustiveCheck: never = message
-            throw new Error(`Unhandled message type${JSON.stringify(message)}`)
-        }
-      })
-      await sendUtopiaReadyMessage()
-      await sendGetUtopiaVSCodeConfigMessage()
-      watchForChanges(dispatch)
-      if (openFilePath != null) {
-        await sendOpenFileMessage(openFilePath)
-      } else {
-        loadingScreenHidden = true
-        dispatch([hideVSCodeLoadingScreen()], 'everyone')
-      }
-    }
-    dispatch([markVSCodeBridgeReady(true)], 'everyone')
-  }
+  //   dispatch([markVSCodeBridgeReady(true)], 'everyone')
+  // }
 
-  // Prevent multiple initialisations from driving over each other.
-  currentInit = currentInit.then(innerInit)
+  // // Prevent multiple initialisations from driving over each other.
+  // currentInit = currentInit.then(innerInit)
 }
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {
