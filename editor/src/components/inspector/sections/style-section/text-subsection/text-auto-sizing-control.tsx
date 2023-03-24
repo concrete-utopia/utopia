@@ -41,10 +41,8 @@ export const TextAutoSizingControl = React.memo(() => {
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
-      const width =
-        detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target) ?? undefined
-      const height =
-        detectFillHugFixedState('vertical', store.editor.jsxMetadata, target) ?? undefined
+      const width = detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
+      const height = detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
 
       if (width?.type === height?.type) {
         return width?.type
