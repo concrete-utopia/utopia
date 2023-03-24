@@ -56,6 +56,7 @@ import {
   SelectedElementChanged,
   utopiaReady,
   setVSCodeTheme,
+  isMessageListenersReady,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -175,6 +176,12 @@ export async function initVSCodeBridge(
   dispatch: EditorDispatch,
   openFilePath: string | null,
 ): Promise<void> {
+  // window.addEventListener('message', (messageEvent: MessageEvent) => {
+  //   const { data } = messageEvent
+  //   if (isMessageListenersReady(data)) {
+  //     console.log('Message Listeners Ready!')
+  //   }
+  // })
   let loadingScreenHidden = false
   async function innerInit(): Promise<void> {
     dispatch([markVSCodeBridgeReady(false)], 'everyone')
