@@ -1799,6 +1799,7 @@ export interface SpecialSizeMeasurements {
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBox: CanvasRectangle | null
+  offsetParentContentBox: CanvasRectangle | null
   float: string
   hasPositionOffset: boolean
   parentTextDirection: TextDirection | null
@@ -1840,6 +1841,7 @@ export function specialSizeMeasurements(
   htmlElementName: string,
   renderedChildrenCount: number,
   globalContentBox: CanvasRectangle | null,
+  offsetParentContentBox: CanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
   parentTextDirection: TextDirection | null,
@@ -1880,6 +1882,7 @@ export function specialSizeMeasurements(
     htmlElementName,
     renderedChildrenCount,
     globalContentBox,
+    offsetParentContentBox,
     float,
     hasPositionOffset,
     parentTextDirection,
@@ -1924,6 +1927,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   'div',
   0,
+  null,
   null,
   'none',
   false,
