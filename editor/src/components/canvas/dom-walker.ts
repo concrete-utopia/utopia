@@ -926,6 +926,17 @@ function getSpecialMeasurements(
     height: globalFrame.height - border.top - border.bottom,
   })
 
+  let offsetParentContentBox: CanvasRectangle | null = null
+  if (offsetParent != null) {
+    const offsetParentContentFrame = globalFrameForElement(offsetParent, scale, containerRectLazy)
+    offsetParentContentBox = canvasRectangle({
+      x: offsetParentContentFrame.x + border.left,
+      y: offsetParentContentFrame.y + border.top,
+      width: offsetParentContentFrame.width - border.left - border.right,
+      height: offsetParentContentFrame.height - border.top - border.bottom,
+    })
+  }
+
   function positionValueIsDefault(value: string) {
     return value === 'auto' || value === '0px'
   }
@@ -993,6 +1004,7 @@ function getSpecialMeasurements(
     element.localName,
     childrenCount,
     globalContentBox,
+    offsetParentContentBox,
     elementStyle.float,
     hasPositionOffset,
     parentTextDirection,

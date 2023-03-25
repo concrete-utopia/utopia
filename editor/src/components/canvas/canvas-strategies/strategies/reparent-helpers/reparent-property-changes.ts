@@ -15,14 +15,12 @@ import {
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
+  zeroCanvasRect,
 } from '../../../../../core/shared/math-utils'
 import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { ProjectContentTreeRoot } from '../../../../assets'
-import {
-  AllElementProps,
-  getElementFromProjectContents,
-} from '../../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
 import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
 import {
@@ -67,10 +65,10 @@ export function getAbsoluteReparentPropertyChanges(
     return []
   }
 
-  const currentParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
-    EP.parentPath(target),
-    targetStartingMetadata,
-  )
+  const currentParentContentBox =
+    MetadataUtils.findElementByElementPath(targetStartingMetadata, target)?.specialSizeMeasurements
+      .offsetParentContentBox ?? zeroCanvasRect
+
   const newParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
     newParent,
     newParentStartingMetadata,
