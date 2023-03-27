@@ -1069,15 +1069,18 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
 function deleteElements(
   targets: ElementPath[],
   editor: EditorModel,
-): { editor: EditorModel; affectedElements: JSXElementChildByElementPath } {
+): {
+  editor: EditorModel
+  originalParentElements: JSXElementChildByElementPath
+} {
   const openUIJSFilePath = getOpenUIJSFileKey(editor)
   if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
-    return { editor, affectedElements: {} }
+    return { editor, originalParentElements: {} }
   }
 
   let updatedEditor: EditorState = { ...editor }
-  let affectedElements: JSXElementChildByElementPath = {}
+  let affectedParentElements: JSXElementChildByElementPath = {}
 
   for (const targetPath of targets) {
     const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -1090,11 +1093,11 @@ function deleteElements(
 
     function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-      const { components: withTargetRemoved, affectedElements: newAffectedElements } =
+      const { components: withTargetRemoved, originalParentElements: newAffectedParentElements } =
         removeElementAtPath(targetPath, utopiaComponents)
-      affectedElements = {
-        ...affectedElements,
-        ...newAffectedElements,
+      affectedParentElements = {
+        ...affectedParentElements,
+        ...newAffectedParentElements,
       }
       return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
         return {
@@ -1114,7 +1117,7 @@ function deleteElements(
       ...updatedEditor,
       selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
     },
-    affectedElements,
+    originalParentElements: affectedParentElements,
   }
 }
 
@@ -1885,10 +1888,8 @@ export const UPDATE_FNS = {
             return path
           })
 
-        const { editor: withElementDeleted, affectedElements } = deleteElements(
-          staticSelectedElements,
-          editor,
-        )
+        const { editor: withElementDeleted, originalParentElements: affectedElements } =
+          deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)

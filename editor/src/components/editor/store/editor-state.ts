@@ -1958,11 +1958,11 @@ export function removeElementAtPath(
   components: Array<UtopiaJSXComponent>,
 ): {
   components: Array<UtopiaJSXComponent>
-  affectedElements: JSXElementChildByElementPath
+  originalParentElements: JSXElementChildByElementPath
 } {
   const staticTarget = EP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
-    return { components, affectedElements: {} }
+    return { components, originalParentElements: {} }
   } else {
     return removeJSXElementChild(staticTarget, components)
   }

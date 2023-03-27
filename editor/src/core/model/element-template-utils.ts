@@ -442,7 +442,7 @@ export function removeJSXElementChild(
   rootElements: Array<UtopiaJSXComponent>,
 ): {
   components: Array<UtopiaJSXComponent>
-  affectedElements: JSXElementChildByElementPath
+  originalParentElements: JSXElementChildByElementPath
 } {
   const parentPath = EP.parentPath(target)
   const targetID = EP.toUid(target)
@@ -494,7 +494,7 @@ export function removeJSXElementChild(
 
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
   if (lastElementPathPart == null) {
-    return { components: rootElements, affectedElements: {} }
+    return { components: rootElements, originalParentElements: {} }
   }
 
   let affectedElements: { [path: string]: JSXElementChild } = {}
@@ -507,7 +507,7 @@ export function removeJSXElementChild(
       return parentAfterRemoval
     },
   )
-  return { components: transformed.elements, affectedElements: affectedElements }
+  return { components: transformed.elements, originalParentElements: affectedElements }
 }
 
 export function insertJSXElementChild(
