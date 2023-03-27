@@ -56,7 +56,7 @@ export function navigatorDepth(
 
   // For the clause entry itself, this needs to step back by 1.
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    result = result + 1
+    result = result - 1
   }
 
   return result
@@ -125,13 +125,10 @@ export function getNavigatorTargets(
           conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
         // Get the clause path.
-        const clausePath = getConditionalClausePath(path, clauseValue, conditionalCase)
+        const clausePath = getConditionalClausePath(path, clauseValue)
 
         // Create the entry for the name of the clause.
-        const clauseTitleEntry = conditionalClauseNavigatorEntry(
-          conditionalSubTree.path,
-          conditionalCase,
-        )
+        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, conditionalCase)
         navigatorTargets.push(clauseTitleEntry)
         visibleNavigatorTargets.push(clauseTitleEntry)
 

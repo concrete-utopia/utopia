@@ -309,15 +309,11 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
-      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue, 'true-case')
+      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue)
       return !EP.pathsEqual(elementPath, trueClausePath)
     }
     // when the condition is false, then the 'else' branch is not hidden
-    const falseClausePath = getConditionalClausePath(
-      parentPath,
-      conditional.whenFalse,
-      'false-case',
-    )
+    const falseClausePath = getConditionalClausePath(parentPath, conditional.whenFalse)
     return !EP.pathsEqual(elementPath, falseClausePath)
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
@@ -340,13 +336,11 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
     return (
       matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenTrue,
-        branch: 'true-case',
         wantOverride: true,
         parentOverride: parentOverride,
       }) ||
       matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenFalse,
-        branch: 'false-case',
         wantOverride: false,
         parentOverride: parentOverride,
       })

@@ -1288,4 +1288,62 @@ describe('conditionals in the navigator', () => {
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
+  it('can select the true case clause by its label', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    // Determine the entry we want to select.
+    const elementPathToSelect = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/then-then-div`,
+    )
+
+    // Getting info relating to what element will be selected.
+    const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
+      NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(
+          conditionalClauseNavigatorEntry(elementPathToSelect, 'true-case'),
+        ),
+      ),
+    )
+    const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
+    const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
+
+    // Select the false label entry in the navigator.
+    await act(async () => {
+      await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
+    expect(selectedViewPaths).toEqual([EP.toString(elementPathToSelect)])
+  })
+  it('can select the false case clause by its label', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    // Determine the entry we want to select.
+    const elementPathToSelect = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
+    )
+
+    // Getting info relating to what element will be selected.
+    const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
+      NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(
+          conditionalClauseNavigatorEntry(elementPathToSelect, 'false-case'),
+        ),
+      ),
+    )
+    const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
+    const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
+
+    // Select the false label entry in the navigator.
+    await act(async () => {
+      await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
+    expect(selectedViewPaths).toEqual([EP.toString(elementPathToSelect)])
+  })
 })
