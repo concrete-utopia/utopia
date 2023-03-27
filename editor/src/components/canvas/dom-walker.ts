@@ -919,7 +919,7 @@ function getSpecialMeasurements(
     providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
 
   const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
-  const globalContentBox = canvasRectangle({
+  const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
     width: globalFrame.width - border.left - border.right,
@@ -992,7 +992,7 @@ function getSpecialMeasurements(
     alignItems,
     element.localName,
     childrenCount,
-    globalContentBox,
+    globalContentBoxForChildren,
     elementStyle.float,
     hasPositionOffset,
     parentTextDirection,
