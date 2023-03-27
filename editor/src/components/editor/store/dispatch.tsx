@@ -660,6 +660,7 @@ function applyProjectChanges(
 
   if (frozenEditorState.vscodeReady) {
     // Chain off of the previous one to ensure the ordering is maintained.
+    // FIXME This is no longer async - do we need to move this chaining inside vs code?
     applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
       const changesToSend = accumulatedProjectChanges
       accumulatedProjectChanges = emptyProjectChanges

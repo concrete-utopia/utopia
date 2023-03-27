@@ -1,71 +1,53 @@
 import {
-  getProjectFileFromTree,
-  isProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
-  walkContentsTree,
-  walkContentsTreeAsync,
-  zipContentsTree,
-  zipContentsTreeAsync,
-} from '../../components/assets'
+  boundsInFile,
+  DecorationRange,
+  decorationRange,
+  DecorationRangeType,
+  deletePathChange,
+  ensureDirectoryExistsChange,
+  FromUtopiaToVSCodeMessage,
+  initProject,
+  isFromVSCodeExtensionMessage,
+  isIndexedDBFailure,
+  isMessageListenersReady,
+  isVSCodeBridgeReady,
+  isVSCodeFileChange,
+  isVSCodeFileDelete,
+  openFileMessage,
+  projectDirectory,
+  ProjectFile as CommonProjectFile,
+  projectTextFile,
+  selectedElementChanged,
+  SelectedElementChanged,
+  setFollowSelectionConfig,
+  setVSCodeTheme,
+  toVSCodeExtensionMessage,
+  updateDecorationsMessage,
+  UpdateDecorationsMessage,
+  writeProjectFileChange,
+} from 'utopia-vscode-common'
+import { ProjectContentTreeRoot, walkContentsTree } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
 import {
   deleteFile,
-  selectFromFileAndPosition,
-  markVSCodeBridgeReady,
-  updateFromCodeEditor,
-  sendCodeEditorInitialisation,
-  updateConfigFromVSCode,
-  sendLinterRequestMessage,
   hideVSCodeLoadingScreen,
+  markVSCodeBridgeReady,
+  selectFromFileAndPosition,
+  sendCodeEditorInitialisation,
+  sendLinterRequestMessage,
   setIndexedDBFailed,
+  updateConfigFromVSCode,
+  updateFromCodeEditor,
 } from '../../components/editor/actions/action-creators'
-import {
-  getSavedCodeFromTextFile,
-  getUnsavedCodeFromTextFile,
-  isDirectory,
-} from '../model/project-file-utils'
-import {
-  openFileMessage,
-  DecorationRange,
-  updateDecorationsMessage,
-  selectedElementChanged,
-  decorationRange,
-  DecorationRangeType,
-  boundsInFile,
-  getUtopiaVSCodeConfig,
-  setFollowSelectionConfig,
-  UpdateDecorationsMessage,
-  SelectedElementChanged,
-  utopiaReady,
-  setVSCodeTheme,
-  isMessageListenersReady,
-  ProjectFile as CommonProjectFile,
-  projectTextFile,
-  projectDirectory,
-  initProject,
-  isVSCodeBridgeReady,
-  isFromVSCodeExtensionMessage,
-  isVSCodeFileChange,
-  isVSCodeFileDelete,
-  isIndexedDBFailure,
-  ToVSCodeMessage,
-  toVSCodeExtensionMessage,
-  deletePathChange,
-  ToVSCodeExtensionMessage,
-  FromUtopiaToVSCodeMessage,
-  writeProjectFileChange,
-  ensureDirectoryExistsChange,
-} from 'utopia-vscode-common'
-import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
-import { assertNever, isBrowserEnvironment } from '../shared/utils'
 import {
   EditorState,
   getHighlightBoundsForElementPath,
-  getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
 import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
 import { Theme } from '../../uuiui'
+import { getSavedCodeFromTextFile, getUnsavedCodeFromTextFile } from '../model/project-file-utils'
+import { ElementPath, ProjectFile } from '../shared/project-file-types'
+import { assertNever, NO_OP } from '../shared/utils'
 
 export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
@@ -102,22 +84,19 @@ function convertProjectContents(projectContents: ProjectContentTreeRoot): Array<
   return projectFiles
 }
 
-let currentInit: Promise<void> = Promise.resolve()
-
 let vscodeIFrame: MessageEventSource | null = null
+let registeredHandlers: (messageEvent: MessageEvent) => void = NO_OP
 
-export async function initVSCodeBridge(
-  projectID: string,
+export function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
   openFilePath: string | null,
-): Promise<void> {
-  // window.removeEventListener('message', onMessage)
-  // window.addEventListener('message', onMessage)
-
+) {
   let loadingScreenHidden = false
 
-  window.addEventListener('message', (messageEvent: MessageEvent) => {
+  // Remove any existing message handlers to prevent us accidentally duplicating them
+  window.removeEventListener('message', registeredHandlers)
+  registeredHandlers = (messageEvent: MessageEvent) => {
     const { data } = messageEvent
     if (isMessageListenersReady(data) && messageEvent.source != null) {
       // Store the source
@@ -176,36 +155,24 @@ export async function initVSCodeBridge(
     } else if (isIndexedDBFailure(data)) {
       dispatch([setIndexedDBFailed(true)], 'everyone')
     }
-  })
+  }
 
-  // // Prevent multiple initialisations from driving over each other.
-  // currentInit = currentInit.then(innerInit)
+  window.addEventListener('message', registeredHandlers)
 }
 
 export function sendMessage(message: FromUtopiaToVSCodeMessage) {
   vscodeIFrame?.postMessage(message, { targetOrigin: '*' })
 }
 
-// FIXME None of these are async now
-export async function sendOpenFileMessage(filePath: string): Promise<void> {
-  return sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath)))
+export function sendOpenFileMessage(filePath: string) {
+  sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath)))
 }
 
-export async function sendUpdateDecorationsMessage(
-  decorations: Array<DecorationRange>,
-): Promise<void> {
-  return sendMessage(toVSCodeExtensionMessage(updateDecorationsMessage(decorations)))
+export function sendSetFollowSelectionEnabledMessage(enabled: boolean) {
+  sendMessage(toVSCodeExtensionMessage(setFollowSelectionConfig(enabled)))
 }
 
-export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Promise<void> {
-  return sendMessage(toVSCodeExtensionMessage(setFollowSelectionConfig(enabled)))
-}
-
-export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
-  return sendMessage(toVSCodeExtensionMessage(getUtopiaVSCodeConfig()))
-}
-
-export async function applyProjectChanges(changes: Array<ProjectFileChange>): Promise<void> {
+export function applyProjectChanges(changes: Array<ProjectFileChange>) {
   for (const change of changes) {
     switch (change.type) {
       case 'DELETE_PATH':
@@ -257,9 +224,9 @@ export function getCodeEditorDecorations(editorState: EditorState): UpdateDecora
   return updateDecorationsMessage(decorations)
 }
 
-export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
+export function sendCodeEditorDecorations(editorState: EditorState) {
   const decorationsMessage = getCodeEditorDecorations(editorState)
-  await sendMessage(toVSCodeExtensionMessage(decorationsMessage))
+  sendMessage(toVSCodeExtensionMessage(decorationsMessage))
 }
 
 export function getSelectedElementChangedMessage(
@@ -291,12 +258,10 @@ export function getSelectedElementChangedMessage(
   }
 }
 
-export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
+export function sendSelectedElement(newEditorState: EditorState) {
   const selectedElementChangedMessage = getSelectedElementChangedMessage(newEditorState)
-  if (selectedElementChangedMessage == null) {
-    return Promise.resolve()
-  } else {
-    await sendMessage(toVSCodeExtensionMessage(selectedElementChangedMessage))
+  if (selectedElementChangedMessage != null) {
+    sendMessage(toVSCodeExtensionMessage(selectedElementChangedMessage))
   }
 }
 
@@ -312,7 +277,7 @@ function vsCodeThemeForTheme(theme: Theme): string {
   }
 }
 
-export async function sendSetVSCodeTheme(theme: Theme): Promise<void> {
+export function sendSetVSCodeTheme(theme: Theme) {
   const vsCodeTheme = vsCodeThemeForTheme(theme)
-  await sendMessage(toVSCodeExtensionMessage(setVSCodeTheme(vsCodeTheme)))
+  sendMessage(toVSCodeExtensionMessage(setVSCodeTheme(vsCodeTheme)))
 }
