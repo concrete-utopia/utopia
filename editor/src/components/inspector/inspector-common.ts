@@ -45,6 +45,7 @@ import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
 import { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
+import { ControlStatus } from '../../uuiui-deps'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -515,9 +516,9 @@ export const nukeAllAbsolutePositioningPropsCommands = (
 }
 
 export type FixedHugFill =
-  | { type: 'fixed'; value: CSSNumber }
-  | { type: 'fill'; value: CSSNumber }
-  | { type: 'hug' }
+  | { type: 'fixed'; value: CSSNumber; status: ControlStatus }
+  | { type: 'fill'; value: CSSNumber; status: ControlStatus }
+  | { type: 'hug'; status: ControlStatus }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -559,12 +560,12 @@ export function detectFillHugFixedState(
 
     const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
     if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      return { type: 'fill', value: flexGrow }
+      return { type: 'fill', value: flexGrow, status: 'simple' }
     }
 
     const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
     if (axis === 'vertical' && isFlexDirectionVertical) {
-      return { type: 'fill', value: flexGrow }
+      return { type: 'fill', value: flexGrow, status: 'simple' }
     }
   }
 
@@ -576,23 +577,23 @@ export function detectFillHugFixedState(
   )
 
   if (prop === MaxContent) {
-    return { type: 'hug' }
+    return { type: 'hug', status: 'simple' }
   }
 
   const parsed = defaultEither(null, parseCSSLengthPercent(prop))
 
   if (parsed != null && parsed.unit === '%') {
-    return { type: 'fill', value: parsed }
+    return { type: 'fill', value: parsed, status: 'simple' }
   }
 
   if (parsed != null) {
-    return { type: 'fixed', value: parsed }
+    return { type: 'fixed', value: parsed, status: 'simple' }
   }
 
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    return { type: 'fixed', value: cssNumber(frame[dimension], 'px') }
+    return { type: 'fixed', value: cssNumber(frame[dimension], 'px'), status: 'unset' }
   }
 
   return null

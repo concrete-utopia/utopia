@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -7,7 +10,12 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { NumberInput, PopupList, SimpleCSSNumberInput } from '../../uuiui'
-import { getControlStyles, SelectOption } from '../../uuiui-deps'
+import {
+  ControlStatus,
+  getControlStyles,
+  InspectorRowHoverCSS,
+  SelectOption,
+} from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
@@ -91,8 +99,6 @@ function elementComputedDimension(
   return localFrame[prop]
 }
 
-const simpleControlStyles = getControlStyles('simple')
-
 interface FillHugFixedControlProps {}
 
 const optionsSelector = createSelector(
@@ -129,6 +135,18 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     'FillHugFixedControl widthCurrentValue',
     isFixedHugFillEqual,
   )
+  const widthControlStatus = React.useMemo(
+    () => (widthCurrentValue == null ? 'unset' : widthCurrentValue.status),
+    [widthCurrentValue],
+  )
+  const widthControlStyles = React.useMemo(
+    () => getControlStyles(widthControlStatus),
+    [widthControlStatus],
+  )
+  const widthInputControlStatus = React.useMemo(
+    () => (isNumberInputEnabled(widthCurrentValue) ? widthControlStatus : 'disabled'),
+    [widthCurrentValue, widthControlStatus],
+  )
 
   const fillsContainerHorizontallyRef = useRefEditorState(
     (store) =>
@@ -158,6 +176,18 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) ?? undefined,
     'FillHugFixedControl heightCurrentValue',
     isFixedHugFillEqual,
+  )
+  const heightControlStatus = React.useMemo(
+    () => (heightCurrentValue == null ? 'unset' : heightCurrentValue.status),
+    [heightCurrentValue],
+  )
+  const heightControlStyles = React.useMemo(
+    () => getControlStyles(heightControlStatus),
+    [heightControlStatus],
+  )
+  const heightInputControlStatus = React.useMemo(
+    () => (isNumberInputEnabled(heightCurrentValue) ? heightControlStatus : 'disabled'),
+    [heightCurrentValue, heightControlStatus],
   )
 
   const fillsContainerVerticallyRef = useRefEditorState(
@@ -298,57 +328,75 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       style={{
         display: 'grid',
         gridTemplateRows: '1fr 1fr',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 4,
-        padding: 4,
+        gridTemplateColumns: '1fr',
       }}
     >
-      <PopupList
-        value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
-        options={options}
-        onSubmitValue={onSubmitWidth}
-        controlStyles={simpleControlStyles}
-      />
-      <NumberInput
-        id={FillFixedHugControlId('width')}
-        testId={FillFixedHugControlId('width')}
-        value={widthValue}
-        onSubmitValue={onAdjustWidth}
-        onTransientSubmitValue={NO_OP}
-        onForcedSubmitValue={NO_OP}
-        controlStatus={isNumberInputEnabled(widthCurrentValue) ? undefined : 'disabled'}
-        numberType={pickNumberType(widthCurrentValue)}
-        incrementControls={true}
-        stepSize={1}
-        minimum={0}
-        maximum={Infinity}
-        labelInner={'W'}
-        defaultUnitToHide={null}
-        focusOnMount={false}
-      />
-      <PopupList
-        value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
-        options={options}
-        onSubmitValue={onSubmitHeight}
-        controlStyles={simpleControlStyles}
-      />
-      <NumberInput
-        id={FillFixedHugControlId('height')}
-        testId={FillFixedHugControlId('height')}
-        value={heightValue}
-        onSubmitValue={onAdjustHeight}
-        onTransientSubmitValue={NO_OP}
-        onForcedSubmitValue={NO_OP}
-        controlStatus={isNumberInputEnabled(heightCurrentValue) ? undefined : 'disabled'}
-        numberType={pickNumberType(heightCurrentValue)}
-        incrementControls={true}
-        stepSize={1}
-        minimum={0}
-        maximum={Infinity}
-        labelInner={'H'}
-        defaultUnitToHide={null}
-        focusOnMount={false}
-      />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 4,
+          padding: 4,
+        }}
+        css={InspectorRowHoverCSS}
+      >
+        <PopupList
+          value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
+          options={options}
+          onSubmitValue={onSubmitWidth}
+          controlStyles={widthControlStyles}
+        />
+        <NumberInput
+          id={FillFixedHugControlId('width')}
+          testId={FillFixedHugControlId('width')}
+          value={widthValue}
+          onSubmitValue={onAdjustWidth}
+          onTransientSubmitValue={NO_OP}
+          onForcedSubmitValue={NO_OP}
+          controlStatus={widthInputControlStatus}
+          numberType={pickNumberType(widthCurrentValue)}
+          incrementControls={true}
+          stepSize={1}
+          minimum={0}
+          maximum={Infinity}
+          labelInner={'W'}
+          defaultUnitToHide={null}
+          focusOnMount={false}
+        />
+      </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 4,
+          padding: 4,
+        }}
+        css={InspectorRowHoverCSS}
+      >
+        <PopupList
+          value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
+          options={options}
+          onSubmitValue={onSubmitHeight}
+          controlStyles={heightControlStyles}
+        />
+        <NumberInput
+          id={FillFixedHugControlId('height')}
+          testId={FillFixedHugControlId('height')}
+          value={heightValue}
+          onSubmitValue={onAdjustHeight}
+          onTransientSubmitValue={NO_OP}
+          onForcedSubmitValue={NO_OP}
+          controlStatus={heightInputControlStatus}
+          numberType={pickNumberType(heightCurrentValue)}
+          incrementControls={true}
+          stepSize={1}
+          minimum={0}
+          maximum={Infinity}
+          labelInner={'H'}
+          defaultUnitToHide={null}
+          focusOnMount={false}
+        />
+      </div>
     </div>
   )
 })

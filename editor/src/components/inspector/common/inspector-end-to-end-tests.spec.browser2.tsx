@@ -1401,14 +1401,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(laterWidthControl.value, `"203px"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
+      `"unset"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(laterHeightControl.value, `"102px"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
+      `"unset"`,
     )
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
