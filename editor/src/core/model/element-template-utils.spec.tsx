@@ -239,7 +239,10 @@ describe('removeJSXElementChild', () => {
         return component
       }
     })
-    expect(updatedElements).toEqual(expectedResult)
+    expect(updatedElements.components).toEqual(expectedResult)
+    expect(Object.keys(updatedElements.affectedElements)).toEqual(
+      `${BakedInStoryboardUID}/scene-aaa:aab`,
+    )
   })
 })
 
