@@ -18,7 +18,6 @@ export type ConditionalCase = 'true-case' | 'false-case'
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
   conditionalClause: JSXElementChild,
-  conditionalCase: ConditionalCase,
 ): ElementPath {
   return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
 }
@@ -36,11 +35,7 @@ export function reorderConditionalChildPathTrees(
     let result: Array<ElementPathTree> = []
 
     // The whenTrue clause should be first.
-    const trueCasePath = getConditionalClausePath(
-      conditionalPath,
-      conditional.whenTrue,
-      'true-case',
-    )
+    const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
     const trueCasePathTree = childPaths.find((childPath) =>
       EP.pathsEqual(childPath.path, trueCasePath),
     )
@@ -49,11 +44,7 @@ export function reorderConditionalChildPathTrees(
     }
 
     // The whenFalse clause should be second.
-    const falseCasePath = getConditionalClausePath(
-      conditionalPath,
-      conditional.whenFalse,
-      'false-case',
-    )
+    const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
     const falseCasePathTree = childPaths.find((childPath) =>
       EP.pathsEqual(childPath.path, falseCasePath),
     )
@@ -90,7 +81,6 @@ export function getConditionalCase(
   if (
     matchesOverriddenConditionalBranch(elementPath, parentPath, {
       clause: parent.whenTrue,
-      branch: 'true-case',
       wantOverride: true,
       parentOverride: parentOverride,
     })
@@ -113,14 +103,13 @@ export function matchesOverriddenConditionalBranch(
   parentPath: ElementPath,
   params: {
     clause: JSXElementChild
-    branch: ConditionalCase
     wantOverride: boolean
     parentOverride: boolean
   },
 ): boolean {
-  const { clause, branch, wantOverride, parentOverride } = params
+  const { clause, wantOverride, parentOverride } = params
   return (
     wantOverride === parentOverride &&
-    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause, branch))
+    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause))
   )
 }

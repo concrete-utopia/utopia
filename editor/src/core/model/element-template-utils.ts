@@ -468,12 +468,8 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
-      const falseCasePath = getConditionalClausePath(
-        parentPath,
-        parentElement.whenFalse,
-        'false-case',
-      )
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue)
+      const falseCasePath = getConditionalClausePath(parentPath, parentElement.whenFalse)
 
       const nullAttribute = jsExpressionValue(null, emptyComments)
 
