@@ -25,7 +25,7 @@ import {
   EmptyInputValue,
   UnknownOrEmptyInput,
 } from './common/css-utils'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { metadataSelector, selectedViewsSelector, useComputedSizeRef } from './inpector-selectors'
 import {
   Axis,
   detectFillHugFixedState,
@@ -86,19 +86,6 @@ function selectOption(mode: FixedHugFillMode): SelectOption {
   }
 }
 
-function elementComputedDimension(
-  prop: 'width' | 'height',
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath | null,
-): number | null {
-  if (elementPath == null) {
-    return null
-  }
-
-  const localFrame = MetadataUtils.getFrameOrZeroRect(elementPath, metadata)
-  return localFrame[prop]
-}
-
 interface FillHugFixedControlProps {}
 
 const optionsSelector = createSelector(
@@ -157,14 +144,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       )?.type === 'fill',
   )
 
-  const widthComputedValueRef = useRefEditorState(
-    (store) =>
-      elementComputedDimension(
-        'width',
-        metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      ) ?? 0,
-  )
+  const widthComputedValueRef = useComputedSizeRef('width')
 
   const heightCurrentValue = useEditorState(
     Substores.metadata,
@@ -199,20 +179,13 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       )?.type === 'fill',
   )
 
-  const heightComputedValueRef = useRefEditorState(
-    (store) =>
-      elementComputedDimension(
-        'height',
-        metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      ) ?? 0,
-  )
+  const heightComputedValueRef = useComputedSizeRef('height')
 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(
-        heightComputedValueRef.current,
+        heightComputedValueRef.current ?? 0,
         'vertical',
         value,
         fillsContainerHorizontallyRef.current,
@@ -301,7 +274,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(
-        widthComputedValueRef.current,
+        widthComputedValueRef.current ?? 0,
         'horizontal',
         value,
         fillsContainerVerticallyRef.current,

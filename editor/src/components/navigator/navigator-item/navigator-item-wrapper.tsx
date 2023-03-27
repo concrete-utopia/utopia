@@ -153,7 +153,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) =>
-      isRegularNavigatorEntry(props.navigatorEntry) &&
+      !isConditionalClauseNavigatorEntry(props.navigatorEntry) &&
       EP.containsPath(props.navigatorEntry.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
