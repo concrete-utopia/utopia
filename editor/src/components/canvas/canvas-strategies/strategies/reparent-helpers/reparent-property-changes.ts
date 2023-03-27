@@ -76,9 +76,14 @@ export function getAbsoluteReparentPropertyChanges(
     return []
   }
 
-  const currentParentContentBox =
-    MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
-  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
+  const currentParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(
+    EP.parentPath(target),
+    targetStartingMetadata,
+  )
+  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(
+    newParent,
+    targetStartingMetadata,
+  )
 
   if (currentParentContentBox == null || newParentContentBox == null) {
     return []

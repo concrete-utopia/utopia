@@ -1260,13 +1260,28 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getGlobalContentBoxForChildren: function (instance: ElementInstanceMetadata): CanvasRectangle {
-    if (instance.specialSizeMeasurements.globalContentBoxForChildren != null) {
-      return instance.specialSizeMeasurements.globalContentBoxForChildren
+  getGlobalContentBoxForChildren: function (
+    targetParent: ElementPath | null,
+    metadata: ElementInstanceMetadataMap,
+  ): CanvasRectangle | null {
+    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (parent != null) {
+      if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
+        return parent.specialSizeMeasurements.globalContentBoxForChildren
+      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
+        return parent.specialSizeMeasurements.coordinateSystemBounds
+      }
     }
-    throw new Error(
-      `globalContentBoxForChildren is not defined for ${EP.toString(instance.elementPath)}`,
-    )
+
+    // Potentially here the parent was something like a fragment that itself doesn't have
+    // the above properties set, so we should move up the hierarchy to find one where they are set.
+    const nextAncestor =
+      targetParent == null || EP.isEmptyPath(targetParent) ? null : EP.parentPath(targetParent)
+    if (nextAncestor == null) {
+      return zeroCanvasRect
+    } else {
+      return MetadataUtils.getGlobalContentBoxForChildren(nextAncestor, metadata)
+    }
   },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath,
@@ -1278,7 +1293,10 @@ export const MetadataUtils = {
       return null
     }
 
-    const globalContentBox = MetadataUtils.getGlobalContentBoxForChildren(targetParentInstance)
+    const globalContentBox = MetadataUtils.getGlobalContentBoxForChildren(targetParent, metadata)
+    if (globalContentBox == null) {
+      return null
+    }
     return canvasRectangleToLocalRectangle(frame, globalContentBox)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
@@ -1976,9 +1994,12 @@ function fillSpyOnlyMetadata(
     return parentLayoutSystem == null
   })
 
-  sortPathsChildrenToFront(elementsWithoutIntrinsicSize)
-  sortPathsChildrenToFront(elementsWithoutDomMetadata)
-  sortPathsChildrenToFront(elementsWithoutParentData)
+  elementsWithoutIntrinsicSize.sort()
+  elementsWithoutIntrinsicSize.reverse()
+  elementsWithoutDomMetadata.sort()
+  elementsWithoutDomMetadata.reverse()
+  elementsWithoutParentData.sort()
+  elementsWithoutParentData.reverse()
 
   const workingElements: ElementInstanceMetadataMap = {}
 
@@ -2099,7 +2120,7 @@ function fillSpyOnlyMetadata(
 
     const parentGlobalContentBoxForChildren =
       workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
-      fromDOM[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+      fromSpy[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
 
     workingElements[pathStr] = {
       ...spyElem,
@@ -2114,14 +2135,6 @@ function fillSpyOnlyMetadata(
   })
 
   return workingElements
-}
-
-function sortPathsChildrenToFront(pathStrings: Array<string>): Array<string> {
-  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
-  // and ancestors. This means that if there are a grandparent and parent which both lack global frames
-  // then the parent is fixed ahead of the grandparent, which will be based on the parent.
-  const paths = [...pathStrings]
-  return paths.sort().reverse()
 }
 
 function findConditionalsAndCreateMetadata(
