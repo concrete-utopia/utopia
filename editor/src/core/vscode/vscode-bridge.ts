@@ -3,6 +3,7 @@ import {
   isProjectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
+  walkContentsTree,
   walkContentsTreeAsync,
   zipContentsTree,
   zipContentsTreeAsync,
@@ -25,28 +26,10 @@ import {
   isDirectory,
 } from '../model/project-file-utils'
 import {
-  initializeFS,
-  writeFileAsUTF8,
-  ensureDirectoryExists,
-  watch,
-  stopWatchingAll,
-  stopPollingMailbox,
-  readFileAsUTF8,
-  clearBothMailboxes,
-  initMailbox,
   openFileMessage,
-  sendMessage,
-  UtopiaInbox,
-  FromVSCodeMessage,
-  deletePath,
   DecorationRange,
   updateDecorationsMessage,
-  appendToPath,
-  stat,
-  BoundsInFile,
   selectedElementChanged,
-  parseFromVSCodeMessage,
-  FSUser,
   decorationRange,
   DecorationRangeType,
   boundsInFile,
@@ -57,9 +40,25 @@ import {
   utopiaReady,
   setVSCodeTheme,
   isMessageListenersReady,
+  ProjectFile as CommonProjectFile,
+  projectTextFile,
+  projectDirectory,
+  initProject,
+  isVSCodeBridgeReady,
+  isFromVSCodeExtensionMessage,
+  isVSCodeFileChange,
+  isVSCodeFileDelete,
+  isIndexedDBFailure,
+  ToVSCodeMessage,
+  toVSCodeExtensionMessage,
+  deletePathChange,
+  ToVSCodeExtensionMessage,
+  FromUtopiaToVSCodeMessage,
+  writeProjectFileChange,
+  ensureDirectoryExistsChange,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
-import { isBrowserEnvironment } from '../shared/utils'
+import { assertNever, isBrowserEnvironment } from '../shared/utils'
 import {
   EditorState,
   getHighlightBoundsForElementPath,
@@ -70,112 +69,42 @@ import { Theme } from '../../uuiui'
 
 export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
-const Scheme = 'utopia'
-const RootDir = `/${Scheme}`
-const UtopiaFSUser: FSUser = 'UTOPIA'
-
-function toFSPath(projectPath: string): string {
-  const fsPath = appendToPath(RootDir, projectPath)
-  return fsPath
-}
-
-function fromFSPath(fsPath: string): string {
-  const prefix = RootDir
-  const prefixIndex = fsPath.indexOf(prefix)
-  if (prefixIndex === 0) {
-    const projectPath = fsPath.slice(prefix.length)
-    return projectPath
-  } else {
-    throw new Error(`Invalid FS path: ${fsPath}`)
-  }
-}
-
-async function writeProjectFile(projectPath: string, file: ProjectFile): Promise<void> {
-  switch (file.type) {
-    case 'DIRECTORY': {
-      return ensureDirectoryExists(toFSPath(projectPath))
-    }
+function projectFileToCommonProjectFile(
+  fullPath: string,
+  projectFile: ProjectFile,
+): CommonProjectFile | null {
+  switch (projectFile.type) {
     case 'TEXT_FILE': {
-      const savedContent = getSavedCodeFromTextFile(file)
-      const unsavedContent = getUnsavedCodeFromTextFile(file)
-      const filePath = toFSPath(projectPath)
-      return writeFileAsUTF8(filePath, savedContent, unsavedContent)
+      const savedContent = getSavedCodeFromTextFile(projectFile)
+      const unsavedContent = getUnsavedCodeFromTextFile(projectFile)
+      return projectTextFile(fullPath, savedContent, unsavedContent)
+    }
+    case 'DIRECTORY': {
+      return projectDirectory(fullPath)
     }
     case 'ASSET_FILE':
-      return Promise.resolve()
     case 'IMAGE_FILE':
-      return Promise.resolve()
+      return null // Don't send these files to VS Code
+    default:
+      assertNever(projectFile)
   }
 }
 
-async function textFileDiffers(projectPath: string, file: TextFile): Promise<boolean> {
-  const savedContent = getSavedCodeFromTextFile(file)
-  const unsavedContent = getUnsavedCodeFromTextFile(file)
-  const filePath = toFSPath(projectPath)
-  const alreadyExistingFile = await readFileAsUTF8(filePath).catch((_) => null)
-  return (
-    alreadyExistingFile == null ||
-    alreadyExistingFile.content !== savedContent ||
-    alreadyExistingFile.unsavedContent !== unsavedContent
-  )
-}
-
-async function writeProjectContents(projectContents: ProjectContentTreeRoot): Promise<void> {
-  await walkContentsTreeAsync(projectContents, async (fullPath, file) => {
-    // Avoid pushing a file to the file system if the content hasn't changed.
-    if ((isTextFile(file) && (await textFileDiffers(fullPath, file))) || isDirectory(file)) {
-      return writeProjectFile(fullPath, file)
-    } else {
-      return Promise.resolve()
+function convertProjectContents(projectContents: ProjectContentTreeRoot): Array<CommonProjectFile> {
+  let projectFiles: Array<CommonProjectFile> = []
+  walkContentsTree(projectContents, (fullPath, file) => {
+    const commonProjectFile = projectFileToCommonProjectFile(fullPath, file)
+    if (commonProjectFile != null) {
+      projectFiles.push(commonProjectFile)
     }
   })
-}
 
-function watchForChanges(dispatch: EditorDispatch): void {
-  function onCreated(fsPath: string): void {
-    void stat(fsPath).then((fsStat) => {
-      if (fsStat.type === 'FILE' && fsStat.sourceOfLastChange !== UtopiaFSUser) {
-        void readFileAsUTF8(fsPath).then((fileContent) => {
-          const path = fromFSPath(fsPath)
-          const updateAction = updateFromCodeEditor(
-            path,
-            fileContent.content,
-            fileContent.unsavedContent,
-          )
-          const requestLintAction = sendLinterRequestMessage(
-            path,
-            fileContent.unsavedContent ?? fileContent.content,
-          )
-          dispatch([updateAction, requestLintAction], 'everyone')
-        })
-      }
-    })
-  }
-  function onModified(fsPath: string, modifiedBySelf: boolean): void {
-    if (!modifiedBySelf) {
-      onCreated(fsPath)
-    }
-  }
-  function onDeleted(fsPath: string): void {
-    const projectPath = fromFSPath(fsPath)
-    const action = deleteFile(projectPath)
-    dispatch([action], 'everyone')
-  }
-  function onIndexedDBFailure(): void {
-    dispatch([setIndexedDBFailed(true)], 'everyone')
-  }
-
-  void watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
+  return projectFiles
 }
 
 let currentInit: Promise<void> = Promise.resolve()
 
-const onMessage = (messageEvent: MessageEvent) => {
-  const { data } = messageEvent
-  if (isMessageListenersReady(data)) {
-    // console.log('Message Listeners Ready!')
-  }
-}
+let vscodeIFrame: MessageEventSource | null = null
 
 export async function initVSCodeBridge(
   projectID: string,
@@ -183,95 +112,116 @@ export async function initVSCodeBridge(
   dispatch: EditorDispatch,
   openFilePath: string | null,
 ): Promise<void> {
-  window.removeEventListener('message', onMessage)
-  window.addEventListener('message', onMessage)
-  // let loadingScreenHidden = false
-  // async function innerInit(): Promise<void> {
-  //   dispatch([markVSCodeBridgeReady(false)], 'everyone')
-  //   if (isBrowserEnvironment) {
-  //     stopWatchingAll()
-  //     stopPollingMailbox()
-  //     await initializeFS(projectID, UtopiaFSUser)
-  //     await clearBothMailboxes()
-  //     await writeProjectContents(projectContents)
-  //     await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-  //       switch (message.type) {
-  //         case 'EDITOR_CURSOR_POSITION_CHANGED':
-  //           dispatch(
-  //             [selectFromFileAndPosition(message.filePath, message.line, message.column)],
-  //             'everyone',
-  //           )
-  //           break
-  //         case 'UTOPIA_VSCODE_CONFIG_VALUES':
-  //           dispatch([updateConfigFromVSCode(message.config)], 'everyone')
-  //           break
-  //         case 'VSCODE_READY':
-  //           dispatch([sendCodeEditorInitialisation()], 'everyone')
-  //           break
-  //         case 'CLEAR_LOADING_SCREEN':
-  //           if (!loadingScreenHidden) {
-  //             loadingScreenHidden = true
-  //             dispatch([hideVSCodeLoadingScreen()], 'everyone')
-  //           }
-  //           break
-  //         default:
-  //           const _exhaustiveCheck: never = message
-  //           throw new Error(`Unhandled message type${JSON.stringify(message)}`)
-  //       }
-  //     })
-  //     await sendUtopiaReadyMessage()
-  //     await sendGetUtopiaVSCodeConfigMessage()
-  //     watchForChanges(dispatch)
-  //     if (openFilePath != null) {
-  //       await sendOpenFileMessage(openFilePath)
-  //     } else {
-  //       loadingScreenHidden = true
-  //       dispatch([hideVSCodeLoadingScreen()], 'everyone')
-  //     }
-  //   }
-  //   dispatch([markVSCodeBridgeReady(true)], 'everyone')
-  // }
+  // window.removeEventListener('message', onMessage)
+  // window.addEventListener('message', onMessage)
+
+  let loadingScreenHidden = false
+
+  window.addEventListener('message', (messageEvent: MessageEvent) => {
+    const { data } = messageEvent
+    if (isMessageListenersReady(data) && messageEvent.source != null) {
+      // Store the source
+      vscodeIFrame = messageEvent.source
+
+      // Send the full project contents
+      const projectFiles = convertProjectContents(projectContents)
+      sendMessage(initProject(projectFiles, openFilePath))
+
+      if (openFilePath == null) {
+        loadingScreenHidden = true
+        dispatch([hideVSCodeLoadingScreen()], 'everyone')
+      }
+    } else if (isVSCodeBridgeReady(data)) {
+      dispatch([markVSCodeBridgeReady(true)], 'everyone')
+    } else if (isFromVSCodeExtensionMessage(data)) {
+      const message = data.message
+      switch (message.type) {
+        case 'EDITOR_CURSOR_POSITION_CHANGED':
+          dispatch(
+            [selectFromFileAndPosition(message.filePath, message.line, message.column)],
+            'everyone',
+          )
+          break
+        case 'UTOPIA_VSCODE_CONFIG_VALUES':
+          dispatch([updateConfigFromVSCode(message.config)], 'everyone')
+          break
+        case 'VSCODE_READY':
+          dispatch([sendCodeEditorInitialisation()], 'everyone')
+          break
+        case 'CLEAR_LOADING_SCREEN':
+          if (!loadingScreenHidden) {
+            loadingScreenHidden = true
+            dispatch([hideVSCodeLoadingScreen()], 'everyone')
+          }
+          break
+        default:
+          const _exhaustiveCheck: never = message
+          throw new Error(`Unhandled message type${JSON.stringify(message)}`)
+      }
+    } else if (isVSCodeFileChange(data)) {
+      const { filePath, fileContent } = data
+      const updateAction = updateFromCodeEditor(
+        filePath,
+        fileContent.content,
+        fileContent.unsavedContent,
+      )
+      const requestLintAction = sendLinterRequestMessage(
+        filePath,
+        fileContent.unsavedContent ?? fileContent.content,
+      )
+      dispatch([updateAction, requestLintAction], 'everyone')
+    } else if (isVSCodeFileDelete(data)) {
+      const action = deleteFile(data.filePath)
+      dispatch([action], 'everyone')
+    } else if (isIndexedDBFailure(data)) {
+      dispatch([setIndexedDBFailed(true)], 'everyone')
+    }
+  })
 
   // // Prevent multiple initialisations from driving over each other.
   // currentInit = currentInit.then(innerInit)
 }
 
+export function sendMessage(message: FromUtopiaToVSCodeMessage) {
+  vscodeIFrame?.postMessage(message, { targetOrigin: '*' })
+}
+
+// FIXME None of these are async now
 export async function sendOpenFileMessage(filePath: string): Promise<void> {
-  return sendMessage(openFileMessage(filePath))
+  return sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath)))
 }
 
 export async function sendUpdateDecorationsMessage(
   decorations: Array<DecorationRange>,
 ): Promise<void> {
-  return sendMessage(updateDecorationsMessage(decorations))
+  return sendMessage(toVSCodeExtensionMessage(updateDecorationsMessage(decorations)))
 }
 
 export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Promise<void> {
-  return sendMessage(setFollowSelectionConfig(enabled))
+  return sendMessage(toVSCodeExtensionMessage(setFollowSelectionConfig(enabled)))
 }
 
 export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
-  return sendMessage(getUtopiaVSCodeConfig())
-}
-
-async function sendUtopiaReadyMessage(): Promise<void> {
-  return sendMessage(utopiaReady())
+  return sendMessage(toVSCodeExtensionMessage(getUtopiaVSCodeConfig()))
 }
 
 export async function applyProjectChanges(changes: Array<ProjectFileChange>): Promise<void> {
   for (const change of changes) {
     switch (change.type) {
       case 'DELETE_PATH':
-        // eslint-disable-next-line no-await-in-loop
-        await deletePath(toFSPath(change.fullPath), change.recursive)
+        sendMessage(deletePathChange(change.fullPath, change.recursive))
         break
       case 'WRITE_PROJECT_FILE':
-        // eslint-disable-next-line no-await-in-loop
-        await writeProjectFile(change.fullPath, change.projectFile)
+        const commonProjectFile = projectFileToCommonProjectFile(
+          change.fullPath,
+          change.projectFile,
+        )
+        if (commonProjectFile != null) {
+          sendMessage(writeProjectFileChange(commonProjectFile))
+        }
         break
       case 'ENSURE_DIRECTORY_EXISTS':
-        // eslint-disable-next-line no-await-in-loop
-        await ensureDirectoryExists(toFSPath(change.fullPath))
+        sendMessage(ensureDirectoryExistsChange(change.fullPath))
         break
       default:
         const _exhaustiveCheck: never = change
@@ -309,7 +259,7 @@ export function getCodeEditorDecorations(editorState: EditorState): UpdateDecora
 
 export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
   const decorationsMessage = getCodeEditorDecorations(editorState)
-  await sendMessage(decorationsMessage)
+  await sendMessage(toVSCodeExtensionMessage(decorationsMessage))
 }
 
 export function getSelectedElementChangedMessage(
@@ -346,7 +296,7 @@ export async function sendSelectedElement(newEditorState: EditorState): Promise<
   if (selectedElementChangedMessage == null) {
     return Promise.resolve()
   } else {
-    await sendMessage(selectedElementChangedMessage)
+    await sendMessage(toVSCodeExtensionMessage(selectedElementChangedMessage))
   }
 }
 
@@ -364,5 +314,5 @@ function vsCodeThemeForTheme(theme: Theme): string {
 
 export async function sendSetVSCodeTheme(theme: Theme): Promise<void> {
   const vsCodeTheme = vsCodeThemeForTheme(theme)
-  await sendMessage(setVSCodeTheme(vsCodeTheme))
+  await sendMessage(toVSCodeExtensionMessage(setVSCodeTheme(vsCodeTheme)))
 }
