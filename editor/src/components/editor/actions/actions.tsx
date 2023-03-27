@@ -1071,48 +1071,50 @@ function deleteElements(
   editor: EditorModel,
 ): { editor: EditorModel; affectedElements: JSXElementChildByElementPath } {
   const openUIJSFilePath = getOpenUIJSFileKey(editor)
-  let affectedElements: JSXElementChildByElementPath = {}
   if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
-    return { editor, affectedElements }
-  } else {
-    const updatedEditor = targets.reduce((working, targetPath) => {
-      const underlyingTarget = normalisePathToUnderlyingTarget(
-        working.projectContents,
-        working.nodeModules.files,
-        openUIJSFilePath,
-        targetPath,
-      )
-      const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+    return { editor, affectedElements: {} }
+  }
 
-      function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-        const { components: withTargetRemoved, affectedElements: newAffectedElements } =
-          removeElementAtPath(targetPath, utopiaComponents)
-        affectedElements = {
-          ...affectedElements,
-          ...newAffectedElements,
-        }
-        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-          return {
-            ...success,
-            utopiaComponents: withTargetRemoved,
-          }
-        }, parseSuccess)
+  let updatedEditor: EditorState = { ...editor }
+  let affectedElements: JSXElementChildByElementPath = {}
+
+  for (const targetPath of targets) {
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      updatedEditor.projectContents,
+      updatedEditor.nodeModules.files,
+      openUIJSFilePath,
+      targetPath,
+    )
+    const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+    function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
+      const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+      const { components: withTargetRemoved, affectedElements: newAffectedElements } =
+        removeElementAtPath(targetPath, utopiaComponents)
+      affectedElements = {
+        ...affectedElements,
+        ...newAffectedElements,
       }
-      return modifyParseSuccessAtPath(
-        targetSuccess.filePath,
-        working,
-        deleteElementFromParseSuccess,
-      )
-    }, editor)
-    return {
-      editor: {
-        ...updatedEditor,
-        selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
-      },
-      affectedElements,
+      return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+        return {
+          ...success,
+          utopiaComponents: withTargetRemoved,
+        }
+      }, parseSuccess)
     }
+    updatedEditor = modifyParseSuccessAtPath(
+      targetSuccess.filePath,
+      updatedEditor,
+      deleteElementFromParseSuccess,
+    )
+  }
+  return {
+    editor: {
+      ...updatedEditor,
+      selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
+    },
+    affectedElements,
   }
 }
 
