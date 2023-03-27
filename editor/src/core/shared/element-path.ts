@@ -503,7 +503,7 @@ export function appendPartToPath(path: ElementPath, next: ElementPathPart): Elem
   return elementPath(updatedPathParts)
 }
 
-export function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
+function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
   return arrayEquals(l, r)
 }
 

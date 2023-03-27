@@ -425,11 +425,7 @@ import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  fixUtopiaElement,
-  getUtopiaID,
-  getUtopiaIDFromJSXElement,
-} from '../../../core/shared/uid-utils'
+import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -502,7 +498,6 @@ import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
 import { ReparentTargetParent } from '../store/reparent-target'
-import { getComponentFromCode } from '../../../core/model/element-template.test-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

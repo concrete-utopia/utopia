@@ -24,7 +24,6 @@ import {
   transformJSXComponentAtPath,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
-  JSXElementChildByElementPath,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
