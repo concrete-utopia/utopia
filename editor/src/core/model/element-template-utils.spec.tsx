@@ -206,7 +206,7 @@ describe('removeJSXElementChild', () => {
   ]
   xit('removes a root element', () => {
     // TODO Scene Implementation
-    const updatedElements = removeJSXElementChild(
+    const { components: updatedElements } = removeJSXElementChild(
       testStaticElementPath([[BakedInStoryboardUID, 'scene-aaa'], ['aaa']]),
       utopiaComponents,
     )

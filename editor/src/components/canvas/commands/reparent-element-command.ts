@@ -54,7 +54,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
         ) => {
           if (underlyingFilePathTarget === underlyingFilePathNewParent) {
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(command.target, components)
+            const withElementRemoved = removeElementAtPath(command.target, components).components
 
             const withElementInserted = insertElementAtPath(
               editorState.projectContents,
@@ -75,7 +75,10 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             editorStatePatches = [editorStatePatchOldParentFile]
           } else {
             const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
+            const withElementRemoved = removeElementAtPath(
+              command.target,
+              componentsOldParent,
+            ).components
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
             const withElementInserted = insertElementAtPath(

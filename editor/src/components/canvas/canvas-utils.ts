@@ -2138,7 +2138,7 @@ function editorReparentNoStyleChange(
             updatedUtopiaComponents = removeElementAtPath(
               underlyingTarget,
               utopiaComponentsIncludingScenes,
-            )
+            ).components
 
             updatedUtopiaComponents = insertElementAtPath(
               editor.projectContents,
@@ -2261,7 +2261,7 @@ export function moveTemplate(
                   updatedUtopiaComponents = removeElementAtPath(
                     underlyingTarget,
                     updatedUtopiaComponents,
-                  )
+                  ).components
 
                   updatedUtopiaComponents = insertElementAtPath(
                     workingEditorState.projectContents,
@@ -2835,7 +2835,7 @@ export function reorderComponent(
     if (indexOfRemovedElement < 0) {
       throw new Error(`Unable to determine old element index.`)
     }
-    workingComponents = removeElementAtPath(target, workingComponents)
+    workingComponents = removeElementAtPath(target, workingComponents).components
     const adjustedIndexPosition = shiftIndexPositionForRemovedElement(
       indexPosition,
       indexOfRemovedElement,

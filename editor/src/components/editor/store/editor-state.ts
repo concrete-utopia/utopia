@@ -24,6 +24,7 @@ import {
   transformJSXComponentAtPath,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
+  JSXElementChildByElementPath,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -1955,10 +1956,13 @@ const emptyImports: Imports = {}
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
-): Array<UtopiaJSXComponent> {
+): {
+  components: Array<UtopiaJSXComponent>
+  affectedElements: JSXElementChildByElementPath
+} {
   const staticTarget = EP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
-    return components
+    return { components, affectedElements: {} }
   } else {
     return removeJSXElementChild(staticTarget, components)
   }

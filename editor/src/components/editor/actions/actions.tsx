@@ -14,6 +14,7 @@ import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
   getZIndexOfElement,
+  JSXElementChildByElementPath,
   transformJSXComponentAtElementPath,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
@@ -1065,11 +1066,15 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   }
 }
 
-function deleteElements(targets: ElementPath[], editor: EditorModel): EditorModel {
+function deleteElements(
+  targets: ElementPath[],
+  editor: EditorModel,
+): { editor: EditorModel; affectedElements: JSXElementChildByElementPath } {
   const openUIJSFilePath = getOpenUIJSFileKey(editor)
+  let affectedElements: JSXElementChildByElementPath = {}
   if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
-    return editor
+    return { editor, affectedElements }
   } else {
     const updatedEditor = targets.reduce((working, targetPath) => {
       const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -1082,10 +1087,12 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
       function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-          targetPath,
-          utopiaComponents,
-        )
+        const { components: withTargetRemoved, affectedElements: newAffectedElements } =
+          removeElementAtPath(targetPath, utopiaComponents)
+        affectedElements = {
+          ...affectedElements,
+          ...newAffectedElements,
+        }
         return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
           return {
             ...success,
@@ -1100,8 +1107,11 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
       )
     }, editor)
     return {
-      ...updatedEditor,
-      selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
+      editor: {
+        ...updatedEditor,
+        selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
+      },
+      affectedElements,
     }
   }
 }
@@ -1873,10 +1883,28 @@ export const UPDATE_FNS = {
             return path
           })
 
-        const withElementDeleted = deleteElements(staticSelectedElements, editor)
+        const { editor: withElementDeleted, affectedElements } = deleteElements(
+          staticSelectedElements,
+          editor,
+        )
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
+            const oldParent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+            if (
+              oldParent != null &&
+              isRight(oldParent.element) &&
+              isJSXConditionalExpression(oldParent.element.value)
+            ) {
+              const isTrueBranch = EP.toUid(view) === getUtopiaID(oldParent.element.value.whenTrue)
+              const newParent = affectedElements[EP.toString(parentPath)]
+              if (newParent != null && isJSXConditionalExpression(newParent)) {
+                return EP.appendToPath(
+                  parentPath,
+                  isTrueBranch ? getUtopiaID(newParent.whenTrue) : getUtopiaID(newParent.whenFalse),
+                )
+              }
+            }
             return EP.isStoryboardPath(parentPath) ? null : parentPath
           }, staticSelectedElements),
           EP.pathsEqual,
@@ -1897,7 +1925,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       (e) => {
-        const updatedEditor = deleteElements([action.target], e)
+        const updatedEditor = deleteElements([action.target], e).editor
         const parentPath = EP.parentPath(action.target)
         const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
@@ -2727,7 +2755,7 @@ export const UPDATE_FNS = {
           }
           return result.editor
         }, editor)
-        const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+        const withViewDeleted = deleteElements([action.target], withChildrenMoved).editor
 
         return {
           ...withViewDeleted,

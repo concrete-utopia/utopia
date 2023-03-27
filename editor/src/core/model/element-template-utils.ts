@@ -435,10 +435,15 @@ export function rearrangeJsxChildren(
       ).elements
 }
 
+export type JSXElementChildByElementPath = { [path: string]: JSXElementChild }
+
 export function removeJSXElementChild(
   target: StaticElementPath,
   rootElements: Array<UtopiaJSXComponent>,
-): Array<UtopiaJSXComponent> {
+): {
+  components: Array<UtopiaJSXComponent>
+  affectedElements: JSXElementChildByElementPath
+} {
   const parentPath = EP.parentPath(target)
   const targetID = EP.toUid(target)
   // Remove it from where it used to be.
@@ -488,15 +493,21 @@ export function removeJSXElementChild(
   }
 
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
-  return lastElementPathPart == null
-    ? rootElements
-    : transformAtPathOptionally(
-        rootElements,
-        lastElementPathPart,
-        (parentElement: JSXElementChild) => {
-          return removeRelevantChild(parentElement, true)
-        },
-      ).elements
+  if (lastElementPathPart == null) {
+    return { components: rootElements, affectedElements: {} }
+  }
+
+  let affectedElements: { [path: string]: JSXElementChild } = {}
+  const transformed = transformAtPathOptionally(
+    rootElements,
+    lastElementPathPart,
+    (parentElement: JSXElementChild) => {
+      const parentAfterRemoval = removeRelevantChild(parentElement, true)
+      affectedElements[EP.toString(parentPath)] = parentAfterRemoval
+      return parentAfterRemoval
+    },
+  )
+  return { components: transformed.elements, affectedElements: affectedElements }
 }
 
 export function insertJSXElementChild(
