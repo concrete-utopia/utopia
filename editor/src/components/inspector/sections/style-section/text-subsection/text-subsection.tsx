@@ -51,6 +51,7 @@ import { getControlStyles } from '../../../common/control-status'
 import { Utils } from '../../../../../uuiui-deps'
 import { TextRelatedProperties } from '../../../../../core/properties/css-properties'
 import { useContextSelector } from 'use-context-selector'
+import { TextAutoSizingControl } from './text-auto-sizing-control'
 
 const ObjectPathImmutable: any = OPI
 
@@ -266,48 +267,7 @@ export const TextSubsection = React.memo(() => {
         </InspectorContextMenuWrapper>
       </PropertyRow>
       <PropertyRow style={{ gridColumnGap: 8 }}>
-        <InspectorContextMenuWrapper
-          id='textSizing-context-menu'
-          items={[]}
-          data={null}
-          style={{ gridColumn: '1 / span 2' }}
-        >
-          <OptionChainControl
-            id='textAutoSizing'
-            key='textAutoSizing'
-            testId='textAutoSizing'
-            controlStatus={'disabled'}
-            controlStyles={getControlStyles('disabled')}
-            onSubmitValue={Utils.NO_OP}
-            value={null}
-            options={
-              [
-                {
-                  value: 'auto',
-                  tooltip: 'Auto',
-                  icon: {
-                    category: 'typography',
-                    type: 'auto',
-                    color: 'secondary',
-                    width: 16,
-                    height: 16,
-                  },
-                },
-                {
-                  value: 'fixed',
-                  tooltip: 'Fixed',
-                  icon: {
-                    category: 'typography',
-                    type: 'fixed',
-                    color: 'secondary',
-                    width: 16,
-                    height: 16,
-                  },
-                },
-              ] as Array<OptionChainOption<string | number>>
-            }
-          />
-        </InspectorContextMenuWrapper>
+        <TextAutoSizingControl />
         <InspectorContextMenuWrapper
           id='textAlign-context-menu'
           items={textAlignContextMenuItems}
