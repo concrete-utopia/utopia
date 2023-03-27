@@ -1956,13 +1956,10 @@ const emptyImports: Imports = {}
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
-): {
-  components: Array<UtopiaJSXComponent>
-  originalParentElements: JSXElementChildByElementPath
-} {
+): Array<UtopiaJSXComponent> {
   const staticTarget = EP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
-    return { components, originalParentElements: {} }
+    return components
   } else {
     return removeJSXElementChild(staticTarget, components)
   }

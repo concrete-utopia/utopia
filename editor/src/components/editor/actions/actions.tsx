@@ -14,7 +14,6 @@ import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
   getZIndexOfElement,
-  JSXElementChildByElementPath,
   transformJSXComponentAtElementPath,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
@@ -87,6 +86,7 @@ import {
   UtopiaJSXComponent,
   walkElements,
   modifiableAttributeIsAttributeValue,
+  isUtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -425,7 +425,11 @@ import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
+import {
+  fixUtopiaElement,
+  getUtopiaID,
+  getUtopiaIDFromJSXElement,
+} from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -498,6 +502,7 @@ import { compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
 import { ReparentTargetParent } from '../store/reparent-target'
+import { getComponentFromCode } from '../../../core/model/element-template.test-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1066,58 +1071,44 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   }
 }
 
-function deleteElements(
-  targets: ElementPath[],
-  editor: EditorModel,
-): {
-  editor: EditorModel
-  originalParentElements: JSXElementChildByElementPath
-} {
+function deleteElements(targets: ElementPath[], editor: EditorModel): EditorModel {
   const openUIJSFilePath = getOpenUIJSFileKey(editor)
   if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
-    return { editor, originalParentElements: {} }
-  }
+    return editor
+  } else {
+    const updatedEditor = targets.reduce((working, targetPath) => {
+      const underlyingTarget = normalisePathToUnderlyingTarget(
+        working.projectContents,
+        working.nodeModules.files,
+        openUIJSFilePath,
+        targetPath,
+      )
+      const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-  let updatedEditor: EditorState = { ...editor }
-  let affectedParentElements: JSXElementChildByElementPath = {}
-
-  for (const targetPath of targets) {
-    const underlyingTarget = normalisePathToUnderlyingTarget(
-      updatedEditor.projectContents,
-      updatedEditor.nodeModules.files,
-      openUIJSFilePath,
-      targetPath,
-    )
-    const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-
-    function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
-      const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-      const { components: withTargetRemoved, originalParentElements: newAffectedParentElements } =
-        removeElementAtPath(targetPath, utopiaComponents)
-      affectedParentElements = {
-        ...affectedParentElements,
-        ...newAffectedParentElements,
+      function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
+          targetPath,
+          utopiaComponents,
+        )
+        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+          return {
+            ...success,
+            utopiaComponents: withTargetRemoved,
+          }
+        }, parseSuccess)
       }
-      return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-        return {
-          ...success,
-          utopiaComponents: withTargetRemoved,
-        }
-      }, parseSuccess)
-    }
-    updatedEditor = modifyParseSuccessAtPath(
-      targetSuccess.filePath,
-      updatedEditor,
-      deleteElementFromParseSuccess,
-    )
-  }
-  return {
-    editor: {
+      return modifyParseSuccessAtPath(
+        targetSuccess.filePath,
+        working,
+        deleteElementFromParseSuccess,
+      )
+    }, editor)
+    return {
       ...updatedEditor,
       selectedViews: EP.filterPaths(updatedEditor.selectedViews, targets),
-    },
-    originalParentElements: affectedParentElements,
+    }
   }
 }
 
@@ -1888,24 +1879,34 @@ export const UPDATE_FNS = {
             return path
           })
 
-        const { editor: withElementDeleted, originalParentElements: affectedElements } =
-          deleteElements(staticSelectedElements, editor)
+        const withElementDeleted = deleteElements(staticSelectedElements, editor)
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
-            const oldParent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+            const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
             if (
-              oldParent != null &&
-              isRight(oldParent.element) &&
-              isJSXConditionalExpression(oldParent.element.value)
+              parent != null &&
+              isRight(parent.element) &&
+              isJSXConditionalExpression(parent.element.value)
             ) {
-              const isTrueBranch = EP.toUid(view) === getUtopiaID(oldParent.element.value.whenTrue)
-              const newParent = affectedElements[EP.toString(parentPath)]
-              if (newParent != null && isJSXConditionalExpression(newParent)) {
-                return EP.appendToPath(
-                  parentPath,
-                  isTrueBranch ? getUtopiaID(newParent.whenTrue) : getUtopiaID(newParent.whenFalse),
-                )
+              const isTrueBranch = EP.toUid(view) === getUtopiaID(parent.element.value.whenTrue)
+
+              let newUID: string | null = null
+              walkContentsTreeForParseSuccess(withElementDeleted.projectContents, (_, success) => {
+                if (newUID != null) {
+                  return
+                }
+                walkElements(getUtopiaJSXComponentsFromSuccess(success), (element) => {
+                  if (newUID != null) {
+                    return
+                  }
+                  if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
+                    newUID = getUtopiaID(isTrueBranch ? element.whenTrue : element.whenFalse)
+                  }
+                })
+              })
+              if (newUID != null) {
+                return EP.appendToPath(parentPath, newUID)
               }
             }
             return EP.isStoryboardPath(parentPath) ? null : parentPath
@@ -1928,7 +1929,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       (e) => {
-        const updatedEditor = deleteElements([action.target], e).editor
+        const updatedEditor = deleteElements([action.target], e)
         const parentPath = EP.parentPath(action.target)
         const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
@@ -2758,7 +2759,7 @@ export const UPDATE_FNS = {
           }
           return result.editor
         }, editor)
-        const withViewDeleted = deleteElements([action.target], withChildrenMoved).editor
+        const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
         return {
           ...withViewDeleted,
