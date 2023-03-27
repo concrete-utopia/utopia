@@ -86,6 +86,7 @@ import {
   UtopiaJSXComponent,
   walkElements,
   modifiableAttributeIsAttributeValue,
+  isUtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -1877,6 +1878,32 @@ export const UPDATE_FNS = {
         const parentsToSelect = uniqBy(
           mapDropNulls((view) => {
             const parentPath = EP.parentPath(view)
+            const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+            if (
+              parent != null &&
+              isRight(parent.element) &&
+              isJSXConditionalExpression(parent.element.value)
+            ) {
+              const isTrueBranch = EP.toUid(view) === getUtopiaID(parent.element.value.whenTrue)
+
+              let newUID: string | null = null
+              walkContentsTreeForParseSuccess(withElementDeleted.projectContents, (_, success) => {
+                if (newUID != null) {
+                  return
+                }
+                walkElements(getUtopiaJSXComponentsFromSuccess(success), (element) => {
+                  if (newUID != null) {
+                    return
+                  }
+                  if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
+                    newUID = getUtopiaID(isTrueBranch ? element.whenTrue : element.whenFalse)
+                  }
+                })
+              })
+              if (newUID != null) {
+                return EP.appendToPath(parentPath, newUID)
+              }
+            }
             return EP.isStoryboardPath(parentPath) ? null : parentPath
           }, staticSelectedElements),
           EP.pathsEqual,
