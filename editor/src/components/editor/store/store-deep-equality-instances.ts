@@ -1419,8 +1419,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const renderedChildrenCount = oldSize.renderedChildrenCount === newSize.renderedChildrenCount
     const globalContentBoxEquals = nullableDeepEquality(CanvasRectangleKeepDeepEquality)(
-      oldSize.globalContentBox,
-      newSize.globalContentBox,
+      oldSize.globalContentBoxForChildren,
+      newSize.globalContentBoxForChildren,
     ).areEqual
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
@@ -1507,7 +1507,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.alignItems,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
-        newSize.globalContentBox,
+        newSize.globalContentBoxForChildren,
         newSize.float,
         newSize.hasPositionOffset,
         newSize.parentTextDirection,
