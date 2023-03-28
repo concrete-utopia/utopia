@@ -1888,9 +1888,9 @@ export const UPDATE_FNS = {
 
               const branchPath = withUnderlyingTarget(
                 parentPath,
-                editor.projectContents,
-                editor.nodeModules.files,
-                editor.canvas.openFile?.filename ?? null,
+                withElementDeleted.projectContents,
+                withElementDeleted.nodeModules.files,
+                withElementDeleted.canvas.openFile?.filename ?? null,
                 null,
                 (_, element) => {
                   if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
