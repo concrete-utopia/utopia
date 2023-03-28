@@ -3,13 +3,13 @@ import {
   deleteJSXAttribute,
   emptyComments,
   jsxArrayValue,
-  jsxAttributeFunctionCall,
-  jsxAttributeNestedArray,
-  jsxAttributeNestedObject,
-  jsxAttributeOtherJavaScript,
+  jsExpressionFunctionCall,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
+  jsExpressionOtherJavaScript,
   jsxAttributesEntry,
   jsxAttributesSpread,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   jsxPropertyAssignment,
   setJSXAttributesAttribute,
@@ -18,18 +18,18 @@ import {
 describe('setJSXAttributesAttribute', () => {
   const startingAttributesEntry = jsxAttributesEntry(
     'one',
-    jsxAttributeValue('thing', emptyComments),
+    jsExpressionValue('thing', emptyComments),
     emptyComments,
   )
   const startingAttributesSpread = jsxAttributesSpread(
-    jsxAttributeValue('theRest', emptyComments),
+    jsExpressionValue('theRest', emptyComments),
     emptyComments,
   )
   const startingAttributes = [startingAttributesEntry, startingAttributesSpread]
 
   it('Setting a value on a new key adds it to the attributes', () => {
     const newKey = 'newKey'
-    const newValue = jsxAttributeValue('newValue', emptyComments)
+    const newValue = jsExpressionValue('newValue', emptyComments)
     const expected = [...startingAttributes, jsxAttributesEntry(newKey, newValue, emptyComments)]
     const actual = setJSXAttributesAttribute(startingAttributes, newKey, newValue)
     expect(actual).toEqual(expected)
@@ -37,7 +37,7 @@ describe('setJSXAttributesAttribute', () => {
 
   it('Setting a value on an existing key updates the attributes', () => {
     const existingKey = 'one'
-    const newValue = jsxAttributeValue('newValue', emptyComments)
+    const newValue = jsExpressionValue('newValue', emptyComments)
     const expected = [
       jsxAttributesEntry(existingKey, newValue, emptyComments),
       startingAttributesSpread,
@@ -50,11 +50,11 @@ describe('setJSXAttributesAttribute', () => {
 describe('deleteJSXAttribute', () => {
   const startingAttributesEntry = jsxAttributesEntry(
     'one',
-    jsxAttributeValue('thing', emptyComments),
+    jsExpressionValue('thing', emptyComments),
     emptyComments,
   )
   const startingAttributesSpread = jsxAttributesSpread(
-    jsxAttributeValue('theRest', emptyComments),
+    jsExpressionValue('theRest', emptyComments),
     emptyComments,
   )
   const startingAttributes = [startingAttributesEntry, startingAttributesSpread]
@@ -74,27 +74,27 @@ describe('deleteJSXAttribute', () => {
 
 describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_VALUE always returns false', () => {
-    expect(attributeReferencesElsewhere(jsxAttributeValue(12, emptyComments))).toEqual(false)
+    expect(attributeReferencesElsewhere(jsExpressionValue(12, emptyComments))).toEqual(false)
   })
   it('ATTRIBUTE_OTHER_JAVASCRIPT returns true if it has a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
+        jsExpressionOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
       ),
     ).toEqual(true)
   })
   it('ATTRIBUTE_OTHER_JAVASCRIPT returns false if it does not have a definedElsewhere entry', () => {
     expect(
-      attributeReferencesElsewhere(jsxAttributeOtherJavaScript('5', 'return 5', [], null, {})),
+      attributeReferencesElsewhere(jsExpressionOtherJavaScript('5', 'return 5', [], null, {})),
     ).toEqual(false)
   })
   it('ATTRIBUTE_NESTED_ARRAY returns true if it has a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeNestedArray(
+        jsExpressionNestedArray(
           [
             jsxArrayValue(
-              jsxAttributeOtherJavaScript(
+              jsExpressionOtherJavaScript(
                 'otherThing',
                 'return otherThing',
                 ['otherThing'],
@@ -112,10 +112,10 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_NESTED_ARRAY returns false if it does not have a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeNestedArray(
+        jsExpressionNestedArray(
           [
             jsxArrayValue(
-              jsxAttributeOtherJavaScript('5', 'return 5', [], null, {}),
+              jsExpressionOtherJavaScript('5', 'return 5', [], null, {}),
               emptyComments,
             ),
           ],
@@ -127,11 +127,11 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_NESTED_OBJECT returns true if it has a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeNestedObject(
+        jsExpressionNestedObject(
           [
             jsxPropertyAssignment(
               'someKey',
-              jsxAttributeOtherJavaScript(
+              jsExpressionOtherJavaScript(
                 'otherThing',
                 'return otherThing',
                 ['otherThing'],
@@ -150,11 +150,11 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_NESTED_OBJECT returns false if it does not have a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeNestedObject(
+        jsExpressionNestedObject(
           [
             jsxPropertyAssignment(
               'someKey',
-              jsxAttributeOtherJavaScript('5', 'return 5', [], null, {}),
+              jsExpressionOtherJavaScript('5', 'return 5', [], null, {}),
               emptyComments,
               emptyComments,
             ),
@@ -168,8 +168,8 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_FUNCTION_CALL returns true if it has a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeFunctionCall('someFn', [
-          jsxAttributeOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
+        jsExpressionFunctionCall('someFn', [
+          jsExpressionOtherJavaScript('otherThing', 'return otherThing', ['otherThing'], null, {}),
         ]),
       ),
     ).toEqual(true)
@@ -177,8 +177,8 @@ describe('attributeReferencesElsewhere', () => {
   it('ATTRIBUTE_FUNCTION_CALL returns false if it does not have a definedElsewhere entry', () => {
     expect(
       attributeReferencesElsewhere(
-        jsxAttributeFunctionCall('someFn', [
-          jsxAttributeOtherJavaScript('5', 'return 5', [], null, {}),
+        jsExpressionFunctionCall('someFn', [
+          jsExpressionOtherJavaScript('5', 'return 5', [], null, {}),
         ]),
       ),
     ).toEqual(false)

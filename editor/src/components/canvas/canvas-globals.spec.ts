@@ -2,8 +2,9 @@ import { right } from '../../core/shared/either'
 import {
   emptyComments,
   jsxAttributesEntry,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElementWithoutUID,
+  clearJSXElementWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import { DispatchPriority, EditorAction, EditorDispatch } from '../editor/action-types'
@@ -29,10 +30,12 @@ const cardComponentDescriptor: ComponentDescriptor = {
   variants: [
     {
       insertMenuLabel: 'Card Default',
-      elementToInsert: jsxElementWithoutUID(
-        'Card',
-        [jsxAttributesEntry('title', jsxAttributeValue('Default', emptyComments), emptyComments)],
-        [],
+      elementToInsert: clearJSXElementWithoutUIDUniqueIDs(
+        jsxElementWithoutUID(
+          'Card',
+          [jsxAttributesEntry('title', jsExpressionValue('Default', emptyComments), emptyComments)],
+          [],
+        ),
       ),
       importsToAdd: {
         ['/src/card']: importDetails(null, [importAlias('Card')], null),
@@ -70,13 +73,15 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
   variants: [
     {
       insertMenuLabel: 'Card Default',
-      elementToInsert: jsxElementWithoutUID(
-        'Card',
-        [
-          jsxAttributesEntry('title', jsxAttributeValue('Default', emptyComments), emptyComments),
-          jsxAttributesEntry('border', jsxAttributeValue('shiny', emptyComments), emptyComments),
-        ],
-        [],
+      elementToInsert: clearJSXElementWithoutUIDUniqueIDs(
+        jsxElementWithoutUID(
+          'Card',
+          [
+            jsxAttributesEntry('title', jsExpressionValue('Default', emptyComments), emptyComments),
+            jsxAttributesEntry('border', jsExpressionValue('shiny', emptyComments), emptyComments),
+          ],
+          [],
+        ),
       ),
       importsToAdd: {
         ['/src/card']: importDetails(null, [importAlias('Card')], null),
@@ -105,16 +110,18 @@ const selectorComponentDescriptor: ComponentDescriptor = {
   variants: [
     {
       insertMenuLabel: 'True False Selector',
-      elementToInsert: jsxElementWithoutUID(
-        'Selector',
-        [
-          jsxAttributesEntry(
-            'value',
-            jsxAttributeValue(`'FileNotFound'`, emptyComments),
-            emptyComments,
-          ),
-        ],
-        [],
+      elementToInsert: clearJSXElementWithoutUIDUniqueIDs(
+        jsxElementWithoutUID(
+          'Selector',
+          [
+            jsxAttributesEntry(
+              'value',
+              jsExpressionValue(`'FileNotFound'`, emptyComments),
+              emptyComments,
+            ),
+          ],
+          [],
+        ),
       ),
       importsToAdd: {
         ['/src/selector']: importDetails(null, [importAlias('Selector')], null),
@@ -213,6 +220,7 @@ describe('validateControlsToCheck', () => {
                               "trailingComments": Array [],
                             },
                             "type": "ATTRIBUTE_VALUE",
+                            "uniqueID": "",
                             "value": "Default",
                           },
                         },
@@ -378,6 +386,7 @@ describe('validateControlsToCheck', () => {
                                 "trailingComments": Array [],
                               },
                               "type": "ATTRIBUTE_VALUE",
+                              "uniqueID": "",
                               "value": "Default",
                             },
                           },
@@ -460,6 +469,7 @@ describe('validateControlsToCheck', () => {
                               "trailingComments": Array [],
                             },
                             "type": "ATTRIBUTE_VALUE",
+                            "uniqueID": "",
                             "value": "'FileNotFound'",
                           },
                         },
@@ -549,6 +559,7 @@ describe('validateControlsToCheck', () => {
                               "trailingComments": Array [],
                             },
                             "type": "ATTRIBUTE_VALUE",
+                            "uniqueID": "",
                             "value": "Default",
                           },
                         },
@@ -565,6 +576,7 @@ describe('validateControlsToCheck', () => {
                               "trailingComments": Array [],
                             },
                             "type": "ATTRIBUTE_VALUE",
+                            "uniqueID": "",
                             "value": "shiny",
                           },
                         },
@@ -642,6 +654,7 @@ describe('validateControlsToCheck', () => {
                               "trailingComments": Array [],
                             },
                             "type": "ATTRIBUTE_VALUE",
+                            "uniqueID": "",
                             "value": "Default",
                           },
                         },
@@ -695,6 +708,7 @@ describe('validateControlsToCheck', () => {
                               "trailingComments": Array [],
                             },
                             "type": "ATTRIBUTE_VALUE",
+                            "uniqueID": "",
                             "value": "Default",
                           },
                         },

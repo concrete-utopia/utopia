@@ -438,7 +438,7 @@ export function getPrintedUiJsCode(
   filePath: string = StoryboardFilePath,
 ): string {
   const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
-  if (isTextFile(file)) {
+  if (file != null && isTextFile(file)) {
     return file.fileContents.code
   } else {
     throw new Error('File is not a text file.')
@@ -447,7 +447,7 @@ export function getPrintedUiJsCode(
 
 export function getPrintedUiJsCodeWithoutUIDs(store: EditorStorePatched): string {
   const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,
       printCodeOptions(false, true, false, true),

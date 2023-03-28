@@ -41,7 +41,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
 import { navigatorDepth } from '../navigator-utils'
-import { childOrBlockIsChild } from '../../../core/shared/element-template'
+import { isJSXArbitraryBlock } from '../../../core/shared/element-template'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -345,7 +345,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           )
         const syntheticCanReparent =
           isSyntheticNavigatorEntry(props.navigatorEntry) &&
-          childOrBlockIsChild(props.navigatorEntry.childOrAttribute)
+          !isJSXArbitraryBlock(props.navigatorEntry.childOrAttribute)
         return regularCanReparent || syntheticCanReparent
       },
     }),

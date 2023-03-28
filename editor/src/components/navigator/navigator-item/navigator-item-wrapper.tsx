@@ -7,10 +7,8 @@ import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
-  childOrBlockIsChild,
   ElementInstanceMetadata,
   getJSXElementNameLastPart,
-  isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -121,36 +119,27 @@ export function getNavigatorEntryLabel(
           throw assertNever(navigatorEntry.clause)
       }
     case 'SYNTHETIC': {
-      if (childOrBlockIsChild(navigatorEntry.childOrAttribute)) {
-        switch (navigatorEntry.childOrAttribute.type) {
-          case 'JSX_ELEMENT':
-            return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
-          case 'JSX_ARBITRARY_BLOCK':
-            return '(code)'
-          case 'JSX_TEXT_BLOCK':
-            return navigatorEntry.childOrAttribute.text
-          case 'JSX_FRAGMENT':
-            return 'Fragment'
-          case 'JSX_CONDITIONAL_EXPRESSION':
-            return 'Conditional'
-          default:
-            throw assertNever(navigatorEntry.childOrAttribute)
-        }
-      } else {
-        const simpleAttributeValue = jsxSimpleAttributeToValue(navigatorEntry.childOrAttribute)
-        return foldEither(
-          () => 'Unknown',
-          (value) => {
-            if (value === null) {
-              return 'null'
-            } else if (value === undefined) {
-              return 'undefined'
-            } else {
-              return value.toString()
-            }
-          },
-          simpleAttributeValue,
-        )
+      switch (navigatorEntry.childOrAttribute.type) {
+        case 'JSX_ELEMENT':
+          return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+          return '(code)'
+        case 'JSX_TEXT_BLOCK':
+          return navigatorEntry.childOrAttribute.text
+        case 'JSX_FRAGMENT':
+          return 'Fragment'
+        case 'JSX_CONDITIONAL_EXPRESSION':
+          return 'Conditional'
+        case 'ATTRIBUTE_VALUE':
+          return `${navigatorEntry.childOrAttribute.value}`
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return '(code)'
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return '(code)'
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return '(code)'
+        default:
+          throw assertNever(navigatorEntry.childOrAttribute)
       }
     }
     default:
@@ -164,7 +153,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) =>
-      isRegularNavigatorEntry(props.navigatorEntry) &&
+      !isConditionalClauseNavigatorEntry(props.navigatorEntry) &&
       EP.containsPath(props.navigatorEntry.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )

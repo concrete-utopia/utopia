@@ -32,7 +32,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       \\"
       data-uid=\\"scene\\"
     >
-      <div data-uid=\\"comment-root\\" data-path=\\"757~~~1:comment-root\\">hat</div>
+      <div data-uid=\\"comment-root\\" data-path=\\"3c7~~~1:comment-root\\">hat</div>
     </div>
   </div>
 </div>
@@ -72,6 +72,7 @@ Object {
                     "trailingComments": Array [],
                   },
                   "type": "ATTRIBUTE_VALUE",
+                  "uniqueID": "",
                   "value": "app",
                 },
               },
@@ -100,6 +101,7 @@ Object {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
+              "uniqueID": "",
               "value": "scene",
             },
           },
@@ -116,6 +118,7 @@ Object {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
+              "uniqueID": "",
               "value": Object {
                 "height": 812,
                 "left": 0,
@@ -230,6 +233,7 @@ Object {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
+              "uniqueID": "",
               "value": "app",
             },
           },

@@ -13,7 +13,6 @@ import {
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -56,7 +55,7 @@ export function navigatorDepth(
 
   // For the clause entry itself, this needs to step back by 1.
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    result = result + 1
+    result = result - 1
   }
 
   return result
@@ -87,7 +86,6 @@ export function getNavigatorTargets(
     if (subTree != null) {
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       navigatorTargets.push(regularNavigatorEntry(path))
       if (
@@ -126,13 +124,10 @@ export function getNavigatorTargets(
           conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
         // Get the clause path.
-        const clausePath = getConditionalClausePath(path, clauseValue, conditionalCase)
+        const clausePath = getConditionalClausePath(path, clauseValue)
 
         // Create the entry for the name of the clause.
-        const clauseTitleEntry = conditionalClauseNavigatorEntry(
-          conditionalSubTree.path,
-          conditionalCase,
-        )
+        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, conditionalCase)
         navigatorTargets.push(clauseTitleEntry)
         visibleNavigatorTargets.push(clauseTitleEntry)
 

@@ -3,7 +3,7 @@ import {
   ComputedStyle,
   ElementInstanceMetadataMap,
   emptyComments,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -151,7 +151,7 @@ const toggleStyleProp = (
   const setAction = EditorActions.setProperty(
     elementPath,
     PP.create('style', prop),
-    jsxAttributeValue(newValue, emptyComments),
+    jsExpressionValue(newValue, emptyComments),
   )
 
   if (newValue === defaultValue) {

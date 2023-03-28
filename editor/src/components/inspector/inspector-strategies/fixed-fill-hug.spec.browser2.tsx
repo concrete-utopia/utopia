@@ -14,9 +14,13 @@ import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-h
 import {
   EditorRenderResult,
   formatTestProjectCode,
+  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
+import { selectComponents } from '../../editor/actions/meta-actions'
 import { FlexDirection } from '../common/css-utils'
 import {
   FillContainerLabel,
@@ -26,6 +30,7 @@ import {
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
 import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
+import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 
 describe('Fixed / Fill / Hug control', () => {
   setFeatureForBrowserTests('Nine block control', true)
@@ -543,6 +548,53 @@ describe('Fixed / Fill / Hug control', () => {
         expect(child.style.height).toEqual(MaxContent)
       })
     })
+    it('setting hug contents on an absolute element removes extra pins', async () => {
+      const testCode = `
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, bottom: 50, right: 60}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello content</div>
+      </div>
+`
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+      await editor.dispatch(selectComponents([targetPath], false), true)
+
+      const fixedControls = await editor.renderedDOM.findAllByText(FixedLabel)
+      const horizontalControl = fixedControls[0]
+      await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
+
+      const horizontalLabel = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+      await expectSingleUndoStep(editor, async () => {
+        await mouseClickAtPoint(horizontalLabel, { x: 5, y: 5 })
+      })
+
+      const verticalControl = fixedControls[1]
+      await mouseClickAtPoint(verticalControl, { x: 5, y: 5 })
+
+      const verticalLabel = (await editor.renderedDOM.findAllByText(HugContentsLabel))[1]
+
+      await expectSingleUndoStep(editor, async () => {
+        await mouseClickAtPoint(verticalLabel, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+            data-uid='bbb'
+            data-testid='bbb'
+          >hello content</div>
+        </div>
+        `),
+      )
+    })
   })
 
   /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectOptionsToBePresent"] }] */
@@ -703,6 +755,77 @@ describe('Fixed / Fill / Hug control', () => {
         expect((heightControl as HTMLInputElement).value).toEqual('407px')
       }
     })
+  })
+})
+
+describe('Fixed/hug on text elements', () => {
+  it('Sets text element fixed to hug inside the font section', async () => {
+    const testCode = `
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25}}
+        data-uid='bbb'
+        data-testid='bbb'
+      >hello text element!</div>
+    </div>
+`
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await editor.dispatch(selectComponents([targetPath], false), true)
+
+    const textAutoSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-0`)
+    await expectSingleUndoStep(editor, async () => {
+      await mouseClickAtPoint(textAutoSizeIcon, { x: 2, y: 2 })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+      `),
+    )
+  })
+  it('Sets text element hug to fixed inside the font section', async () => {
+    const testCode = `
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div
+        style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+        data-uid='bbb'
+        data-testid='bbb'
+      >hello text element!</div>
+    </div>
+`
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await editor.dispatch(selectComponents([targetPath], false), true)
+
+    const textFixedSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-1`)
+    await expectSingleUndoStep(editor, async () => {
+      await mouseClickAtPoint(textFixedSizeIcon, { x: 2, y: 2 })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 120, height: 18.5}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+      `),
+    )
   })
 })
 

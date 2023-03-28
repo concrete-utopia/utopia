@@ -1,12 +1,12 @@
 import {
-  JSXAttributeOtherJavaScript,
+  JSExpressionOtherJavaScript,
   ArbitraryJSBlock,
   JSXArbitraryBlock,
 } from './element-template'
 import { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
-type JavaScriptContainer = JSXAttributeOtherJavaScript | ArbitraryJSBlock | JSXArbitraryBlock
+type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock
 
 export type GetOrUpdateFunctionCache = (
   javascript: JavaScriptContainer,

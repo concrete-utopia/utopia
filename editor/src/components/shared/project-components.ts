@@ -1,30 +1,17 @@
 import { PropertyControls } from 'utopia-api/core'
 import { URL_HASH } from '../../common/env-vars'
-import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
 import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
-import { mapArrayToDictionary } from '../../core/shared/array-utils'
-import {
-  eitherToMaybe,
-  flatMapEither,
-  foldEither,
-  forEachRight,
-  right,
-} from '../../core/shared/either'
 import {
   emptyComments,
-  isIntrinsicElementFromString,
+  jsExpressionValue,
   JSXAttributes,
-  jsxAttributesEntry,
   jsxAttributesFromMap,
-  jsxAttributeValue,
   jsxConditionalExpressionWithoutUID,
-  jsxElementName,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
-  parsedComments,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -35,15 +22,7 @@ import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
-import { mapToArray, mapValues } from '../../core/shared/object-utils'
-import {
-  importDetailsFromImportOption,
-  Imports,
-  isParsedTextFile,
-  isParseSuccess,
-  isTextFile,
-  ProjectFile,
-} from '../../core/shared/project-file-types'
+import { Imports, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { fastForEach } from '../../core/shared/utils'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
@@ -53,6 +32,7 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
   ComponentElementToInsert,
+  clearComponentElementToInsertUniqueIDs,
 } from '../custom-code/code-file'
 import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
@@ -81,6 +61,19 @@ export function insertableComponent(
     name: name,
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
+  }
+}
+
+export function clearInsertableComponentUniqueIDs(
+  insertableComponentToFix: InsertableComponent,
+): InsertableComponent {
+  const updatedElement =
+    typeof insertableComponentToFix.element === 'string'
+      ? insertableComponentToFix.element
+      : clearComponentElementToInsertUniqueIDs(insertableComponentToFix.element)
+  return {
+    ...insertableComponentToFix,
+    element: updatedElement,
   }
 }
 
@@ -164,6 +157,17 @@ export function insertableComponentGroup(
   return {
     source: source,
     insertableComponents: insertableComponents,
+  }
+}
+
+export function clearInsertableComponentGroupUniqueIDs(
+  insertableGroup: InsertableComponentGroup,
+): InsertableComponentGroup {
+  return {
+    source: insertableGroup.source,
+    insertableComponents: insertableGroup.insertableComponents.map(
+      clearInsertableComponentUniqueIDs,
+    ),
   }
 }
 
@@ -337,10 +341,10 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
       {
         insertMenuLabel: 'Conditional',
         elementToInsert: jsxConditionalExpressionWithoutUID(
-          jsxAttributeValue(true, emptyComments),
+          jsExpressionValue(true, emptyComments),
           'true',
-          jsxAttributeValue(null, emptyComments),
-          jsxAttributeValue(null, emptyComments),
+          jsExpressionValue(null, emptyComments),
+          jsExpressionValue(null, emptyComments),
           emptyComments,
         ),
         importsToAdd: {},
