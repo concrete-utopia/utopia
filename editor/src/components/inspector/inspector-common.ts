@@ -826,7 +826,7 @@ export function isFixedHugFillEqual(
     return false
   }
 
-  if (a?.status !== b?.status) {
+  if (a?.source !== b?.source) {
     return false
   }
 
