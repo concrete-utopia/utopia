@@ -1886,22 +1886,24 @@ export const UPDATE_FNS = {
             ) {
               const isTrueBranch = EP.toUid(view) === getUtopiaID(parent.element.value.whenTrue)
 
-              let newUID: string | null = null
-              walkContentsTreeForParseSuccess(withElementDeleted.projectContents, (_, success) => {
-                if (newUID != null) {
-                  return
-                }
-                walkElements(getUtopiaJSXComponentsFromSuccess(success), (element) => {
-                  if (newUID != null) {
-                    return
-                  }
+              const branchPath = withUnderlyingTarget(
+                parentPath,
+                withElementDeleted.projectContents,
+                withElementDeleted.nodeModules.files,
+                withElementDeleted.canvas.openFile?.filename ?? null,
+                null,
+                (_, element) => {
                   if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
-                    newUID = getUtopiaID(isTrueBranch ? element.whenTrue : element.whenFalse)
+                    return EP.appendToPath(
+                      parentPath,
+                      getUtopiaID(isTrueBranch ? element.whenTrue : element.whenFalse),
+                    )
                   }
-                })
-              })
-              if (newUID != null) {
-                return EP.appendToPath(parentPath, newUID)
+                  return null
+                },
+              )
+              if (branchPath != null) {
+                return branchPath
               }
             }
             return EP.isStoryboardPath(parentPath) ? null : parentPath
