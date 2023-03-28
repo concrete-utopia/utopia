@@ -3,32 +3,19 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { NumberInput, PopupList, SimpleCSSNumberInput } from '../../uuiui'
-import {
-  ControlStatus,
-  getControlStyles,
-  InspectorRowHoverCSS,
-  SelectOption,
-} from '../../uuiui-deps'
+import { NumberInput, PopupList } from '../../uuiui'
+import { getControlStyles, InspectorRowHoverCSS, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import {
-  CSSNumber,
-  cssNumber,
-  CSSNumberType,
-  EmptyInputValue,
-  UnknownOrEmptyInput,
-} from './common/css-utils'
+import { CSSNumber, cssNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
 import { metadataSelector, selectedViewsSelector, useComputedSizeRef } from './inpector-selectors'
 import {
   Axis,
   detectFillHugFixedState,
+  fillHugFixedStateToControlStatus,
   FixedHugFill,
   FixedHugFillMode,
   getFixedFillHugOptionsForElement,
@@ -108,7 +95,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
   const widthControlStatus = React.useMemo(
-    () => (widthCurrentValue == null ? 'unset' : widthCurrentValue.status),
+    () => fillHugFixedStateToControlStatus(widthCurrentValue),
     [widthCurrentValue],
   )
   const widthControlStyles = React.useMemo(
@@ -143,7 +130,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
   const heightControlStatus = React.useMemo(
-    () => (heightCurrentValue == null ? 'unset' : heightCurrentValue.status),
+    () => fillHugFixedStateToControlStatus(heightCurrentValue),
     [heightCurrentValue],
   )
   const heightControlStyles = React.useMemo(

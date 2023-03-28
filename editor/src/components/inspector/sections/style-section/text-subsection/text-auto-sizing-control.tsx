@@ -15,6 +15,7 @@ import {
 } from '../../../inpector-selectors'
 import {
   detectFillHugFixedState,
+  fillHugFixedStateToControlStatus,
   FixedHugFill,
   isFixedHugFillEqual,
 } from '../../../inspector-common'
@@ -73,7 +74,7 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     if (!isEditableText) {
       return 'disabled'
     } else {
-      return fixedHugState == null ? 'unset' : fixedHugState.status
+      return fillHugFixedStateToControlStatus(fixedHugState)
     }
   }, [fixedHugState, isEditableText])
 

@@ -516,9 +516,9 @@ export const nukeAllAbsolutePositioningPropsCommands = (
 }
 
 export type FixedHugFill =
-  | { type: 'fixed'; value: CSSNumber; status: ControlStatus }
-  | { type: 'fill'; value: CSSNumber; status: ControlStatus }
-  | { type: 'hug'; status: ControlStatus }
+  | { type: 'fixed'; value: CSSNumber; source: 'parsed' | 'fallback' }
+  | { type: 'fill'; value: CSSNumber; source: 'parsed' | 'fallback' }
+  | { type: 'hug'; source: 'parsed' | 'fallback' }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -560,12 +560,12 @@ export function detectFillHugFixedState(
 
     const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
     if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      return { type: 'fill', value: flexGrow, status: 'simple' }
+      return { type: 'fill', value: flexGrow, source: 'parsed' }
     }
 
     const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
     if (axis === 'vertical' && isFlexDirectionVertical) {
-      return { type: 'fill', value: flexGrow, status: 'simple' }
+      return { type: 'fill', value: flexGrow, source: 'parsed' }
     }
   }
 
@@ -577,23 +577,23 @@ export function detectFillHugFixedState(
   )
 
   if (prop === MaxContent) {
-    return { type: 'hug', status: 'simple' }
+    return { type: 'hug', source: 'parsed' }
   }
 
   const parsed = defaultEither(null, parseCSSLengthPercent(prop))
 
   if (parsed != null && parsed.unit === '%') {
-    return { type: 'fill', value: parsed, status: 'simple' }
+    return { type: 'fill', value: parsed, source: 'parsed' }
   }
 
   if (parsed != null) {
-    return { type: 'fixed', value: parsed, status: 'simple' }
+    return { type: 'fixed', value: parsed, source: 'parsed' }
   }
 
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    return { type: 'fixed', value: cssNumber(frame[dimension], 'px'), status: 'unset' }
+    return { type: 'fixed', value: cssNumber(frame[dimension], 'px'), source: 'fallback' }
   }
 
   return null
@@ -835,4 +835,10 @@ export function isFixedHugFillEqual(
   }
 
   return true
+}
+
+export function fillHugFixedStateToControlStatus(
+  fillHugFixedState: FixedHugFill | undefined | null,
+): ControlStatus {
+  return fillHugFixedState == null || fillHugFixedState.source === 'fallback' ? 'unset' : 'simple'
 }
