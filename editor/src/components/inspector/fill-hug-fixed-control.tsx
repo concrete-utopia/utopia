@@ -32,6 +32,7 @@ import {
   FixedHugFill,
   FixedHugFillMode,
   getFixedFillHugOptionsForElement,
+  isFixedHugFillEqual,
 } from './inspector-common'
 import {
   setPropFillStrategies,
@@ -45,22 +46,6 @@ import {
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
-
-function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
-  if (a === undefined && b === undefined) {
-    return true
-  }
-
-  if (a?.type !== b?.type) {
-    return false
-  }
-
-  if ((a?.type === 'fixed' && b?.type === 'fixed') || (a?.type === 'fill' && b?.type === 'fill')) {
-    return a.value.value === b.value.value && a.value.unit === b.value.unit
-  }
-
-  return true
-}
 
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
