@@ -1,4 +1,5 @@
 import { ImportType, NormalisedFrame } from 'utopia-api/core'
+import { pathsEqual } from './element-path'
 import {
   ArbitraryJSBlock,
   ImportStatement,
@@ -23,6 +24,10 @@ export interface StaticElementPath {
 export interface ElementPath {
   type: 'elementpath'
   parts: Array<ElementPathPart>
+}
+
+function eq(p: StaticElementPath, p1: StaticElementPath) {
+  return pathsEqual(p, p1)
 }
 
 export type PropertyPathPart = string | number

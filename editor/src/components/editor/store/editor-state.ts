@@ -2238,7 +2238,7 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     case 'REGULAR':
       return `regular-${EP.toComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
-      return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
+      return `conditional-clause-${EP.toComponentId(entry.elementPath)}`
     case 'SYNTHETIC':
       const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
         ? `attribute`
@@ -2254,7 +2254,7 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
     case 'REGULAR':
       return `regular_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
-      return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
+      return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'SYNTHETIC':
       const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
         ? `attribute`
