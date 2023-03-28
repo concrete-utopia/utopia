@@ -13,7 +13,6 @@ import {
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
