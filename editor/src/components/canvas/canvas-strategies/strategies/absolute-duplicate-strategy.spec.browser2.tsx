@@ -2,20 +2,21 @@ import {
   EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
-  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import {
   expectElementWithTestIdNotToBeRendered,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
@@ -25,6 +26,7 @@ import { AllContentAffectingTypes } from './group-like-helpers'
 import {
   getClosingGroupLikeTag,
   getOpeningGroupLikeTag,
+  getRegularNavigatorTargets,
   GroupLikeElementUid,
 } from './group-like-helpers.test-utils'
 
@@ -162,6 +164,8 @@ describe('Absolute Duplicate Strategy', () => {
           'await-first-dom-report',
         )
 
+        FOR_TESTS_setNextGeneratedUids(['aaa', 'bbb', 'ccc'])
+
         const dragDelta = windowPoint({ x: 40, y: -25 })
 
         const targetElement = renderResult.renderedDOM.getByTestId('child')
@@ -196,43 +200,14 @@ describe('Absolute Duplicate Strategy', () => {
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
-          formatTestProjectCode(
-            projectWithFragment(`
-              ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
-        <div
-          style={{
-            backgroundColor: '#d089cc',
-            width: 150,
-            height: 186,
-            contain: 'layout',
-            left: 7,
-            top: 186,
-            position: 'absolute',
-          }}
-          data-testid='child'
-        >
-          second
-        </div>
-        ${getClosingGroupLikeTag(type)}
-        ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
-        <div
-          style={{
-            backgroundColor: '#d089cc',
-            width: 150,
-            height: 186,
-            contain: 'layout',
-            left: 47,
-            top: 161,
-            position: 'absolute',
-          }}
-          data-testid='child'
-        >
-          second
-        </div>
-        ${getClosingGroupLikeTag(type)}`),
-          ),
-        )
+        expect(getRegularNavigatorTargets(renderResult)).toEqual([
+          'sb/children-affecting',
+          'sb/children-affecting/inner-fragment',
+          'sb/children-affecting/inner-fragment/chi',
+          'sb/aaa',
+          'sb/aaa/ccc',
+          'sb/aaa/ccc/bbb',
+        ])
       })
     })
   })
@@ -242,7 +217,7 @@ const projectWithFragment = (innards: string) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard>
+  <Storyboard data-uid='sb'>
     ${innards}
   </Storyboard>
 )
