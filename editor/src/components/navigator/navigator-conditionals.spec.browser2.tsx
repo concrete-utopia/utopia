@@ -6,7 +6,7 @@ import {
   getPrintedUiJsCode,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
-import { fireEvent } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import { selectComponents } from '../editor/actions/meta-actions'
 import * as EP from '../../core/shared/element-path'
 import { act } from 'react-dom/test-utils'
@@ -35,7 +35,6 @@ import { getUtopiaID } from '../../core/shared/uid-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { pressKey } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { wait } from '../../utils/utils.test-utils'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -1350,5 +1349,59 @@ describe('conditionals in the navigator', () => {
 
     const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
     expect(selectedViewPaths).toEqual([EP.toString(elementPathToSelect)])
+  })
+  it('can be collapsed', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    const collapseButton = await screen.findByTestId(`navigator-item-collapse-conditional1-button`)
+    const collapseButtonRect = collapseButton.getBoundingClientRect()
+    const collapseButtonCenter = getDomRectCenter(collapseButtonRect)
+
+    const trueBranchTestId = NavigatorItemTestId(
+      varSafeNavigatorEntryToKey(
+        conditionalClauseNavigatorEntry(
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
+          ),
+          'true-case',
+        ),
+      ),
+    )
+    const falseBranchTestId = NavigatorItemTestId(
+      varSafeNavigatorEntryToKey(
+        conditionalClauseNavigatorEntry(
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
+          ),
+          'false-case',
+        ),
+      ),
+    )
+
+    // by default, branches are shown
+    {
+      expect(renderResult.renderedDOM.queryByTestId(trueBranchTestId)).not.toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId(falseBranchTestId)).not.toBeNull()
+    }
+
+    // clicking once will collapse the item, hiding the contents
+    {
+      await act(async () => {
+        await mouseClickAtPoint(collapseButton, collapseButtonCenter)
+      })
+
+      expect(renderResult.renderedDOM.queryByTestId(trueBranchTestId)).toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId(falseBranchTestId)).toBeNull()
+    }
+
+    // clicking again will expand the item, showing the contents again
+    {
+      await act(async () => {
+        await mouseClickAtPoint(collapseButton, collapseButtonCenter)
+      })
+
+      expect(renderResult.renderedDOM.queryByTestId(trueBranchTestId)).not.toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId(falseBranchTestId)).not.toBeNull()
+    }
   })
 })
