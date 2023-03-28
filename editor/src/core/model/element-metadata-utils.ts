@@ -2034,7 +2034,7 @@ function fillSpyOnlyMetadata(
   })
 
   fastForEach(elementsWithoutParentData, (pathStr) => {
-    const spyElem = fromSpy[pathStr]
+    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
     const domElem = fromDOM[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
     const children = findChildrenInDomRecursively(pathStr)
@@ -2094,15 +2094,16 @@ function fillSpyOnlyMetadata(
   elementsWithoutGlobalContentBox.sort()
 
   fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
-    const spyElem = fromSpy[pathStr]
+    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
     const domElem = fromDOM[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
 
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
     const parentGlobalContentBoxForChildren =
-      sameThingFromWorkingElems?.specialSizeMeasurements.globalContentBoxForChildren ??
       fromSpy[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      fromDOM[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       infinityCanvasRectangle
 
     workingElements[pathStr] = {
