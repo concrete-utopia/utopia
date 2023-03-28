@@ -1839,7 +1839,7 @@ export function specialSizeMeasurements(
   alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
-  globalContentBox: CanvasRectangle | null,
+  globalContentBox: MaybeInfinityCanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
   parentTextDirection: TextDirection | null,
