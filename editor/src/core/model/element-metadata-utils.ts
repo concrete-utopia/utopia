@@ -1261,27 +1261,16 @@ export const MetadataUtils = {
     }
   },
   getGlobalContentBoxForChildren: function (
-    targetParent: ElementPath | null,
-    metadata: ElementInstanceMetadataMap,
+    parent: ElementInstanceMetadata,
   ): CanvasRectangle | null {
-    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
-        return parent.specialSizeMeasurements.globalContentBoxForChildren
-      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-        return parent.specialSizeMeasurements.coordinateSystemBounds
-      }
+    if (
+      parent.specialSizeMeasurements.globalContentBoxForChildren != null &&
+      isFiniteRectangle(parent.specialSizeMeasurements.globalContentBoxForChildren)
+    ) {
+      return parent.specialSizeMeasurements.globalContentBoxForChildren
     }
 
-    // Potentially here the parent was something like a fragment that itself doesn't have
-    // the above properties set, so we should move up the hierarchy to find one where they are set.
-    const nextAncestor =
-      targetParent == null || EP.isEmptyPath(targetParent) ? null : EP.parentPath(targetParent)
-    if (nextAncestor == null) {
-      return zeroCanvasRect
-    } else {
-      return MetadataUtils.getGlobalContentBoxForChildren(nextAncestor, metadata)
-    }
+    return zeroCanvasRect
   },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath,
@@ -1293,7 +1282,7 @@ export const MetadataUtils = {
       return null
     }
 
-    const globalContentBox = MetadataUtils.getGlobalContentBoxForChildren(targetParent, metadata)
+    const globalContentBox = MetadataUtils.getGlobalContentBoxForChildren(targetParentInstance)
     if (globalContentBox == null) {
       return null
     }
@@ -2098,10 +2087,7 @@ function fillSpyOnlyMetadata(
   })
 
   const elementsWithoutGlobalContentBox = Object.keys(fromSpy).filter((p) => {
-    return (
-      fromDOM[p]?.specialSizeMeasurements.globalContentBoxForChildren == null &&
-      !EP.isStoryboardPath(EP.fromString(p))
-    )
+    return fromDOM[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
   })
 
   // sorted, so that parents are fixed first
@@ -2114,21 +2100,22 @@ function fillSpyOnlyMetadata(
 
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
-    if (EP.isStoryboardPath(EP.fromString(pathStr))) {
-      return
-    }
-
     const parentGlobalContentBoxForChildren =
-      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
-      fromSpy[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+      sameThingFromWorkingElems?.specialSizeMeasurements.globalContentBoxForChildren ??
+      fromSpy[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      infinityCanvasRectangle
 
     workingElements[pathStr] = {
       ...spyElem,
       ...sameThingFromWorkingElems,
+      globalFrame:
+        sameThingFromWorkingElems?.globalFrame ?? domElem?.globalFrame ?? spyElem.globalFrame,
+      localFrame:
+        sameThingFromWorkingElems?.localFrame ?? domElem?.localFrame ?? spyElem.localFrame,
       specialSizeMeasurements: {
-        ...(spyElem?.specialSizeMeasurements ?? emptySpecialSizeMeasurements),
-        ...(domElem?.specialSizeMeasurements ?? emptySpecialSizeMeasurements),
-        ...(sameThingFromWorkingElems?.specialSizeMeasurements ?? emptySpecialSizeMeasurements),
+        ...emptySpecialSizeMeasurements,
+        ...spyElem.specialSizeMeasurements,
+        ...(sameThingFromWorkingElems?.specialSizeMeasurements ?? {}),
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
     }

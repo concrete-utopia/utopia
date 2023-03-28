@@ -1798,7 +1798,7 @@ export interface SpecialSizeMeasurements {
   alignItems: FlexAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
-  globalContentBoxForChildren: CanvasRectangle | null
+  globalContentBoxForChildren: MaybeInfinityCanvasRectangle | null
   float: string
   hasPositionOffset: boolean
   parentTextDirection: TextDirection | null
