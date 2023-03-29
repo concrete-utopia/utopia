@@ -1353,7 +1353,9 @@ describe('conditionals in the navigator', () => {
   it('can be collapsed', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
-    const collapseButton = await screen.findByTestId(`navigator-item-collapse-conditional1-button`)
+    const collapseButton = await screen.findByTestId(
+      `navigator-item-collapse-regular-${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1-button`,
+    )
     const collapseButtonRect = collapseButton.getBoundingClientRect()
     const collapseButtonCenter = getDomRectCenter(collapseButtonRect)
 
