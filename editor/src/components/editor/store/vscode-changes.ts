@@ -306,5 +306,4 @@ export function sendVSCodeChanges(changes: ProjectChanges) {
   if (toVSCodeAccumulated.messages.length > 0) {
     sendMessage(toVSCodeExtensionMessage(toVSCodeAccumulated))
   }
-  return Promise.resolve()
 }

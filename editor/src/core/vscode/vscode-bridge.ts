@@ -99,18 +99,22 @@ export function initVSCodeBridge(
   registeredHandlers = (messageEvent: MessageEvent) => {
     const { data } = messageEvent
     if (isMessageListenersReady(data) && messageEvent.source != null) {
-      // Store the source
-      vscodeIFrame = messageEvent.source
+      // Don't store the source yet, because we don't want to send any messages
+      // until the bridge is ready
 
       // Send the full project contents
       const projectFiles = convertProjectContents(projectContents)
-      sendMessage(initProject(projectFiles, openFilePath))
+      messageEvent.source.postMessage(initProject(projectFiles, openFilePath), {
+        targetOrigin: '*',
+      })
 
       if (openFilePath == null) {
         loadingScreenHidden = true
         dispatch([hideVSCodeLoadingScreen()], 'everyone')
       }
-    } else if (isVSCodeBridgeReady(data)) {
+    } else if (isVSCodeBridgeReady(data) && messageEvent.source != null) {
+      // Store the source
+      vscodeIFrame = messageEvent.source
       dispatch([markVSCodeBridgeReady(true)], 'everyone')
     } else if (isFromVSCodeExtensionMessage(data)) {
       const message = data.message

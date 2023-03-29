@@ -190,10 +190,10 @@ index 6148eb30092..6948ededa4a 100644
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/communication.ts b/src/vs/code/browser/workbench/communication.ts
 new file mode 100644
-index 00000000000..2b05e70967e
+index 00000000000..1486dd6cb34
 --- /dev/null
 +++ b/src/vs/code/browser/workbench/communication.ts
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,177 @@
 +// This file exists so that the extension can communicate with the Utopia editor
 +import {
 +  appendToPath,
@@ -342,19 +342,30 @@ index 00000000000..2b05e70967e
 +  currentInit = currentInit.then(innerInit)
 +}
 +
++// Chain off of the previous one to ensure the ordering of changes is maintained.
++let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
++
 +export function setupEventListenersForProject(projectID: string) {
 +  window.addEventListener('message', (messageEvent: MessageEvent) => {
 +    const { data } = messageEvent
 +    if (isInitProject(data)) {
 +      initIndexedDBBridge(projectID, data.projectContents, data.openFilePath)
 +    } else if (isDeletePathChange(data)) {
-+      deletePath(toFSPath(data.fullPath), data.recursive)
++      applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++        await deletePath(toFSPath(data.fullPath), data.recursive)
++      })
 +    } else if (isWriteProjectFileChange(data)) {
-+      writeProjectFile(data.projectFile)
++      applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++        await writeProjectFile(data.projectFile)
++      })
 +    } else if (isEnsureDirectoryExistsChange(data)) {
-+      ensureDirectoryExists(toFSPath(data.fullPath))
++      applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++        await ensureDirectoryExists(toFSPath(data.fullPath))
++      })
 +    } else if (isToVSCodeExtensionMessage(data)) {
-+      sendMessage(data.message)
++      applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++        await sendMessage(data.message)
++      })
 +    }
 +  })
 +
