@@ -11,7 +11,6 @@ import {
   navigatorEntriesEqual,
   NavigatorEntry,
 } from '../../../components/editor/store/editor-state'
-import { when } from '../../../utils/react-conditionals'
 
 interface ItemLabelProps {
   testId: string
@@ -117,10 +116,6 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
         }}
       >
         {value}
-        {when(
-          this.props.target.type == 'CONDITIONAL_CLAUSE',
-          <Icons.PinFilled color={'overridden'} />,
-        )}
       </div>
     )
   }
