@@ -123,20 +123,26 @@ export function getNavigatorTargets(
         const clauseValue =
           conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
+        function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
+          if (newCollapsedAncestor) {
+            return
+          }
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
+        }
+
         // Get the clause path.
         const clausePath = getConditionalClausePath(path, clauseValue)
 
         // Create the entry for the name of the clause.
         const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, conditionalCase)
-        navigatorTargets.push(clauseTitleEntry)
-        visibleNavigatorTargets.push(clauseTitleEntry)
+        addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
         // Create the entry for the value of the clause.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
         if (elementMetadata == null) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          navigatorTargets.push(clauseValueEntry)
-          visibleNavigatorTargets.push(clauseValueEntry)
+          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
 
         // Walk the clause of the conditional.
@@ -144,7 +150,7 @@ export function getNavigatorTargets(
           return EP.pathsEqual(childPath.path, clausePath)
         })
         if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, collapsedAncestor)
+          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
         }
       }
 
