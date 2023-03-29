@@ -32,7 +32,7 @@ import {
   ElementInstanceMetadata,
   ElementsByUID,
   getJSXElementNameLastPart,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXElement,
   isJSXTextBlock,
   JSXAttributes,
@@ -992,7 +992,7 @@ export const MetadataUtils = {
       const elementValue = element.element.value
       return (
         elementValue.children.length >= 1 &&
-        elementValue.children.some((c) => isJSXTextBlock(c) || isJSXArbitraryBlock(c))
+        elementValue.children.some((c) => isJSXTextBlock(c) || isJSExpressionOtherJavaScript(c))
       )
     }
     return false
@@ -1003,7 +1003,7 @@ export const MetadataUtils = {
         const childElement = element.element.value.children[0]
         if (isJSXTextBlock(childElement)) {
           return childElement.text
-        } else if (isJSXArbitraryBlock(childElement)) {
+        } else if (isJSExpressionOtherJavaScript(childElement)) {
           return `{${childElement.originalJavascript}}`
         }
       } else if (element.element.value.children.length === 0) {
@@ -1094,14 +1094,11 @@ export const MetadataUtils = {
         if (subTree != null) {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
           const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
-            (isFeatureEnabled('Fragment support') || !isFragment) &&
-            (isFeatureEnabled('Conditional support') || !isConditional) &&
             !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
           ) {
             visibleNavigatorTargets.push(path)
@@ -1115,7 +1112,7 @@ export const MetadataUtils = {
           let subTreeChildren: ElementPathTreeRoot = subTree.children
           // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
           // case for consistent ordering.
-          if (isFeatureEnabled('Conditional support') && isConditional) {
+          if (isConditional) {
             const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
             if (
               elementMetadata != null &&
@@ -1336,7 +1333,7 @@ export const MetadataUtils = {
                   if (isJSXTextBlock(firstChild)) {
                     return firstChild.text
                   }
-                  if (isJSXArbitraryBlock(firstChild)) {
+                  if (isJSExpressionOtherJavaScript(firstChild)) {
                     return `{${firstChild.originalJavascript}}`
                   }
                 }
@@ -1360,12 +1357,20 @@ export const MetadataUtils = {
               return lastNamePart
             case 'JSX_TEXT_BLOCK':
               return '(text)'
-            case 'JSX_ARBITRARY_BLOCK':
+            case 'ATTRIBUTE_OTHER_JAVASCRIPT':
               return '(code)'
             case 'JSX_FRAGMENT':
               return 'Fragment'
             case 'JSX_CONDITIONAL_EXPRESSION':
               return 'Conditional'
+            case 'ATTRIBUTE_VALUE':
+              return `${jsxElement.value}`
+            case 'ATTRIBUTE_NESTED_ARRAY':
+              return '(code)'
+            case 'ATTRIBUTE_NESTED_OBJECT':
+              return '(code)'
+            case 'ATTRIBUTE_FUNCTION_CALL':
+              return '(code)'
             default:
               const _exhaustiveCheck: never = jsxElement
               throw new Error(`Unexpected element type ${jsxElement}`)

@@ -2,9 +2,9 @@ import { foldEither, isRight } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsAttributeNotFound,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
@@ -48,7 +48,7 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
       if (isJSXElement(element)) {
         return foldEither(
           () => false,
-          (value) => !isJSXAttributeNotFound(value),
+          (value) => !modifiableAttributeIsAttributeNotFound(value),
           getModifiableJSXAttributeAtPath(element.props, command.property),
         )
       } else {
@@ -62,7 +62,7 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
     const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
       editorState,
       command.element,
-      [{ path: command.property, value: jsxAttributeValue(command.value, emptyComments) }],
+      [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
     )
 
     return {

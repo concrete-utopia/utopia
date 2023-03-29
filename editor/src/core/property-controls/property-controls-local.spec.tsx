@@ -106,6 +106,7 @@ describe('registered property controls', () => {
                         "trailingComments": Array [],
                       },
                       "type": "ATTRIBUTE_VALUE",
+                      "uniqueID": "",
                       "value": "fb0",
                     },
                   },
@@ -150,6 +151,7 @@ describe('registered property controls', () => {
                       ],
                       "elementsWithin": Object {},
                       "javascript": "DefaultPerson",
+                      "originalJavascript": "DefaultPerson",
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAI2BA",
@@ -188,12 +190,13 @@ describe('registered property controls', () => {
                         "trailingComments": Array [],
                       },
                       "type": "ATTRIBUTE_VALUE",
-                      "value": "8c0",
+                      "uniqueID": "",
+                      "value": "571",
                     },
                   },
                 ],
                 "type": "JSX_ELEMENT",
-                "uid": "8c0",
+                "uid": "571",
               },
               "importsToAdd": Object {
                 "/src/card": Object {

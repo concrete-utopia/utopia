@@ -1,6 +1,5 @@
 import React from 'react'
 import { ConditionValue } from '../../../core/shared/element-template'
-import { when } from '../../../utils/react-conditionals'
 import { ButtonProps, FlexRow, Icons, Tooltip } from '../../../uuiui'
 import { SquareButton } from '../../titlebar/buttons'
 import { ControlStatus, ControlStyles } from '../common/control-status'
@@ -8,7 +7,7 @@ import { UIGridRow } from '../widgets/ui-grid-row'
 import { OptionChainControl, OptionChainOption } from './option-chain-control'
 
 export const ConditionalOverrideControlTestIdPrefix = 'conditional-override-control'
-export const ConditionalOverrideControlDisableTestId = 'conditional-override-control-disable'
+export const ConditionalOverrideControlToggleTestId = 'conditional-override-control-toggle'
 
 export interface ConditionalOverrideControlProps extends ButtonProps {
   controlStatus: ControlStatus
@@ -35,39 +34,31 @@ const OverrideControlOptions: Array<OptionChainOption<boolean>> = [
 export const ConditionalOverrideControl: React.FunctionComponent<
   React.PropsWithChildren<ConditionalOverrideControlProps>
 > = (props) => {
-  const { controlStatus, controlStyles, setConditionOverride } = props
+  const { controlStatus, controlStyles, setConditionOverride, conditionValue } = props
 
-  const disableOverride = React.useCallback(() => {
+  const toggleOverride = React.useCallback(() => {
     if (controlStatus === 'overridden') {
       setConditionOverride(null)
+    } else if (conditionValue !== 'not-a-conditional') {
+      setConditionOverride(conditionValue)
     }
-  }, [controlStatus, setConditionOverride])
+  }, [controlStatus, setConditionOverride, conditionValue])
 
   return (
-    <UIGridRow
-      padded={true}
-      variant='<---1fr--->|------172px-------|'
-      style={{ color: props.controlStyles.mainColor }}
-    >
+    <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       Result
-      <FlexRow style={{ flexGrow: 1, gap: 4 }}>
-        {when(
-          controlStatus === 'overridden',
-          <Tooltip title={'Override'}>
-            <SquareButton
-              onClick={disableOverride}
-              testId={ConditionalOverrideControlDisableTestId}
-            >
-              {getPinIcon(controlStatus, controlStyles)}
-            </SquareButton>
-          </Tooltip>,
-        )}
+      <FlexRow>
+        <Tooltip title={'Override'}>
+          <SquareButton onClick={toggleOverride} testId={ConditionalOverrideControlToggleTestId}>
+            {getPinIcon(controlStatus, controlStyles)}
+          </SquareButton>
+        </Tooltip>
         <OptionChainControl
           id={'conditional-override-control'}
           testId={ConditionalOverrideControlTestIdPrefix}
           key={'conditional-override-control'}
           onSubmitValue={props.setConditionOverride}
-          value={props.conditionValue}
+          value={conditionValue}
           options={OverrideControlOptions}
           controlStatus={controlStatus}
           controlStyles={controlStyles}

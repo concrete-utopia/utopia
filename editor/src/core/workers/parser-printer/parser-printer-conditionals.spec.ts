@@ -10,7 +10,6 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-temp
 import { printCode, printCodeOptions } from './parser-printer'
 
 describe('JSX parser', () => {
-  setFeatureForUnitTests('Conditional support', true)
   it('ensure that conditionals get the same UID each time', () => {
     const code = applyPrettier(SimpleConditionalsExample, false).formatted
     const firstParseResult = testParseCode(code)

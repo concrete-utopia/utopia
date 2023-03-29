@@ -3,7 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -131,7 +131,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
 
     propsToUpdate.push({
       path: command.property,
-      value: jsxAttributeValue(newValue, emptyComments),
+      value: jsExpressionValue(newValue, emptyComments),
     })
   } else {
     const newCssValue =
@@ -143,7 +143,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
 
     propsToUpdate.push({
       path: command.property,
-      value: jsxAttributeValue(printedValue, emptyComments),
+      value: jsExpressionValue(printedValue, emptyComments),
     })
   }
 

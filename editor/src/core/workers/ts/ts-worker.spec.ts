@@ -179,6 +179,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                         type: 'SPREAD_ASSIGNMENT',
                         value: {
                           type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+                          originalJavascript: 'props.style',
                           javascript: 'props.style',
                           transpiledJavascript: 'return props.style;',
                           definedElsewhere: ['props'],
@@ -202,6 +203,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                         key: 'backgroundColor',
                         value: {
                           type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+                          originalJavascript: 'colorTheme.white.value',
                           javascript: 'colorTheme.white.value',
                           transpiledJavascript: 'return colorTheme.white.value;',
                           definedElsewhere: ['colorTheme'],
@@ -223,6 +225,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                       },
                     ],
                     comments: emptyComments,
+                    uniqueID: '',
                   },
                   layout: {
                     type: 'ATTRIBUTE_VALUE',
@@ -230,11 +233,13 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                       layoutSystem: LayoutSystem.PinSystem,
                     },
                     comments: emptyComments,
+                    uniqueID: '',
                   },
                   'data-uid': {
                     type: 'ATTRIBUTE_VALUE',
                     value: 'aaa',
                     comments: emptyComments,
+                    uniqueID: '',
                   },
                 }),
                 children: [],

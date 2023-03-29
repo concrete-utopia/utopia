@@ -16,7 +16,7 @@ import {
   jsxTestElement,
   jsxTextBlock,
   jsxElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   elementInstanceMetadata,
   emptyComputedStyle,
   ElementInstanceMetadataMap,
@@ -777,7 +777,7 @@ describe('getElementLabel', () => {
   const spanElement = jsxElement(
     'span',
     'span-1',
-    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('span-1', emptyComments) }),
+    jsxAttributesFromMap({ 'data-uid': jsExpressionValue('span-1', emptyComments) }),
     [textBlock],
   )
   const spanElementMetadata = elementInstanceMetadata(
@@ -800,7 +800,7 @@ describe('getElementLabel', () => {
   const divElement = jsxElement(
     'div',
     'div-1',
-    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('div-1', emptyComments) }),
+    jsxAttributesFromMap({ 'data-uid': jsExpressionValue('div-1', emptyComments) }),
     [spanElement],
   )
   const divElementMetadata = elementInstanceMetadata(

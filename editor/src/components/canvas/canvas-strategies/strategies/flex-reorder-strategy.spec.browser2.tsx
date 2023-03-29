@@ -439,9 +439,6 @@ describe('Flex Reorder Strategy', () => {
   })
 
   describe('flex reorder, with a group-like element as a sibling', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     AllContentAffectingTypes.forEach((type) => {
       describe(`– group-like element ${type} –`, () => {
         it('works with normal direction', async () => {
@@ -596,9 +593,6 @@ describe('Flex Reorder Strategy', () => {
   })
 
   describe('projects with fragments, with fragments support enabled', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    setFeatureForBrowserTests('Conditional support', true)
-
     // we only run this test for non-dom elements, as a sizeless div in flex layout acts weird
     AllContentAffectingNonDomElementTypes.forEach((type) => {
       describe(`– group-like element ${type} – `, () => {

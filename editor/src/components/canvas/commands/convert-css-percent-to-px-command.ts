@@ -3,7 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -101,7 +101,7 @@ export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = 
 
     propsToUpdate.push({
       path: command.property,
-      value: jsxAttributeValue(newValue, emptyComments),
+      value: jsExpressionValue(newValue, emptyComments),
     })
   }
 

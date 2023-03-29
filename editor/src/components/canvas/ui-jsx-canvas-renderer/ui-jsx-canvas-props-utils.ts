@@ -1,7 +1,7 @@
 import { MapLike } from 'typescript'
 import {
   Param,
-  JSXAttributeOtherJavaScript,
+  JSExpressionOtherJavaScript,
   BoundParam,
   isRegularParam,
   isDestructuredObject,
@@ -20,7 +20,7 @@ export function applyPropsParamToPassedProps(
 
   function getParamValue(
     value: unknown,
-    defaultExpression: JSXAttributeOtherJavaScript | null,
+    defaultExpression: JSExpressionOtherJavaScript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
       return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression)

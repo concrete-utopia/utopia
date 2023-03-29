@@ -393,6 +393,20 @@ export var storyboard = (
 )
 `
 
+const projectWithExpression = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      {
+        // @utopia/uid=conditional
+        true ? 'Hello' : null
+      }
+    </div>
+  </Storyboard>
+)
+`
+
 describe('Navigator', () => {
   describe('selecting elements', () => {
     it('by clicking the center of the item', async () => {
@@ -405,6 +419,31 @@ describe('Navigator', () => {
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
         NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
+      )
+
+      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+
+      await mouseClickAtPoint(dragMeElement, {
+        x: dragMeElementRect.x + dragMeElementRect.width / 2,
+        y: dragMeElementRect.y + dragMeElementRect.height / 2,
+      })
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
+      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
+    })
+
+    it('by clicking the center of the item which is an expression', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        projectWithExpression,
+        'await-first-dom-report',
+      )
+
+      const dragMePath = EP.fromString('sb/group/conditional/0e3')
+
+      const dragMeElement = await renderResult.renderedDOM.findByTestId(
+        'NavigatorItemTestId-synthetic_sb/group/conditional/0e3_attribute',
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()
@@ -1129,8 +1168,6 @@ describe('Navigator', () => {
   })
 
   describe('reparenting to children-affecting elements', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
     it('reparenting into fragment reparents to the correct index', async () => {
       const renderResult = await renderTestEditorWithCode(
         projectWithGroupsAndNotGroups,

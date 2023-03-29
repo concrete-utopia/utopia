@@ -64,7 +64,6 @@ async function createAndRenderProject() {
 }
 
 describe('a project with conditionals', () => {
-  setFeatureForBrowserTests('Conditional support', true)
   it('fills the content of the navigator', async () => {
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
@@ -74,14 +73,14 @@ describe('a project with conditionals', () => {
       'regular-storyboard/scene/app',
       'regular-storyboard/scene/app:app-root',
       'regular-storyboard/scene/app:app-root/conditional1',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1-true-case',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/false-case-attribute',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/false-case-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/60c',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/60c-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/30e',
+      'synthetic-storyboard/scene/app:app-root/conditional1/30e-attribute',
     ])
   })
 })

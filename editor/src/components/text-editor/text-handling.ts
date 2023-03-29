@@ -9,7 +9,7 @@ import {
   getJSXElementNameAsString,
   isJSXElement,
   isJSXTextBlock,
-  JSXAttribute,
+  JSExpression,
   JSXAttributes,
   JSXElement,
   JSXElementChild,
@@ -47,8 +47,8 @@ export const stylePropertiesEligibleForMerge: Set<string> = new Set([
 ])
 
 function areStylePropsCompatible(
-  targetStyleProp: JSXAttribute,
-  toCheckStyleProp: JSXAttribute,
+  targetStyleProp: JSExpression,
+  toCheckStyleProp: JSExpression,
 ): boolean {
   const targetStyleValue = jsxSimpleAttributeToValue(targetStyleProp)
   return foldEither(
@@ -92,8 +92,8 @@ function arePropsCompatible(
   targetAttributes: JSXAttributes,
   toCheckAttributes: JSXAttributes,
 ): boolean {
-  let targetStyleProp: JSXAttribute | null = null
-  let toCheckStyleProp: JSXAttribute | null = null
+  let targetStyleProp: JSExpression | null = null
+  let toCheckStyleProp: JSExpression | null = null
   for (const targetAttribute of targetAttributes) {
     if (isJSXAttributesEntry(targetAttribute)) {
       if (targetAttribute.key === 'style') {

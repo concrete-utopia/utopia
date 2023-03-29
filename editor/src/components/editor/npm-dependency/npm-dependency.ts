@@ -447,7 +447,7 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
   )
 
   return React.useMemo(() => {
-    if (isTextFile(packageJsonFile)) {
+    if (packageJsonFile != null && isTextFile(packageJsonFile)) {
       return dependenciesFromPackageJsonContents(packageJsonFile.fileContents.code)
     } else {
       return []

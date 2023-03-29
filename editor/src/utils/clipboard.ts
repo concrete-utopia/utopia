@@ -187,7 +187,11 @@ export function createClipboardDataFromSelection(
       editor.projectContents,
       targetPathSuccess.filePath,
     )
-    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    if (
+      projectFile != null &&
+      isTextFile(projectFile) &&
+      isParseSuccess(projectFile.fileContents.parsed)
+    ) {
       const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
       const elementToPaste = findElementAtPath(target, components)
       if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {

@@ -72,8 +72,6 @@ describe('shortcuts', () => {
   })
 
   describe('x', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-
     it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 

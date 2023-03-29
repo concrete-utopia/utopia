@@ -4,7 +4,7 @@ import {
   isUtopiaJSXComponent,
   jsxAttributeNestedObjectSimple,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   JSXElement,
   jsxElementName,
@@ -19,7 +19,7 @@ import {
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
-  jsxAttributeOtherJavaScript,
+  jsExpressionOtherJavaScript,
   JSXElementChild,
   partOfJsxAttributeValue,
   jsxElementWithoutUID,
@@ -142,15 +142,15 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
         'Scene',
         `scene-${sceneIndex}`,
         jsxAttributesFromMap({
-          'data-uid': jsxAttributeValue(`scene-${sceneIndex}`, emptyComments),
+          'data-uid': jsExpressionValue(`scene-${sceneIndex}`, emptyComments),
         }),
         [
           jsxElement(
             `MyView${sceneIndex + 1}`,
             `main-component-${sceneIndex}`,
             jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue(`main-component-${sceneIndex}`, emptyComments),
-              style: jsxAttributeValue(
+              'data-uid': jsExpressionValue(`main-component-${sceneIndex}`, emptyComments),
+              style: jsExpressionValue(
                 {
                   position: 'absolute',
                   left: 0,
@@ -178,7 +178,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
       'Storyboard',
       BakedInStoryboardUID,
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
+        'data-uid': jsExpressionValue(BakedInStoryboardUID, emptyComments),
       }),
       scenes,
     ),
@@ -210,7 +210,7 @@ const originalModel = deepFreeze(
           jsxElementName('View', []),
           'aaa',
           jsxAttributesFromMap({
-            'data-uid': jsxAttributeValue('aaa', emptyComments),
+            'data-uid': jsExpressionValue('aaa', emptyComments),
           }),
           [
             jsxElement(
@@ -218,10 +218,10 @@ const originalModel = deepFreeze(
               'bbb',
               jsxAttributesFromMap({
                 test: jsxAttributeNestedObjectSimple(
-                  jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
+                  jsxAttributesFromMap({ prop: jsExpressionValue(5, emptyComments) }),
                   emptyComments,
                 ),
-                'data-uid': jsxAttributeValue('bbb', emptyComments),
+                'data-uid': jsExpressionValue('bbb', emptyComments),
               }),
               [],
             ),
@@ -257,7 +257,7 @@ describe('SET_PROP', () => {
     const action = setProp_UNSAFE(
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       PP.create('test', 'prop'),
-      jsxAttributeValue(100, emptyComments),
+      jsExpressionValue(100, emptyComments),
     )
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
     const newUiJsFile = getContentsTreeFileFromString(
@@ -384,14 +384,14 @@ describe('moveTemplate', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            left: jsxAttributeValue(x, emptyComments),
-            top: jsxAttributeValue(y, emptyComments),
-            width: jsxAttributeValue(width, emptyComments),
-            height: jsxAttributeValue(height, emptyComments),
+            left: jsExpressionValue(x, emptyComments),
+            top: jsExpressionValue(y, emptyComments),
+            width: jsExpressionValue(width, emptyComments),
+            height: jsExpressionValue(height, emptyComments),
           }),
           emptyComments,
         ),
-        'data-uid': jsxAttributeValue(uid, emptyComments),
+        'data-uid': jsExpressionValue(uid, emptyComments),
       }),
       children,
     )
@@ -689,14 +689,14 @@ describe('moveTemplate', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            bottom: jsxAttributeValue(50, emptyComments),
-            right: jsxAttributeValue(50, emptyComments),
-            width: jsxAttributeValue(100, emptyComments),
-            height: jsxAttributeValue(100, emptyComments),
+            bottom: jsExpressionValue(50, emptyComments),
+            right: jsExpressionValue(50, emptyComments),
+            width: jsExpressionValue(100, emptyComments),
+            height: jsExpressionValue(100, emptyComments),
           }),
           emptyComments,
         ),
-        'data-uid': jsxAttributeValue('bbb', emptyComments),
+        'data-uid': jsExpressionValue('bbb', emptyComments),
       }),
       [],
     )
@@ -769,8 +769,8 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'View',
     'bbb',
     jsxAttributesFromMap({
-      'data-uid': jsxAttributeValue('bbb', emptyComments),
-      style: jsxAttributeValue(
+      'data-uid': jsExpressionValue('bbb', emptyComments),
+      style: jsExpressionValue(
         {
           left: 5,
           top: 10,
@@ -786,8 +786,8 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'View',
     'aaa',
     jsxAttributesFromMap({
-      'data-uid': jsxAttributeValue('aaa', emptyComments),
-      style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
+      'data-uid': jsExpressionValue('aaa', emptyComments),
+      style: jsExpressionValue({ backgroundColor: '#FFFFFF' }, emptyComments),
     }),
     [childElement],
   )
@@ -814,15 +814,15 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       'Storyboard',
       BakedInStoryboardUID,
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
+        'data-uid': jsExpressionValue(BakedInStoryboardUID, emptyComments),
       }),
       [
         jsxElement(
           'Scene',
           'scene-0',
           jsxAttributesFromMap({
-            component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null, {}),
-            'data-uid': jsxAttributeValue('scene-0', emptyComments),
+            component: jsExpressionOtherJavaScript('App', `return App`, ['App'], null, {}),
+            'data-uid': jsExpressionValue('scene-0', emptyComments),
           }),
           [],
         ),
@@ -1080,7 +1080,7 @@ describe('INSERT_INSERTABLE', () => {
     )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1184,7 +1184,7 @@ describe('INSERT_INSERTABLE', () => {
     )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1287,7 +1287,7 @@ describe('INSERT_INSERTABLE', () => {
     )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1380,7 +1380,7 @@ describe('INSERT_INSERTABLE', () => {
     })
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
@@ -1471,7 +1471,7 @@ describe('INSERT_INSERTABLE', () => {
     const action = insertInsertable(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (isTextFile(cardFile)) {
+    if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(

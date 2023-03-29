@@ -13,7 +13,6 @@ import {
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -43,39 +42,20 @@ export function navigatorDepth(
   for (const ancestorPath of EP.getAncestors(path)) {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
     if (elementMetadata != null) {
-      // If fragments are not supported, shift the depth back by 1 as they will not be included in the
-      // hierarchy.
-      if (!isFeatureEnabled('Fragment support')) {
-        const isFragment = foldEither(
-          () => false,
-          (e) => isJSXFragment(e),
-          elementMetadata.element,
-        )
-        if (isFragment) {
-          result = result - 1
-        }
-      }
-
-      // A conditional ancestor will shift this by an additional 1, for the clause.
-      if (isFeatureEnabled('Conditional support')) {
-        const isConditional = foldEither(
-          () => false,
-          (e) => isJSXConditionalExpression(e),
-          elementMetadata.element,
-        )
-        if (isConditional) {
-          result = result + 1
-        }
+      const isConditional = foldEither(
+        () => false,
+        (e) => isJSXConditionalExpression(e),
+        elementMetadata.element,
+      )
+      if (isConditional) {
+        result = result + 1
       }
     }
   }
 
   // For the clause entry itself, this needs to step back by 1.
-  if (
-    isFeatureEnabled('Conditional support') &&
-    isConditionalClauseNavigatorEntry(navigatorEntry)
-  ) {
-    result = result + 1
+  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+    result = result - 1
   }
 
   return result
@@ -106,14 +86,11 @@ export function getNavigatorTargets(
     if (subTree != null) {
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       navigatorTargets.push(regularNavigatorEntry(path))
       if (
         !collapsedAncestor &&
         !isHiddenInNavigator &&
-        (isFeatureEnabled('Fragment support') || !isFragment) &&
-        (isFeatureEnabled('Conditional support') || !isConditional) &&
         !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
@@ -146,23 +123,26 @@ export function getNavigatorTargets(
         const clauseValue =
           conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
+        function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
+          if (newCollapsedAncestor) {
+            return
+          }
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
+        }
+
         // Get the clause path.
-        const clausePath = getConditionalClausePath(path, clauseValue, conditionalCase)
+        const clausePath = getConditionalClausePath(path, clauseValue)
 
         // Create the entry for the name of the clause.
-        const clauseTitleEntry = conditionalClauseNavigatorEntry(
-          conditionalSubTree.path,
-          conditionalCase,
-        )
-        navigatorTargets.push(clauseTitleEntry)
-        visibleNavigatorTargets.push(clauseTitleEntry)
+        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, conditionalCase)
+        addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
         // Create the entry for the value of the clause.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
         if (elementMetadata == null) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          navigatorTargets.push(clauseValueEntry)
-          visibleNavigatorTargets.push(clauseValueEntry)
+          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
 
         // Walk the clause of the conditional.
@@ -170,11 +150,11 @@ export function getNavigatorTargets(
           return EP.pathsEqual(childPath.path, clausePath)
         })
         if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, collapsedAncestor)
+          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
         }
       }
 
-      if (isFeatureEnabled('Conditional support') && isConditional) {
+      if (isConditional) {
         // Add in the additional elements for a conditional.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (

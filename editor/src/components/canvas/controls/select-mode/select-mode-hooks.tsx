@@ -188,20 +188,9 @@ function replaceNonSelectablePaths(
     const isLocked = lockedElements.simpleLock.some((lockedPath) =>
       EP.pathsEqual(lockedPath, selectablePath),
     )
-    const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
-      componentMetadata,
-      selectablePath,
-    )
-    const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(
-      componentMetadata,
-      selectablePath,
-    )
     const isRootPath = EP.isRootElementOfInstance(selectablePath)
 
-    const mustReplaceWithChildren =
-      isLocked ||
-      (!isFeatureEnabled('Fragment support') && isFragment) ||
-      (!isFeatureEnabled('Conditional support') && isConditional)
+    const mustReplaceWithChildren = isLocked
     const shouldAttemptToReplaceWithChildren = isRootPath
 
     // If this element is locked we want to recurse the children
@@ -269,13 +258,8 @@ export function getSelectableViews(
     nonSelectableElements,
     candidateSelectableViews,
   )
-  if (isFeatureEnabled('Fragment support')) {
-    return selectableElements
-  }
 
-  return selectableElements.filter((p) => {
-    return !MetadataUtils.isElementPathFragmentFromMetadata(componentMetadata, p)
-  })
+  return selectableElements
 }
 
 function getCandidateSelectableViews(

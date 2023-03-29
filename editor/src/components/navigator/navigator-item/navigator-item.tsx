@@ -32,6 +32,7 @@ import {
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   getConditionalClausePath,
@@ -42,6 +43,7 @@ import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook
 import { navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
+import { assertNever } from '../../../core/shared/utils'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -77,7 +79,7 @@ export interface NavigatorItemInnerProps {
 function selectItem(
   dispatch: EditorDispatch,
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
-  elementPath: ElementPath,
+  navigatorEntry: NavigatorEntry,
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
@@ -85,13 +87,13 @@ function selectItem(
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
+      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], true), 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
       dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
     } else {
-      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
+      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], false), 'leftpane')
     }
   }
 }
@@ -307,15 +309,11 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
-      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue, 'true-case')
+      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue)
       return !EP.pathsEqual(elementPath, trueClausePath)
     }
     // when the condition is false, then the 'else' branch is not hidden
-    const falseClausePath = getConditionalClausePath(
-      parentPath,
-      conditional.whenFalse,
-      'false-case',
-    )
+    const falseClausePath = getConditionalClausePath(parentPath, conditional.whenFalse)
     return !EP.pathsEqual(elementPath, falseClausePath)
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
@@ -338,13 +336,11 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
     return (
       matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenTrue,
-        branch: 'true-case',
         wantOverride: true,
         parentOverride: parentOverride,
       }) ||
       matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenFalse,
-        branch: 'false-case',
         wantOverride: false,
         parentOverride: parentOverride,
       })
@@ -483,16 +479,9 @@ export const NavigatorItem: React.FunctionComponent<
   )
   const select = React.useCallback(
     (event: any) => {
-      selectItem(
-        dispatch,
-        getSelectedViewsInRange,
-        navigatorEntry.elementPath,
-        index,
-        selected,
-        event,
-      )
+      selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
     },
-    [dispatch, getSelectedViewsInRange, navigatorEntry.elementPath, index, selected],
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
@@ -556,6 +545,7 @@ export const NavigatorItem: React.FunctionComponent<
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+            testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
           />
           <NavigatorRowLabel
             navigatorEntry={navigatorEntry}
