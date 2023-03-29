@@ -1008,7 +1008,6 @@ describe('UPDATE_FILE_PATH', () => {
       updateFilePath('/src', '/src2'),
       editorState,
       defaultUserState,
-      NO_OP,
     )
     let filesAndTheirImports: { [filename: string]: Array<string> } = {}
     walkContentsTreeForParseSuccess(actualResult.projectContents, (fullPath, success) => {
