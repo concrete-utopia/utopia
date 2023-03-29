@@ -1,16 +1,15 @@
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
+  reparentTargetToString,
 } from '../../../components/editor/store/reparent-target'
 import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
-  removeElementAtPath,
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import * as EP from '../../../core/shared/element-path'
 import { JSXElementChild } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
@@ -78,6 +77,6 @@ export const runAddElement: CommandFunction<AddElement> = (
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Add Element to ${JSON.stringify(command.parentPath)}`,
+    commandDescription: `Add Element to ${reparentTargetToString(command.parentPath)}`,
   }
 }

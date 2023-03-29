@@ -1551,6 +1551,7 @@ describe('conditionals in the navigator', () => {
         )
         const elementToPasteIntoAfterPaste = unsafeGet(elementToPasteIntoOptic, endingEditorState)
 
+        // The pasted item is added to `else-div` as a child.
         expect(elementToPasteIntoAfterPaste.children).toHaveLength(
           elementToPasteIntoBeforePaste.children.length + 1,
         )
