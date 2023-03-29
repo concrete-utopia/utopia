@@ -698,7 +698,7 @@ export const JSXAttributeValueKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpre
     JSXAttributeValueValueKeepDeepEqualityCall,
     (attribute) => attribute.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    (attribute) => attribute.uniqueID,
+    (attribute) => attribute.uid,
     createCallWithTripleEquals<string>(),
     jsExpressionValue,
   )
@@ -756,7 +756,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     arrayDeepEquality(createCallWithTripleEquals()),
     (attribute) => attribute.sourceMap,
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (attribute) => attribute.uniqueID,
+    (attribute) => attribute.uid,
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
@@ -776,7 +776,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
         transpiledJavascript: transpiledJavascript,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
-        uniqueID: uniqueID,
+        uid: uniqueID,
         elementsWithin: elementsWithin,
       }
     },
@@ -821,7 +821,7 @@ export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityC
     arrayDeepEquality(JSXArrayElementKeepDeepEqualityCall()),
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    (attribute) => attribute.uniqueID,
+    (attribute) => attribute.uid,
     createCallWithTripleEquals<string>(),
     jsExpressionNestedArray,
   )
@@ -869,7 +869,7 @@ export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEquality
     arrayDeepEquality(JSXPropertyKeepDeepEqualityCall()),
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    (value) => value.uniqueID,
+    (value) => value.uid,
     createCallWithTripleEquals<string>(),
     jsExpressionNestedObject,
   )
@@ -881,7 +881,7 @@ export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEquality
     createCallWithTripleEquals(),
     (value) => value.parameters,
     arrayDeepEquality(JSXAttributeKeepDeepEqualityCall),
-    (value) => value.uniqueID,
+    (value) => value.uid,
     createCallWithTripleEquals<string>(),
     jsExpressionFunctionCall,
   )
@@ -999,7 +999,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
     arrayDeepEquality(createCallWithTripleEquals()),
     (block) => block.sourceMap,
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (block) => block.uniqueID,
+    (block) => block.uid,
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
@@ -1009,7 +1009,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
       definedWithin: Array<string>,
       definedElsewhere: Array<string>,
       sourceMap: RawSourceMap | null,
-      uniqueID: string,
+      uid: string,
       elementsWithin: ElementsWithin,
     ) => {
       return {
@@ -1019,7 +1019,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
         definedWithin: definedWithin,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
-        uniqueID: uniqueID,
+        uid: uid,
         elementsWithin: elementsWithin,
       }
     },
@@ -1141,13 +1141,13 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
   combine2EqualityCalls(
     (block) => block.text,
     createCallWithTripleEquals(),
-    (block) => block.uniqueID,
+    (block) => block.uid,
     createCallWithTripleEquals(),
     (text, uniqueID) => {
       return {
         type: 'JSX_TEXT_BLOCK',
         text: text,
-        uniqueID: uniqueID,
+        uid: uniqueID,
       }
     },
   )

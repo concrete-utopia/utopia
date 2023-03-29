@@ -8,7 +8,7 @@ import {
   jsExpressionValue,
   jsxTestElement,
   clearExpressionUniqueIDs,
-  clearJSXElementUniqueIDs,
+  clearJSXElementChildUniqueIDs,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
@@ -87,7 +87,7 @@ describe('toggleStyleProp', () => {
       [],
     )
 
-    const expectedElement = clearJSXElementUniqueIDs(
+    const expectedElement = clearJSXElementChildUniqueIDs(
       jsxTestElement(
         'View',
         jsxAttributesFromMap({
@@ -103,7 +103,7 @@ describe('toggleStyleProp', () => {
         [],
       ),
     )
-    const toggledElement = clearJSXElementUniqueIDs(simpleToggleProp(element))
+    const toggledElement = clearJSXElementChildUniqueIDs(simpleToggleProp(element))
     expect(toggledElement).toEqual(expectedElement)
   })
 
@@ -123,7 +123,7 @@ describe('toggleStyleProp', () => {
       [],
     )
 
-    const expectedElement = clearJSXElementUniqueIDs(
+    const expectedElement = clearJSXElementChildUniqueIDs(
       jsxTestElement(
         'View',
         jsxAttributesFromMap({
@@ -137,7 +137,7 @@ describe('toggleStyleProp', () => {
         [],
       ),
     )
-    const toggledElement = clearJSXElementUniqueIDs(simpleToggleProp(element))
+    const toggledElement = clearJSXElementChildUniqueIDs(simpleToggleProp(element))
     expect(toggledElement).toEqual(expectedElement)
   })
 
@@ -155,7 +155,7 @@ describe('toggleStyleProp', () => {
       [],
     )
 
-    const expectedElement = clearJSXElementUniqueIDs(
+    const expectedElement = clearJSXElementChildUniqueIDs(
       jsxTestElement(
         'View',
         jsxAttributesFromMap({
@@ -171,7 +171,7 @@ describe('toggleStyleProp', () => {
         [],
       ),
     )
-    const toggledElement = clearJSXElementUniqueIDs(simpleToggleProp(element))
+    const toggledElement = clearJSXElementChildUniqueIDs(simpleToggleProp(element))
     expect(toggledElement).toEqual(expectedElement)
   })
 })
@@ -929,7 +929,7 @@ describe('printBackgroundImage', () => {
             "trailingComments": Array [],
           },
           "type": "ATTRIBUTE_VALUE",
-          "uniqueID": "",
+          "uid": "",
           "value": "radial-gradient(#000 0%, #fff 100%)",
         },
         Object {
@@ -938,7 +938,7 @@ describe('printBackgroundImage', () => {
             "trailingComments": Array [],
           },
           "type": "ATTRIBUTE_VALUE",
-          "uniqueID": "",
+          "uid": "",
           "value": "linear-gradient(90deg, #000 0%, #fff 100%), linear-gradient(#000 0%, #000 100%)",
         },
         Object {
@@ -947,7 +947,7 @@ describe('printBackgroundImage', () => {
             "trailingComments": Array [],
           },
           "type": "ATTRIBUTE_VALUE",
-          "uniqueID": "",
+          "uid": "",
           "value": "linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%)*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%)*/ radial-gradient(#000 0%, #fff 100%)",
         },
       ]
@@ -1798,7 +1798,7 @@ describe('printBackgroundSize', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "auto, auto auto, 100px, 100% 100%",
       }
     `)

@@ -222,7 +222,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "4px 24px 12px 8px",
       }
     `)
@@ -254,7 +254,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "4px 24px 12px 8px",
       }
     `)
@@ -286,7 +286,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "4px 24px",
       }
     `)
@@ -318,7 +318,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "4% 24%",
       }
     `)
@@ -350,7 +350,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "4px 8px 12px 8px",
       }
     `)
@@ -382,7 +382,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": 6,
       }
     `)
@@ -414,7 +414,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "uniqueID": "",
+        "uid": "",
         "value": "6%",
       }
     `)

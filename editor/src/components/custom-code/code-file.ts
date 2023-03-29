@@ -39,7 +39,7 @@ import {
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
   UtopiaJSXComponent,
-  clearJSXElementUniqueIDs,
+  clearJSXElementChildUniqueIDs,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
   clearJSXConditionalExpressionWithoutUIDUniqueIDs,

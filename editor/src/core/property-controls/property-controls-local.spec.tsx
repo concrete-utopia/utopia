@@ -106,13 +106,13 @@ describe('registered property controls', () => {
                         "trailingComments": Array [],
                       },
                       "type": "ATTRIBUTE_VALUE",
-                      "uniqueID": "",
+                      "uid": "",
                       "value": "fb0",
                     },
                   },
                 ],
                 "type": "JSX_ELEMENT",
-                "uid": "fb0",
+                "uid": "",
               },
               "importsToAdd": Object {
                 "/src/card": Object {
@@ -174,7 +174,7 @@ describe('registered property controls', () => {
                       },
                       "transpiledJavascript": "return DefaultPerson;",
                       "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                      "uniqueID": "",
+                      "uid": "",
                     },
                   },
                   Object {
@@ -190,13 +190,13 @@ describe('registered property controls', () => {
                         "trailingComments": Array [],
                       },
                       "type": "ATTRIBUTE_VALUE",
-                      "uniqueID": "",
-                      "value": "571",
+                      "uid": "",
+                      "value": "d8b",
                     },
                   },
                 ],
                 "type": "JSX_ELEMENT",
-                "uid": "571",
+                "uid": "",
               },
               "importsToAdd": Object {
                 "/src/card": Object {
