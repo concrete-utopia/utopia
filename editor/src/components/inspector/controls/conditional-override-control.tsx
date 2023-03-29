@@ -18,13 +18,13 @@ export interface ConditionalOverrideControlProps extends ButtonProps {
 
 const OverrideControlOptions: Array<OptionChainOption<boolean>> = [
   {
-    tooltip: 'True',
+    tooltip: 'Override as True',
     label: 'True',
     value: true,
     forceCallOnSubmitValue: true,
   },
   {
-    tooltip: 'False',
+    tooltip: 'Override as False',
     label: 'False',
     value: false,
     forceCallOnSubmitValue: true,
