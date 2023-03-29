@@ -1502,6 +1502,7 @@ describe('conditionals in the navigator', () => {
     pathToPasteInto: ElementPath
     expectedTargetPasteParent: ReparentTargetParent<ElementPath>
     expectedToasts: Array<string>
+    expectedNavigatorStructure: string
     postPasteValidation: (
       pasteTestCase: PasteTestCase,
       startingEditorState: EditorState,
@@ -1523,6 +1524,18 @@ describe('conditionals in the navigator', () => {
         `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
       ),
       expectedToasts: [],
+      expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
         pasteTestCase: PasteTestCase,
         startingEditorState: EditorState,
@@ -1559,6 +1572,18 @@ describe('conditionals in the navigator', () => {
         'false-case',
       ),
       expectedToasts: [],
+      expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib-element-sib
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
         pasteTestCase: PasteTestCase,
         startingEditorState: EditorState,
@@ -1596,6 +1621,18 @@ describe('conditionals in the navigator', () => {
         'false-case',
       ),
       expectedToasts: ['Value in conditional replaced.'],
+      expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib-element-sib
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
         pasteTestCase: PasteTestCase,
         startingEditorState: EditorState,
@@ -1688,6 +1725,13 @@ describe('conditionals in the navigator', () => {
       expect(renderResult.getEditorState().editor.toasts.map((t) => t.message)).toEqual(
         pasteTestCase.expectedToasts,
       )
+
+      expect(
+        navigatorStructure(
+          renderResult.getEditorState().editor,
+          renderResult.getEditorState().derived,
+        ),
+      ).toEqual(pasteTestCase.expectedNavigatorStructure)
 
       pasteTestCase.postPasteValidation(
         pasteTestCase,
