@@ -593,7 +593,7 @@ export function detectFillHugFixedState(
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    return { type: 'fixed', value: cssNumber(frame[dimension], 'px'), source: 'fallback' }
+    return { type: 'fixed', value: cssNumber(frame[dimension]), source: 'fallback' }
   }
 
   return null

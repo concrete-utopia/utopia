@@ -335,14 +335,14 @@ describe('inspector tests with real metadata', () => {
       'position-right-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"335px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"335"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"detected"`,
     // )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"102px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -686,14 +686,14 @@ describe('inspector tests with real metadata', () => {
       'position-maxWidth-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"0px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple-unknown-css"`,
     // )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"0px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1000,14 +1000,14 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"150px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple-unknown-css"`,
     // )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"88px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"88"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1101,14 +1101,14 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"150px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"controlled"`,
     // )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"130px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1338,7 +1338,7 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
-    matchInlineSnapshotBrowser(earlyWidthControl.value, `"203px"`)
+    matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1346,7 +1346,7 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
-    matchInlineSnapshotBrowser(earlyHeightControl.value, `"102px"`)
+    matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1398,14 +1398,14 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
-    matchInlineSnapshotBrowser(laterWidthControl.value, `"203px"`)
+    matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"unset"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
-    matchInlineSnapshotBrowser(laterHeightControl.value, `"102px"`)
+    matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"unset"`,
@@ -1489,14 +1489,14 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"0px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple-unknown-css"`,
     // )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"0px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1599,7 +1599,7 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
-    matchInlineSnapshotBrowser(widthControl.value, `"250px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"250"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1607,7 +1607,7 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
-    matchInlineSnapshotBrowser(heightControl.value, `"250px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"250"`)
     // TODO restore this when fixing controlstatus
     // matchInlineSnapshotBrowser(
     //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
