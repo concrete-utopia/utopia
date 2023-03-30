@@ -490,7 +490,8 @@ function isElementSetToHugAlongAffectedAxis(
       ? 'vertical'
       : 'horizontal'
 
-  const isHug = detectFillHugFixedState(axis, metadata, selectedElement)?.type === 'hug'
+  const isHug =
+    detectFillHugFixedState(axis, metadata, selectedElement).fixedHugFill?.type === 'hug'
   return isHug
 }
 

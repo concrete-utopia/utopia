@@ -516,9 +516,9 @@ export const nukeAllAbsolutePositioningPropsCommands = (
 }
 
 export type FixedHugFill =
-  | { type: 'fixed'; value: CSSNumber; source: 'parsed' | 'fallback' }
-  | { type: 'fill'; value: CSSNumber; source: 'parsed' | 'fallback' }
-  | { type: 'hug'; source: 'parsed' | 'fallback' }
+  | { type: 'fixed'; value: CSSNumber }
+  | { type: 'fill'; value: CSSNumber }
+  | { type: 'hug' }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -526,10 +526,10 @@ export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
-): FixedHugFill | null {
+): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-    return null
+    return { fixedHugFill: null, controlStatus: 'off' }
   }
 
   const flexGrowLonghand = foldEither(
@@ -560,12 +560,14 @@ export function detectFillHugFixedState(
 
     const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
     if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      return { type: 'fill', value: flexGrow, source: 'parsed' }
+      const valueWithType = { type: 'fill' as const, value: flexGrow }
+      return { fixedHugFill: valueWithType, controlStatus: 'simple' }
     }
 
     const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
     if (axis === 'vertical' && isFlexDirectionVertical) {
-      return { type: 'fill', value: flexGrow, source: 'parsed' }
+      const valueWithType = { type: 'fill' as const, value: flexGrow }
+      return { fixedHugFill: valueWithType, controlStatus: 'simple' }
     }
   }
 
@@ -577,26 +579,30 @@ export function detectFillHugFixedState(
   )
 
   if (prop === MaxContent) {
-    return { type: 'hug', source: 'parsed' }
+    const valueWithType = { type: 'hug' as const }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   const parsed = defaultEither(null, parseCSSLengthPercent(prop))
 
   if (parsed != null && parsed.unit === '%') {
-    return { type: 'fill', value: parsed, source: 'parsed' }
+    const valueWithType = { type: 'fill' as const, value: parsed }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   if (parsed != null) {
-    return { type: 'fixed', value: parsed, source: 'parsed' }
+    const valueWithType = { type: 'fixed' as const, value: parsed }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    return { type: 'fixed', value: cssNumber(frame[dimension]), source: 'fallback' }
+    const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
-  return null
+  return { fixedHugFill: null, controlStatus: 'unset' }
 }
 
 export const MaxContent = 'max-content' as const
@@ -705,8 +711,8 @@ export function toggleResizeToFitSetToFixed(
   }
 
   const isSetToHug =
-    detectFillHugFixedState('horizontal', metadata, elementPaths[0])?.type === 'hug' &&
-    detectFillHugFixedState('vertical', metadata, elementPaths[0])?.type === 'hug'
+    detectFillHugFixedState('horizontal', metadata, elementPaths[0]).fixedHugFill?.type === 'hug' &&
+    detectFillHugFixedState('vertical', metadata, elementPaths[0]).fixedHugFill?.type === 'hug'
 
   return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
@@ -751,7 +757,7 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const isHug = detectFillHugFixedState(axis, metadata, parentPath)?.type === 'hug'
+  const isHug = detectFillHugFixedState(axis, metadata, parentPath).fixedHugFill?.type === 'hug'
   if (!isHug) {
     return []
   }
@@ -815,30 +821,30 @@ export function removeExtraPinsWhenSettingSize(
 }
 
 export function isFixedHugFillEqual(
-  a: FixedHugFill | undefined,
-  b: FixedHugFill | undefined,
+  a: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
+  b: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
 ): boolean {
-  if (a === undefined && b === undefined) {
+  if (a.fixedHugFill == null && b.fixedHugFill == null && a.controlStatus === b.controlStatus) {
     return true
   }
 
-  if (a?.type !== b?.type) {
+  if (a.fixedHugFill?.type !== b.fixedHugFill?.type) {
     return false
   }
 
-  if (a?.source !== b?.source) {
+  if (a.controlStatus !== b.controlStatus) {
     return false
   }
 
-  if ((a?.type === 'fixed' && b?.type === 'fixed') || (a?.type === 'fill' && b?.type === 'fill')) {
-    return a.value.value === b.value.value && a.value.unit === b.value.unit
+  if (
+    (a.fixedHugFill?.type === 'fixed' && b.fixedHugFill?.type === 'fixed') ||
+    (a.fixedHugFill?.type === 'fill' && b.fixedHugFill?.type === 'fill')
+  ) {
+    return (
+      a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
+      a.fixedHugFill.value.unit === b.fixedHugFill.value.unit
+    )
   }
 
   return true
-}
-
-export function fillHugFixedStateToControlStatus(
-  fillHugFixedState: FixedHugFill | undefined | null,
-): ControlStatus {
-  return fillHugFixedState == null || fillHugFixedState.source === 'fallback' ? 'unset' : 'simple'
 }

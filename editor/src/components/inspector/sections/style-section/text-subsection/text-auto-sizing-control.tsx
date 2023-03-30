@@ -15,7 +15,6 @@ import {
 } from '../../../inpector-selectors'
 import {
   detectFillHugFixedState,
-  fillHugFixedStateToControlStatus,
   FixedHugFill,
   isFixedHugFillEqual,
 } from '../../../inspector-common'
@@ -42,7 +41,7 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target) ?? undefined
+      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
     },
     'TextAutoSizingControl fixedHugFillState width',
     isFixedHugFillEqual,
@@ -52,7 +51,7 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target) ?? undefined
+      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
     },
     'TextAutoSizingControl fixedHugFillState height',
     isFixedHugFillEqual,
@@ -60,13 +59,13 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
 
   let fixedHugState: FixedHugFill | null = null
   if (
-    widthFillHugFixedState != null &&
-    widthFillHugFixedState.type !== 'fill' &&
-    heightFillHugFixedState != null &&
-    heightFillHugFixedState.type !== 'fill'
+    widthFillHugFixedState.fixedHugFill != null &&
+    widthFillHugFixedState.fixedHugFill.type !== 'fill' &&
+    heightFillHugFixedState.fixedHugFill != null &&
+    heightFillHugFixedState.fixedHugFill.type !== 'fill'
   ) {
-    if (widthFillHugFixedState.type === heightFillHugFixedState.type) {
-      fixedHugState = widthFillHugFixedState
+    if (widthFillHugFixedState.fixedHugFill.type === heightFillHugFixedState.fixedHugFill.type) {
+      fixedHugState = widthFillHugFixedState.fixedHugFill
     }
   }
 
@@ -74,9 +73,9 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     if (!isEditableText) {
       return 'disabled'
     } else {
-      return fillHugFixedStateToControlStatus(fixedHugState)
+      return widthFillHugFixedState.controlStatus
     }
-  }, [fixedHugState, isEditableText])
+  }, [widthFillHugFixedState, isEditableText])
 
   const type =
     controlStatus === 'disabled' || controlStatus === 'unset' ? null : fixedHugState?.type ?? null
