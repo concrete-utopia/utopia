@@ -2046,8 +2046,7 @@ function fillSpyOnlyMetadata(
   })
 
   fastForEach(elementsWithoutParentData, (pathStr) => {
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
-    const domElem = fromDOM[pathStr]
+    const spyElem = fromSpy[pathStr]
     const sameThingFromWorkingElems = workingElements[pathStr]
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
