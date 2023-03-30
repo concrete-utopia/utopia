@@ -2077,7 +2077,6 @@ function fillSpyOnlyMetadata(
 
     workingElements[pathStr] = {
       ...spyElem,
-      ...domElem,
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
