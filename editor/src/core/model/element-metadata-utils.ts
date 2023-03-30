@@ -1270,7 +1270,11 @@ export const MetadataUtils = {
       return parent.specialSizeMeasurements.globalContentBoxForChildren
     }
 
+    // if (EP.isStoryboardPath(parent.elementPath)) {
     return zeroCanvasRect
+    // }
+
+    // return null
   },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath,
@@ -2040,6 +2044,7 @@ function fillSpyOnlyMetadata(
     workingElements[pathStr] = {
       ...spyElem,
       ...domElem,
+      element: spyElem.element ?? domElem.element,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
     }
@@ -2122,6 +2127,7 @@ function fillSpyOnlyMetadata(
         sameThingFromWorkingElems?.globalFrame ?? domElem?.globalFrame ?? spyElem.globalFrame,
       localFrame:
         sameThingFromWorkingElems?.localFrame ?? domElem?.localFrame ?? spyElem.localFrame,
+      element: sameThingFromWorkingElems?.element ?? spyElem.element ?? domElem.element,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
         ...(sameThingFromWorkingElems?.specialSizeMeasurements ?? {}),

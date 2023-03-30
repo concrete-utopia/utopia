@@ -527,21 +527,7 @@ export function detectFillHugFixedState(
   elementPath: ElementPath | null,
 ): FixedHugFill | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return null
-  }
-
-  if (isLeft(element.element)) {
-    // sizeless divs are parsed as Left
-    const frame = element.globalFrame
-    if (frame != null && isFiniteRectangle(frame)) {
-      const dimension = widthHeightFromAxis(axis)
-      return { type: 'fixed', value: cssNumber(frame[dimension], 'px') }
-    }
-    return null
-  }
-
-  if (!isJSXElement(element.element.value)) {
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return null
   }
 
