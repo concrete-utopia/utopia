@@ -1270,11 +1270,11 @@ export const MetadataUtils = {
       return parent.specialSizeMeasurements.globalContentBoxForChildren
     }
 
-    // if (EP.isStoryboardPath(parent.elementPath)) {
-    return zeroCanvasRect
-    // }
+    if (EP.isStoryboardPath(parent.elementPath)) {
+      return zeroCanvasRect
+    }
 
-    // return null
+    return null
   },
   getFrameRelativeToTargetContainingBlock: function (
     targetParent: ElementPath,
