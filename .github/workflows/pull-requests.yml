@@ -2,9 +2,39 @@ name: Pull Request
 on: [pull_request]
 
 jobs:
+  build-and-cache-everything:
+    name: Build and cache everything needed
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Cancel existing runs on this branch
+        uses: fauguste/auto-cancellation-running-action@0.1.4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Cache utopia-vscode-common build result
+        id: cache-utopia-vscode-common
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/dist
+          key: ${{ runner.os }}-utopia-vscode-common-pr-build-${{ hashFiles('utopia-vscode-extension/src/**', 'utopia-vscode-extension/package.json', 'utopia-vscode-common/src/**', 'utopia-vscode-common/package.json') }}
+      - name: Build utopia-vscode-common
+        if: steps.cache-utopia-vscode-common.outputs.cache-hit != 'true'
+        working-directory: ./utopia-vscode-common/
+        run: |
+          pnpm install
+          pnpm run build
   test-editor-code:
     name: Test Editor PR – TypeScript, ESLint, dependency-cruiser
     runs-on: ubuntu-latest
+    needs: [build-and-cache-everything]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -22,10 +52,18 @@ jobs:
           path: editor/lib
           key: ${{ runner.os }}-editor-code-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache .pnpm-store
+        # Should just pop the result of the above from the cache
         uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Cache utopia-vscode-common build result
+        # Should just pop the result of the above from the cache
+        id: cache-utopia-vscode-common
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/dist
+          key: ${{ runner.os }}-utopia-vscode-common-pr-build-${{ hashFiles('utopia-vscode-extension/src/**', 'utopia-vscode-extension/package.json', 'utopia-vscode-common/src/**', 'utopia-vscode-common/package.json') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -36,6 +74,7 @@ jobs:
   test-editor-jest:
     name: Test Editor PR – Jest tests
     runs-on: ubuntu-latest
+    needs: [build-and-cache-everything]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -53,10 +92,18 @@ jobs:
           path: editor/lib
           key: ${{ runner.os }}-editor-jest-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache .pnpm-store
+        # Should just pop the result of the above from the cache
         uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Cache utopia-vscode-common build result
+        # Should just pop the result of the above from the cache
+        id: cache-utopia-vscode-common
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/dist
+          key: ${{ runner.os }}-utopia-vscode-common-pr-build-${{ hashFiles('utopia-vscode-extension/src/**', 'utopia-vscode-extension/package.json', 'utopia-vscode-common/src/**', 'utopia-vscode-common/package.json') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -67,6 +114,7 @@ jobs:
   test-editor-karma:
     name: Test Editor PR – Karma tests
     runs-on: ubuntu-latest
+    needs: [build-and-cache-everything]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -84,10 +132,18 @@ jobs:
           path: editor/lib
           key: ${{ runner.os }}-editor-karma-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache .pnpm-store
+        # Should just pop the result of the above from the cache
         uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Cache utopia-vscode-common build result
+        # Should just pop the result of the above from the cache
+        id: cache-utopia-vscode-common
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/dist
+          key: ${{ runner.os }}-utopia-vscode-common-pr-build-${{ hashFiles('utopia-vscode-extension/src/**', 'utopia-vscode-extension/package.json', 'utopia-vscode-common/src/**', 'utopia-vscode-common/package.json') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -99,6 +155,7 @@ jobs:
   deploy-staging:
     name: Deploy Staging Editor
     runs-on: ubuntu-latest
+    needs: [build-and-cache-everything]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -134,10 +191,18 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Cache .pnpm-store
+        # Should just pop the result of the above from the cache
         uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Cache utopia-vscode-common build result
+        # Should just pop the result of the above from the cache
+        id: cache-utopia-vscode-common
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/dist
+          key: ${{ runner.os }}-utopia-vscode-common-pr-build-${{ hashFiles('utopia-vscode-extension/src/**', 'utopia-vscode-extension/package.json', 'utopia-vscode-common/src/**', 'utopia-vscode-common/package.json') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
