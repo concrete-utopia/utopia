@@ -26,6 +26,19 @@ export function retargetStrategyToChildrenOfContentAffectingElements(
   )
 }
 
+export function retargetStrategyToTopMostGroupLikeElement(
+  canvasState: InteractionCanvasState,
+): Array<ElementPath> {
+  const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const targetsWithoutDescedants = flattenSelection(targets)
+
+  return optionallyReplacePathWithGroupLikeParentRecursive(
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    targetsWithoutDescedants,
+  )
+}
+
 export const replaceContentAffectingPathsWithTheirChildrenRecursive = memoize(
   replaceContentAffectingPathsWithTheirChildrenRecursiveInner,
   { maxSize: 1, equals: is },
@@ -53,6 +66,7 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
       }
 
       pathsWereReplaced = true
+      // Balazs: I think this is breaking the Memo!!!!!! this should be calling replaceContentAffectingPathsWithTheirChildrenRecursiveInner
       return replaceContentAffectingPathsWithTheirChildrenRecursive(
         metadata,
         allElementProps,
@@ -64,6 +78,31 @@ function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   })
 
   return pathsWereReplaced ? updatedPaths : paths
+}
+
+export function optionallyReplacePathWithGroupLikeParentRecursive(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  siblingPaths: Array<ElementPath>,
+): Array<ElementPath> {
+  if (siblingPaths.length === 0) {
+    return siblingPaths
+  }
+
+  if (!EP.areSiblings(siblingPaths)) {
+    return siblingPaths
+  }
+
+  if (!siblingPaths.every((t) => treatElementAsContentAffecting(metadata, allElementProps, t))) {
+    return siblingPaths
+  }
+
+  const parent = EP.parentPath(siblingPaths[0])
+  if (!treatElementAsContentAffecting(metadata, allElementProps, parent)) {
+    return siblingPaths
+  }
+
+  return optionallyReplacePathWithGroupLikeParentRecursive(metadata, allElementProps, [parent])
 }
 
 export const AllContentAffectingNonDomElementTypes = ['fragment', 'conditional'] as const
