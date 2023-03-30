@@ -2111,7 +2111,6 @@ function fillSpyOnlyMetadata(
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
     const parentGlobalContentBoxForChildren =
-      fromSpy[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       fromDOM[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       infinityCanvasRectangle
