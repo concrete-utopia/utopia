@@ -2123,7 +2123,6 @@ function fillSpyOnlyMetadata(
       localFrame:
         sameThingFromWorkingElems?.localFrame ?? domElem?.localFrame ?? spyElem.localFrame,
       specialSizeMeasurements: {
-        ...emptySpecialSizeMeasurements,
         ...spyElem.specialSizeMeasurements,
         ...(sameThingFromWorkingElems?.specialSizeMeasurements ?? {}),
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
