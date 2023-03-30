@@ -1276,8 +1276,8 @@ export const MetadataUtils = {
   ): CanvasRectangle {
     const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
     if (parent != null) {
-      if (parent.specialSizeMeasurements.globalContentBox != null) {
-        return parent.specialSizeMeasurements.globalContentBox
+      if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
+        return parent.specialSizeMeasurements.globalContentBoxForChildren
       } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
         return parent.specialSizeMeasurements.coordinateSystemBounds
       }
