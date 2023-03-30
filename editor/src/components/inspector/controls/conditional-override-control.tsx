@@ -18,13 +18,13 @@ export interface ConditionalOverrideControlProps extends ButtonProps {
 
 const OverrideControlOptions: Array<OptionChainOption<boolean>> = [
   {
-    tooltip: 'True',
+    tooltip: 'Override as True',
     label: 'True',
     value: true,
     forceCallOnSubmitValue: true,
   },
   {
-    tooltip: 'False',
+    tooltip: 'Override as False',
     label: 'False',
     value: false,
     forceCallOnSubmitValue: true,
@@ -45,25 +45,23 @@ export const ConditionalOverrideControl: React.FunctionComponent<
   }, [controlStatus, setConditionOverride, conditionValue])
 
   return (
-    <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} variant='<--------1fr-------->|145px||22px|'>
       Result
-      <FlexRow>
-        <Tooltip title={'Override'}>
-          <SquareButton onClick={toggleOverride} testId={ConditionalOverrideControlToggleTestId}>
-            {getPinIcon(controlStatus, controlStyles)}
-          </SquareButton>
-        </Tooltip>
-        <OptionChainControl
-          id={'conditional-override-control'}
-          testId={ConditionalOverrideControlTestIdPrefix}
-          key={'conditional-override-control'}
-          onSubmitValue={props.setConditionOverride}
-          value={conditionValue}
-          options={OverrideControlOptions}
-          controlStatus={controlStatus}
-          controlStyles={controlStyles}
-        />
-      </FlexRow>
+      <OptionChainControl
+        id={'conditional-override-control'}
+        testId={ConditionalOverrideControlTestIdPrefix}
+        key={'conditional-override-control'}
+        onSubmitValue={props.setConditionOverride}
+        value={conditionValue}
+        options={OverrideControlOptions}
+        controlStatus={controlStatus}
+        controlStyles={controlStyles}
+      />
+      <Tooltip title={'Override'}>
+        <SquareButton onClick={toggleOverride} testId={ConditionalOverrideControlToggleTestId}>
+          {getPinIcon(controlStatus, controlStyles)}
+        </SquareButton>
+      </Tooltip>
     </UIGridRow>
   )
 }
@@ -72,6 +70,6 @@ function getPinIcon(controlStatus: ControlStatus, controlStyles: ControlStyles) 
   return controlStatus === 'overridden' ? (
     <Icons.PinFilled color={controlStyles.iconColor} />
   ) : (
-    <Icons.PinLeftFilled color={controlStyles.iconColor} />
+    <Icons.PinRightOutline color={controlStyles.iconColor} />
   )
 }
