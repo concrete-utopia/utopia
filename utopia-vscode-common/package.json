@@ -14,7 +14,7 @@
     "url": "https://github.com/concrete-utopia/utopia"
   },
   "scripts": {
-    "build": "pnpx webpack-cli",
+    "build": "tsc && pnpx webpack-cli",
     "watch": "tsc --watch",
     "watch-dev": "tsc --watch",
     "preinstall": "npx only-allow pnpm"

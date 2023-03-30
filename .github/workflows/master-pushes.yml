@@ -21,12 +21,6 @@ jobs:
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - name: Cache utopia-vscode-common build result
-        id: cache-utopia-vscode-common
-        uses: actions/cache@v2
-        with:
-          path: utopia-vscode-common/dist
-          key: ${{ runner.os }}-utopia-vscode-common-main-build-${{ hashFiles('utopia-vscode-extension/src/**', 'utopia-vscode-extension/package.json', 'utopia-vscode-common/src/**', 'utopia-vscode-common/package.json') }}
       - name: Cache editor test result
         id: cache-editor-tests
         uses: actions/cache@v2
@@ -38,12 +32,6 @@ jobs:
         uses: cachix/install-nix-action@v12
         with:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
-      - name: Build utopia-vscode-common
-        if: steps.cache-utopia-vscode-common.outputs.cache-hit != 'true'
-        working-directory: ./utopia-vscode-common/
-        run: |
-          pnpm install
-          pnpm run build
       - name: Run the tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-all-ci
