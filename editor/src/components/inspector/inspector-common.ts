@@ -46,6 +46,7 @@ import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProper
 import { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
+import { getModifiableJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -573,17 +574,22 @@ export function detectFillHugFixedState(
 
   const property = widthHeightFromAxis(axis)
 
-  const prop = defaultEither(
+  const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (prop === MaxContent) {
+  if (simpleAttribute === MaxContent) {
     const valueWithType = { type: 'hug' as const }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
-  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
+  const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
+
+  const getAttrResult = getModifiableJSXAttributeAtPath(
+    element.element.value.props,
+    PP.create('style', property),
+  )
 
   if (parsed != null && parsed.unit === '%') {
     const valueWithType = { type: 'fill' as const, value: parsed }
@@ -599,7 +605,20 @@ export function detectFillHugFixedState(
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
     const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
-    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
+
+    const isUnknown = simpleAttribute != null && parsed == null && isRight(getAttrResult)
+    const isControlled =
+      simpleAttribute == null &&
+      isRight(getAttrResult) &&
+      getAttrResult.value.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+
+    const controlStatus = isUnknown
+      ? 'simple-unknown-css'
+      : isControlled
+      ? 'controlled'
+      : 'detected'
+
+    return { fixedHugFill: valueWithType, controlStatus: controlStatus }
   }
 
   return { fixedHugFill: null, controlStatus: 'unset' }
