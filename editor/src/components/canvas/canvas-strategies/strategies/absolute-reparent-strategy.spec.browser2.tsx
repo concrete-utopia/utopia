@@ -1149,7 +1149,11 @@ describe('children-affecting reparent tests', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
         ]
       // the fragment-like element continues to have no style prop
-      expect(propsOfFragment?.style == null).toBeTruthy()
+      if (type === 'display-contents') {
+        expect(propsOfFragment?.style).toEqual({ display: 'contents' })
+      } else {
+        expect(propsOfFragment?.style == null).toBeTruthy()
+      }
       const propsOfInnerFragment =
         renderResult.getEditorState().editor.allElementProps[
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'

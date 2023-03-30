@@ -105,7 +105,11 @@ export function optionallyReplacePathWithGroupLikeParentRecursive(
   return optionallyReplacePathWithGroupLikeParentRecursive(metadata, allElementProps, [parent])
 }
 
-export const AllContentAffectingNonDomElementTypes = ['fragment', 'conditional'] as const
+export const AllContentAffectingNonDomElementTypes = [
+  'fragment',
+  'conditional',
+  'display-contents',
+] as const
 export const AllContentAffectingTypes = [
   ...AllContentAffectingNonDomElementTypes,
   'sizeless-div',
@@ -127,6 +131,10 @@ export function getElementContentAffectingType(
 
   if (MetadataUtils.isConditionalFromMetadata(elementMetadata)) {
     return 'conditional'
+  }
+
+  if (MetadataUtils.isDisplayContentsContainer(metadata, path)) {
+    return 'display-contents'
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
