@@ -190,10 +190,10 @@ index 6148eb30092..6948ededa4a 100644
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/communication.ts b/src/vs/code/browser/workbench/communication.ts
 new file mode 100644
-index 00000000000..1486dd6cb34
+index 00000000000..21dcbbf7156
 --- /dev/null
 +++ b/src/vs/code/browser/workbench/communication.ts
-@@ -0,0 +1,177 @@
+@@ -0,0 +1,181 @@
 +// This file exists so that the extension can communicate with the Utopia editor
 +import {
 +  appendToPath,
@@ -275,8 +275,12 @@ index 00000000000..1486dd6cb34
 +          savedContent,
 +          unsavedContent)
 +      }
++      return
 +    }
-+    // FIXME Default never
++    default:
++      // @ts-ignore
++      const _exhaustiveCheck: never = projectFile
++      throw new Error(`Invalid file projectFile type ${projectFile}`)
 +  }
 +}
 +
