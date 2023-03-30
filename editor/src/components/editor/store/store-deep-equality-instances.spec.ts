@@ -579,7 +579,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'old',
+    uid: 'old',
     elementsWithin: {},
   }
   const newSameValue: JSExpressionOtherJavaScript = {
@@ -589,7 +589,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'old',
+    uid: 'old',
     elementsWithin: {},
   }
   const newDifferentValue: JSExpressionOtherJavaScript = {
@@ -599,7 +599,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
-    uniqueID: 'new',
+    uid: 'new',
     elementsWithin: {},
   }
 
@@ -620,7 +620,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     expect(result.value.transpiledJavascript).toBe(oldValue.transpiledJavascript)
     expect(result.value.definedElsewhere).toBe(oldValue.definedElsewhere)
     expect(result.value.sourceMap).toBe(oldValue.sourceMap)
-    expect(result.value.uniqueID).not.toBe(oldValue.uniqueID)
+    expect(result.value.uid).not.toBe(oldValue.uid)
     expect(result.value.elementsWithin).toBe(oldValue.elementsWithin)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)

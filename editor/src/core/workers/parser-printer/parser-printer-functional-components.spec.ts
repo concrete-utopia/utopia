@@ -19,7 +19,7 @@ import {
   jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   emptyComments,
-  clearJSXElementUniqueIDs,
+  clearJSXElementChildUniqueIDs,
 } from '../../shared/element-template'
 import { printCode, printCodeOptions } from './parser-printer'
 import {
@@ -770,7 +770,7 @@ describe('Parsing a function component with props', () => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithPropsDestructuredInTheFunction),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aaa',
@@ -812,7 +812,7 @@ describe('Parsing a function component with props', () => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithARenamedFunction),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aaa',

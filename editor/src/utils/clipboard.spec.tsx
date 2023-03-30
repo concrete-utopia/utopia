@@ -121,7 +121,7 @@ export var Card = (props) => {
                     leadingComments: [],
                     trailingComments: []
                   },
-                  uniqueID: \\"393\\"
+                  uid: \\"393\\"
                 },
                 comments: {
                   leadingComments: [],
