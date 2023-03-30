@@ -1370,10 +1370,6 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
   let currentElement: HTMLElement | null = element
 
   while (currentElement != null) {
-    const currentElementStyle = window.getComputedStyle(currentElement)
-    if (isElementAContainingBlockForAbsolute(currentElementStyle)) {
-      return currentElement
-    }
     if (currentElement.offsetParent != null) {
       return currentElement.offsetParent
     }
