@@ -141,7 +141,7 @@ function otherFn(n) {
 }
 return { cakeFn: cakeFn, otherFn: otherFn };",
     "type": "ARBITRARY_JS_BLOCK",
-    "uniqueID": "",
+    "uid": "",
   },
   "exportsDetail": Array [
     Object {
@@ -344,7 +344,7 @@ export var whatever = (props) => {
 }
 return { cakeFn: cakeFn };",
       "type": "ARBITRARY_JS_BLOCK",
-      "uniqueID": "",
+      "uid": "",
     },
     Object {
       "rawCode": "
@@ -414,7 +414,7 @@ export var whatever = (props) => {
 }
 return { otherFn: otherFn };",
       "type": "ARBITRARY_JS_BLOCK",
-      "uniqueID": "",
+      "uid": "",
     },
     Object {
       "rawCode": "
@@ -465,7 +465,7 @@ return { otherFn: otherFn };",
                     "trailingComments": Array [],
                   },
                   "type": "ATTRIBUTE_VALUE",
-                  "uniqueID": "",
+                  "uid": "",
                   "value": "aab",
                 },
               },
@@ -532,12 +532,12 @@ export var whatever = (props) => {
                   },
                   "transpiledJavascript": "return cakeFn(otherFn('b') + 2);",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                  "uniqueID": "",
+                  "uid": "",
                 },
               },
             ],
             "type": "JSX_ELEMENT",
-            "uid": "aab",
+            "uid": "",
           },
         ],
         "name": Object {
@@ -560,13 +560,13 @@ export var whatever = (props) => {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
-              "uniqueID": "",
+              "uid": "",
               "value": "aaa",
             },
           },
         ],
         "type": "JSX_ELEMENT",
-        "uid": "aaa",
+        "uid": "",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
@@ -591,19 +591,12 @@ Object {
     },
   ],
   "highlightBounds": Object {
-    "044": Object {
+    "5fd": Object {
       "endCol": 34,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "044",
-    },
-    "069": Object {
-      "endCol": 34,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "069",
+      "uid": "5fd",
     },
     "aaa": Object {
       "endCol": 56,
@@ -611,6 +604,13 @@ Object {
       "startCol": 33,
       "startLine": 5,
       "uid": "aaa",
+    },
+    "d03": Object {
+      "endCol": 34,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "d03",
     },
   },
   "imports": Object {
@@ -724,11 +724,11 @@ const b = (n) => n > 0 ? n : a(10)
           },
           "transpiledJavascript": "return n > 0;",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-          "uniqueID": "",
+          "uid": "",
         },
         "originalConditionString": "n > 0",
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uid": "069",
+        "uid": "",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "b",
@@ -761,7 +761,7 @@ const b = (n) => n > 0 ? n : a(10)
           },
           "transpiledJavascript": "return b(10);",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-          "uniqueID": "",
+          "uid": "",
         },
         "whenTrue": Object {
           "definedElsewhere": Array [
@@ -793,7 +793,7 @@ const b = (n) => n > 0 ? n : a(10)
           },
           "transpiledJavascript": "return n;",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-          "uniqueID": "",
+          "uid": "",
         },
       },
       "type": "UTOPIA_JSX_COMPONENT",
@@ -846,13 +846,13 @@ const b = (n) => n > 0 ? n : a(10)
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
-              "uniqueID": "",
+              "uid": "",
               "value": "aaa",
             },
           },
         ],
         "type": "JSX_ELEMENT",
-        "uid": "aaa",
+        "uid": "",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
@@ -924,11 +924,11 @@ const b = (n) => n > 0 ? n : a(10)
           },
           "transpiledJavascript": "return n > 0;",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-          "uniqueID": "",
+          "uid": "",
         },
         "originalConditionString": "n > 0",
         "type": "JSX_CONDITIONAL_EXPRESSION",
-        "uid": "044",
+        "uid": "",
         "whenFalse": Object {
           "definedElsewhere": Array [
             "a",
@@ -961,7 +961,7 @@ const b = (n) => n > 0 ? n : a(10)
           },
           "transpiledJavascript": "return a(10);",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-          "uniqueID": "",
+          "uid": "",
         },
         "whenTrue": Object {
           "definedElsewhere": Array [
@@ -993,7 +993,7 @@ const b = (n) => n > 0 ? n : a(10)
           },
           "transpiledJavascript": "return n;",
           "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-          "uniqueID": "",
+          "uid": "",
         },
       },
       "type": "UTOPIA_JSX_COMPONENT",
@@ -1055,7 +1055,7 @@ export var App = (props) => <View data-uid='bbb'>
     "transpiledJavascript": "var a = \\"cake\\";
 return { a: a };",
     "type": "ARBITRARY_JS_BLOCK",
-    "uniqueID": "",
+    "uid": "",
   },
   "exportsDetail": Array [
     Object {
@@ -1207,7 +1207,7 @@ export var App = (props) => <View data-uid='bbb'>
       "transpiledJavascript": "var a = \\"cake\\";
 return { a: a };",
       "type": "ARBITRARY_JS_BLOCK",
-      "uniqueID": "",
+      "uid": "",
     },
     Object {
       "rawCode": "
@@ -1272,7 +1272,7 @@ export var App = (props) => <View data-uid='bbb'>
   a: a
 });",
             "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-            "uniqueID": "",
+            "uid": "",
           },
         ],
         "name": Object {
@@ -1295,13 +1295,13 @@ export var App = (props) => <View data-uid='bbb'>
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
-              "uniqueID": "",
+              "uid": "",
               "value": "bbb",
             },
           },
         ],
         "type": "JSX_ELEMENT",
-        "uid": "bbb",
+        "uid": "",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,

@@ -100,6 +100,8 @@ function canDrop(
       MetadataUtils.targetSupportsChildren(
         editorState.projectContents,
         editorState.jsxMetadata,
+        editorState.nodeModules.files,
+        editorState.canvas.openFile?.filename,
         draggedOnto.navigatorEntry.elementPath,
       ))
   const notSelectedItem = draggedItem.getCurrentlySelectedEntries().every((selection) => {

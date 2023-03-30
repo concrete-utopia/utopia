@@ -63,6 +63,7 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import {
   replaceContentAffectingPathsWithTheirChildrenRecursive,
   retargetStrategyToChildrenOfContentAffectingElements,
+  retargetStrategyToTopMostGroupLikeElement,
 } from './group-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
@@ -73,9 +74,7 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const originalTargets = flattenSelection(
-    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-  )
+  const originalTargets = retargetStrategyToTopMostGroupLikeElement(canvasState) // this needs a better variable name
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   if (

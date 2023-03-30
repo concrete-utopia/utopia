@@ -94,7 +94,7 @@ describe('conditionals', () => {
         conditionalWhenTrueOptic,
         fromTypeGuard(isJSExpressionValue),
         filtered((value) => value.value === 'hello'),
-        fromField('uniqueID'),
+        fromField('uid'),
       )
       const helloWorldUID: string = unsafeGet(
         helloWorldUIDOptic,

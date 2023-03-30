@@ -24,6 +24,8 @@ import {
   transformJSXComponentAtPath,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
+  InsertChildAndDetails,
+  insertChildAndDetails,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -1915,7 +1917,7 @@ export function addNewScene(model: EditorState, newSceneElement: JSXElement): Ed
         components,
         newSceneElement,
         model.spyMetadata,
-      ),
+      ).components,
     model,
   )
 }
@@ -1926,7 +1928,7 @@ export function addSceneToJSXComponents(
   components: UtopiaJSXComponent[],
   newSceneElement: JSXElement,
   spyMetadata: ElementInstanceMetadataMap,
-): UtopiaJSXComponent[] {
+): InsertChildAndDetails {
   const storyoardComponentRootElement = components.find(
     (c) => c.name === BakedInStoryboardVariableName,
   )?.rootElement
@@ -1946,7 +1948,7 @@ export function addSceneToJSXComponents(
       spyMetadata,
     )
   } else {
-    return components
+    return insertChildAndDetails(components)
   }
 }
 
@@ -1972,7 +1974,7 @@ export function insertElementAtPath(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
   spyMetadata: ElementInstanceMetadataMap,
-): Array<UtopiaJSXComponent> {
+): InsertChildAndDetails {
   const staticTarget =
     targetParent == null
       ? null
