@@ -63,6 +63,7 @@ import {
   isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -170,7 +171,7 @@ import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
-import { uniqToasts } from '../editor/actions/toast-helpers'
+import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
@@ -2018,6 +2019,7 @@ export function getReparentTargetFromState(
     editorState.hiddenInstances,
     position,
     editorState.projectContents,
+    editorState.nodeModules.files,
     editorState.canvas.openFile?.filename,
     editorState.allElementProps,
   )
@@ -2030,6 +2032,7 @@ export function getReparentTarget(
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
   projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
   openFile: string | null | undefined,
   allElementProps: AllElementProps,
 ): {
@@ -2060,6 +2063,8 @@ export function getReparentTarget(
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       projectContents,
       componentMeta,
+      nodeModules,
+      openFile,
       possibleNewParent,
     )
   }
@@ -2133,31 +2138,39 @@ function editorReparentNoStyleChange(
             return editor
           }
           // Remove and then insert again at the new location.
-          return modifyParseSuccessAtPath(underlyingNewParentFilePath, editor, (workingSuccess) => {
-            let updatedUtopiaComponents: UtopiaJSXComponent[] = []
-            updatedUtopiaComponents = removeElementAtPath(
-              underlyingTarget,
-              utopiaComponentsIncludingScenes,
-            )
+          let detailsOfInsertion: string | null = null
+          const insertionResult = modifyParseSuccessAtPath(
+            underlyingNewParentFilePath,
+            editor,
+            (workingSuccess) => {
+              let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+              updatedUtopiaComponents = removeElementAtPath(
+                underlyingTarget,
+                utopiaComponentsIncludingScenes,
+              )
 
-            updatedUtopiaComponents = insertElementAtPath(
-              editor.projectContents,
-              editor.canvas.openFile?.filename ?? null,
-              underlyingNewParentPath,
-              updatedUnderlyingElement,
-              updatedUtopiaComponents,
-              indexPosition,
-              editor.spyMetadata,
-            )
-
-            return {
-              ...workingSuccess,
-              topLevelElements: applyUtopiaJSXComponentsChanges(
-                workingSuccess.topLevelElements,
+              const withInserted = insertElementAtPath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+                underlyingNewParentPath,
+                updatedUnderlyingElement,
                 updatedUtopiaComponents,
-              ),
-            }
-          })
+                indexPosition,
+                editor.spyMetadata,
+              )
+              detailsOfInsertion = withInserted.insertionDetails
+
+              return {
+                ...workingSuccess,
+                topLevelElements: applyUtopiaJSXComponentsChanges(
+                  workingSuccess.topLevelElements,
+                  withInserted.components,
+                ),
+              }
+            },
+          )
+
+          return includeToast(detailsOfInsertion, insertionResult)
         },
       )
     },
@@ -2254,6 +2267,7 @@ export function moveTemplate(
               flexContextChanged = flexContextChanged || didSwitch
 
               // Remove and then insert again at the new location.
+              let detailsOfUpdate: string | null = null
               workingEditorState = modifyParseSuccessAtPath(
                 underlyingNewParentFilePath,
                 workingEditorState,
@@ -2263,7 +2277,7 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  updatedUtopiaComponents = insertElementAtPath(
+                  const insertResult = insertElementAtPath(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     underlyingNewParentPath,
@@ -2272,6 +2286,8 @@ export function moveTemplate(
                     indexPosition,
                     workingEditorState.spyMetadata,
                   )
+                  updatedUtopiaComponents = insertResult.components
+                  detailsOfUpdate = insertResult.insertionDetails
 
                   return {
                     ...workingSuccess,
@@ -2282,6 +2298,7 @@ export function moveTemplate(
                   }
                 },
               )
+              workingEditorState = includeToast(detailsOfUpdate, workingEditorState)
 
               // Validate the result of the re-insertion.
               if (newParentPath == null) {
@@ -2685,6 +2702,7 @@ export function duplicate(
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
     ) => metadata
+    let detailsOfUpdate: string | null = null
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
@@ -2768,7 +2786,7 @@ export function duplicate(
               }
             }
 
-            utopiaComponents = insertElementAtPath(
+            const insertResult = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
               newParentPath,
@@ -2777,6 +2795,8 @@ export function duplicate(
               position(),
               editor.spyMetadata,
             )
+            utopiaComponents = insertResult.components
+            detailsOfUpdate = insertResult.insertionDetails
 
             newSelectedViews.push(newPath)
             // duplicating and inserting the metadata to ensure we're not working with stale metadata
@@ -2801,6 +2821,7 @@ export function duplicate(
         }
       },
     )
+    workingEditorState = includeToast(detailsOfUpdate, workingEditorState)
     workingEditorState = {
       ...workingEditorState,
       jsxMetadata: metadataUpdate(workingEditorState.jsxMetadata),
@@ -2849,7 +2870,7 @@ export function reorderComponent(
       workingComponents,
       adjustedIndexPosition,
       spyMetadata,
-    )
+    ).components
   }
 
   return workingComponents
