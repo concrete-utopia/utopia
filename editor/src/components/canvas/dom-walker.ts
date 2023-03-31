@@ -71,7 +71,7 @@ import {
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type {
   EditorState,
@@ -914,9 +914,7 @@ function getSpecialMeasurements(
     left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
   }
 
-  const offsetParent = getClosestOffsetParent(element) as HTMLElement | null
-  const elementOrContainingParent =
-    providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
+  const elementOrContainingParent = getClosestElementProvidingAbsoluteBounds(element) as HTMLElement
 
   const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
   const globalContentBoxForChildren = canvasRectangle({
@@ -1366,14 +1364,23 @@ function walkElements(
   }
 }
 
-function getClosestOffsetParent(element: HTMLElement): Element | null {
-  let currentElement: HTMLElement | null = element
+function getClosestElementProvidingAbsoluteBounds(element: HTMLElement): Element {
+  let currentElement: HTMLElement = element
 
   while (currentElement != null) {
+    if (isElementAContainingBlockForAbsolute(window.getComputedStyle(currentElement))) {
+      return currentElement
+    }
     if (currentElement.offsetParent != null) {
       return currentElement.offsetParent
     }
+    if (currentElement.parentElement == null) {
+      // if we reach the top of the hierarchy without finding a suitable
+      // offset parent, we return the top element in the hierarchy
+      return currentElement
+    }
     currentElement = currentElement.parentElement
   }
-  return null
+
+  assertNever(currentElement)
 }
