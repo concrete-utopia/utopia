@@ -549,7 +549,7 @@ export var ${BakedInStoryboardVariableName} = (
           }}
           data-uid='sibling-div'
           data-testid='sibling-div'
-        >HELLO</div>
+        />
       </div>
     </Scene>
   </Storyboard>
