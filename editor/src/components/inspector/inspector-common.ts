@@ -47,8 +47,8 @@ import { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getModifiableJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
-import { InspectorPropsContext, stylePropPathMappingFn } from './common/property-path-hooks'
-import { useContextSelector } from 'use-context-selector'
+import { stylePropPathMappingFn } from './common/property-path-hooks'
+import { nonSimpleControlStatusForProperty } from './common/control-status'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -562,22 +562,41 @@ export function detectFillHugFixedState(
       ),
     )
 
-  if (flexGrow != null) {
+  const flexGrowStatus = nonSimpleControlStatusForProperty(
+    'flexGrow',
+    propertyTarget,
+    element.element.value.props,
+    element.attributeMetadatada,
+  )
+
+  if (flexGrow != null || flexGrowStatus !== 'detected') {
+    // instead of the fallback detected flexgrow the control shows computed frame values
     const flexDirection = optionalMap(
-      (e) => detectFlexDirectionOne(metadata, EP.parentPath(e)),
+      (e) => detectFlexDirectionOne(metadata, EP.parentPath(e)), // TODO fix flex parent, the parent may not be found at parentpath
       elementPath,
     )
 
     const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
-    if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      const valueWithType = { type: 'fill' as const, value: flexGrow }
-      return { fixedHugFill: valueWithType, controlStatus: 'simple' }
-    }
-
     const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
-    if (axis === 'vertical' && isFlexDirectionVertical) {
-      const valueWithType = { type: 'fill' as const, value: flexGrow }
-      return { fixedHugFill: valueWithType, controlStatus: 'simple' }
+
+    const flexGrowDetectedValue = defaultEither(
+      null,
+      parseCSSNumber(element.computedStyle?.flexGrow, 'Unitless'),
+    )
+
+    const isAxisMatchingFlexDirection =
+      (axis === 'horizontal' && isFlexDirectionHorizontal) ||
+      (axis === 'vertical' && isFlexDirectionVertical)
+
+    if (isAxisMatchingFlexDirection) {
+      if (flexGrow != null) {
+        const valueWithType = { type: 'fill' as const, value: flexGrow }
+        return { fixedHugFill: valueWithType, controlStatus: 'simple' }
+      }
+      if (flexGrowDetectedValue != null) {
+        const valueWithType = { type: 'fill' as const, value: flexGrowDetectedValue }
+        return { fixedHugFill: valueWithType, controlStatus: flexGrowStatus }
+      }
     }
   }
 
@@ -597,16 +616,6 @@ export function detectFillHugFixedState(
   }
 
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
-
-  const getAttrResult = getModifiableJSXAttributeAtPath(
-    element.element.value.props,
-    PP.create('style', property),
-  )
-
-  const isFromStyleSheet =
-    element.attributeMetadatada != null &&
-    element.attributeMetadatada[property]?.fromStyleSheet === true
-
   if (parsed != null && parsed.unit === '%') {
     const valueWithType = { type: 'fill' as const, value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
@@ -622,19 +631,12 @@ export function detectFillHugFixedState(
     const dimension = widthHeightFromAxis(axis)
     const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
 
-    const isUnknown = simpleAttribute != null && parsed == null && isRight(getAttrResult)
-    const isControlled =
-      simpleAttribute == null &&
-      isRight(getAttrResult) &&
-      getAttrResult.value.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
-
-    const controlStatus = isUnknown
-      ? 'simple-unknown-css'
-      : isControlled
-      ? 'controlled'
-      : isFromStyleSheet
-      ? 'detected-fromcss'
-      : 'detected'
+    const controlStatus = nonSimpleControlStatusForProperty(
+      property,
+      propertyTarget,
+      element.element.value.props,
+      element.attributeMetadatada,
+    )
 
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
   }

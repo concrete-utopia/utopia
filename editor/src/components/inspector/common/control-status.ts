@@ -2,16 +2,26 @@ import deepEqual from 'fast-deep-equal'
 //TODO: pass in colorTheme to utility functions to get rid of colorTheme here:
 import { colorTheme, UtopiaTheme } from '../../../uuiui/styles/theme'
 import {
+  JSXAttributes,
   modifiableAttributeIsAttributeNotFound,
   modifiableAttributeIsAttributeValue,
   modifiableAttributeIsPartOfAttributeValue,
+  StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
-import { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
-import { isLeft, isRight, Either } from '../../../core/shared/either'
+import {
+  GetModifiableAttributeResult,
+  getModifiableJSXAttributeAtPath,
+} from '../../../core/shared/jsx-attributes'
+import { isLeft, isRight, Either, right, defaultEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
-import { ParsedPropertiesKeys } from './css-utils'
-import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import { CSSNumber, ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
+import {
+  MultiselectAtProps,
+  MultiselectAtStringProps,
+  stylePropPathMappingFn,
+} from './property-path-hooks'
 import { IcnColor } from '../../../uuiui'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 
 export interface ControlStyles {
   fontStyle: string
@@ -573,4 +583,43 @@ export function isNotUnsetDefaultOrDetected(controlStatus: ControlStatus): boole
     controlStatus !== 'detected' &&
     controlStatus !== 'detected-fromcss'
   )
+}
+
+export function nonSimpleControlStatusForProperty(
+  property: keyof ParsedCSSProperties,
+  propertyTarget: ReadonlyArray<string>,
+  jsxAttributes: JSXAttributes,
+  attributeMetadatada: StyleAttributeMetadata | null,
+): ControlStatus {
+  const modifiableAttribute = getModifiableJSXAttributeAtPath(
+    jsxAttributes,
+    stylePropPathMappingFn(property, propertyTarget),
+  )
+
+  const simpleAttribute = defaultEither(
+    null,
+    getSimpleAttributeAtPath(
+      right(jsxAttributes),
+      stylePropPathMappingFn(property, propertyTarget),
+    ),
+  )
+
+  const fromStyleSheet =
+    attributeMetadatada != null && attributeMetadatada[property]?.fromStyleSheet === true
+
+  const overwritable = isOverwritable(modifiableAttribute)
+  const controlled = isControlled(modifiableAttribute, null)
+
+  const unknown = simpleAttribute != null && overwritable
+  if (controlled) {
+    return 'controlled'
+  } else if (unknown) {
+    return 'simple-unknown-css'
+  } else if (!overwritable) {
+    return 'unoverwritable'
+  } else if (fromStyleSheet) {
+    return 'detected-fromcss'
+  } else {
+    return 'detected'
+  }
 }
