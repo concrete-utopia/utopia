@@ -1889,6 +1889,7 @@ export const MetadataUtils = {
               return getConditionalClausePath(
                 reparentTargetParent.elementPath,
                 reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
+                reparentTargetParent.clause,
               )
             } else {
               throw new Error(
