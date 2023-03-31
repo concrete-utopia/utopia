@@ -288,7 +288,7 @@ function updateJSXElementsWithin(
   ): TS.Node {
     return withUID(undefined, attributes, originalNode, (uid) => {
       if (uid in elementsWithin) {
-        return jsxElementToExpression(elementsWithin[uid], imports, stripUIDs)
+        return jsxElementToExpression(elementsWithin[uid], imports, stripUIDs, false)
       } else {
         return originalNode
       }
@@ -376,6 +376,7 @@ function jsxElementToExpression(
   element: JSXElementChild,
   imports: Imports,
   stripUIDs: boolean,
+  parentIsJSX: boolean,
 ):
   | TS.JsxElement
   | TS.JsxSelfClosingElement
@@ -440,42 +441,48 @@ function jsxElementToExpression(
         const closing = TS.createJsxClosingElement(tagName)
         return TS.createJsxElement(
           opening,
-          element.children.map((child) => jsxElementToJSXExpression(child, imports, stripUIDs)),
+          element.children.map((child) =>
+            jsxElementToJSXExpression(child, imports, stripUIDs, true),
+          ),
           closing,
         )
       }
     }
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
-      let rawCode: string = element.javascript // Fallback for the case where the code is simply a comment
-      if (maybeExpressionStatement != null) {
-        const { statement, sourceFile } = maybeExpressionStatement
-        const lastToken = statement.getLastToken(sourceFile)
-        const finalComments =
-          lastToken == null
-            ? emptyComments
-            : parsedComments([], getLeadingComments(element.javascript, lastToken))
+      if (parentIsJSX) {
+        const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
+        let rawCode: string = element.javascript // Fallback for the case where the code is simply a comment
+        if (maybeExpressionStatement != null) {
+          const { statement, sourceFile } = maybeExpressionStatement
+          const lastToken = statement.getLastToken(sourceFile)
+          const finalComments =
+            lastToken == null
+              ? emptyComments
+              : parsedComments([], getLeadingComments(element.javascript, lastToken))
 
-        const updatedStatement = updateJSXElementsWithin(
-          statement.expression,
-          element.elementsWithin,
-          imports,
-          stripUIDs,
-        )
-        addCommentsToNode(updatedStatement, finalComments)
-        rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
-          TS.EmitHint.Unspecified,
-          updatedStatement,
-          sourceFile,
-        )
+          const updatedStatement = updateJSXElementsWithin(
+            statement.expression,
+            element.elementsWithin,
+            imports,
+            stripUIDs,
+          )
+          addCommentsToNode(updatedStatement, finalComments)
+          rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
+            TS.EmitHint.Unspecified,
+            updatedStatement,
+            sourceFile,
+          )
+        }
+
+        // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
+        return TS.createJsxText(`{${rawCode}}`)
+      } else {
+        return jsxAttributeToExpression(element)
       }
-
-      // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
-      return TS.createJsxText(`{${rawCode}}`)
     }
     case 'JSX_FRAGMENT': {
       const children = element.children.map((child) => {
-        return jsxElementToJSXExpression(child, imports, stripUIDs)
+        return jsxElementToJSXExpression(child, imports, stripUIDs, true)
       })
       if (element.longForm) {
         const tagName = jsxElementNameToExpression(getFragmentElementNameFromImports(imports))
@@ -499,8 +506,8 @@ function jsxElementToExpression(
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const condition = jsxAttributeToExpression(element.condition)
-      const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs)
-      const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs)
+      const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs, false)
+      const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs, false)
 
       const node = TS.createConditional(
         condition,
@@ -527,8 +534,9 @@ function jsxElementToJSXExpression(
   element: JSXElementChild,
   imports: Imports,
   stripUIDs: boolean,
+  parentIsJSX: boolean,
 ): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
-  const expression = jsxElementToExpression(element, imports, stripUIDs)
+  const expression = jsxElementToExpression(element, imports, stripUIDs, parentIsJSX)
   if (
     TS.isJsxElement(expression) ||
     TS.isJsxSelfClosingElement(expression) ||
@@ -627,7 +635,7 @@ function printUtopiaJSXComponent(
   element: UtopiaJSXComponent,
   detailOfExports: ExportsDetail,
 ): TS.Node {
-  const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
+  const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs, true)
   if (
     TS.isJsxElement(asJSX) ||
     TS.isJsxSelfClosingElement(asJSX) ||

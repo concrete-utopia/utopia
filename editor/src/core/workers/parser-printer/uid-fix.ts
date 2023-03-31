@@ -157,7 +157,7 @@ function fixArrayElements<T>(
   })
 }
 
-function fixTopLevelElementsUIDs(
+export function fixTopLevelElementsUIDs(
   oldElements: Array<TopLevelElement>,
   newElements: Array<TopLevelElement>,
   fixUIDsState: FixUIDsState,
@@ -171,7 +171,7 @@ function fixTopLevelElementsUIDs(
   )
 }
 
-function fixTopLevelElementUIDs(
+export function fixTopLevelElementUIDs(
   oldElement: TopLevelElement,
   newElement: TopLevelElement,
   fixUIDsState: FixUIDsState,
@@ -203,7 +203,7 @@ function fixTopLevelElementUIDs(
   return newElement
 }
 
-function fixUtopiaJSXComponentUIDs(
+export function fixUtopiaJSXComponentUIDs(
   oldElement: UtopiaJSXComponent,
   newElement: UtopiaJSXComponent,
   fixUIDsState: FixUIDsState,
@@ -216,7 +216,7 @@ function fixUtopiaJSXComponentUIDs(
           newElement.arbitraryJSBlock,
           fixUIDsState,
         )
-  const fixedRootElement = fixJSXElementChild(
+  const fixedRootElement = fixJSXElementChildUIDs(
     oldElement.rootElement,
     newElement.rootElement,
     fixUIDsState,
@@ -228,7 +228,7 @@ function fixUtopiaJSXComponentUIDs(
   }
 }
 
-function fixArbitraryJSBlockUIDs(
+export function fixArbitraryJSBlockUIDs(
   oldElement: ArbitraryJSBlock,
   newElement: ArbitraryJSBlock,
   fixUIDsState: FixUIDsState,
@@ -244,7 +244,7 @@ function fixArbitraryJSBlockUIDs(
   }
 }
 
-function fixJSXArrayElement(
+export function fixJSXArrayElement(
   oldElement: JSXArrayElement,
   newElement: JSXArrayElement,
   fixUIDsState: FixUIDsState,
@@ -255,7 +255,7 @@ function fixJSXArrayElement(
   }
 }
 
-function fixJSXArrayElements(
+export function fixJSXArrayElements(
   oldExpression: Array<JSXArrayElement>,
   newExpression: Array<JSXArrayElement>,
   fixUIDsState: FixUIDsState,
@@ -269,7 +269,7 @@ function fixJSXArrayElements(
   )
 }
 
-function fixJSXProperty(
+export function fixJSXProperty(
   oldExpression: JSXProperty,
   newExpression: JSXProperty,
   fixUIDsState: FixUIDsState,
@@ -280,7 +280,7 @@ function fixJSXProperty(
   }
 }
 
-function fixJSXPropertyArray(
+export function fixJSXPropertyArray(
   oldExpression: Array<JSXProperty>,
   newExpression: Array<JSXProperty>,
   fixUIDsState: FixUIDsState,
@@ -294,7 +294,7 @@ function fixJSXPropertyArray(
   )
 }
 
-function fixExpressionArray(
+export function fixExpressionArray(
   oldExpression: Array<JSExpression>,
   newExpression: Array<JSExpression>,
   fixUIDsState: FixUIDsState,
@@ -308,7 +308,7 @@ function fixExpressionArray(
   )
 }
 
-function fixJSXAttributesPart(
+export function fixJSXAttributesPart(
   oldExpression: JSXAttributesPart,
   newExpression: JSXAttributesPart,
   fixUIDsState: FixUIDsState,
@@ -346,7 +346,7 @@ function fixJSXAttributesPart(
   return newExpression
 }
 
-function fixJSXAttributesUIDs(
+export function fixJSXAttributesUIDs(
   oldExpression: JSXAttributes,
   newExpression: JSXAttributes,
   fixUIDsState: FixUIDsState,
@@ -360,21 +360,21 @@ function fixJSXAttributesUIDs(
   )
 }
 
-function fixJSXElementChildArray(
+export function fixJSXElementChildArray(
   oldElements: Array<JSXElementChild>,
   newElements: Array<JSXElementChild>,
   fixUIDsState: FixUIDsState,
 ): Array<JSXElementChild> {
   return fixArrayElements(
     (oldElement, newElement) => {
-      return fixJSXElementChild(oldElement, newElement, fixUIDsState)
+      return fixJSXElementChildUIDs(oldElement, newElement, fixUIDsState)
     },
     oldElements,
     newElements,
   )
 }
 
-function fixElementsWithin(
+export function fixElementsWithin(
   oldExpression: ElementsWithin,
   newExpression: ElementsWithin,
   fixUIDsState: FixUIDsState,
@@ -394,7 +394,7 @@ function fixElementsWithin(
   return result
 }
 
-function fixJSXElementChild(
+export function fixJSXElementChildUIDs(
   oldElement: JSXElementChild,
   newElement: JSXElementChild,
   fixUIDsState: FixUIDsState,
@@ -433,12 +433,12 @@ function fixJSXElementChild(
           newElement.condition,
           fixUIDsState,
         )
-        const updatedWhenTrue = fixJSXElementChild(
+        const updatedWhenTrue = fixJSXElementChildUIDs(
           oldElement.whenTrue,
           newElement.whenTrue,
           fixUIDsState,
         )
-        const updatedWhenFalse = fixJSXElementChild(
+        const updatedWhenFalse = fixJSXElementChildUIDs(
           oldElement.whenFalse,
           newElement.whenFalse,
           fixUIDsState,
@@ -470,7 +470,7 @@ function fixJSXElementChild(
   return newElement
 }
 
-function fixJSXElementUIDs(
+export function fixJSXElementUIDs(
   oldElement: JSXElement,
   newElement: JSXElement,
   fixUIDsState: FixUIDsState,
@@ -488,7 +488,7 @@ function fixJSXElementUIDs(
   })
 }
 
-function fixExpressionUIDs(
+export function fixExpressionUIDs(
   oldExpression: JSExpression,
   newExpression: JSExpression,
   fixUIDsState: FixUIDsState,

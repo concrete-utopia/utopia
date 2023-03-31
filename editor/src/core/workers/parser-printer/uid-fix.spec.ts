@@ -1,14 +1,19 @@
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
+import * as FastCheck from 'fast-check'
 import {
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
+  JSExpression,
   JSXElementChild,
 } from '../../shared/element-template'
 import { isParseSuccess, ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
 import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
+import { jsxAttributeArbitrary, jsxElementChildArbitrary } from './parser-printer.test-utils'
+import { Arbitrary } from 'fast-check'
+import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
@@ -266,6 +271,60 @@ describe('fixParseSuccessUIDs', () => {
         scene
           component"
     `)
+  })
+})
+
+describe('fixExpressionUIDs', () => {
+  it('if expressions are the same type, their uids will be copied over', () => {
+    const arbitraryExpressionPair: Arbitrary<{ first: JSExpression; second: JSExpression }> =
+      FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2)).map(([first, second]) => {
+        return {
+          first: first,
+          second: second,
+        }
+      })
+    function checkCall(value: { first: JSExpression; second: JSExpression }): boolean {
+      const { first, second } = value
+      const afterFix = fixExpressionUIDs(first, second, {
+        mutableAllNewUIDs: emptySet(),
+        mappings: [],
+      })
+      if (first.type === second.type) {
+        return first.uid === afterFix.uid
+      } else {
+        return first.uid !== afterFix.uid
+      }
+    }
+    const prop = FastCheck.property(arbitraryExpressionPair, checkCall)
+    FastCheck.assert(prop, { verbose: true })
+  })
+})
+
+describe('fixJSXElementChildUIDs', () => {
+  it('if expressions are the same type, their uids will be copied over', () => {
+    const arbitraryElementPair: Arbitrary<{ first: JSXElementChild; second: JSXElementChild }> =
+      FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3)).map(
+        ([first, second]) => {
+          return {
+            first: first,
+            second: second,
+          }
+        },
+      )
+    function checkCall(value: { first: JSXElementChild; second: JSXElementChild }): boolean {
+      const { first, second } = value
+      const afterFix = fixJSXElementChildUIDs(first, second, {
+        mutableAllNewUIDs: emptySet(),
+        mappings: [],
+      })
+      if (first.type === second.type) {
+        return first.uid === afterFix.uid
+      } else {
+        return first.uid !== afterFix.uid
+      }
+    }
+    const prop = FastCheck.property(arbitraryElementPair, checkCall)
+    FastCheck.assert(prop, { verbose: true })
   })
 })
 
