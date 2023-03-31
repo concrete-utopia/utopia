@@ -601,7 +601,7 @@ export function insertJSXElementChild(
           )
         } else if (isJSXElementLike(parentElement)) {
           if (elementChildSupportsChildrenAlsoText(parentElement) === 'doesNotSupportChildren') {
-            // the element cannot contain children, so we need to wrap it and the new element in a fragment
+            // the target cannot contain children, so we need to wrap it and the new element in a fragment
             return jsxFragment(
               generateUidWithExistingComponents(projectContents),
               [parentElement, elementToInsert],
