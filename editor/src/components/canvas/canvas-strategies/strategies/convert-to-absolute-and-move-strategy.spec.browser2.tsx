@@ -492,6 +492,266 @@ const escapeHatchTestCases: Array<EscapeHatchTestCases> = [
   },
 ]
 
+describe('Convert to Absolute/runEscapeHatch action', () => {
+  fastForEach(
+    escapeHatchTestCases,
+    ({
+      targetsToConvert,
+      focusedElement,
+      globalFrameUnchangedForElements,
+      expectedAbsoluteElements,
+    }) => {
+      const focusedElementInTitle =
+        focusedElement != null ? `, focused element is${EP.toUid(focusedElement)}` : ''
+      it(`Converts ${targetsToConvert
+        .map(EP.toUid)
+        .join(', ')} element(s) to absolute ${focusedElementInTitle}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          complexProject(),
+          'await-first-dom-report',
+        )
+
+        if (focusedElement != null) {
+          await renderResult.dispatch([setFocusedElement(focusedElement)], true)
+        }
+
+        const canvasFramesBeforeConversion = mapArrayToDictionary(
+          globalFrameUnchangedForElements,
+          ({ path, pathAfter }) => EP.toString(pathAfter ?? path),
+          ({ path, pathAfter }) => {
+            return MetadataUtils.getFrameInCanvasCoords(
+              path,
+              renderResult.getEditorState().editor.jsxMetadata,
+            )
+          },
+        )
+
+        // CONVERT TO ABSOLUTE
+        await renderResult.dispatch([runEscapeHatch(targetsToConvert)], true)
+
+        fastForEach(expectedAbsoluteElements, (target) => {
+          const result = MetadataUtils.isPositionAbsolute(
+            MetadataUtils.findElementByElementPath(
+              renderResult.getEditorState().editor.jsxMetadata,
+              target,
+            ),
+          )
+          expect(result).toEqual(true)
+        })
+        fastForEach(Object.keys(canvasFramesBeforeConversion), (target) => {
+          const resultFrame = MetadataUtils.getFrameInCanvasCoords(
+            EP.fromString(target),
+            renderResult.getEditorState().editor.jsxMetadata,
+          )
+          expect(resultFrame).toEqual(canvasFramesBeforeConversion[target])
+        })
+      })
+    },
+  )
+
+  describe('Escape Hatch Strategy', () => {
+    it('Runs the escape hatch strategy', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+            <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+              <View
+                style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
+                data-uid='bbb'
+              />
+            </View>
+        `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const action = runEscapeHatch([targetElement])
+
+      await initialEditor.dispatch([action], true)
+      await initialEditor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
+            data-uid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
+
+    it('works on a flow element with all pins', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '50%',
+            height: '20%',
+            right: 200,
+            bottom: 320,
+            top: 0,
+            left: 0
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
+
+    it('works on a flow element without siblings', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
+
+    it('works on a flow element without siblings where width and height is percentage', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '50%',
+            height: '20%',
+            right: 200,
+            bottom: 320,
+            top: 0,
+            left: 0
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
+  })
+})
+
 describe('Convert to Absolute', () => {
   it('Correctly uses the captured closestOffsetParentPath to determine which elements to update', async () => {
     function getCodeForTestProject(childTag: string): string {
