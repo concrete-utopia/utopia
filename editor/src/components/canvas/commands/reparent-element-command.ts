@@ -1,3 +1,4 @@
+import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
@@ -56,7 +57,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const withElementInserted = insertElementAtPath(
+            const insertionResult = insertElementAtPath(
               editorState.projectContents,
               underlyingFilePathTarget,
               command.newParent,
@@ -67,18 +68,21 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
-              withElementInserted,
+              insertionResult.components,
               successTarget.imports,
               underlyingFilePathTarget,
             )
 
-            editorStatePatches = [editorStatePatchOldParentFile]
+            editorStatePatches = [
+              editorStatePatchOldParentFile,
+              includeToastPatch(insertionResult.insertionDetails, editorState),
+            ]
           } else {
             const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
-            const withElementInserted = insertElementAtPath(
+            const insertionResult = insertElementAtPath(
               editorState.projectContents,
               underlyingFilePathNewParent,
               command.newParent,
@@ -97,12 +101,16 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
             const editorStatePatchNewParentFile = getPatchForComponentChange(
               successNewParent.topLevelElements,
-              withElementInserted,
+              insertionResult.components,
               successNewParent.imports,
               underlyingFilePathNewParent,
             )
 
-            editorStatePatches = [editorStatePatchOldParentFile, editorStatePatchNewParentFile]
+            editorStatePatches = [
+              editorStatePatchOldParentFile,
+              editorStatePatchNewParentFile,
+              includeToastPatch(insertionResult.insertionDetails, editorState),
+            ]
           }
         },
       )

@@ -89,6 +89,8 @@ import {
   componentUsesProperty,
   elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
+  ElementSupportsChildren,
+  elementChildSupportsChildrenAlsoText,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -134,6 +136,10 @@ import {
   ConditionalCase,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
+import {
+  ReparentTargetParent,
+  reparentTargetParentIsElementPath,
+} from '../../components/editor/store/reparent-target'
 
 const ObjectPathImmutable: any = OPI
 
@@ -151,11 +157,6 @@ export const getChildrenOfCollapsedViews = (
 }
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
-
-export type ElementSupportsChildren =
-  | 'supportsChildren'
-  | 'hasOnlyTextChildren'
-  | 'doesNotSupportChildren'
 
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
@@ -840,37 +841,26 @@ export const MetadataUtils = {
     instance: ElementInstanceMetadata,
   ): ElementSupportsChildren {
     return foldEither(
-      (elementString) =>
-        intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
+      (elementString) => {
+        return intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
           ? 'supportsChildren'
-          : 'doesNotSupportChildren',
+          : 'doesNotSupportChildren'
+      },
       (element) => {
-        if (elementOnlyHasTextChildren(element)) {
-          // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
-          return 'hasOnlyTextChildren'
+        const elementResult = elementChildSupportsChildrenAlsoText(element)
+        if (elementResult != null) {
+          return elementResult
+        } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+          // Explicitly prevent components / elements that we *know* don't support children
+          return isViewLikeFromMetadata(instance) ||
+            isSceneFromMetadata(instance) ||
+            EP.isStoryboardPath(instance.elementPath)
+            ? 'supportsChildren'
+            : 'doesNotSupportChildren'
         } else {
-          if (isJSXElement(element)) {
-            if (isIntrinsicElement(element.name)) {
-              return intrinsicHTMLElementNamesThatSupportChildren.includes(
-                element.name.baseVariable,
-              )
-                ? 'supportsChildren'
-                : 'doesNotSupportChildren'
-            } else if (isUtopiaAPIComponentFromMetadata(instance)) {
-              // Explicitly prevent components / elements that we *know* don't support children
-              return isViewLikeFromMetadata(instance) ||
-                isSceneFromMetadata(instance) ||
-                EP.isStoryboardPath(instance.elementPath)
-                ? 'supportsChildren'
-                : 'doesNotSupportChildren'
-            } else {
-              return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
-                ? 'supportsChildren'
-                : 'doesNotSupportChildren'
-            }
-          }
-          // We don't know at this stage
-          return 'supportsChildren'
+          return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
+            ? 'supportsChildren'
+            : 'doesNotSupportChildren'
         }
       },
       instance.element,
@@ -879,16 +869,25 @@ export const MetadataUtils = {
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
+    nodeModules: NodeModules,
+    openFile: string | null | undefined,
     target: ElementPath | null,
   ): boolean {
     return (
-      this.targetSupportsChildrenAlsoText(projectContents, metadata, target) !==
-      'doesNotSupportChildren'
+      this.targetSupportsChildrenAlsoText(
+        projectContents,
+        metadata,
+        nodeModules,
+        openFile,
+        target,
+      ) !== 'doesNotSupportChildren'
     )
   },
   targetSupportsChildrenAlsoText(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
+    nodeModules: NodeModules,
+    openFile: string | null | undefined,
     target: ElementPath | null,
   ): ElementSupportsChildren {
     if (target == null) {
@@ -896,9 +895,20 @@ export const MetadataUtils = {
       return 'supportsChildren'
     } else {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
-      return instance == null
-        ? 'doesNotSupportChildren'
-        : MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
+      if (instance == null) {
+        return withUnderlyingTarget(
+          target,
+          projectContents,
+          nodeModules,
+          openFile,
+          'doesNotSupportChildren',
+          (_, element) => {
+            return elementChildSupportsChildrenAlsoText(element) ?? 'doesNotSupportChildren'
+          },
+        )
+      } else {
+        return MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
+      }
     }
   },
   targetUsesProperty(
@@ -1266,8 +1276,8 @@ export const MetadataUtils = {
   ): CanvasRectangle {
     const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
     if (parent != null) {
-      if (parent.specialSizeMeasurements.globalContentBox != null) {
-        return parent.specialSizeMeasurements.globalContentBox
+      if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
+        return parent.specialSizeMeasurements.globalContentBoxForChildren
       } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
         return parent.specialSizeMeasurements.coordinateSystemBounds
       }
@@ -1849,6 +1859,49 @@ export const MetadataUtils = {
       isRight(element.element) &&
       isJSXConditionalExpression(element.element.value)
     )
+  },
+  resolveReparentTargetParentToPath(
+    metadata: ElementInstanceMetadataMap,
+    reparentTargetParent: ReparentTargetParent<ElementPath>,
+  ): ElementPath {
+    if (reparentTargetParentIsElementPath(reparentTargetParent)) {
+      // This is an element path, so return directly.
+      return reparentTargetParent
+    } else {
+      // Resolve this to the element in the clause.
+      const targetElement = this.findElementByElementPath(
+        metadata,
+        reparentTargetParent.elementPath,
+      )
+      if (targetElement == null) {
+        throw new Error(
+          `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+        )
+      } else {
+        return foldEither(
+          () => {
+            throw new Error(
+              `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+            )
+          },
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              return getConditionalClausePath(
+                reparentTargetParent.elementPath,
+                reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
+              )
+            } else {
+              throw new Error(
+                `Found a ${element.type} at ${EP.toString(
+                  reparentTargetParent.elementPath,
+                )} instead of a conditional.`,
+              )
+            }
+          },
+          targetElement.element,
+        )
+      }
+    }
   },
   getConditionValueFromMetadata(element: ElementInstanceMetadata | null): ConditionValue {
     if (!this.isConditionalFromMetadata(element)) {

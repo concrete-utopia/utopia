@@ -797,7 +797,7 @@ describe('Fixed/hug on text elements', () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
-        style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+        style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content', lineHeight: '18px' }}
         data-uid='bbb'
         data-testid='bbb'
       >hello text element!</div>
@@ -819,7 +819,7 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 120, height: 18.5}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 120, height: 18, lineHeight: '18px'}}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>

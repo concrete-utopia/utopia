@@ -1008,7 +1008,6 @@ describe('UPDATE_FILE_PATH', () => {
       updateFilePath('/src', '/src2'),
       editorState,
       defaultUserState,
-      NO_OP,
     )
     let filesAndTheirImports: { [filename: string]: Array<string> } = {}
     walkContentsTreeForParseSuccess(actualResult.projectContents, (fullPath, success) => {
@@ -1598,61 +1597,5 @@ describe('SET_FOCUSED_ELEMENT', () => {
     const action = setFocusedElement(pathToFocus)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
     expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
-  })
-})
-// more detailed tests on the different cases are in escape-hatch-strategy.spec-tsx
-describe('RUN_ESCAPE_HATCH', () => {
-  it('Runs the escape hatch strategy', () => {
-    const targetElement = EP.elementPath([
-      ['scene-aaa', 'app-entity'],
-      ['aaa', 'bbb'],
-    ])
-
-    const editorState = getEditorState(
-      makeTestProjectCodeWithSnippet(
-        `
-          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-            <View
-              style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
-              data-uid='bbb'
-            />
-          </View>
-      `,
-      ),
-    )
-    editorState.jsxMetadata = {
-      'scene-aaa/app-entity:aaa/bbb': {
-        elementPath: EP.elementPath([
-          ['scene-aaa', 'app-entity'],
-          ['aaa', 'bbb'],
-        ]),
-        localFrame: { x: 0, y: 0, width: 250, height: 300 },
-        globalFrame: { x: 0, y: 0, width: 250, height: 300 },
-        specialSizeMeasurements: {
-          immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-          position: 'static',
-        } as SpecialSizeMeasurements,
-      } as ElementInstanceMetadata,
-    } as ElementInstanceMetadataMap
-
-    const action = runEscapeHatch([targetElement])
-
-    const updatedEditorState = UPDATE_FNS.RUN_ESCAPE_HATCH(
-      action,
-      editorState,
-      createBuiltInDependenciesList(null),
-    )
-
-    expect(testPrintCodeFromEditorState(updatedEditorState)).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
   })
 })

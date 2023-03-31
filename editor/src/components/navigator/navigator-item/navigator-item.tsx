@@ -545,6 +545,7 @@ export const NavigatorItem: React.FunctionComponent<
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
             style={{ transform: 'scale(0.6)', opacity: 'var(--paneHoverOpacity)' }}
+            testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
           />
           <NavigatorRowLabel
             navigatorEntry={navigatorEntry}
@@ -648,7 +649,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       />
 
       {when(
-        conditionalOverride != null,
+        conditionalOverride != null && props.navigatorEntry.type != 'CONDITIONAL_CLAUSE',
         <div
           style={{
             marginLeft: 10,

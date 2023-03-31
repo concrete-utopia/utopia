@@ -1,7 +1,5 @@
-import {
-  ElementSupportsChildren,
-  MetadataUtils,
-} from '../../../../core/model/element-metadata-utils'
+import { ElementSupportsChildren } from '../../../../core/model/element-template-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { CanvasPoint, offsetPoint } from '../../../../core/shared/math-utils'
@@ -150,6 +148,7 @@ function getStartingTargetParentsToFilterOutInner(
     interactionData.modifiers.cmd,
     canvasState,
     canvasState.startingMetadata,
+    canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,
     elementSupportsChildren,

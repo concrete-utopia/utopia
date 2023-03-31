@@ -32,7 +32,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       \\"
       data-uid=\\"scene\\"
     >
-      <div data-uid=\\"comment-root\\" data-path=\\"3c7~~~1:comment-root\\">hat</div>
+      <div data-uid=\\"comment-root\\" data-path=\\"a09~~~1:comment-root\\">hat</div>
     </div>
   </div>
 </div>
@@ -72,13 +72,13 @@ Object {
                     "trailingComments": Array [],
                   },
                   "type": "ATTRIBUTE_VALUE",
-                  "uniqueID": "",
+                  "uid": "",
                   "value": "app",
                 },
               },
             ],
             "type": "JSX_ELEMENT",
-            "uid": "app",
+            "uid": "",
           },
         ],
         "name": Object {
@@ -101,7 +101,7 @@ Object {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
-              "uniqueID": "",
+              "uid": "",
               "value": "scene",
             },
           },
@@ -118,7 +118,7 @@ Object {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
-              "uniqueID": "",
+              "uid": "",
               "value": Object {
                 "height": 812,
                 "left": 0,
@@ -130,7 +130,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
-        "uid": "scene",
+        "uid": "",
       },
     },
     "elementPath": Object {
@@ -169,7 +169,7 @@ Object {
       "fontStyle": null,
       "fontWeight": null,
       "gap": null,
-      "globalContentBox": null,
+      "globalContentBoxForChildren": null,
       "hasPositionOffset": false,
       "hasTransform": false,
       "htmlElementName": "div",
@@ -233,13 +233,13 @@ Object {
                 "trailingComments": Array [],
               },
               "type": "ATTRIBUTE_VALUE",
-              "uniqueID": "",
+              "uid": "",
               "value": "app",
             },
           },
         ],
         "type": "JSX_ELEMENT",
-        "uid": "app",
+        "uid": "",
       },
     },
     "elementPath": Object {
@@ -278,7 +278,7 @@ Object {
       "fontStyle": null,
       "fontWeight": null,
       "gap": null,
-      "globalContentBox": null,
+      "globalContentBoxForChildren": null,
       "hasPositionOffset": false,
       "hasTransform": false,
       "htmlElementName": "div",

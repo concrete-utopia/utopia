@@ -1,7 +1,7 @@
 import { Either, isRight, left, mapEither, right } from '../shared/either'
 import {
   ArbitraryJSBlock,
-  clearJSXElementUniqueIDs,
+  clearJSXElementChildUniqueIDs,
   JSXElementChild,
   JSXElementWithoutUID,
   UtopiaJSXComponent,
@@ -71,7 +71,7 @@ async function getParseResultForUserStrings(
           topLevelElement.definedWithin.includes('Utopia$$$Component'),
       )
       if (parsedWrapperComponent != null) {
-        const elementToInsert = clearJSXElementUniqueIDs(parsedWrapperComponent.rootElement)
+        const elementToInsert = clearJSXElementChildUniqueIDs(parsedWrapperComponent.rootElement)
 
         if (elementToInsert.type === 'JSX_ELEMENT') {
           return right({

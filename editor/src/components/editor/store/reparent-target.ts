@@ -53,3 +53,13 @@ export function dynamicReparentTargetParentToStaticReparentTargetParent(
     return EP.dynamicPathToStaticPath(reparentTargetParent)
   }
 }
+
+export function reparentTargetToString<P extends ElementPath>(
+  reparentTargetParent: ReparentTargetParent<P>,
+): string {
+  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
+    return `${reparentTargetParent.clause} of ${EP.toString(reparentTargetParent.elementPath)}`
+  } else {
+    return EP.toString(reparentTargetParent)
+  }
+}
