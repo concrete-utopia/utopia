@@ -1,7 +1,6 @@
 import {
   formatTestProjectCode,
   getPrintedUiJsCode,
-  makeTestProjectCodeWithComponentInnards,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -15,7 +14,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
   canvasPoint,
-  isInfinityRectangle,
   localRectangle,
   LocalRectangle,
   nullIfInfinity,
