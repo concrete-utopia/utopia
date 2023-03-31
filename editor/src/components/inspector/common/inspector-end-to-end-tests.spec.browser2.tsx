@@ -2011,6 +2011,54 @@ describe('inspector tests with real metadata', () => {
     //   `"simple"`,
     // )
   })
+  it('Flex longhand in style props using a simple expression', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', display: 'flex', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              backgroundColor: '#DDDDDD',
+              flexGrow: 0.5+0.5,
+              height: 30+100,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-height',
+    )) as HTMLInputElement
+
+    matchInlineSnapshotBrowser(widthControl.value, `"1"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"controlled"`,
+    )
+
+    matchInlineSnapshotBrowser(heightControl.value, `"130"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"controlled"`,
+    )
+  })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {
       '/package.json': textFile(
