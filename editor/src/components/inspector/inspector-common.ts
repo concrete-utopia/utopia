@@ -47,6 +47,8 @@ import { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getModifiableJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { InspectorPropsContext, stylePropPathMappingFn } from './common/property-path-hooks'
+import { useContextSelector } from 'use-context-selector'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -527,6 +529,7 @@ export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
+  propertyTarget: ReadonlyArray<string> = ['style'],
 ): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
@@ -536,7 +539,10 @@ export function detectFillHugFixedState(
   const flexGrowLonghand = foldEither(
     () => null,
     (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flexGrow')),
+    getSimpleAttributeAtPath(
+      right(element.element.value.props),
+      stylePropPathMappingFn('flexGrow', propertyTarget),
+    ),
   )
 
   const flexGrow =
@@ -550,7 +556,10 @@ export function detectFillHugFixedState(
           parseFlex(value),
         )
       },
-      getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flex')),
+      getSimpleAttributeAtPath(
+        right(element.element.value.props),
+        stylePropPathMappingFn('flex', propertyTarget),
+      ),
     )
 
   if (flexGrow != null) {
@@ -576,7 +585,10 @@ export function detectFillHugFixedState(
 
   const simpleAttribute = defaultEither(
     null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
+    getSimpleAttributeAtPath(
+      right(element.element.value.props),
+      stylePropPathMappingFn(property, propertyTarget),
+    ),
   )
 
   if (simpleAttribute === MaxContent) {
@@ -590,6 +602,10 @@ export function detectFillHugFixedState(
     element.element.value.props,
     PP.create('style', property),
   )
+
+  const isFromStyleSheet =
+    element.attributeMetadatada != null &&
+    element.attributeMetadatada[property]?.fromStyleSheet === true
 
   if (parsed != null && parsed.unit === '%') {
     const valueWithType = { type: 'fill' as const, value: parsed }
@@ -616,6 +632,8 @@ export function detectFillHugFixedState(
       ? 'simple-unknown-css'
       : isControlled
       ? 'controlled'
+      : isFromStyleSheet
+      ? 'detected-fromcss'
       : 'detected'
 
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
