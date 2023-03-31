@@ -1533,9 +1533,15 @@ export const MetadataUtils = {
       openFile,
     )
 
-    return {
+    workingElements = {
       ...workingElements,
       ...spyOnlyElements,
+    }
+
+    const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements) // fontos hogy a workingElements-et adjuk neki
+    return {
+      ...workingElements,
+      ...elementsInheritingFromAncestors,
     }
   },
   removeElementMetadataChild(
@@ -2072,7 +2078,6 @@ function fillSpyOnlyMetadata(
 
   fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
     const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
-    const domElem = fromDOM[pathStr]
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
@@ -2105,8 +2110,6 @@ function fillSpyOnlyMetadata(
 
     workingElements[pathStr] = {
       ...spyElem,
-      ...domElem,
-      element: spyElem.element ?? domElem.element,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
     }
@@ -2146,7 +2149,6 @@ function fillSpyOnlyMetadata(
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
-        ...sameThingFromWorkingElems.specialSizeMeasurements,
         parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
           ? parentLayoutSystemFromChildren[0]
           : spyElem.specialSizeMeasurements.parentLayoutSystem,
@@ -2163,36 +2165,31 @@ function fillSpyOnlyMetadata(
     }
   })
 
-  const elementsWithoutGlobalContentBox = Object.keys(fromSpy).filter((p) => {
-    return fromDOM[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
-  })
+  return workingElements
+}
 
+function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
+  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+
+  const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
+    return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
+  })
   // sorted, so that parents are fixed first
   elementsWithoutGlobalContentBox.sort()
 
   fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
-    const domElem = fromDOM[pathStr]
-    const sameThingFromWorkingElems = workingElements[pathStr]
+    const elem = workingElements[pathStr]
 
     const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
 
     const parentGlobalContentBoxForChildren =
-      fromDOM[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       infinityCanvasRectangle
 
     workingElements[pathStr] = {
-      ...spyElem,
-      ...sameThingFromWorkingElems,
-      globalFrame:
-        sameThingFromWorkingElems?.globalFrame ?? domElem?.globalFrame ?? spyElem.globalFrame,
-      localFrame:
-        sameThingFromWorkingElems?.localFrame ?? domElem?.localFrame ?? spyElem.localFrame,
-      element: sameThingFromWorkingElems?.element ?? spyElem.element ?? domElem.element,
+      ...elem,
       specialSizeMeasurements: {
-        ...spyElem.specialSizeMeasurements,
-        ...(sameThingFromWorkingElems?.specialSizeMeasurements ?? {}),
+        ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
     }
