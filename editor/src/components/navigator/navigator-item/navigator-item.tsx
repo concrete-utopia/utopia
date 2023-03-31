@@ -78,7 +78,7 @@ export interface NavigatorItemInnerProps {
 function selectItem(
   dispatch: EditorDispatch,
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
-  navigatorEntry: NavigatorEntry,
+  elementPath: ElementPath,
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
@@ -86,13 +86,13 @@ function selectItem(
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], true), 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
       dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
     } else {
-      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], false), 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
     }
   }
 }
@@ -498,17 +498,17 @@ export const NavigatorItem: React.FunctionComponent<
         )
 
         if (pathToSelect != null) {
-          selectItem(
-            dispatch,
-            getSelectedViewsInRange,
-            regularNavigatorEntry(pathToSelect),
-            index,
-            selected,
-            event,
-          )
+          selectItem(dispatch, getSelectedViewsInRange, pathToSelect, index, selected, event)
         }
       } else {
-        selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
+        selectItem(
+          dispatch,
+          getSelectedViewsInRange,
+          navigatorEntry.elementPath,
+          index,
+          selected,
+          event,
+        )
       }
     },
     [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, elementMetadata],
