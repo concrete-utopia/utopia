@@ -73,13 +73,13 @@ describe('a project with conditionals', () => {
       'regular-storyboard/scene/app',
       'regular-storyboard/scene/app:app-root',
       'regular-storyboard/scene/app:app-root/conditional1',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/60c',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/60c-false-case',
       'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/60c-attribute',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/30e',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/30e-false-case',
       'synthetic-storyboard/scene/app:app-root/conditional1/30e-attribute',
     ])
   })
