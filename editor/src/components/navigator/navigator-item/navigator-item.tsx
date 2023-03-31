@@ -17,6 +17,7 @@ import {
   isRegularNavigatorEntry,
   NavigatorEntry,
   navigatorEntryToKey,
+  regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
@@ -32,7 +33,6 @@ import {
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
-  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   getConditionalClausePath,
@@ -40,10 +40,9 @@ import {
   matchesOverriddenConditionalBranch,
 } from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth } from '../navigator-utils'
+import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
-import { assertNever } from '../../../core/shared/utils'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -435,6 +434,13 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditional',
   )
 
+  const elementMetadata = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, navigatorEntry.elementPath),
+    'NavigatorItem elementMetadata',
+  )
+
   const isInsideComponent =
     EP.isInsideFocusedComponent(navigatorEntry.elementPath) || isFocusedComponent
   const fullyVisible = useStyleFullyVisible(navigatorEntry)
@@ -485,9 +491,27 @@ export const NavigatorItem: React.FunctionComponent<
   )
   const select = React.useCallback(
     (event: any) => {
-      selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
+      if (isConditionalClauseNavigatorEntry(navigatorEntry) && elementMetadata != null) {
+        const pathToSelect = getConditionalClausePathForNavigatorEntry(
+          navigatorEntry,
+          elementMetadata,
+        )
+
+        if (pathToSelect != null) {
+          selectItem(
+            dispatch,
+            getSelectedViewsInRange,
+            regularNavigatorEntry(pathToSelect),
+            index,
+            selected,
+            event,
+          )
+        }
+      } else {
+        selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
+      }
     },
-    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected],
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, elementMetadata],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),

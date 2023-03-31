@@ -2,14 +2,16 @@ import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
   isJSXFragment,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { foldEither, isRight } from '../../core/shared/either'
+import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import {
+  ConditionalClauseNavigatorEntry,
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   NavigatorEntry,
@@ -26,7 +28,7 @@ import {
 } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
-import { getConditionalClausePath, ConditionalCase } from '../../core/model/conditionals'
+import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -190,4 +192,24 @@ export function getNavigatorTargets(
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
+}
+
+export function getConditionalClausePathForNavigatorEntry(
+  navigatorEntry: ConditionalClauseNavigatorEntry,
+  elementMetadata: ElementInstanceMetadata,
+): ElementPath | null {
+  if (elementMetadata == null) {
+    return null
+  }
+  const element = elementMetadata.element
+  if (isLeft(element)) {
+    return null
+  }
+  const jsxElement = element.value
+  if (!isJSXConditionalExpression(jsxElement)) {
+    return null
+  }
+  const clauseElement =
+    navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
+  return getConditionalClausePath(navigatorEntry.elementPath, clauseElement, navigatorEntry.clause)
 }
