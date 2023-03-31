@@ -48,7 +48,7 @@ import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getModifiableJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { stylePropPathMappingFn } from './common/property-path-hooks'
-import { nonSimpleControlStatusForProperty } from './common/control-status'
+import { getFallbackControlStatusForProperty } from './common/control-status'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -562,7 +562,7 @@ export function detectFillHugFixedState(
       ),
     )
 
-  const flexGrowStatus = nonSimpleControlStatusForProperty(
+  const flexGrowStatus = getFallbackControlStatusForProperty(
     'flexGrow',
     propertyTarget,
     element.element.value.props,
@@ -631,7 +631,7 @@ export function detectFillHugFixedState(
     const dimension = widthHeightFromAxis(axis)
     const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
 
-    const controlStatus = nonSimpleControlStatusForProperty(
+    const controlStatus = getFallbackControlStatusForProperty(
       property,
       propertyTarget,
       element.element.value.props,

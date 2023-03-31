@@ -585,7 +585,7 @@ export function isNotUnsetDefaultOrDetected(controlStatus: ControlStatus): boole
   )
 }
 
-export function nonSimpleControlStatusForProperty(
+export function getFallbackControlStatusForProperty(
   property: keyof ParsedCSSProperties,
   propertyTarget: ReadonlyArray<string>,
   jsxAttributes: JSXAttributes,
