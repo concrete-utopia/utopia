@@ -2078,6 +2078,7 @@ function fillSpyOnlyMetadata(
 
   fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
     const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+    const domElem = fromDOM[pathStr]
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
@@ -2110,6 +2111,21 @@ function fillSpyOnlyMetadata(
 
     workingElements[pathStr] = {
       ...spyElem,
+      /**
+       * FIXME: the reason this is needed is that in the case of divs with
+       * `display: contents` set, while the actual div is present in the
+       * DOM (i.e, their corresponding `ElementInstanceMetadata` is present
+       * in `fromDOM`), their `globalFrame` is 0x0, so they are included in
+       * `elementsWithoutIntrinsicSize`. However, the above `...spyElem` line
+       * overwrites their correctly filled out instance metadata with the dummy
+       * values from `fromDOM`, erasing important properties such as `parentLayoutSystem` or
+       * `parentFlexDirection`.
+       *
+       * I'm intending this as a temporary solution until we come up with a more fine-grained
+       * way to merge metadata
+       */
+      ...domElem, // balazs don't hate me pls
+      element: spyElem.element,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
     }
