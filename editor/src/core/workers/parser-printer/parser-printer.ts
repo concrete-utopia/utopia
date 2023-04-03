@@ -441,9 +441,7 @@ function jsxElementToExpression(
         const closing = TS.createJsxClosingElement(tagName)
         return TS.createJsxElement(
           opening,
-          element.children.map((child) =>
-            jsxElementToJSXExpression(child, imports, stripUIDs, true),
-          ),
+          element.children.map((child) => jsxElementToJSXExpression(child, imports, stripUIDs)),
           closing,
         )
       }
@@ -482,7 +480,7 @@ function jsxElementToExpression(
     }
     case 'JSX_FRAGMENT': {
       const children = element.children.map((child) => {
-        return jsxElementToJSXExpression(child, imports, stripUIDs, true)
+        return jsxElementToJSXExpression(child, imports, stripUIDs)
       })
       if (element.longForm) {
         const tagName = jsxElementNameToExpression(getFragmentElementNameFromImports(imports))
@@ -534,9 +532,8 @@ function jsxElementToJSXExpression(
   element: JSXElementChild,
   imports: Imports,
   stripUIDs: boolean,
-  parentIsJSX: boolean,
 ): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
-  const expression = jsxElementToExpression(element, imports, stripUIDs, parentIsJSX)
+  const expression = jsxElementToExpression(element, imports, stripUIDs, true)
   if (
     TS.isJsxElement(expression) ||
     TS.isJsxSelfClosingElement(expression) ||
