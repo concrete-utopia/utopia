@@ -60,7 +60,7 @@ function reparentElement(
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         providesBoundsForAbsoluteChildren: true,
-        globalContentBox: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+        globalContentBoxForChildren: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
     'scene-aaa/app-entity:aaa/bbb': {
@@ -74,7 +74,7 @@ function reparentElement(
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         providesBoundsForAbsoluteChildren: true,
-        globalContentBox: targetParentWithSpecialContentBox
+        globalContentBoxForChildren: targetParentWithSpecialContentBox
           ? canvasRectangle({ x: 90, y: 100, width: 170, height: 120 })
           : canvasRectangle({ x: 50, y: 60, width: 250, height: 200 }),
       } as SpecialSizeMeasurements,
@@ -110,7 +110,7 @@ function reparentElement(
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         providesBoundsForAbsoluteChildren: true,
-        globalContentBox: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
+        globalContentBoxForChildren: canvasRectangle({ x: 150, y: 160, width: 250, height: 200 }),
       } as SpecialSizeMeasurements,
     } as ElementInstanceMetadata,
   }

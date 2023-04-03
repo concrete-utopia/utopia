@@ -267,7 +267,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
-    globalContentBox: canvasRectangle({
+    globalContentBoxForChildren: canvasRectangle({
       x: 20,
       y: 40,
       width: 60,
@@ -346,7 +346,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     alignItems: 'auto',
     htmlElementName: 'div',
     renderedChildrenCount: 10,
-    globalContentBox: canvasRectangle({
+    globalContentBoxForChildren: canvasRectangle({
       x: 20,
       y: 40,
       width: 60,
@@ -480,7 +480,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
-      globalContentBox: canvasRectangle({
+      globalContentBoxForChildren: canvasRectangle({
         x: 20,
         y: 40,
         width: 60,
@@ -588,7 +588,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       alignItems: 'auto',
       htmlElementName: 'div',
       renderedChildrenCount: 10,
-      globalContentBox: canvasRectangle({
+      globalContentBoxForChildren: canvasRectangle({
         x: 20,
         y: 40,
         width: 60,
@@ -722,7 +722,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
-        globalContentBox: canvasRectangle({
+        globalContentBoxForChildren: canvasRectangle({
           x: 20,
           y: 40,
           width: 60,
@@ -832,7 +832,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
-        globalContentBox: canvasRectangle({
+        globalContentBoxForChildren: canvasRectangle({
           x: 20,
           y: 40,
           width: 60,
@@ -942,7 +942,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         alignItems: 'auto',
         htmlElementName: 'div',
         renderedChildrenCount: 10,
-        globalContentBox: canvasRectangle({
+        globalContentBoxForChildren: canvasRectangle({
           x: 20,
           y: 40,
           width: 60,

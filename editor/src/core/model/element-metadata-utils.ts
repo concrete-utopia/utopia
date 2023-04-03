@@ -89,6 +89,8 @@ import {
   componentUsesProperty,
   elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
+  ElementSupportsChildren,
+  elementChildSupportsChildrenAlsoText,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -134,6 +136,10 @@ import {
   ConditionalCase,
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
+import {
+  ReparentTargetParent,
+  reparentTargetParentIsElementPath,
+} from '../../components/editor/store/reparent-target'
 
 const ObjectPathImmutable: any = OPI
 
@@ -151,11 +157,6 @@ export const getChildrenOfCollapsedViews = (
 }
 
 const ElementsToDrillIntoForTextContent = ['div', 'span']
-
-export type ElementSupportsChildren =
-  | 'supportsChildren'
-  | 'hasOnlyTextChildren'
-  | 'doesNotSupportChildren'
 
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
@@ -840,37 +841,26 @@ export const MetadataUtils = {
     instance: ElementInstanceMetadata,
   ): ElementSupportsChildren {
     return foldEither(
-      (elementString) =>
-        intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
+      (elementString) => {
+        return intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
           ? 'supportsChildren'
-          : 'doesNotSupportChildren',
+          : 'doesNotSupportChildren'
+      },
       (element) => {
-        if (elementOnlyHasTextChildren(element)) {
-          // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal
-          return 'hasOnlyTextChildren'
+        const elementResult = elementChildSupportsChildrenAlsoText(element)
+        if (elementResult != null) {
+          return elementResult
+        } else if (isUtopiaAPIComponentFromMetadata(instance)) {
+          // Explicitly prevent components / elements that we *know* don't support children
+          return isViewLikeFromMetadata(instance) ||
+            isSceneFromMetadata(instance) ||
+            EP.isStoryboardPath(instance.elementPath)
+            ? 'supportsChildren'
+            : 'doesNotSupportChildren'
         } else {
-          if (isJSXElement(element)) {
-            if (isIntrinsicElement(element.name)) {
-              return intrinsicHTMLElementNamesThatSupportChildren.includes(
-                element.name.baseVariable,
-              )
-                ? 'supportsChildren'
-                : 'doesNotSupportChildren'
-            } else if (isUtopiaAPIComponentFromMetadata(instance)) {
-              // Explicitly prevent components / elements that we *know* don't support children
-              return isViewLikeFromMetadata(instance) ||
-                isSceneFromMetadata(instance) ||
-                EP.isStoryboardPath(instance.elementPath)
-                ? 'supportsChildren'
-                : 'doesNotSupportChildren'
-            } else {
-              return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
-                ? 'supportsChildren'
-                : 'doesNotSupportChildren'
-            }
-          }
-          // We don't know at this stage
-          return 'supportsChildren'
+          return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
+            ? 'supportsChildren'
+            : 'doesNotSupportChildren'
         }
       },
       instance.element,
@@ -879,16 +869,25 @@ export const MetadataUtils = {
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
+    nodeModules: NodeModules,
+    openFile: string | null | undefined,
     target: ElementPath | null,
   ): boolean {
     return (
-      this.targetSupportsChildrenAlsoText(projectContents, metadata, target) !==
-      'doesNotSupportChildren'
+      this.targetSupportsChildrenAlsoText(
+        projectContents,
+        metadata,
+        nodeModules,
+        openFile,
+        target,
+      ) !== 'doesNotSupportChildren'
     )
   },
   targetSupportsChildrenAlsoText(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
+    nodeModules: NodeModules,
+    openFile: string | null | undefined,
     target: ElementPath | null,
   ): ElementSupportsChildren {
     if (target == null) {
@@ -896,9 +895,20 @@ export const MetadataUtils = {
       return 'supportsChildren'
     } else {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
-      return instance == null
-        ? 'doesNotSupportChildren'
-        : MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
+      if (instance == null) {
+        return withUnderlyingTarget(
+          target,
+          projectContents,
+          nodeModules,
+          openFile,
+          'doesNotSupportChildren',
+          (_, element) => {
+            return elementChildSupportsChildrenAlsoText(element) ?? 'doesNotSupportChildren'
+          },
+        )
+      } else {
+        return MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
+      }
     }
   },
   targetUsesProperty(
@@ -1260,39 +1270,37 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getParentCoordinateSystemBounds: function (
-    targetParent: ElementPath | null,
-    metadata: ElementInstanceMetadataMap,
-  ): CanvasRectangle {
-    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (parent.specialSizeMeasurements.globalContentBox != null) {
-        return parent.specialSizeMeasurements.globalContentBox
-      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-        return parent.specialSizeMeasurements.coordinateSystemBounds
-      }
+  getGlobalContentBoxForChildren: function (
+    parent: ElementInstanceMetadata,
+  ): CanvasRectangle | null {
+    if (
+      parent.specialSizeMeasurements.globalContentBoxForChildren != null &&
+      isFiniteRectangle(parent.specialSizeMeasurements.globalContentBoxForChildren)
+    ) {
+      return parent.specialSizeMeasurements.globalContentBoxForChildren
     }
 
-    // Potentially here the parent was something like a fragment that itself doesn't have
-    // the above properties set, so we should move up the hierarchy to find one where they are set.
-    const nextAncestor =
-      targetParent == null || EP.isEmptyPath(targetParent) ? null : EP.parentPath(targetParent)
-    if (nextAncestor == null) {
+    if (EP.isStoryboardPath(parent.elementPath)) {
       return zeroCanvasRect
-    } else {
-      return MetadataUtils.getParentCoordinateSystemBounds(nextAncestor, metadata)
     }
+
+    return null
   },
   getFrameRelativeToTargetContainingBlock: function (
-    targetParent: ElementPath | null,
+    targetParent: ElementPath,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
-  ): LocalRectangle {
-    const closestParentCoordinateSystemBounds = MetadataUtils.getParentCoordinateSystemBounds(
-      targetParent,
-      metadata,
-    )
-    return canvasRectangleToLocalRectangle(frame, closestParentCoordinateSystemBounds)
+  ): LocalRectangle | null {
+    const targetParentInstance = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (targetParentInstance == null) {
+      return null
+    }
+
+    const globalContentBox = MetadataUtils.getGlobalContentBoxForChildren(targetParentInstance)
+    if (globalContentBox == null) {
+      return null
+    }
+    return canvasRectangleToLocalRectangle(frame, globalContentBox)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
@@ -1525,9 +1533,15 @@ export const MetadataUtils = {
       openFile,
     )
 
-    return {
+    workingElements = {
       ...workingElements,
       ...spyOnlyElements,
+    }
+
+    const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements)
+    return {
+      ...workingElements,
+      ...elementsInheritingFromAncestors,
     }
   },
   removeElementMetadataChild(
@@ -1850,6 +1864,50 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  resolveReparentTargetParentToPath(
+    metadata: ElementInstanceMetadataMap,
+    reparentTargetParent: ReparentTargetParent<ElementPath>,
+  ): ElementPath {
+    if (reparentTargetParentIsElementPath(reparentTargetParent)) {
+      // This is an element path, so return directly.
+      return reparentTargetParent
+    } else {
+      // Resolve this to the element in the clause.
+      const targetElement = this.findElementByElementPath(
+        metadata,
+        reparentTargetParent.elementPath,
+      )
+      if (targetElement == null) {
+        throw new Error(
+          `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+        )
+      } else {
+        return foldEither(
+          () => {
+            throw new Error(
+              `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+            )
+          },
+          (element) => {
+            if (isJSXConditionalExpression(element)) {
+              return getConditionalClausePath(
+                reparentTargetParent.elementPath,
+                reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
+                reparentTargetParent.clause,
+              )
+            } else {
+              throw new Error(
+                `Found a ${element.type} at ${EP.toString(
+                  reparentTargetParent.elementPath,
+                )} instead of a conditional.`,
+              )
+            }
+          },
+          targetElement.element,
+        )
+      }
+    }
+  },
   getConditionValueFromMetadata(element: ElementInstanceMetadata | null): ConditionValue {
     if (!this.isConditionalFromMetadata(element)) {
       return 'not-a-conditional'
@@ -2095,6 +2153,36 @@ function fillSpyOnlyMetadata(
         position: allElemsEqual(positionForChildren)
           ? positionForChildren[0]
           : spyElem.specialSizeMeasurements.position,
+      },
+    }
+  })
+
+  return workingElements
+}
+
+function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
+  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+
+  const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
+    return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
+  })
+  // sorted, so that parents are fixed first
+  elementsWithoutGlobalContentBox.sort()
+
+  fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const parentGlobalContentBoxForChildren =
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      infinityCanvasRectangle
+
+    workingElements[pathStr] = {
+      ...elem,
+      specialSizeMeasurements: {
+        ...elem.specialSizeMeasurements,
+        globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
     }
   })

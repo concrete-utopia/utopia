@@ -573,6 +573,10 @@ export function isSiblingOf(l: ElementPath | null, r: ElementPath | null): boole
   return l != null && r != null && pathsEqual(parentPath(l), parentPath(r))
 }
 
+export function areSiblings(paths: Array<ElementPath>): boolean {
+  return paths.every((p) => isSiblingOf(paths[0], p))
+}
+
 function slicedPathsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
   const slicedL = l.slice(0, r.length)
   return elementPathPartsEqual(slicedL, r)

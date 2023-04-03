@@ -63,6 +63,7 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import {
   replaceContentAffectingPathsWithTheirChildrenRecursive,
   retargetStrategyToChildrenOfContentAffectingElements,
+  retargetStrategyToTopMostGroupLikeElement,
 } from './group-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
@@ -73,9 +74,7 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const originalTargets = flattenSelection(
-    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-  )
+  const originalTargets = retargetStrategyToTopMostGroupLikeElement(canvasState) // this needs a better variable name
   const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   if (
@@ -341,6 +340,7 @@ function collectSetLayoutPropCommands(
       metadata,
       globalFrame,
     )
+
     const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
       if (globalFrame == null) {
         return []
@@ -350,20 +350,22 @@ function collectSetLayoutPropCommands(
       }
     })()
 
-    let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
-    const updatePinsCommands = createUpdatePinsCommands(
-      path,
-      metadata,
-      canvasState,
-      dragDelta,
-      newLocalFrame,
-    )
-    commands.push(...updatePinsCommands)
+    if (newLocalFrame != null) {
+      let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
+      const updatePinsCommands = createUpdatePinsCommands(
+        path,
+        metadata,
+        canvasState,
+        dragDelta,
+        newLocalFrame,
+      )
+      commands.push(...updatePinsCommands)
 
-    return { commands: commands, intendedBounds: intendedBounds }
-  } else {
-    return { commands: [], intendedBounds: [] }
+      return { commands: commands, intendedBounds: intendedBounds }
+    }
   }
+
+  return { commands: [], intendedBounds: [] }
 }
 
 function collectReparentCommands(

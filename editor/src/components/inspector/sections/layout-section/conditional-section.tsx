@@ -40,10 +40,7 @@ import {
   updateConditionalExpression,
 } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import {
-  isConditionalClauseNavigatorEntry,
-  NavigatorEntry,
-} from '../../../editor/store/editor-state'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
@@ -92,19 +89,23 @@ const branchNavigatorEntriesSelector = createCachedSelector(
 
     const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
 
-    function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
+    function getNavigatorEntry(
+      clause: JSXElementChild,
+      conditionalCase: ConditionalCase,
+    ): NavigatorEntry | null {
       return (
-        navigatorEntries.find(
-          (entry) =>
-            EP.pathsEqual(entry.elementPath, getConditionalClausePath(paths[0], clause)) &&
-            !isConditionalClauseNavigatorEntry(entry),
+        navigatorEntries.find((entry) =>
+          EP.pathsEqual(
+            entry.elementPath,
+            getConditionalClausePath(paths[0], clause, conditionalCase),
+          ),
         ) ?? null
       )
     }
 
     return {
-      true: getNavigatorEntry(conditional.whenTrue),
-      false: getNavigatorEntry(conditional.whenFalse),
+      true: getNavigatorEntry(conditional.whenTrue, 'true-case'),
+      false: getNavigatorEntry(conditional.whenFalse, 'false-case'),
     }
   },
 )((_, paths) => paths.map(EP.toString).join(','))
@@ -327,7 +328,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   const controlStyles = getControlStyles(controlStatus)
 
   return (
-    <React.Fragment>
+    <div style={{ paddingBottom: 8 }}>
       <InspectorSubsectionHeader
         css={{
           transition: 'color .1s ease-in-out',
@@ -352,7 +353,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
       {unless(
         originalConditionExpression === 'multiselect',
         <React.Fragment>
-          <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
+          <UIGridRow padded={true} variant='<--------auto-------->|167px|'>
             Condition
             <StringInput
               testId={ConditionalsControlSectionExpressionTestId}
@@ -399,7 +400,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           </SquareButton>
         </Tooltip>
       </FlexRow>
-    </React.Fragment>
+    </div>
   )
 })
 
@@ -419,7 +420,7 @@ const BranchRow = ({
   }
 
   return (
-    <UIGridRow padded={true} variant='|--67px--|<--------1fr-------->'>
+    <UIGridRow padded={true} variant='<--------1fr-------->|145px|'>
       <div>{conditionalCase === 'true-case' ? 'True' : 'False'}</div>
       <div
         style={{

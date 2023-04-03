@@ -14,6 +14,8 @@ import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
   getZIndexOfElement,
+  insertChildAndDetails,
+  InsertChildAndDetails,
   transformJSXComponentAtElementPath,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
@@ -464,6 +466,7 @@ import { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
+  addToast,
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
@@ -481,7 +484,7 @@ import {
   updatePackageJson,
   updateThumbnailGenerated,
 } from './action-creators'
-import { uniqToasts } from './toast-helpers'
+import { addToastToState, includeToast, removeToastFromState, uniqToasts } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
   refreshDependencies,
@@ -1156,26 +1159,24 @@ function setZIndexOnSelected(
   index: 'back' | 'front' | 'backward' | 'forward',
 ): EditorModel {
   const selectedViews = editor.selectedViews
-  return selectedViews.reduce(
-    (working, selectedView) => {
-      const indexPosition = indexPositionForAdjustment(selectedView, working, index)
-      return editorMoveTemplate(
-        selectedView,
-        selectedView,
-        SkipFrameChange,
-        indexPosition,
-        EP.parentPath(selectedView),
-        null,
-        editor,
-        null,
-        null,
-      ).editor
-    },
-    {
-      ...editor,
-      selectedViews: [],
-    } as EditorModel,
-  )
+  const initialEditorState: EditorModel = {
+    ...editor,
+    selectedViews: [],
+  }
+  return selectedViews.reduce((working, selectedView) => {
+    const indexPosition = indexPositionForAdjustment(selectedView, working, index)
+    return editorMoveTemplate(
+      selectedView,
+      selectedView,
+      SkipFrameChange,
+      indexPosition,
+      EP.parentPath(selectedView),
+      null,
+      editor,
+      null,
+      null,
+    ).editor
+  }, initialEditorState)
 }
 
 function setModeState(mode: Mode, editor: EditorModel): EditorModel {
@@ -1438,7 +1439,7 @@ function toastOnGeneratedElementsTargeted(
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast(notice(message))
-    result = UPDATE_FNS.ADD_TOAST(showToastAction, result, dispatch)
+    result = UPDATE_FNS.ADD_TOAST(showToastAction, result)
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
@@ -1461,7 +1462,7 @@ function toastOnUncopyableElementsSelected(
   let result: EditorState = editor
   if (!isReparentable) {
     const showToastAction = showToast(notice(message))
-    result = UPDATE_FNS.ADD_TOAST(showToastAction, result, dispatch)
+    result = UPDATE_FNS.ADD_TOAST(showToastAction, result)
   }
 
   if (isReparentable || allowActionRegardless) {
@@ -1696,7 +1697,7 @@ export const UPDATE_FNS = {
     )
     if (unsetPropFailedMessage != null) {
       const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
     } else {
       return updatedEditor
     }
@@ -1728,7 +1729,7 @@ export const UPDATE_FNS = {
     )
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
     } else {
       return updatedEditor
     }
@@ -2088,12 +2089,8 @@ export const UPDATE_FNS = {
       )
     }
   },
-  ADD_TOAST: (action: AddToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    const withOldToastRemoved = UPDATE_FNS.REMOVE_TOAST(removeToast(action.toast.id), editor)
-    return {
-      ...withOldToastRemoved,
-      toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
-    }
+  ADD_TOAST: (action: AddToast, editor: EditorModel): EditorModel => {
+    return addToastToState(editor, action.toast)
   },
   UPDATE_GITHUB_OPERATIONS: (action: UpdateGithubOperations, editor: EditorModel): EditorModel => {
     const operations = [...editor.githubOperations]
@@ -2160,10 +2157,7 @@ export const UPDATE_FNS = {
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      toasts: editor.toasts.filter((toast) => toast.id !== action.id),
-    }
+    return removeToastFromState(editor, action.id)
   },
   TOGGLE_HIDDEN: (action: ToggleHidden, editor: EditorModel): EditorModel => {
     const targets = action.targets.length > 0 ? action.targets : editor.selectedViews
@@ -2231,6 +2225,7 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
+    let detailsOfUpdate: string | null = null
     const withNewElement = modifyUnderlyingTargetElement(
       action.parent,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
@@ -2261,6 +2256,7 @@ export const UPDATE_FNS = {
           null,
           editor.spyMetadata,
         )
+        detailsOfUpdate = withInsertedElement.insertionDetails
 
         const uid = getUtopiaID(action.jsxElement)
         const newPath = EP.appendToPath(targetParent, uid)
@@ -2268,7 +2264,7 @@ export const UPDATE_FNS = {
 
         const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
           success.topLevelElements,
-          withInsertedElement,
+          withInsertedElement.components,
         )
 
         const updatedImports = mergeImports(
@@ -2391,6 +2387,7 @@ export const UPDATE_FNS = {
             }
           }
 
+          let detailsOfUpdate: string | null = null
           const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
             targetSuccess.filePath,
             editor,
@@ -2405,7 +2402,7 @@ export const UPDATE_FNS = {
                 : setPositionAttribute(elementToInsert, 'absolute')
 
               if (targetThatIsRootElementOfCommonParent == null) {
-                withTargetAdded = insertElementAtPath(
+                const insertResult = insertElementAtPath(
                   editor.projectContents,
                   editor.canvas.openFile?.filename ?? null,
                   parentPath,
@@ -2420,6 +2417,8 @@ export const UPDATE_FNS = {
                   ),
                   editor.spyMetadata,
                 )
+                withTargetAdded = insertResult.components
+                detailsOfUpdate = insertResult.insertionDetails
               } else {
                 const staticTarget = EP.dynamicPathToStaticPath(
                   targetThatIsRootElementOfCommonParent,
@@ -2462,7 +2461,11 @@ export const UPDATE_FNS = {
             ? [] // if we are wrapping something in a Flex parent, try not adding frames here
             : [getFrameChange(viewPath, boundingBox, isParentFlex)]
           const withWrapperViewAdded = {
-            ...setCanvasFramesInnerNew(withWrapperViewAddedNoFrame, frameChanges, null),
+            ...setCanvasFramesInnerNew(
+              includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
+              frameChanges,
+              null,
+            ),
           }
 
           // reparent targets to the view
@@ -2537,6 +2540,7 @@ export const UPDATE_FNS = {
           }
 
           let viewPath: ElementPath | null = null
+          let detailsOfUpdate: string | null = null
 
           const underlyingTarget = normalisePathToUnderlyingTarget(
             editor.projectContents,
@@ -2556,7 +2560,8 @@ export const UPDATE_FNS = {
               const elementToInsert = action.whatToWrapWith.element
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-              let withTargetAdded: Array<UtopiaJSXComponent>
+              let withTargetAdded: InsertChildAndDetails =
+                insertChildAndDetails(utopiaJSXComponents)
 
               function withInsertedElement() {
                 return insertElementAtPath(
@@ -2630,14 +2635,13 @@ export const UPDATE_FNS = {
                   const staticTarget = EP.dynamicPathToStaticPath(
                     targetThatIsRootElementOfCommonParent,
                   )
-                  withTargetAdded = transformJSXComponentAtPath(
-                    utopiaJSXComponents,
-                    staticTarget,
-                    (oldRoot) =>
+                  withTargetAdded = insertChildAndDetails(
+                    transformJSXComponentAtPath(utopiaJSXComponents, staticTarget, (oldRoot) =>
                       jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
                         ...elementToInsert.children,
                         oldRoot,
                       ]),
+                    ),
                   )
                 }
               }
@@ -2648,10 +2652,11 @@ export const UPDATE_FNS = {
 
               const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
 
+              detailsOfUpdate = withTargetAdded.insertionDetails
               return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
                 return {
                   ...success,
-                  utopiaComponents: withTargetAdded,
+                  utopiaComponents: withTargetAdded.components,
                   imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
                 }
               }, parseSuccess)
@@ -2671,7 +2676,7 @@ export const UPDATE_FNS = {
             orderedActionTargets,
             indexPosition,
             viewPath,
-            withWrapperViewAddedNoFrame,
+            includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
           )
 
           return {
@@ -3034,9 +3039,12 @@ export const UPDATE_FNS = {
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     let insertionAllowed: boolean = true
-    if (action.pasteInto != null) {
-      const pasteInto = action.pasteInto
-      const parentGenerated = MetadataUtils.isElementGenerated(pasteInto)
+    const resolvedTarget = MetadataUtils.resolveReparentTargetParentToPath(
+      editor.jsxMetadata,
+      action.pasteInto,
+    )
+    if (resolvedTarget != null) {
+      const parentGenerated = MetadataUtils.isElementGenerated(resolvedTarget)
       insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
@@ -3060,7 +3068,7 @@ export const UPDATE_FNS = {
 
           const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
-            action.pasteInto,
+            resolvedTarget,
           )
           const pastedElementIsFlex =
             MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -3078,7 +3086,7 @@ export const UPDATE_FNS = {
 
           const pasteIntoParent = MetadataUtils.findElementByElementPath(
             editor.jsxMetadata,
-            action.pasteInto,
+            resolvedTarget,
           )
 
           const continueWithPaste =
@@ -3087,13 +3095,11 @@ export const UPDATE_FNS = {
             pastedElementIsConditional ||
             MetadataUtils.isConditionalFromMetadata(pasteIntoParent)
 
-          if (!continueWithPaste) {
-            return workingEditorState
-          } else {
+          if (continueWithPaste) {
             const propertyChangeCommands = getReparentPropertyChanges(
               reparentStrategy.strategy,
               newPath,
-              action.pasteInto,
+              resolvedTarget,
               action.targetOriginalContextMetadata,
               workingEditorState.jsxMetadata,
               workingEditorState.projectContents,
@@ -3105,6 +3111,8 @@ export const UPDATE_FNS = {
             const allCommands = [...reparentCommands, ...propertyChangeCommands]
 
             return foldAndApplyCommandsSimple(workingEditorState, allCommands)
+          } else {
+            return workingEditorState
           }
         }
       }, editor)
@@ -3112,7 +3120,7 @@ export const UPDATE_FNS = {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
       )
-      return UPDATE_FNS.ADD_TOAST(showToastAction, editor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
     }
   },
   PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
@@ -3297,7 +3305,7 @@ export const UPDATE_FNS = {
 
     const shouldShowToast = targetWidth < hideWidth && priorWidth > minWidth
     const updatedEditor = shouldShowToast
-      ? UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor, dispatch)
+      ? UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
       : editor
 
     return {
@@ -3331,7 +3339,7 @@ export const UPDATE_FNS = {
 
     const updatedEditor = codeEditorVisibleAfter
       ? editor
-      : UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor, dispatch)
+      : UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
 
     return {
       ...updatedEditor,
@@ -3393,7 +3401,7 @@ export const UPDATE_FNS = {
     if (errorMessage != null) {
       console.error(errorMessage)
       const toastAction = showToast(notice(errorMessage!, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor)
     } else {
       return updatedEditor
     }
@@ -3562,7 +3570,6 @@ export const UPDATE_FNS = {
       editorWithToast = UPDATE_FNS.ADD_TOAST(
         showToast(notice(`Please log in to upload assets`, 'ERROR', true)),
         editor,
-        dispatch,
       )
     }
 
@@ -3627,7 +3634,13 @@ export const UPDATE_FNS = {
           }
         }
         case 'SAVE_IMAGE_INSERT_WITH': {
-          const parent = action.imageDetails.afterSave.parentPath
+          const parent =
+            action.imageDetails.afterSave.parentPath == null
+              ? null
+              : MetadataUtils.resolveReparentTargetParentToPath(
+                  editor.jsxMetadata,
+                  action.imageDetails.afterSave.parentPath,
+                )
           const relativeFrame = MetadataUtils.getFrameRelativeTo(
             parent,
             editor.jsxMetadata,
@@ -3838,7 +3851,6 @@ export const UPDATE_FNS = {
     action: UpdateFilePath,
     editor: EditorModel,
     userState: UserState,
-    dispatch: EditorDispatch,
   ): EditorModel => {
     const replaceFilePathResults = replaceFilePath(
       action.oldPath,
@@ -3847,7 +3859,7 @@ export const UPDATE_FNS = {
     )
     if (replaceFilePathResults.type === 'FAILURE') {
       const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
     } else {
       let currentDesignerFile = editor.canvas.openFile
       const { projectContents, updatedFiles } = replaceFilePathResults
@@ -5055,6 +5067,7 @@ export const UPDATE_FNS = {
       return editor
     } else {
       let newSelectedViews: ElementPath[] = []
+      let detailsOfUpdate: string | null = null
       const withNewElement = modifyUnderlyingTargetElement(
         action.targetParent,
         openFilename,
@@ -5126,13 +5139,14 @@ export const UPDATE_FNS = {
             action.indexPosition,
             editor.spyMetadata,
           )
+          detailsOfUpdate = withInsertedElement.insertionDetails
 
           const newPath = EP.appendToPath(action.targetParent, newUID)
           newSelectedViews.push(newPath)
 
           const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
             success.topLevelElements,
-            withInsertedElement,
+            withInsertedElement.components,
           )
 
           const updatedImports = mergeImports(
@@ -5147,10 +5161,13 @@ export const UPDATE_FNS = {
           }
         },
       )
-      return {
+      const updatedEditorState: EditorModel = {
         ...withNewElement,
         selectedViews: newSelectedViews,
       }
+
+      // Add the toast for the update details if necessary.
+      return includeToast(detailsOfUpdate, updatedEditorState)
     }
   },
   SET_PROP_TRANSIENT: (action: SetPropTransient, editor: EditorModel): EditorModel => {

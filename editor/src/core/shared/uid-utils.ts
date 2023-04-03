@@ -275,18 +275,18 @@ export function fixUtopiaElement(
   }
 
   function fixJSXTextBlock(textBlock: JSXTextBlock): JSXTextBlock {
-    const fixedUID = addAndMaybeUpdateUID(textBlock.uniqueID)
+    const fixedUID = addAndMaybeUpdateUID(textBlock.uid)
     return {
       ...textBlock,
-      uniqueID: fixedUID,
+      uid: fixedUID,
     }
   }
 
   function fixJSFunctionCall(call: JSExpressionFunctionCall): JSExpressionFunctionCall {
-    const fixedUID = addAndMaybeUpdateUID(call.uniqueID)
+    const fixedUID = addAndMaybeUpdateUID(call.uid)
     return {
       ...call,
-      uniqueID: fixedUID,
+      uid: fixedUID,
       parameters: call.parameters.map(fixJSExpression),
     }
   }
@@ -294,10 +294,10 @@ export function fixUtopiaElement(
   function fixJSOtherJavaScript(
     otherJavaScript: JSExpressionOtherJavaScript,
   ): JSExpressionOtherJavaScript {
-    const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uniqueID)
+    const fixedUID = addAndMaybeUpdateUID(otherJavaScript.uid)
     return {
       ...otherJavaScript,
-      uniqueID: fixedUID,
+      uid: fixedUID,
       elementsWithin: objectMap(fixJSXElement, otherJavaScript.elementsWithin),
     }
   }
@@ -354,28 +354,28 @@ export function fixUtopiaElement(
   }
 
   function fixJSExpressionValue(value: JSExpressionValue<any>): JSExpressionValue<any> {
-    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    const fixedUID = addAndMaybeUpdateUID(value.uid)
     return {
       ...value,
-      uniqueID: fixedUID,
+      uid: fixedUID,
     }
   }
 
   function fixJSNestedArray(value: JSExpressionNestedArray): JSExpressionNestedArray {
-    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    const fixedUID = addAndMaybeUpdateUID(value.uid)
     return {
       ...value,
       content: value.content.map(fixJSXArrayElement),
-      uniqueID: fixedUID,
+      uid: fixedUID,
     }
   }
 
   function fixJSNestedObject(value: JSExpressionNestedObject): JSExpressionNestedObject {
-    const fixedUID = addAndMaybeUpdateUID(value.uniqueID)
+    const fixedUID = addAndMaybeUpdateUID(value.uid)
     return {
       ...value,
       content: value.content.map(fixJSXProperty),
-      uniqueID: fixedUID,
+      uid: fixedUID,
     }
   }
 
@@ -648,17 +648,17 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   if (isUtopiaJSXElement(element)) {
     return getUtopiaIDFromJSXElement(element)
   } else if (isUtopiaJSExpressionValue(element)) {
-    return element.uniqueID
+    return element.uid
   } else if (isUtopiaJSExpressionNestedArray(element)) {
-    return element.uniqueID
+    return element.uid
   } else if (isUtopiaJSExpressionNestedObject(element)) {
-    return element.uniqueID
+    return element.uid
   } else if (isUtopiaJSExpressionFunctionCall(element)) {
-    return element.uniqueID
+    return element.uid
   } else if (isUtopiaJSExpressionOtherJavaScript(element)) {
-    return element.uniqueID
+    return element.uid
   } else if (isUtopiaJSXTextBlock(element)) {
-    return element.uniqueID
+    return element.uid
   } else if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {

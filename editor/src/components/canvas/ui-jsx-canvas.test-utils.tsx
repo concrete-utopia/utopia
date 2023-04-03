@@ -8,7 +8,7 @@ import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-ex
 import { Either, isRight, left, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
-  clearJSXElementUniqueIDs,
+  clearJSXElementChildUniqueIDs,
   TopLevelElement,
   ArbitraryJSBlock,
 } from '../../core/shared/element-template'
@@ -100,7 +100,7 @@ function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstan
   if (isRight(metadata.element)) {
     return {
       ...metadata,
-      element: right(clearJSXElementUniqueIDs(metadata.element.value)),
+      element: right(clearJSXElementChildUniqueIDs(metadata.element.value)),
     }
   } else {
     return metadata

@@ -120,20 +120,20 @@ export function isWithComments(e: unknown): e is WithComments {
 
 export interface JSExpressionValue<T> extends WithComments {
   type: 'ATTRIBUTE_VALUE'
-  uniqueID: string
+  uid: string
   value: T
 }
 
 export function jsExpressionValue<T>(
   value: T,
   comments: ParsedComments,
-  uniqueID: string = UUID(),
+  uid: string = UUID(),
 ): JSExpressionValue<T> {
   return {
     type: 'ATTRIBUTE_VALUE',
     value: value,
     comments: comments,
-    uniqueID: uniqueID,
+    uid: uid,
   }
 }
 
@@ -177,7 +177,7 @@ export interface JSExpressionOtherJavaScript {
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
-  uniqueID: string
+  uid: string
   elementsWithin: ElementsWithin
 }
 
@@ -187,7 +187,7 @@ export function jsExpressionOtherJavaScript(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
-  uniqueID: string = UUID(),
+  uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -196,7 +196,7 @@ export function jsExpressionOtherJavaScript(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uniqueID: uniqueID,
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }
@@ -252,26 +252,26 @@ export function isPropertyAssignment(property: JSXProperty): property is JSXProp
 export interface JSExpressionNestedObject extends WithComments {
   type: 'ATTRIBUTE_NESTED_OBJECT'
   content: Array<JSXProperty>
-  uniqueID: string
+  uid: string
 }
 
 export function jsExpressionNestedObject(
   content: Array<JSXProperty>,
   comments: ParsedComments,
-  uniqueID: string = UUID(),
+  uid: string = UUID(),
 ): JSExpressionNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
     content: content,
     comments: comments,
-    uniqueID: uniqueID,
+    uid: uid,
   }
 }
 
 export function jsxAttributeNestedObjectSimple(
   content: Array<JSXAttributesEntry>,
   comments: ParsedComments,
-  uniqueID: string = UUID(),
+  uid: string = UUID(),
 ): JSExpressionNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
@@ -279,7 +279,7 @@ export function jsxAttributeNestedObjectSimple(
       jsxPropertyAssignment(elem.key, elem.value, emptyComments, emptyComments),
     ),
     comments: comments,
-    uniqueID: uniqueID,
+    uid: uid,
   }
 }
 
@@ -322,19 +322,19 @@ export function isArraySpread(elem: JSXArrayElement): elem is JSXArraySpread {
 export interface JSExpressionNestedArray extends WithComments {
   type: 'ATTRIBUTE_NESTED_ARRAY'
   content: Array<JSXArrayElement>
-  uniqueID: string
+  uid: string
 }
 
 export function jsExpressionNestedArray(
   content: Array<JSXArrayElement>,
   comments: ParsedComments,
-  uniqueID: string = UUID(),
+  uid: string = UUID(),
 ): JSExpressionNestedArray {
   return {
     type: 'ATTRIBUTE_NESTED_ARRAY',
     content: content,
     comments: comments,
-    uniqueID: uniqueID,
+    uid: uid,
   }
 }
 
@@ -351,19 +351,19 @@ export interface JSExpressionFunctionCall {
   type: 'ATTRIBUTE_FUNCTION_CALL'
   functionName: string
   parameters: Array<JSExpression>
-  uniqueID: string
+  uid: string
 }
 
 export function jsExpressionFunctionCall(
   functionName: string,
   parameters: Array<JSExpression>,
-  uniqueID: string = UUID(),
+  uid: string = UUID(),
 ): JSExpressionFunctionCall {
   return {
     type: 'ATTRIBUTE_FUNCTION_CALL',
     functionName: functionName,
     parameters: parameters,
-    uniqueID: uniqueID,
+    uid: uid,
   }
 }
 
@@ -380,7 +380,7 @@ export function clearJSExpressionOtherJavaScriptUniqueIDs(
   const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
   return {
     ...attribute,
-    uniqueID: '',
+    uid: '',
     elementsWithin: updatedElementsWithin,
   }
 }
@@ -1041,7 +1041,7 @@ export function clearJSXElementWithoutUIDUniqueIDs(
   return {
     ...element,
     props: clearAttributesUniqueIDs(element.props),
-    children: element.children.map(clearJSXElementUniqueIDs),
+    children: element.children.map(clearJSXElementChildUniqueIDs),
   }
 }
 
@@ -1051,8 +1051,8 @@ export function clearJSXConditionalExpressionWithoutUIDUniqueIDs(
   return {
     ...conditional,
     condition: clearExpressionUniqueIDs(conditional.condition),
-    whenTrue: clearJSXElementUniqueIDs(conditional.whenTrue),
-    whenFalse: clearJSXElementUniqueIDs(conditional.whenFalse),
+    whenTrue: clearJSXElementChildUniqueIDs(conditional.whenTrue),
+    whenFalse: clearJSXElementChildUniqueIDs(conditional.whenFalse),
   }
 }
 
@@ -1061,7 +1061,7 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
 ): JSXFragmentWithoutUID {
   return {
     ...fragment,
-    children: fragment.children.map(clearJSXElementUniqueIDs),
+    children: fragment.children.map(clearJSXElementChildUniqueIDs),
   }
 }
 
@@ -1084,7 +1084,7 @@ export function jsxArbitraryBlock(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uniqueID: UUID(),
+    uid: UUID(),
     elementsWithin: elementsWithin,
   }
 }
@@ -1092,14 +1092,14 @@ export function jsxArbitraryBlock(
 export interface JSXTextBlock {
   type: 'JSX_TEXT_BLOCK'
   text: string
-  uniqueID: string
+  uid: string
 }
 
 export function jsxTextBlock(text: string): JSXTextBlock {
   return {
     type: 'JSX_TEXT_BLOCK',
     text: text,
-    uniqueID: UUID(),
+    uid: UUID(),
   }
 }
 
@@ -1282,43 +1282,58 @@ export function isElementWithUid(element: unknown): element is ElementWithUid {
 
 export type JSXElementChildren = Array<JSXElementChild>
 
-export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {
-  if (isJSXElement(element)) {
-    const updatedProps = clearAttributesUniqueIDs(element.props)
-    const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementUniqueIDs)
-    return {
-      ...element,
-      props: updatedProps,
-      children: updatedChildren,
+export function clearJSXElementUniqueIDs(element: JSXElement): JSXElement {
+  const updatedProps = clearAttributesUniqueIDs(element.props)
+  const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementChildUniqueIDs)
+  return {
+    ...element,
+    props: updatedProps,
+    children: updatedChildren,
+    uid: '',
+  }
+}
+
+export function clearJSXElementChildUniqueIDs(element: JSXElementChild): JSXElementChild {
+  switch (element.type) {
+    case 'JSX_ELEMENT': {
+      return clearJSXElementUniqueIDs(element)
     }
-  } else if (isJSExpressionOtherJavaScript(element)) {
-    const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, element.elementsWithin)
-    return {
-      ...element,
-      uniqueID: '',
-      elementsWithin: updatedElementsWithin,
+    case 'JSX_FRAGMENT': {
+      const updatedChildren: JSXElementChildren = element.children.map(
+        clearJSXElementChildUniqueIDs,
+      )
+      return {
+        ...element,
+        children: updatedChildren,
+        uid: '',
+      }
     }
-  } else if (isJSXFragment(element)) {
-    const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementUniqueIDs)
-    return {
-      ...element,
-      children: updatedChildren,
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const updatedCondition = clearExpressionUniqueIDs(element.condition)
+      const updatedWhenTrue = clearJSXElementChildUniqueIDs(element.whenTrue)
+      const updatedWhenFalse = clearJSXElementChildUniqueIDs(element.whenFalse)
+      return {
+        ...element,
+        condition: updatedCondition,
+        whenTrue: updatedWhenTrue,
+        whenFalse: updatedWhenFalse,
+        uid: '',
+      }
     }
-  } else if (isJSXConditionalExpression(element)) {
-    const updatedCondition = clearExpressionUniqueIDs(element.condition)
-    const updatedWhenTrue = clearJSXElementUniqueIDs(element.whenTrue)
-    const updatedWhenFalse = clearJSXElementUniqueIDs(element.whenFalse)
-    return {
-      ...element,
-      condition: updatedCondition,
-      whenTrue: updatedWhenTrue,
-      whenFalse: updatedWhenFalse,
+    case 'JSX_TEXT_BLOCK': {
+      return {
+        ...element,
+        uid: '',
+      }
     }
-  } else {
-    return {
-      ...element,
-      uniqueID: '',
-    }
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return clearExpressionUniqueIDs(element)
+    default:
+      assertNever(element)
   }
 }
 
@@ -1434,7 +1449,7 @@ export function arbitraryJSBlock(
     definedWithin: definedWithin,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uniqueID: UUID(),
+    uid: UUID(),
     elementsWithin: elementsWithin,
   }
 }
@@ -1628,7 +1643,7 @@ export interface ArbitraryJSBlock {
   definedWithin: Array<string>
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
-  uniqueID: string
+  uid: string
   elementsWithin: ElementsWithin
 }
 
@@ -1651,7 +1666,7 @@ export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock | ImportStat
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
     ...block,
-    uniqueID: '',
+    uid: '',
   }
 }
 
@@ -1713,7 +1728,7 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
     case 'UTOPIA_JSX_COMPONENT':
       let updatedComponent: UtopiaJSXComponent = {
         ...element,
-        rootElement: clearJSXElementUniqueIDs(element.rootElement),
+        rootElement: clearJSXElementChildUniqueIDs(element.rootElement),
       }
       if (updatedComponent.arbitraryJSBlock != null) {
         updatedComponent.arbitraryJSBlock = clearArbitraryJSBlockUniqueIDs(
@@ -1900,7 +1915,7 @@ export interface SpecialSizeMeasurements {
   alignItems: FlexAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
-  globalContentBox: CanvasRectangle | null
+  globalContentBoxForChildren: MaybeInfinityCanvasRectangle | null
   float: string
   hasPositionOffset: boolean
   parentTextDirection: TextDirection | null
@@ -1941,7 +1956,7 @@ export function specialSizeMeasurements(
   alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
-  globalContentBox: CanvasRectangle | null,
+  globalContentBoxForChildren: MaybeInfinityCanvasRectangle | null,
   float: string,
   hasPositionOffset: boolean,
   parentTextDirection: TextDirection | null,
@@ -1981,7 +1996,7 @@ export function specialSizeMeasurements(
     alignItems,
     htmlElementName,
     renderedChildrenCount,
-    globalContentBox,
+    globalContentBoxForChildren: globalContentBoxForChildren,
     float,
     hasPositionOffset,
     parentTextDirection,

@@ -140,7 +140,7 @@ export function runSimpleLocalEditorAction(
     case 'TOGGLE_COLLAPSE':
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
     case 'ADD_TOAST':
-      return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+      return UPDATE_FNS.ADD_TOAST(action, state)
     case 'SET_REFRESHING_DEPENDENCIES':
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
@@ -202,7 +202,7 @@ export function runSimpleLocalEditorAction(
     case 'SEND_PREVIEW_MODEL':
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
-      return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState, dispatch)
+      return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
     case 'SET_FOCUS':
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'RESIZE_LEFTPANE':

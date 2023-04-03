@@ -29,6 +29,7 @@ import {
   getJSXAttributeForced,
   isJSXAttributesEntry,
   emptyComments,
+  clearJSXElementChildUniqueIDs,
   clearJSXElementUniqueIDs,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
@@ -2558,7 +2559,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 </View>
 `
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    const cake = clearJSXElementUniqueIDs(
+    const cake = clearJSXElementChildUniqueIDs(
       jsxElement(
         'cake',
         'aab',
@@ -2584,7 +2585,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         [],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aaa',
@@ -2640,7 +2641,7 @@ export var whatever = () => <View data-uid='aaa'>
 </View>
 `
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    const cake = clearJSXElementUniqueIDs(
+    const cake = clearJSXElementChildUniqueIDs(
       jsxElement(
         'cake',
         'aab',
@@ -2651,7 +2652,7 @@ export var whatever = () => <View data-uid='aaa'>
         [],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aaa',
@@ -2708,9 +2709,9 @@ export var App = (props) => <View data-uid='bbb'>
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const emptyBrackets = {
       ...jsxArbitraryBlock('', '', 'return undefined', [], null, {}),
-      uniqueID: expect.any(String),
+      uid: expect.any(String),
     }
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'bbb',
@@ -2762,7 +2763,7 @@ export var App = (props) => <View data-uid='bbb'>
   })
 
   it('parses back and forth as a var', () => {
-    const cake = clearJSXElementUniqueIDs(
+    const cake = clearJSXElementChildUniqueIDs(
       jsxElement(
         'cake',
         'aab',
@@ -2775,7 +2776,7 @@ export var App = (props) => <View data-uid='bbb'>
         [],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aaa',
@@ -2949,7 +2950,7 @@ return { getSizing: getSizing, spacing: spacing };`
     expect(actualResult).toEqual(expectedResult)
   })
   it('parses back and forth as a var and includes canvas metadata', () => {
-    const cake = clearJSXElementUniqueIDs(
+    const cake = clearJSXElementChildUniqueIDs(
       jsxElement(
         'cake',
         'aab',
@@ -2960,7 +2961,7 @@ return { getSizing: getSizing, spacing: spacing };`
         [],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aaa',
@@ -3082,7 +3083,7 @@ export var whatever = props => {
     }
   })
   it('parses back and forth as a function', () => {
-    const cake = clearJSXElementUniqueIDs(
+    const cake = clearJSXElementChildUniqueIDs(
       jsxElement(
         'cake',
         'aaa',
@@ -3093,7 +3094,7 @@ export var whatever = props => {
         [],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aab',
@@ -3142,7 +3143,7 @@ export var whatever = props => {
     expect(actualResult).toEqual(expectedResult)
   })
   it('parses back and forth as a function, with null and undefined values for props', () => {
-    const cake = clearJSXElementUniqueIDs(
+    const cake = clearJSXElementChildUniqueIDs(
       jsxElement(
         'cake',
         'aaa',
@@ -3157,7 +3158,7 @@ export var whatever = props => {
         [],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'aab',
@@ -3864,7 +3865,7 @@ export var App = props => {
   );
 };`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    const ellipse = clearJSXElementUniqueIDs(
+    const ellipse = clearJSXElementChildUniqueIDs(
       jsxElement(
         'Ellipse',
         'bbb',
@@ -3879,7 +3880,7 @@ export var App = props => {
         [],
       ),
     )
-    const rectangle = clearJSXElementUniqueIDs(
+    const rectangle = clearJSXElementChildUniqueIDs(
       jsxElement(
         'Rectangle',
         'ccc',
@@ -3894,7 +3895,7 @@ export var App = props => {
         [],
       ),
     )
-    const myCustomCompomnent = clearJSXElementUniqueIDs(
+    const myCustomCompomnent = clearJSXElementChildUniqueIDs(
       jsxElement(
         'MyCustomCompomnent',
         'ddd',
@@ -3904,7 +3905,7 @@ export var App = props => {
         [ellipse, rectangle],
       ),
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'View',
         'ggg',
@@ -4403,7 +4404,7 @@ export var whatever = props => {
       }),
       { bbb: innerElement },
     )
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'div',
         'aaa',
@@ -4523,7 +4524,7 @@ return { a: a };`,
       {},
     )
 
-    const view = clearJSXElementUniqueIDs(
+    const view = clearJSXElementChildUniqueIDs(
       jsxElement(
         'div',
         'aaa',

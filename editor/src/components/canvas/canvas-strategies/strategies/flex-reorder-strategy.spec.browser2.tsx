@@ -686,8 +686,7 @@ describe('Flex Reorder Strategy', () => {
           ])
         })
 
-        // TODO fix this in the next PR!
-        xit('dragging root fragment of conditional active branch reparents the conditional itself', async () => {
+        it('dragging root fragment of conditional active branch reparents the conditional itself', async () => {
           const renderResult = await renderTestEditorWithCode(
             makeTestProjectCodeWithSnippet(TestProjectWithFragment(type, 'row')),
             'await-first-dom-report',
