@@ -7,7 +7,7 @@ import {
   TestSceneUID,
   TestAppUID,
 } from '../../ui-jsx.test-utils'
-import { GroupFlagKey, isGroupPragmaApplied } from './group-like-helpers'
+import { GroupFlagKey, isElementMarkedAsGroup } from './group-like-helpers'
 
 describe('group like helpers', () => {
   describe('group flag', () => {
@@ -51,7 +51,7 @@ describe('group like helpers', () => {
       )
 
       expect(
-        isGroupPragmaApplied(editor.getEditorState().editor.jsxMetadata, conditional1),
+        isElementMarkedAsGroup(editor.getEditorState().editor.jsxMetadata, conditional1),
       ).toEqual(true)
 
       const conditional2 = EP.fromString(
@@ -59,7 +59,7 @@ describe('group like helpers', () => {
       )
 
       expect(
-        isGroupPragmaApplied(editor.getEditorState().editor.jsxMetadata, conditional2),
+        isElementMarkedAsGroup(editor.getEditorState().editor.jsxMetadata, conditional2),
       ).toEqual(false)
 
       const conditional3 = EP.fromString(
@@ -67,7 +67,7 @@ describe('group like helpers', () => {
       )
 
       expect(
-        isGroupPragmaApplied(editor.getEditorState().editor.jsxMetadata, conditional3),
+        isElementMarkedAsGroup(editor.getEditorState().editor.jsxMetadata, conditional3),
       ).toEqual(false)
     })
 
@@ -85,28 +85,28 @@ describe('group like helpers', () => {
       )
 
       expect(
-        isGroupPragmaApplied(
+        isElementMarkedAsGroup(
           editor.getEditorState().editor.jsxMetadata,
           EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/a`),
         ),
       ).toEqual(true)
 
       expect(
-        isGroupPragmaApplied(
+        isElementMarkedAsGroup(
           editor.getEditorState().editor.jsxMetadata,
           EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/b`),
         ),
       ).toEqual(true)
 
       expect(
-        isGroupPragmaApplied(
+        isElementMarkedAsGroup(
           editor.getEditorState().editor.jsxMetadata,
           EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/c`),
         ),
       ).toEqual(false)
 
       expect(
-        isGroupPragmaApplied(
+        isElementMarkedAsGroup(
           editor.getEditorState().editor.jsxMetadata,
           EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/d`),
         ),

@@ -170,7 +170,7 @@ export function treatElementAsContentAffecting(
 
 export const GroupFlagKey = 'data-group'
 
-export function isGroupPragmaApplied(
+export function isElementMarkedAsGroup(
   metadata: ElementInstanceMetadataMap,
   path: ElementPath,
 ): boolean {
