@@ -53,12 +53,18 @@ import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-st
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
+import { CanvasCommand } from '../commands/commands'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ) => CanvasStrategy | null
+
+export interface PostStrategyFixupStep {
+  name: string
+  fixup: (store: EditorState) => Array<CanvasCommand>
+}
 
 export type MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -160,6 +166,8 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   keyboardShortcutStrategies,
   drawToInsertTextStrategy,
 ]
+
+export const PostStrategyFixupSteps: Array<PostStrategyFixupStep> = []
 
 export function pickCanvasStateFromEditorState(
   editorState: EditorState,

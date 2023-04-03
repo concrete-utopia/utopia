@@ -5,6 +5,7 @@ import {
   interactionInProgress,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
+  PostStrategyFixupStep,
   StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
@@ -17,7 +18,7 @@ import {
   KeyboardInteractionData,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
-import { foldAndApplyCommands } from '../../canvas/commands/commands'
+import { foldAndApplyCommands, foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
 import { EditorAction } from '../action-types'
 import {
@@ -607,6 +608,7 @@ function handleUpdate(
 
 export function handleStrategies(
   strategies: Array<MetaCanvasStrategy>,
+  fixupSteps: Array<PostStrategyFixupStep>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
@@ -622,6 +624,7 @@ export function handleStrategies(
   }
   const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
     strategies,
+    fixupSteps,
     dispatchedActions,
     storedState,
     result,
@@ -714,6 +717,7 @@ function injectNewMetadataToOldEditorState(
 
 function handleStrategiesInner(
   strategies: Array<MetaCanvasStrategy>,
+  fixupSteps: Array<PostStrategyFixupStep>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
@@ -754,7 +758,12 @@ function handleStrategiesInner(
     if (cancelInteraction) {
       return interactionCancel(storedState, result)
     } else if (makeChangesPermanent) {
-      return interactionFinished(strategies, storedState, result)
+      const finalResult = interactionFinished(strategies, storedState, result)
+      const fixedState = fixupSteps.reduce(
+        (state, step) => foldAndApplyCommandsSimple(state, step.fixup(state)),
+        finalResult.patchedEditorState,
+      )
+      return { ...finalResult, patchedEditorState: fixedState }
     } else {
       const interactionHardResetNeeded = hasDragModifiersChanged(
         storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,

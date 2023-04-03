@@ -724,6 +724,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     // the job of handleStrategies in this case is to update the metadata of patchedEditor, without running any strategies
     const actualResult = handleStrategies(
       RegisteredCanvasStrategies,
+      [],
       [saveDOMReport(newMetadata, [], [])],
       oldEditorStore,
       dispatchResultFromEditorStore(newEditorStore),
@@ -775,6 +776,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
     // the job of handleStrategies in this case is to update the jsxMetadata of patchedEditor using unpatchedEditor.canvas.interactionSession.metadata, without running any strategies
     const actualResult = handleStrategies(
       RegisteredCanvasStrategies,
+      [],
       [saveDOMReport(newMetadata, [], [])],
       oldEditorStore,
       dispatchResultFromEditorStore(newEditorStore),

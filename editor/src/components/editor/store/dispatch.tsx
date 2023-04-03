@@ -60,6 +60,8 @@ import { handleStrategies } from './dispatch-strategies'
 import { emptySet } from '../../../core/shared/set-utils'
 import {
   MetaCanvasStrategy,
+  PostStrategyFixupStep,
+  PostStrategyFixupSteps,
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
@@ -387,6 +389,7 @@ export function editorDispatch(
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
+  fixupSteps: Array<PostStrategyFixupStep> = PostStrategyFixupSteps,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some(
@@ -449,6 +452,7 @@ export function editorDispatch(
         working,
         spyCollector,
         strategiesToUse,
+        fixupSteps,
       )
       return newStore
     },
@@ -688,6 +692,7 @@ function editorDispatchInner(
   storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
+  fixupSteps: Array<PostStrategyFixupStep>,
 ): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
@@ -795,6 +800,7 @@ function editorDispatchInner(
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
       handleStrategies(
         strategiesToUse,
+        fixupSteps,
         dispatchedActions,
         storedState,
         result,
