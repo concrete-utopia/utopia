@@ -162,3 +162,20 @@ export function treatElementAsContentAffecting(
 ): boolean {
   return getElementContentAffectingType(metadata, allElementProps, path) != null
 }
+
+export function isSizedContainerWithAbsoluteChildren(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): boolean {
+  const elementProps = allElementProps[EP.toString(path)]
+  const hasWidthAndHeightProps =
+    elementProps?.['style']?.['width'] != null && elementProps?.['style']?.['height'] != null
+
+  const allChildrenAbsolute = MetadataUtils.getChildrenPathsUnordered(metadata, path).every(
+    (child) =>
+      MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, child)),
+  )
+
+  return hasWidthAndHeightProps && allChildrenAbsolute
+}

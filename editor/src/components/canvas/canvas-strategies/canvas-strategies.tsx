@@ -54,6 +54,7 @@ import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strat
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import { CanvasCommand } from '../commands/commands'
+import { groupSizingFixup } from './fixups/group-size-fixup'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -167,7 +168,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   drawToInsertTextStrategy,
 ]
 
-export const PostStrategyFixupSteps: Array<PostStrategyFixupStep> = []
+export const PostStrategyFixupSteps: Array<PostStrategyFixupStep> = [groupSizingFixup]
 
 export function pickCanvasStateFromEditorState(
   editorState: EditorState,

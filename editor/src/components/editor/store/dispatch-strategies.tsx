@@ -759,10 +759,13 @@ function handleStrategiesInner(
       return interactionCancel(storedState, result)
     } else if (makeChangesPermanent) {
       const finalResult = interactionFinished(strategies, storedState, result)
-      const fixedState = fixupSteps.reduce(
-        (state, step) => foldAndApplyCommandsSimple(state, step.fixup(state)),
-        finalResult.patchedEditorState,
-      )
+      const fixedState = fixupSteps.reduce((state, step) => {
+        const fix = step.fixup(state)
+        if (fix.length > 0) {
+          return foldAndApplyCommandsSimple(state, fix)
+        }
+        return state
+      }, finalResult.patchedEditorState)
       return { ...finalResult, patchedEditorState: fixedState }
     } else {
       const interactionHardResetNeeded = hasDragModifiersChanged(
