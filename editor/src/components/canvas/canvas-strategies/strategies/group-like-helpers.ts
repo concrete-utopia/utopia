@@ -197,3 +197,15 @@ export function isElementMarkedAsGroup(
 
   return false
 }
+
+export function listAllGroupLikeAffectedAncestorsForTarget(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<ElementPath> {
+  const parentElement = EP.parentPath(target)
+  if (isElementMarkedAsGroup(metadata, parentElement)) {
+    return [parentElement, ...listAllGroupLikeAffectedAncestorsForTarget(metadata, parentElement)]
+  }
+
+  return []
+}

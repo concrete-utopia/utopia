@@ -1,7 +1,32 @@
-import { toString } from '../../../core/shared/element-path'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
+import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import {
+  CanvasRectangle,
+  boundingRectangle,
+  nullIfInfinity,
+  zeroRectIfNullOrInfinity,
+} from '../../../core/shared/math-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import * as PP from '../../../core/shared/property-path'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { cssNumber } from '../../inspector/common/css-utils'
+import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { listAllGroupLikeAffectedAncestorsForTarget } from '../canvas-strategies/strategies/group-like-helpers'
 import { CanvasFrameAndTarget } from '../canvas-types'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { adjustCssLengthProperty } from './adjust-css-length-command'
+import {
+  BaseCommand,
+  CanvasCommand,
+  CommandFunction,
+  WhenToRun,
+  foldAndApplyCommandsSimple,
+  getPatchForComponentChange,
+  runCanvasCommand,
+} from './commands'
+import { CommandFunctionResult } from './commands'
+import { setCssLengthProperty } from './set-css-length-command'
 
 export interface PushIntendedBounds extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS'
@@ -11,26 +36,151 @@ export interface PushIntendedBounds extends BaseCommand {
 export function pushIntendedBounds(value: Array<CanvasFrameAndTarget>): PushIntendedBounds {
   return {
     type: 'PUSH_INTENDED_BOUNDS',
-    whenToRun: 'mid-interaction',
+    whenToRun: 'always',
     value: value,
   }
 }
 
-export const runPushIntendedBounds: CommandFunction<PushIntendedBounds> = (
-  _: EditorState,
+export const runPushIntendedBounds = (
+  editor: EditorState,
   command: PushIntendedBounds,
-) => {
-  const editorStatePatch: EditorStatePatch = {
-    canvas: {
-      controls: {
-        strategyIntendedBounds: { $push: command.value },
-      },
-    },
-  }
+  commandLifecycle: InteractionLifecycle,
+): CommandFunctionResult => {
+  const resizeAncestorsPatch = getResizeAncestorsPatches(editor, command)
+
+  const intendedBoundsPatch =
+    commandLifecycle === 'mid-interaction' ? pushCommandStatePatch(command) : []
+
   return {
-    editorStatePatches: [editorStatePatch],
+    editorStatePatches: [resizeAncestorsPatch, ...intendedBoundsPatch],
     commandDescription: `Set Intended Bounds for ${command.value
-      .map((c) => toString(c.target))
+      .map((c) => EP.toString(c.target))
       .join(', ')}`,
   }
+}
+
+function pushCommandStatePatch(command: PushIntendedBounds): Array<EditorStatePatch> {
+  return [
+    {
+      canvas: {
+        controls: {
+          strategyIntendedBounds: { $push: command.value },
+        },
+      },
+    },
+  ]
+}
+
+function getResizeAncestorsPatches(
+  editor: EditorState,
+  command: PushIntendedBounds,
+): EditorStatePatch {
+  const targets = command.value
+
+  // we are going to mutate this as we iterate over targets
+  let updatedGlobalFrames: { [path: string]: CanvasRectangle } = {}
+
+  function getGlobalFrame(path: ElementPath): CanvasRectangle {
+    return forceNotNull(
+      `Invariant: found null globalFrame for ${EP.toString(path)}`,
+      updatedGlobalFrames[EP.toString(path)] ??
+        MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)?.globalFrame,
+    )
+  }
+
+  targets.forEach((frameAndTarget) => {
+    // find out which ancestors need resizing
+    const affectedAncestors = listAllGroupLikeAffectedAncestorsForTarget(
+      editor.jsxMetadata,
+      frameAndTarget.target,
+    )
+
+    // I assume that affectedAncestors are ordered bottom-up
+    affectedAncestors.forEach((ancestor) => {
+      // the ancestor's globalFrame shall be the union of the current global frame and the target's frame
+      const currentGlobalFrame = getGlobalFrame(ancestor)
+      const newGlobalFrame = boundingRectangle(currentGlobalFrame, frameAndTarget.frame)
+      updatedGlobalFrames[EP.toString(ancestor)] = newGlobalFrame
+    })
+  })
+
+  // we REALLY need a lens for this!
+  let commandsToRun: Array<CanvasCommand> = []
+
+  // okay so now we have a bunch of new globalFrames. what do we do with them?
+  Object.keys(updatedGlobalFrames).forEach((pathStr) => {
+    const elementToUpdate = EP.fromString(pathStr)
+    const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
+    if (metadata != null) {
+      commandsToRun.push(...setElementTopLeftWidthHeight(metadata, updatedGlobalFrames[pathStr]))
+    }
+  })
+
+  const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
+  return { projectContents: { $set: updatedEditor.projectContents } }
+}
+
+function setElementTopLeftWidthHeight(
+  instance: ElementInstanceMetadata,
+  updatedGlobalFrame: CanvasRectangle,
+): Array<CanvasCommand> {
+  const currentGlobalFrame = zeroRectIfNullOrInfinity(instance.globalFrame)
+  return [
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'top'),
+      updatedGlobalFrame.y - currentGlobalFrame.y,
+      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'left'),
+      updatedGlobalFrame.x - currentGlobalFrame.x,
+      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'right'),
+      // prettier-ignore
+      (updatedGlobalFrame.x + updatedGlobalFrame.width) - (currentGlobalFrame.x + currentGlobalFrame.width),
+      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'bottom'),
+      // prettier-ignore
+      (updatedGlobalFrame.y + updatedGlobalFrame.height) - (currentGlobalFrame.y + currentGlobalFrame.height),
+      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'width'),
+      updatedGlobalFrame.width - currentGlobalFrame.width,
+      instance.specialSizeMeasurements.coordinateSystemBounds?.width,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+    adjustCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'height'),
+      updatedGlobalFrame.height - currentGlobalFrame.height,
+      instance.specialSizeMeasurements.coordinateSystemBounds?.height,
+      instance.specialSizeMeasurements.parentFlexDirection,
+      'do-not-create-if-doesnt-exist',
+    ),
+  ]
 }
