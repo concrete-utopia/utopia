@@ -1125,6 +1125,9 @@ export type ElementSupportsChildren =
 export function elementChildSupportsChildrenAlsoText(
   element: JSXElementChild,
 ): ElementSupportsChildren | null {
+  if (isJSXConditionalExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
   if (elementOnlyHasTextChildren(element)) {
     // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal.
     return 'hasOnlyTextChildren'
