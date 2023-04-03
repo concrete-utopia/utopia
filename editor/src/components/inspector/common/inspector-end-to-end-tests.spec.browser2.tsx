@@ -1391,14 +1391,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
+      `"detected-fromcss"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
+      `"detected-fromcss"`,
     )
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
@@ -1482,13 +1482,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"detected-fromcss"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"detected-fromcss"`,
     )
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
