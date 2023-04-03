@@ -523,7 +523,6 @@ export function insertJSXElementChild(
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
-  spyMetadata: ElementInstanceMetadataMap,
 ): InsertChildAndDetails {
   const makeE = () => {
     // TODO delete me
@@ -619,73 +618,6 @@ export function insertJSXElementChild(
             ...parentElement,
             children: updatedChildren,
           }
-        } else if (isJSXConditionalExpression(parentElement)) {
-          function getNewBranch(branch: JSXElementChild): JSXElementChild {
-            switch (branch.type) {
-              case 'ATTRIBUTE_VALUE':
-                if (branch.value === null) {
-                  return elementToInsert
-                }
-                return jsxFragment(
-                  generateUidWithExistingComponents(projectContents),
-                  [jsxTextBlock(`${branch.value}`), elementToInsert],
-                  false,
-                )
-              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-                return jsxFragment(
-                  generateUidWithExistingComponents(projectContents),
-                  [
-                    jsxArbitraryBlock(
-                      branch.javascript,
-                      branch.javascript,
-                      branch.transpiledJavascript,
-                      branch.definedElsewhere,
-                      branch.sourceMap,
-                      branch.elementsWithin,
-                    ),
-                    elementToInsert,
-                  ],
-                  false,
-                )
-              case 'ATTRIBUTE_FUNCTION_CALL':
-              case 'ATTRIBUTE_NESTED_ARRAY':
-              case 'ATTRIBUTE_NESTED_OBJECT':
-                return branch
-              case 'JSX_FRAGMENT':
-                return { ...branch, children: [...branch.children, elementToInsert] }
-              case 'JSX_ELEMENT':
-              case 'JSX_TEXT_BLOCK':
-              case 'JSX_CONDITIONAL_EXPRESSION':
-                return jsxFragment(
-                  generateUidWithExistingComponents(projectContents),
-                  [branch, elementToInsert],
-                  false,
-                )
-              default:
-                assertNever(branch)
-            }
-          }
-
-          function getIsTrueCase(conditional: JSXConditionalExpression): boolean {
-            const spyParentMetadata = spyMetadata[EP.toString(parentPath)] ?? null
-            if (spyParentMetadata == null) {
-              return true
-            }
-            const conditionalCase = getConditionalCase(
-              EP.appendToPath(parentPath, getUtopiaID(conditional.whenTrue)),
-              conditional,
-              spyParentMetadata,
-              parentPath,
-            )
-            return conditionalCase === 'true-case'
-          }
-          const isTrueCase = getIsTrueCase(parentElement)
-
-          const branch = getNewBranch(isTrueCase ? parentElement.whenTrue : parentElement.whenFalse)
-
-          return isTrueCase
-            ? { ...parentElement, whenTrue: branch }
-            : { ...parentElement, whenFalse: branch }
         } else {
           return parentElement
         }

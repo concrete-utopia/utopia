@@ -64,7 +64,6 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               underlyingElementTarget,
               withElementRemoved,
               null,
-              editorState.spyMetadata,
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
@@ -89,7 +88,6 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               underlyingElementTarget,
               componentsNewParent,
               null,
-              editorState.spyMetadata,
             )
 
             const editorStatePatchOldParentFile = getPatchForComponentChange(
