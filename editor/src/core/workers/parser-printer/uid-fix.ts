@@ -90,9 +90,12 @@ export function fixParseSuccessUIDs(
     ...newParsed.highlightBounds,
   }
   for (const { oldUID, newUID } of fixUIDsState.mappings) {
-    const bounds = fixedHighlightBounds[oldUID]
-    delete fixedHighlightBounds[oldUID]
-    fixedHighlightBounds[newUID] = bounds
+    // Protect against highlight bounds not being defined for this case.
+    if (oldUID in fixedHighlightBounds) {
+      const bounds = fixedHighlightBounds[oldUID]
+      delete fixedHighlightBounds[oldUID]
+      fixedHighlightBounds[newUID] = bounds
+    }
   }
 
   // Return the result.
