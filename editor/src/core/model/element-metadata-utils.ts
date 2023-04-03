@@ -1538,7 +1538,7 @@ export const MetadataUtils = {
       ...spyOnlyElements,
     }
 
-    const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements) // fontos hogy a workingElements-et adjuk neki
+    const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements)
     return {
       ...workingElements,
       ...elementsInheritingFromAncestors,
