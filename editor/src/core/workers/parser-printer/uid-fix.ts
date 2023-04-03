@@ -19,14 +19,16 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
-import type {
+import {
   ParsedTextFile,
   ParseSuccess,
   HighlightBoundsForUids,
+  isParseSuccess,
 } from '../../shared/project-file-types'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField } from '../../../core/shared/optics/optic-creators'
+import { assertNever } from '../../../core/shared/utils'
 
 const jsxElementUIDOptic: Optic<JSXElement, string> = fromField('uid')
 
@@ -57,8 +59,8 @@ export function fixParseSuccessUIDs(
   newParsed: ParsedTextFile,
   alreadyExistingUIDs: Set<string>,
 ): ParsedTextFile {
-  if (oldParsed == null || newParsed.type !== 'PARSE_SUCCESS') {
-    // we won't try to fix parse failures
+  if (oldParsed == null || !isParseSuccess(newParsed)) {
+    // We won't try to fix parse failures.
     return newParsed
   }
 
@@ -114,7 +116,7 @@ function updateUID<T>(
   baseValue: T,
 ): T {
   const newUID = unsafeGet(uidOptic, baseValue)
-  let uidToUse: string = oldUID
+  let uidToUse: string
   if (oldUID === newUID) {
     // Old one is the same as the new one, so everything is great.
     uidToUse = newUID
@@ -199,8 +201,7 @@ export function fixTopLevelElementUIDs(
       return newElement
     }
     default:
-      const _exhaustiveCheck: never = newElement
-      throw new Error(`Unhandled case ${JSON.stringify(newElement)}.`)
+      assertNever(newElement)
   }
 
   return newElement
@@ -342,8 +343,7 @@ export function fixJSXAttributesPart(
       break
     }
     default:
-      const _exhaustiveCheck: never = newExpression
-      throw new Error(`Unhandled case ${JSON.stringify(newExpression)}.`)
+      assertNever(newExpression)
   }
 
   return newExpression
@@ -466,8 +466,7 @@ export function fixJSXElementChildUIDs(
       break
     }
     default:
-      const _exhaustiveCheck: never = newElement
-      throw new Error(`Unhandled case ${JSON.stringify(newElement)}.`)
+      assertNever(newElement)
   }
 
   return newElement
@@ -564,8 +563,7 @@ export function fixExpressionUIDs(
       break
     }
     default:
-      const _exhaustiveCheck: never = newExpression
-      throw new Error(`Unhandled case ${JSON.stringify(newExpression)}.`)
+      assertNever(newExpression)
   }
 
   return newExpression
