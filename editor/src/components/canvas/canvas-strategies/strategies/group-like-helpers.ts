@@ -1,7 +1,12 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../../core/shared/either'
+import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
+import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -161,4 +166,34 @@ export function treatElementAsContentAffecting(
   path: ElementPath,
 ): boolean {
   return getElementContentAffectingType(metadata, allElementProps, path) != null
+}
+
+export const GroupFlagKey = 'data-group'
+
+export function isGroupPragmaApplied(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): boolean {
+  const instance = MetadataUtils.findElementByElementPath(metadata, path)
+  if (instance == null || isLeft(instance.element)) {
+    return false
+  }
+
+  if (isJSXConditionalExpression(instance.element.value)) {
+    return findUtopiaCommentFlag(instance.element.value.comments, 'group')?.value === true
+  }
+
+  if (isJSXElement(instance.element.value)) {
+    return (
+      instance.element.value.props.find(
+        (prop) =>
+          prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
+          prop.key === GroupFlagKey &&
+          prop.value.type === 'ATTRIBUTE_VALUE' &&
+          prop.value.value === true,
+      ) != null
+    )
+  }
+
+  return false
 }
