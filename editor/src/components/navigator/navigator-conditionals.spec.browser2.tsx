@@ -520,13 +520,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -593,15 +593,15 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment
                 regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment/then-then-div
                 regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment/sibling-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
 
@@ -619,14 +619,14 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e
                 regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -693,15 +693,15 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e
                 regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e/then-then-div
                 regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/38e/sibling-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
 
@@ -716,13 +716,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -745,7 +745,7 @@ describe('conditionals in the navigator', () => {
 
     // Getting info relating to where the element will be dragged to.
     const elementPathToTarget = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`,
     )
     const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
       `navigator-item-${varSafeNavigatorEntryToKey(
@@ -789,14 +789,14 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
-          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/fragment-element-fragment`)
   })
 
   it('dragging into a non-empty inactive clause with a fragment wrapper, inserts into a wrapper', async () => {
@@ -813,13 +813,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/38e
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/38e-element-38e
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -842,7 +842,7 @@ describe('conditionals in the navigator', () => {
 
     // Getting info relating to where the element will be dragged to.
     const elementPathToTarget = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/38e`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`,
     )
     const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
       `navigator-item-${varSafeNavigatorEntryToKey(
@@ -889,13 +889,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/38e
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/38e-element-38e`)
   })
 
@@ -913,13 +913,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/129
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/129-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -984,13 +984,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/129
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/129-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
   it('dragging into an empty inactive clause, takes the place of the empty value', async () => {
@@ -1004,13 +1004,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -1048,8 +1048,6 @@ describe('conditionals in the navigator', () => {
       y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
     }
 
-    FOR_TESTS_setNextGeneratedUids(['fragment'])
-
     await act(async () =>
       dragElement(
         renderResult,
@@ -1077,15 +1075,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment
-                regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment/then-then-div
-                regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/fragment/sibling-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div-element-sibling-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
   it('dragging out of an inactive clause, replaces with null', async () => {
@@ -1099,13 +1095,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -1192,13 +1188,13 @@ describe('conditionals in the navigator', () => {
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
@@ -1213,13 +1209,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
 
@@ -1293,20 +1289,19 @@ describe('conditionals in the navigator', () => {
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/then-then-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/${removedOriginalUID}
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/${removedOriginalUID}-attribute
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
   xit('dragging into child of an active clause, works as it would without the conditional', () => {
     // TODO: Fill this out.
   })
-
   it('can select and delete an inactive clause', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
@@ -1369,13 +1364,13 @@ describe('conditionals in the navigator', () => {
     ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
@@ -1383,7 +1378,7 @@ describe('conditionals in the navigator', () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     // Determine the entry we want to select.
-    const elementPathToSelect = EP.fromString(
+    const clausePath = EP.fromString(
       `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/then-then-div`,
     )
 
@@ -1391,7 +1386,7 @@ describe('conditionals in the navigator', () => {
     const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
       NavigatorItemTestId(
         varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(elementPathToSelect, 'true-case'),
+          conditionalClauseNavigatorEntry(EP.parentPath(clausePath), 'true-case'),
         ),
       ),
     )
@@ -1406,13 +1401,13 @@ describe('conditionals in the navigator', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-    expect(selectedViewPaths).toEqual([EP.toString(elementPathToSelect)])
+    expect(selectedViewPaths).toEqual([EP.toString(clausePath)])
   })
   it('can select the false case clause by its label', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     // Determine the entry we want to select.
-    const elementPathToSelect = EP.fromString(
+    const clausePath = EP.fromString(
       `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
     )
 
@@ -1420,7 +1415,7 @@ describe('conditionals in the navigator', () => {
     const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
       NavigatorItemTestId(
         varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(elementPathToSelect, 'false-case'),
+          conditionalClauseNavigatorEntry(EP.parentPath(clausePath), 'false-case'),
         ),
       ),
     )
@@ -1435,7 +1430,7 @@ describe('conditionals in the navigator', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-    expect(selectedViewPaths).toEqual([EP.toString(elementPathToSelect)])
+    expect(selectedViewPaths).toEqual([EP.toString(clausePath)])
   })
   it('can be collapsed', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -1449,9 +1444,7 @@ describe('conditionals in the navigator', () => {
     const trueBranchTestId = NavigatorItemTestId(
       varSafeNavigatorEntryToKey(
         conditionalClauseNavigatorEntry(
-          EP.fromString(
-            `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
-          ),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`),
           'true-case',
         ),
       ),
@@ -1459,9 +1452,7 @@ describe('conditionals in the navigator', () => {
     const falseBranchTestId = NavigatorItemTestId(
       varSafeNavigatorEntryToKey(
         conditionalClauseNavigatorEntry(
-          EP.fromString(
-            `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
-          ),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`),
           'false-case',
         ),
       ),
@@ -1526,13 +1517,13 @@ describe('conditionals in the navigator', () => {
       expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
@@ -1575,13 +1566,13 @@ describe('conditionals in the navigator', () => {
       expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib-element-sib
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
@@ -1624,13 +1615,13 @@ describe('conditionals in the navigator', () => {
       expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib-element-sib
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
