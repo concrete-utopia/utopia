@@ -1,10 +1,19 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../../core/shared/either'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
+import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
   getTargetPathsFromInteractionTarget,
@@ -181,5 +190,31 @@ export function isSizedContainerWithAbsoluteChildren(
       MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, child)),
   )
 
-  return hasWidthAndHeightProps && allChildrenAbsolute
+  return hasWidthAndHeightProps && allChildrenAbsolute && isElementMarkedAsGroup(metadata, path)
+}
+
+export const GroupFlagKey = 'data-group'
+
+export function isElementMarkedAsGroup(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): boolean {
+  const instance = MetadataUtils.findElementByElementPath(metadata, path)
+  if (instance == null || isLeft(instance.element)) {
+    return false
+  }
+
+  if (isJSXConditionalExpression(instance.element.value)) {
+    return findUtopiaCommentFlag(instance.element.value.comments, 'group')?.value === true
+  }
+
+  if (isJSXElement(instance.element.value)) {
+    return foldEither(
+      () => false,
+      (v) => v === true,
+      getSimpleAttributeAtPath(right(instance.element.value.props), PP.create(GroupFlagKey)),
+    )
+  }
+
+  return false
 }
