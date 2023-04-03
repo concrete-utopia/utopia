@@ -78,11 +78,21 @@ export interface NavigatorItemInnerProps {
 function selectItem(
   dispatch: EditorDispatch,
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
-  elementPath: ElementPath,
+  navigatorEntry: NavigatorEntry,
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
+  elementMetadata: ElementInstanceMetadata | null,
 ) {
+  const elementPath =
+    isConditionalClauseNavigatorEntry(navigatorEntry) && elementMetadata != null
+      ? getConditionalClausePathForNavigatorEntry(navigatorEntry, elementMetadata)
+      : navigatorEntry.elementPath
+
+  if (elementPath == null) {
+    return
+  }
+
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
@@ -490,27 +500,16 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, navigatorEntry.elementPath],
   )
   const select = React.useCallback(
-    (event: any) => {
-      if (isConditionalClauseNavigatorEntry(navigatorEntry) && elementMetadata != null) {
-        const pathToSelect = getConditionalClausePathForNavigatorEntry(
-          navigatorEntry,
-          elementMetadata,
-        )
-
-        if (pathToSelect != null) {
-          selectItem(dispatch, getSelectedViewsInRange, pathToSelect, index, selected, event)
-        }
-      } else {
-        selectItem(
-          dispatch,
-          getSelectedViewsInRange,
-          navigatorEntry.elementPath,
-          index,
-          selected,
-          event,
-        )
-      }
-    },
+    (event: any) =>
+      selectItem(
+        dispatch,
+        getSelectedViewsInRange,
+        navigatorEntry,
+        index,
+        selected,
+        event,
+        elementMetadata,
+      ),
     [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, elementMetadata],
   )
   const highlight = React.useCallback(
