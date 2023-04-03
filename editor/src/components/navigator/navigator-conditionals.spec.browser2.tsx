@@ -512,23 +512,25 @@ describe('conditionals in the navigator', () => {
   it('can not drag into a conditional', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
+    const expectedNavigatorStructure = `  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`
+
     expect(
       navigatorStructure(
         renderResult.getEditorState().editor,
         renderResult.getEditorState().derived,
       ),
-    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
-    regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
-          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
+    ).toEqual(expectedNavigatorStructure)
 
     // Select the entry we plan to drag.
     const elementPathToDrag = EP.fromString(
@@ -584,18 +586,7 @@ describe('conditionals in the navigator', () => {
         renderResult.getEditorState().editor,
         renderResult.getEditorState().derived,
       ),
-    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
-    regular-utopia-storyboard-uid/scene-aaa/containing-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
-        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div
-          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
-      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
+    ).toEqual(expectedNavigatorStructure)
   })
   it('dragging into a non-empty active clause, creates a fragment wrapper', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
