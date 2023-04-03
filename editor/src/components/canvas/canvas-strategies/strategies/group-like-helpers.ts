@@ -1,6 +1,9 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
 import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
-import { isLeft } from '../../../../core/shared/either'
+import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
@@ -10,6 +13,7 @@ import {
 import { is } from '../../../../core/shared/equality-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
   getTargetPathsFromInteractionTarget,
@@ -184,14 +188,10 @@ export function isElementMarkedAsGroup(
   }
 
   if (isJSXElement(instance.element.value)) {
-    return (
-      instance.element.value.props.find(
-        (prop) =>
-          prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
-          prop.key === GroupFlagKey &&
-          prop.value.type === 'ATTRIBUTE_VALUE' &&
-          prop.value.value === true,
-      ) != null
+    return foldEither(
+      () => false,
+      (v) => v === true,
+      getSimpleAttributeAtPath(right(instance.element.value.props), PP.create(GroupFlagKey)),
     )
   }
 
