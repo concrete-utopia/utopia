@@ -3,7 +3,6 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { useContextSelector } from 'use-context-selector'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
@@ -12,7 +11,6 @@ import { getControlStyles, InspectorRowHoverCSS, SelectOption } from '../../uuiu
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { CSSNumber, cssNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
-import { InspectorPropsContext } from './common/property-path-hooks'
 import { metadataSelector, selectedViewsSelector, useComputedSizeRef } from './inpector-selectors'
 import {
   Axis,
@@ -84,11 +82,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
-  const propertyTarget = useContextSelector(
-    InspectorPropsContext,
-    (contextData) => contextData.targetPath,
-  )
-
   const widthCurrentValue = useEditorState(
     Substores.metadata,
     (store) =>
@@ -96,7 +89,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         'horizontal',
         metadataSelector(store),
         selectedViewsSelector(store)[0] ?? null,
-        propertyTarget,
       ),
     'FillHugFixedControl widthCurrentValue',
     isFixedHugFillEqual,
@@ -120,7 +112,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         'horizontal',
         metadataSelector(store),
         selectedViewsSelector(store)[0] ?? null,
-        propertyTarget,
       ).fixedHugFill?.type === 'fill',
   )
 
@@ -133,7 +124,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         'vertical',
         metadataSelector(store),
         selectedViewsSelector(store)[0] ?? null,
-        propertyTarget,
       ),
     'FillHugFixedControl heightCurrentValue',
     isFixedHugFillEqual,
@@ -157,7 +147,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         'vertical',
         metadataSelector(store),
         selectedViewsSelector(store)[0] ?? null,
-        propertyTarget,
       ).fixedHugFill?.type === 'fill',
   )
 

@@ -15,11 +15,8 @@ import {
 import { isLeft, isRight, Either, right, defaultEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CSSNumber, ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
-import {
-  MultiselectAtProps,
-  MultiselectAtStringProps,
-  stylePropPathMappingFn,
-} from './property-path-hooks'
+import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import * as PP from '../../../core/shared/property-path'
 import { IcnColor } from '../../../uuiui'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 
@@ -587,21 +584,17 @@ export function isNotUnsetDefaultOrDetected(controlStatus: ControlStatus): boole
 
 export function getFallbackControlStatusForProperty(
   property: keyof ParsedCSSProperties,
-  propertyTarget: ReadonlyArray<string>,
   jsxAttributes: JSXAttributes,
   attributeMetadatada: StyleAttributeMetadata | null,
 ): ControlStatus {
   const modifiableAttribute = getModifiableJSXAttributeAtPath(
     jsxAttributes,
-    stylePropPathMappingFn(property, propertyTarget),
+    PP.create('style', property),
   )
 
   const simpleAttribute = defaultEither(
     null,
-    getSimpleAttributeAtPath(
-      right(jsxAttributes),
-      stylePropPathMappingFn(property, propertyTarget),
-    ),
+    getSimpleAttributeAtPath(right(jsxAttributes), PP.create('style', property)),
   )
 
   const fromStyleSheet =

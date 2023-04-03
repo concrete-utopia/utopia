@@ -1,5 +1,4 @@
 import React from 'react'
-import { useContextSelector } from 'use-context-selector'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { strictEvery } from '../../../../../core/shared/array-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -8,7 +7,6 @@ import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ControlStatus, getControlStyles } from '../../../common/control-status'
 import { cssNumber } from '../../../common/css-utils'
-import { InspectorPropsContext } from '../../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import {
   metadataSelector,
@@ -39,16 +37,11 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     'TextAutoSizingControl isEditableText',
   )
 
-  const propertyTarget = useContextSelector(
-    InspectorPropsContext,
-    (contextData) => contextData.targetPath,
-  )
-
   const widthFillHugFixedState = useEditorState(
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target, propertyTarget)
+      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
     },
     'TextAutoSizingControl fixedHugFillState width',
     isFixedHugFillEqual,
@@ -58,7 +51,7 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target, propertyTarget)
+      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
     },
     'TextAutoSizingControl fixedHugFillState height',
     isFixedHugFillEqual,

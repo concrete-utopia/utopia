@@ -46,8 +46,6 @@ import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProper
 import { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
-import { getModifiableJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
-import { stylePropPathMappingFn } from './common/property-path-hooks'
 import { getFallbackControlStatusForProperty } from './common/control-status'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -529,7 +527,6 @@ export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath | null,
-  propertyTarget: ReadonlyArray<string> = ['style'],
 ): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
@@ -539,10 +536,7 @@ export function detectFillHugFixedState(
   const flexGrowLonghand = foldEither(
     () => null,
     (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(
-      right(element.element.value.props),
-      stylePropPathMappingFn('flexGrow', propertyTarget),
-    ),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flexGrow')),
   )
 
   const flexGrow =
@@ -556,15 +550,11 @@ export function detectFillHugFixedState(
           parseFlex(value),
         )
       },
-      getSimpleAttributeAtPath(
-        right(element.element.value.props),
-        stylePropPathMappingFn('flex', propertyTarget),
-      ),
+      getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flex')),
     )
 
   const flexGrowStatus = getFallbackControlStatusForProperty(
     'flexGrow',
-    propertyTarget,
     element.element.value.props,
     element.attributeMetadatada,
   )
@@ -604,10 +594,7 @@ export function detectFillHugFixedState(
 
   const simpleAttribute = defaultEither(
     null,
-    getSimpleAttributeAtPath(
-      right(element.element.value.props),
-      stylePropPathMappingFn(property, propertyTarget),
-    ),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
   if (simpleAttribute === MaxContent) {
@@ -633,7 +620,6 @@ export function detectFillHugFixedState(
 
     const controlStatus = getFallbackControlStatusForProperty(
       property,
-      propertyTarget,
       element.element.value.props,
       element.attributeMetadatada,
     )
