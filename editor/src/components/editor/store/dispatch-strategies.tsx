@@ -622,13 +622,19 @@ export function handleStrategies(
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')
   }
-  const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
-    strategies,
-    fixupSteps,
-    dispatchedActions,
-    storedState,
-    result,
-  )
+  const {
+    unpatchedEditorState: unpatchedEditorStateeee,
+    patchedEditorState,
+    newStrategyState,
+  } = handleStrategiesInner(strategies, fixupSteps, dispatchedActions, storedState, result)
+
+  const unpatchedEditorState = fixupSteps.reduce((state, step) => {
+    const fix = step.fixup(state)
+    if (fix.length > 0) {
+      return foldAndApplyCommandsSimple(state, fix)
+    }
+    return state
+  }, unpatchedEditorStateeee)
 
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
@@ -654,7 +660,7 @@ export function handleStrategies(
   }
 
   return {
-    unpatchedEditorState,
+    unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
     newStrategyState: newStrategyState,
@@ -758,15 +764,7 @@ function handleStrategiesInner(
     if (cancelInteraction) {
       return interactionCancel(storedState, result)
     } else if (makeChangesPermanent) {
-      const finalResult = interactionFinished(strategies, storedState, result)
-      const fixedState = fixupSteps.reduce((state, step) => {
-        const fix = step.fixup(state)
-        if (fix.length > 0) {
-          return foldAndApplyCommandsSimple(state, fix)
-        }
-        return state
-      }, finalResult.patchedEditorState)
-      return { ...finalResult, patchedEditorState: fixedState }
+      return interactionFinished(strategies, storedState, result)
     } else {
       const interactionHardResetNeeded = hasDragModifiersChanged(
         storedState.unpatchedEditor.canvas.interactionSession?.interactionData ?? null,

@@ -168,6 +168,10 @@ export function isSizedContainerWithAbsoluteChildren(
   allElementProps: AllElementProps,
   path: ElementPath,
 ): boolean {
+  if (EP.isStoryboardPath(path)) {
+    return false
+  }
+
   const elementProps = allElementProps[EP.toString(path)]
   const hasWidthAndHeightProps =
     elementProps?.['style']?.['width'] != null && elementProps?.['style']?.['height'] != null
