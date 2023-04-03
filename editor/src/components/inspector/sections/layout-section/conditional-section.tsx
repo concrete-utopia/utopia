@@ -40,10 +40,7 @@ import {
   updateConditionalExpression,
 } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import {
-  isConditionalClauseNavigatorEntry,
-  NavigatorEntry,
-} from '../../../editor/store/editor-state'
+import { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
@@ -92,19 +89,23 @@ const branchNavigatorEntriesSelector = createCachedSelector(
 
     const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
 
-    function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
+    function getNavigatorEntry(
+      clause: JSXElementChild,
+      conditionalCase: ConditionalCase,
+    ): NavigatorEntry | null {
       return (
-        navigatorEntries.find(
-          (entry) =>
-            EP.pathsEqual(entry.elementPath, getConditionalClausePath(paths[0], clause)) &&
-            !isConditionalClauseNavigatorEntry(entry),
+        navigatorEntries.find((entry) =>
+          EP.pathsEqual(
+            entry.elementPath,
+            getConditionalClausePath(paths[0], clause, conditionalCase),
+          ),
         ) ?? null
       )
     }
 
     return {
-      true: getNavigatorEntry(conditional.whenTrue),
-      false: getNavigatorEntry(conditional.whenFalse),
+      true: getNavigatorEntry(conditional.whenTrue, 'true-case'),
+      false: getNavigatorEntry(conditional.whenFalse, 'false-case'),
     }
   },
 )((_, paths) => paths.map(EP.toString).join(','))

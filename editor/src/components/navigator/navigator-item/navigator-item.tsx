@@ -17,6 +17,7 @@ import {
   isRegularNavigatorEntry,
   NavigatorEntry,
   navigatorEntryToKey,
+  regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
@@ -32,7 +33,6 @@ import {
   ElementInstanceMetadata,
   isJSXConditionalExpression,
   JSXConditionalExpression,
-  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   getConditionalClausePath,
@@ -40,10 +40,9 @@ import {
   matchesOverriddenConditionalBranch,
 } from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth } from '../navigator-utils'
+import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
-import { assertNever } from '../../../core/shared/utils'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -83,17 +82,27 @@ function selectItem(
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
+  elementMetadata: ElementInstanceMetadata | null,
 ) {
+  const elementPath =
+    isConditionalClauseNavigatorEntry(navigatorEntry) && elementMetadata != null
+      ? getConditionalClausePathForNavigatorEntry(navigatorEntry, elementMetadata)
+      : navigatorEntry.elementPath
+
+  if (elementPath == null) {
+    return
+  }
+
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], true), 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
       dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
     } else {
-      dispatch(MetaActions.selectComponents([navigatorEntry.elementPath], false), 'leftpane')
+      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
     }
   }
 }
@@ -309,11 +318,15 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
-      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue)
+      const trueClausePath = getConditionalClausePath(parentPath, conditional.whenTrue, 'true-case')
       return !EP.pathsEqual(elementPath, trueClausePath)
     }
     // when the condition is false, then the 'else' branch is not hidden
-    const falseClausePath = getConditionalClausePath(parentPath, conditional.whenFalse)
+    const falseClausePath = getConditionalClausePath(
+      parentPath,
+      conditional.whenFalse,
+      'false-case',
+    )
     return !EP.pathsEqual(elementPath, falseClausePath)
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
@@ -336,11 +349,13 @@ const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
     return (
       matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenTrue,
+        branch: 'true-case',
         wantOverride: true,
         parentOverride: parentOverride,
       }) ||
       matchesOverriddenConditionalBranch(elementPath, parentPath, {
         clause: conditionalParent.whenFalse,
+        branch: 'false-case',
         wantOverride: false,
         parentOverride: parentOverride,
       })
@@ -429,6 +444,13 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditional',
   )
 
+  const elementMetadata = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, navigatorEntry.elementPath),
+    'NavigatorItem elementMetadata',
+  )
+
   const isInsideComponent =
     EP.isInsideFocusedComponent(navigatorEntry.elementPath) || isFocusedComponent
   const fullyVisible = useStyleFullyVisible(navigatorEntry)
@@ -478,10 +500,17 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, navigatorEntry.elementPath],
   )
   const select = React.useCallback(
-    (event: any) => {
-      selectItem(dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, event)
-    },
-    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected],
+    (event: any) =>
+      selectItem(
+        dispatch,
+        getSelectedViewsInRange,
+        navigatorEntry,
+        index,
+        selected,
+        event,
+        elementMetadata,
+      ),
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, elementMetadata],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),

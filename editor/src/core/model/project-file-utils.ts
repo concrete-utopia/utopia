@@ -313,8 +313,6 @@ export function isImportedComponentNPM(
   )
 }
 
-const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent
-
 export function getOrDefaultScenes(parsedSuccess: ParseSuccess): UtopiaJSXComponent {
   const utopiaComponentFromTopLevelElements = fishOutUtopiaCanvasFromTopLevelElements(
     parsedSuccess.topLevelElements,
@@ -323,7 +321,7 @@ export function getOrDefaultScenes(parsedSuccess: ParseSuccess): UtopiaJSXCompon
     return utopiaComponentFromTopLevelElements
   }
   // If all fails, let's return an empty default component
-  return defaultEmptyUtopiaComponent
+  return EmptyUtopiaCanvasComponent
 }
 
 export function getComponentsFromTopLevelElements(

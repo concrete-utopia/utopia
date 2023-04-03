@@ -62,6 +62,10 @@ import {
   ParsedComments,
   parsedComments,
   isJSXConditionalExpression,
+  JSXConditionalExpression,
+  jsxConditionalExpression,
+  JSXFragment,
+  jsxFragment,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -562,35 +566,65 @@ export function jsxAttributesArbitrary(): Arbitrary<JSXAttributes> {
 }
 
 export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
-  let childArbitrary: Arbitrary<JSXElementChild>
-  if (depth <= 1) {
-    childArbitrary = FastCheck.oneof<JSXElementChild>(
-      jsxArbitraryBlockArbitrary(),
-      jsxTextBlockArbitrary(),
-    )
-  } else {
-    childArbitrary = FastCheck.oneof<JSXElementChild>(
-      jsxElementArbitrary(depth - 1),
-      jsxArbitraryBlockArbitrary(),
-      jsxTextBlockArbitrary(),
-    )
-  }
   return FastCheck.tuple(
     jsxElementNameArbitrary(),
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     jsxAttributesArbitrary(),
-    FastCheck.array(childArbitrary, 3),
+    FastCheck.array(jsxElementChildArbitrary(depth - 1), 3),
   ).map(([elementName, elementUID, elementAttributes, elementChildren]) => {
     return jsxElement(elementName, elementUID, elementAttributes, elementChildren)
   })
 }
 
-export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
-  return FastCheck.oneof<JSXElementChild>(
-    jsxElementArbitrary(3),
-    jsxArbitraryBlockArbitrary(),
-    jsxTextBlockArbitrary(),
-  )
+export function jsxFragmentArbitrary(depth: number): Arbitrary<JSXFragment> {
+  return FastCheck.tuple(
+    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    FastCheck.array(jsxElementChildArbitrary(depth - 1), 3),
+    FastCheck.boolean(),
+  ).map(([uid, children, longForm]) => {
+    return jsxFragment(uid, children, longForm)
+  })
+}
+
+export function jsxConditionalExpressionArbitrary(
+  depth: number,
+): Arbitrary<JSXConditionalExpression> {
+  return FastCheck.tuple(
+    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    FastCheck.oneof(FastCheck.constant('1 === 2'), FastCheck.constant('1 === 1')),
+    jsxAttributeArbitrary(3),
+    jsxElementChildArbitrary(depth - 1).filter((c) => c.type !== 'JSX_TEXT_BLOCK'),
+    jsxElementChildArbitrary(depth - 1).filter((c) => c.type !== 'JSX_TEXT_BLOCK'),
+    FastCheck.constant(emptyComments),
+  ).map(([elementUID, originalConditionString, condition, whenTrue, whenFalse, comments]) => {
+    return jsxConditionalExpression(
+      elementUID,
+      condition,
+      originalConditionString,
+      whenTrue,
+      whenFalse,
+      comments,
+    )
+  })
+}
+
+export function jsxElementChildArbitrary(depth: number): Arbitrary<JSXElementChild> {
+  if (depth <= 1) {
+    return FastCheck.oneof<JSXElementChild>(
+      jsxArbitraryBlockArbitrary(),
+      jsxTextBlockArbitrary(),
+      jsxAttributeArbitrary(3),
+    )
+  } else {
+    return FastCheck.oneof<JSXElementChild>(
+      jsxElementArbitrary(depth),
+      jsxArbitraryBlockArbitrary(),
+      jsxTextBlockArbitrary(),
+      jsxConditionalExpressionArbitrary(depth),
+      jsxFragmentArbitrary(depth),
+      jsxAttributeArbitrary(3),
+    )
+  }
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
