@@ -340,6 +340,7 @@ function collectSetLayoutPropCommands(
       metadata,
       globalFrame,
     )
+
     const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
       if (globalFrame == null) {
         return []
@@ -349,20 +350,22 @@ function collectSetLayoutPropCommands(
       }
     })()
 
-    let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
-    const updatePinsCommands = createUpdatePinsCommands(
-      path,
-      metadata,
-      canvasState,
-      dragDelta,
-      newLocalFrame,
-    )
-    commands.push(...updatePinsCommands)
+    if (newLocalFrame != null) {
+      let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
+      const updatePinsCommands = createUpdatePinsCommands(
+        path,
+        metadata,
+        canvasState,
+        dragDelta,
+        newLocalFrame,
+      )
+      commands.push(...updatePinsCommands)
 
-    return { commands: commands, intendedBounds: intendedBounds }
-  } else {
-    return { commands: [], intendedBounds: [] }
+      return { commands: commands, intendedBounds: intendedBounds }
+    }
   }
+
+  return { commands: [], intendedBounds: [] }
 }
 
 function collectReparentCommands(

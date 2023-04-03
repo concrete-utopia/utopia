@@ -63,18 +63,26 @@ export function getAbsoluteReparentPropertyChanges(
     openFile,
   )
 
-  if (element == null) {
+  const originalParentInstance = MetadataUtils.findElementByElementPath(
+    targetStartingMetadata,
+    EP.parentPath(target),
+  )
+  const newParentInstance = MetadataUtils.findElementByElementPath(
+    targetStartingMetadata,
+    newParent,
+  )
+
+  if (element == null || originalParentInstance == null || newParentInstance == null) {
     return []
   }
 
-  const currentParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
-    EP.parentPath(target),
-    targetStartingMetadata,
-  )
-  const newParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
-    newParent,
-    newParentStartingMetadata,
-  )
+  const currentParentContentBox =
+    MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
+  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
+
+  if (currentParentContentBox == null || newParentContentBox == null) {
+    return []
+  }
 
   const offsetTL = roundPointToNearestHalf(
     pointDifference(newParentContentBox, currentParentContentBox),
