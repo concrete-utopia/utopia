@@ -853,23 +853,26 @@ export function isFixedHugFillEqual(
     return true
   }
 
-  if (a.fixedHugFill?.type !== b.fixedHugFill?.type) {
-    return false
-  }
-
   if (a.controlStatus !== b.controlStatus) {
     return false
   }
 
-  if (
-    (a.fixedHugFill?.type === 'fixed' && b.fixedHugFill?.type === 'fixed') ||
-    (a.fixedHugFill?.type === 'fill' && b.fixedHugFill?.type === 'fill')
-  ) {
-    return (
-      a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
-      a.fixedHugFill.value.unit === b.fixedHugFill.value.unit
-    )
+  if (a.fixedHugFill == null || b.fixedHugFill == null) {
+    return false
   }
 
-  return true
+  switch (a.fixedHugFill.type) {
+    case 'hug':
+      return b.fixedHugFill.type === 'hug'
+    case 'fill':
+    case 'fixed':
+      return (
+        a.fixedHugFill.type === b.fixedHugFill.type &&
+        a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
+        a.fixedHugFill.value.unit === b.fixedHugFill.value.unit
+      )
+    default:
+      const _exhaustiveCheck: never = a.fixedHugFill
+      throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
+  }
 }
