@@ -5,7 +5,11 @@ import {
   CanvasRectangle,
   boundingRectangle,
   boundingRectangleArray,
+  canvasVector,
+  magnitude,
   nullIfInfinity,
+  offsetRect,
+  vectorDifference,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -28,6 +32,7 @@ import {
 } from './commands'
 import { CommandFunctionResult } from './commands'
 import { setCssLengthProperty } from './set-css-length-command'
+import { wildcardPatch } from './wildcard-patch-command'
 
 export interface PushIntendedBounds extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS'
@@ -118,10 +123,53 @@ function getResizeAncestorsPatches(
   Object.keys(updatedGlobalFrames).forEach((pathStr) => {
     const elementToUpdate = EP.fromString(pathStr)
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
+
+    // TODO rewrite it as happy-path-to-the-left
     if (metadata != null) {
-      // TODO we also need to offset all children for top and left changes
-      // TODO we also need to update the globalFrame measurements in metadata
-      commandsToRun.push(...setElementTopLeftWidthHeight(metadata, updatedGlobalFrames[pathStr]))
+      const currentGlobalFrame = nullIfInfinity(metadata.globalFrame)
+      const updatedGlobalFrame = updatedGlobalFrames[pathStr]
+
+      if (currentGlobalFrame != null) {
+        commandsToRun.push(
+          ...setElementTopLeftWidthHeight(metadata, currentGlobalFrame, updatedGlobalFrame),
+          wildcardPatch('always', {
+            jsxMetadata: { [pathStr]: { globalFrame: { $set: updatedGlobalFrame } } },
+          }),
+        )
+
+        // TODO we also need to offset all children for top and left changes
+        const offsetChangeForChildren = vectorDifference(currentGlobalFrame, updatedGlobalFrame)
+        if (magnitude(offsetChangeForChildren) != 0) {
+          const children = MetadataUtils.getChildrenPathsUnordered(
+            editor.jsxMetadata,
+            elementToUpdate,
+          )
+          children.forEach((childPath) => {
+            const childMetadata = MetadataUtils.findElementByElementPath(
+              editor.jsxMetadata,
+              childPath,
+            )
+            if (childMetadata != null) {
+              // unshift children now that their parent's top left moved
+              const currentChildGlobalFrame = getGlobalFrame(childPath)
+              const currentChildGlobalFrameOffset = offsetRect(
+                currentChildGlobalFrame,
+                offsetChangeForChildren,
+              )
+
+              if (currentChildGlobalFrame != null) {
+                commandsToRun.push(
+                  ...setElementTopLeftWidthHeight(
+                    childMetadata,
+                    currentChildGlobalFrameOffset,
+                    currentChildGlobalFrame,
+                  ),
+                )
+              }
+            }
+          })
+        }
+      }
     }
   })
 
@@ -131,9 +179,9 @@ function getResizeAncestorsPatches(
 
 function setElementTopLeftWidthHeight(
   instance: ElementInstanceMetadata,
+  currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
 ): Array<CanvasCommand> {
-  const currentGlobalFrame = zeroRectIfNullOrInfinity(instance.globalFrame)
   return [
     adjustCssLengthProperty(
       'always',
