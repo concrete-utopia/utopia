@@ -1270,39 +1270,37 @@ export const MetadataUtils = {
       }, Utils.asLocal(frame))
     }
   },
-  getParentCoordinateSystemBounds: function (
-    targetParent: ElementPath | null,
-    metadata: ElementInstanceMetadataMap,
-  ): CanvasRectangle {
-    const parent = MetadataUtils.findElementByElementPath(metadata, targetParent)
-    if (parent != null) {
-      if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
-        return parent.specialSizeMeasurements.globalContentBoxForChildren
-      } else if (parent.specialSizeMeasurements.coordinateSystemBounds != null) {
-        return parent.specialSizeMeasurements.coordinateSystemBounds
-      }
+  getGlobalContentBoxForChildren: function (
+    parent: ElementInstanceMetadata,
+  ): CanvasRectangle | null {
+    if (
+      parent.specialSizeMeasurements.globalContentBoxForChildren != null &&
+      isFiniteRectangle(parent.specialSizeMeasurements.globalContentBoxForChildren)
+    ) {
+      return parent.specialSizeMeasurements.globalContentBoxForChildren
     }
 
-    // Potentially here the parent was something like a fragment that itself doesn't have
-    // the above properties set, so we should move up the hierarchy to find one where they are set.
-    const nextAncestor =
-      targetParent == null || EP.isEmptyPath(targetParent) ? null : EP.parentPath(targetParent)
-    if (nextAncestor == null) {
+    if (EP.isStoryboardPath(parent.elementPath)) {
       return zeroCanvasRect
-    } else {
-      return MetadataUtils.getParentCoordinateSystemBounds(nextAncestor, metadata)
     }
+
+    return null
   },
   getFrameRelativeToTargetContainingBlock: function (
-    targetParent: ElementPath | null,
+    targetParent: ElementPath,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
-  ): LocalRectangle {
-    const closestParentCoordinateSystemBounds = MetadataUtils.getParentCoordinateSystemBounds(
-      targetParent,
-      metadata,
-    )
-    return canvasRectangleToLocalRectangle(frame, closestParentCoordinateSystemBounds)
+  ): LocalRectangle | null {
+    const targetParentInstance = MetadataUtils.findElementByElementPath(metadata, targetParent)
+    if (targetParentInstance == null) {
+      return null
+    }
+
+    const globalContentBox = MetadataUtils.getGlobalContentBoxForChildren(targetParentInstance)
+    if (globalContentBox == null) {
+      return null
+    }
+    return canvasRectangleToLocalRectangle(frame, globalContentBox)
   },
   getElementLabelFromProps(allElementProps: AllElementProps, path: ElementPath): string | null {
     const dataLabelProp = allElementProps?.[EP.toString(path)]?.[UTOPIA_LABEL_KEY]
@@ -1535,9 +1533,15 @@ export const MetadataUtils = {
       openFile,
     )
 
-    return {
+    workingElements = {
       ...workingElements,
       ...spyOnlyElements,
+    }
+
+    const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements)
+    return {
+      ...workingElements,
+      ...elementsInheritingFromAncestors,
     }
   },
   removeElementMetadataChild(
@@ -1889,6 +1893,7 @@ export const MetadataUtils = {
               return getConditionalClausePath(
                 reparentTargetParent.elementPath,
                 reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
+                reparentTargetParent.clause,
               )
             } else {
               throw new Error(
@@ -2148,6 +2153,36 @@ function fillSpyOnlyMetadata(
         position: allElemsEqual(positionForChildren)
           ? positionForChildren[0]
           : spyElem.specialSizeMeasurements.position,
+      },
+    }
+  })
+
+  return workingElements
+}
+
+function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
+  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+
+  const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
+    return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
+  })
+  // sorted, so that parents are fixed first
+  elementsWithoutGlobalContentBox.sort()
+
+  fastForEach(elementsWithoutGlobalContentBox, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const parentGlobalContentBoxForChildren =
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      infinityCanvasRectangle
+
+    workingElements[pathStr] = {
+      ...elem,
+      specialSizeMeasurements: {
+        ...elem.specialSizeMeasurements,
+        globalContentBoxForChildren: parentGlobalContentBoxForChildren,
       },
     }
   })

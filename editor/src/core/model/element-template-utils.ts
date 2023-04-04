@@ -470,8 +470,12 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue)
-      const falseCasePath = getConditionalClausePath(parentPath, parentElement.whenFalse)
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
+      const falseCasePath = getConditionalClausePath(
+        parentPath,
+        parentElement.whenFalse,
+        'false-case',
+      )
 
       const nullAttribute = jsExpressionValue(null, emptyComments)
 
@@ -600,15 +604,6 @@ export function insertJSXElementChild(
             parentElement,
           )
         } else if (isJSXElementLike(parentElement)) {
-          if (elementChildSupportsChildrenAlsoText(parentElement) === 'doesNotSupportChildren') {
-            // the target cannot contain children, so we need to wrap it and the new element in a fragment
-            return jsxFragment(
-              generateUidWithExistingComponents(projectContents),
-              [parentElement, elementToInsert],
-              false,
-            )
-          }
-
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)

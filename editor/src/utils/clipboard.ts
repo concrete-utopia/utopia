@@ -309,7 +309,7 @@ export function getTargetParentForPaste(
     if (parentElement != null && isJSXConditionalExpression(parentElement)) {
       // Check if the target parent is an attribute,
       // if so replace the target parent instead of trying to insert into it.
-      const truePath = getConditionalClausePath(targetPath, parentElement.whenTrue)
+      const truePath = getConditionalClausePath(targetPath, parentElement.whenTrue, 'true-case')
       const conditionalCase: ConditionalCase = EP.pathsEqual(truePath, targetPath)
         ? 'true-case'
         : 'false-case'
