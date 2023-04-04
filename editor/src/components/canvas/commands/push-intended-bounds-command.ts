@@ -4,6 +4,7 @@ import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
   boundingRectangle,
+  boundingRectangleArray,
   nullIfInfinity,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -98,9 +99,15 @@ function getResizeAncestorsPatches(
     // I assume that affectedAncestors are ordered bottom-up
     affectedAncestors.forEach((ancestor) => {
       // the ancestor's globalFrame shall be the union of the current global frame and the target's frame
-      const currentGlobalFrame = getGlobalFrame(ancestor)
-      const newGlobalFrame = boundingRectangle(currentGlobalFrame, frameAndTarget.frame)
-      updatedGlobalFrames[EP.toString(ancestor)] = newGlobalFrame
+      const childrenExceptTheTarget = MetadataUtils.getChildrenPathsUnordered(
+        editor.jsxMetadata,
+        ancestor,
+      ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
+      const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
+      const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
+      if (newGlobalFrame != null) {
+        updatedGlobalFrames[EP.toString(ancestor)] = newGlobalFrame
+      }
     })
   })
 
