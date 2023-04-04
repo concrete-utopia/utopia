@@ -51,7 +51,8 @@ function getOrUpdateFunctionCache(
   requireResult: MapLike<any>,
   handleError: (error: Error) => void,
 ): (...args: Array<unknown>) => unknown {
-  const fromCache = functionCache[javascript.uid]
+  const cacheKey = `${javascript.uid}_${javascript.javascript}`
+  const fromCache = functionCache[cacheKey]
   if (fromCache == null) {
     const newCachedFunction = SafeFunctionCurriedErrorHandler(
       false,
@@ -61,7 +62,7 @@ function getOrUpdateFunctionCache(
       javascript.sourceMap,
       javascript.definedElsewhere,
     )
-    functionCache[javascript.uid] = newCachedFunction
+    functionCache[cacheKey] = newCachedFunction
     return newCachedFunction(handleError)
   } else {
     return fromCache(handleError)
