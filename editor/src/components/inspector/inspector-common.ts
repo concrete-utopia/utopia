@@ -727,6 +727,28 @@ export function addPositionAbsoluteTopLeft(
   ]
 }
 
+export function setElementTopLeft(
+  instance: ElementInstanceMetadata,
+  { top, left }: { top: number; left: number },
+): Array<CanvasCommand> {
+  return [
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(top, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(left, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
+  ]
+}
+
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,

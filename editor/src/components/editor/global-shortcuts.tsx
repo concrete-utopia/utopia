@@ -139,6 +139,7 @@ import {
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
   isIntrinsicallyInlineElement,
+  setElementTopLeft,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
@@ -147,7 +148,11 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { isInfinityRectangle, zeroCanvasPoint } from '../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  zeroCanvasPoint,
+} from '../../core/shared/math-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -904,6 +909,16 @@ export function handleKeyDown(
             }
 
             return [
+              ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
+              ...MetadataUtils.getChildrenUnordered(editor.jsxMetadata, elementPath).flatMap(
+                (child) =>
+                  child.globalFrame != null && isFiniteRectangle(child.globalFrame)
+                    ? setElementTopLeft(child, {
+                        top: child.globalFrame.y - childrenBoundingFrame.y,
+                        left: child.globalFrame.x - childrenBoundingFrame.x,
+                      })
+                    : [],
+              ),
               setCssLengthProperty(
                 'always',
                 elementPath,
