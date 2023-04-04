@@ -2254,7 +2254,6 @@ export const UPDATE_FNS = {
           action.jsxElement,
           utopiaComponents,
           null,
-          editor.spyMetadata,
         )
         detailsOfUpdate = withInsertedElement.insertionDetails
 
@@ -2415,7 +2414,6 @@ export const UPDATE_FNS = {
                     }),
                     indexInParent,
                   ),
-                  editor.spyMetadata,
                 )
                 withTargetAdded = insertResult.components
                 detailsOfUpdate = insertResult.insertionDetails
@@ -2577,7 +2575,6 @@ export const UPDATE_FNS = {
                     }),
                     indexInParent,
                   ),
-                  editor.spyMetadata,
                 )
               }
 
@@ -5137,7 +5134,6 @@ export const UPDATE_FNS = {
             element,
             withMaybeUpdatedParent,
             action.indexPosition,
-            editor.spyMetadata,
           )
           detailsOfUpdate = withInsertedElement.insertionDetails
 
