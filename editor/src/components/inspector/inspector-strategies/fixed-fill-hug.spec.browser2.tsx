@@ -739,9 +739,9 @@ describe('Fixed / Fill / Hug control', () => {
 
       {
         const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
-        expect((widthControl as HTMLInputElement).value).toEqual('326px')
+        expect((widthControl as HTMLInputElement).value).toEqual('326')
         const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
-        expect((heightControl as HTMLInputElement).value).toEqual('407px')
+        expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
 
       const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup/group'))
@@ -750,9 +750,9 @@ describe('Fixed / Fill / Hug control', () => {
 
       {
         const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
-        expect((widthControl as HTMLInputElement).value).toEqual('326px')
+        expect((widthControl as HTMLInputElement).value).toEqual('326')
         const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
-        expect((heightControl as HTMLInputElement).value).toEqual('407px')
+        expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
     })
   })

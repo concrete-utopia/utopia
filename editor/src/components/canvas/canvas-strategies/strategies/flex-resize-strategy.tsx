@@ -401,7 +401,7 @@ function shouldSnapToParentEdge(
       direction,
       startingMetadata,
       sibling.elementPath,
-    )
+    ).fixedHugFill
     return fillHugFixedState?.type === 'fill'
   })
 
@@ -518,7 +518,7 @@ function snapToHugChildren(
         direction,
         startingMetadata,
         child.elementPath,
-      )
+      ).fixedHugFill
       return fillHugFixedState?.type === 'fixed'
     })
     if (!areAllChildrenFixed || childrenBoundingBox == null) {

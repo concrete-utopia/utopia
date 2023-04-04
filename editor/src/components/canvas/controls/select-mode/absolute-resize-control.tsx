@@ -376,9 +376,11 @@ function sizeLabelContents(
     }
 
     const horizontal =
-      detectFillHugFixedState('horizontal', metadata, selectedElements[0])?.type ?? 'fixed'
+      detectFillHugFixedState('horizontal', metadata, selectedElements[0]).fixedHugFill?.type ??
+      'fixed'
     const vertical =
-      detectFillHugFixedState('vertical', metadata, selectedElements[0])?.type ?? 'fixed'
+      detectFillHugFixedState('vertical', metadata, selectedElements[0]).fixedHugFill?.type ??
+      'fixed'
     return {
       h: sizeLabel(horizontal, globalFrame.width),
       v: sizeLabel(vertical, globalFrame.height),
