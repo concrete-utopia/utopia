@@ -25,7 +25,10 @@ import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { PostStrategyFixupStep } from '../canvas-strategies'
-import { isSizedContainerWithAbsoluteChildren } from '../strategies/group-like-helpers'
+import {
+  isSizedContainerWithAbsoluteChildren,
+  listAllGroupLikeAffectedAncestorsForTarget,
+} from '../strategies/group-like-helpers'
 
 function setElementTopLeftWidthHeight(
   instance: ElementInstanceMetadata,
