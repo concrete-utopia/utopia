@@ -119,6 +119,8 @@ function getResizeAncestorsPatches(
     const elementToUpdate = EP.fromString(pathStr)
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
     if (metadata != null) {
+      // TODO we also need to offset all children for top and left changes
+      // TODO we also need to update the globalFrame measurements in metadata
       commandsToRun.push(...setElementTopLeftWidthHeight(metadata, updatedGlobalFrames[pathStr]))
     }
   })
