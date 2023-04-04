@@ -143,7 +143,10 @@ import {
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  getElementContentAffectingType,
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -152,7 +155,10 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   zeroCanvasPoint,
+  zeroCanvasRect,
 } from '../../core/shared/math-utils'
+import { parentPath } from '../../core/shared/element-path'
+import { mapDropNulls } from '../../core/shared/array-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -908,16 +914,55 @@ export function handleKeyDown(
               return []
             }
 
+            const parentInstance = MetadataUtils.findElementByElementPath(
+              editor.jsxMetadata,
+              parentPath(elementPath),
+            )
+
+            if (parentInstance == null) {
+              return null
+            }
+
+            const parentFrame = MetadataUtils.getGlobalContentBoxForChildren(parentInstance)
+
+            const parentBounds =
+              parentFrame == null || isInfinityRectangle(parentFrame) ? zeroCanvasRect : parentFrame
+
+            const left = childrenBoundingFrame.x - parentBounds.x
+            const top = childrenBoundingFrame.y - parentBounds.y
+
+            const childInstances = mapDropNulls(
+              (path) => MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
+              replaceContentAffectingPathsWithTheirChildrenRecursive(
+                editor.jsxMetadata,
+                editor.allElementProps,
+                MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
+              ),
+            )
+
             return [
-              ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
-              ...MetadataUtils.getChildrenUnordered(editor.jsxMetadata, elementPath).flatMap(
-                (child) =>
-                  child.globalFrame != null && isFiniteRectangle(child.globalFrame)
-                    ? setElementTopLeft(child, {
-                        top: child.globalFrame.y - childrenBoundingFrame.y,
-                        left: child.globalFrame.x - childrenBoundingFrame.x,
-                      })
-                    : [],
+              setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+              setCssLengthProperty(
+                'always',
+                elementPath,
+                PP.create('style', 'left'),
+                setExplicitCssValue(cssPixelLength(left)),
+                element.specialSizeMeasurements.parentFlexDirection,
+              ),
+              setCssLengthProperty(
+                'always',
+                elementPath,
+                PP.create('style', 'top'),
+                setExplicitCssValue(cssPixelLength(top)),
+                element.specialSizeMeasurements.parentFlexDirection,
+              ),
+              ...childInstances.flatMap((child) =>
+                child.globalFrame != null && isFiniteRectangle(child.globalFrame)
+                  ? setElementTopLeft(child, {
+                      top: child.globalFrame.y - childrenBoundingFrame.y,
+                      left: child.globalFrame.x - childrenBoundingFrame.x,
+                    })
+                  : [],
               ),
               setCssLengthProperty(
                 'always',
