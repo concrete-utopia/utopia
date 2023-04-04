@@ -2156,7 +2156,6 @@ function editorReparentNoStyleChange(
                 updatedUnderlyingElement,
                 updatedUtopiaComponents,
                 indexPosition,
-                editor.spyMetadata,
               )
               detailsOfInsertion = withInserted.insertionDetails
 
@@ -2284,7 +2283,6 @@ export function moveTemplate(
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
-                    workingEditorState.spyMetadata,
                   )
                   updatedUtopiaComponents = insertResult.components
                   detailsOfUpdate = insertResult.insertionDetails
@@ -2793,7 +2791,6 @@ export function duplicate(
               newElement,
               utopiaComponents,
               position(),
-              editor.spyMetadata,
             )
             utopiaComponents = insertResult.components
             detailsOfUpdate = insertResult.insertionDetails
@@ -2869,7 +2866,6 @@ export function reorderComponent(
       jsxElement,
       workingComponents,
       adjustedIndexPosition,
-      spyMetadata,
     ).components
   }
 

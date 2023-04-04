@@ -93,6 +93,16 @@ function canDrop(
   draggedOnto: NavigatorItemDragAndDropWrapperProps,
 ): boolean {
   const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
+  // TODO: This returns true when isReparentTarget is false, so when the dropTargetHint is
+  // after or before
+  // However, even in those cases sometimes we reparent too, because the parent changes!
+  // And even then we should check if the new parent supports children, so e.g.
+  // we can not drop in between the conditional and the true clause navigator entries.
+  // TODO: we also need to check here whether a conditional clause slot is empty.
+  // Maybe extract the logic to a function which checks whether a navigatorEntry supports children,
+  // and generally works for all kinds of entries (and checks if the slot is empty or not).
+  // Maybe for this it is useful to create a new navigator entry type for slots (so we don't have
+  // to check the parent navigator entry).
   const childrenSupportedIfRequired =
     !isReparentTarget ||
     isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||
