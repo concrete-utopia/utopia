@@ -508,6 +508,42 @@ ${snippet}
 `)
 }
 
+export function makeTestProjectCodeWithComponentInnardsWithoutUIDs(
+  componentInnards: string,
+): string {
+  const code = `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+${componentInnards}
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+        >
+          <App
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`
+  return formatTestProjectCode(code)
+}
+
+export function makeTestProjectCodeWithSnippetWithoutUIDs(snippet: string): string {
+  return makeTestProjectCodeWithComponentInnardsWithoutUIDs(`
+  return (
+${snippet}
+  )
+`)
+}
+
 export function makeTestProjectCodeWithSnippetStyledComponents(snippet: string): string {
   const code = `
   /** @jsx jsx */

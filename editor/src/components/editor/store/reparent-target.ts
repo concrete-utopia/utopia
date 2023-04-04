@@ -1,6 +1,8 @@
 import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { ConditionalCase } from '../../../core/model/conditionals'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { drop } from '../../../core/shared/array-utils'
 
 export interface ConditionalClause<P extends ElementPath> {
   elementPath: P
@@ -62,4 +64,58 @@ export function reparentTargetToString<P extends ElementPath>(
   } else {
     return EP.toString(reparentTargetParent)
   }
+}
+
+export function commonReparentTarget(
+  first: ReparentTargetParent<ElementPath>,
+  second: ReparentTargetParent<ElementPath>,
+): ReparentTargetParent<ElementPath> | null {
+  if (reparentTargetParentIsElementPath(first)) {
+    if (reparentTargetParentIsElementPath(second)) {
+      return EP.closestSharedAncestor(first, second, true)
+    } else {
+      return EP.closestSharedAncestor(first, second.elementPath, true)
+    }
+  } else {
+    if (reparentTargetParentIsElementPath(second)) {
+      return EP.closestSharedAncestor(first.elementPath, second, true)
+    } else {
+      if (EP.pathsEqual(first.elementPath, second.elementPath)) {
+        if (first.clause === second.clause) {
+          return first
+        } else {
+          return first.elementPath
+        }
+      } else {
+        // Best effort result which doesn't handle the clauses.
+        return EP.closestSharedAncestor(first.elementPath, second.elementPath, true)
+      }
+    }
+  }
+}
+
+export function commonReparentTargetFromArray(
+  array: Array<ReparentTargetParent<ElementPath> | null>,
+): ReparentTargetParent<ElementPath> | null {
+  let workingArray: Array<ReparentTargetParent<ElementPath>> = []
+  for (const arrayElem of array) {
+    if (arrayElem == null) {
+      return null
+    } else {
+      workingArray.push(arrayElem)
+    }
+  }
+  if (workingArray.length === 0) {
+    return null
+  }
+  return drop(1, workingArray).reduce<ReparentTargetParent<ElementPath> | null>(
+    (working, target) => {
+      if (working == null) {
+        return working
+      } else {
+        return commonReparentTarget(working, target)
+      }
+    },
+    workingArray[0],
+  )
 }

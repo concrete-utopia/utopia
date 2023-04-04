@@ -137,6 +137,7 @@ import {
 } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
+  conditionalClause,
   ReparentTargetParent,
   reparentTargetParentIsElementPath,
 } from '../../components/editor/store/reparent-target'
@@ -1962,6 +1963,28 @@ export const MetadataUtils = {
       return fallbackFlexDirection
     }
     return flexDirections[0]
+  },
+  getReparentTargetOfTarget(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): ReparentTargetParent<ElementPath> | null {
+    const parentElement = this.getParent(metadata, target)
+    if (parentElement == null) {
+      return null
+    } else {
+      if (
+        isRight(parentElement.element) &&
+        isJSXConditionalExpression(parentElement.element.value)
+      ) {
+        const conditionalExpression: JSXConditionalExpression = parentElement.element.value
+        if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
+          return conditionalClause(parentElement.elementPath, 'true-case')
+        } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
+          return conditionalClause(parentElement.elementPath, 'false-case')
+        }
+      }
+      return parentElement.elementPath
+    }
   },
 }
 
