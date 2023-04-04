@@ -5,7 +5,7 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import { getControlStyles } from '../../../common/control-status'
+import { ControlStatus, getControlStyles } from '../../../common/control-status'
 import { cssNumber } from '../../../common/css-utils'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import {
@@ -13,7 +13,11 @@ import {
   selectedViewsSelector,
   useComputedSizeRef,
 } from '../../../inpector-selectors'
-import { detectFillHugFixedState } from '../../../inspector-common'
+import {
+  detectFillHugFixedState,
+  FixedHugFill,
+  isFixedHugFillEqual,
+} from '../../../inspector-common'
 import {
   setPropFixedStrategies,
   setPropHugStrategies,
@@ -22,11 +26,7 @@ import { commandsForFirstApplicableStrategy } from '../../../inspector-strategie
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
-export const TextAutoSizingControl = React.memo(() => {
-  const dispatch = useDispatch()
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-
+function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 'hug' | null } {
   const isEditableText = useEditorState(
     Substores.metadata,
     (store) => {
@@ -37,29 +37,62 @@ export const TextAutoSizingControl = React.memo(() => {
     'TextAutoSizingControl isEditableText',
   )
 
-  const fixedHugFillState = useEditorState(
+  const widthFillHugFixedState = useEditorState(
     Substores.metadata,
     (store) => {
       const target = store.editor.selectedViews[0]
-      const width = detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
-      const height = detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
-
-      if (width?.type === height?.type) {
-        return width?.type
-      }
-      return null
+      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
     },
-    'TextAutoSizingControl fixedHugFillState',
+    'TextAutoSizingControl fixedHugFillState width',
+    isFixedHugFillEqual,
   )
+
+  const heightFillHugFixedState = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const target = store.editor.selectedViews[0]
+      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
+    },
+    'TextAutoSizingControl fixedHugFillState height',
+    isFixedHugFillEqual,
+  )
+
+  let fixedHugState: FixedHugFill | null = null
+  if (
+    widthFillHugFixedState.fixedHugFill != null &&
+    widthFillHugFixedState.fixedHugFill.type !== 'fill' &&
+    heightFillHugFixedState.fixedHugFill != null &&
+    heightFillHugFixedState.fixedHugFill.type !== 'fill'
+  ) {
+    if (widthFillHugFixedState.fixedHugFill.type === heightFillHugFixedState.fixedHugFill.type) {
+      fixedHugState = widthFillHugFixedState.fixedHugFill
+    }
+  }
 
   const controlStatus = React.useMemo(() => {
     if (!isEditableText) {
       return 'disabled'
     } else {
-      return fixedHugFillState != null && fixedHugFillState !== 'fill' ? 'simple' : 'unset'
+      return widthFillHugFixedState.controlStatus
     }
-  }, [fixedHugFillState, isEditableText])
-  const controlStyles = React.useMemo(() => getControlStyles(controlStatus), [controlStatus])
+  }, [widthFillHugFixedState, isEditableText])
+
+  const type =
+    controlStatus === 'disabled' || controlStatus === 'unset' ? null : fixedHugState?.type ?? null
+
+  return { status: controlStatus, type: type }
+}
+
+export const TextAutoSizingControl = React.memo(() => {
+  const dispatch = useDispatch()
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+
+  const controlStatusAndValueType = useAutoSizingTypeAndStatus()
+  const controlStyles = React.useMemo(
+    () => getControlStyles(controlStatusAndValueType.status),
+    [controlStatusAndValueType],
+  )
 
   const widthComputedValue = useComputedSizeRef('width')
   const heightComputedValue = useComputedSizeRef('height')
@@ -118,10 +151,10 @@ export const TextAutoSizingControl = React.memo(() => {
         id='textAutoSizing'
         key='textAutoSizing'
         testId={TextAutoSizingTestId}
-        controlStatus={controlStatus}
+        controlStatus={controlStatusAndValueType.status}
         controlStyles={controlStyles}
         onSubmitValue={onSubmitValue}
-        value={fixedHugFillState}
+        value={controlStatusAndValueType.type}
         options={
           [
             {

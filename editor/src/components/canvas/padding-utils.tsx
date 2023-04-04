@@ -290,7 +290,8 @@ export function getSizeUpdateCommandsForNewPadding(
     const dimensionKey = isHorizontal ? 'width' : 'height'
 
     const fixedSizeChildrenPaths = nonAbsoluteChildrenPaths.filter(
-      (childPath) => detectFillHugFixedState(dimension, metadata, childPath)?.type === 'fixed',
+      (childPath) =>
+        detectFillHugFixedState(dimension, metadata, childPath).fixedHugFill?.type === 'fixed',
     )
     const childrenBoundingFrameMaybeInfinite = MetadataUtils.getBoundingRectangleInCanvasCoords(
       fixedSizeChildrenPaths,

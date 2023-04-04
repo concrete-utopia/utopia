@@ -374,11 +374,9 @@ function maybeRequestModelUpdateOnEditor(
 }
 
 let accumulatedProjectChanges: ProjectChanges = emptyProjectChanges
-let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function resetDispatchGlobals(): void {
   accumulatedProjectChanges = emptyProjectChanges
-  applyProjectChangesCoordinator = Promise.resolve()
 }
 
 export function editorDispatch(
@@ -590,8 +588,11 @@ export function editorDispatch(
     )
   }
 
-  const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
-  applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+  if (!isLoadAction) {
+    // If the action was a load action then we don't want to send across any changes
+    const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
+    applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+  }
 
   const shouldUpdatePreview =
     anySendPreviewModel ||
@@ -659,14 +660,9 @@ function applyProjectChanges(
   )
 
   if (frozenEditorState.vscodeReady) {
-    // Chain off of the previous one to ensure the ordering is maintained.
-    applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-      const changesToSend = accumulatedProjectChanges
-      accumulatedProjectChanges = emptyProjectChanges
-      return sendVSCodeChanges(changesToSend).catch((error) => {
-        console.error('Error sending updates to VS Code', error)
-      })
-    })
+    const changesToSend = accumulatedProjectChanges
+    accumulatedProjectChanges = emptyProjectChanges
+    sendVSCodeChanges(changesToSend)
   }
 
   const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
