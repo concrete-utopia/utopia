@@ -16,6 +16,7 @@ import {
   applyProjectChanges,
   getCodeEditorDecorations,
   getSelectedElementChangedMessage,
+  sendMessage,
 } from '../../../core/vscode/vscode-bridge'
 import {
   UpdateDecorationsMessage,
@@ -23,7 +24,7 @@ import {
   AccumulatedToVSCodeMessage,
   ToVSCodeMessageNoAccumulated,
   accumulatedToVSCodeMessage,
-  sendMessage,
+  toVSCodeExtensionMessage,
 } from 'utopia-vscode-common'
 import {
   EditorState,
@@ -299,11 +300,10 @@ export function getProjectChanges(
   }
 }
 
-export async function sendVSCodeChanges(changes: ProjectChanges): Promise<void> {
-  await applyProjectChanges(changes.fileChanges)
+export function sendVSCodeChanges(changes: ProjectChanges) {
+  applyProjectChanges(changes.fileChanges)
   const toVSCodeAccumulated = projectChangesToVSCodeMessages(changes)
   if (toVSCodeAccumulated.messages.length > 0) {
-    await sendMessage(toVSCodeAccumulated)
+    sendMessage(toVSCodeExtensionMessage(toVSCodeAccumulated))
   }
-  return Promise.resolve()
 }
