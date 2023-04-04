@@ -622,19 +622,12 @@ export function handleStrategies(
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')
   }
-  const {
-    unpatchedEditorState: unpatchedEditorStateeee,
-    patchedEditorState,
-    newStrategyState,
-  } = handleStrategiesInner(strategies, fixupSteps, dispatchedActions, storedState, result)
-
-  const unpatchedEditorState = fixupSteps.reduce((state, step) => {
-    const fix = step.fixup(state)
-    if (fix.length > 0) {
-      return foldAndApplyCommandsSimple(state, fix)
-    }
-    return state
-  }, unpatchedEditorStateeee)
+  const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
+    strategies,
+    dispatchedActions,
+    storedState,
+    result,
+  )
 
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
@@ -723,7 +716,6 @@ function injectNewMetadataToOldEditorState(
 
 function handleStrategiesInner(
   strategies: Array<MetaCanvasStrategy>,
-  fixupSteps: Array<PostStrategyFixupStep>,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,

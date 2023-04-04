@@ -115,7 +115,6 @@ import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate as shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
 import { isAuthenticatedWithGithub } from '../utils/github-auth'
-import { ProjectContentTreeRootKeepDeepEquality } from '../components/editor/store/store-deep-equality-instances'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import { ElementPath } from '../core/shared/project-file-types'
@@ -129,6 +128,8 @@ import {
   logSelectorTimings,
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
+import { PostStrategyFixupSteps } from '../components/canvas/canvas-strategies/canvas-strategies'
+import { foldAndApplyCommandsSimple } from '../components/canvas/commands/commands'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -532,6 +533,72 @@ export class Editor {
                 domWalkerResult.metadata,
                 domWalkerResult.cachedPaths,
                 domWalkerResult.invalidatedPaths,
+              ),
+            ],
+            this.storedState,
+            this.spyCollector,
+          )
+          this.storedState = dispatchResultWithMetadata
+          entireUpdateFinished = Promise.all([
+            entireUpdateFinished,
+            dispatchResultWithMetadata.entireUpdateFinished,
+          ])
+        }
+
+        if (this.storedState.unpatchedEditor.canvas.interactionSession != null) {
+          const fixedPatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
+            const fix = step.fixup(state)
+            if (fix.length > 0) {
+              return foldAndApplyCommandsSimple(state, fix)
+            }
+            return state
+          }, this.storedState.patchedEditor)
+          this.storedState = {
+            ...this.storedState,
+            patchedEditor: fixedPatchedEditor,
+          }
+        } else {
+          const fixedUnpatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
+            const fix = step.fixup(state)
+            if (fix.length > 0) {
+              return foldAndApplyCommandsSimple(state, fix)
+            }
+            return state
+          }, this.storedState.unpatchedEditor)
+
+          this.storedState = {
+            ...this.storedState,
+            unpatchedEditor: fixedUnpatchedEditor,
+          }
+        }
+
+        ReactDOM.flushSync(() => {
+          ReactDOM.unstable_batchedUpdates(() => {
+            this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+          })
+        })
+
+        // FIXME: this is only here for the spike!
+        const domWalkerResultAfterFix = runDomWalker({
+          domWalkerMutableState: this.domWalkerMutableState,
+          selectedViews: this.storedState.patchedEditor.selectedViews,
+          elementsToFocusOn: this.storedState.patchedEditor.canvas.elementsToRerender,
+          scale: this.storedState.patchedEditor.canvas.scale,
+          additionalElementsToUpdate:
+            this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+          rootMetadataInStateRef: {
+            current: this.storedState.patchedEditor.domMetadata,
+          },
+        })
+
+        if (domWalkerResultAfterFix != null) {
+          const dispatchResultWithMetadata = editorDispatch(
+            this.boundDispatch,
+            [
+              EditorActions.saveDOMReport(
+                domWalkerResultAfterFix.metadata,
+                domWalkerResultAfterFix.cachedPaths,
+                domWalkerResultAfterFix.invalidatedPaths,
               ),
             ],
             this.storedState,

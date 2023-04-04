@@ -6,6 +6,7 @@ import {
   canvasRectangle,
   CanvasRectangle,
   isFiniteRectangle,
+  rectanglesEqual,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { cssNumber } from '../../../inspector/common/css-utils'
@@ -68,9 +69,19 @@ export const groupSizingFixup: PostStrategyFixupStep = {
             children,
           ),
         )
+
         if (aabb == null) {
           return []
         }
+
+        if (
+          instance.globalFrame != null &&
+          isFiniteRectangle(instance.globalFrame) &&
+          rectanglesEqual(instance.globalFrame, aabb)
+        ) {
+          return []
+        }
+
         return [
           ...setElementTopLeftWidthHeight(instance, aabb),
           ...children.flatMap((child) =>
