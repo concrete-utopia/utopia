@@ -18,7 +18,7 @@ export type ConditionalCase = 'true-case' | 'false-case'
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
   conditionalClause: JSXElementChild,
-  conditionalCase: ConditionalCase,
+  _: ConditionalCase, // TODO remove this parameter
 ): ElementPath {
   return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
 }

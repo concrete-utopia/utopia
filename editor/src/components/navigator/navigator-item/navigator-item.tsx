@@ -27,10 +27,11 @@ import { LayoutIcon } from './layout-icon'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
-import { when } from '../../../utils/react-conditionals'
-import { isLeft } from '../../../core/shared/either'
+import { unless, when } from '../../../utils/react-conditionals'
+import { isLeft, isRight } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  isJSXAttributeValue,
   isJSXConditionalExpression,
   JSXConditionalExpression,
 } from '../../../core/shared/element-template'
@@ -43,6 +44,7 @@ import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook
 import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
+import { isSyntheticNavigatorEntry } from '../../editor/store/editor-state'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -59,6 +61,8 @@ export function getElementPadding(withNavigatorDepth: number): number {
   return paddingOffset * BasePaddingUnit
 }
 
+export type ParentOutline = 'solid' | 'child' | 'none'
+
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
   index: number
@@ -71,7 +75,7 @@ export interface NavigatorItemInnerProps {
   isElementVisible: boolean
   renamingTarget: ElementPath | null
   selected: boolean
-  shouldShowParentOutline: boolean
+  parentOutline: ParentOutline
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
@@ -536,14 +540,36 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
+  const parentElement = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const parentPath = EP.parentPath(props.navigatorEntry.elementPath)
+      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath)
+    },
+    'NavigatorItem parentElement',
+  )
+
+  const isSlot = React.useMemo(() => {
+    const isParentConditional =
+      parentElement != null &&
+      isRight(parentElement.element) &&
+      isJSXConditionalExpression(parentElement.element.value)
+    const isNullValue =
+      isSyntheticNavigatorEntry(props.navigatorEntry) &&
+      isJSXAttributeValue(props.navigatorEntry.childOrAttribute) &&
+      props.navigatorEntry.childOrAttribute.value === null
+
+    return isParentConditional && isNullValue
+  }, [parentElement, props.navigatorEntry])
+
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
-      opacity: isElementVisible && !isHiddenConditionalBranch ? undefined : 0.4,
+      opacity: isElementVisible && (!isHiddenConditionalBranch || isSlot) ? undefined : 0.4,
       overflow: 'hidden',
       flexGrow: 1,
       flexShrink: 0,
     }
-  }, [isElementVisible, isHiddenConditionalBranch])
+  }, [isElementVisible, isHiddenConditionalBranch, isSlot])
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
@@ -555,7 +581,9 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       style={{
         border: `1px solid ${
-          props.shouldShowParentOutline ? colorTheme.navigatorResizeHintBorder.value : 'transparent'
+          props.parentOutline === 'solid'
+            ? colorTheme.navigatorResizeHintBorder.value
+            : 'transparent'
         }`,
       }}
     >
@@ -577,6 +605,7 @@ export const NavigatorItem: React.FunctionComponent<
             testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
           />
           <NavigatorRowLabel
+            shouldShowParentOutline={props.parentOutline === 'child'}
             navigatorEntry={navigatorEntry}
             label={props.label}
             renamingTarget={props.renamingTarget}
@@ -585,6 +614,7 @@ export const NavigatorItem: React.FunctionComponent<
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
             warningText={warningText}
+            isSlot={isSlot}
           />
         </FlexRow>
         <NavigatorItemActionSheet
@@ -594,6 +624,7 @@ export const NavigatorItem: React.FunctionComponent<
           isVisibleOnCanvas={isElementVisible}
           instanceOriginalComponentName={null}
           dispatch={dispatch}
+          isSlot={isSlot}
         />
       </FlexRow>
     </div>
@@ -609,6 +640,8 @@ interface NavigatorRowLabelProps {
   isDynamic: boolean
   renamingTarget: ElementPath | null
   selected: boolean
+  shouldShowParentOutline: boolean
+  isSlot: boolean
   dispatch: EditorDispatch
 }
 
@@ -651,50 +684,78 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   return (
     <React.Fragment>
-      {props.navigatorEntry.type != 'CONDITIONAL_CLAUSE' ? (
-        <LayoutIcon
-          key={`layout-type-${props.label}`}
-          navigatorEntry={props.navigatorEntry}
-          color={props.iconColor}
-          warningText={props.warningText}
-        />
-      ) : null}
-
-      <ItemLabel
-        key={`label-${props.label}`}
-        testId={`navigator-item-label-${props.label}`}
-        name={props.label}
-        isDynamic={props.isDynamic}
-        target={props.navigatorEntry}
-        selected={props.selected}
-        dispatch={props.dispatch}
-        inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-        style={{
-          color:
-            !props.selected && isActiveBranchOfOverriddenConditional
-              ? colorTheme.brandNeonPink.value
-              : 'inherit',
-        }}
-      />
-
       {when(
-        conditionalOverride != null && props.navigatorEntry.type != 'CONDITIONAL_CLAUSE',
+        props.isSlot,
         <div
+          key={`label-${props.label}-slot`}
           style={{
-            marginLeft: 10,
-            color: colorTheme.bg0.value,
-            background: colorTheme.brandNeonPink.value,
-            borderRadius: 10,
-            padding: '0px 6px',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            fontSize: 9,
+            border: `1px ${props.shouldShowParentOutline ? 'solid' : 'dashed'} ${
+              props.selected
+                ? colorTheme.bg0.value
+                : props.shouldShowParentOutline
+                ? colorTheme.navigatorResizeHintBorder.value
+                : colorTheme.fg7.value
+            }`,
+            opacity: props.selected ? 0.8 : 1,
+            width: '100%',
+            padding: '2px 4px',
+            borderRadius: 2,
+            color: props.selected ? colorTheme.bg0.value : colorTheme.fg8.value,
+            textTransform: 'lowercase',
           }}
         >
-          {conditionalOverride ? 'True' : 'False'}
+          Empty
         </div>,
       )}
+      {unless(
+        props.isSlot,
+        <React.Fragment>
+          {unless(
+            props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+            <LayoutIcon
+              key={`layout-type-${props.label}`}
+              navigatorEntry={props.navigatorEntry}
+              color={props.iconColor}
+              warningText={props.warningText}
+            />,
+          )}
 
+          <ItemLabel
+            key={`label-${props.label}`}
+            testId={`navigator-item-label-${props.label}`}
+            name={props.label}
+            isDynamic={props.isDynamic}
+            target={props.navigatorEntry}
+            selected={props.selected}
+            dispatch={props.dispatch}
+            inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+            style={{
+              color:
+                !props.selected && isActiveBranchOfOverriddenConditional
+                  ? colorTheme.brandNeonPink.value
+                  : 'inherit',
+            }}
+          />
+
+          {when(
+            conditionalOverride != null && props.navigatorEntry.type !== 'CONDITIONAL_CLAUSE',
+            <div
+              style={{
+                marginLeft: 10,
+                color: colorTheme.bg0.value,
+                background: colorTheme.brandNeonPink.value,
+                borderRadius: 10,
+                padding: '0px 6px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                fontSize: 9,
+              }}
+            >
+              {conditionalOverride ? 'True' : 'False'}
+            </div>,
+          )}
+        </React.Fragment>,
+      )}
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}

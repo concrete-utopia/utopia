@@ -8,7 +8,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
+  JSXConditionalExpression,
   getJSXElementNameLastPart,
+  isJSXAttributeValue,
+  isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -20,6 +23,7 @@ import {
   EditorStorePatched,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
   navigatorEntryToKey,
@@ -32,7 +36,7 @@ import {
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
-import { foldEither } from '../../../core/shared/either'
+import { foldEither, isRight } from '../../../core/shared/either'
 import { navigatorDepth } from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
@@ -179,8 +183,32 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     (store) => elementSupportsChildrenSelector(store, props.navigatorEntry),
     'NavigatorItemWrapper elementSupportsChildren',
   )
+
+  const parentElement = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        EP.parentPath(props.navigatorEntry.elementPath),
+      ),
+    'NavigatorItemWrapper parentElement',
+  )
+
+  function isNullAttributeValue(entry: NavigatorEntry, conditional: JSXConditionalExpression) {
+    const truePath = EP.appendToPath(EP.parentPath(entry.elementPath), conditional.whenTrue.uid)
+    const branch = EP.pathsEqual(entry.elementPath, truePath)
+      ? conditional.whenTrue
+      : conditional.whenFalse
+    return isJSXAttributeValue(branch) && branch.value === null
+  }
+
   const canReparentInto =
-    elementSupportsChildren || isConditionalClauseNavigatorEntry(props.navigatorEntry)
+    elementSupportsChildren ||
+    isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
+    (parentElement != null &&
+      isRight(parentElement.element) &&
+      isJSXConditionalExpression(parentElement.element.value) &&
+      isNullAttributeValue(props.navigatorEntry, parentElement.element.value))
 
   const labelForTheElement = useEditorState(
     Substores.metadata,
@@ -221,6 +249,16 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
+
+        if (isSyntheticNavigatorEntry(props.navigatorEntry)) {
+          // TODO update this for actual conditional branches
+          possiblyAppropriateDropTargetHint = {
+            type: 'reparent',
+            displayAtEntry: null,
+            moveToEntry: null,
+          }
+        }
+
         const elementIsCollapsed = EP.containsPath(
           props.navigatorEntry.elementPath,
           store.editor.navigator.collapsedViews,
