@@ -1586,7 +1586,7 @@ export const UPDATE_FNS = {
     )
     const storyboardFile = getContentsTreeFileFromString(parsedProjectFiles, StoryboardFilePath)
     const openFilePath = storyboardFile != null ? StoryboardFilePath : null
-    void initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch, openFilePath)
+    initVSCodeBridge(parsedProjectFiles, dispatch, openFilePath)
 
     const parsedModel = {
       ...migratedModel,
@@ -2254,7 +2254,6 @@ export const UPDATE_FNS = {
           action.jsxElement,
           utopiaComponents,
           null,
-          editor.spyMetadata,
         )
         detailsOfUpdate = withInsertedElement.insertionDetails
 
@@ -2415,7 +2414,6 @@ export const UPDATE_FNS = {
                     }),
                     indexInParent,
                   ),
-                  editor.spyMetadata,
                 )
                 withTargetAdded = insertResult.components
                 detailsOfUpdate = insertResult.insertionDetails
@@ -2577,7 +2575,6 @@ export const UPDATE_FNS = {
                     }),
                     indexInParent,
                   ),
-                  editor.spyMetadata,
                 )
               }
 
@@ -3748,12 +3745,7 @@ export const UPDATE_FNS = {
     if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
       vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
       // Side effect.
-      void initVSCodeBridge(
-        action.id,
-        editor.projectContents,
-        dispatch,
-        editor.canvas.openFile?.filename ?? null,
-      )
+      initVSCodeBridge(editor.projectContents, dispatch, editor.canvas.openFile?.filename ?? null)
     }
     return {
       ...editor,
@@ -3919,7 +3911,7 @@ export const UPDATE_FNS = {
   },
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
-    void sendOpenFileMessage(action.filename)
+    sendOpenFileMessage(action.filename)
     if (action.forceShowCodeEditor) {
       return {
         ...editor,
@@ -4847,9 +4839,9 @@ export const UPDATE_FNS = {
     userState: UserState,
   ): EditorModel => {
     // Side effects.
-    void sendCodeEditorDecorations(editor)
-    void sendSelectedElement(editor)
-    void sendSetVSCodeTheme(getCurrentTheme(userState))
+    sendCodeEditorDecorations(editor)
+    sendSelectedElement(editor)
+    sendSetVSCodeTheme(getCurrentTheme(userState))
     return {
       ...editor,
       vscodeReady: true,
@@ -4955,7 +4947,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
   ): EditorModel => {
     // Side effects
-    void sendSetFollowSelectionEnabledMessage(action.value)
+    sendSetFollowSelectionEnabledMessage(action.value)
     return {
       ...editor,
       config: {
@@ -4987,7 +4979,7 @@ export const UPDATE_FNS = {
   },
   SET_USER_CONFIGURATION: (action: SetUserConfiguration, userState: UserState): UserState => {
     // Side effect - update the theme setting in VS Code
-    void sendSetVSCodeTheme(getCurrentTheme(action.userConfiguration))
+    sendSetVSCodeTheme(getCurrentTheme(action.userConfiguration))
 
     return {
       ...userState,
@@ -5032,7 +5024,7 @@ export const UPDATE_FNS = {
     }
 
     // Side effect - update the setting in VS Code
-    void sendSetVSCodeTheme(getCurrentTheme(updatedUserConfiguration))
+    sendSetVSCodeTheme(getCurrentTheme(updatedUserConfiguration))
 
     // Side effect - store the setting on the server
     void saveUserConfiguration(updatedUserConfiguration)
@@ -5142,7 +5134,6 @@ export const UPDATE_FNS = {
             element,
             withMaybeUpdatedParent,
             action.indexPosition,
-            editor.spyMetadata,
           )
           detailsOfUpdate = withInsertedElement.insertionDetails
 

@@ -57,6 +57,7 @@ fse.copySync('product.json', '../dist/product.json')
 fse.copySync('../node_modules/semver-umd', '../dist/lib/semver-umd')
 fse.copySync('../node_modules/vscode-oniguruma', '../dist/lib/vscode-oniguruma')
 fse.copySync('../node_modules/vscode-textmate', '../dist/lib/vscode-textmate')
+fse.copySync('../node_modules/utopia-vscode-common', '../dist/lib/utopia-vscode-common')
 
 const extensionNM = glob.sync('extensions/**/node_modules', {})
 extensionNM.forEach((modules) => {

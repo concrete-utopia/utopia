@@ -133,9 +133,12 @@ export async function readFileUnsavedContent(path: string): Promise<Uint8Array |
   return fileNode.unsavedContent
 }
 
-export async function readFileAsUTF8(
-  path: string,
-): Promise<{ content: string; unsavedContent: string | null }> {
+export interface StoredFile {
+  content: string
+  unsavedContent: string | null
+}
+
+export async function readFileAsUTF8(path: string): Promise<StoredFile> {
   const { content, unsavedContent } = await getFile(path)
   return {
     content: decoder.decode(content),
