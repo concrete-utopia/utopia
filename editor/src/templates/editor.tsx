@@ -546,17 +546,27 @@ export class Editor {
           ])
         }
 
+        const fixedPatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
+          return step.fixup(state, this.storedState.unpatchedEditor.jsxMetadata)
+        }, this.storedState.patchedEditor)
+
         if (this.storedState.unpatchedEditor.canvas.interactionSession != null) {
-          const fixedPatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
-            return step.fixup(state, this.storedState.unpatchedEditor.jsxMetadata)
-          }, this.storedState.patchedEditor)
           this.storedState = {
             ...this.storedState,
             patchedEditor: fixedPatchedEditor,
           }
         }
 
-        // TODO commit!!!
+        if (
+          oldEditorState.unpatchedEditor.canvas.interactionSession != null &&
+          this.storedState.unpatchedEditor.canvas.interactionSession == null
+        ) {
+          // this is when we want to persist the changes I guess?
+          this.storedState = {
+            ...this.storedState,
+            unpatchedEditor: fixedPatchedEditor,
+          }
+        }
 
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
