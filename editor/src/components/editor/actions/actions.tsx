@@ -4515,14 +4515,25 @@ export const UPDATE_FNS = {
           return element
         }
 
+        // Use the values from the previous version in an attempt to stop a brief error screen
+        // from flashing between committing this change and re-parsing the file
+        const oldDefinedElsewhere =
+          element.condition.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+            ? element.condition.definedElsewhere
+            : []
+        const oldElementsWithin =
+          element.condition.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+            ? element.condition.elementsWithin
+            : {}
+
         return {
           ...element,
           condition: jsExpressionOtherJavaScript(
             action.expression,
             action.expression,
-            [],
+            oldDefinedElsewhere,
             null,
-            {},
+            oldElementsWithin,
           ),
           originalConditionString: action.expression,
         }
