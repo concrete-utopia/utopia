@@ -920,7 +920,7 @@ export function handleKeyDown(
             )
 
             if (parentInstance == null) {
-              return null
+              return []
             }
 
             const parentFrame = MetadataUtils.getGlobalContentBoxForChildren(parentInstance)

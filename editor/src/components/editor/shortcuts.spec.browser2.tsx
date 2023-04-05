@@ -1,5 +1,6 @@
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
+import { canvasRectangle, CanvasRectangle } from '../../core/shared/math-utils'
 import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../utils/modifiers'
 import {
   expectNoAction,
@@ -27,6 +28,8 @@ const TestIdTwo = 'two'
 const StoryBoardId = 'StoryBoardId'
 const ParentId = 'ParentId'
 const backgroundColor = '#384C5CAB'
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectBoundsToEqual"] }] */
 
 // for some reason, ctrl + c does not trigger the eyedropper in tests
 // maybe for security since the event is programmatically triggered?
@@ -174,6 +177,164 @@ describe('shortcuts', () => {
       const groupContainer = editor.renderedDOM.getByTestId('group')
       expect(groupContainer.style.width).toEqual('207px')
       expect(groupContainer.style.height).toEqual('311px')
+    })
+
+    it('pressing x converts a sizeless div into a absolutely positioned container, sized to the AABB if its children', async () => {
+      const editor = await renderTestEditorWithCode(
+        `
+      import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group' data-testid='group'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 232,
+          top: 305,
+          width: 363,
+          height: 167,
+        }}
+        data-uid='515'
+        data-testid='c1'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 316,
+          top: 504,
+          width: 163,
+          height: 98,
+        }}
+        data-uid='df9'
+        data-testid='c2'
+      />
+    </div>
+  </Storyboard>
+)
+`,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+
+      expectBoundsToEqual(
+        editor,
+        'group',
+        canvasRectangle({ x: 232, y: 305, width: 363, height: 297 }),
+      )
+
+      expectBoundsToEqual(editor, 'c1', canvasRectangle({ x: 0, y: 0, width: 363, height: 167 }))
+
+      expectBoundsToEqual(editor, 'c2', canvasRectangle({ x: 84, y: 199, width: 163, height: 98 }))
+    })
+
+    describe('pressing x in nested groups only affects the selected group and its absolutely positoned children', () => {
+      it('converting the outermost group doesnt convert the intermediate groups', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithNestedGroups,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString('sb/outermost-group')])
+
+        await expectSingleUndoStep(editor, async () => {
+          await pressKey('x')
+        })
+
+        expectBoundsToEqual(
+          editor,
+          'outermost-group',
+          canvasRectangle({ x: 232, y: 305, width: 924, height: 309 }),
+        )
+
+        expectElementToBeSizelessDiv(editor, 'middle-group')
+        expectElementToBeSizelessDiv(editor, 'group')
+
+        expectBoundsToEqual(
+          editor,
+          'group-child-1',
+          canvasRectangle({
+            x: 0,
+            y: 0,
+            width: 363,
+            height: 167,
+          }),
+        )
+
+        expectBoundsToEqual(
+          editor,
+          'group-child-2',
+          canvasRectangle({
+            x: 84,
+            y: 199,
+            width: 163,
+            height: 98,
+          }),
+        )
+
+        expectBoundsToEqual(
+          editor,
+          'outermost-group-child',
+          canvasRectangle({
+            x: 537,
+            y: 64,
+            width: 387,
+            height: 245,
+          }),
+        )
+      })
+
+      it('converting a nested group doesnt convert the enclosing groups', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithNestedGroups,
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [
+          EP.fromString('sb/outermost-group/middle-group/group'),
+        ])
+
+        await expectSingleUndoStep(editor, async () => {
+          await pressKey('x')
+        })
+
+        expectBoundsToEqual(
+          editor,
+          'group',
+          canvasRectangle({ x: 232, y: 305, width: 363, height: 297 }),
+        )
+
+        expectBoundsToEqual(
+          editor,
+          'group-child-1',
+          canvasRectangle({
+            x: 0,
+            y: 0,
+            width: 363,
+            height: 167,
+          }),
+        )
+
+        expectBoundsToEqual(
+          editor,
+          'group-child-2',
+          canvasRectangle({
+            x: 84,
+            y: 199,
+            width: 163,
+            height: 98,
+          }),
+        )
+
+        expectElementToBeSizelessDiv(editor, 'middle-group')
+        expectElementToBeSizelessDiv(editor, 'outermost-group')
+      })
     })
   })
 
@@ -378,6 +539,57 @@ export var storyboard = (
           position: 'absolute',
         }}
         data-uid='755'
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithNestedGroups = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='outermost-group' data-testid='outermost-group'>
+      <div data-uid='middle-group' data-testid='middle-group'>
+        <div data-uid='group' data-testid='group'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 232,
+              top: 305,
+              width: 363,
+              height: 167,
+            }}
+            data-uid='515'
+            data-testid='group-child-1'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 316,
+              top: 504,
+              width: 163,
+              height: 98,
+            }}
+            data-uid='df9'
+            data-testid='group-child-2'
+          />
+        </div>
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 769,
+          top: 369,
+          width: 387,
+          height: 245,
+        }}
+        data-uid='321'
+        data-testid='outermost-group-child'
       />
     </div>
   </Storyboard>
@@ -904,6 +1116,22 @@ describe('group selection', () => {
 async function doGroup(editor: EditorRenderResult) {
   await selectComponentsForTest(editor, [EP.fromString(`sb/e5b/6de`), EP.fromString(`sb/e5b/8f4`)])
   await expectSingleUndoStep(editor, async () => pressKey('g', { modifiers: cmdModifier }))
+}
+
+function expectBoundsToEqual(editor: EditorRenderResult, testId: string, bounds: CanvasRectangle) {
+  const element = editor.renderedDOM.getByTestId(testId)
+  expect(element.style.position).toEqual('absolute')
+  expect(element.style.top).toEqual(`${bounds.y}px`)
+  expect(element.style.left).toEqual(`${bounds.x}px`)
+  expect(element.style.width).toEqual(`${bounds.width}px`)
+  expect(element.style.height).toEqual(`${bounds.height}px`)
+}
+
+function expectElementToBeSizelessDiv(editor: EditorRenderResult, testId: string) {
+  const element = editor.renderedDOM.getByTestId(testId)
+  expect(element.style.position).toEqual('')
+  expect(element.style.width).toEqual('')
+  expect(element.style.height).toEqual('')
 }
 
 function makeTestProjectCodeWithStoryboardChildren(storyboardChildren: string): string {
