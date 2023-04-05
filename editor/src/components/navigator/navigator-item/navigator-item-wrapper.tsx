@@ -250,8 +250,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
 
-        if (isSyntheticNavigatorEntry(props.navigatorEntry)) {
-          // TODO update this for actual conditional branches
+        if (
+          isSyntheticNavigatorEntry(props.navigatorEntry) &&
+          parentElement != null &&
+          isRight(parentElement.element) &&
+          isJSXConditionalExpression(parentElement.element.value)
+        ) {
           possiblyAppropriateDropTargetHint = {
             type: 'reparent',
             displayAtEntry: null,
