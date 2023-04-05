@@ -690,7 +690,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         <div
           key={`label-${props.label}-slot`}
           style={{
-            border: `1px ${props.shouldShowParentOutline ? 'solid' : 'dashed'} ${
+            border: `1px solid ${
               props.selected
                 ? colorTheme.bg0.value
                 : props.shouldShowParentOutline
@@ -699,7 +699,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
             }`,
             opacity: props.selected ? 0.8 : 1,
             width: '100%',
-            padding: '2px 4px',
+            padding: '2px 6px',
             borderRadius: 2,
             color: props.selected ? colorTheme.bg0.value : colorTheme.fg8.value,
             textTransform: 'lowercase',
