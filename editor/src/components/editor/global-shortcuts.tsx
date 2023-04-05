@@ -160,7 +160,7 @@ import {
 import { parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { convertToGroupCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -892,14 +892,14 @@ export function handleKeyDown(
         }
 
         const commands = editor.selectedViews.flatMap((elementPath) => {
-          const maybeConvertToGroupCommands = convertToGroupCommands(
+          const maybeGroupConversionCommands = groupConversionCommands(
             editor.jsxMetadata,
             editor.allElementProps,
             elementPath,
           )
 
-          if (maybeConvertToGroupCommands != null) {
-            return maybeConvertToGroupCommands
+          if (maybeGroupConversionCommands != null) {
+            return maybeGroupConversionCommands
           }
 
           const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)

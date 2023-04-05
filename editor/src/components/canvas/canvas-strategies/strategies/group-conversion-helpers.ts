@@ -69,12 +69,10 @@ function convertFrameToGroupCommands(
     nukeSizingPropsForAxisCommand('vertical', elementPath),
     nukeSizingPropsForAxisCommand('horizontal', elementPath),
     ...childInstances.flatMap((child) =>
-      child.globalFrame != null && isFiniteRectangle(child.globalFrame)
-        ? setElementTopLeft(child, {
-            top: child.specialSizeMeasurements.offset.y + parentOffset.y,
-            left: child.specialSizeMeasurements.offset.x + parentOffset.x,
-          })
-        : [],
+      setElementTopLeft(child, {
+        top: child.specialSizeMeasurements.offset.y + parentOffset.y,
+        left: child.specialSizeMeasurements.offset.x + parentOffset.x,
+      }),
     ),
   ]
 }
@@ -150,7 +148,7 @@ function convertGroupToFrameCommands(
   ]
 }
 
-export function convertToGroupCommands(
+export function groupConversionCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPath: ElementPath,

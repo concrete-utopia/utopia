@@ -1,0 +1,234 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import React from 'react'
+import { jsx } from '@emotion/react'
+import { createSelector } from 'reselect'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { assertNever } from '../../core/shared/utils'
+import { useColorTheme, FlexColumn, InspectorSectionHeader, PopupList, FlexRow } from '../../uuiui'
+import { getControlStyles } from '../../uuiui-deps'
+import {
+  ContentAffectingType,
+  getElementContentAffectingType,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { applyCommandsAction } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
+import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import { SelectOption } from './controls/select-control'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import {
+  convertFrameToGroupCommands,
+  convertGroupToFrameCommands,
+  groupConversionCommands,
+  isAbsolutePositionedFrame,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { assert } from 'chai'
+import { CanvasCommand } from '../canvas/commands/commands'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+
+type WrapperType = 'fragment' | 'frame' | 'group'
+
+const simpleControlStyles = getControlStyles('simple')
+
+const selectedElementGrouplikeTypeSelector = createSelector(
+  metadataSelector,
+  (store: MetadataSubstate) => store.editor.allElementProps,
+  selectedViewsSelector,
+  (metadata, allElementProps, selectedViews) => {
+    if (selectedViews.length !== 1) {
+      return null
+    }
+    return getElementContentAffectingType(metadata, allElementProps, selectedViews[0])
+  },
+)
+
+export function groupSectionOption(wrapperType: WrapperType): SelectOption {
+  switch (wrapperType) {
+    case 'frame':
+      return { value: 'frame', label: 'Frame' }
+    case 'fragment':
+      return { value: 'fragment', label: 'Fragment' }
+    case 'group':
+      return { value: 'group', label: 'Group' }
+    default:
+      assertNever(wrapperType)
+  }
+}
+
+const FragmentOption = groupSectionOption('fragment')
+const GroupOption = groupSectionOption('group')
+const DivOption = groupSectionOption('frame')
+
+const Options: Array<SelectOption> = [FragmentOption, GroupOption, DivOption]
+
+function wrapperTypeFromContentAffectingType(type: ContentAffectingType | null): WrapperType {
+  if (type === 'fragment') {
+    return 'fragment'
+  }
+  if (type === 'sizeless-div') {
+    return 'group'
+  }
+  return 'frame'
+}
+
+export const GroupSection = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
+  const selectedFrames = useEditorState(
+    Substores.metadata,
+    (store) =>
+      selectedViewsSelector(store).filter(
+        (elementPath) =>
+          isAbsolutePositionedFrame(
+            store.editor.jsxMetadata,
+            store.editor.allElementProps,
+            elementPath,
+          ) &&
+          !MetadataUtils.isParentFlexLayoutedContainerForElement(
+            MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+          ),
+      ),
+    'GroupSection selectedViews',
+  )
+
+  const selectedElementGrouplikeType = useEditorState(
+    Substores.metadata,
+    selectedElementGrouplikeTypeSelector,
+    'GroupSection allSelectedElementGrouplike',
+  )
+
+  const currentValue = React.useMemo(() => {
+    if (selectedElementGrouplikeType === 'fragment') {
+      return FragmentOption
+    }
+    if (selectedElementGrouplikeType === 'sizeless-div') {
+      return GroupOption
+    }
+    return DivOption
+  }, [selectedElementGrouplikeType])
+
+  const onChange = React.useCallback(
+    ({ value }: SelectOption) => {
+      const currentType: WrapperType = wrapperTypeFromContentAffectingType(
+        selectedElementGrouplikeType,
+      )
+      const desiredType = value as WrapperType
+      const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
+        if (currentType === 'fragment') {
+          if (desiredType === 'fragment') {
+            return []
+          }
+
+          if (desiredType === 'group') {
+            // wrap in group
+            return []
+          }
+
+          if (desiredType === 'frame') {
+            // fix children offsets
+            // wrap in frame
+            return []
+          }
+          assertNever(desiredType)
+        }
+
+        if (currentType === 'group') {
+          if (desiredType === 'group') {
+            return []
+          }
+
+          if (desiredType === 'frame') {
+            return (
+              convertGroupToFrameCommands(
+                metadataRef.current,
+                allElementPropsRef.current,
+                elementPath,
+              ) ?? []
+            )
+          }
+
+          if (desiredType === 'fragment') {
+            // fix children offsets
+            // wrap in fragment
+            return []
+          }
+
+          assertNever(desiredType)
+        }
+
+        if (currentType === 'frame') {
+          if (desiredType === 'frame') {
+            return []
+          }
+
+          if (desiredType === 'group') {
+            return convertFrameToGroupCommands(
+              metadataRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
+          }
+
+          if (desiredType === 'fragment') {
+            // fix children offsets
+            // wrap in fragment
+            return []
+          }
+          assertNever(desiredType)
+        }
+
+        assertNever(currentType)
+      })
+
+      if (commands.length > 0) {
+        dispatch([applyCommandsAction(commands)])
+      }
+    },
+    [allElementPropsRef, dispatch, metadataRef, selectedElementGrouplikeType, selectedViewsRef],
+  )
+
+  if (selectedFrames.length !== 1) {
+    return null
+  }
+
+  return (
+    <FlexColumn>
+      <InspectorSectionHeader
+        css={{
+          transition: 'color .1s ease-in-out',
+          color: colorTheme.fg1.value,
+          '--buttonContentOpacity': 0.3,
+          '&:hover': {
+            color: colorTheme.fg1.value,
+            '--buttonContentOpacity': 1,
+          },
+        }}
+      >
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            alignSelf: 'stretch',
+            gap: 8,
+          }}
+        >
+          <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Group</span>
+        </FlexRow>
+      </InspectorSectionHeader>
+      <FlexRow style={{ padding: 4 }}>
+        <PopupList
+          value={currentValue}
+          options={Options}
+          onSubmitValue={onChange}
+          controlStyles={simpleControlStyles}
+        />
+      </FlexRow>
+    </FlexColumn>
+  )
+})
