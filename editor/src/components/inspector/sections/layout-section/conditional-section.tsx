@@ -432,6 +432,7 @@ const BranchRow = ({
           alignItems: 'center',
           gap: 4,
           overflowX: 'scroll',
+          whiteSpace: 'nowrap',
         }}
       >
         <LayoutIcon
