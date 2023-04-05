@@ -516,6 +516,12 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   ]
 }
 
+export const nukeSizingProps = (path: ElementPath): Array<CanvasCommand> => {
+  return [
+    deleteProperties('always', path, [PP.create('style', 'width'), PP.create('style', 'height')]),
+  ]
+}
+
 export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
@@ -724,6 +730,28 @@ export function addPositionAbsoluteTopLeft(
       parentFlexDirection,
     ),
     setProperty('always', elementPath, styleP('position'), 'absolute'),
+  ]
+}
+
+export function setElementTopLeft(
+  instance: ElementInstanceMetadata,
+  { top, left }: { top: number; left: number },
+): Array<CanvasCommand> {
+  return [
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(top, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(left, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
   ]
 }
 

@@ -139,15 +139,29 @@ import {
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
   isIntrinsicallyInlineElement,
+  setElementTopLeft,
+  nukeSizingProps,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  getElementContentAffectingType,
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { isInfinityRectangle, zeroCanvasPoint } from '../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  zeroCanvasPoint,
+  zeroCanvasRect,
+} from '../../core/shared/math-utils'
+import { parentPath } from '../../core/shared/element-path'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { deleteProperties } from '../canvas/commands/delete-properties-command'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -903,7 +917,48 @@ export function handleKeyDown(
               return []
             }
 
+            const parentBounds =
+              optionalMap(
+                MetadataUtils.getGlobalContentBoxForChildren,
+                MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath(elementPath)),
+              ) ?? zeroCanvasRect
+
+            const left = childrenBoundingFrame.x - parentBounds.x
+            const top = childrenBoundingFrame.y - parentBounds.y
+
+            const childInstances = mapDropNulls(
+              (path) => MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
+              replaceContentAffectingPathsWithTheirChildrenRecursive(
+                editor.jsxMetadata,
+                editor.allElementProps,
+                MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
+              ),
+            )
+
             return [
+              setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+              setCssLengthProperty(
+                'always',
+                elementPath,
+                PP.create('style', 'left'),
+                setExplicitCssValue(cssPixelLength(left)),
+                element.specialSizeMeasurements.parentFlexDirection,
+              ),
+              setCssLengthProperty(
+                'always',
+                elementPath,
+                PP.create('style', 'top'),
+                setExplicitCssValue(cssPixelLength(top)),
+                element.specialSizeMeasurements.parentFlexDirection,
+              ),
+              ...childInstances.flatMap((child) =>
+                child.globalFrame != null && isFiniteRectangle(child.globalFrame)
+                  ? setElementTopLeft(child, {
+                      top: child.globalFrame.y - childrenBoundingFrame.y,
+                      left: child.globalFrame.x - childrenBoundingFrame.x,
+                    })
+                  : [],
+              ),
               setCssLengthProperty(
                 'always',
                 elementPath,
@@ -917,6 +972,46 @@ export function handleKeyDown(
                 PP.create('style', 'height'),
                 setExplicitCssValue(cssPixelLength(childrenBoundingFrame.height)),
                 element.specialSizeMeasurements.parentFlexDirection ?? null,
+              ),
+            ]
+          }
+
+          const isProbablyPositionAbsoluteContainer =
+            MetadataUtils.isPositionAbsolute(element) &&
+            MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath).length > 0 &&
+            replaceContentAffectingPathsWithTheirChildrenRecursive(
+              editor.jsxMetadata,
+              editor.allElementProps,
+              MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
+            ).every((childPath) =>
+              MetadataUtils.isPositionAbsolute(
+                MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath),
+              ),
+            )
+
+          if (isProbablyPositionAbsoluteContainer) {
+            const parentOffset =
+              MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
+                ?.specialSizeMeasurements.offset ?? zeroCanvasPoint
+
+            const childInstances = mapDropNulls(
+              (path) => MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
+              replaceContentAffectingPathsWithTheirChildrenRecursive(
+                editor.jsxMetadata,
+                editor.allElementProps,
+                MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
+              ),
+            )
+
+            return [
+              deleteProperties('always', elementPath, [PP.create('style')]),
+              ...childInstances.flatMap((child) =>
+                child.globalFrame != null && isFiniteRectangle(child.globalFrame)
+                  ? setElementTopLeft(child, {
+                      top: child.specialSizeMeasurements.offset.y + parentOffset.y,
+                      left: child.specialSizeMeasurements.offset.x + parentOffset.x,
+                    })
+                  : [],
               ),
             ]
           }
