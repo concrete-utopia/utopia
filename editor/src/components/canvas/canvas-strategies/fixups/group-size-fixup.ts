@@ -173,7 +173,7 @@ function getResizeAncestorsPatches(
 
       if (currentGlobalFrame != null) {
         commandsToRun.push(
-          ...setElementTopLeftWidthHeight(metadata, currentGlobalFrame, updatedGlobalFrame),
+          ...setElementTopLeftWidthHeight2(metadata, currentGlobalFrame, updatedGlobalFrame),
           wildcardPatch('always', {
             jsxMetadata: { [pathStr]: { globalFrame: { $set: updatedGlobalFrame } } },
           }),
@@ -201,7 +201,7 @@ function getResizeAncestorsPatches(
 
               if (currentChildGlobalFrame != null) {
                 commandsToRun.push(
-                  ...setElementTopLeftWidthHeight(
+                  ...setElementTopLeftWidthHeight2(
                     childMetadata,
                     currentChildGlobalFrameOffset,
                     currentChildGlobalFrame,
