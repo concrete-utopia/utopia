@@ -32,6 +32,7 @@ import {
   ElementInstanceMetadata,
   isJSXAttributeValue,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
   JSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import {
@@ -547,10 +548,10 @@ export const NavigatorItem: React.FunctionComponent<
       parentElement != null &&
       isRight(parentElement.element) &&
       isJSXConditionalExpression(parentElement.element.value)
+
     const isNullValue =
       isSyntheticNavigatorEntry(props.navigatorEntry) &&
-      isJSXAttributeValue(props.navigatorEntry.childOrAttribute) &&
-      props.navigatorEntry.childOrAttribute.value === null
+      isNullJSXAttributeValue(props.navigatorEntry.childOrAttribute)
 
     return isParentConditional && isNullValue
   }, [parentElement, props.navigatorEntry])

@@ -12,7 +12,7 @@ import {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
 } from './math-utils'
-import { Either, foldEither, isLeft, left, right } from './either'
+import { Either, isRight } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -21,7 +21,7 @@ import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
 import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
-import { ModifiableAttribute } from './jsx-attributes'
+import { ModifiableAttribute, jsxSimpleAttributeToValue } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -618,7 +618,11 @@ export function isJSXAttributeValue(element: JSXElementChild): element is JSExpr
 }
 
 export function isNullJSXAttributeValue(element: JSXElementChild): boolean {
-  return isJSXAttributeValue(element) && element.value === null
+  if (!isJSXAttributeValue(element)) {
+    return false
+  }
+  const value = jsxSimpleAttributeToValue(element)
+  return isRight(value) && value.value === null
 }
 
 export function modifiableAttributeIsPartOfAttributeValue(
