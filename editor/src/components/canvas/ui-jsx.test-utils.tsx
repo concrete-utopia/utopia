@@ -240,6 +240,7 @@ export async function renderTestEditorWithModel(
       domWalkerMutableState,
       workingEditorState.patchedEditor,
       result.patchedEditor,
+      'no-force',
     )
 
     workingEditorState = result

@@ -563,9 +563,11 @@ export function invalidateDomWalkerIfNecessary(
   domWalkerMutableState: DomWalkerMutableStateData,
   oldEditorState: EditorState,
   newEditorState: EditorState,
+  force: 'force-invalidate' | 'no-force',
 ): void {
   // invalidate initComplete on mountCount increase
   if (
+    force === 'force-invalidate' ||
     newEditorState.canvas.domWalkerInvalidateCount >
       oldEditorState.canvas.domWalkerInvalidateCount ||
     newEditorState.canvas.mountCount > oldEditorState.canvas.mountCount

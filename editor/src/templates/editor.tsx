@@ -477,6 +477,7 @@ export class Editor {
         this.domWalkerMutableState,
         oldEditorState.patchedEditor,
         dispatchResult.patchedEditor,
+        'force-invalidate',
       )
 
       this.storedState = dispatchResult
@@ -516,7 +517,7 @@ export class Editor {
         const domWalkerResult = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
           selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: currentElementsToRender,
+          elementsToFocusOn: 'rerender-all-elements',
           scale: this.storedState.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -567,7 +568,7 @@ export class Editor {
         const domWalkerResultAfterFix = runDomWalker({
           domWalkerMutableState: this.domWalkerMutableState,
           selectedViews: this.storedState.patchedEditor.selectedViews,
-          elementsToFocusOn: this.storedState.patchedEditor.canvas.elementsToRerender,
+          elementsToFocusOn: currentElementsToRender,
           scale: this.storedState.patchedEditor.canvas.scale,
           additionalElementsToUpdate:
             this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
