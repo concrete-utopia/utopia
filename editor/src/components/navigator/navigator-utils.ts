@@ -214,19 +214,3 @@ export function getConditionalClausePathForNavigatorEntry(
     navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
   return getConditionalClausePath(navigatorEntry.elementPath, clauseElement, navigatorEntry.clause)
 }
-
-export function getItemHeight(navigatorEntry: NavigatorEntry): number {
-  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    if (navigatorEntry.clause === 'true-case') {
-      // The TRUE label row will be the shortest size.
-      return UtopiaTheme.layout.rowHeight.smallest
-    } else {
-      // The FALSE label row should visually appear to be the shortest size.
-      // The size difference (against the TRUE label row) will be a top margin.
-      return UtopiaTheme.layout.rowHeight.smaller
-    }
-  } else {
-    // Default size for everything else.
-    return UtopiaTheme.layout.rowHeight.smaller
-  }
-}

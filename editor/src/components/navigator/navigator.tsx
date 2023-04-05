@@ -25,7 +25,7 @@ import {
   NavigatorEntry,
   navigatorEntryToKey,
 } from '../editor/store/editor-state'
-import { getItemHeight } from './navigator-utils'
+import { getItemHeight } from './navigator-item/navigator-item'
 
 interface ItemProps extends ListChildComponentProps {}
 
