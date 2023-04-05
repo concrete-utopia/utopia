@@ -82,8 +82,10 @@ export function commonReparentTarget(
     } else {
       if (EP.pathsEqual(first.elementPath, second.elementPath)) {
         if (first.clause === second.clause) {
+          // If the clauses are the same (both 'true-case' or both 'false-case'), then refer specifically to that case.
           return first
         } else {
+          // As the clauses are not the same, but this is the same conditional refer to the conditional instead.
           return first.elementPath
         }
       } else {
