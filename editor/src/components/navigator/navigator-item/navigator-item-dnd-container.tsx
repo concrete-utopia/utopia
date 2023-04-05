@@ -367,39 +367,6 @@ function getConditionalBranch(conditional: JSXConditionalExpression, clause: Con
   return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 }
 
-function fixDropTarget(
-  props: NavigatorItemDragAndDropWrapperProps,
-  metadata: ElementInstanceMetadataMap,
-): NavigatorItemDragAndDropWrapperProps {
-  const dropTarget = { ...props }
-  const { elementPath: elementPath } = props.navigatorEntry
-  const parentPath = EP.parentPath(elementPath)
-  const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
-  if (conditionalParent != null) {
-    function getConditionalClause(conditional: JSXConditionalExpression): ConditionalCase | null {
-      const truePath = EP.appendToPath(parentPath, conditional.whenTrue.uid)
-      const falsePath = EP.appendToPath(parentPath, conditional.whenFalse.uid)
-      if (EP.pathsEqual(truePath, elementPath)) {
-        return 'true-case'
-      } else if (EP.pathsEqual(falsePath, elementPath)) {
-        return 'false-case'
-      } else {
-        return null
-      }
-    }
-
-    const clause = getConditionalClause(conditionalParent)
-    if (clause != null) {
-      dropTarget.navigatorEntry = {
-        type: 'CONDITIONAL_CLAUSE',
-        elementPath: parentPath,
-        clause: clause,
-      }
-    }
-  }
-  return dropTarget
-}
-
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
 
@@ -429,6 +396,42 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props],
   )
 
+  const metadata = useEditorState(
+    Substores.metadata,
+    metadataSelector,
+    'NavigatorItemContainer metadata',
+  )
+
+  const dropTarget = React.useMemo(() => {
+    const fixedProps = { ...props }
+    const { elementPath: elementPath } = props.navigatorEntry
+    const parentPath = EP.parentPath(elementPath)
+    const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
+    if (conditionalParent != null) {
+      function getConditionalClause(conditional: JSXConditionalExpression): ConditionalCase | null {
+        const truePath = EP.appendToPath(parentPath, conditional.whenTrue.uid)
+        const falsePath = EP.appendToPath(parentPath, conditional.whenFalse.uid)
+        if (EP.pathsEqual(truePath, elementPath)) {
+          return 'true-case'
+        } else if (EP.pathsEqual(falsePath, elementPath)) {
+          return 'false-case'
+        } else {
+          return null
+        }
+      }
+
+      const clause = getConditionalClause(conditionalParent)
+      if (clause != null) {
+        fixedProps.navigatorEntry = {
+          type: 'CONDITIONAL_CLAUSE',
+          elementPath: parentPath,
+          clause: clause,
+        }
+      }
+    }
+    return fixedProps
+  }, [props, metadata])
+
   const [{ isOver: isOverBottomHint }, bottomDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
@@ -444,7 +447,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         onHoverDropTargetLine(item, props, monitor, 'after')
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onDrop(item, fixDropTarget(props, metadata), monitor)
+        onDrop(item, dropTarget, monitor)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
@@ -469,7 +472,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         onHoverDropTargetLine(item, props, monitor, 'before')
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onDrop(item, fixDropTarget(props, metadata), monitor)
+        onDrop(item, dropTarget, monitor)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
@@ -494,7 +497,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         onHoverParentOutline(item, props, monitor)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onDrop(item, fixDropTarget(props, metadata), monitor)
+        onDrop(item, dropTarget, monitor)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
@@ -520,12 +523,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     Substores.navigator,
     (store) => store.editor.navigator.dropTargetHint.type,
     'NavigatorItemDndWrapper dropTargetHintType',
-  )
-
-  const metadata = useEditorState(
-    Substores.metadata,
-    metadataSelector,
-    'NavigatorItemContainer metadata',
   )
 
   const shouldShowBottomHint =
