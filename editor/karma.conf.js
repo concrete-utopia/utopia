@@ -21,7 +21,7 @@ webpackConfig['plugins'].push(
 module.exports = function (config) {
   config.set({
     plugins: [
-      // require('karma-parallel'),
+      require('karma-parallel'),
       'karma-webpack',
       'karma-mocha',
       'karma-chrome-launcher',
@@ -38,7 +38,7 @@ module.exports = function (config) {
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     // NOTE: 'parallel' must be the first framework in the list
-    frameworks: ['mocha', 'viewport'],
+    frameworks: ['parallel', 'mocha', 'viewport'],
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser
