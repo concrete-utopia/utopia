@@ -15,7 +15,7 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import { Modifier, Modifiers } from '../../utils/modifiers'
-import Utils, { getChainSegmentEdge } from '../../utils/utils'
+import Utils from '../../utils/utils'
 import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
@@ -27,7 +27,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode, WrapInView } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -35,7 +35,6 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultSpanElement,
-  defaultTransparentViewElement,
   defaultUnstyledDivElement,
   defaultViewElement,
 } from './defaults'
@@ -139,15 +138,29 @@ import {
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
   isIntrinsicallyInlineElement,
+  setElementTopLeft,
+  nukeSizingPropsForAxisCommand,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  getElementContentAffectingType,
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { isInfinityRectangle, zeroCanvasPoint } from '../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  zeroCanvasPoint,
+  zeroCanvasRect,
+} from '../../core/shared/math-utils'
+import { parentPath } from '../../core/shared/element-path'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -879,46 +892,26 @@ export function handleKeyDown(
         }
 
         const commands = editor.selectedViews.flatMap((elementPath) => {
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
-          if (element == null) {
-            return []
-          }
-
-          const contentAffectingType = getElementContentAffectingType(
+          const maybeGroupConversionCommands = groupConversionCommands(
             editor.jsxMetadata,
             editor.allElementProps,
             elementPath,
           )
 
-          if (contentAffectingType === 'fragment' || contentAffectingType === 'conditional') {
+          if (maybeGroupConversionCommands != null) {
+            return maybeGroupConversionCommands
+          }
+
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
+          if (element == null) {
             return []
           }
 
-          if (contentAffectingType === 'sizeless-div') {
-            const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
-              elementPath,
-              editor.jsxMetadata,
-            )
-            if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
-              return []
-            }
-
-            return [
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'width'),
-                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.width)),
-                element.specialSizeMeasurements.parentFlexDirection ?? null,
-              ),
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'height'),
-                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.height)),
-                element.specialSizeMeasurements.parentFlexDirection ?? null,
-              ),
-            ]
+          if (
+            MetadataUtils.isFragmentFromMetadata(element) ||
+            MetadataUtils.isConditionalFromMetadata(element)
+          ) {
+            return []
           }
 
           if (MetadataUtils.isPositionAbsolute(element)) {
