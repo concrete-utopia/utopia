@@ -431,6 +431,7 @@ const BranchRow = ({
           justifyContent: 'flex-start',
           alignItems: 'center',
           gap: 4,
+          overflowX: 'scroll',
         }}
       >
         <LayoutIcon
