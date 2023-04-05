@@ -32,12 +32,6 @@ import {
   isJSXConditionalExpression,
   emptyComments,
   jsExpressionValue,
-  jsxFragment,
-  isJSXArbitraryBlock,
-  jsxTextBlock,
-  jsxArbitraryBlock,
-  ElementInstanceMetadataMap,
-  JSXConditionalExpression,
   isIntrinsicElement,
 } from '../shared/element-template'
 import {
@@ -57,21 +51,14 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import {
-  getJSXAttributeAtPath,
-  GetJSXAttributeResult,
-  jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
+import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import {
-  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
-  getConditionalCase,
   getConditionalClausePath,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
-import { foldEither } from '../shared/either'
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
@@ -470,12 +457,8 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
-      const falseCasePath = getConditionalClausePath(
-        parentPath,
-        parentElement.whenFalse,
-        'false-case',
-      )
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue)
+      const falseCasePath = getConditionalClausePath(parentPath, parentElement.whenFalse)
 
       const nullAttribute = jsExpressionValue(null, emptyComments)
 
