@@ -516,12 +516,6 @@ export const nukeAllAbsolutePositioningPropsCommands = (
   ]
 }
 
-export const nukeSizingProps = (path: ElementPath): Array<CanvasCommand> => {
-  return [
-    deleteProperties('always', path, [PP.create('style', 'width'), PP.create('style', 'height')]),
-  ]
-}
-
 export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }

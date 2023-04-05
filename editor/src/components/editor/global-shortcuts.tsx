@@ -15,7 +15,7 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import { Modifier, Modifiers } from '../../utils/modifiers'
-import Utils, { getChainSegmentEdge } from '../../utils/utils'
+import Utils from '../../utils/utils'
 import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
@@ -27,7 +27,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode, WrapInView } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -35,7 +35,6 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultSpanElement,
-  defaultTransparentViewElement,
   defaultUnstyledDivElement,
   defaultViewElement,
 } from './defaults'
@@ -140,7 +139,7 @@ import {
   toggleResizeToFitSetToFixed,
   isIntrinsicallyInlineElement,
   setElementTopLeft,
-  nukeSizingProps,
+  nukeSizingPropsForAxisCommand,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
@@ -161,7 +160,6 @@ import {
 import { parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { deleteProperties } from '../canvas/commands/delete-properties-command'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -1004,7 +1002,9 @@ export function handleKeyDown(
             )
 
             return [
-              deleteProperties('always', elementPath, [PP.create('style')]),
+              ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+              nukeSizingPropsForAxisCommand('vertical', elementPath),
+              nukeSizingPropsForAxisCommand('horizontal', elementPath),
               ...childInstances.flatMap((child) =>
                 child.globalFrame != null && isFiniteRectangle(child.globalFrame)
                   ? setElementTopLeft(child, {
