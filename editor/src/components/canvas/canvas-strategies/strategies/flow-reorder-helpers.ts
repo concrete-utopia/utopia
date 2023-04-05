@@ -27,6 +27,7 @@ import { DeleteProperties } from '../../commands/delete-properties-command'
 import { SetProperty, setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
+import { memoize } from '../../../../core/shared/memoize'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -208,7 +209,7 @@ export function getElementDirection(element: ElementInstanceMetadata | null): Di
   return displayValue?.includes('inline') ? 'horizontal' : 'vertical'
 }
 
-const StyleDisplayProp = stylePropPathMappingFn('display', styleStringInArray)
+const StyleDisplayProp = memoize(() => stylePropPathMappingFn('display', styleStringInArray))
 
 export function getOptionalCommandToConvertDisplayInlineBlock(
   target: ElementPath,
@@ -232,9 +233,9 @@ function getOptionalCommandToConvertDisplayInline(
   const displayValueKnownGood = ['block', 'flex', 'grid'].some((p) => displayValue === p)
 
   if (displayValue == null) {
-    return [setProperty('always', target, StyleDisplayProp, `inline-block`)]
+    return [setProperty('always', target, StyleDisplayProp(), `inline-block`)]
   } else if (displayValueKnownGood) {
-    return [setProperty('always', target, StyleDisplayProp, `inline-${displayValue}`)]
+    return [setProperty('always', target, StyleDisplayProp(), `inline-${displayValue}`)]
   } else {
     return []
   }
@@ -249,9 +250,9 @@ function getOptionalCommandToRemoveDisplayInline(
   )
 
   if (displayValue == null || displayValue === 'inline') {
-    return [setProperty('always', target, StyleDisplayProp, `block`)]
+    return [setProperty('always', target, StyleDisplayProp(), `block`)]
   } else if (displayValueKnownGood) {
-    return [setProperty('always', target, StyleDisplayProp, displayValue.slice('inline-'.length))]
+    return [setProperty('always', target, StyleDisplayProp(), displayValue.slice('inline-'.length))]
   } else {
     return []
   }
