@@ -29,6 +29,7 @@ import {
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
+import { UtopiaTheme } from '../../uuiui'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -212,4 +213,10 @@ export function getConditionalClausePathForNavigatorEntry(
   const clauseElement =
     navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
   return getConditionalClausePath(navigatorEntry.elementPath, clauseElement, navigatorEntry.clause)
+}
+
+export function getItemHeight(navigatorEntry: NavigatorEntry): number {
+  return isConditionalClauseNavigatorEntry(navigatorEntry)
+    ? UtopiaTheme.layout.rowHeight.smallest
+    : UtopiaTheme.layout.rowHeight.smaller
 }

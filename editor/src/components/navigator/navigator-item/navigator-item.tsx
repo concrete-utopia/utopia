@@ -40,7 +40,11 @@ import {
   matchesOverriddenConditionalBranch,
 } from '../../../core/model/conditionals'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
+import {
+  getConditionalClausePathForNavigatorEntry,
+  getItemHeight,
+  navigatorDepth,
+} from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
 
@@ -547,7 +551,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
-    height: UtopiaTheme.layout.rowHeight.smaller,
+    height: getItemHeight(navigatorEntry),
     ...resultingStyle.style,
   })
 
