@@ -21,6 +21,34 @@ import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+
+// Should the condition value of conditional expression change (which maybe be done by overriding it),
+// then the values we have accumulated in the spy metadata may need to be cleaned up.
+export function clearOpposingConditionalSpyValues(
+  metadataContext: UiJsxCanvasContextData,
+  conditional: JSXConditionalExpression,
+  conditionValue: boolean,
+  elementPath: ElementPath,
+): void {
+  const opposingElement = conditionValue ? conditional.whenFalse : conditional.whenTrue
+  const pathToOpposing = EP.appendToPath(elementPath, getUtopiaID(opposingElement))
+  const opposingPathString = EP.toString(pathToOpposing)
+  const metadata = metadataContext.current.spyValues.metadata
+  // Search for this and should we find it, only then should we attempt to clear the metadata.
+  // As walking all the keys is somewhat expensive.
+  if (opposingPathString in metadata) {
+    for (const metadataKey of Object.keys(metadata)) {
+      const metadataEntry = metadata[metadataKey]
+      const metadataPath = metadataEntry.elementPath
+      // This is one of the descendants or the value of the opposing clause
+      // of the conditional.
+      if (EP.isDescendantOfOrEqualTo(metadataPath, pathToOpposing)) {
+        delete metadata[metadataKey]
+      }
+    }
+  }
+}
 
 export function addFakeSpyEntry(
   metadataContext: UiJsxCanvasContextData,

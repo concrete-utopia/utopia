@@ -45,7 +45,11 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import { addFakeSpyEntry, buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
+import {
+  addFakeSpyEntry,
+  buildSpyWrappedElement,
+  clearOpposingConditionalSpyValues,
+} from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid, getUtopiaID } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -347,6 +351,8 @@ export function renderCoreElement(
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
+        clearOpposingConditionalSpyValues(metadataContext, element, conditionValue, elementPath)
+
         addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
       }
 
