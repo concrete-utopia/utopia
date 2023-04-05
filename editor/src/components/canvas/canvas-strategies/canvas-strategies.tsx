@@ -64,7 +64,7 @@ export type CanvasStrategyFactory = (
 
 export interface PostStrategyFixupStep {
   name: string
-  fixup: (store: EditorState, previousStore: EditorState) => EditorState
+  fixup: (patchedStore: EditorState, startingMetadata: ElementInstanceMetadataMap) => EditorState
 }
 
 export type MetaCanvasStrategy = (

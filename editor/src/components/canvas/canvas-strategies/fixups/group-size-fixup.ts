@@ -1,7 +1,12 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   canvasRectangle,
@@ -12,6 +17,11 @@ import {
   nullIfInfinity,
   offsetRect,
   rectanglesEqual,
+  resizeCanvasRectangle,
+  roundRectangleToNearestWhole,
+  size,
+  Size,
+  transformFrameUsingBoundingBox,
   vectorDifference,
 } from '../../../../core/shared/math-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
@@ -19,7 +29,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { editorState, EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { cssNumber } from '../../../inspector/common/css-utils'
-import { CanvasFrameAndTarget } from '../../canvas-types'
+import { CanvasFrameAndTarget, EdgePositionBottomRight } from '../../canvas-types'
 import { adjustCssLengthProperty } from '../../commands/adjust-css-length-command'
 import { CanvasCommand, foldAndApplyCommandsSimple } from '../../commands/commands'
 import { PushIntendedBounds } from '../../commands/push-intended-bounds-command'
@@ -27,6 +37,8 @@ import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { PostStrategyFixupStep } from '../canvas-strategies'
+import { createResizeCommandsFromFrame } from '../strategies/absolute-resize-bounding-box-strategy'
+import { isElementMarkedAsGroup } from '../strategies/group-like-helpers'
 import {
   isSizedContainerWithAbsoluteChildren,
   listAllGroupLikeAffectedAncestorsForTarget,
@@ -70,28 +82,29 @@ function setElementTopLeftWidthHeight(
 
 export const groupSizingFixup: PostStrategyFixupStep = {
   name: 'Fix Group Sizes',
-  fixup: (store, previousStore: EditorState): EditorState => {
-    const metadata = store.jsxMetadata
-    const metadataKeys = Object.keys(metadata)
+  fixup: (patchedStore: EditorState, startingMetadata: ElementInstanceMetadataMap): EditorState => {
+    const currentMetadata = patchedStore.jsxMetadata
+    const metadataKeys = Object.keys(currentMetadata)
+    // we go top-down for this one
     metadataKeys.sort()
-    metadataKeys.reverse()
 
     return metadataKeys
-      .map((k) => metadata[k])
-      .filter((instance) =>
-        isSizedContainerWithAbsoluteChildren(metadata, store.allElementProps, instance.elementPath),
-      )
+      .map((k) => currentMetadata[k])
+      .filter((instance) => isElementMarkedAsGroup(currentMetadata, instance.elementPath))
       .reduce((workingEditorState, instance) => {
-        const children = MetadataUtils.getChildrenUnordered(metadata, instance.elementPath)
-        const desiredAabb = boundingRectangleArray(
+        const startingChildren = MetadataUtils.getChildrenUnordered(
+          startingMetadata,
+          instance.elementPath,
+        )
+        const startingChildrenAABB = boundingRectangleArray(
           mapDropNulls(
             (e) =>
               e.globalFrame != null && isFiniteRectangle(e.globalFrame) ? e.globalFrame : null,
-            children,
+            startingChildren,
           ),
         )
 
-        if (desiredAabb == null) {
+        if (startingChildrenAABB == null) {
           return workingEditorState
         }
 
@@ -99,18 +112,27 @@ export const groupSizingFixup: PostStrategyFixupStep = {
           return workingEditorState
         }
 
+        const currentGlobalFrameRounded = roundRectangleToNearestWhole(instance.globalFrame)
+        const childrenAABBRounded = roundRectangleToNearestWhole(startingChildrenAABB)
+
         if (
           instance.globalFrame != null &&
           isFiniteRectangle(instance.globalFrame) &&
-          rectanglesEqual(instance.globalFrame, desiredAabb)
+          rectanglesEqual(currentGlobalFrameRounded, childrenAABBRounded)
         ) {
           return workingEditorState
         }
 
-        return getResizeAncestorsPatches(workingEditorState, [
-          { target: instance.elementPath, frame: desiredAabb },
+        // the children's AABB does not match the element's frame
+        // let's fix the children!!
+        return squishDescendantsToFitFrame(workingEditorState, startingMetadata, [
+          {
+            path: instance.elementPath,
+            childrenCurrentAABB: startingChildrenAABB,
+            desiredChildrenSize: instance.globalFrame,
+          },
         ])
-      }, store)
+      }, patchedStore)
   },
 }
 
@@ -120,19 +142,10 @@ function getResizeAncestorsPatches(
   editor: EditorState,
   targets: CanvasFrameAndTarget[],
 ): EditorState {
-  // we are going to mutate this as we iterate over targets
-  let updatedGlobalFrames: { [path: string]: CanvasRectangle } = {}
+  const [getGlobalFrame, setGlobalFrame, allUpdatedFramesRef] = uzeGlobalFrames(editor.jsxMetadata)
 
   // we update the global frames with the values from targets
-  targets.forEach((t) => (updatedGlobalFrames[EP.toString(t.target)] = t.frame))
-
-  function getGlobalFrame(path: ElementPath): CanvasRectangle {
-    return forceNotNull(
-      `Invariant: found null globalFrame for ${EP.toString(path)}`,
-      updatedGlobalFrames[EP.toString(path)] ??
-        MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)?.globalFrame,
-    )
-  }
+  targets.forEach((t) => setGlobalFrame(t.target, t.frame))
 
   targets.forEach((frameAndTarget) => {
     // find out which ancestors need resizing
@@ -151,7 +164,7 @@ function getResizeAncestorsPatches(
       const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
       const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
       if (newGlobalFrame != null) {
-        updatedGlobalFrames[EP.toString(ancestor)] = newGlobalFrame
+        setGlobalFrame(ancestor, newGlobalFrame)
       }
     })
   })
@@ -160,14 +173,14 @@ function getResizeAncestorsPatches(
   let commandsToRun: Array<CanvasCommand> = []
 
   // okay so now we have a bunch of new globalFrames. what do we do with them?
-  Object.keys(updatedGlobalFrames).forEach((pathStr) => {
+  Object.keys(allUpdatedFramesRef.current).forEach((pathStr) => {
     const elementToUpdate = EP.fromString(pathStr)
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
 
     // TODO rewrite it as happy-path-to-the-left
     if (metadata != null) {
       const currentGlobalFrame = nullIfInfinity(metadata.globalFrame)
-      const updatedGlobalFrame = updatedGlobalFrames[pathStr]
+      const updatedGlobalFrame = getGlobalFrame(elementToUpdate)
 
       if (currentGlobalFrame != null) {
         commandsToRun.push(
@@ -280,4 +293,120 @@ function setElementTopLeftWidthHeight2(
       'do-not-create-if-doesnt-exist',
     ),
   ]
+}
+
+function uzeGlobalFrames(metadata: ElementInstanceMetadataMap) {
+  let updatedGlobalFrames: { [path: string]: CanvasRectangle } = {}
+
+  function getGlobalFrame(path: ElementPath): CanvasRectangle {
+    return forceNotNull(
+      `Invariant: found null globalFrame for ${EP.toString(path)}`,
+      updatedGlobalFrames[EP.toString(path)] ??
+        MetadataUtils.findElementByElementPath(metadata, path)?.globalFrame,
+    )
+  }
+  function setGlobalFrame(path: ElementPath, frame: CanvasRectangle) {
+    updatedGlobalFrames[EP.toString(path)] = frame
+  }
+
+  return [getGlobalFrame, setGlobalFrame, { current: updatedGlobalFrames }] as const
+}
+
+function squishDescendantsToFitFrame(
+  editor: EditorState,
+  startingMetadata: ElementInstanceMetadataMap,
+  potentialGroupsWithUnfittingChildren: {
+    path: ElementPath
+    childrenCurrentAABB: CanvasRectangle
+    desiredChildrenSize: Size
+  }[],
+): EditorState {
+  const updatedEditor: EditorState = potentialGroupsWithUnfittingChildren.reduce(
+    (workingEditor, maybeGroup) => {
+      if (!isElementMarkedAsGroup(startingMetadata, maybeGroup.path)) {
+        return workingEditor
+      }
+
+      const groupInstance = MetadataUtils.findElementByElementPath(
+        startingMetadata,
+        maybeGroup.path,
+      )
+
+      if (groupInstance == null) {
+        return workingEditor
+      }
+
+      if (groupInstance.globalFrame == null || isInfinityRectangle(groupInstance.globalFrame)) {
+        return workingEditor
+      }
+
+      const originalGroupFrame = maybeGroup.childrenCurrentAABB
+      const newGroupFrame = canvasRectangle({
+        x: originalGroupFrame.x,
+        y: originalGroupFrame.y,
+        width: maybeGroup.desiredChildrenSize.width,
+        height: maybeGroup.desiredChildrenSize.height,
+      })
+
+      const childrenToResize = MetadataUtils.getChildrenPathsUnordered(
+        startingMetadata,
+        maybeGroup.path,
+      )
+
+      const resizeCommands = childrenToResize.flatMap((childPath) => {
+        const childMetadata = MetadataUtils.findElementByElementPath(startingMetadata, childPath)
+        if (
+          childMetadata == null ||
+          childMetadata.globalFrame == null ||
+          isInfinityRectangle(childMetadata.globalFrame) ||
+          isLeft(childMetadata.element) ||
+          !isJSXElement(childMetadata.element.value)
+        ) {
+          return []
+        }
+
+        const originalFrame = childMetadata.globalFrame
+        const newFrame = transformFrameUsingBoundingBox(
+          newGroupFrame,
+          originalGroupFrame,
+          originalFrame,
+        )
+
+        if (
+          rectanglesEqual(
+            roundRectangleToNearestWhole(originalFrame),
+            roundRectangleToNearestWhole(newFrame),
+          )
+        ) {
+          return []
+        }
+
+        // console.log('setting frame', EP.toString(childPath), newFrame, {
+        //   newGroupFrame,
+        //   originalGroupFrame,
+        //   originalFrame,
+        // })
+
+        return [
+          ...createResizeCommandsFromFrame(
+            childMetadata.element.value,
+            childPath,
+            newFrame,
+            originalFrame,
+            newGroupFrame,
+            childMetadata.specialSizeMeasurements.parentFlexDirection,
+            EdgePositionBottomRight,
+          ),
+          wildcardPatch('always', {
+            jsxMetadata: { [EP.toString(childPath)]: { globalFrame: { $set: newFrame } } },
+          }),
+        ]
+      })
+
+      return foldAndApplyCommandsSimple(workingEditor, resizeCommands)
+    },
+    editor,
+  )
+
+  return updatedEditor
 }

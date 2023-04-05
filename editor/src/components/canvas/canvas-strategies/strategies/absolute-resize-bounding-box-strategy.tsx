@@ -224,7 +224,7 @@ export function absoluteResizeBoundingBoxStrategy(
   }
 }
 
-function createResizeCommandsFromFrame(
+export function createResizeCommandsFromFrame(
   element: JSXElement,
   selectedElement: ElementPath,
   newFrame: CanvasRectangle,

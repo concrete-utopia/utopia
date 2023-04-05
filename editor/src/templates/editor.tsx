@@ -547,22 +547,15 @@ export class Editor {
 
         if (this.storedState.unpatchedEditor.canvas.interactionSession != null) {
           const fixedPatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
-            return step.fixup(state, oldEditorState.patchedEditor)
+            return step.fixup(state, this.storedState.unpatchedEditor.jsxMetadata)
           }, this.storedState.patchedEditor)
           this.storedState = {
             ...this.storedState,
             patchedEditor: fixedPatchedEditor,
           }
-        } else {
-          const fixedUnpatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
-            return step.fixup(state, oldEditorState.unpatchedEditor)
-          }, this.storedState.unpatchedEditor)
-
-          this.storedState = {
-            ...this.storedState,
-            unpatchedEditor: fixedUnpatchedEditor,
-          }
         }
+
+        // TODO commit!!!
 
         ReactDOM.flushSync(() => {
           ReactDOM.unstable_batchedUpdates(() => {
