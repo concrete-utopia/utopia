@@ -26,7 +26,7 @@ import {
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 
-function isAbsolutePositionedFrame(
+export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -46,7 +46,7 @@ function isAbsolutePositionedFrame(
   )
 }
 
-function convertFrameToGroupCommands(
+export function convertFrameToGroupCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -79,7 +79,7 @@ function convertFrameToGroupCommands(
   ]
 }
 
-function convertGroupToFrameCommands(
+export function convertGroupToFrameCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPath: ElementPath,

@@ -7,14 +7,27 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { assertNever } from '../../core/shared/utils'
 import { useColorTheme, FlexColumn, InspectorSectionHeader, PopupList, FlexRow } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  ContentAffectingType,
+  getElementContentAffectingType,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
 import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { SelectOption } from './controls/select-control'
-import { WrapperType } from './convert-to-group-dropdown-helpers'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import {
+  convertFrameToGroupCommands,
+  convertGroupToFrameCommands,
+  convertToGroupCommands,
+  isAbsolutePositionedFrame,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { assert } from 'chai'
+import { CanvasCommand } from '../canvas/commands/commands'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+
+type WrapperType = 'fragment' | 'frame' | 'group'
 
 const simpleControlStyles = getControlStyles('simple')
 
@@ -49,6 +62,16 @@ const DivOption = groupSectionOption('frame')
 
 const Options: Array<SelectOption> = [FragmentOption, GroupOption, DivOption]
 
+function wrapperTypeFromContentAffectingType(type: ContentAffectingType | null): WrapperType {
+  if (type === 'fragment') {
+    return 'fragment'
+  }
+  if (type === 'sizeless-div') {
+    return 'group'
+  }
+  return 'frame'
+}
+
 export const GroupSection = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
@@ -58,9 +81,20 @@ export const GroupSection = React.memo(() => {
 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    selectedViewsSelector,
+  const selectedFrames = useEditorState(
+    Substores.metadata,
+    (store) =>
+      selectedViewsSelector(store).filter(
+        (elementPath) =>
+          isAbsolutePositionedFrame(
+            store.editor.jsxMetadata,
+            store.editor.allElementProps,
+            elementPath,
+          ) &&
+          !MetadataUtils.isParentFlexLayoutedContainerForElement(
+            MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+          ),
+      ),
     'GroupSection selectedViews',
   )
 
@@ -82,31 +116,85 @@ export const GroupSection = React.memo(() => {
 
   const onChange = React.useCallback(
     ({ value }: SelectOption) => {
-      const mode = value as WrapperType
-      const commands = selectedViewsRef.current.flatMap((elementPath) => {
-        switch (mode) {
-          case 'fragment':
-            return wrapInFragment(metadataRef.current, allElementPropsRef.current, elementPath)
-          case 'sizeless-div':
-            return wrapInSizelessDiv(metadataRef.current, allElementPropsRef.current, elementPath)
-          case 'div':
+      const currentType: WrapperType = wrapperTypeFromContentAffectingType(
+        selectedElementGrouplikeType,
+      )
+      const desiredType = value as WrapperType
+      const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
+        if (currentType === 'fragment') {
+          if (desiredType === 'fragment') {
+            return []
+          }
+
+          if (desiredType === 'group') {
+            // wrap in group
+            return []
+          }
+
+          if (desiredType === 'frame') {
+            // fix children offsets
+            // wrap in frame
+            return []
+          }
+          assertNever(desiredType)
+        }
+
+        if (currentType === 'group') {
+          if (desiredType === 'group') {
+            return []
+          }
+
+          if (desiredType === 'frame') {
             return (
-              optionalMap(
-                (props) =>
-                  wrapInDiv(metadataRef.current, allElementPropsRef.current, elementPath, props),
-                getWrapperPositioningProps(metadataRef.current, elementPath),
+              convertGroupToFrameCommands(
+                metadataRef.current,
+                allElementPropsRef.current,
+                elementPath,
               ) ?? []
             )
-          default:
-            assertNever(mode)
+          }
+
+          if (desiredType === 'fragment') {
+            // fix children offsets
+            // wrap in fragment
+            return []
+          }
+
+          assertNever(desiredType)
         }
+
+        if (currentType === 'frame') {
+          if (desiredType === 'frame') {
+            return []
+          }
+
+          if (desiredType === 'group') {
+            return convertFrameToGroupCommands(
+              metadataRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
+          }
+
+          if (desiredType === 'fragment') {
+            // fix children offsets
+            // wrap in fragment
+            return []
+          }
+          assertNever(desiredType)
+        }
+
+        assertNever(currentType)
       })
-      dispatch([applyCommandsAction(commands)])
+
+      if (commands.length > 0) {
+        dispatch([applyCommandsAction(commands)])
+      }
     },
-    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedElementGrouplikeType, selectedViewsRef],
   )
 
-  if (selectedViews.length !== 1) {
+  if (selectedFrames.length !== 1) {
     return null
   }
 
