@@ -111,6 +111,7 @@ function canDrop(
   const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
   const childrenSupportedIfRequired =
     !isReparentTarget ||
+    isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||
     (isRegularNavigatorEntry(draggedOnto.navigatorEntry) &&
       MetadataUtils.targetSupportsChildren(
         editorState.projectContents,
