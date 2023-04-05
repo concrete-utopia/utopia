@@ -160,6 +160,7 @@ import {
 import { parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { convertToGroupCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -891,129 +892,26 @@ export function handleKeyDown(
         }
 
         const commands = editor.selectedViews.flatMap((elementPath) => {
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
-          if (element == null) {
-            return []
-          }
-
-          const contentAffectingType = getElementContentAffectingType(
+          const maybeConvertToGroupCommands = convertToGroupCommands(
             editor.jsxMetadata,
             editor.allElementProps,
             elementPath,
           )
 
-          if (contentAffectingType === 'fragment' || contentAffectingType === 'conditional') {
+          if (maybeConvertToGroupCommands != null) {
+            return maybeConvertToGroupCommands
+          }
+
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
+          if (element == null) {
             return []
           }
 
-          if (contentAffectingType === 'sizeless-div') {
-            const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
-              elementPath,
-              editor.jsxMetadata,
-            )
-            if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
-              return []
-            }
-
-            const parentBounds =
-              optionalMap(
-                MetadataUtils.getGlobalContentBoxForChildren,
-                MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath(elementPath)),
-              ) ?? zeroCanvasRect
-
-            const left = childrenBoundingFrame.x - parentBounds.x
-            const top = childrenBoundingFrame.y - parentBounds.y
-
-            const childInstances = mapDropNulls(
-              (path) => MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
-              replaceContentAffectingPathsWithTheirChildrenRecursive(
-                editor.jsxMetadata,
-                editor.allElementProps,
-                MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
-              ),
-            )
-
-            return [
-              setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'left'),
-                setExplicitCssValue(cssPixelLength(left)),
-                element.specialSizeMeasurements.parentFlexDirection,
-              ),
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'top'),
-                setExplicitCssValue(cssPixelLength(top)),
-                element.specialSizeMeasurements.parentFlexDirection,
-              ),
-              ...childInstances.flatMap((child) =>
-                child.globalFrame != null && isFiniteRectangle(child.globalFrame)
-                  ? setElementTopLeft(child, {
-                      top: child.globalFrame.y - childrenBoundingFrame.y,
-                      left: child.globalFrame.x - childrenBoundingFrame.x,
-                    })
-                  : [],
-              ),
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'width'),
-                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.width)),
-                element.specialSizeMeasurements.parentFlexDirection ?? null,
-              ),
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'height'),
-                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.height)),
-                element.specialSizeMeasurements.parentFlexDirection ?? null,
-              ),
-            ]
-          }
-
-          const isProbablyPositionAbsoluteContainer =
-            MetadataUtils.isPositionAbsolute(element) &&
-            MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath).length > 0 &&
-            replaceContentAffectingPathsWithTheirChildrenRecursive(
-              editor.jsxMetadata,
-              editor.allElementProps,
-              MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
-            ).every((childPath) =>
-              MetadataUtils.isPositionAbsolute(
-                MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath),
-              ),
-            )
-
-          if (isProbablyPositionAbsoluteContainer) {
-            const parentOffset =
-              MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
-                ?.specialSizeMeasurements.offset ?? zeroCanvasPoint
-
-            const childInstances = mapDropNulls(
-              (path) => MetadataUtils.findElementByElementPath(editor.jsxMetadata, path),
-              replaceContentAffectingPathsWithTheirChildrenRecursive(
-                editor.jsxMetadata,
-                editor.allElementProps,
-                MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
-              ),
-            )
-
-            return [
-              ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-              nukeSizingPropsForAxisCommand('vertical', elementPath),
-              nukeSizingPropsForAxisCommand('horizontal', elementPath),
-              ...childInstances.flatMap((child) =>
-                child.globalFrame != null && isFiniteRectangle(child.globalFrame)
-                  ? setElementTopLeft(child, {
-                      top: child.specialSizeMeasurements.offset.y + parentOffset.y,
-                      left: child.specialSizeMeasurements.offset.x + parentOffset.x,
-                    })
-                  : [],
-              ),
-            ]
+          if (
+            MetadataUtils.isFragmentFromMetadata(element) ||
+            MetadataUtils.isConditionalFromMetadata(element)
+          ) {
+            return []
           }
 
           if (MetadataUtils.isPositionAbsolute(element)) {
