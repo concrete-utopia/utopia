@@ -3,7 +3,6 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import { createSelector } from 'reselect'
-import { optionalMap } from '../../core/shared/optional-utils'
 import { assertNever } from '../../core/shared/utils'
 import { useColorTheme, FlexColumn, InspectorSectionHeader, PopupList, FlexRow } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
@@ -20,10 +19,8 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   convertFrameToGroupCommands,
   convertGroupToFrameCommands,
-  groupConversionCommands,
   isAbsolutePositionedFrame,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { assert } from 'chai'
 import { CanvasCommand } from '../canvas/commands/commands'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
@@ -123,6 +120,7 @@ export const GroupSection = React.memo(() => {
       const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
         if (currentType === 'fragment') {
           if (desiredType === 'fragment') {
+            // NOOP
             return []
           }
 
@@ -141,6 +139,7 @@ export const GroupSection = React.memo(() => {
 
         if (currentType === 'group') {
           if (desiredType === 'group') {
+            // NOOP
             return []
           }
 
@@ -165,6 +164,7 @@ export const GroupSection = React.memo(() => {
 
         if (currentType === 'frame') {
           if (desiredType === 'frame') {
+            // NOOP
             return []
           }
 

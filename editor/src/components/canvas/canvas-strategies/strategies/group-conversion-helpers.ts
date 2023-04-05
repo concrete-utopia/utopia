@@ -1,11 +1,17 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
 import {
   zeroCanvasPoint,
   isFiniteRectangle,
   isInfinityRectangle,
   zeroCanvasRect,
+  CanvasPoint,
+  LocalPoint,
+  CanvasRectangle,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -46,6 +52,34 @@ export function isAbsolutePositionedFrame(
   )
 }
 
+// when removing the parent from between the children and the grandparent
+function offsetChildrenByVectorCommands(
+  childInstances: Array<ElementInstanceMetadata>,
+  offset: CanvasPoint | LocalPoint,
+) {
+  return childInstances.flatMap((child) =>
+    setElementTopLeft(child, {
+      top: child.specialSizeMeasurements.offset.y + offset.y,
+      left: child.specialSizeMeasurements.offset.x + offset.x,
+    }),
+  )
+}
+
+// when putting new container between the children and the grandparent
+function offsetChildrenByDelta(
+  childInstances: Array<ElementInstanceMetadata>,
+  boundingFrame: CanvasRectangle,
+) {
+  return childInstances.flatMap((child) =>
+    child.globalFrame != null && isFiniteRectangle(child.globalFrame)
+      ? setElementTopLeft(child, {
+          top: child.globalFrame.y - boundingFrame.y,
+          left: child.globalFrame.x - boundingFrame.x,
+        })
+      : [],
+  )
+}
+
 export function convertFrameToGroupCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
@@ -68,12 +102,7 @@ export function convertFrameToGroupCommands(
     ...nukeAllAbsolutePositioningPropsCommands(elementPath),
     nukeSizingPropsForAxisCommand('vertical', elementPath),
     nukeSizingPropsForAxisCommand('horizontal', elementPath),
-    ...childInstances.flatMap((child) =>
-      setElementTopLeft(child, {
-        top: child.specialSizeMeasurements.offset.y + parentOffset.y,
-        left: child.specialSizeMeasurements.offset.x + parentOffset.x,
-      }),
-    ),
+    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }
 
@@ -123,14 +152,6 @@ export function convertGroupToFrameCommands(
       setExplicitCssValue(cssPixelLength(top)),
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
-    ...childInstances.flatMap((child) =>
-      child.globalFrame != null && isFiniteRectangle(child.globalFrame)
-        ? setElementTopLeft(child, {
-            top: child.globalFrame.y - childrenBoundingFrame.y,
-            left: child.globalFrame.x - childrenBoundingFrame.x,
-          })
-        : [],
-    ),
     setCssLengthProperty(
       'always',
       elementPath,
@@ -145,6 +166,7 @@ export function convertGroupToFrameCommands(
       setExplicitCssValue(cssPixelLength(childrenBoundingFrame.height)),
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
+    ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
   ]
 }
 
