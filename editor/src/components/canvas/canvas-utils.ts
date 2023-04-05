@@ -470,7 +470,7 @@ export function updateFramesOfScenesAndComponents(
     const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
     const elementProps = editorState.allElementProps[EP.toString(target)] ?? {}
 
-    const elementAttributes = isJSXConditionalExpression(element) ? [] : element.props
+    const elementAttributes = isJSXElement(element) ? element.props : []
 
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
