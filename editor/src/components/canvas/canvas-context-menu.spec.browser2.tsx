@@ -1,14 +1,25 @@
 import { fireEvent } from '@testing-library/react'
+import { forElementOptic } from '../../core/model/common-optics'
+import {
+  conditionalWhenFalseOptic,
+  jsxConditionalExpressionOptic,
+} from '../../core/model/conditionals'
+import { JSXElementChild } from '../../core/shared/element-template'
+import { unsafeGet } from '../../core/shared/optics/optic-utilities'
+import { compose3Optics, Optic } from '../../core/shared/optics/optics'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier } from '../../utils/modifiers'
 import { selectComponents } from '../editor/actions/meta-actions'
+import { EditorState } from '../editor/store/editor-state'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from './event-helpers.test-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
+  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
+  makeTestProjectCodeWithSnippetWithoutUIDs,
   renderTestEditorWithCode,
   TestAppUID,
   TestSceneUID,
@@ -122,6 +133,211 @@ describe('canvas context menu', () => {
             data-uid='ccc'
           >hello</div>
         </div>`,
+      ),
+    )
+  })
+  it('wrap in div works inside a conditional on an expression', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+           {
+             // @utopia/uid=conditional
+             [].length === 0 ? (
+               <div
+                 style={{
+                  height: 150,
+                   width: 150,
+                   position: 'absolute',
+                   left: 154,
+                   top: 134,
+                   backgroundColor: 'lightblue',
+                 }}
+                 data-uid='then-div'
+                 data-testid='then-div'
+               />
+             ) : 'Test' 
+           }
+         </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const conditionalPath = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional`,
+    )
+    const inactiveElementOptic: Optic<EditorState, JSXElementChild> = compose3Optics(
+      forElementOptic(conditionalPath),
+      jsxConditionalExpressionOptic,
+      conditionalWhenFalseOptic,
+    )
+    const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState().editor)
+    const testValuePath = EP.appendToPath(conditionalPath, inactiveElement.uid)
+
+    await renderResult.dispatch(selectComponents([testValuePath], false), true)
+
+    // Wrap it in a div.
+    await openContextMenuAndClickOnItem(renderResult, 'Wrap in div')
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippetWithoutUIDs(
+        `<div style={{ ...props.style }}>
+           {
+             // @utopia/uid=conditional
+             [].length === 0 ? (
+               <div
+                 style={{
+                  height: 150,
+                   width: 150,
+                   position: 'absolute',
+                   left: 154,
+                   top: 134,
+                   backgroundColor: 'lightblue',
+                 }}
+                 data-testid='then-div'
+               />
+             ) : (
+               <div
+                 style={{
+                   position: 'absolute',
+                   left: -154,
+                   top: -134, 
+                   width: 0,
+                   height: 0, 
+                 }}
+               >
+                 {'Test'}
+               </div>
+             )
+           }
+         </div>`,
+      ),
+    )
+  })
+  it('wrap in div works inside a conditional on an element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+           {
+             // @utopia/uid=conditional
+             [].length === 0 ? (
+               <div
+                 style={{
+                  height: 150,
+                   width: 150,
+                   position: 'absolute',
+                   left: 154,
+                   top: 134,
+                   backgroundColor: 'lightblue',
+                 }}
+                 data-uid='then-div'
+                 data-testid='then-div'
+               />
+             ) : 'Test' 
+           }
+         </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const testValuePath = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional/then-div`,
+    )
+
+    await renderResult.dispatch(selectComponents([testValuePath], false), true)
+
+    // Wrap it in a div.
+    await openContextMenuAndClickOnItem(renderResult, 'Wrap in div')
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippetWithoutUIDs(
+        `<div style={{ ...props.style }}>
+           {
+             // @utopia/uid=conditional
+             [].length === 0 ? (
+               <div
+                 style={{
+                   position: 'absolute',
+                   left: 0,
+                   top: 0, 
+                   width: 150,
+                   height: 150, 
+                 }}
+               >
+                 <div
+                   style={{
+                     height: 150,
+                     width: 150,
+                     position: 'absolute',
+                     left: 154,
+                     top: 134,
+                     backgroundColor: 'lightblue',
+                   }}
+                   data-testid='then-div'
+                 />
+               </div>
+             ) : (
+              'Test' 
+             )
+           }
+         </div>`,
+      ),
+    )
+  })
+  it('wrap in div works on an element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+           <div
+             style={{
+               height: 150,
+               width: 150,
+               position: 'absolute',
+               left: 154,
+               top: 134,
+               backgroundColor: 'lightblue',
+             }}
+             data-uid='target-div'
+             data-testid='target-div'
+           />
+         </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const testValuePath = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/target-div`,
+    )
+
+    await renderResult.dispatch(selectComponents([testValuePath], false), true)
+
+    // Wrap it in a div.
+    await openContextMenuAndClickOnItem(renderResult, 'Wrap in div')
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippetWithoutUIDs(
+        `<div style={{ ...props.style }}>
+           <div
+             style={{
+               position: 'absolute',
+               left: 154,
+               top: 134, 
+               width: 150,
+               height: 150, 
+             }}
+           >
+             <div
+               style={{
+                 height: 150,
+                 width: 150,
+                 position: 'absolute',
+                 left: 154,
+                 top: 134,
+                 backgroundColor: 'lightblue',
+               }}
+               data-testid='target-div'
+             />
+           </div>
+         </div>`,
       ),
     )
   })

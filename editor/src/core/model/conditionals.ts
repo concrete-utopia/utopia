@@ -74,6 +74,16 @@ export const conditionalWhenTrueOptic: Optic<JSXConditionalExpression, JSXElemen
 export const conditionalWhenFalseOptic: Optic<JSXConditionalExpression, JSXElementChild> =
   fromField('whenFalse')
 
+export function getClauseOptic(
+  clause: ConditionalCase,
+): Optic<JSXConditionalExpression, JSXElementChild> {
+  if (clause === 'true-case') {
+    return conditionalWhenTrueOptic
+  } else {
+    return conditionalWhenFalseOptic
+  }
+}
+
 export function getConditionalCase(
   elementPath: ElementPath,
   parent: JSXConditionalExpression,
