@@ -407,7 +407,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     const { elementPath: elementPath } = props.navigatorEntry
     const parentPath = EP.parentPath(elementPath)
     const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
-    if (conditionalParent != null) {
+    if (conditionalParent != null && !isConditionalClauseNavigatorEntry(props.navigatorEntry)) {
       function getConditionalClause(conditional: JSXConditionalExpression): ConditionalCase | null {
         const truePath = EP.appendToPath(parentPath, conditional.whenTrue.uid)
         const falsePath = EP.appendToPath(parentPath, conditional.whenFalse.uid)
