@@ -85,6 +85,7 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
+import { GroupSection } from './convert-to-group-dropdown'
 
 export interface ElementPathElement {
   name?: string
@@ -359,6 +360,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <GroupSection />
           <PositionSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
