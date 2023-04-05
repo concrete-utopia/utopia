@@ -235,6 +235,82 @@ export var storyboard = (
       expectBoundsToEqual(editor, 'c2', canvasRectangle({ x: 84, y: 199, width: 163, height: 98 }))
     })
 
+    it('pressing x on an absolute positioned container with only absolute children converts it back into a sizeless div', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 646,
+        top: 72,
+        width: 605,
+        height: 190,
+      }}
+      data-uid='wrapper'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 162,
+          top: 49,
+          width: 358,
+          height: 100,
+        }}
+        data-uid='container'
+        data-testid='container'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 65,
+            top: 34,
+            width: 77,
+            height: 35,
+          }}
+          data-testid='child1'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 186,
+            top: 34,
+            width: 94,
+            height: 55,
+          }}
+          data-testid='child2'
+        />
+      </div>
+     </div>`),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:wrapper/container`),
+      ])
+
+      await expectSingleUndoStep(editor, async () => {
+        await pressKey('x')
+      })
+
+      expectElementToBeSizelessDiv(editor, 'container')
+
+      expectBoundsToEqual(
+        editor,
+        'child1',
+        canvasRectangle({ x: 227, y: 83, width: 77, height: 35 }),
+      )
+
+      expectBoundsToEqual(
+        editor,
+        'child2',
+        canvasRectangle({ x: 348, y: 83, width: 94, height: 55 }),
+      )
+    })
+
     describe('pressing x in nested groups only affects the selected group and its absolutely positoned children', () => {
       it('converting the outermost group doesnt convert the intermediate groups', async () => {
         const editor = await renderTestEditorWithCode(
@@ -333,6 +409,85 @@ export var storyboard = (
 
         expectElementToBeSizelessDiv(editor, 'middle-group')
         expectElementToBeSizelessDiv(editor, 'outermost-group')
+      })
+
+      it('converting back to group with nested groups', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 646,
+          top: 72,
+          width: 605,
+          height: 190,
+        }}
+        data-uid='wrapper'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 162,
+            top: 49,
+            width: 358,
+            height: 100,
+          }}
+          data-uid='container'
+          data-testid='container'
+        >
+        <div data-testid='nested-group'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 65,
+              top: 34,
+              width: 77,
+              height: 35,
+            }}
+            data-testid='child1'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 186,
+              top: 34,
+              width: 94,
+              height: 55,
+            }}
+            data-testid='child2'
+          />
+        </div>
+        </div>
+       </div>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:wrapper/container`),
+        ])
+
+        await expectSingleUndoStep(editor, async () => {
+          await pressKey('x')
+        })
+
+        expectElementToBeSizelessDiv(editor, 'container')
+        expectElementToBeSizelessDiv(editor, 'nested-group')
+
+        expectBoundsToEqual(
+          editor,
+          'child1',
+          canvasRectangle({ x: 227, y: 83, width: 77, height: 35 }),
+        )
+
+        expectBoundsToEqual(
+          editor,
+          'child2',
+          canvasRectangle({ x: 348, y: 83, width: 94, height: 55 }),
+        )
       })
     })
   })
