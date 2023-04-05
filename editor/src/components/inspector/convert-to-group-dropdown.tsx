@@ -20,7 +20,7 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   convertFrameToGroupCommands,
   convertGroupToFrameCommands,
-  convertToGroupCommands,
+  groupConversionCommands,
   isAbsolutePositionedFrame,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { assert } from 'chai'
