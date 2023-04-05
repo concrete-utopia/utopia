@@ -22,7 +22,6 @@ import {
   ConditionalClauseNavigatorEntry,
   DropTargetHint,
   EditorState,
-  ElementWarnings,
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   isSyntheticNavigatorEntry,
@@ -44,13 +43,10 @@ import { metadataSelector } from '../../inspector/inpector-selectors'
 import { navigatorDepth } from '../navigator-utils'
 import {
   ElementInstanceMetadataMap,
-  JSXElementChild,
   isJSXArbitraryBlock,
-  isJSXAttributeValue,
-  isJSXConditionalExpression,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
-import { isRight } from '../../../core/shared/either'
-import { ConditionalCase } from '../../../core/model/conditionals'
+import { ConditionalCase, findMaybeConditionalExpression } from '../../../core/model/conditionals'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -106,7 +102,7 @@ function canDrop(
   }
   if (
     isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) &&
-    !canReparentIntoConditional(draggedOnto.navigatorEntry, editorState.jsxMetadata)
+    !canReparentIntoConditionalClause(draggedOnto.navigatorEntry, editorState.jsxMetadata)
   ) {
     return false
   }
@@ -343,41 +339,26 @@ interface DropCollectedProps {
   canDrop: boolean
 }
 
-function canReparentIntoConditional(
+function canReparentIntoConditionalClause(
   entry: ConditionalClauseNavigatorEntry,
   jsxMetadata: ElementInstanceMetadataMap,
 ) {
   if (entry == null || !isConditionalClauseNavigatorEntry(entry)) {
     return false
   }
-
-  function isNullAttributeValue(v: JSXElementChild) {
-    return isJSXAttributeValue(v) && v.value === null
+  const conditional = findMaybeConditionalExpression(entry.elementPath, jsxMetadata)
+  if (conditional == null) {
+    return false
   }
-
-  const conditional = MetadataUtils.findElementByElementPath(jsxMetadata, entry.elementPath)
-  return (
-    conditional != null &&
-    isRight(conditional.element) &&
-    isJSXConditionalExpression(conditional.element.value) &&
-    isNullAttributeValue(
-      entry.clause === 'true-case'
-        ? conditional.element.value.whenTrue
-        : conditional.element.value.whenFalse,
-    )
-  )
+  const branch = entry.clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+  return isNullJSXAttributeValue(branch)
 }
 
 function isConditionalRoot(entry: NavigatorEntry | null, jsxMetadata: ElementInstanceMetadataMap) {
-  if (entry == null) {
-    return false
-  }
-  if (isConditionalClauseNavigatorEntry(entry)) {
-    return false
-  }
-  const element = MetadataUtils.findElementByElementPath(jsxMetadata, entry.elementPath)
   return (
-    element != null && isRight(element.element) && isJSXConditionalExpression(element.element.value)
+    entry != null &&
+    !isConditionalClauseNavigatorEntry(entry) &&
+    findMaybeConditionalExpression(entry.elementPath, jsxMetadata) != null
   )
 }
 
@@ -388,14 +369,10 @@ function fixDropTarget(
   const dropTarget = { ...props }
   const { elementPath: elementPath } = props.navigatorEntry
   const parentPath = EP.parentPath(elementPath)
-  const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
-  if (
-    parent != null &&
-    isRight(parent.element) &&
-    isJSXConditionalExpression(parent.element.value)
-  ) {
-    const trueBranch = EP.appendToPath(parentPath, parent.element.value.whenTrue.uid)
-    const falseBranch = EP.appendToPath(parentPath, parent.element.value.whenFalse.uid)
+  const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
+  if (conditionalParent != null) {
+    const trueBranch = EP.appendToPath(parentPath, conditionalParent.whenTrue.uid)
+    const falseBranch = EP.appendToPath(parentPath, conditionalParent.whenFalse.uid)
     const clause: ConditionalCase | null = EP.pathsEqual(trueBranch, elementPath)
       ? 'true-case'
       : EP.pathsEqual(falseBranch, elementPath)
@@ -581,58 +558,45 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return 0
   })()
 
-  const getShouldShowParentOutline = React.useCallback((): ParentOutline => {
-    const equalEntries = navigatorEntriesEqual(props.navigatorEntry, moveToElementPath)
-    const parentPath = EP.parentPath(props.navigatorEntry.elementPath)
+  const parentOutline = React.useMemo((): ParentOutline => {
     if (isConditionalRoot(moveToElementPath, metadata)) {
       return 'none'
     }
+
+    const parentPath = EP.parentPath(props.navigatorEntry.elementPath)
+    const equalEntries = navigatorEntriesEqual(props.navigatorEntry, moveToElementPath)
+    const parentConditional = findMaybeConditionalExpression(parentPath, metadata)
+
     if (moveToElementPath != null && isConditionalClauseNavigatorEntry(moveToElementPath)) {
-      const canReparent = canReparentIntoConditional(moveToElementPath, metadata)
-      if (!canReparent) {
-        return 'none'
-      }
-
-      const conditional = MetadataUtils.findElementByElementPath(
-        metadata,
-        moveToElementPath.elementPath,
-      )
-      if (
-        conditional != null &&
-        isRight(conditional.element) &&
-        isJSXConditionalExpression(conditional.element.value)
-      ) {
+      // it's a conditional clause entry
+      const canReparent = canReparentIntoConditionalClause(moveToElementPath, metadata)
+      const conditional = findMaybeConditionalExpression(moveToElementPath.elementPath, metadata)
+      if (canReparent && conditional != null) {
         const branch =
-          moveToElementPath.clause === 'true-case'
-            ? conditional.element.value.whenTrue
-            : conditional.element.value.whenFalse
+          moveToElementPath.clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
         const branchPath = EP.appendToPath(moveToElementPath.elementPath, branch.uid)
-
-        return EP.pathsEqual(parentPath, moveToElementPath.elementPath) &&
+        if (
+          EP.pathsEqual(parentPath, moveToElementPath.elementPath) &&
           EP.pathsEqual(branchPath, props.navigatorEntry.elementPath)
-          ? 'child'
-          : 'none'
-      } else {
-        return 'none'
+        ) {
+          return 'child'
+        }
       }
-    }
-
-    const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
-    if (
-      parent != null &&
-      isRight(parent.element) &&
-      isJSXConditionalExpression(parent.element.value) &&
+      return 'none'
+    } else if (parentConditional != null && equalEntries) {
+      // it's a conditional branch item
+      return 'child'
+    } else if (dropTargetHintType === 'reparent') {
+      return isOverBottomHint || isOverParentOutline ? 'solid' : 'none'
+    } else if (
+      moveToElementPath != null &&
+      isRegularNavigatorEntry(moveToElementPath) &&
       equalEntries
     ) {
-      return 'child'
+      return 'solid'
+    } else {
+      return 'none'
     }
-
-    if (dropTargetHintType === 'reparent') {
-      return isOverBottomHint || isOverParentOutline ? 'solid' : 'none'
-    }
-    return moveToElementPath != null && isRegularNavigatorEntry(moveToElementPath) && equalEntries
-      ? 'solid'
-      : 'none'
   }, [
     moveToElementPath,
     metadata,
@@ -641,8 +605,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     props.navigatorEntry,
     dropTargetHintType,
   ])
-
-  const shouldShowParentOutline = getShouldShowParentOutline()
 
   const isFirstSibling = React.useMemo(() => {
     if (!isRegularNavigatorEntry(props.navigatorEntry)) {
@@ -698,7 +660,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           renamingTarget={props.renamingTarget}
           collapsed={props.collapsed}
           selected={props.selected}
-          parentOutline={shouldShowParentOutline}
+          parentOutline={parentOutline}
           visibleNavigatorTargets={props.visibleNavigatorTargets}
         />
       </div>

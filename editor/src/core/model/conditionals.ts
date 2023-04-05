@@ -2,6 +2,7 @@ import { ElementPath } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
@@ -11,6 +12,8 @@ import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
+import { isRight } from '../shared/either'
+import { MetadataUtils } from './element-metadata-utils'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
@@ -122,5 +125,27 @@ export function matchesOverriddenConditionalBranch(
   return (
     wantOverride === parentOverride &&
     EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause, branch))
+  )
+}
+
+export function maybeConditionalExpression(
+  element: ElementInstanceMetadata | null,
+): JSXConditionalExpression | null {
+  if (
+    element != null &&
+    isRight(element.element) &&
+    isJSXConditionalExpression(element.element.value)
+  ) {
+    return element.element.value
+  }
+  return null
+}
+
+export function findMaybeConditionalExpression(
+  elementPath: ElementPath | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+) {
+  return maybeConditionalExpression(
+    MetadataUtils.findElementByElementPath(jsxMetadata, elementPath),
   )
 }

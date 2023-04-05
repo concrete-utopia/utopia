@@ -10,15 +10,11 @@ import {
   ElementInstanceMetadata,
   JSXConditionalExpression,
   getJSXElementNameLastPart,
-  isJSXAttributeValue,
-  isJSXConditionalExpression,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { getValueFromComplexMap } from '../../../utils/map'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
-  defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
   isConditionalClauseNavigatorEntry,
@@ -31,13 +27,11 @@ import {
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import {
-  DragSelection,
   NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
-import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
-import { foldEither, isRight } from '../../../core/shared/either'
 import { navigatorDepth } from '../navigator-utils'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -194,21 +188,27 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper parentElement',
   )
 
-  function isNullAttributeValue(entry: NavigatorEntry, conditional: JSXConditionalExpression) {
-    const truePath = EP.appendToPath(EP.parentPath(entry.elementPath), conditional.whenTrue.uid)
+  function isNullConditionalBranch(
+    entry: NavigatorEntry,
+    maybeConditional: JSXConditionalExpression | null,
+  ) {
+    if (maybeConditional == null) {
+      return false
+    }
+    const truePath = EP.appendToPath(
+      EP.parentPath(entry.elementPath),
+      maybeConditional.whenTrue.uid,
+    )
     const branch = EP.pathsEqual(entry.elementPath, truePath)
-      ? conditional.whenTrue
-      : conditional.whenFalse
-    return isJSXAttributeValue(branch) && branch.value === null
+      ? maybeConditional.whenTrue
+      : maybeConditional.whenFalse
+    return isNullJSXAttributeValue(branch)
   }
 
   const canReparentInto =
     elementSupportsChildren ||
     isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
-    (parentElement != null &&
-      isRight(parentElement.element) &&
-      isJSXConditionalExpression(parentElement.element.value) &&
-      isNullAttributeValue(props.navigatorEntry, parentElement.element.value))
+    isNullConditionalBranch(props.navigatorEntry, maybeConditionalExpression(parentElement))
 
   const labelForTheElement = useEditorState(
     Substores.metadata,
@@ -252,9 +252,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
 
         if (
           isSyntheticNavigatorEntry(props.navigatorEntry) &&
-          parentElement != null &&
-          isRight(parentElement.element) &&
-          isJSXConditionalExpression(parentElement.element.value)
+          maybeConditionalExpression(parentElement) != null
         ) {
           possiblyAppropriateDropTargetHint = {
             type: 'reparent',

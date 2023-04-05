@@ -617,6 +617,10 @@ export function isJSXAttributeValue(element: JSXElementChild): element is JSExpr
   return element.type === 'ATTRIBUTE_VALUE'
 }
 
+export function isNullJSXAttributeValue(element: JSXElementChild): boolean {
+  return isJSXAttributeValue(element) && element.value === null
+}
+
 export function modifiableAttributeIsPartOfAttributeValue(
   attribute: ModifiableAttribute,
 ): attribute is PartOfJSXAttributeValue {
