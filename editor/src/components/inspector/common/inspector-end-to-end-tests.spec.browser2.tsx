@@ -2252,6 +2252,8 @@ describe('inspector tests with real metadata', () => {
       expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      const bbbPath = EP.appendToPath(targetPath, 'bbb')
+      const cccPath = EP.appendToPath(targetPath, 'ccc')
       await act(async () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
@@ -2277,6 +2279,14 @@ describe('inspector tests with real metadata', () => {
         )
         expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
           'simple',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
         )
       }
 
@@ -2325,6 +2335,14 @@ describe('inspector tests with real metadata', () => {
         expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
           'overridden',
         )
+
+        // 'ccc' should be present in the metadata and 'bbb' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(cccPath),
+        )
       }
 
       // override to true
@@ -2372,6 +2390,14 @@ describe('inspector tests with real metadata', () => {
         expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
           'overridden',
         )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
+        )
       }
 
       // disable override
@@ -2417,6 +2443,14 @@ describe('inspector tests with real metadata', () => {
         )
         expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
           'simple',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
         )
       }
 
@@ -2464,6 +2498,14 @@ describe('inspector tests with real metadata', () => {
         )
         expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
           'overridden',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
         )
       }
     })
