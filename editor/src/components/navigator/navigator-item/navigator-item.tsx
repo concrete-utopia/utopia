@@ -552,6 +552,11 @@ export const NavigatorItem: React.FunctionComponent<
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
     height: getItemHeight(navigatorEntry),
+    // This matches up with the implementation of `getItemHeight`.
+    marginTop:
+      isConditionalClauseNavigatorEntry(navigatorEntry) && navigatorEntry.clause === 'false-case'
+        ? '8px'
+        : undefined,
     ...resultingStyle.style,
   })
 
