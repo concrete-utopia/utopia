@@ -570,6 +570,14 @@ export const NavigatorItem: React.FunctionComponent<
     ...resultingStyle.style,
   })
 
+  const showExpandableIndicator = React.useMemo(() => {
+    return (
+      isConditional || // if it is a conditional, so it could have no children if both branches are null
+      childComponentCount > 0 ||
+      isFocusedComponent
+    )
+  }, [childComponentCount, isFocusedComponent, isConditional])
+
   return (
     <div
       style={{
@@ -590,7 +598,7 @@ export const NavigatorItem: React.FunctionComponent<
         <FlexRow style={containerStyle}>
           <ExpandableIndicator
             key='expandable-indicator'
-            visible={childComponentCount > 0 || isFocusedComponent}
+            visible={showExpandableIndicator}
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
