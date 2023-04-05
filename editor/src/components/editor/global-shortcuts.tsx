@@ -978,7 +978,16 @@ export function handleKeyDown(
 
           const isProbablyPositionAbsoluteContainer =
             MetadataUtils.isPositionAbsolute(element) &&
-            MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath).length > 0
+            MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath).length > 0 &&
+            replaceContentAffectingPathsWithTheirChildrenRecursive(
+              editor.jsxMetadata,
+              editor.allElementProps,
+              MetadataUtils.getChildrenPathsUnordered(editor.jsxMetadata, elementPath),
+            ).every((childPath) =>
+              MetadataUtils.isPositionAbsolute(
+                MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath),
+              ),
+            )
 
           if (isProbablyPositionAbsoluteContainer) {
             const parentOffset =
