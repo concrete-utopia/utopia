@@ -3,7 +3,12 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  emptyComments,
   isJSXElementLike,
+  jsExpressionValue,
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxElementName,
   jsxFragment,
 } from '../../../../core/shared/element-template'
 import {
@@ -84,6 +89,57 @@ function offsetChildrenByDelta(
         })
       : [],
   )
+}
+
+export function convertFragmentToGroup(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const parentPath = EP.parentPath(elementPath)
+  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
+    return []
+  }
+
+  const { children, uid } = instance.element.value
+
+  return [
+    deleteElement('always', elementPath),
+    addElement(
+      'always',
+      parentPath,
+      jsxElement(
+        jsxElementName('div', []),
+        uid,
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue(uid, emptyComments) }),
+        children,
+      ),
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
+  ]
+}
+
+export function convertGroupToFragment(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const parentPath = EP.parentPath(elementPath)
+  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
+    return []
+  }
+
+  const { children, uid } = instance.element.value
+
+  return [
+    deleteElement('always', elementPath),
+    addElement(
+      'always',
+      parentPath,
+      jsxFragment(uid, children, true),
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
+  ]
 }
 
 export function convertFrameToGroupCommands(

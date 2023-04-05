@@ -17,8 +17,10 @@ import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
+  convertFragmentToGroup,
   convertFrameToFragmentCommands,
   convertFrameToGroupCommands,
+  convertGroupToFragment,
   convertGroupToFrameCommands,
   isAbsolutePositionedFrame,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
@@ -82,17 +84,31 @@ export const GroupSection = React.memo(() => {
   const selectedFrames = useEditorState(
     Substores.metadata,
     (store) =>
-      selectedViewsSelector(store).filter(
-        (elementPath) =>
-          isAbsolutePositionedFrame(
-            store.editor.jsxMetadata,
-            store.editor.allElementProps,
-            elementPath,
-          ) &&
+      selectedViewsSelector(store).filter((elementPath) => {
+        const contentAffectingType = getElementContentAffectingType(
+          store.editor.jsxMetadata,
+          store.editor.allElementProps,
+          elementPath,
+        )
+
+        const isFrameHeuristic = isAbsolutePositionedFrame(
+          store.editor.jsxMetadata,
+          store.editor.allElementProps,
+          elementPath,
+        )
+
+        const isFrameOrGroup =
+          isFrameHeuristic ||
+          contentAffectingType === 'fragment' ||
+          contentAffectingType === 'sizeless-div'
+
+        return (
+          isFrameOrGroup &&
           !MetadataUtils.isParentFlexLayoutedContainerForElement(
             MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
-          ),
-      ),
+          )
+        )
+      }),
     'GroupSection selectedViews',
   )
 
@@ -126,8 +142,7 @@ export const GroupSection = React.memo(() => {
           }
 
           if (desiredType === 'group') {
-            // wrap in group
-            return []
+            return convertFragmentToGroup(metadataRef.current, elementPath)
           }
 
           if (desiredType === 'frame') {
@@ -155,8 +170,7 @@ export const GroupSection = React.memo(() => {
           }
 
           if (desiredType === 'fragment') {
-            // wrap in fragment
-            return []
+            return convertGroupToFragment(metadataRef.current, elementPath)
           }
 
           assertNever(desiredType)
