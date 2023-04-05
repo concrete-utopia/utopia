@@ -3,6 +3,8 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  isJSXElementLike,
+  jsxFragment,
 } from '../../../../core/shared/element-template'
 import {
   zeroCanvasPoint,
@@ -31,6 +33,10 @@ import {
 } from './group-like-helpers'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
+import { isLeft } from '../../../../core/shared/either'
+import { deleteElement } from '../../commands/delete-element-command'
+import { absolute } from '../../../../utils/utils'
+import { addElement } from '../../commands/add-element-command'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -167,6 +173,44 @@ export function convertGroupToFrameCommands(
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
+  ]
+}
+
+export function convertFrameToFragmentCommands(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const parentPath = EP.parentPath(elementPath)
+  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
+    return []
+  }
+
+  const { children, uid } = instance.element.value
+
+  const parentOffset =
+    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
+    zeroCanvasPoint
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+    ),
+  )
+
+  return [
+    deleteElement('always', elementPath),
+    addElement(
+      'always',
+      parentPath,
+      jsxFragment(uid, children, true),
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
+    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }
 

@@ -17,6 +17,7 @@ import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
+  convertFrameToFragmentCommands,
   convertFrameToGroupCommands,
   convertGroupToFrameCommands,
   isAbsolutePositionedFrame,
@@ -154,7 +155,6 @@ export const GroupSection = React.memo(() => {
           }
 
           if (desiredType === 'fragment') {
-            // fix children offsets
             // wrap in fragment
             return []
           }
@@ -177,9 +177,11 @@ export const GroupSection = React.memo(() => {
           }
 
           if (desiredType === 'fragment') {
-            // fix children offsets
-            // wrap in fragment
-            return []
+            return convertFrameToFragmentCommands(
+              metadataRef.current,
+              allElementPropsRef.current,
+              elementPath,
+            )
           }
           assertNever(desiredType)
         }
