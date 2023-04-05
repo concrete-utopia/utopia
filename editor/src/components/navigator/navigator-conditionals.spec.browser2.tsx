@@ -263,6 +263,60 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
+function getProjectCodeNotEmpty(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+      data-testid='${TestSceneUID}'
+    >
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='containing-div'
+        data-testid='containing-div'
+      >
+        {
+          // @utopia/uid=conditional1
+          [].length === 0 ? (
+            <div data-uid='then-div' data-testid='then-div'>foo</div>
+          ) : (
+            <div data-uid='else-div' data-testid='else-div'>bar</div>
+          )
+        }
+        <div
+          style={{
+            height: 150,
+            width: 150,
+            position: 'absolute',
+            left: 300,
+            top: 300,
+            backgroundColor: 'darkblue',
+          }}
+          data-uid='sibling-div'
+          data-testid='sibling-div'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
 function navigatorStructure(editorState: EditorState, deriveState: DerivedState): string {
   const lines = deriveState.visibleNavigatorTargets.map((target) => {
     const targetAsText = navigatorEntryToKey(target)
@@ -274,6 +328,57 @@ function navigatorStructure(editorState: EditorState, deriveState: DerivedState)
     return `${prefix}${targetAsText}`
   })
   return lines.join('\n')
+}
+
+async function ensureNoopDrag({
+  projectCode,
+  pathToDrag,
+  dropTargetID,
+}: {
+  projectCode: string
+  pathToDrag: ElementPath
+  dropTargetID: string
+}) {
+  const renderResult = await renderTestEditorWithCode(projectCode, 'await-first-dom-report')
+
+  await act(async () => {
+    const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+    await renderResult.dispatch(selectComponents([pathToDrag], false), false)
+    await dispatchDone
+  })
+
+  // Getting info relating to what element will be dragged.
+  const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
+    `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(pathToDrag))}`,
+  )
+  const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
+  const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)
+
+  // Getting info relating to where the element will be dragged to.
+  const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(dropTargetID)
+
+  const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
+  const navigatorEntryToTargetCenter = getDomRectCenter(navigatorEntryToTargetRect)
+
+  const dragDelta = {
+    x: navigatorEntryToTargetCenter.x - navigatorEntryToDragCenter.x,
+    y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
+  }
+
+  await act(async () =>
+    dragElement(
+      renderResult,
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(pathToDrag))}`,
+      dropTargetID,
+      windowPoint(navigatorEntryToDragCenter),
+      windowPoint(dragDelta),
+      'apply-hover-events',
+    ),
+  )
+
+  await renderResult.getDispatchFollowUpActionsFinished()
+
+  return getPrintedUiJsCode(renderResult.getEditorState())
 }
 
 describe('conditionals in the navigator', () => {
@@ -542,6 +647,38 @@ describe('conditionals in the navigator', () => {
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sibling-div-element-sibling-div
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+  })
+  it('cannot drag into a non-empty active clause', async () => {
+    const projectCode = getProjectCodeNotEmpty()
+    const got = await ensureNoopDrag({
+      projectCode: projectCode,
+      pathToDrag: EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/sibling-div`,
+      ),
+      dropTargetID: `navigator-item-${varSafeNavigatorEntryToKey(
+        conditionalClauseNavigatorEntry(
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`),
+          'true-case',
+        ),
+      )}`,
+    })
+    expect(got).toEqual(projectCode)
+  })
+  it('cannot drag into a non-empty inactive clause', async () => {
+    const projectCode = getProjectCodeNotEmpty()
+    const got = await ensureNoopDrag({
+      projectCode: projectCode,
+      pathToDrag: EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/sibling-div`,
+      ),
+      dropTargetID: `navigator-item-${varSafeNavigatorEntryToKey(
+        conditionalClauseNavigatorEntry(
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`),
+          'false-case',
+        ),
+      )}`,
+    })
+    expect(got).toEqual(projectCode)
   })
   it('dragging out of an inactive clause, replaces with null', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
