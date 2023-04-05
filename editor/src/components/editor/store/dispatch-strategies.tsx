@@ -42,6 +42,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { last } from '../../../core/shared/array-utils'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { isInsertMode } from '../editor-modes'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -224,7 +225,8 @@ export function interactionUpdate(
   const interactionSession = newEditorState.canvas.interactionSession
   if (
     interactionSession == null ||
-    isNotYetStartedDragInteraction(interactionSession.interactionData)
+    (isNotYetStartedDragInteraction(interactionSession.interactionData) &&
+      !isInsertMode(storedState.unpatchedEditor.mode))
   ) {
     return {
       unpatchedEditorState: newEditorState,
