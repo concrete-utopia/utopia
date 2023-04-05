@@ -186,8 +186,8 @@ export function cssNumberEqual(left: CSSNumber, right: CSSNumber): boolean {
 
 type CanvasPropControl = 'padding' | 'borderRadius' | 'gap'
 
-const CONTROL_CROWDING_UPPER_THRESHOLD = 80
-const CONTROL_CROWDING_LOWER_THRESHOLD = 40
+const SHOW_ALL_CONTROLS_THRESHOLD = 80
+const SHOW_NO_CONTROLS_THRESHOLD = 60
 
 export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
@@ -198,11 +198,11 @@ export function canShowCanvasPropControl(
 
   const { width, height } = size((frame.width ?? 0) * scale, (frame.height ?? 0) * scale)
 
-  if (width > CONTROL_CROWDING_UPPER_THRESHOLD && height > CONTROL_CROWDING_UPPER_THRESHOLD) {
+  if (width > SHOW_ALL_CONTROLS_THRESHOLD && height > SHOW_ALL_CONTROLS_THRESHOLD) {
     return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
   }
 
-  if (Math.min(width, height) < CONTROL_CROWDING_LOWER_THRESHOLD) {
+  if (width < SHOW_NO_CONTROLS_THRESHOLD || height < SHOW_NO_CONTROLS_THRESHOLD) {
     return new Set<CanvasPropControl>([])
   }
 

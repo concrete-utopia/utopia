@@ -207,32 +207,6 @@ export function convertGroupToFragment(
   ]
 }
 
-export function convertFrameToGroupCommands(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentOffset =
-    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
-    zeroCanvasPoint
-
-  const childInstances = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceContentAffectingPathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
-    ),
-  )
-
-  return [
-    ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-    nukeSizingPropsForAxisCommand('vertical', elementPath),
-    nukeSizingPropsForAxisCommand('horizontal', elementPath),
-    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
-  ]
-}
-
 export function convertGroupToFrameCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
@@ -294,6 +268,32 @@ export function convertGroupToFrameCommands(
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
+  ]
+}
+
+export function convertFrameToGroupCommands(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const parentOffset =
+    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
+    zeroCanvasPoint
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+    ),
+  )
+
+  return [
+    ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+    nukeSizingPropsForAxisCommand('vertical', elementPath),
+    nukeSizingPropsForAxisCommand('horizontal', elementPath),
+    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }
 
