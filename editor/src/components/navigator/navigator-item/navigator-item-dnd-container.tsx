@@ -43,6 +43,7 @@ import { metadataSelector } from '../../inspector/inpector-selectors'
 import { navigatorDepth } from '../navigator-utils'
 import {
   ElementInstanceMetadataMap,
+  JSXConditionalExpression,
   isJSXArbitraryBlock,
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
@@ -350,7 +351,7 @@ function canReparentIntoConditionalClause(
   if (conditional == null) {
     return false
   }
-  const branch = entry.clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+  const branch = getConditionalBranch(conditional, entry.clause)
   return isNullJSXAttributeValue(branch)
 }
 
@@ -362,6 +363,10 @@ function isConditionalRoot(entry: NavigatorEntry | null, jsxMetadata: ElementIns
   )
 }
 
+function getConditionalBranch(conditional: JSXConditionalExpression, clause: ConditionalCase) {
+  return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+}
+
 function fixDropTarget(
   props: NavigatorItemDragAndDropWrapperProps,
   metadata: ElementInstanceMetadataMap,
@@ -371,13 +376,19 @@ function fixDropTarget(
   const parentPath = EP.parentPath(elementPath)
   const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
   if (conditionalParent != null) {
-    const trueBranch = EP.appendToPath(parentPath, conditionalParent.whenTrue.uid)
-    const falseBranch = EP.appendToPath(parentPath, conditionalParent.whenFalse.uid)
-    const clause: ConditionalCase | null = EP.pathsEqual(trueBranch, elementPath)
-      ? 'true-case'
-      : EP.pathsEqual(falseBranch, elementPath)
-      ? 'false-case'
-      : null
+    function getConditionalClause(conditional: JSXConditionalExpression): ConditionalCase | null {
+      const truePath = EP.appendToPath(parentPath, conditional.whenTrue.uid)
+      const falsePath = EP.appendToPath(parentPath, conditional.whenFalse.uid)
+      if (EP.pathsEqual(truePath, elementPath)) {
+        return 'true-case'
+      } else if (EP.pathsEqual(falsePath, elementPath)) {
+        return 'false-case'
+      } else {
+        return null
+      }
+    }
+
+    const clause = getConditionalClause(conditionalParent)
     if (clause != null) {
       dropTarget.navigatorEntry = {
         type: 'CONDITIONAL_CLAUSE',
@@ -572,8 +583,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       const canReparent = canReparentIntoConditionalClause(moveToElementPath, metadata)
       const conditional = findMaybeConditionalExpression(moveToElementPath.elementPath, metadata)
       if (canReparent && conditional != null) {
-        const branch =
-          moveToElementPath.clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+        const branch = getConditionalBranch(conditional, moveToElementPath.clause)
         const branchPath = EP.appendToPath(moveToElementPath.elementPath, branch.uid)
         if (
           EP.pathsEqual(parentPath, moveToElementPath.elementPath) &&
