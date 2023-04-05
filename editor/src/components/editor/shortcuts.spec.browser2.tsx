@@ -29,7 +29,7 @@ const StoryBoardId = 'StoryBoardId'
 const ParentId = 'ParentId'
 const backgroundColor = '#384C5CAB'
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectBoundsToEqual"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectBoundsToEqual", "expectNoAction"] }] */
 
 // for some reason, ctrl + c does not trigger the eyedropper in tests
 // maybe for security since the event is programmatically triggered?
@@ -148,7 +148,6 @@ describe('shortcuts', () => {
       expect(div.style.left).toEqual('0px')
     })
 
-    // eslint-disable-next-line jest/expect-expect
     it('pressing x when a fragment is selected does nothing', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithContentAffectingElements,
