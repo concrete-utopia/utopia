@@ -148,3 +148,19 @@ export function findMaybeConditionalExpression(
     MetadataUtils.findElementByElementPath(jsxMetadata, elementPath),
   )
 }
+
+export function maybeBranchConditionalClause(
+  conditionalPath: ElementPath,
+  conditional: JSXConditionalExpression,
+  branchPath: ElementPath,
+): ConditionalCase | null {
+  const truePath = EP.appendToPath(conditionalPath, conditional.whenTrue.uid)
+  const falsePath = EP.appendToPath(conditionalPath, conditional.whenFalse.uid)
+  if (EP.pathsEqual(truePath, branchPath)) {
+    return 'true-case'
+  } else if (EP.pathsEqual(falsePath, branchPath)) {
+    return 'false-case'
+  } else {
+    return null
+  }
+}

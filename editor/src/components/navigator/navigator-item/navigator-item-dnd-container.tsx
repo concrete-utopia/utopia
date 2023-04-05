@@ -47,7 +47,11 @@ import {
   isJSXArbitraryBlock,
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
-import { ConditionalCase, findMaybeConditionalExpression } from '../../../core/model/conditionals'
+import {
+  ConditionalCase,
+  findMaybeConditionalExpression,
+  maybeBranchConditionalClause,
+} from '../../../core/model/conditionals'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -93,38 +97,61 @@ function notDescendant(
   return !EP.isDescendantOfOrEqualTo(draggedOnto.navigatorEntry.elementPath, draggedItem)
 }
 
+function isNonEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(elementPath)
+  const conditionalParent = findMaybeConditionalExpression(parentPath, jsxMetadata)
+  if (conditionalParent == null) {
+    return false
+  }
+  const clause = maybeBranchConditionalClause(parentPath, conditionalParent, elementPath)
+  if (clause == null) {
+    return false
+  }
+  const branch = getConditionalBranch(conditionalParent, clause)
+  return !isNullJSXAttributeValue(branch)
+}
+
 function canDrop(
   editorState: EditorState,
   draggedItem: NavigatorItemDragAndDropWrapperProps,
   draggedOnto: NavigatorItemDragAndDropWrapperProps,
 ): boolean {
   if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata)) {
+    // target is a conditional
     return false
-  }
-  if (
+  } else if (
     isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) &&
     !canReparentIntoConditionalClause(draggedOnto.navigatorEntry, editorState.jsxMetadata)
   ) {
+    // target is a conditional clause entry, non-empty
     return false
+  } else if (
+    !isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) &&
+    isNonEmptyConditionalBranch(draggedOnto.navigatorEntry.elementPath, editorState.jsxMetadata)
+  ) {
+    // target is a direct conditional branch, non-empty
+    return false
+  } else {
+    const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
+    const childrenSupportedIfRequired =
+      !isReparentTarget ||
+      isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||
+      (isRegularNavigatorEntry(draggedOnto.navigatorEntry) &&
+        MetadataUtils.targetSupportsChildren(
+          editorState.projectContents,
+          editorState.jsxMetadata,
+          editorState.nodeModules.files,
+          editorState.canvas.openFile?.filename,
+          draggedOnto.navigatorEntry.elementPath,
+        ))
+    const notSelectedItem = draggedItem.getCurrentlySelectedEntries().every((selection) => {
+      return notDescendant(draggedOnto, selection.elementPath)
+    })
+    return childrenSupportedIfRequired && notSelectedItem
   }
-
-  const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
-  const childrenSupportedIfRequired =
-    !isReparentTarget ||
-    isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||
-    (isRegularNavigatorEntry(draggedOnto.navigatorEntry) &&
-      MetadataUtils.targetSupportsChildren(
-        editorState.projectContents,
-        editorState.jsxMetadata,
-        editorState.nodeModules.files,
-        editorState.canvas.openFile?.filename,
-        draggedOnto.navigatorEntry.elementPath,
-      ))
-  const notSelectedItem = draggedItem.getCurrentlySelectedEntries().every((selection) => {
-    return notDescendant(draggedOnto, selection.elementPath)
-  })
-  const result = childrenSupportedIfRequired && notSelectedItem
-  return result
 }
 
 function onDrop(
@@ -405,23 +432,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   const dropTarget = React.useMemo(() => {
     const fixedProps = { ...props }
-    const { elementPath: elementPath } = props.navigatorEntry
+    const { elementPath } = props.navigatorEntry
     const parentPath = EP.parentPath(elementPath)
     const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
     if (conditionalParent != null && !isConditionalClauseNavigatorEntry(props.navigatorEntry)) {
-      function getConditionalClause(conditional: JSXConditionalExpression): ConditionalCase | null {
-        const truePath = EP.appendToPath(parentPath, conditional.whenTrue.uid)
-        const falsePath = EP.appendToPath(parentPath, conditional.whenFalse.uid)
-        if (EP.pathsEqual(truePath, elementPath)) {
-          return 'true-case'
-        } else if (EP.pathsEqual(falsePath, elementPath)) {
-          return 'false-case'
-        } else {
-          return null
-        }
-      }
-
-      const clause = getConditionalClause(conditionalParent)
+      const clause = maybeBranchConditionalClause(parentPath, conditionalParent, elementPath)
       if (clause != null) {
         fixedProps.navigatorEntry = {
           type: 'CONDITIONAL_CLAUSE',
