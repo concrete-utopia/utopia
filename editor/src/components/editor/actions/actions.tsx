@@ -4173,9 +4173,10 @@ export const UPDATE_FNS = {
           }
           case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
             code = fileUpdate.code
+            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
             updatedContents = updateParsedTextFileHighlightBounds(
               fileUpdate.parsed,
-              fileUpdate.highlightBounds,
+              highlightBounds,
             )
             break
           default:

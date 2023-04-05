@@ -246,7 +246,7 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
-        codeNeedsParsing(file.fileContents.revisionsState) &&
+        // codeNeedsParsing(file.fileContents.revisionsState) &&
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
@@ -269,11 +269,12 @@ function maybeRequestModelUpdate(
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
-        filesToUpdate.push(
-          createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
-        )
-        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
-        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
+        throw new Error(`Shouldn't happen!`)
+        // filesToUpdate.push(
+        //   createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
+        // )
+        // const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        // fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
