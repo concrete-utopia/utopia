@@ -144,10 +144,17 @@ function getPrintAndReparseCodeResult(
   lastRevisedTime: number,
   alreadyExistingUIDs: Set<string>,
 ): PrintAndReparseResult {
-  const printResult = getPrintCodeResult(filename, parseSuccess, stripUIDs, lastRevisedTime)
+  const printedCode = printCode(
+    filename,
+    printCodeOptions(false, true, true, stripUIDs),
+    parseSuccess.imports,
+    parseSuccess.topLevelElements,
+    parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
+  )
   const parseResult = getParseFileResult(
     filename,
-    printResult.printResult,
+    printedCode,
     parseSuccess,
     lastRevisedTime,
     alreadyExistingUIDs,
@@ -156,7 +163,7 @@ function getPrintAndReparseCodeResult(
     filename,
     parseResult.parseResult,
     lastRevisedTime,
-    printResult.highlightBounds,
-    printResult.printResult,
+    {},
+    printedCode,
   )
 }
