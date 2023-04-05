@@ -14,6 +14,7 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   magnitude,
+  MaybeInfinityCanvasRectangle,
   nullIfInfinity,
   offsetRect,
   rectanglesEqual,
@@ -80,6 +81,20 @@ function setElementTopLeftWidthHeight(
   ]
 }
 
+function getGlobalFrameOrIntendedBounds(
+  path: ElementPath,
+  startingMetadata: ElementInstanceMetadataMap,
+  strategyIntendedBounds: Array<CanvasFrameAndTarget>,
+): MaybeInfinityCanvasRectangle | null {
+  const startingGlobalFrame =
+    MetadataUtils.findElementByElementPath(startingMetadata, path)?.globalFrame ?? null
+
+  const intendedBounds =
+    strategyIntendedBounds.find((b) => EP.pathsEqual(b.target, path))?.frame ?? null
+
+  return intendedBounds ?? startingGlobalFrame
+}
+
 export const groupSizingFixup: PostStrategyFixupStep = {
   name: 'Fix Group Sizes',
   fixup: (patchedStore: EditorState, startingMetadata: ElementInstanceMetadataMap): EditorState => {
@@ -97,11 +112,17 @@ export const groupSizingFixup: PostStrategyFixupStep = {
           instance.elementPath,
         )
         const startingChildrenAABB = boundingRectangleArray(
-          mapDropNulls(
-            (e) =>
-              e.globalFrame != null && isFiniteRectangle(e.globalFrame) ? e.globalFrame : null,
-            startingChildren,
-          ),
+          mapDropNulls((e) => {
+            const childStartingGlobalFrameOrIntendedBounds = getGlobalFrameOrIntendedBounds(
+              e.elementPath,
+              startingMetadata,
+              patchedStore.canvas.controls.strategyIntendedBounds,
+            )
+            return childStartingGlobalFrameOrIntendedBounds != null &&
+              isFiniteRectangle(childStartingGlobalFrameOrIntendedBounds)
+              ? childStartingGlobalFrameOrIntendedBounds
+              : null
+          }, startingChildren),
         )
 
         if (startingChildrenAABB == null) {
@@ -125,13 +146,18 @@ export const groupSizingFixup: PostStrategyFixupStep = {
 
         // the children's AABB does not match the element's frame
         // let's fix the children!!
-        return squishDescendantsToFitFrame(workingEditorState, startingMetadata, [
-          {
-            path: instance.elementPath,
-            childrenCurrentAABB: startingChildrenAABB,
-            desiredChildrenSize: instance.globalFrame,
-          },
-        ])
+        return squishDescendantsToFitFrame(
+          workingEditorState,
+          startingMetadata,
+          patchedStore.canvas.controls.strategyIntendedBounds,
+          [
+            {
+              path: instance.elementPath,
+              childrenCurrentAABB: startingChildrenAABB,
+              desiredChildrenSize: instance.globalFrame,
+            },
+          ],
+        )
       }, patchedStore)
   },
 }
@@ -139,6 +165,7 @@ export const groupSizingFixup: PostStrategyFixupStep = {
 function squishDescendantsToFitFrame(
   editor: EditorState,
   startingMetadata: ElementInstanceMetadataMap,
+  strategyIntendedBounds: Array<CanvasFrameAndTarget>,
   potentialGroupsWithUnfittingChildren: {
     path: ElementPath
     childrenCurrentAABB: CanvasRectangle
@@ -179,17 +206,23 @@ function squishDescendantsToFitFrame(
 
       const resizeCommands = childrenToResize.flatMap((childPath) => {
         const childMetadata = MetadataUtils.findElementByElementPath(startingMetadata, childPath)
+
+        const originalFrame = getGlobalFrameOrIntendedBounds(
+          childPath,
+          startingMetadata,
+          strategyIntendedBounds,
+        )
+
         if (
           childMetadata == null ||
-          childMetadata.globalFrame == null ||
-          isInfinityRectangle(childMetadata.globalFrame) ||
+          originalFrame == null ||
+          isInfinityRectangle(originalFrame) ||
           isLeft(childMetadata.element) ||
           !isJSXElement(childMetadata.element.value)
         ) {
           return []
         }
 
-        const originalFrame = childMetadata.globalFrame
         const newFrame = transformFrameUsingBoundingBox(
           newGroupFrame,
           originalGroupFrame,
@@ -205,10 +238,11 @@ function squishDescendantsToFitFrame(
           return []
         }
 
-        // console.log('setting frame', EP.toString(childPath), newFrame, {
+        // console.log('setting frame', EP.toString(childPath), {
         //   newGroupFrame,
         //   originalGroupFrame,
         //   originalFrame,
+        //   newFrame,
         // })
 
         return [
