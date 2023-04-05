@@ -119,6 +119,71 @@ export function convertFragmentToGroup(
   ]
 }
 
+export function convertFragmentToFrame(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): CanvasCommand[] | null {
+  const parentPath = EP.parentPath(elementPath)
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
+    return []
+  }
+
+  const { children, uid } = element.element.value
+
+  const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
+    return null
+  }
+
+  const parentBounds =
+    optionalMap(
+      MetadataUtils.getGlobalContentBoxForChildren,
+      MetadataUtils.findElementByElementPath(metadata, EP.parentPath(elementPath)),
+    ) ?? zeroCanvasRect
+
+  const left = childrenBoundingFrame.x - parentBounds.x
+  const top = childrenBoundingFrame.y - parentBounds.y
+
+  const childInstances = mapDropNulls(
+    (path) => MetadataUtils.findElementByElementPath(metadata, path),
+    replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+    ),
+  )
+
+  return [
+    deleteElement('always', elementPath),
+    addElement(
+      'always',
+      parentPath,
+      jsxElement(
+        jsxElementName('div', []),
+        uid,
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionValue(uid, emptyComments),
+          style: jsExpressionValue(
+            {
+              position: 'absolute',
+              left: left,
+              top: top,
+              width: childrenBoundingFrame.width,
+              height: childrenBoundingFrame.height,
+            },
+            emptyComments,
+          ),
+        }),
+        children,
+      ),
+      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+    ),
+    ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
+  ]
+}
+
 export function convertGroupToFragment(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
