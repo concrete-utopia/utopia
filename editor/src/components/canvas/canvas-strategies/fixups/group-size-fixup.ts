@@ -7,6 +7,7 @@ import {
   canvasRectangle,
   CanvasRectangle,
   isFiniteRectangle,
+  isInfinityRectangle,
   magnitude,
   nullIfInfinity,
   offsetRect,
@@ -16,8 +17,9 @@ import {
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import { editorState, EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { cssNumber } from '../../../inspector/common/css-utils'
+import { CanvasFrameAndTarget } from '../../canvas-types'
 import { adjustCssLengthProperty } from '../../commands/adjust-css-length-command'
 import { CanvasCommand, foldAndApplyCommandsSimple } from '../../commands/commands'
 import { PushIntendedBounds } from '../../commands/push-intended-bounds-command'
@@ -68,15 +70,20 @@ function setElementTopLeftWidthHeight(
 
 export const groupSizingFixup: PostStrategyFixupStep = {
   name: 'Fix Group Sizes',
-  fixup: (store) => {
+  fixup: (store, previousStore: EditorState): EditorState => {
     const metadata = store.jsxMetadata
-    return Object.values(metadata)
+    const metadataKeys = Object.keys(metadata)
+    metadataKeys.sort()
+    metadataKeys.reverse()
+
+    return metadataKeys
+      .map((k) => metadata[k])
       .filter((instance) =>
         isSizedContainerWithAbsoluteChildren(metadata, store.allElementProps, instance.elementPath),
       )
-      .flatMap((instance) => {
+      .reduce((workingEditorState, instance) => {
         const children = MetadataUtils.getChildrenUnordered(metadata, instance.elementPath)
-        const aabb = boundingRectangleArray(
+        const desiredAabb = boundingRectangleArray(
           mapDropNulls(
             (e) =>
               e.globalFrame != null && isFiniteRectangle(e.globalFrame) ? e.globalFrame : null,
@@ -84,36 +91,26 @@ export const groupSizingFixup: PostStrategyFixupStep = {
           ),
         )
 
-        if (aabb == null) {
-          return []
+        if (desiredAabb == null) {
+          return workingEditorState
+        }
+
+        if (instance.globalFrame == null || isInfinityRectangle(instance.globalFrame)) {
+          return workingEditorState
         }
 
         if (
           instance.globalFrame != null &&
           isFiniteRectangle(instance.globalFrame) &&
-          rectanglesEqual(instance.globalFrame, aabb)
+          rectanglesEqual(instance.globalFrame, desiredAabb)
         ) {
-          return []
+          return workingEditorState
         }
 
-        return [
-          ...setElementTopLeftWidthHeight(instance, aabb),
-          ...children.flatMap((child) =>
-            child.globalFrame != null && isFiniteRectangle(child.globalFrame)
-              ? setElementTopLeftWidthHeight(
-                  child,
-                  canvasRectangle({
-                    x: child.globalFrame.x - aabb.x,
-                    y: child.globalFrame.y - aabb.y,
-                    width: child.globalFrame.width,
-                    height: child.globalFrame.height,
-                  }),
-                )
-              : [],
-          ),
-          setElementsToRerenderCommand('rerender-all-elements'),
-        ]
-      })
+        return getResizeAncestorsPatches(workingEditorState, [
+          { target: instance.elementPath, frame: desiredAabb },
+        ])
+      }, store)
   },
 }
 
@@ -121,12 +118,13 @@ export const groupSizingFixup: PostStrategyFixupStep = {
 
 function getResizeAncestorsPatches(
   editor: EditorState,
-  command: PushIntendedBounds,
-): EditorStatePatch {
-  const targets = command.value
-
+  targets: CanvasFrameAndTarget[],
+): EditorState {
   // we are going to mutate this as we iterate over targets
   let updatedGlobalFrames: { [path: string]: CanvasRectangle } = {}
+
+  // we update the global frames with the values from targets
+  targets.forEach((t) => (updatedGlobalFrames[EP.toString(t.target)] = t.frame))
 
   function getGlobalFrame(path: ElementPath): CanvasRectangle {
     return forceNotNull(
@@ -216,7 +214,7 @@ function getResizeAncestorsPatches(
   })
 
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
-  return { projectContents: { $set: updatedEditor.projectContents } }
+  return updatedEditor
 }
 
 function setElementTopLeftWidthHeight2(

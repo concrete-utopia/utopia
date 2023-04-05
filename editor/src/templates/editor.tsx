@@ -547,11 +547,7 @@ export class Editor {
 
         if (this.storedState.unpatchedEditor.canvas.interactionSession != null) {
           const fixedPatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
-            const fix = step.fixup(state)
-            if (fix.length > 0) {
-              return foldAndApplyCommandsSimple(state, fix)
-            }
-            return state
+            return step.fixup(state, oldEditorState.patchedEditor)
           }, this.storedState.patchedEditor)
           this.storedState = {
             ...this.storedState,
@@ -559,11 +555,7 @@ export class Editor {
           }
         } else {
           const fixedUnpatchedEditor = PostStrategyFixupSteps.reduce((state, step) => {
-            const fix = step.fixup(state)
-            if (fix.length > 0) {
-              return foldAndApplyCommandsSimple(state, fix)
-            }
-            return state
+            return step.fixup(state, oldEditorState.unpatchedEditor)
           }, this.storedState.unpatchedEditor)
 
           this.storedState = {

@@ -64,7 +64,7 @@ export type CanvasStrategyFactory = (
 
 export interface PostStrategyFixupStep {
   name: string
-  fixup: (store: EditorState) => Array<CanvasCommand>
+  fixup: (store: EditorState, previousStore: EditorState) => EditorState
 }
 
 export type MetaCanvasStrategy = (
