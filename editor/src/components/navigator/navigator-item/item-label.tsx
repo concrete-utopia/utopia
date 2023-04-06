@@ -100,11 +100,13 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
-          fontStyle: this.props.target.type == 'CONDITIONAL_CLAUSE' ? 'italic' : 'unset',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
           gap: 6,
+          fontWeight: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
+          color: this.props.target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
+          textTransform: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
         }}
         onDoubleClick={(event) => {
           if (!this.props.isDynamic && event.altKey && isRegularNavigatorEntry(this.props.target)) {

@@ -243,6 +243,7 @@ interface NavigatorItemActionSheetProps {
   navigatorEntry: NavigatorEntry
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
+  isSlot: boolean
   dispatch: EditorDispatch
 }
 
@@ -321,7 +322,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             props.selected ||
             isLockedElement ||
             isLockedHierarchy ||
-            isDescendantOfLocked)
+            isDescendantOfLocked) &&
+          !props.isSlot
         }
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
@@ -330,7 +332,9 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
       />
       <VisibilityIndicator
         key={`visibility-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
-        shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
+        shouldShow={
+          !props.isSlot && (props.highlighted || props.selected || !props.isVisibleOnCanvas)
+        }
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
         onClick={toggleHidden}

@@ -87,7 +87,6 @@ import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
-  elementOnlyHasTextChildren,
   findJSXElementChildAtPath,
   ElementSupportsChildren,
   elementChildSupportsChildrenAlsoText,
@@ -106,11 +105,7 @@ import { objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import {
   AllElementProps,
-  conditionalClauseNavigatorEntry,
-  isRegularNavigatorEntry,
   LockedElements,
-  NavigatorEntry,
-  regularNavigatorEntry,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -129,12 +124,7 @@ import {
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import {
-  getConditionalClausePath,
-  reorderConditionalChildPathTrees,
-  ConditionalCase,
-} from './conditionals'
+import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
   conditionalClause,
@@ -1894,7 +1884,6 @@ export const MetadataUtils = {
               return getConditionalClausePath(
                 reparentTargetParent.elementPath,
                 reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
-                reparentTargetParent.clause,
               )
             } else {
               throw new Error(

@@ -40,11 +40,7 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  conditionalClause,
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-} from '../components/editor/store/reparent-target'
+import { conditionalClause, ReparentTargetParent } from '../components/editor/store/reparent-target'
 import { getConditionalClausePath, ConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
@@ -309,7 +305,7 @@ export function getTargetParentForPaste(
     if (parentElement != null && isJSXConditionalExpression(parentElement)) {
       // Check if the target parent is an attribute,
       // if so replace the target parent instead of trying to insert into it.
-      const truePath = getConditionalClausePath(targetPath, parentElement.whenTrue, 'true-case')
+      const truePath = getConditionalClausePath(targetPath, parentElement.whenTrue)
       const conditionalCase: ConditionalCase = EP.pathsEqual(truePath, targetPath)
         ? 'true-case'
         : 'false-case'

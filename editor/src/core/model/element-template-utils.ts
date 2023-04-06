@@ -32,12 +32,6 @@ import {
   isJSXConditionalExpression,
   emptyComments,
   jsExpressionValue,
-  jsxFragment,
-  isJSXArbitraryBlock,
-  jsxTextBlock,
-  jsxArbitraryBlock,
-  ElementInstanceMetadataMap,
-  JSXConditionalExpression,
   isIntrinsicElement,
 } from '../shared/element-template'
 import {
@@ -57,21 +51,14 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import {
-  getJSXAttributeAtPath,
-  GetJSXAttributeResult,
-  jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
+import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import {
-  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
-  getConditionalCase,
   getConditionalClausePath,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
-import { foldEither } from '../shared/either'
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
@@ -470,12 +457,8 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'true-case')
-      const falseCasePath = getConditionalClausePath(
-        parentPath,
-        parentElement.whenFalse,
-        'false-case',
-      )
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue)
+      const falseCasePath = getConditionalClausePath(parentPath, parentElement.whenFalse)
 
       const nullAttribute = jsExpressionValue(null, emptyComments)
 
@@ -552,58 +535,10 @@ export function insertJSXElementChild(
           return modify(
             toClauseOptic,
             (clauseValue) => {
-              if (isJSXArbitraryBlock(clauseValue)) {
-                const simpleValue = jsxSimpleAttributeToValue(clauseValue)
-                return foldEither(
-                  () => {
-                    // TODO: we don't want to replace values anymore (slot behavior)
-                    // Not a simple value, so replace it but do so while indicating that
-                    // the value was replaced.
-                    details = 'Value in conditional replaced.'
-                    return elementToInsert
-                  },
-                  (value) => {
-                    // Simple value of some kind.
-                    if (value == null) {
-                      // TODO: this is the only case when we would like to replace value
-                      // Simple value is null, so replace it with the new content.
-                      return elementToInsert
-                    } else {
-                      // TODO: we don't want to replace values anymore (slot behavior)
-                      // A simple non-null value, but one that we should replace with the new element
-                      // and indicate that it was replaced.
-                      details = 'Value in conditional replaced.'
-                      return elementToInsert
-                    }
-                  },
-                  simpleValue,
-                )
-              } else {
-                if (isJSXFragment(clauseValue)) {
-                  // TODO: we don't want to add anything to fragments anymore (slot behavior)
-                  // Existing fragment, so add it in as appropriate.
-                  let updatedChildren: Array<JSXElementChild>
-                  if (indexPosition == null) {
-                    updatedChildren = clauseValue.children.concat(elementToInsert)
-                  } else {
-                    updatedChildren = Utils.addToArrayWithFill(
-                      elementToInsert,
-                      clauseValue.children,
-                      indexPosition,
-                      makeE,
-                    )
-                  }
-                  return jsxFragment(clauseValue.uid, updatedChildren, clauseValue.longForm)
-                } else {
-                  // TODO: we don't want to wrap existing values into fragmens (slot behavior)
-                  // Something other than a fragment, so wrap that and the newly inserted element into a fragment.
-                  return jsxFragment(
-                    generateUidWithExistingComponents(projectContents),
-                    [clauseValue, elementToInsert],
-                    false,
-                  )
-                }
+              if (isJSXAttributeValue(clauseValue) && clauseValue.value == null) {
+                return elementToInsert
               }
+              return parentElement
             },
             parentElement,
           )
