@@ -45,6 +45,7 @@ import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../na
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { isSyntheticNavigatorEntry } from '../../editor/store/editor-state'
+import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`

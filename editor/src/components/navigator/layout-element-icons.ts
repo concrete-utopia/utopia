@@ -20,7 +20,10 @@ import {
   NavigatorEntry,
 } from '../editor/store/editor-state'
 import { isSpawnedActor } from 'xstate/lib/Actor'
-import { treatElementAsContentAffecting } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  getElementContentAffectingType,
+  treatElementAsContentAffecting,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -84,7 +87,22 @@ export function createLayoutOrElementIconResult(
     }
   }
 
-  if (treatElementAsContentAffecting(metadata, allElementProps, path)) {
+  const contentAffectingType = getElementContentAffectingType(metadata, allElementProps, path)
+
+  if (contentAffectingType === 'fragment') {
+    return {
+      iconProps: {
+        category: 'element',
+        type: 'fragment',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (contentAffectingType !== null) {
     return {
       iconProps: {
         category: 'element',

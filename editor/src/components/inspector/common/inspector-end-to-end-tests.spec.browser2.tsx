@@ -2935,7 +2935,7 @@ describe('inspector tests with real metadata', () => {
         {
           // @utopia/uid=conditional
           [].length === 0 ? (
-          <div data-uid='bbb' data-testid='bbb'><div>Another div</div></div>
+          <div data-uid='bbb' data-testid='bbb' style={{ position: 'absolute', width: 22, height: 22 }}><div>Another div</div></div>
         ) : (
           <h1 data-uid='ccc' data-testid='ccc'>hello there</h1>
         )}
