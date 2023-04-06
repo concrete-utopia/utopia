@@ -168,8 +168,8 @@ export function convertFragmentToFrame(
           style: jsExpressionValue(
             {
               position: 'absolute',
-              left: left,
               top: top,
+              left: left,
               width: childrenBoundingFrame.width,
               height: childrenBoundingFrame.height,
             },
@@ -242,15 +242,15 @@ export function convertGroupToFrameCommands(
     setCssLengthProperty(
       'always',
       elementPath,
-      PP.create('style', 'left'),
-      setExplicitCssValue(cssPixelLength(left)),
+      PP.create('style', 'top'),
+      setExplicitCssValue(cssPixelLength(top)),
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
     setCssLengthProperty(
       'always',
       elementPath,
-      PP.create('style', 'top'),
-      setExplicitCssValue(cssPixelLength(top)),
+      PP.create('style', 'left'),
+      setExplicitCssValue(cssPixelLength(left)),
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
     setCssLengthProperty(

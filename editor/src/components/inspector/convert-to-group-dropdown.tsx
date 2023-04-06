@@ -28,7 +28,7 @@ import {
 import { CanvasCommand } from '../canvas/commands/commands'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
-type WrapperType = 'fragment' | 'frame' | 'group'
+export type WrapperType = 'fragment' | 'frame' | 'group'
 
 const simpleControlStyles = getControlStyles('simple')
 
