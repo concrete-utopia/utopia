@@ -360,7 +360,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <GroupSection />
           <PositionSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}

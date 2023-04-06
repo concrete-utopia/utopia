@@ -74,8 +74,7 @@ function wrapperTypeFromContentAffectingType(type: ContentAffectingType | null):
   return 'frame'
 }
 
-export const GroupSection = React.memo(() => {
-  const colorTheme = useColorTheme()
+export const GroupDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
   const metadataRef = useRefEditorState(metadataSelector)
@@ -114,23 +113,13 @@ export const GroupSection = React.memo(() => {
     'GroupSection selectedViews',
   )
 
+  const isDropDownEnabled = selectedFrames.length === 1
+
   const selectedElementGrouplikeType = useEditorState(
     Substores.metadata,
     selectedElementGrouplikeTypeSelector,
     'GroupSection allSelectedElementGrouplike',
   )
-
-  const currentValue = React.useMemo(() => {
-    if (selectedElementGrouplikeType === 'fragment') {
-      return FragmentOption
-    }
-    if (selectedElementGrouplikeType === 'sizeless-div') {
-      return GroupOption
-    }
-    return DivOption
-  }, [selectedElementGrouplikeType])
-
-  const isDropDownEnabled = selectedFrames.length === 1
 
   const onChange = React.useCallback(
     ({ value }: SelectOption) => {
@@ -229,7 +218,30 @@ export const GroupSection = React.memo(() => {
     ],
   )
 
+  const currentValue = React.useMemo(() => {
+    if (selectedElementGrouplikeType === 'fragment') {
+      return FragmentOption
+    }
+    if (selectedElementGrouplikeType === 'sizeless-div') {
+      return GroupOption
+    }
+    return DivOption
+  }, [selectedElementGrouplikeType])
+
   const controlStyles = isDropDownEnabled ? simpleControlStyles : disabledControlStyles
+  return (
+    <PopupList
+      value={currentValue}
+      options={Options}
+      onSubmitValue={onChange}
+      controlStyles={controlStyles}
+      containerMode={'noBorder'}
+    />
+  )
+})
+
+export const GroupSection = React.memo(() => {
+  const colorTheme = useColorTheme()
 
   return (
     <FlexColumn>
@@ -255,12 +267,7 @@ export const GroupSection = React.memo(() => {
         </FlexRow>
       </InspectorSectionHeader>
       <FlexRow style={{ padding: 4 }}>
-        <PopupList
-          value={currentValue}
-          options={Options}
-          onSubmitValue={onChange}
-          controlStyles={controlStyles}
-        />
+        <GroupDropdown />
       </FlexRow>
     </FlexColumn>
   )
