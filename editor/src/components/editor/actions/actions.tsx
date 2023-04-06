@@ -508,7 +508,7 @@ import {
   reparentTargetParentIsConditionalClause,
   reparentTargetParentIsElementPath,
 } from '../store/reparent-target'
-import { getClauseOptic } from '../../../core/model/conditionals'
+import { findMaybeConditionalExpression, getClauseOptic } from '../../../core/model/conditionals'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3127,6 +3127,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
+    let elements = [...action.elements]
     let insertionAllowed: boolean = true
     const resolvedTarget = MetadataUtils.resolveReparentTargetParentToPath(
       editor.jsxMetadata,
@@ -3137,8 +3138,38 @@ export const UPDATE_FNS = {
       insertionAllowed = !parentGenerated
     }
     if (insertionAllowed) {
+      function isConditionalTarget(): boolean {
+        if (reparentTargetParentIsConditionalClause(action.pasteInto)) {
+          return true
+        }
+        const parentPath = EP.parentPath(action.pasteInto)
+        if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
+          return true
+        }
+        return false
+      }
+      // when targeting a conditional, wrap multiple elements into a fragment
+      if (action.elements.length > 1 && isConditionalTarget()) {
+        const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
+        let mergedImports: Imports = {}
+        for (const { importsToAdd } of elements) {
+          mergedImports = { ...mergedImports, ...importsToAdd }
+        }
+        elements = [
+          {
+            element: jsxFragment(
+              fragmentUID,
+              elements.map((e) => e.element),
+              false,
+            ),
+            importsToAdd: mergedImports,
+            originalElementPath: EP.fromString(fragmentUID),
+          },
+        ]
+      }
+
       const existingIDs = getAllUniqueUids(editor.projectContents)
-      return action.elements.reduce((workingEditorState, currentValue, index) => {
+      return elements.reduce((workingEditorState, currentValue, index) => {
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
@@ -3182,7 +3213,8 @@ export const UPDATE_FNS = {
             pastedElementIsAbsolute ||
             pastedElementIsFlex ||
             pastedElementIsConditional ||
-            MetadataUtils.isConditionalFromMetadata(pasteIntoParent)
+            MetadataUtils.isConditionalFromMetadata(pasteIntoParent) ||
+            isJSXFragment(currentValue.element)
 
           if (continueWithPaste) {
             const propertyChangeCommands = getReparentPropertyChanges(

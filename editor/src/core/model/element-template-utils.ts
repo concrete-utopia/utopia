@@ -34,12 +34,14 @@ import {
   jsExpressionValue,
   isIntrinsicElement,
   jsxFragment,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
   isTextFile,
   StaticElementPathPart,
   StaticElementPath,
+  ElementPath,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -59,6 +61,7 @@ import {
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
+  maybeBranchConditionalCase,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import {
@@ -514,6 +517,16 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+  function getConditionalCase(
+    conditional: JSXConditionalExpression,
+    parentPath: ElementPath,
+    target: ReparentTargetParent<ElementPath>,
+  ) {
+    if (reparentTargetParentIsConditionalClause(target)) {
+      return target.clause
+    }
+    return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
+  }
   const targetParentIncludingStoryboardRoot =
     targetParent ?? getStoryboardElementPath(projectContents, openFile)
   if (targetParentIncludingStoryboardRoot == null) {
@@ -527,13 +540,13 @@ export function insertJSXElementChild(
       (parentElement) => {
         if (isJSXConditionalExpression(parentElement)) {
           // Determine which clause of the conditional we want to modify.
-          const clause: ConditionalCase = reparentTargetParentIsConditionalClause(
+          const conditionalCase = getConditionalCase(
+            parentElement,
+            parentPath,
             targetParentIncludingStoryboardRoot,
           )
-            ? targetParentIncludingStoryboardRoot.clause
-            : 'true-case'
           const toClauseOptic =
-            clause === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
           // Update the clause if it currently holds a null value.
           return modify(
             toClauseOptic,
