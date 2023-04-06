@@ -88,11 +88,12 @@ export function createLayoutOrElementIconResult(
   }
 
   const contentAffectingType = getElementContentAffectingType(metadata, allElementProps, path)
-  if (contentAffectingType === 'sizeless-div') {
+
+  if (contentAffectingType === 'fragment') {
     return {
       iconProps: {
         category: 'element',
-        type: 'group-open',
+        type: 'fragment',
         width: 18,
         height: 18,
       },
@@ -101,11 +102,11 @@ export function createLayoutOrElementIconResult(
     }
   }
 
-  if (contentAffectingType === 'fragment') {
+  if (contentAffectingType !== null) {
     return {
       iconProps: {
         category: 'element',
-        type: 'fragment',
+        type: 'group-open',
         width: 18,
         height: 18,
       },
