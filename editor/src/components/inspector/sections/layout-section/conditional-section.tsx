@@ -372,7 +372,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           ) : null}
         </React.Fragment>,
       )}
-      <FlexRow>
+      <FlexRow style={{ paddingRight: '8px' }}>
         <FlexColumn style={{ flexGrow: 2 }}>
           <BranchRow
             label={branchLabels.true}
@@ -414,7 +414,11 @@ const BranchRow = ({
   }
 
   return (
-    <UIGridRow padded={true} variant='<--------1fr-------->|145px|'>
+    <UIGridRow
+      padded={false}
+      variant='<--------1fr-------->|145px|'
+      style={{ padding: '0px 0px 0px 8px' }}
+    >
       <div>{conditionalCase === 'true-case' ? 'True' : 'False'}</div>
       <div
         style={{
@@ -425,6 +429,8 @@ const BranchRow = ({
           justifyContent: 'flex-start',
           alignItems: 'center',
           gap: 4,
+          overflowX: 'scroll',
+          whiteSpace: 'nowrap',
         }}
       >
         <LayoutIcon
