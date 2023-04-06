@@ -1953,6 +1953,12 @@ export const MetadataUtils = {
     }
     return flexDirections[0]
   },
+  getIndexInParent(metadata: ElementInstanceMetadataMap, elementPath: ElementPath): number {
+    const siblingPaths = MetadataUtils.getSiblingsOrdered(metadata, elementPath).map(
+      (instance) => instance.elementPath,
+    )
+    return siblingPaths.findIndex((path) => EP.pathsEqual(path, elementPath))
+  },
   getReparentTargetOfTarget(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,

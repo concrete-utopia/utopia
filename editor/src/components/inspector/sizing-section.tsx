@@ -1,5 +1,6 @@
 import React from 'react'
 import { FlexRow, InspectorSubsectionHeader } from '../../uuiui'
+import { GroupDropdown } from './convert-to-group-dropdown'
 import { FillHugFixedControl } from './fill-hug-fixed-control'
 import { ResizeToFitControl } from './resize-to-fit-control'
 
@@ -15,7 +16,7 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
             gap: 8,
           }}
         >
-          <span style={{ flexGrow: 1 }}>Size</span>
+          <GroupDropdown />
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>

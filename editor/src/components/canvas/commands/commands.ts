@@ -65,6 +65,7 @@ import {
   runAddContainLayoutIfNeeded,
 } from './add-contain-layout-if-needed-command'
 import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-command'
+import { DeleteElement, runDeleteElement } from './delete-element-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -112,6 +113,7 @@ export type CanvasCommand =
   | ShowToastCommand
   | AddContainLayoutIfNeeded
   | RearrangeChildren
+  | DeleteElement
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -183,6 +185,8 @@ export function runCanvasCommand(
       return runAddContainLayoutIfNeeded(editorState, command)
     case 'REARRANGE_CHILDREN':
       return runRearrangeChildren(editorState, command)
+    case 'DELETE_ELEMENT':
+      return runDeleteElement(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
