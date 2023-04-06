@@ -8,6 +8,8 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { AllContentAffectingNonDomElementTypes } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
@@ -33,7 +35,12 @@ export function convertLayoutToFlexCommands(
       return []
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path) // TODO recurse into fragment children! but _only_ fragment children. Alternatively, refuse if fragment children are present.
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+
+    if (areAnyChildrenNonDomElement(metadata, childrenPaths)) {
+      // This is a known limitation and future TODO. we must early return now to avoid bizarro layouts
+      return []
+    }
 
     const parentFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
@@ -100,6 +107,16 @@ export function convertLayoutToFlexCommands(
       ]),
       ...rearrangeCommands,
     ]
+  })
+}
+
+function areAnyChildrenNonDomElement(
+  metadata: ElementInstanceMetadataMap,
+  children: Array<ElementPath>,
+): boolean {
+  return children.some((childPath) => {
+    const contentAffectingType = getElementContentAffectingType(metadata, {}, childPath)
+    return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
   })
 }
 

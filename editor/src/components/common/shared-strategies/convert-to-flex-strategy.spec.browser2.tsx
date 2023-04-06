@@ -1,5 +1,6 @@
 import { navigatorEntryToKey } from '../../../components/editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
+import { expectNoAction } from '../../../utils/utils.test-utils'
 import {
   expectSingleUndoStep,
   selectComponentsForTest,
@@ -913,6 +914,84 @@ describe('Smart Convert to Flex Fragment In Existing Flex', () => {
     </div>
     `),
     )
+  })
+})
+
+describe('Smart Convert To Flex if Fragment Children', () => {
+  it('for now, just refuse to convert if there are fragment children present.', async () => {
+    const testProjectWithBadFragment = makeTestProjectCodeWithSnippet(`
+    <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 200,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 40,
+          padding: '80px 30px',
+        }}
+        data-uid='parent'
+      >
+        <React.Fragment data-uid='fragment'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 47,
+              height: 37,
+              contain: 'layout',
+            }}
+            data-uid='aaa'
+          />
+          <React.Fragment data-uid='bad-fragment'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 43,
+                height: 35,
+                contain: 'layout',
+              }}
+              data-uid='bbb'
+            />
+          </React.Fragment>
+        </React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 140,
+            height: 120,
+            contain: 'layout',
+          }}
+          data-uid='ccc'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 94,
+            height: 110,
+            contain: 'layout',
+          }}
+          data-uid='ddd'
+        />
+      </div>
+    </div>
+    `)
+
+    const editor = await renderTestEditorWithCode(
+      testProjectWithBadFragment,
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
+    await editor.dispatch([selectComponents([targetPath], false)], true)
+
+    await expectNoAction(editor, () => clickOnPlusButton(editor))
+
+    // Expect that nothing changed
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(testProjectWithBadFragment)
   })
 })
 
