@@ -45,7 +45,8 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
       const withElementRemoved = removeElementAtPath(command.target, components)
 
       // Add the target as the child of the true case of a conditional
-      const conditionalUID = generateUidWithExistingComponents(editor.projectContents)
+      const elementUID = EP.toUid(command.target)
+      const conditionalUID = `condition-${elementUID}` // FIXME Provide the UID as part of the wrapper command
       const conditional = jsxConditionalExpression(
         conditionalUID,
         jsExpressionValue(true, emptyComments),
@@ -75,7 +76,6 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
         ),
       )
 
-      const elementUID = EP.toUid(command.target)
       const conditionalPath = EP.appendToPath(targetParent, conditionalUID)
       const newPath = EP.appendToPath(conditionalPath, elementUID)
 
