@@ -131,6 +131,7 @@ import {
   ReparentTargetParent,
   reparentTargetParentIsElementPath,
 } from '../../components/editor/store/reparent-target'
+import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1302,10 +1303,14 @@ export const MetadataUtils = {
     }
   },
   getElementLabelFromMetadata(
+    metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
+    const isElementGroup =
+      getElementContentAffectingType(metadata, allElementProps, element.elementPath) ===
+      'sizeless-div'
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
@@ -1313,6 +1318,8 @@ export const MetadataUtils = {
     )
     if (dataLabelProp != null) {
       return dataLabelProp
+    } else if (isElementGroup) {
+      return 'Group'
     } else if (sceneLabel != null) {
       return sceneLabel
     } else {
@@ -1398,7 +1405,12 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByElementPath(metadata, path)
     if (element != null) {
-      return MetadataUtils.getElementLabelFromMetadata(allElementProps, element, staticName)
+      return MetadataUtils.getElementLabelFromMetadata(
+        metadata,
+        allElementProps,
+        element,
+        staticName,
+      )
     }
 
     // Default catch all name, will probably avoid some odd cases in the future.

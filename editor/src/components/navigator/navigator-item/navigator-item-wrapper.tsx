@@ -73,13 +73,14 @@ const elementSupportsChildrenSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 export const labelSelector = createCachedSelector(
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
-  (elementMetadata, allElementProps) => {
+  (metadata, elementMetadata, allElementProps) => {
     if (elementMetadata == null) {
       return 'Element 👻'
     }
-    return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
+    return MetadataUtils.getElementLabelFromMetadata(metadata, allElementProps, elementMetadata)
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
