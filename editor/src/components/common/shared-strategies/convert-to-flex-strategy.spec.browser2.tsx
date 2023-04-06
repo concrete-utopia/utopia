@@ -864,6 +864,7 @@ describe('Smart Convert to Flex Fragment In Existing Flex', () => {
         <div
           data-uid='fragment'
           style={{
+            contain: 'layout',
             width: 'max-content',
             height: 'max-content',
             display: 'flex',

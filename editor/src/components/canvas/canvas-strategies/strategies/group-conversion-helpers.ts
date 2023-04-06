@@ -165,7 +165,7 @@ export function convertFragmentToFrame(
 
   const absoluteTopLeftProps = fragmentIsCurrentlyAbsolute
     ? ({ position: 'absolute', top: top, left: left } as const)
-    : {}
+    : ({ contain: 'layout' } as const)
 
   return [
     deleteElement('always', elementPath),
