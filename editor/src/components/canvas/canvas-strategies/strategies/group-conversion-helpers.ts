@@ -161,6 +161,12 @@ export function convertFragmentToFrame(
     ),
   )
 
+  const fragmentIsCurrentlyAbsolute = element.specialSizeMeasurements.position === 'absolute'
+
+  const absoluteTopLeftProps = fragmentIsCurrentlyAbsolute
+    ? ({ position: 'absolute', top: top, left: left } as const)
+    : {}
+
   return [
     deleteElement('always', elementPath),
     addElement(
@@ -173,9 +179,7 @@ export function convertFragmentToFrame(
           'data-uid': jsExpressionValue(uid, emptyComments),
           style: jsExpressionValue(
             {
-              position: 'absolute',
-              top: top,
-              left: left,
+              ...absoluteTopLeftProps,
               width: childrenBoundingFrame.width,
               height: childrenBoundingFrame.height,
             },

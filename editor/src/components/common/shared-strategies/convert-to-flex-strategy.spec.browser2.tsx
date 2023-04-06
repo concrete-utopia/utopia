@@ -772,6 +772,149 @@ describe('Smart Convert to Flex Fragment Parents', () => {
   })
 })
 
+describe('Smart Convert to Flex Fragment In Existing Flex', () => {
+  setFeatureForBrowserTests('Nine block control', true)
+
+  it('converts a fragment inside a flex layout to a flex child that is also a flex parent', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='a'>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 50,
+            top: 200,
+            width: 'max-content',
+            height: 'max-content',
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 40,
+            padding: '80px 30px',
+          }}
+          data-uid='parent'
+        >
+          <React.Fragment data-uid='fragment'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 47,
+                height: 37,
+                contain: 'layout',
+              }}
+              data-uid='aaa'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 43,
+                height: 35,
+                contain: 'layout',
+              }}
+              data-uid='bbb'
+            />
+          </React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 140,
+              height: 120,
+              contain: 'layout',
+            }}
+            data-uid='ccc'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 94,
+              height: 110,
+              contain: 'layout',
+            }}
+            data-uid='ddd'
+          />
+        </div>
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
+    await editor.dispatch([selectComponents([targetPath], false)], true)
+
+    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+    <div style={{ ...props.style }} data-uid='a'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 200,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 40,
+          padding: '80px 30px',
+        }}
+        data-uid='parent'
+      >
+        <div
+          data-uid='fragment'
+          style={{
+            width: 'max-content',
+            height: 'max-content',
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 40,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 47,
+              height: 37,
+              contain: 'layout',
+            }}
+            data-uid='aaa'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 43,
+              height: 35,
+              contain: 'layout',
+            }}
+            data-uid='bbb'
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 140,
+            height: 120,
+            contain: 'layout',
+          }}
+          data-uid='ccc'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 94,
+            height: 110,
+            contain: 'layout',
+          }}
+          data-uid='ddd'
+        />
+      </div>
+    </div>
+    `),
+    )
+  })
+})
+
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
   const [parentL, parentT, parentW, parentH] = input.parent
   return renderTestEditorWithCode(
