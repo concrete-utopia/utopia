@@ -27,6 +27,7 @@ import { EditorModes } from './editor-modes'
 import {
   useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
+  useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
@@ -46,10 +47,12 @@ export const CanvasToolbar = React.memo(() => {
   const insertDivCallback = useEnterDrawToInsertForDiv()
   const imgInsertion = useCheckInsertModeForElementType('img')
   const insertImgCallback = useEnterDrawToInsertForImage()
-  const spanInsertion = useCheckInsertModeForElementType('span')
-  const insertSpanCallback = useEnterTextEditMode()
+  const textInsertion = useCheckInsertModeForElementType('span', { textEdit: true })
+  const insertTextCallback = useEnterTextEditMode()
   const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
+  const conditionalInsertion = useCheckInsertModeForElementType('div', { wrapInConditional: true })
+  const insertConditionalCallback = useEnterDrawToInsertForConditional()
 
   const insertMenuMode = useEditorState(
     Substores.restOfEditor,
@@ -207,8 +210,8 @@ export const CanvasToolbar = React.memo(() => {
           <Tooltip title='Insert text' placement='bottom'>
             <InsertModeButton
               iconType='pure-text'
-              primary={spanInsertion}
-              onClick={insertSpanCallback}
+              primary={textInsertion}
+              onClick={insertTextCallback}
             />
           </Tooltip>
         </FlexRow>
@@ -236,6 +239,13 @@ export const CanvasToolbar = React.memo(() => {
               iconType='componentinstance'
               primary={insertMenuMode === 'insert'}
               onClick={openFloatingInsertMenuCallback}
+            />
+          </Tooltip>
+          <Tooltip title='Insert conditional' placement='bottom'>
+            <InsertModeButton
+              iconType='conditional'
+              primary={conditionalInsertion}
+              onClick={insertConditionalCallback}
             />
           </Tooltip>
           <Tooltip title='Open insert menu' placement='bottom'>

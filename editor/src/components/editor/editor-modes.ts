@@ -16,6 +16,7 @@ export interface InsertionSubject {
   importsToAdd: Imports
   parent: InsertionParent
   textEdit: boolean
+  wrapInConditional: boolean // FIXME extend this to handle maps and maybe other types of expression
 }
 
 export function insertionSubject(
@@ -25,6 +26,7 @@ export function insertionSubject(
   importsToAdd: Imports,
   parent: InsertionParent,
   textEdit: boolean,
+  wrapInConditional: boolean,
 ): InsertionSubject {
   return {
     uid: uid,
@@ -33,6 +35,7 @@ export function insertionSubject(
     importsToAdd: importsToAdd,
     parent: parent,
     textEdit: textEdit,
+    wrapInConditional: wrapInConditional,
   }
 }
 

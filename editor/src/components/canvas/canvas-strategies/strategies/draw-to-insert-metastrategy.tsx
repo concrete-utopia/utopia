@@ -65,6 +65,7 @@ import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/lay
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
+import { wrapInConditionalCommand } from '../../commands/wrap-in-conditional-command'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -224,10 +225,28 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand = insertionSubject.wrapInConditional
+                ? [
+                    updateFunctionCommand(
+                      'always',
+                      (editorState, lifecycle): Array<EditorStatePatch> =>
+                        foldAndApplyCommandsInner(
+                          editorState,
+                          [],
+                          [wrapInConditionalCommand('always', newPath)],
+                          lifecycle,
+                        ).statePatches,
+                    ),
+                  ]
+                : []
+
               return strategyApplicationResult([
                 insertionCommand.command,
                 reparentCommand,
                 resizeCommand,
+                ...optionalWrappingCommand,
               ])
             }
           } else if (strategyLifecycle === 'end-interaction') {
@@ -257,7 +276,28 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([insertionCommand.command, reparentCommand])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand = insertionSubject.wrapInConditional
+                ? [
+                    updateFunctionCommand(
+                      'always',
+                      (editorState, lifecycle): Array<EditorStatePatch> =>
+                        foldAndApplyCommandsInner(
+                          editorState,
+                          [],
+                          [wrapInConditionalCommand('always', newPath)],
+                          lifecycle,
+                        ).statePatches,
+                    ),
+                  ]
+                : []
+
+              return strategyApplicationResult([
+                insertionCommand.command,
+                reparentCommand,
+                ...optionalWrappingCommand,
+              ])
             }
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened
