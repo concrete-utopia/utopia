@@ -31,6 +31,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 export type WrapperType = 'fragment' | 'frame' | 'group'
 
 const simpleControlStyles = getControlStyles('simple')
+const disabledControlStyles = getControlStyles('disabled')
 
 const selectedElementGrouplikeTypeSelector = createSelector(
   metadataSelector,
@@ -129,8 +130,14 @@ export const GroupSection = React.memo(() => {
     return DivOption
   }, [selectedElementGrouplikeType])
 
+  const isDropDownEnabled = selectedFrames.length === 1
+
   const onChange = React.useCallback(
     ({ value }: SelectOption) => {
+      if (!isDropDownEnabled) {
+        return
+      }
+
       const currentType: WrapperType = wrapperTypeFromContentAffectingType(
         selectedElementGrouplikeType,
       )
@@ -212,12 +219,17 @@ export const GroupSection = React.memo(() => {
         dispatch([applyCommandsAction(commands)])
       }
     },
-    [allElementPropsRef, dispatch, metadataRef, selectedElementGrouplikeType, selectedViewsRef],
+    [
+      allElementPropsRef,
+      dispatch,
+      isDropDownEnabled,
+      metadataRef,
+      selectedElementGrouplikeType,
+      selectedViewsRef,
+    ],
   )
 
-  if (selectedFrames.length !== 1) {
-    return null
-  }
+  const controlStyles = isDropDownEnabled ? simpleControlStyles : disabledControlStyles
 
   return (
     <FlexColumn>
@@ -247,7 +259,7 @@ export const GroupSection = React.memo(() => {
           value={currentValue}
           options={Options}
           onSubmitValue={onChange}
-          controlStyles={simpleControlStyles}
+          controlStyles={controlStyles}
         />
       </FlexRow>
     </FlexColumn>
