@@ -14,7 +14,7 @@ import {
   useComputedSizeRef,
 } from '../../../inpector-selectors'
 import {
-  detectFillHugFixedState,
+  detectFillHugFixedStateMultiselect,
   FixedHugFill,
   isFixedHugFillEqual,
 } from '../../../inspector-common'
@@ -40,8 +40,11 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
   const widthFillHugFixedState = useEditorState(
     Substores.metadata,
     (store) => {
-      const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('horizontal', store.editor.jsxMetadata, target)
+      return detectFillHugFixedStateMultiselect(
+        'horizontal',
+        store.editor.jsxMetadata,
+        store.editor.selectedViews,
+      )
     },
     'TextAutoSizingControl fixedHugFillState width',
     isFixedHugFillEqual,
@@ -50,8 +53,11 @@ function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 
   const heightFillHugFixedState = useEditorState(
     Substores.metadata,
     (store) => {
-      const target = store.editor.selectedViews[0]
-      return detectFillHugFixedState('vertical', store.editor.jsxMetadata, target)
+      return detectFillHugFixedStateMultiselect(
+        'vertical',
+        store.editor.jsxMetadata,
+        store.editor.selectedViews,
+      )
     },
     'TextAutoSizingControl fixedHugFillState height',
     isFixedHugFillEqual,
