@@ -33,6 +33,7 @@ import {
   emptyComments,
   jsExpressionValue,
   isIntrinsicElement,
+  jsxFragment,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -54,6 +55,7 @@ import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import {
+  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
@@ -65,6 +67,7 @@ import {
   reparentTargetParentIsConditionalClause,
 } from '../../components/editor/store/reparent-target'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import { isNullJSXAttributeValue } from '../shared/element-template'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -522,23 +525,31 @@ export function insertJSXElementChild(
       components,
       parentPath,
       (parentElement) => {
-        if (
-          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
-          isJSXConditionalExpression(parentElement)
-        ) {
+        if (isJSXConditionalExpression(parentElement)) {
           // Determine which clause of the conditional we want to modify.
+          const clause: ConditionalCase = reparentTargetParentIsConditionalClause(
+            targetParentIncludingStoryboardRoot,
+          )
+            ? targetParentIncludingStoryboardRoot.clause
+            : 'true-case'
           const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'true-case'
-              ? conditionalWhenTrueOptic
-              : conditionalWhenFalseOptic
+            clause === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
           // Update the clause if it currently holds a null value.
           return modify(
             toClauseOptic,
             (clauseValue) => {
-              if (isJSXAttributeValue(clauseValue) && clauseValue.value == null) {
+              if (isNullJSXAttributeValue(clauseValue)) {
                 return elementToInsert
+              } else if (isJSXFragment(clauseValue)) {
+                return parentElement
+              } else {
+                // for wrapping multiple elements
+                return jsxFragment(
+                  generateUidWithExistingComponents(projectContents),
+                  [clauseValue, elementToInsert],
+                  false,
+                )
               }
-              return parentElement
             },
             parentElement,
           )
