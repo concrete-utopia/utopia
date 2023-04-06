@@ -662,17 +662,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     'NavigatorRowLabel element',
   )
 
-  const isElementGroup = useEditorState(
-    Substores.metadata,
-    (store) =>
-      getElementContentAffectingType(
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-        props.navigatorEntry.elementPath,
-      ) === 'sizeless-div',
-    'NavigatorRowLabel element',
-  )
-
   const conditionalOverride = React.useMemo(() => {
     const conditional = asConditional(element)
     if (conditional == null) {
@@ -695,8 +684,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     },
     'NavigatorRowLabel isActiveBranchOfOverriddenConditional',
   )
-
-  const label = isElementGroup ? 'Group' : props.label
 
   return (
     <React.Fragment>
