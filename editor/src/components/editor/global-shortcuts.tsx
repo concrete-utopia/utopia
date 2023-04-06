@@ -119,6 +119,7 @@ import {
   jsExpressionValue,
   JSXElement,
   jsxElement,
+  jsxFragment,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -570,12 +571,14 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInElement(
-                editor.selectedViews,
-                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
+              EditorActions.wrapInElement(editor.selectedViews, {
+                element: jsxFragment(
                   generateUidWithExistingComponents(editor.projectContents),
+                  [],
+                  true,
                 ),
-              ),
+                importsToAdd: {},
+              }),
             ]
           : []
       },
