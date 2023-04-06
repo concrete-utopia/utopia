@@ -583,6 +583,195 @@ describe('Smart Convert to Flex alignItems', () => {
   })
 })
 
+describe('Smart Convert to Flex Fragment Parents', () => {
+  setFeatureForBrowserTests('Nine block control', true)
+
+  it('converts a horizontal layout with zero padding and a gap of 15', async () => {
+    const editor = await renderProjectWithFragmentParent({
+      children: [
+        [50, 50, 50, 50],
+        [115, 50, 50, 50],
+        [180, 50, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectAfterFragment({
+        parent: {
+          top: 50,
+          left: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts a horizontal parent but with clearly vertical children as a vertical layout', async () => {
+    const editor = await renderProjectWithFragmentParent({
+      children: [
+        [50, 50, 50, 50],
+        [50, 110, 50, 50],
+        [50, 170, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectAfterFragment({
+        parent: {
+          top: 50,
+          left: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts a vertical parent with ambiguous children as a vertical layout', async () => {
+    const editor = await renderProjectWithFragmentParent({
+      children: [
+        [50, 50, 50, 50],
+        [110, 110, 50, 50],
+        [170, 170, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectAfterFragment({
+        parent: {
+          top: 50,
+          left: 50,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts horizontal layout with gap of 15', async () => {
+    const editor = await renderProjectWithFragmentParent({
+      children: [
+        [75, 50, 50, 50],
+        [140, 50, 50, 50],
+        [205, 50, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectAfterFragment({
+        parent: {
+          top: 50,
+          left: 75,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts horizontal layout with 15px gap', async () => {
+    const editor = await renderProjectWithFragmentParent({
+      children: [
+        [75, 70, 50, 50],
+        [140, 70, 50, 50],
+        [205, 70, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectAfterFragment({
+        parent: {
+          top: 70,
+          left: 75,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 15,
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+
+  it('converts horizontal layout 2', async () => {
+    const editor = await renderProjectWithFragmentParent({
+      children: [
+        [75, 50, 50, 50],
+        [125, 50, 50, 50],
+        [175, 50, 50, 50],
+      ],
+    })
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeReferenceProjectAfterFragment({
+        parent: {
+          top: 50,
+          left: 75,
+          width: MaxContent,
+          height: MaxContent,
+          display: 'flex',
+          flexDirection: 'row',
+        },
+        children: [
+          [50, 50],
+          [50, 50],
+          [50, 50],
+        ],
+      }),
+    )
+  })
+})
+
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
   const [parentL, parentT, parentW, parentH] = input.parent
   return renderTestEditorWithCode(
@@ -615,6 +804,34 @@ function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
   )
 }
 
+function renderProjectWithFragmentParent(input: { children: Array<LTWH> }) {
+  return renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(`
+    <div style={{ ...props.style }} data-uid='a'>
+      <React.Fragment data-uid='parent'>
+        ${input.children
+          .map((child, i) => {
+            const [childL, childT, childW, childH, maybeUid] = child
+            const uid = `child-${maybeUid ?? i}`
+            return `<div 
+                data-uid='${uid}' 
+                style={{ 
+                  backgroundColor: '#aaaaaa33', 
+                  position: 'absolute', 
+                  left: ${JSON.stringify(childL)}, 
+                  top: ${JSON.stringify(childT)},
+                  width: ${JSON.stringify(childW)},
+                  height: ${JSON.stringify(childH)} }}
+              />`
+          })
+          .join('\n')}
+      </React.Fragment>
+    </div>
+    `),
+    'await-first-dom-report',
+  )
+}
+
 function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Size> }): string {
   return makeTestProjectCodeWithSnippet(`
   <div style={{ ...props.style }} data-uid='a'>
@@ -627,6 +844,41 @@ function makeReferenceProjectWith(input: { parent: FlexProps; children: Array<Si
         })}
       }
       data-uid='parent'
+    >
+      ${input.children
+        .map((child, i) => {
+          const [childW, childH, maybeUid] = child
+          const uid = `child-${maybeUid ?? i}`
+          return `<div 
+                  data-uid='${uid}'
+                  style={{ 
+                    backgroundColor: '#aaaaaa33',
+                    width: ${JSON.stringify(childW)}, 
+                    height: ${JSON.stringify(childH)}, 
+                    contain: 'layout' 
+                  }}
+                />`
+        })
+        .join('\n')}
+    </div>
+  </div>
+  `)
+}
+
+function makeReferenceProjectAfterFragment(input: {
+  parent: FlexProps
+  children: Array<Size>
+}): string {
+  return makeTestProjectCodeWithSnippet(`
+  <div style={{ ...props.style }} data-uid='a'>
+    <div
+      data-uid='parent'
+      style={
+        ${JSON.stringify({
+          position: 'absolute',
+          ...input.parent,
+        })}
+      }
     >
       ${input.children
         .map((child, i) => {

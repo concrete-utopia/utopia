@@ -5,6 +5,7 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   isJSXElementLike,
+  isJSXFragment,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxElement,
@@ -130,11 +131,16 @@ export function convertFragmentToFrame(
     return []
   }
 
+  if (!isJSXFragment(element.element.value)) {
+    // not a fragment, nothing to convert!
+    return []
+  }
+
   const { children, uid } = element.element.value
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
-    return null
+    return null // TODO why not return [] here?
   }
 
   const parentBounds =

@@ -7,6 +7,7 @@ import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
+import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
@@ -32,7 +33,7 @@ export function convertLayoutToFlexCommands(
       return []
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path) // TODO recurse into fragment children! but _only_ fragment children. Alternatively, refuse if fragment children are present.
 
     const parentFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
@@ -58,6 +59,7 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
+        ...isElementIsFragmentFirstConvertItToFrame(metadata, path),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -84,6 +86,7 @@ export function convertLayoutToFlexCommands(
       : []
 
     return [
+      ...isElementIsFragmentFirstConvertItToFrame(metadata, path),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -98,6 +101,13 @@ export function convertLayoutToFlexCommands(
       ...rearrangeCommands,
     ]
   })
+}
+
+function isElementIsFragmentFirstConvertItToFrame(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<CanvasCommand> {
+  return convertFragmentToFrame(metadata, {}, target) ?? []
 }
 
 function guessMatchingFlexSetup(
