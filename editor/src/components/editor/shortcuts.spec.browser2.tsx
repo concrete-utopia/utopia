@@ -985,74 +985,22 @@ describe('global shortcuts to set properties', () => {
 })
 
 describe('group selection', () => {
-  it('wraps flex row children in a container with flex row set', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboardChildren(`<div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 200,
-        top: 138,
-        width: 513,
-        height: 364,
-        display: 'flex',
-        gap: 42,
-      }}
-      data-uid='e5b'
-    >
-      <div
+  // x-ed when cmd+g was changed so it wraps in a fragment
+  xdescribe('grouping in container', () => {
+    it('wraps flex row children in a container with flex row set', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboardChildren(`<div
         style={{
           backgroundColor: '#aaaaaa33',
-          width: 139,
-          height: 130,
-          contain: 'layout',
-        }}
-        data-uid='6de'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 119,
-          height: 213,
-          contain: 'layout',
-        }}
-        data-uid='8f4'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 99,
-          height: 132,
-          contain: 'layout',
-        }}
-        data-uid='0e8'
-      />
-    </div>`),
-      'await-first-dom-report',
-    )
-
-    await doGroup(editor)
-
-    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 200,
-        top: 138,
-        width: 513,
-        height: 364,
-        display: 'flex',
-        gap: 42,
-      }}
-    >
-      <div
-        style={{
+          position: 'absolute',
+          left: 200,
+          top: 138,
+          width: 513,
+          height: 364,
           display: 'flex',
-          flexDirection: 'row',
-          contain: 'layout',
           gap: 42,
         }}
+        data-uid='e5b'
       >
         <div
           style={{
@@ -1061,6 +1009,7 @@ describe('group selection', () => {
             height: 130,
             contain: 'layout',
           }}
+          data-uid='6de'
         />
         <div
           style={{
@@ -1069,87 +1018,181 @@ describe('group selection', () => {
             height: 213,
             contain: 'layout',
           }}
+          data-uid='8f4'
         />
-      </div>
-      <div
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 99,
+            height: 132,
+            contain: 'layout',
+          }}
+          data-uid='0e8'
+        />
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      await doGroup(editor)
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
         style={{
           backgroundColor: '#aaaaaa33',
-          width: 99,
-          height: 132,
-          contain: 'layout',
-        }}
-      />
-    </div>`),
-    )
-  })
-  it('wraps flex column children in a container with flex column set', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboardChildren(`<div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 200,
-        top: 138,
-        width: 513,
-        height: 364,
-        display: 'flex',
-        gap: 42,
-        flexDirection: 'column'
-      }}
-      data-uid='e5b'
-    >
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 139,
-          height: 130,
-          contain: 'layout',
-        }}
-        data-uid='6de'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 119,
-          height: 213,
-          contain: 'layout',
-        }}
-        data-uid='8f4'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 99,
-          height: 132,
-          contain: 'layout',
-        }}
-        data-uid='0e8'
-      />
-    </div>`),
-      'await-first-dom-report',
-    )
-    await doGroup(editor)
-    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 200,
-        top: 138,
-        width: 513,
-        height: 364,
-        display: 'flex',
-        gap: 42,
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
+          position: 'absolute',
+          left: 200,
+          top: 138,
+          width: 513,
+          height: 364,
           display: 'flex',
+          gap: 42,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            contain: 'layout',
+            gap: 42,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 139,
+              height: 130,
+              contain: 'layout',
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 119,
+              height: 213,
+              contain: 'layout',
+            }}
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 99,
+            height: 132,
+            contain: 'layout',
+          }}
+        />
+      </div>`),
+      )
+    })
+    it('wraps flex column children in a container with flex column set', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboardChildren(`<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 200,
+          top: 138,
+          width: 513,
+          height: 364,
+          display: 'flex',
+          gap: 42,
+          flexDirection: 'column'
+        }}
+        data-uid='e5b'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 139,
+            height: 130,
+            contain: 'layout',
+          }}
+          data-uid='6de'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 119,
+            height: 213,
+            contain: 'layout',
+          }}
+          data-uid='8f4'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 99,
+            height: 132,
+            contain: 'layout',
+          }}
+          data-uid='0e8'
+        />
+      </div>`),
+        'await-first-dom-report',
+      )
+      await doGroup(editor)
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 200,
+          top: 138,
+          width: 513,
+          height: 364,
+          display: 'flex',
+          gap: 42,
           flexDirection: 'column',
-          contain: 'layout',
-          gap: 42,
         }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            contain: 'layout',
+            gap: 42,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 139,
+              height: 130,
+              contain: 'layout',
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 119,
+              height: 213,
+              contain: 'layout',
+            }}
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 99,
+            height: 132,
+            contain: 'layout',
+          }}
+        />
+      </div>`),
+      )
+    })
+    it('wraps flow children in a simple unstyled div', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithStoryboardChildren(`<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 200,
+          top: 138,
+          width: 429,
+          height: 548,
+        }}
+        data-uid='e5b'
       >
         <div
           style={{
@@ -1158,6 +1201,7 @@ describe('group selection', () => {
             height: 130,
             contain: 'layout',
           }}
+          data-uid='6de'
         />
         <div
           style={{
@@ -1166,104 +1210,137 @@ describe('group selection', () => {
             height: 213,
             contain: 'layout',
           }}
+          data-uid='8f4'
         />
-      </div>
-      <div
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 99,
+            height: 132,
+            contain: 'layout',
+          }}
+          data-uid='0e8'
+        />
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      await doGroup(editor)
+
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
         style={{
           backgroundColor: '#aaaaaa33',
-          width: 99,
-          height: 132,
-          contain: 'layout',
+          position: 'absolute',
+          left: 200,
+          top: 138,
+          width: 429,
+          height: 548,
         }}
-      />
-    </div>`),
-    )
+      >
+        <div>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 139,
+              height: 130,
+              contain: 'layout',
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 119,
+              height: 213,
+              contain: 'layout',
+            }}
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 99,
+            height: 132,
+            contain: 'layout',
+          }}
+        />
+      </div>`),
+      )
+    })
   })
-  it('wraps flow children in a simple unstyled div', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithStoryboardChildren(`<div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 200,
-        top: 138,
-        width: 429,
-        height: 548,
-      }}
-      data-uid='e5b'
-    >
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 139,
-          height: 130,
-          contain: 'layout',
-        }}
-        data-uid='6de'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 119,
-          height: 213,
-          contain: 'layout',
-        }}
-        data-uid='8f4'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 99,
-          height: 132,
-          contain: 'layout',
-        }}
-        data-uid='0e8'
-      />
-    </div>`),
-      'await-first-dom-report',
-    )
 
-    await doGroup(editor)
-
-    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithStoryboardChildrenNoUids(`<div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 200,
-        top: 138,
-        width: 429,
-        height: 548,
-      }}
-    >
-      <div>
-        <div
+  describe('grouping in fragment', () => {
+    it('wraps selected elements in a fragment', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+          <div
           style={{
             backgroundColor: '#aaaaaa33',
-            width: 139,
-            height: 130,
-            contain: 'layout',
+            position: 'absolute',
+            left: 62,
+            top: 60,
+            width: 75,
+            height: 91,
           }}
+          data-uid='aaa'
         />
         <div
           style={{
             backgroundColor: '#aaaaaa33',
-            width: 119,
-            height: 213,
-            contain: 'layout',
+            position: 'absolute',
+            left: 151,
+            top: 86,
+            width: 48,
+            height: 48,
           }}
+          data-uid='bbb'
         />
-      </div>
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 99,
-          height: 132,
-          contain: 'layout',
-        }}
-      />
-    </div>`),
-    )
+          </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/aaa`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/bbb`),
+      ])
+
+      await expectSingleUndoStep(renderResult, async () =>
+        pressKey('g', { modifiers: cmdModifier }),
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+          <React.Fragment>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 62,
+                top: 60,
+                width: 75,
+                height: 91,
+              }}
+              data-uid='aaa'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 151,
+                top: 86,
+                width: 48,
+                height: 48,
+              }}
+              data-uid='bbb'
+            />
+          </React.Fragment>
+        </div>`,
+        ),
+      )
+    })
   })
 })
 
