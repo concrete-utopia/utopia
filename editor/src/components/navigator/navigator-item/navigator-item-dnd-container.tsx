@@ -50,7 +50,7 @@ import {
 import {
   ConditionalCase,
   findMaybeConditionalExpression,
-  maybeBranchConditionalClause,
+  maybeBranchConditionalCase,
 } from '../../../core/model/conditionals'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
@@ -106,7 +106,7 @@ function isNonEmptyConditionalBranch(
   if (conditionalParent == null) {
     return false
   }
-  const clause = maybeBranchConditionalClause(parentPath, conditionalParent, elementPath)
+  const clause = maybeBranchConditionalCase(parentPath, conditionalParent, elementPath)
   if (clause == null) {
     return false
   }
@@ -436,7 +436,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     const parentPath = EP.parentPath(elementPath)
     const conditionalParent = findMaybeConditionalExpression(EP.parentPath(elementPath), metadata)
     if (conditionalParent != null && !isConditionalClauseNavigatorEntry(props.navigatorEntry)) {
-      const clause = maybeBranchConditionalClause(parentPath, conditionalParent, elementPath)
+      const clause = maybeBranchConditionalCase(parentPath, conditionalParent, elementPath)
       if (clause != null) {
         fixedProps.navigatorEntry = {
           type: 'CONDITIONAL_CLAUSE',

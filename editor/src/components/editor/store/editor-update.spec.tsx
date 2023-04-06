@@ -245,7 +245,7 @@ describe('action RENAME_COMPONENT', () => {
 
   it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
   it('renames an existing element', () =>
-    checkRename(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']), 'View'))
+    checkRename(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']), 'Group'))
 })
 
 describe('action TOGGLE_PANE', () => {

@@ -131,6 +131,7 @@ import {
   ReparentTargetParent,
   reparentTargetParentIsElementPath,
 } from '../../components/editor/store/reparent-target'
+import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1302,10 +1303,20 @@ export const MetadataUtils = {
     }
   },
   getElementLabelFromMetadata(
+    metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
+    const elementContentAffectingType = getElementContentAffectingType(
+      metadata,
+      allElementProps,
+      element.elementPath,
+    )
+
+    const isElementGroup =
+      elementContentAffectingType != null && elementContentAffectingType !== 'fragment'
+
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
@@ -1315,6 +1326,8 @@ export const MetadataUtils = {
       return dataLabelProp
     } else if (sceneLabel != null) {
       return sceneLabel
+    } else if (isElementGroup) {
+      return 'Group'
     } else {
       const possibleName: string = foldEither(
         (tagName) => {
@@ -1398,7 +1411,12 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByElementPath(metadata, path)
     if (element != null) {
-      return MetadataUtils.getElementLabelFromMetadata(allElementProps, element, staticName)
+      return MetadataUtils.getElementLabelFromMetadata(
+        metadata,
+        allElementProps,
+        element,
+        staticName,
+      )
     }
 
     // Default catch all name, will probably avoid some odd cases in the future.

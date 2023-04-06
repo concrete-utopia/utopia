@@ -33,12 +33,15 @@ import {
   emptyComments,
   jsExpressionValue,
   isIntrinsicElement,
+  jsxFragment,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
   isTextFile,
   StaticElementPathPart,
   StaticElementPath,
+  ElementPath,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -54,9 +57,11 @@ import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
 import {
+  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
+  maybeBranchConditionalCase,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import {
@@ -65,6 +70,7 @@ import {
   reparentTargetParentIsConditionalClause,
 } from '../../components/editor/store/reparent-target'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import { isNullJSXAttributeValue } from '../shared/element-template'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -511,6 +517,16 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+  function getConditionalCase(
+    conditional: JSXConditionalExpression,
+    parentPath: ElementPath,
+    target: ReparentTargetParent<ElementPath>,
+  ) {
+    if (reparentTargetParentIsConditionalClause(target)) {
+      return target.clause
+    }
+    return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
+  }
   const targetParentIncludingStoryboardRoot =
     targetParent ?? getStoryboardElementPath(projectContents, openFile)
   if (targetParentIncludingStoryboardRoot == null) {
@@ -522,23 +538,31 @@ export function insertJSXElementChild(
       components,
       parentPath,
       (parentElement) => {
-        if (
-          reparentTargetParentIsConditionalClause(targetParentIncludingStoryboardRoot) &&
-          isJSXConditionalExpression(parentElement)
-        ) {
+        if (isJSXConditionalExpression(parentElement)) {
           // Determine which clause of the conditional we want to modify.
+          const conditionalCase = getConditionalCase(
+            parentElement,
+            parentPath,
+            targetParentIncludingStoryboardRoot,
+          )
           const toClauseOptic =
-            targetParentIncludingStoryboardRoot.clause === 'true-case'
-              ? conditionalWhenTrueOptic
-              : conditionalWhenFalseOptic
+            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
           // Update the clause if it currently holds a null value.
           return modify(
             toClauseOptic,
             (clauseValue) => {
-              if (isJSXAttributeValue(clauseValue) && clauseValue.value == null) {
+              if (isNullJSXAttributeValue(clauseValue)) {
                 return elementToInsert
+              } else if (isJSXFragment(clauseValue)) {
+                return parentElement
+              } else {
+                // for wrapping multiple elements
+                return jsxFragment(
+                  generateUidWithExistingComponents(projectContents),
+                  [clauseValue, elementToInsert],
+                  false,
+                )
               }
-              return parentElement
             },
             parentElement,
           )
