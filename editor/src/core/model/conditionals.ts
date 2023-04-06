@@ -149,7 +149,7 @@ export function findMaybeConditionalExpression(
   )
 }
 
-export function maybeBranchConditionalClause(
+export function maybeBranchConditionalCase(
   conditionalPath: ElementPath,
   conditional: JSXConditionalExpression,
   branchPath: ElementPath,
