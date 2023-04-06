@@ -59,7 +59,7 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
-        ...isElementIsFragmentFirstConvertItToFrame(metadata, path),
+        ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -86,7 +86,7 @@ export function convertLayoutToFlexCommands(
       : []
 
     return [
-      ...isElementIsFragmentFirstConvertItToFrame(metadata, path),
+      ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -103,7 +103,7 @@ export function convertLayoutToFlexCommands(
   })
 }
 
-function isElementIsFragmentFirstConvertItToFrame(
+function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): Array<CanvasCommand> {
