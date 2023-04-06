@@ -988,7 +988,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectNoAction(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
 
     // Expect that nothing changed
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(testProjectWithBadFragment)

@@ -14,6 +14,7 @@ import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
+import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -39,7 +40,13 @@ export function convertLayoutToFlexCommands(
 
     if (areAnyChildrenNonDomElement(metadata, childrenPaths)) {
       // This is a known limitation and future TODO. we must early return now to avoid bizarro layouts
-      return []
+      return [
+        showToastCommand(
+          'Cannot be converted to Flex yet',
+          'WARNING',
+          'cannot-convert-children-to-flex',
+        ),
+      ]
     }
 
     const parentFlexDirection =
