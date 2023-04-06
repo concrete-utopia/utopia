@@ -1324,10 +1324,10 @@ export const MetadataUtils = {
     )
     if (dataLabelProp != null) {
       return dataLabelProp
-    } else if (isElementGroup) {
-      return 'Group'
     } else if (sceneLabel != null) {
       return sceneLabel
+    } else if (isElementGroup) {
+      return 'Group'
     } else {
       const possibleName: string = foldEither(
         (tagName) => {
