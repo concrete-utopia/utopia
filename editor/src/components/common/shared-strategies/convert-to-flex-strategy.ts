@@ -43,7 +43,7 @@ export function convertLayoutToFlexCommands(
       return [
         showToastCommand(
           'Cannot be converted to Flex yet',
-          'WARNING',
+          'NOTICE',
           'cannot-convert-children-to-flex',
         ),
       ]
