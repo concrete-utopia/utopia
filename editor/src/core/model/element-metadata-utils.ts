@@ -1315,7 +1315,9 @@ export const MetadataUtils = {
     )
 
     const isElementGroup =
-      elementContentAffectingType != null && elementContentAffectingType !== 'fragment'
+      elementContentAffectingType != null &&
+      elementContentAffectingType !== 'fragment' &&
+      elementContentAffectingType !== 'conditional'
 
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
