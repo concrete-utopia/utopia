@@ -1308,9 +1308,15 @@ export const MetadataUtils = {
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
+    const elementContentAffectingType = getElementContentAffectingType(
+      metadata,
+      allElementProps,
+      element.elementPath,
+    )
+
     const isElementGroup =
-      getElementContentAffectingType(metadata, allElementProps, element.elementPath) ===
-      'sizeless-div'
+      elementContentAffectingType != null && elementContentAffectingType !== 'fragment'
+
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
