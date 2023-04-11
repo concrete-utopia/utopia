@@ -151,9 +151,12 @@ export function findMaybeConditionalExpression(
 
 export function maybeBranchConditionalCase(
   conditionalPath: ElementPath,
-  conditional: JSXConditionalExpression,
+  conditional: JSXConditionalExpression | null,
   branchPath: ElementPath,
 ): ConditionalCase | null {
+  if (conditional == null) {
+    return null
+  }
   const truePath = EP.appendToPath(conditionalPath, conditional.whenTrue.uid)
   const falsePath = EP.appendToPath(conditionalPath, conditional.whenFalse.uid)
   if (EP.pathsEqual(truePath, branchPath)) {
