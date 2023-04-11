@@ -89,6 +89,7 @@ import {
   walkElements,
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -508,7 +509,12 @@ import {
   reparentTargetParentIsConditionalClause,
   reparentTargetParentIsElementPath,
 } from '../store/reparent-target'
-import { findMaybeConditionalExpression, getClauseOptic } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  maybeBranchConditionalCase,
+  maybeConditionalExpression,
+} from '../../../core/model/conditionals'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3188,17 +3194,44 @@ export const UPDATE_FNS = {
           const pastedElementIsConditional =
             MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
-          const pasteIntoParent = MetadataUtils.findElementByElementPath(
+          const parentOfPasteInto = MetadataUtils.findElementByElementPath(
             editor.jsxMetadata,
             resolvedTarget,
           )
 
+          function maybePasteIntoConditionalBranch(
+            branchPath: ElementPath,
+          ): JSXElementChild | null {
+            const conditionalPath = EP.parentPath(branchPath)
+            const conditional = maybeConditionalExpression(
+              MetadataUtils.findElementByElementPath(editor.jsxMetadata, conditionalPath),
+            )
+            if (conditional == null) {
+              return null
+            }
+            const conditionalCase = maybeBranchConditionalCase(
+              conditionalPath,
+              conditional,
+              branchPath,
+            )
+            if (conditionalCase == null) {
+              return null
+            }
+            const branch =
+              conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+            return branch
+          }
+
+          const pasteIntoConditionalBranch = maybePasteIntoConditionalBranch(resolvedTarget)
+
           const continueWithPaste =
-            pastedElementIsAbsolute ||
-            pastedElementIsFlex ||
-            pastedElementIsConditional ||
-            MetadataUtils.isConditionalFromMetadata(pasteIntoParent) ||
-            isJSXFragment(currentValue.element)
+            pasteIntoConditionalBranch != null
+              ? isNullJSXAttributeValue(pasteIntoConditionalBranch)
+              : pastedElementIsAbsolute ||
+                pastedElementIsFlex ||
+                pastedElementIsConditional ||
+                MetadataUtils.isConditionalFromMetadata(parentOfPasteInto) ||
+                isJSXFragment(currentValue.element)
 
           if (continueWithPaste) {
             const propertyChangeCommands = getReparentPropertyChanges(
