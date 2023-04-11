@@ -2662,23 +2662,7 @@ export const UPDATE_FNS = {
               }
 
               if (isJSXConditionalExpression(elementToInsert)) {
-                // if the selection is a single element, put it directly into the true branch.
-                // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
-                const branch: JSXElementChild | JSXFragment | null =
-                  action.targets.length === 1
-                    ? getTargetElement(action.targets[0])
-                    : jsxFragment(
-                        generateUidWithExistingComponents(editor.projectContents),
-                        mapDropNulls(getTargetElement, pathsToBeWrappedInFragment()),
-                        false,
-                      )
-                if (branch != null) {
-                  if (isJSXFragment(branch) && branch.children.length === 0) {
-                    // nothing to do
-                    return parseSuccess
-                  }
-                  withTargetAdded = withInsertedElement()
-                }
+                withTargetAdded = withInsertedElement()
               } else if (isJSXFragment(elementToInsert)) {
                 const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
                 if (children.length === 0) {
@@ -3151,17 +3135,17 @@ export const UPDATE_FNS = {
       // when targeting a conditional, wrap multiple elements into a fragment
       if (action.elements.length > 1 && isConditionalTarget()) {
         const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
-        let mergedImports: Imports = {}
-        for (const { importsToAdd } of elements) {
-          mergedImports = { ...mergedImports, ...importsToAdd }
-        }
+        const mergedImports = elements
+          .map((e) => e.importsToAdd)
+          .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+        const fragment = jsxFragment(
+          fragmentUID,
+          elements.map((e) => e.element),
+          false,
+        )
         elements = [
           {
-            element: jsxFragment(
-              fragmentUID,
-              elements.map((e) => e.element),
-              false,
-            ),
+            element: fragment,
             importsToAdd: mergedImports,
             originalElementPath: EP.fromString(fragmentUID),
           },

@@ -3,33 +3,33 @@ import { act } from '@testing-library/react'
 import { forElementOptic } from '../../core/model/common-optics'
 import { conditionalWhenTrueOptic } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isRight } from '../../core/shared/either'
+import { isLeft, isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
+  JSXElementChild,
   emptyComments,
   isJSExpressionValue,
   isJSXConditionalExpression,
   jsExpressionValue,
-  jsxAttributesEntry,
-  jsxElement,
-  JSXElement,
-  jsxTextBlock,
+  jsxConditionalExpression,
 } from '../../core/shared/element-template'
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
-import { compose6Optics, Optic } from '../../core/shared/optics/optics'
+import { Optic, compose6Optics } from '../../core/shared/optics/optics'
+import { ElementPath } from '../../core/shared/project-file-types'
 import {
+  EditorRenderResult,
+  TestScenePath,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
-  TestScenePath,
 } from '../canvas/ui-jsx.test-utils'
 import {
   deleteSelected,
   pasteJSXElements,
   selectComponents,
+  wrapInElement,
 } from '../editor/actions/action-creators'
-import { ElementPaste } from './action-types'
 import { EditorState } from './store/editor-state'
 
 describe('conditionals', () => {
@@ -281,4 +281,230 @@ describe('conditionals', () => {
       }
     })
   })
+  describe('wrap', () => {
+    it('can wrap a single element in a conditional', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          <div data-uid='bbb'>hello there</div>
+          <div data-uid='ccc'>another div</div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const conditional = jsxConditionalExpression(
+        'cond',
+        jsExpressionValue(true, emptyComments),
+        'true',
+        jsExpressionValue(null, emptyComments),
+        jsExpressionValue(null, emptyComments),
+        emptyComments,
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+      await act(async () => {
+        await renderResult.dispatch(
+          [wrapInElement([targetPath], { element: conditional, importsToAdd: {} })],
+          true,
+        )
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                true ? <div data-uid='bbb'>hello there</div> : null
+              }
+              <div data-uid='ccc'>another div</div>
+            </div>
+         `),
+      )
+    })
+    it('can wrap a multiple elements in a conditional', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          <div data-uid='bbb'>hello there</div>
+          <div data-uid='ccc'>another div</div>
+          <div data-uid='ddd'>yet another one</div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const conditional = jsxConditionalExpression(
+        'cond',
+        jsExpressionValue(true, emptyComments),
+        'true',
+        jsExpressionValue(null, emptyComments),
+        jsExpressionValue(null, emptyComments),
+        emptyComments,
+      )
+
+      const targetPaths = [
+        EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+        EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
+      ]
+
+      await act(async () => {
+        await renderResult.dispatch(
+          [wrapInElement(targetPaths, { element: conditional, importsToAdd: {} })],
+          true,
+        )
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                true ? (
+                  <>
+                    <div data-uid='bbb'>hello there</div>
+                    <div data-uid='ccc'>another div</div>
+                  </>
+                ) : null
+              }
+              <div data-uid='ddd'>yet another one</div>
+            </div>
+         `),
+      )
+    })
+  })
+  describe('paste', () => {
+    it('can paste a single element into a conditional', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=cond
+            true ? null : null
+          }
+          <div data-uid='bbb'>copy me</div>
+          <div data-uid='ccc'>another div</div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+      const elementToPaste = getElementFromRenderResult(renderResult, targetPath)
+
+      const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
+
+      await act(async () => {
+        await renderResult.dispatch(
+          [
+            pasteJSXElements(
+              conditionalPath,
+              [{ element: elementToPaste, importsToAdd: {}, originalElementPath: targetPath }],
+              {},
+            ),
+          ],
+          true,
+        )
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              // @utopia/uid=cond
+              true ? (
+                <div data-uid='aab' style={{ display: 'block' }}>copy me</div>
+              ) : null
+            }
+            <div data-uid='bbb'>copy me</div>
+            <div data-uid='ccc'>another div</div>
+          </div>
+         `),
+      )
+    })
+    it('can paste multiple elements into a conditional', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=cond
+            true ? null : null
+          }
+          <div data-uid='bbb'>copy me</div>
+          <div data-uid='ccc'>another div</div>
+          <div data-uid='ddd'>yet another div</div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPathBBB = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+      const elementToPasteBBB = getElementFromRenderResult(renderResult, targetPathBBB)
+
+      const targetPathCCC = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
+      const elementToPasteCCC = getElementFromRenderResult(renderResult, targetPathCCC)
+
+      const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
+
+      await act(async () => {
+        await renderResult.dispatch(
+          [
+            pasteJSXElements(
+              conditionalPath,
+              [
+                {
+                  element: elementToPasteCCC,
+                  importsToAdd: {},
+                  originalElementPath: targetPathCCC,
+                },
+                {
+                  element: elementToPasteBBB,
+                  importsToAdd: {},
+                  originalElementPath: targetPathBBB,
+                },
+              ],
+              {},
+            ),
+          ],
+          true,
+        )
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              // @utopia/uid=cond
+              true ? (
+                <>
+                  <div data-uid='aac'>copy me</div>
+                  <div data-uid='aab' style={{ display: 'block' }}>another div</div>
+                </>
+              ) : null
+            }
+            <div data-uid='bbb'>copy me</div>
+            <div data-uid='ccc'>another div</div>
+            <div data-uid='ddd'>yet another div</div>
+          </div>
+         `),
+      )
+    })
+  })
 })
+
+function getElementFromRenderResult(
+  renderResult: EditorRenderResult,
+  path: ElementPath,
+): JSXElementChild {
+  const element = MetadataUtils.findElementByElementPath(
+    renderResult.getEditorState().editor.jsxMetadata,
+    path,
+  )
+  if (element == null || isLeft(element.element)) {
+    throw new Error('element is invalid')
+  }
+  return element.element.value
+}
