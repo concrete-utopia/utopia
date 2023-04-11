@@ -31,6 +31,8 @@ import {
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { EditorState } from './store/editor-state'
+import { ReparentTargetParent } from './store/reparent-target'
+import { ElementPaste } from './action-types'
 
 describe('conditionals', () => {
   describe('deletion', () => {
@@ -386,30 +388,14 @@ describe('conditionals', () => {
           <div data-uid='ccc'>another div</div>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(startSnippet),
-        'await-first-dom-report',
-      )
 
-      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-      const elementToPaste = getElementFromRenderResult(renderResult, targetPath)
-
-      const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-      await act(async () => {
-        await renderResult.dispatch(
-          [
-            pasteJSXElements(
-              conditionalPath,
-              [{ element: elementToPaste, importsToAdd: {}, originalElementPath: targetPath }],
-              {},
-            ),
-          ],
-          true,
-        )
+      const got = await runPaste({
+        startSnippet,
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+        targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
       })
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      expect(got).toEqual(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa'>
             {
@@ -436,44 +422,17 @@ describe('conditionals', () => {
           <div data-uid='ddd'>yet another div</div>
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(startSnippet),
-        'await-first-dom-report',
-      )
 
-      const targetPathBBB = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-      const elementToPasteBBB = getElementFromRenderResult(renderResult, targetPathBBB)
-
-      const targetPathCCC = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
-      const elementToPasteCCC = getElementFromRenderResult(renderResult, targetPathCCC)
-
-      const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-      await act(async () => {
-        await renderResult.dispatch(
-          [
-            pasteJSXElements(
-              conditionalPath,
-              [
-                {
-                  element: elementToPasteCCC,
-                  importsToAdd: {},
-                  originalElementPath: targetPathCCC,
-                },
-                {
-                  element: elementToPasteBBB,
-                  importsToAdd: {},
-                  originalElementPath: targetPathBBB,
-                },
-              ],
-              {},
-            ),
-          ],
-          true,
-        )
+      const got = await runPaste({
+        startSnippet,
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+        targets: [
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+        ],
       })
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      expect(got).toEqual(
         makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa'>
             {
@@ -505,30 +464,17 @@ describe('conditionals', () => {
               <div data-uid='ccc'>another div</div>
             </div>
           `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(startSnippet),
-            'await-first-dom-report',
-          )
 
-          const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-          const elementToPaste = getElementFromRenderResult(renderResult, targetPath)
-
-          const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  { clause: 'true-case', elementPath: conditionalPath },
-                  [{ element: elementToPaste, importsToAdd: {}, originalElementPath: targetPath }],
-                  {},
-                ),
-              ],
-              true,
-            )
+          const got = await runPaste({
+            startSnippet,
+            pasteInto: {
+              clause: 'true-case',
+              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+            },
+            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
                 {
@@ -555,43 +501,20 @@ describe('conditionals', () => {
               <div data-uid='ddd'>yet another div</div>
             </div>
           `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(startSnippet),
-            'await-first-dom-report',
-          )
 
-          const targetPathBBB = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-          const elementToPasteBBB = getElementFromRenderResult(renderResult, targetPathBBB)
-          const targetPathCCC = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
-          const elementToPasteCCC = getElementFromRenderResult(renderResult, targetPathCCC)
-
-          const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  { clause: 'true-case', elementPath: conditionalPath },
-                  [
-                    {
-                      element: elementToPasteBBB,
-                      importsToAdd: {},
-                      originalElementPath: targetPathBBB,
-                    },
-                    {
-                      element: elementToPasteCCC,
-                      importsToAdd: {},
-                      originalElementPath: targetPathCCC,
-                    },
-                  ],
-                  {},
-                ),
-              ],
-              true,
-            )
+          const got = await runPaste({
+            startSnippet,
+            pasteInto: {
+              clause: 'true-case',
+              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+            },
+            targets: [
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
+            ],
           })
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
                 {
@@ -622,30 +545,17 @@ describe('conditionals', () => {
               <div data-uid='ddd'>yet another div</div>
             </div>
           `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(startSnippet),
-            'await-first-dom-report',
-          )
 
-          const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-          const elementToPaste = getElementFromRenderResult(renderResult, targetPath)
-
-          const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  { clause: 'true-case', elementPath: conditionalPath },
-                  [{ element: elementToPaste, importsToAdd: {}, originalElementPath: targetPath }],
-                  {},
-                ),
-              ],
-              true,
-            )
+          const got = await runPaste({
+            startSnippet,
+            pasteInto: {
+              clause: 'true-case',
+              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+            },
+            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
                 {
@@ -672,30 +582,17 @@ describe('conditionals', () => {
               <div data-uid='ccc'>another div</div>
             </div>
           `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(startSnippet),
-            'await-first-dom-report',
-          )
 
-          const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-          const elementToPaste = getElementFromRenderResult(renderResult, targetPath)
-
-          const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  { clause: 'false-case', elementPath: conditionalPath },
-                  [{ element: elementToPaste, importsToAdd: {}, originalElementPath: targetPath }],
-                  {},
-                ),
-              ],
-              true,
-            )
+          const got = await runPaste({
+            startSnippet,
+            pasteInto: {
+              clause: 'false-case',
+              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+            },
+            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
                 {
@@ -722,43 +619,20 @@ describe('conditionals', () => {
               <div data-uid='ddd'>yet another div</div>
             </div>
           `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(startSnippet),
-            'await-first-dom-report',
-          )
 
-          const targetPathBBB = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-          const elementToPasteBBB = getElementFromRenderResult(renderResult, targetPathBBB)
-          const targetPathCCC = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
-          const elementToPasteCCC = getElementFromRenderResult(renderResult, targetPathCCC)
-
-          const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  { clause: 'false-case', elementPath: conditionalPath },
-                  [
-                    {
-                      element: elementToPasteBBB,
-                      importsToAdd: {},
-                      originalElementPath: targetPathBBB,
-                    },
-                    {
-                      element: elementToPasteCCC,
-                      importsToAdd: {},
-                      originalElementPath: targetPathCCC,
-                    },
-                  ],
-                  {},
-                ),
-              ],
-              true,
-            )
+          const got = await runPaste({
+            startSnippet,
+            pasteInto: {
+              clause: 'false-case',
+              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+            },
+            targets: [
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
+            ],
           })
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
                 {
@@ -789,30 +663,17 @@ describe('conditionals', () => {
               <div data-uid='ddd'>yet another div</div>
             </div>
           `
-          const renderResult = await renderTestEditorWithCode(
-            makeTestProjectCodeWithSnippet(startSnippet),
-            'await-first-dom-report',
-          )
 
-          const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-          const elementToPaste = getElementFromRenderResult(renderResult, targetPath)
-
-          const conditionalPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])
-
-          await act(async () => {
-            await renderResult.dispatch(
-              [
-                pasteJSXElements(
-                  { clause: 'false-case', elementPath: conditionalPath },
-                  [{ element: elementToPaste, importsToAdd: {}, originalElementPath: targetPath }],
-                  {},
-                ),
-              ],
-              true,
-            )
+          const got = await runPaste({
+            startSnippet,
+            pasteInto: {
+              clause: 'false-case',
+              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+            },
+            targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
-          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          expect(got).toEqual(
             makeTestProjectCodeWithSnippet(`
               <div data-uid='aaa'>
                 {
@@ -830,6 +691,35 @@ describe('conditionals', () => {
     })
   })
 })
+
+async function runPaste({
+  startSnippet,
+  pasteInto,
+  targets,
+}: {
+  startSnippet: string
+  pasteInto: ReparentTargetParent<ElementPath>
+  targets: Array<ElementPath>
+}) {
+  const renderResult = await renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(startSnippet),
+    'await-first-dom-report',
+  )
+
+  const elements: Array<ElementPaste> = targets.map((target) => {
+    return {
+      element: getElementFromRenderResult(renderResult, target),
+      originalElementPath: target,
+      importsToAdd: {},
+    }
+  })
+
+  await act(async () => {
+    await renderResult.dispatch([pasteJSXElements(pasteInto, elements, {})], true)
+  })
+
+  return getPrintedUiJsCode(renderResult.getEditorState())
+}
 
 function getElementFromRenderResult(
   renderResult: EditorRenderResult,
