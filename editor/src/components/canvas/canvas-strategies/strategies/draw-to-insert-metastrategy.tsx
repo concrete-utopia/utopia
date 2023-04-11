@@ -65,6 +65,7 @@ import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/lay
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -285,14 +286,22 @@ function getHighlightAndReorderIndicatorCommands(
     const highlightParentCommand = updateHighlightedViews('mid-interaction', [targetParent])
 
     if (targetIndex != null && targetIndex > -1) {
-      return [highlightParentCommand, showReorderIndicator(targetParent, targetIndex)]
+      return [
+        highlightParentCommand,
+        showReorderIndicator(targetParent, targetIndex),
+        clearSelectionCommand,
+      ]
     } else {
-      return [highlightParentCommand]
+      return [highlightParentCommand, clearSelectionCommand]
     }
   } else {
-    return []
+    return [clearSelectionCommand]
   }
 }
+
+const clearSelectionCommand: CanvasCommand = wildcardPatch('mid-interaction', {
+  selectedViews: { $set: [] },
+})
 
 function getInsertionCommands(
   subject: InsertionSubject,
