@@ -137,7 +137,7 @@ describe('Absolute Duplicate Strategy', () => {
   describe('with content-affecting elements', () => {
     AllContentAffectingTypes.forEach((type) => {
       // TODO: reenable this after we know why does it destroy the test runner
-      xit(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {
+      it(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             projectWithFragment(
