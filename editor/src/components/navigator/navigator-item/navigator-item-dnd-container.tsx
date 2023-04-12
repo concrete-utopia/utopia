@@ -120,8 +120,9 @@ function canDrop(
   draggedOnto: NavigatorItemDragAndDropWrapperProps,
   dropTarget: 'top' | 'bottom' | 'hover',
 ): boolean {
-  if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata)) {
-    // target is a conditional
+  const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
+  if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata) && isReparentTarget) {
+    // reparent target is the conditional root
     return false
   } else if (
     isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) &&
@@ -141,7 +142,6 @@ function canDrop(
   ) {
     return true
   } else {
-    const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
     const childrenSupportedIfRequired =
       !isReparentTarget ||
       isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||
