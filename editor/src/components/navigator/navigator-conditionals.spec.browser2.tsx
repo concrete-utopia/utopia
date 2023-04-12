@@ -21,7 +21,7 @@ import {
 } from '../editor/store/editor-state'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { navigatorDepth } from './navigator-utils'
-import { compose2Optics, compose3Optics, Optic } from '../../core/shared/optics/optics'
+import { compose3Optics, Optic } from '../../core/shared/optics/optics'
 import { forElementOptic } from '../../core/model/common-optics'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import {
@@ -30,11 +30,7 @@ import {
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
-import {
-  isJSXConditionalExpression,
-  isJSXElement,
-  JSXElementChild,
-} from '../../core/shared/element-template'
+import { isJSXConditionalExpression, JSXElementChild } from '../../core/shared/element-template'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { pressKey } from '../canvas/event-helpers.test-utils'
@@ -45,6 +41,7 @@ import { getTargetParentForPaste } from '../../utils/clipboard'
 import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { conditionalClause, ReparentTargetParent } from '../editor/store/reparent-target'
+import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -461,7 +458,7 @@ describe('conditionals in the navigator', () => {
       ),
     ).toEqual(expectedNavigatorStructure)
   })
-  xit('can reorder to before the conditional', async () => {
+  it('can reorder to before the conditional', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
     const expectedNavigatorStructure = `  regular-utopia-storyboard-uid/scene-aaa
@@ -488,10 +485,10 @@ describe('conditionals in the navigator', () => {
     const elementPathToDrag = EP.fromString(
       `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/sibling-div`,
     )
+
     await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
       await renderResult.dispatch(selectComponents([elementPathToDrag], false), false)
-      await dispatchDone
+      await renderResult.getDispatchFollowUpActionsFinished()
     })
 
     // Getting info relating to what element will be dragged.
@@ -510,10 +507,14 @@ describe('conditionals in the navigator', () => {
     )
     const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
     const navigatorEntryToTargetCenter = getDomRectCenter(navigatorEntryToTargetRect)
+    const dragTo = {
+      x: navigatorEntryToTargetCenter.x,
+      y: navigatorEntryToTargetCenter.y + 3,
+    }
 
     const dragDelta = {
-      x: navigatorEntryToTargetCenter.x - navigatorEntryToDragCenter.x,
-      y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
+      x: dragTo.x - navigatorEntryToDragCenter.x,
+      y: dragTo.y - navigatorEntryToDragCenter.y,
     }
 
     FOR_TESTS_setNextGeneratedUids(['fragment'])
@@ -522,7 +523,9 @@ describe('conditionals in the navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
-        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget))}`,
+        TopDropTargetLineTestId(
+          varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
+        ),
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
@@ -531,14 +534,23 @@ describe('conditionals in the navigator', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(getProjectCode())
-
     expect(
       navigatorStructure(
         renderResult.getEditorState().editor,
         renderResult.getEditorState().derived,
       ),
-    ).toEqual(expectedNavigatorStructure)
+    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
   it('dragging into an empty active clause, takes the place of the empty value', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -973,9 +985,6 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
-  })
-  xit('dragging into child of an active clause, works as it would without the conditional', () => {
-    // TODO: Fill this out.
   })
   it('can select and delete an inactive clause', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
