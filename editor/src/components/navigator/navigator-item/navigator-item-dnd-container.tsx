@@ -119,8 +119,9 @@ function canDrop(
   draggedItem: NavigatorItemDragAndDropWrapperProps,
   draggedOnto: NavigatorItemDragAndDropWrapperProps,
 ): boolean {
-  if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata)) {
-    // target is a conditional
+  const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
+  if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata) && isReparentTarget) {
+    // reparent target is the conditional root
     return false
   } else if (
     isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) &&
@@ -135,7 +136,6 @@ function canDrop(
     // target is a direct conditional branch, non-empty
     return false
   } else {
-    const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
     const childrenSupportedIfRequired =
       !isReparentTarget ||
       isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||

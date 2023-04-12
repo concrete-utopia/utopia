@@ -185,7 +185,7 @@ export const MetadataUtils = {
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
   getViewZIndexFromMetadata(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
-    const siblings = MetadataUtils.getSiblingsUnordered(metadata, target)
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, target)
     return siblings.findIndex((child) => {
       return getUtopiaID(child) === EP.toUid(target)
     })
