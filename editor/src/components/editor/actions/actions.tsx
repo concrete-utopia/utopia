@@ -1791,7 +1791,7 @@ export const UPDATE_FNS = {
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, dropTarget.target)
+      const index = MetadataUtils.getIndexInParent(editor.jsxMetadata, dropTarget.target)
       let indexPosition: IndexPosition
       switch (dropTarget.type) {
         case 'MOVE_ROW_BEFORE': {
@@ -2341,10 +2341,7 @@ export const UPDATE_FNS = {
           if (reparentTargetParentIsElementPath(parentPath)) {
             indexInParent = optionalMap(
               (firstPathMatchingCommonParent) =>
-                MetadataUtils.getViewZIndexFromMetadata(
-                  editor.jsxMetadata,
-                  firstPathMatchingCommonParent,
-                ),
+                MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
               orderedActionTargets.find((target) =>
                 EP.pathsEqual(EP.parentPath(target), parentPath),
               ),
@@ -2580,10 +2577,7 @@ export const UPDATE_FNS = {
         if (parentPath != null && reparentTargetParentIsElementPath(parentPath)) {
           indexInParent = optionalMap(
             (firstPathMatchingCommonParent) =>
-              MetadataUtils.getViewZIndexFromMetadata(
-                editor.jsxMetadata,
-                firstPathMatchingCommonParent,
-              ),
+              MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
             orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
           )
         }
