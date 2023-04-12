@@ -833,13 +833,13 @@ describe('conditionals in the navigator', () => {
     const dragMeElementRect = dragMeElement.getBoundingClientRect()
     const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
     const firstDivElement = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-drag-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional/129_attribute`,
+      `navigator-item-drag-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional/a25_attribute`,
     )
     const firstDivElementRect = firstDivElement.getBoundingClientRect()
     const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
     const dragTo = {
       x: firstDivElementCenter.x,
-      y: firstDivElementRect.y - 3,
+      y: firstDivElementRect.y + 3,
     }
 
     const dragDelta = windowPoint({
@@ -860,7 +860,7 @@ describe('conditionals in the navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-regular_utopia_storyboard_uid/scene_aaa/containing_div/sibling_div`,
-        `navigator-item-drop-after-conditional_clause_utopia_storyboard_uid/scene_aaa/containing_div/conditional_false-case`,
+        `navigator-item-drop-after-conditional_clause_utopia_storyboard_uid/scene_aaa/containing_div/conditional_true-case`,
         windowPoint(dragMeElementCenter),
         dragDelta,
         'apply-hover-events',
