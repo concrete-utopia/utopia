@@ -256,7 +256,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
           maybeConditionalExpression(parentElement) != null
         ) {
           possiblyAppropriateDropTargetHint = {
-            type: 'reparent',
+            type: store.editor.navigator.dropTargetHint.type ?? 'reparent',
             displayAtEntry: null,
             moveToEntry: null,
           }
