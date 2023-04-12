@@ -401,14 +401,10 @@ function isInsideConditional(
   entry: NavigatorEntry | null,
   jsxMetadata: ElementInstanceMetadataMap,
 ) {
-  if (entry == null) {
-    return false
-  }
-  const conditional = findMaybeConditionalExpression(EP.parentPath(entry.elementPath), jsxMetadata)
-  if (conditional == null) {
-    return false
-  }
-  return true
+  return (
+    entry != null &&
+    findMaybeConditionalExpression(EP.parentPath(entry.elementPath), jsxMetadata) != null
+  )
 }
 
 function getConditionalBranch(conditional: JSXConditionalExpression, clause: ConditionalCase) {
