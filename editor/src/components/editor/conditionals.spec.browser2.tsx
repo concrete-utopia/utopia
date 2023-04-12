@@ -33,6 +33,7 @@ import {
 import { EditorState } from './store/editor-state'
 import { ReparentTargetParent } from './store/reparent-target'
 import { ElementPaste } from './action-types'
+import { forceNotNull } from '../../core/shared/optional-utils'
 
 describe('conditionals', () => {
   describe('deletion', () => {
@@ -371,6 +372,57 @@ describe('conditionals', () => {
                 ) : null
               }
               <div data-uid='ddd'>yet another one</div>
+            </div>
+         `),
+      )
+    })
+    it('can wrap a conditional clause element in a conditional', async () => {
+      const targetUID = 'bbb'
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            true ? <div data-uid='${targetUID}'>hello there</div> : <div data-uid='ccc'>another div</div>
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const conditional = jsxConditionalExpression(
+        'cond',
+        jsExpressionValue(true, emptyComments),
+        'true',
+        jsExpressionValue(null, emptyComments),
+        jsExpressionValue(null, emptyComments),
+        emptyComments,
+      )
+
+      const targetPath = forceNotNull(
+        `Missing ${targetUID} element`,
+        Object.keys(renderResult.getEditorState().editor.jsxMetadata).find((path) =>
+          path.includes(targetUID),
+        ),
+      )
+
+      await act(async () => {
+        await renderResult.dispatch(
+          [wrapInElement([EP.fromString(targetPath)], { element: conditional, importsToAdd: {} })],
+          true,
+        )
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {true ? (
+                true ? (
+                  <div data-uid='${targetUID}'>hello there</div>
+                ) : null
+              ) : (
+                <div data-uid='ccc'>another div</div>
+              )}
             </div>
          `),
       )
