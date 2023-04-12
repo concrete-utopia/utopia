@@ -813,11 +813,11 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
 
-    const updatedZIndex = MetadataUtils.getViewZIndexFromMetadata(
+    const updatedZIndex = MetadataUtils.getIndexInParent(
       updatedMetadata,
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
-    const oldZIndex = MetadataUtils.getViewZIndexFromMetadata(
+    const oldZIndex = MetadataUtils.getIndexInParent(
       editor.jsxMetadata,
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
