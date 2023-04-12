@@ -47,7 +47,12 @@ import {
   isSceneElement,
   getZIndexOfElement,
 } from '../../core/model/element-template-utils'
-import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import {
+  fixUtopiaElement,
+  generateUID,
+  getUtopiaID,
+  setUtopiaID,
+} from '../../core/shared/uid-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -2739,7 +2744,18 @@ export function duplicate(
                   duplicateNewUID.newUID,
                 ]),
               }
-            }
+            } else if (isJSXConditionalExpression(newElement))
+              newElement = {
+                ...newElement,
+                whenTrue: fixUtopiaElement(newElement.whenTrue, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+                whenFalse: fixUtopiaElement(newElement.whenFalse, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+              }
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath
