@@ -118,6 +118,7 @@ function canDrop(
   editorState: EditorState,
   draggedItem: NavigatorItemDragAndDropWrapperProps,
   draggedOnto: NavigatorItemDragAndDropWrapperProps,
+  dropTarget: 'top' | 'bottom' | 'hover',
 ): boolean {
   if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata)) {
     // target is a conditional
@@ -134,6 +135,11 @@ function canDrop(
   ) {
     // target is a direct conditional branch, non-empty
     return false
+  } else if (
+    (dropTarget === 'bottom' || dropTarget === 'top') &&
+    isInsideConditional(draggedOnto.navigatorEntry, editorState.jsxMetadata)
+  ) {
+    return true
   } else {
     const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
     const childrenSupportedIfRequired =
@@ -391,6 +397,20 @@ function isConditionalRoot(entry: NavigatorEntry | null, jsxMetadata: ElementIns
   )
 }
 
+function isInsideConditional(
+  entry: NavigatorEntry | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+) {
+  if (entry == null) {
+    return false
+  }
+  const conditional = findMaybeConditionalExpression(EP.parentPath(entry.elementPath), jsxMetadata)
+  if (conditional == null) {
+    return false
+  }
+  return true
+}
+
 function getConditionalBranch(conditional: JSXConditionalExpression, clause: ConditionalCase) {
   return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 }
@@ -467,7 +487,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
-        return canDrop(editorState, item, props)
+        return canDrop(editorState, item, props, 'bottom')
       },
     }),
     [props],
@@ -492,7 +512,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
-        return canDrop(editorState, item, props)
+        return canDrop(editorState, item, props, 'top')
       },
     }),
     [props],
@@ -517,7 +537,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
         const editorState = editorStateRef.current
-        return canDrop(editorState, item, props)
+        return canDrop(editorState, item, props, 'hover')
       },
     }),
     [props],
@@ -541,10 +561,18 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper dropTargetHintType',
   )
 
+  const shouldShowTopHint =
+    moveToElementPath != null &&
+    (isInsideConditional(moveToElementPath, metadata) ||
+      isConditionalClauseNavigatorEntry(moveToElementPath))
+      ? false
+      : isOverTopHint
+
   const shouldShowBottomHint =
     moveToElementPath != null &&
-    (isConditionalClauseNavigatorEntry(moveToElementPath) ||
-      isConditionalRoot(moveToElementPath, metadata))
+    (isConditionalRoot(moveToElementPath, metadata) ||
+      isConditionalClauseNavigatorEntry(moveToElementPath) ||
+      isInsideConditional(moveToElementPath, metadata))
       ? false
       : isOverBottomHint &&
         (props.appropriateDropTargetHint?.type === 'after' ||
@@ -660,7 +688,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         <NavigatorHintTop
           testId={TopDropTargetLineTestId(safeComponentId)}
           ref={topDropRef}
-          shouldBeShown={isOverTopHint}
+          shouldBeShown={shouldShowTopHint}
           shouldAcceptMouseEvents={shouldDropLinesInterceptMouseEvents}
           margin={margin}
         />,
