@@ -50,6 +50,7 @@ import { fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
 import * as EP from './element-path'
+import { encodeText } from '../../third-party/unicode-steganography/unicode-steganography'
 
 export type AnyMap = { [key: string]: any }
 
@@ -182,14 +183,16 @@ export function jsxAttributeToValue(
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   attribute: JSExpression,
-  steganoPrintUid: ElementPath | null,
+  elementPathToPrint: ElementPath | null,
 ): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE': {
       const value = attribute.value
-      return typeof value === 'string' && steganoPrintUid != null
-        ? `~uidSteganoPrint~~${EP.toString(steganoPrintUid)}~~${value}`
-        : value
+      const valueWithElementPathEmbedded =
+        typeof value === 'string' && elementPathToPrint != null
+          ? encodeText(value, EP.toString(elementPathToPrint))
+          : value
+      return valueWithElementPathEmbedded
     }
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
@@ -199,7 +202,7 @@ export function jsxAttributeToValue(
           inScope,
           requireResult,
           elem.value,
-          steganoPrintUid,
+          elementPathToPrint,
         )
 
         // We don't need to explicitly handle spreads because `concat` will take care of it for us
@@ -215,7 +218,7 @@ export function jsxAttributeToValue(
           inScope,
           requireResult,
           prop.value,
-          steganoPrintUid,
+          elementPathToPrint,
         )
 
         switch (prop.type) {
@@ -236,7 +239,7 @@ export function jsxAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) =>
-          jsxAttributeToValue(filePath, inScope, requireResult, param, steganoPrintUid),
+          jsxAttributeToValue(filePath, inScope, requireResult, param, elementPathToPrint),
         )
         return foundFunction(...resolvedParameters)
       }

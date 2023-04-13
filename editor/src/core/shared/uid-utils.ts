@@ -56,6 +56,7 @@ import { objectMap } from './object-utils'
 import { ElementPath } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
+import { decodeText } from '../../third-party/unicode-steganography/unicode-steganography'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -446,15 +447,12 @@ export function getPathWithStringsOnDomNodeSteganography(
     return []
   }
   const textContent = childNode.textContent
-  if (!textContent?.startsWith('~uidSteganoPrint~~')) {
+  if (textContent == null) {
     return []
   }
-  const pathString = textContent.split('~~')[1]
-  if (pathString == null) {
-    return []
-  }
+  const decodedText = decodeText(textContent).hiddenText
 
-  return getPathsWithStringFromString(pathString)
+  return getPathsWithStringFromString(decodedText)
 }
 
 export function getPathsOnDomElement(element: Element): Array<ElementPath> {
