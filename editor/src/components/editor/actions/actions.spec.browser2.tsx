@@ -16,6 +16,7 @@ import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
 import { ReparentTargetParent } from '../store/reparent-target'
 import { getElementFromRenderResult } from './actions.test-utils'
+import { JSXConditionalExpression } from '../../../core/shared/element-template'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -853,6 +854,72 @@ describe('actions', () => {
 				<div data-uid='ddd'>qux</div>
 				<div data-uid='eee'>waldo</div>
 			</>
+		</div>
+		`,
+      },
+      {
+        name: 'an active conditional branch',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : null
+			}
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'aaa'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : null
+			}
+			<div data-uid='aab'>foo</div>
+		</div>
+		`,
+      },
+      {
+        name: 'an inactive conditional branch',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? null : <div data-uid='aaa'>foo</div>
+			}
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25'])
+          return [
+            {
+              element: (
+                renderResult.getEditorState().editor.jsxMetadata[
+                  'utopia-storyboard-uid/scene-aaa/app-entity:root/conditional'
+                ].element.value as JSXConditionalExpression
+              ).whenFalse,
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? null : <div data-uid='aaa'>foo</div>
+			}
+			<div data-uid='aab' style={{ display: 'block' }}>foo</div>
 		</div>
 		`,
       },
