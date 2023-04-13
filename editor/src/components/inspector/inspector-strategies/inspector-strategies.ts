@@ -6,6 +6,7 @@ import {
   FlexAlignment,
   flexChildProps,
   FlexJustifyContent,
+  nullOrNonEmpty,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
@@ -21,9 +22,14 @@ import {
   fillContainerStrategyFlow,
 } from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
-import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
+import {
+  convertLayoutToFlexCommands,
+  ifElementIsFragmentFirstConvertItToFrame,
+} from '../../common/shared-strategies/convert-to-flex-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
+import { showToastCommand } from '../../canvas/commands/show-toast-command'
+import { flattenSelection } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {
@@ -127,8 +133,27 @@ export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
   {
     name: 'Add flex layout',
     strategy: (metadata, elementPaths) => {
-      return convertLayoutToFlexCommands(metadata, elementPaths)
+      return nullOrNonEmpty(convertLayoutToFlexCommands(metadata, elementPaths))
     },
+  },
+  {
+    name: 'Add flex layout (basic)',
+    strategy: (metadata, elementPaths) => {
+      return flattenSelection(elementPaths).flatMap((elementPath) => [
+        ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPath),
+        setProperty('always', elementPath, PP.create('style', 'display'), 'flex'),
+      ])
+    },
+  },
+  {
+    name: 'Add flex layout (apology)',
+    strategy: () => [
+      showToastCommand(
+        'Cannot be converted to Flex yet',
+        'NOTICE',
+        'cannot-convert-children-to-flex',
+      ),
+    ],
   },
 ]
 

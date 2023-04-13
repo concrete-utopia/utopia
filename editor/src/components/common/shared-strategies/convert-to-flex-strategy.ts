@@ -10,6 +10,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { AllContentAffectingNonDomElementTypes } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { flattenSelection } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
@@ -30,7 +31,7 @@ export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
 ): Array<CanvasCommand> {
-  return elementPaths.flatMap((path) => {
+  return flattenSelection(elementPaths).flatMap((path) => {
     const parentInstance = MetadataUtils.findElementByElementPath(metadata, path)
     if (parentInstance == null) {
       return []
@@ -40,13 +41,7 @@ export function convertLayoutToFlexCommands(
 
     if (areAnyChildrenNonDomElement(metadata, childrenPaths)) {
       // This is a known limitation and future TODO. we must early return now to avoid bizarro layouts
-      return [
-        showToastCommand(
-          'Cannot be converted to Flex yet',
-          'NOTICE',
-          'cannot-convert-children-to-flex',
-        ),
-      ]
+      return []
     }
 
     const parentFlexDirection =
@@ -127,7 +122,7 @@ function areAnyChildrenNonDomElement(
   })
 }
 
-function ifElementIsFragmentFirstConvertItToFrame(
+export function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): Array<CanvasCommand> {
