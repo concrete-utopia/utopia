@@ -527,7 +527,6 @@ export interface CloseFloatingInsertMenu {
 export interface UnwrapGroupOrView {
   action: 'UNWRAP_GROUP_OR_VIEW'
   target: ElementPath
-  onlyForGroups: boolean
 }
 
 export interface UpdateFrameDimensions {

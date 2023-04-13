@@ -2820,16 +2820,10 @@ export const UPDATE_FNS = {
       editorForAction,
       false,
       (editor) => {
-        if (action.onlyForGroups) {
-          // TOOD groups
-          // bail early, we shouldn't delete a non-group view
-          return editor
-        }
-
-        const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
         const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
-        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
-          return editor
+        if (children.length === 0) {
+          const showToastAction = showToast(notice('Unwrap only works on child elements'))
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
         const parentPath = EP.parentPath(action.target)
