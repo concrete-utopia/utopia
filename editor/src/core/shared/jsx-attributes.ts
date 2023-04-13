@@ -44,11 +44,12 @@ import {
   clearExpressionUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
-import { PropertyPath } from './project-file-types'
+import { ElementPath, PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
+import * as EP from './element-path'
 
 export type AnyMap = { [key: string]: any }
 
@@ -181,14 +182,25 @@ export function jsxAttributeToValue(
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   attribute: JSExpression,
+  steganoPrintUid: ElementPath | null,
 ): any {
   switch (attribute.type) {
-    case 'ATTRIBUTE_VALUE':
-      return attribute.value
+    case 'ATTRIBUTE_VALUE': {
+      const value = attribute.value
+      return typeof value === 'string' && steganoPrintUid != null
+        ? `~uidSteganoPrint~~${EP.toString(steganoPrintUid)}~~${value}`
+        : value
+    }
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, elem.value)
+        const value = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          elem.value,
+          steganoPrintUid,
+        )
 
         // We don't need to explicitly handle spreads because `concat` will take care of it for us
         returnArray = returnArray.concat(value)
@@ -198,7 +210,13 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       fastForEach(attribute.content, (prop) => {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, prop.value)
+        const value = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          prop.value,
+          steganoPrintUid,
+        )
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -218,7 +236,7 @@ export function jsxAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) =>
-          jsxAttributeToValue(filePath, inScope, requireResult, param),
+          jsxAttributeToValue(filePath, inScope, requireResult, param, steganoPrintUid),
         )
         return foundFunction(...resolvedParameters)
       }
@@ -241,12 +259,12 @@ export function jsxAttributesToProps(
   for (const entry of attributes) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
+        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value, null)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
         result = {
           ...result,
-          ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+          ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue, null),
         }
         break
       default:

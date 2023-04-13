@@ -291,7 +291,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
+      return runJSXArbitraryBlock(filePath, requireResult, element, blockScope, elementPath)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -344,7 +344,7 @@ export function renderCoreElement(
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const conditionValueAsAny =
-        override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
+        override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition, null)
       // Coerce `conditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       const conditionValue: boolean = !!conditionValueAsAny
@@ -356,45 +356,52 @@ export function renderCoreElement(
         addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
       }
 
-      if (isJSXArbitraryBlock(actualElement)) {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
-      } else {
-        const childPath = optionalMap(
-          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
-          elementPath,
-        )
+      const childPath = optionalMap(
+        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        elementPath,
+      )
 
-        return renderCoreElement(
-          actualElement,
-          childPath,
-          rootScope,
-          inScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
-          codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          filePath,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-        )
-      }
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+        )
+      }
+
+      return jsxAttributeToValue(filePath, inScope, requireResult, element, elementPath)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -706,13 +713,14 @@ function runJSXArbitraryBlock(
   requireResult: MapLike<any>,
   block: JSXArbitraryBlock,
   currentScope: MapLike<any>,
+  elementPath: ElementPath | null,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return jsxAttributeToValue(filePath, block, requireResult, block)
+      return jsxAttributeToValue(filePath, block, requireResult, block, elementPath)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
     default:

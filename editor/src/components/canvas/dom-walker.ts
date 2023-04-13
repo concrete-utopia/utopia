@@ -68,6 +68,7 @@ import {
   getDeepestPathOnDomElement,
   getPathStringsOnDomElement,
   getPathWithStringsOnDomElement,
+  getPathWithStringsOnDomNodeSteganography,
 } from '../../core/shared/uid-utils'
 import { pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
@@ -762,6 +763,50 @@ function collectAndCreateMetadataForElement(
       null,
       'not-a-conditional',
     )
+  })
+
+  element.childNodes.forEach((childNode) => {
+    if (childNode.nodeType !== childNode.TEXT_NODE) {
+      return
+    }
+
+    const pathsForTextRange = getPathWithStringsOnDomNodeSteganography(childNode)
+    const r = document.createRange()
+    r.selectNode(childNode)
+    var rects = r.getClientRects()
+
+    const rect = rects[0]
+
+    if (rect == null) {
+      return
+    }
+    const nodeRect = canvasRectangle({
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    })
+    const nodeCanvasFrame = Utils.offsetRect(nodeRect, Utils.negate(containerRectLazy()))
+    const nodeLocalFrame = localRectangle(
+      Utils.offsetRect(nodeCanvasFrame, Utils.negate(globalFrame)),
+    )
+
+    pathsForTextRange.forEach((path) => {
+      collectedMetadata[path.asString] = elementInstanceMetadata(
+        path.path,
+        left('uh its like a text what do I do'),
+        nodeCanvasFrame,
+        nodeLocalFrame,
+        false,
+        false,
+        emptySpecialSizeMeasurements,
+        null,
+        null,
+        null,
+        null,
+        'not-a-conditional',
+      )
+    })
   })
 
   return {

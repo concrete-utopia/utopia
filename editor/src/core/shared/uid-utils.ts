@@ -420,8 +420,7 @@ export interface PathWithString {
   asString: string
 }
 
-export function getPathWithStringsOnDomElement(element: Element): Array<PathWithString> {
-  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
+function getPathsWithStringFromString(elementPathStr: string | null): Array<PathWithString> {
   return mapDropNulls((pathString) => {
     const parsedPath = EP.fromString(pathString)
     if (EP.isElementPath(parsedPath)) {
@@ -432,7 +431,30 @@ export function getPathWithStringsOnDomElement(element: Element): Array<PathWith
     } else {
       return null
     }
-  }, getSplitPathsStrings(pathsAttribute))
+  }, getSplitPathsStrings(elementPathStr))
+}
+
+export function getPathWithStringsOnDomElement(element: Element): Array<PathWithString> {
+  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
+  return getPathsWithStringFromString(pathsAttribute)
+}
+
+export function getPathWithStringsOnDomNodeSteganography(
+  childNode: ChildNode,
+): Array<PathWithString> {
+  if (childNode.nodeType !== childNode.TEXT_NODE) {
+    return []
+  }
+  const textContent = childNode.textContent
+  if (!textContent?.startsWith('~uidSteganoPrint~~')) {
+    return []
+  }
+  const pathString = textContent.split('~~')[1]
+  if (pathString == null) {
+    return []
+  }
+
+  return getPathsWithStringFromString(pathString)
 }
 
 export function getPathsOnDomElement(element: Element): Array<ElementPath> {

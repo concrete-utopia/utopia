@@ -58,27 +58,8 @@ export function addFakeSpyEntry(
   imports: Imports,
   conditionValue: ConditionValue,
 ): void {
-  let element: Either<string, JSXElementChild>
-  if (isJSXArbitraryBlock(elementOrAttribute)) {
-    const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
-    element = left(
-      foldEither(
-        () => '(unknown)',
-        (value) => {
-          if (value === null) {
-            return 'null'
-          } else if (value === undefined) {
-            return 'undefined'
-          } else {
-            return value.toString()
-          }
-        },
-        simpleAttributeValue,
-      ),
-    )
-  } else {
-    element = right(elementOrAttribute)
-  }
+  const element: Either<string, JSXElementChild> = right(elementOrAttribute)
+
   const instanceMetadata: ElementInstanceMetadata = {
     element: element,
     elementPath: elementPath,
