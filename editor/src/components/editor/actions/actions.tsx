@@ -2662,7 +2662,33 @@ export const UPDATE_FNS = {
               }
 
               if (isJSXConditionalExpression(elementToInsert)) {
-                withTargetAdded = withInsertedElement()
+                const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
+                  targetThatIsRootElementOfCommonParent ?? parentPath,
+                )
+                if (reparentTargetParentIsConditionalClause(staticTarget)) {
+                  withTargetAdded = insertChildAndDetails(
+                    transformJSXComponentAtPath(
+                      utopiaJSXComponents,
+                      getElementPathFromReparentTargetParent(staticTarget),
+                      (oldRoot) => {
+                        if (isJSXConditionalExpression(oldRoot)) {
+                          const clauseOptic = getClauseOptic(staticTarget.clause)
+                          return modify(
+                            clauseOptic,
+                            (clauseElement) => {
+                              return { ...elementToInsert, whenTrue: clauseElement }
+                            },
+                            oldRoot,
+                          )
+                        } else {
+                          return { ...oldRoot }
+                        }
+                      },
+                    ),
+                  )
+                } else {
+                  withTargetAdded = withInsertedElement()
+                }
               } else if (isJSXFragment(elementToInsert)) {
                 const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
                 if (children.length === 0) {
