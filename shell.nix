@@ -14,29 +14,14 @@ let
   node = pkgs.nodejs-16_x;
   postgres = pkgs.postgresql_13;
   stdenv = pkgs.stdenv;
+  pnpm = node.pkgs.pnpm;
+  yarn = pkgs.yarn;
 
-  pnpmPkg = pkgs.nodePackages_latest.pnpm.override {
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-
-    preRebuild = ''
-      sed 's/"link:/"file:/g' --in-place package.json
-    '';
-
-    postInstall = let
-      pnpmLibPath = pkgs.lib.makeBinPath [
-        node.passthru.python
-        node
-      ];
-    in ''
-      for prog in $out/lib/node_modules/pnpm/bin/*; do
-        wrapProgram "$prog" --prefix PATH : ${pnpmLibPath}
-      done
-    '';
-  };
-  pnpm = "${pnpmPkg}/lib/node_modules/pnpm/bin/pnpm.cjs";
-  pnpx = "${pnpmPkg}/lib/node_modules/pnpm/bin/pnpx.cjs";
-
-  yarn = "${pkgs.nodePackages_latest.yarn}/lib/node_modules/yarn/bin/yarn.js";
+  nodePackages = [
+    node
+    pnpm
+    (yarn.override { nodejs = node; })
+  ];
 
   cabal = pkgs.haskellPackages.cabal-install;
   # Slightly kludgy because the zlib Haskell package is a pain in the face.
@@ -49,47 +34,47 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
-      ${pnpm} install
+      pnpm install
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} install
+      pnpm install
     '')
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} install
+      pnpm install
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm} install
+      pnpm install
     '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} test
+      pnpm test
     '')
     (pkgs.writeScriptBin "test-editor-watch" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} test-watch
+      pnpm test-watch
     '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${pnpm} test
+      pnpm test
     '')
     (pkgs.writeScriptBin "test-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      # ${pnpm} test
+      # pnpm test
     '')
     (pkgs.writeScriptBin "test-editor-all" ''
       #!/usr/bin/env bash
@@ -101,43 +86,43 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run check
+      pnpm run check
     '')
     (pkgs.writeScriptBin "check-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run check-ci
+      pnpm run check-ci
     '')
     (pkgs.writeScriptBin "check-editor-code" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run check-code
+      pnpm run check-code
     '')
     (pkgs.writeScriptBin "check-editor-jest" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run test-ci
+      pnpm run test-ci
     '')
     (pkgs.writeScriptBin "check-editor-karma" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run test-browser
+      pnpm run test-browser
     '')
     (pkgs.writeScriptBin "test-editor-browser" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run test-browser
+      pnpm run test-browser
     '')
     (pkgs.writeScriptBin "test-editor-browser-debug" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run test-browser-debug
+      pnpm run test-browser-debug
     '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
@@ -174,38 +159,38 @@ let
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm} install
+      pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} run staging-print-json
+      pnpm run staging-print-json
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm} install
-      ${pnpm} run build
+      pnpm install
+      pnpm run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm} install
-      ${pnpm} run build
+      pnpm install
+      pnpm run build
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn} run pull-utopia-extension
+      yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}
-      ${yarn} run build
+      yarn
+      yarn run build
     '')
     (pkgs.writeScriptBin "build-vscode-with-extension" ''
       #!/usr/bin/env bash
@@ -222,15 +207,15 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
-      ${pnpm} install --unsafe-perm
-      ${pnpm} run build
+      pnpm install --unsafe-perm
+      pnpm run build
     '')
       (pkgs.writeScriptBin "run-puppeteer-test" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
-      ${pnpm} install --unsafe-perm
-      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable ${pnpm} run performance-test
+      pnpm install --unsafe-perm
+      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable pnpm run performance-test
     '')
   ];
 
@@ -285,44 +270,44 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpx} tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
+      pnpm run watch-tsc
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm} run move-fast-and-break-things
+      RUN_COMPILER=true pnpm run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-hmr" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm} run dev-fast
+      RUN_COMPILER=true pnpm run dev-fast
     '')
     (pkgs.writeScriptBin "watch-editor-no-compile" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=false ${pnpm} run move-fast-and-break-things
+      RUN_COMPILER=false pnpm run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-performance" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm} run performance-test
+      RUN_COMPILER=true pnpm run performance-test
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy-danger-hot" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm} run move-fast-and-break-things-hot
+      RUN_COMPILER=true pnpm run move-fast-and-break-things-hot
     '')
     (pkgs.writeScriptBin "watch-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm} install
-      BROWSER=none ${pnpm} run dev
+      pnpm install
+      BROWSER=none pnpm run dev
     '')
   ];
 
@@ -419,28 +404,28 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}
-      ${yarn} run make-patch
+      yarn
+      yarn run make-patch
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm} install
-      ${pnpm} run watch-dev
+      pnpm install
+      pnpm run watch-dev
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm} install
-      ${pnpm} run watch-dev
+      pnpm install
+      pnpm run watch-dev
     '')
     (pkgs.writeScriptBin "pull-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn} run pull-utopia-extension
+      yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
@@ -540,16 +525,16 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm} install --unsafe-perm
-      ${pnpm} run production
+      pnpm install --unsafe-perm
+      pnpm run production
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm} install
-      CI=false ${pnpm} run export
+      pnpm install
+      CI=false pnpm run export
     '')
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash
@@ -593,7 +578,7 @@ let
 
   pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
@@ -608,13 +593,16 @@ in pkgs.mkShell {
         mkdir -p $out/bin
       '' + (builtins.concatStringsSep "" (builtins.map (script: ''
         for f in $(ls -d ${script}/bin/*); do ln -s $f $out/bin; done
-      '') scripts)) + ''
-        ln -s ${pnpm} $out/bin/pnpm
-        ln -s ${pnpx} $out/bin/pnpx
-        ln -s ${yarn} $out/bin/yarn
-      '';
+      '') scripts));
     })
   ] ++ packagesToUse;
+
+  # This is required for a digital envelope routines::unsupported error thrown by this version of node
+  NODE_OPTIONS = "--openssl-legacy-provider";
+
+  # FIXME The version of amazonka is marked as broken
+  # NIXPKGS_ALLOW_BROKEN=1;
+
   # Makes the electron runner use this executable instead.
   ELECTRON_OVERRIDE_DIST_PATH = if stdenv.isLinux then "${pkgs.electron}/bin" else null;
 }

@@ -31,7 +31,7 @@ import           Data.UUID                       hiding (null)
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple
 import           Opaleye
-import           Opaleye.Trans
+-- import           Opaleye.Trans
 import           Protolude                       hiding (get)
 import           System.Environment
 import           System.Posix.User

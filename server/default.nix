@@ -12,6 +12,8 @@ let
   overriddenHaskellPackages = pkgs.haskell.packages.${compiler}.override {
     overrides = self: super: {
       wai-extra = super.callHackage "wai-extra" "3.1.6" {};
+      amazonka-core = super.callHackage "amazonka-core" "1.6.1" {};
+      modern-uri = super.callHackage "modern-uri" "0.3.2.0" {};
       utopia-clientmodel = super.callCabal2nix "utopia-clientmodel" (../clientmodel/lib) {};
       utopia-web = serverModifications (super.callCabal2nix "utopia-web" (./.) {});
     };

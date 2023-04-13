@@ -52,7 +52,7 @@ dependencies:
   - filepath
   - free
   - generic-lens
-  - github 
+  - github
   - hashable
   - hoauth2 ==1.16.0
   - http-api-data
@@ -68,13 +68,12 @@ dependencies:
   - magic
   - mime
   - mime-types
-  - modern-uri
+  - modern-uri ==0.3.2.0
   - monad-control
   - monad-logger
   - mtl
   - network-uri
   - opaleye
-  - opaleye-trans
   - path
   - path-pieces
   - pathwalk
@@ -125,11 +124,11 @@ executable:
 tests:
   utopia-web-test:
     when:
-    - condition: flag(enable-external-tests)
-      then:
-        cpp-options: -DENABLE_EXTERNAL_TESTS=True
-      else:
-        cpp-options: -DENABLE_EXTERNAL_TESTS=False
+      - condition: flag(enable-external-tests)
+        then:
+          cpp-options: -DENABLE_EXTERNAL_TESTS=True
+        else:
+          cpp-options: -DENABLE_EXTERNAL_TESTS=False
     main: Main.hs
     ghc-options: +RTS -N1 -RTS
     source-dirs:

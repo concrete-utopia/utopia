@@ -107,13 +107,12 @@ executable utopia-web
     , magic
     , mime
     , mime-types
-    , modern-uri
+    , modern-uri ==0.3.2.0
     , monad-control
     , monad-logger
     , mtl
     , network-uri
     , opaleye
-    , opaleye-trans
     , path
     , path-pieces
     , pathwalk
@@ -251,13 +250,12 @@ test-suite utopia-web-test
     , magic
     , mime
     , mime-types
-    , modern-uri
+    , modern-uri ==0.3.2.0
     , monad-control
     , monad-logger
     , mtl
     , network-uri
     , opaleye
-    , opaleye-trans
     , path
     , path-pieces
     , pathwalk
