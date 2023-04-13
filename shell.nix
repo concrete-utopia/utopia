@@ -1,5 +1,5 @@
 { 
-  compiler ? "ghc8107",
+  compiler ? "ghc902",
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,

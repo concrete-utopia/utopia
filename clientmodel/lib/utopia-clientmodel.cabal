@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -39,12 +39,12 @@ library
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
   build-depends:
       QuickCheck
-    , aeson <2.1
+    , aeson >=2.0
     , base
     , generic-arbitrary
     , generic-lens
     , lens
-    , lens-aeson <1.2
+    , lens-aeson
     , quickcheck-instances
     , relude
     , tasty
@@ -83,7 +83,7 @@ test-suite clientmodel-test
   ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports
   build-depends:
       QuickCheck
-    , aeson <2.1
+    , aeson >=2.0
     , base
     , generic-arbitrary
     , generic-lens
@@ -91,7 +91,7 @@ test-suite clientmodel-test
     , hedgehog-quickcheck
     , hspec
     , lens
-    , lens-aeson <1.2
+    , lens-aeson
     , quickcheck-instances
     , relude
     , tasty

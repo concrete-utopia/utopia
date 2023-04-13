@@ -26,9 +26,8 @@ import           Data.Profunctor.Product
 import qualified Data.Serialize                  as S
 import qualified Data.Text.Encoding              as TE
 import           Data.Time
-import           Database.PostgreSQL.Simple      hiding (Query)
+import           Database.PostgreSQL.Simple     
 import           Opaleye
-import           Opaleye.Trans
 import           Protolude                       hiding (State)
 import           Utopia.Web.Database
 import           Utopia.Web.Database.Types
@@ -86,41 +85,64 @@ persistentSessionTableSelectByKey key = do
   where_ (rowKey .== toFields key)
   pure row
 
-persistentSessionTableQueryByKey :: Text -> Query PersistentSessionFields
-persistentSessionTableQueryByKey = persistentSessionTableSelectByKey
-
-persistentSessionTableKeyPredicate :: Text -> PersistentSessionFields -> Column PGBool
+persistentSessionTableKeyPredicate :: Text -> PersistentSessionFields -> Column SqlBool
 persistentSessionTableKeyPredicate key (rowKey, _, _, _, _) = rowKey .== toFields key
 
-persistentSessionTableDeleteByKey :: Text -> Transaction ()
-persistentSessionTableDeleteByKey key =
-  void $ delete persistentSessionTable $ persistentSessionTableKeyPredicate key
+persistentSessionTableDeleteByKey :: Text -> ReaderT Connection IO ()
+persistentSessionTableDeleteByKey key = do
+  connection <- ask
+  void $ liftIO $ runDelete connection $ Delete
+                                       { dTable = persistentSessionTable
+                                       , dWhere = persistentSessionTableKeyPredicate key
+                                       , dReturning = rCount
+                                       }
 
-persistentSessionTableDeleteByAuthId :: ByteString -> Transaction ()
-persistentSessionTableDeleteByAuthId authId =
-  void $ delete persistentSessionTable (\(_, rowAuthId, _, _, _) -> rowAuthId .== toFields (Just authId))
+persistentSessionTableDeleteByAuthId :: ByteString -> ReaderT Connection IO ()
+persistentSessionTableDeleteByAuthId authId = do
+  connection <- ask
+  void $ liftIO $ runDelete connection $ Delete
+                                       { dTable = persistentSessionTable
+                                       , dWhere = (\(_, rowAuthId, _, _, _) -> (nullableToMaybeFields rowAuthId) .=== (nullableToMaybeFields (toFields (Just authId))))
+                                       , dReturning = rCount
+                                       }
 
-lookupSession :: SessionStorage -> SessionId (SessionData SessionStorage) -> OpaleyeT IO (Maybe (Session (SessionData SessionStorage)))
+lookupSession :: SessionStorage -> SessionId (SessionData SessionStorage) -> ReaderT Connection IO (Maybe (Session (SessionData SessionStorage)))
 lookupSession _ sessionId = do
-  possibleSession <- transaction $ queryFirst (persistentSessionTableQueryByKey $ toPathPiece sessionId)
+  connection <- ask
+  possibleSession <- liftIO $ fmap listToMaybe $ runSelect connection (persistentSessionTableSelectByKey $ toPathPiece sessionId)
   liftIO $ traverse sessionFromTable possibleSession
 
 instance Storage SessionStorage where
   type SessionData SessionStorage = SessionMap
-  type TransactionM SessionStorage = OpaleyeT IO
-  runTransactionM sto trxn = usePool (pool sto) $ \connection -> runOpaleyeT connection trxn
+  type TransactionM SessionStorage = ReaderT Connection IO
+  runTransactionM sto trxn = do
+    usePool (pool sto) $ \connection -> do
+      withTransaction connection $ do
+        runReaderT trxn connection 
   getSession sto sessionId = lookupSession sto sessionId
-  deleteSession _ sessionId = transaction $ persistentSessionTableDeleteByKey $ toPathPiece sessionId
-  deleteAllSessionsOfAuthId _ authId = transaction $ persistentSessionTableDeleteByAuthId authId
+  deleteSession _ sessionId = persistentSessionTableDeleteByKey $ toPathPiece sessionId
+  deleteAllSessionsOfAuthId _ authId = persistentSessionTableDeleteByAuthId authId
   insertSession sto session = do
-    existingSession <- lookupSession sto (sessionKey session)
+    connection <- ask
+    existingSession <- lookupSession sto (sessionKey session) 
     case existingSession of
       Just old -> throwSS $ SessionAlreadyExists old session
-      Nothing -> transaction $ void $ insert persistentSessionTable $ sessionToTable session
+      Nothing -> liftIO $ void $ runInsert connection $ Insert
+                                                      { iTable = persistentSessionTable
+                                                      , iRows = [sessionToTable session]
+                                                      , iReturning = rCount
+                                                      , iOnConflict = Nothing
+                                                      }
   replaceSession sto session = do
     existingSession <- lookupSession sto (sessionKey session)
+    connection <- ask
     case existingSession of
-      Just _ -> transaction $ void $ update persistentSessionTable (const $ sessionToTable session) (persistentSessionTableKeyPredicate $ toPathPiece $ sessionKey session)
+      Just _ -> liftIO $ void $ runUpdate connection $ Update
+                                                     { uTable = persistentSessionTable 
+                                                     , uUpdateWith = updateEasy (const $ sessionToTable session)
+                                                     , uWhere = persistentSessionTableKeyPredicate $ toPathPiece $ sessionKey session
+                                                     , uReturning = rCount
+                                                     }
       Nothing -> throwSS $ SessionDoesNotExist session
 
 createSessionState :: DBPool -> IO SessionState

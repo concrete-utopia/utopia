@@ -26,11 +26,8 @@ flags:
     manual: true
     default: true
 dependencies:
-  - aeson <2.1
+  - aeson >=2.0
   - aeson-pretty
-  - amazonka ==1.6.1
-  - amazonka-core ==1.6.1
-  - amazonka-s3 ==1.6.1
   - base >= 4.7 && < 5
   - base16-bytestring
   - base64
@@ -54,7 +51,7 @@ dependencies:
   - generic-lens
   - github
   - hashable
-  - hoauth2 ==1.16.0
+  - hoauth2
   - http-api-data
   - http-client
   - http-client-tls
@@ -62,18 +59,19 @@ dependencies:
   - http-types
   - JuicyPixels
   - lens
-  - lens-aeson <1.2
+  - lens-aeson 
   - lifted-async
   - lifted-base
   - magic
   - mime
   - mime-types
-  - modern-uri ==0.3.2.0
+  - minio-hs
+  - modern-uri
   - monad-control
   - monad-logger
   - mtl
   - network-uri
-  - opaleye
+  - opaleye ==0.9.6.1
   - path
   - path-pieces
   - pathwalk
@@ -81,17 +79,17 @@ dependencies:
   - postgresql-simple-migration
   - process
   - product-profunctors
-  - protolude ==0.3.0
+  - protolude
   - resource-pool
   - rio
-  - servant ==0.18.3
+  - servant 
   - servant-blaze
-  - servant-client ==0.18.3
+  - servant-client 
   - servant-conduit
   - servant-rawm-client
   - servant-rawm-server
-  - servant-server ==0.18.3
-  - servant-websockets ==2.0.0
+  - servant-server
+  - servant-websockets 
   - serversession ==1.0.2
   - split
   - string-conversions
@@ -102,6 +100,7 @@ dependencies:
   - time
   - time-manager
   - transformers
+  - unliftio
   - unix
   - unordered-containers
   - uri-bytestring
@@ -110,7 +109,7 @@ dependencies:
   - vector
   - wai
   - wai-app-static
-  - wai-extra ==3.1.6
+  - wai-extra
   - wai-websockets
   - warp
   - websockets
