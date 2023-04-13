@@ -3200,23 +3200,10 @@ export const UPDATE_FNS = {
             workingEditorState.jsxMetadata,
             resolvedTarget,
           )
-          const pastedElementIsFlex =
-            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-              currentValue.originalElementPath,
-              action.targetOriginalContextMetadata,
-            )
 
           const pastedElementMetadata = MetadataUtils.findElementByElementPath(
             action.targetOriginalContextMetadata,
             currentValue.originalElementPath,
-          )
-          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
-          const pastedElementIsConditional =
-            MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
-
-          const parentOfPasteInto = MetadataUtils.findElementByElementPath(
-            editor.jsxMetadata,
-            resolvedTarget,
           )
 
           function maybePasteIntoConditionalBranch(
@@ -3244,34 +3231,29 @@ export const UPDATE_FNS = {
 
           const pasteIntoConditionalBranch = maybePasteIntoConditionalBranch(resolvedTarget)
 
-          const continueWithPaste =
-            pasteIntoConditionalBranch != null
-              ? isNullJSXAttributeValue(pasteIntoConditionalBranch)
-              : pastedElementIsAbsolute ||
-                pastedElementIsFlex ||
-                pastedElementIsConditional ||
-                MetadataUtils.isConditionalFromMetadata(parentOfPasteInto) ||
-                isJSXFragment(currentValue.element)
-
-          if (continueWithPaste) {
-            const propertyChangeCommands = getReparentPropertyChanges(
-              reparentStrategy.strategy,
-              newPath,
-              resolvedTarget,
-              action.targetOriginalContextMetadata,
-              workingEditorState.jsxMetadata,
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename,
-              pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-            )
-
-            const allCommands = [...reparentCommands, ...propertyChangeCommands]
-
-            return foldAndApplyCommandsSimple(workingEditorState, allCommands)
-          } else {
+          if (
+            pasteIntoConditionalBranch != null &&
+            !isNullJSXAttributeValue(pasteIntoConditionalBranch)
+          ) {
+            // do not allow pasting into non-empty conditional branches
             return workingEditorState
           }
+
+          const propertyChangeCommands = getReparentPropertyChanges(
+            reparentStrategy.strategy,
+            newPath,
+            resolvedTarget,
+            action.targetOriginalContextMetadata,
+            workingEditorState.jsxMetadata,
+            workingEditorState.projectContents,
+            workingEditorState.canvas.openFile?.filename,
+            pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+            pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+          )
+
+          const allCommands = [...reparentCommands, ...propertyChangeCommands]
+
+          return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
     } else {

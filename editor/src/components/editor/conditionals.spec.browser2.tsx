@@ -18,7 +18,6 @@ import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import { Optic, compose6Optics } from '../../core/shared/optics/optics'
 import { ElementPath } from '../../core/shared/project-file-types'
 import {
-  EditorRenderResult,
   TestScenePath,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -34,6 +33,7 @@ import { EditorState } from './store/editor-state'
 import { ReparentTargetParent } from './store/reparent-target'
 import { ElementPaste } from './action-types'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { getElementFromRenderResult } from './actions/actions.test-utils'
 
 describe('conditionals', () => {
   describe('deletion', () => {
@@ -771,18 +771,4 @@ async function runPaste({
   })
 
   return getPrintedUiJsCode(renderResult.getEditorState())
-}
-
-function getElementFromRenderResult(
-  renderResult: EditorRenderResult,
-  path: ElementPath,
-): JSXElementChild {
-  const element = MetadataUtils.findElementByElementPath(
-    renderResult.getEditorState().editor.jsxMetadata,
-    path,
-  )
-  if (element == null || isLeft(element.element)) {
-    throw new Error('element is invalid')
-  }
-  return element.element.value
 }

@@ -2,14 +2,20 @@
 import * as EP from '../../../core/shared/element-path'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import {
+  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
+  TestScenePath,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import { deleteSelected, selectComponents } from './action-creators'
+import { deleteSelected, pasteJSXElements, selectComponents } from './action-creators'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPaste } from '../action-types'
+import { act } from '@testing-library/react'
+import { ReparentTargetParent } from '../store/reparent-target'
+import { getElementFromRenderResult } from './actions.test-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -268,6 +274,611 @@ describe('actions', () => {
         const got = await deleteFromScene(tt.input, tt.targets)
         expect(got.code).toEqual(makeTestProjectCodeWithSnippet(tt.wantCode))
         expect(got.selection).toEqual(tt.wantSelection)
+      })
+    })
+  })
+  describe('PASTE_JSX_ELEMENTS', () => {
+    type PasteTest = {
+      name: string
+      startingCode: string
+      elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
+      pasteInto: ReparentTargetParent<ElementPath>
+      want: string
+    }
+    const tests: Array<PasteTest> = [
+      {
+        name: 'a single element',
+        startingCode: `
+		<div data-uid='aaa'>
+			<div data-uid='bbb'>foo</div>
+			<div data-uid='ccc'>bar</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa']),
+        want: `
+		<div data-uid='aaa'>
+			<div data-uid='bbb'>foo</div>
+			<div data-uid='ccc'>bar</div>
+			<div data-uid='aab'>foo</div>
+		</div>
+		`,
+      },
+      {
+        name: 'multiple elements',
+        startingCode: `
+		<div data-uid='aaa'>
+			<div data-uid='bbb'>foo</div>
+			<div data-uid='ccc'>bar</div>
+			<div data-uid='ddd'>baz</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const fooPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+          const barPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, fooPath),
+              originalElementPath: fooPath,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, barPath),
+              originalElementPath: barPath,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa']),
+        want: `
+		<div data-uid='aaa'>
+			<div data-uid='bbb'>foo</div>
+			<div data-uid='ccc'>bar</div>
+			<div data-uid='ddd'>baz</div>
+			<div data-uid='aab'>foo</div>
+			<div data-uid='aac'>bar</div>
+		</div>
+		`,
+      },
+      {
+        name: 'a fragment',
+        startingCode: `
+		<div data-uid='root'>
+			<div data-uid='aaa'>
+				<div data-uid='bbb'>foo</div>
+				<div data-uid='ccc'>bar</div>
+			</div>
+			<>
+				<div data-uid='ddd'>hello</div>
+				<div data-uid='eee'>there</div>
+			</>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
+        want: `
+		<div data-uid='root'>
+			<div data-uid='aaa'>
+				<div data-uid='bbb'>foo</div>
+				<div data-uid='ccc'>bar</div>
+				<>
+					<div data-uid='aab'>hello</div>
+					<div data-uid='aac'>there</div>
+				</>
+			</div>
+			<>
+				<div data-uid='ddd'>hello</div>
+				<div data-uid='eee'>there</div>
+			</>
+		</div>
+		`,
+      },
+      {
+        name: 'an empty fragment',
+        startingCode: `
+		<div data-uid='root'>
+			<div data-uid='aaa'>
+				<div data-uid='bbb'>foo</div>
+				<div data-uid='ccc'>bar</div>
+			</div>
+			<></>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
+        want: `
+		<div data-uid='root'>
+			<div data-uid='aaa'>
+				<div data-uid='bbb'>foo</div>
+				<div data-uid='ccc'>bar</div>
+				<></>
+			</div>
+			<></>
+		</div>
+		`,
+      },
+      {
+        name: 'a conditional',
+        startingCode: `
+		<div data-uid='root'>
+			<div data-uid='aaa'>
+				<div data-uid='bbb'>foo</div>
+				<div data-uid='ccc'>bar</div>
+			</div>
+			{
+				// @utopia/uid=conditional
+				true ? (
+					<div data-uid='ddd'>true</div>
+				): (
+					<div data-uid='eee'>false</div>
+				)
+			}
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
+        want: `
+		<div data-uid='root'>
+			<div data-uid='aaa'>
+				<div data-uid='bbb'>foo</div>
+				<div data-uid='ccc'>bar</div>
+				{
+					// @utopia/uid=conditional
+					true ? (
+						<div data-uid='aab'>true</div>
+					): (
+						<div data-uid='aac'>false</div>
+					)
+				}
+			</div>
+			{
+				// @utopia/uid=conditional
+				true ? (
+					<div data-uid='ddd'>true</div>
+				): (
+					<div data-uid='eee'>false</div>
+				)
+			}
+		</div>
+		`,
+      },
+      {
+        name: 'an element inside a fragment',
+        startingCode: `
+		<div data-uid='root'>
+			<>
+				<div data-uid='aaa'>foo</div>
+			</>
+			<div data-uid='bbb'>bar</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', '38e']),
+        want: `
+		<div data-uid='root'>
+			<>
+				<div data-uid='aaa'>foo</div>
+				<div data-uid='aab'>bar</div>
+			</>
+			<div data-uid='bbb'>bar</div>
+		</div>
+		`,
+      },
+      {
+        name: 'multiple elements inside a fragment',
+        startingCode: `
+		<div data-uid='root'>
+			<>
+				<div data-uid='aaa'>foo</div>
+			</>
+			<div data-uid='bbb'>bar</div>
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const fooPath = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          const barPath = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, fooPath),
+              originalElementPath: fooPath,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, barPath),
+              originalElementPath: barPath,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', '38e']),
+        want: `
+		<div data-uid='root'>
+			<>
+				<div data-uid='aaa'>foo</div>
+				<div data-uid='aab'>bar</div>
+				<div data-uid='aac'>baz</div>
+			</>
+			<div data-uid='bbb'>bar</div>
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+      },
+      {
+        name: 'an element inside an empty conditional branch (true)',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? null : <div data-uid='aaa'>foo</div>
+			}
+			<div data-uid='bbb'>bar</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aab'>bar</div> : <div data-uid='aaa'>foo</div>
+			}
+			<div data-uid='bbb'>bar</div>
+		</div>
+		`,
+      },
+      {
+        name: 'an element inside an empty conditional branch (false)',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : null
+			}
+			<div data-uid='bbb'>bar</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : <div data-uid='aab'>bar</div>
+			}
+			<div data-uid='bbb'>bar</div>
+		</div>
+		`,
+      },
+      {
+        name: 'an element inside a non-empty conditional branch (does nothing)',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+			}
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: {
+          clause: 'true-case',
+          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+        },
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+			}
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+      },
+      {
+        name: 'multiple elements into an empty conditional branch (true)',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? null : <div data-uid='aaa'>foo</div>
+			}
+			<div data-uid='bbb'>bar</div>
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const barPath = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          const bazPath = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, barPath),
+              originalElementPath: barPath,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, bazPath),
+              originalElementPath: barPath,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: {
+          clause: 'true-case',
+          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+        },
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? (
+					<>
+						<div data-uid='aab'>bar</div>
+						<div data-uid='aac'>baz</div>
+					</>
+				) : <div data-uid='aaa'>foo</div>
+			}
+			<div data-uid='bbb'>bar</div>
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+      },
+      {
+        name: 'multiple elements into an empty conditional branch (false)',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : null
+			}
+			<div data-uid='bbb'>bar</div>
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const barPath = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
+          const bazPath = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, barPath),
+              originalElementPath: barPath,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, bazPath),
+              originalElementPath: barPath,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: {
+          clause: 'false-case',
+          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+        },
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? <div data-uid='aaa'>foo</div> : (
+					<>
+						<div data-uid='aab'>bar</div>
+						<div data-uid='aac'>baz</div>
+					</>
+				)
+			}
+			<div data-uid='bbb'>bar</div>
+			<div data-uid='ccc'>baz</div>
+		</div>
+		`,
+      },
+      {
+        name: 'an fragment inside an empty conditional branch',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? null : <div data-uid='aaa'>foo</div>
+			}
+			<>
+				<div data-uid='bbb'>bar</div>
+				<div data-uid='ccc'>baz</div>
+			</>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: {
+          clause: 'true-case',
+          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+        },
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? (
+					<>
+						<div data-uid='aab'>bar</div>
+						<div data-uid='aac'>baz</div>
+					</>
+				) : <div data-uid='aaa'>foo</div>
+			}
+			<>
+				<div data-uid='bbb'>bar</div>
+				<div data-uid='ccc'>baz</div>
+			</>
+		</div>
+		`,
+      },
+      {
+        name: 'multiple fragments inside an empty conditional branch',
+        startingCode: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? null : <div data-uid='aaa'>foo</div>
+			}
+			<>
+				<div data-uid='bbb'>bar</div>
+				<div data-uid='ccc'>baz</div>
+			</>
+			<>
+				<div data-uid='ddd'>qux</div>
+				<div data-uid='eee'>waldo</div>
+			</>
+		</div>
+		`,
+        elements: (renderResult) => {
+          const firstPath = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
+          const secondPath = EP.appendNewElementPath(TestScenePath, ['root', 'c9d'])
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, firstPath),
+              originalElementPath: firstPath,
+              importsToAdd: {},
+            },
+            {
+              element: getElementFromRenderResult(renderResult, secondPath),
+              originalElementPath: secondPath,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: {
+          clause: 'true-case',
+          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+        },
+        want: `
+		<div data-uid='root'>
+			{
+				// @utopia/uid=conditional
+				true ? (
+					<>
+						<>
+							<div data-uid='aab'>bar</div>
+							<div data-uid='aac'>baz</div>
+						</>
+						<>
+							<div data-uid='aae'>qux</div>
+							<div data-uid='aaf'>waldo</div>
+						</>
+					</>
+				) : <div data-uid='aaa'>foo</div>
+			}
+			<>
+				<div data-uid='bbb'>bar</div>
+				<div data-uid='ccc'>baz</div>
+			</>
+			<>
+				<div data-uid='ddd'>qux</div>
+				<div data-uid='eee'>waldo</div>
+			</>
+		</div>
+		`,
+      },
+    ]
+    tests.forEach((test, i) => {
+      it(`${i + 1}/${tests.length} ${test.name}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(test.startingCode),
+          'await-first-dom-report',
+        )
+
+        await act(async () => {
+          await renderResult.dispatch(
+            [
+              pasteJSXElements(
+                test.pasteInto,
+                test.elements(renderResult),
+                renderResult.getEditorState().editor.jsxMetadata,
+              ),
+            ],
+            true,
+          )
+        })
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(test.want),
+        )
       })
     })
   })
