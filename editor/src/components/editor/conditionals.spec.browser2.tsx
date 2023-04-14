@@ -28,6 +28,7 @@ import {
   deleteSelected,
   pasteJSXElements,
   selectComponents,
+  unwrapGroupOrView,
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { EditorState } from './store/editor-state'
@@ -423,6 +424,45 @@ describe('conditionals', () => {
               ) : (
                 <div data-uid='ccc'>another div</div>
               )}
+            </div>
+         `),
+      )
+    })
+  })
+  describe('unwrap', () => {
+    it('can unwrap a conditional', async () => {
+      const elementUid = 'bbb'
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            true ? <div data-uid='${elementUid}'>hello there</div> : <div data-uid='ccc'>another div</div>
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const bbbPath = forceNotNull(
+        `Missing ${elementUid} element`,
+        Object.keys(renderResult.getEditorState().editor.jsxMetadata).find((path) =>
+          path.includes(elementUid),
+        ),
+      )
+      const targetConditional = forceNotNull(
+        'Missing conditional path from conditional test',
+        EP.parentPath(EP.fromString(bbbPath)),
+      )
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapGroupOrView(targetConditional)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              <div data-uid='${elementUid}'>hello there</div>
             </div>
          `),
       )
