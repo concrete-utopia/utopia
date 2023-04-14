@@ -26,6 +26,7 @@ import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-depende
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
+  insertableComponent,
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
@@ -44,7 +45,6 @@ import {
 import {
   emptyComments,
   jsExpressionValue,
-  jsxConditionalExpression,
   JSXConditionalExpressionWithoutUID,
   jsxElement,
   JSXElementName,
@@ -67,6 +67,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { emptyElementPath } from '../../../core/shared/element-path'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -93,14 +94,16 @@ function convertInsertableComponentsToFlatList(
     return {
       label: getInsertableGroupLabel(componentGroup.source),
       options: componentGroup.insertableComponents.map(
-        (insertableComponent, index): InsertMenuItem => {
+        (componentToBeInserted, index): InsertMenuItem => {
           const source = index === 0 ? componentGroup.source : null
           return {
-            label: insertableComponent.name,
+            label: componentToBeInserted.name,
             source: optionalMap(getInsertableGroupLabel, source),
             value: {
-              ...insertableComponent,
-              key: `${getInsertableGroupLabel(componentGroup.source)}-${insertableComponent.name}`,
+              ...componentToBeInserted,
+              key: `${getInsertableGroupLabel(componentGroup.source)}-${
+                componentToBeInserted.name
+              }`,
               source: source,
             },
           }
@@ -501,6 +504,17 @@ export var FloatingMenu = React.memo(() => {
           ]
           break
         case 'insert':
+          const targetParent = safeIndex(selectedViews, 0) ?? emptyElementPath
+          actionsToDispatch = [
+            insertInsertable(
+              targetParent,
+              insertableComponent({}, element, '', [], null),
+              fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+              wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
+              floatingMenuState.indexPosition,
+            ),
+          ]
+          break
         case 'convert':
         case 'closed':
           break
@@ -509,7 +523,13 @@ export var FloatingMenu = React.memo(() => {
       }
       return actionsToDispatch
     },
-    [floatingMenuState, selectedViewsref, projectContentsRef],
+    [
+      selectedViewsref,
+      floatingMenuState,
+      projectContentsRef,
+      fixedSizeForInsertion,
+      wrapContentForInsertion,
+    ],
   )
 
   const onChangeElement = React.useCallback(
