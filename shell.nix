@@ -449,6 +449,7 @@ let
       #!/usr/bin/env bash
       stop-dev
       tmux new-session -s utopia-dev \; \
+        set -g default-terminal "xterm-256color" \; \
         set-option -g mouse on \; \
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
@@ -487,6 +488,7 @@ let
       #!/usr/bin/env bash
       stop-dev
       tmux new-session -s utopia-dev \; \
+        set -g default-terminal "xterm-256color" \; \
         set-option -g mouse on \; \
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
