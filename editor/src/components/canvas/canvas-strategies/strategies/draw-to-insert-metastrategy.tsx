@@ -67,6 +67,7 @@ import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
 import { wrapInConditionalCommand } from '../../commands/wrap-in-conditional-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -184,6 +185,11 @@ export function drawToInsertStrategyFactory(
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
+          const wrapperUID =
+            insertionSubject.wrapInConditional === true
+              ? customStrategyState.duplicatedElementNewUids[insertionSubject.uid] ??
+                generateUidWithExistingComponents(canvasState.projectContents)
+              : 'empty'
           if (interactionSession.interactionData.drag != null) {
             const insertionCommand = getInsertionCommands(
               insertionSubject,
@@ -236,19 +242,26 @@ export function drawToInsertStrategyFactory(
                         foldAndApplyCommandsInner(
                           editorState,
                           [],
-                          [wrapInConditionalCommand('always', newPath)],
+                          [wrapInConditionalCommand('always', newPath, wrapperUID)],
                           lifecycle,
                         ).statePatches,
                     ),
                   ]
                 : []
 
-              return strategyApplicationResult([
-                insertionCommand.command,
-                reparentCommand,
-                resizeCommand,
-                ...optionalWrappingCommand,
-              ])
+              return strategyApplicationResult(
+                [
+                  insertionCommand.command,
+                  reparentCommand,
+                  resizeCommand,
+                  ...optionalWrappingCommand,
+                ],
+                {
+                  duplicatedElementNewUids: {
+                    [insertionSubject.uid]: wrapperUID,
+                  },
+                },
+              )
             }
           } else if (strategyLifecycle === 'end-interaction') {
             const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
@@ -287,18 +300,21 @@ export function drawToInsertStrategyFactory(
                         foldAndApplyCommandsInner(
                           editorState,
                           [],
-                          [wrapInConditionalCommand('always', newPath)],
+                          [wrapInConditionalCommand('always', newPath, wrapperUID)],
                           lifecycle,
                         ).statePatches,
                     ),
                   ]
                 : []
 
-              return strategyApplicationResult([
-                insertionCommand.command,
-                reparentCommand,
-                ...optionalWrappingCommand,
-              ])
+              return strategyApplicationResult(
+                [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                {
+                  duplicatedElementNewUids: {
+                    [insertionSubject.uid]: wrapperUID,
+                  },
+                },
+              )
             }
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened

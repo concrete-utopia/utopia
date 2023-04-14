@@ -22,13 +22,20 @@ export interface WrapInConditionalCommand extends BaseCommand {
   type: 'WRAP_IN_CONDITIONAL'
   whenToRun: WhenToRun
   target: ElementPath
+  wrapperUID: string
 }
 
 export function wrapInConditionalCommand(
   whenToRun: WhenToRun,
   target: ElementPath,
+  wrapperUID: string,
 ): WrapInConditionalCommand {
-  return { type: 'WRAP_IN_CONDITIONAL', whenToRun: whenToRun, target: target }
+  return {
+    type: 'WRAP_IN_CONDITIONAL',
+    whenToRun: whenToRun,
+    target: target,
+    wrapperUID: wrapperUID,
+  }
 }
 
 export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalCommand> = (
@@ -46,9 +53,9 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
 
       // Add the target as the child of the true case of a conditional
       const elementUID = EP.toUid(command.target)
-      const conditionalUID = `condition-${elementUID}` // FIXME Provide the UID as part of the wrapper command
-      const conditional = jsxConditionalExpression(
-        conditionalUID,
+      const wrapperUID = command.wrapperUID
+      const wrapper = jsxConditionalExpression(
+        wrapperUID,
         jsExpressionValue(true, emptyComments),
         'true',
         elementToWrap,
@@ -62,7 +69,7 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
         editor.projectContents,
         underlyingFilePath,
         targetParent,
-        conditional,
+        wrapper,
         withElementRemoved,
         null, // FIXME Find the index position of the original element
       )
@@ -76,7 +83,7 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
         ),
       )
 
-      const conditionalPath = EP.appendToPath(targetParent, conditionalUID)
+      const conditionalPath = EP.appendToPath(targetParent, wrapperUID)
       const newPath = EP.appendToPath(conditionalPath, elementUID)
 
       editorStatePatches.push({
