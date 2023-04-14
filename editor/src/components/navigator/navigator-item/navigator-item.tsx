@@ -46,6 +46,23 @@ import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { isSyntheticNavigatorEntry } from '../../editor/store/editor-state'
 import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
+
+export function getItemHeight(navigatorEntry: NavigatorEntry): number {
+  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+    if (navigatorEntry.clause === 'true-case') {
+      // The TRUE label row will be the shortest size.
+      return UtopiaTheme.layout.rowHeight.smallest
+    } else {
+      // The FALSE label row should visually appear to be the shortest size.
+      // The size difference (against the TRUE label row) will be a top margin.
+      return UtopiaTheme.layout.rowHeight.smaller
+    }
+  } else {
+    // Default size for everything else.
+    return UtopiaTheme.layout.rowHeight.smaller
+  }
+}
 
 export const NavigatorItemTestId = (pathString: string): string =>
   `NavigatorItemTestId-${pathString}`
@@ -535,27 +552,11 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
-  const parentElement = useEditorState(
+  const isSlot = useEditorState(
     Substores.metadata,
-    (store) => {
-      const parentPath = EP.parentPath(props.navigatorEntry.elementPath)
-      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath)
-    },
+    (store) => isEntryAConditionalSlot(store.editor.jsxMetadata, props.navigatorEntry),
     'NavigatorItem parentElement',
   )
-
-  const isSlot = React.useMemo(() => {
-    const isParentConditional =
-      parentElement != null &&
-      isRight(parentElement.element) &&
-      isJSXConditionalExpression(parentElement.element.value)
-
-    const isNullValue =
-      isSyntheticNavigatorEntry(props.navigatorEntry) &&
-      isNullJSXAttributeValue(props.navigatorEntry.childOrAttribute)
-
-    return isParentConditional && isNullValue
-  }, [parentElement, props.navigatorEntry])
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -568,7 +569,12 @@ export const NavigatorItem: React.FunctionComponent<
 
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
-    height: UtopiaTheme.layout.rowHeight.smaller,
+    height: getItemHeight(navigatorEntry),
+    // This matches up with the implementation of `getItemHeight`.
+    marginTop:
+      isConditionalClauseNavigatorEntry(navigatorEntry) && navigatorEntry.clause === 'false-case'
+        ? '8px'
+        : undefined,
     ...resultingStyle.style,
   })
 

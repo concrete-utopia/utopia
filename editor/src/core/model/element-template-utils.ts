@@ -559,7 +559,7 @@ export function insertJSXElementChild(
                 // for wrapping multiple elements
                 return jsxFragment(
                   generateUidWithExistingComponents(projectContents),
-                  [clauseValue, elementToInsert],
+                  [elementToInsert, clauseValue],
                   false,
                 )
               }

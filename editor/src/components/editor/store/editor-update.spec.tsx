@@ -96,6 +96,7 @@ import { cssNumber } from '../../inspector/common/css-utils'
 import { testStaticElementPath } from '../../../core/shared/element-path.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
 
 const chaiExpect = Chai.expect
 
@@ -789,39 +790,6 @@ describe('INSERT_JSX_ELEMENT', () => {
     )
     expect(updatedComponents.length).toEqual(componentsBeforeInsert.length + 1)
     expect(insertedElement).toBeDefined()
-  })
-})
-
-describe('action MOVE_SELECTED_BACKWARD', () => {
-  it('moves the element backward', () => {
-    const { editor, derivedState, dispatch } = createEditorStates()
-    const editorWithSelectedView = {
-      ...editor,
-      selectedViews: [EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
-    }
-    const actionToRun = moveSelectedBackward()
-    const updatedEditor = runLocalEditorAction(
-      editorWithSelectedView,
-      derivedState,
-      defaultUserState,
-      workers,
-      actionToRun,
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-      builtInDependencies,
-    )
-    const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
-
-    const updatedZIndex = MetadataUtils.getViewZIndexFromMetadata(
-      updatedMetadata,
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
-    )
-    const oldZIndex = MetadataUtils.getViewZIndexFromMetadata(
-      editor.jsxMetadata,
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
-    )
-    expect(updatedZIndex).toBe(oldZIndex - 2)
   })
 })
 

@@ -89,6 +89,7 @@ import {
   walkElements,
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -508,7 +509,12 @@ import {
   reparentTargetParentIsConditionalClause,
   reparentTargetParentIsElementPath,
 } from '../store/reparent-target'
-import { findMaybeConditionalExpression, getClauseOptic } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  maybeBranchConditionalCase,
+  maybeConditionalExpression,
+} from '../../../core/model/conditionals'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1785,7 +1791,7 @@ export const UPDATE_FNS = {
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
       const newParentPath: ElementPath | null = EP.parentPath(dropTarget.target)
-      const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, dropTarget.target)
+      const index = MetadataUtils.getIndexInParent(editor.jsxMetadata, dropTarget.target)
       let indexPosition: IndexPosition
       switch (dropTarget.type) {
         case 'MOVE_ROW_BEFORE': {
@@ -2335,10 +2341,7 @@ export const UPDATE_FNS = {
           if (reparentTargetParentIsElementPath(parentPath)) {
             indexInParent = optionalMap(
               (firstPathMatchingCommonParent) =>
-                MetadataUtils.getViewZIndexFromMetadata(
-                  editor.jsxMetadata,
-                  firstPathMatchingCommonParent,
-                ),
+                MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
               orderedActionTargets.find((target) =>
                 EP.pathsEqual(EP.parentPath(target), parentPath),
               ),
@@ -2574,10 +2577,7 @@ export const UPDATE_FNS = {
         if (parentPath != null && reparentTargetParentIsElementPath(parentPath)) {
           indexInParent = optionalMap(
             (firstPathMatchingCommonParent) =>
-              MetadataUtils.getViewZIndexFromMetadata(
-                editor.jsxMetadata,
-                firstPathMatchingCommonParent,
-              ),
+              MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
             orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
           )
         }
@@ -2662,21 +2662,31 @@ export const UPDATE_FNS = {
               }
 
               if (isJSXConditionalExpression(elementToInsert)) {
-                // if the selection is a single element, put it directly into the true branch.
-                // otherwise, wrap the selected elements into a fragment, and then put that fragment into the true branch.
-                const branch: JSXElementChild | JSXFragment | null =
-                  action.targets.length === 1
-                    ? getTargetElement(action.targets[0])
-                    : jsxFragment(
-                        generateUidWithExistingComponents(editor.projectContents),
-                        mapDropNulls(getTargetElement, pathsToBeWrappedInFragment()),
-                        false,
-                      )
-                if (branch != null) {
-                  if (isJSXFragment(branch) && branch.children.length === 0) {
-                    // nothing to do
-                    return parseSuccess
-                  }
+                const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
+                  targetThatIsRootElementOfCommonParent ?? parentPath,
+                )
+                if (reparentTargetParentIsConditionalClause(staticTarget)) {
+                  withTargetAdded = insertChildAndDetails(
+                    transformJSXComponentAtPath(
+                      utopiaJSXComponents,
+                      getElementPathFromReparentTargetParent(staticTarget),
+                      (oldRoot) => {
+                        if (isJSXConditionalExpression(oldRoot)) {
+                          const clauseOptic = getClauseOptic(staticTarget.clause)
+                          return modify(
+                            clauseOptic,
+                            (clauseElement) => {
+                              return { ...elementToInsert, whenTrue: clauseElement }
+                            },
+                            oldRoot,
+                          )
+                        } else {
+                          return { ...oldRoot }
+                        }
+                      },
+                    ),
+                  )
+                } else {
                   withTargetAdded = withInsertedElement()
                 }
               } else if (isJSXFragment(elementToInsert)) {
@@ -2779,6 +2789,10 @@ export const UPDATE_FNS = {
     )
   },
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
+    if (action.mode.insertMenuMode !== 'closed' && editor.selectedViews.length === 0) {
+      const showToastAction = showToast(notice(`There are no elements selected`, 'WARNING'))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+    }
     return {
       ...editor,
       floatingInsertMenu: action.mode,
@@ -3151,17 +3165,17 @@ export const UPDATE_FNS = {
       // when targeting a conditional, wrap multiple elements into a fragment
       if (action.elements.length > 1 && isConditionalTarget()) {
         const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
-        let mergedImports: Imports = {}
-        for (const { importsToAdd } of elements) {
-          mergedImports = { ...mergedImports, ...importsToAdd }
-        }
+        const mergedImports = elements
+          .map((e) => e.importsToAdd)
+          .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+        const fragment = jsxFragment(
+          fragmentUID,
+          elements.map((e) => e.element),
+          false,
+        )
         elements = [
           {
-            element: jsxFragment(
-              fragmentUID,
-              elements.map((e) => e.element),
-              false,
-            ),
+            element: fragment,
             importsToAdd: mergedImports,
             originalElementPath: EP.fromString(fragmentUID),
           },
@@ -3204,17 +3218,44 @@ export const UPDATE_FNS = {
           const pastedElementIsConditional =
             MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
 
-          const pasteIntoParent = MetadataUtils.findElementByElementPath(
+          const parentOfPasteInto = MetadataUtils.findElementByElementPath(
             editor.jsxMetadata,
             resolvedTarget,
           )
 
+          function maybePasteIntoConditionalBranch(
+            branchPath: ElementPath,
+          ): JSXElementChild | null {
+            const conditionalPath = EP.parentPath(branchPath)
+            const conditional = maybeConditionalExpression(
+              MetadataUtils.findElementByElementPath(editor.jsxMetadata, conditionalPath),
+            )
+            if (conditional == null) {
+              return null
+            }
+            const conditionalCase = maybeBranchConditionalCase(
+              conditionalPath,
+              conditional,
+              branchPath,
+            )
+            if (conditionalCase == null) {
+              return null
+            }
+            const branch =
+              conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+            return branch
+          }
+
+          const pasteIntoConditionalBranch = maybePasteIntoConditionalBranch(resolvedTarget)
+
           const continueWithPaste =
-            pastedElementIsAbsolute ||
-            pastedElementIsFlex ||
-            pastedElementIsConditional ||
-            MetadataUtils.isConditionalFromMetadata(pasteIntoParent) ||
-            isJSXFragment(currentValue.element)
+            pasteIntoConditionalBranch != null
+              ? isNullJSXAttributeValue(pasteIntoConditionalBranch)
+              : pastedElementIsAbsolute ||
+                pastedElementIsFlex ||
+                pastedElementIsConditional ||
+                MetadataUtils.isConditionalFromMetadata(parentOfPasteInto) ||
+                isJSXFragment(currentValue.element)
 
           if (continueWithPaste) {
             const propertyChangeCommands = getReparentPropertyChanges(

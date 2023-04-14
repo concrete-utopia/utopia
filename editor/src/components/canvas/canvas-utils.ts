@@ -40,6 +40,7 @@ import {
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -47,7 +48,12 @@ import {
   isSceneElement,
   getZIndexOfElement,
 } from '../../core/model/element-template-utils'
-import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import {
+  fixUtopiaElement,
+  generateUID,
+  getUtopiaID,
+  setUtopiaID,
+} from '../../core/shared/uid-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -119,6 +125,8 @@ import {
   ResizeOptions,
   AllElementProps,
   ElementProps,
+  NavigatorEntry,
+  isSyntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -2739,7 +2747,18 @@ export function duplicate(
                   duplicateNewUID.newUID,
                 ]),
               }
-            }
+            } else if (isJSXConditionalExpression(newElement))
+              newElement = {
+                ...newElement,
+                whenTrue: fixUtopiaElement(newElement.whenTrue, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+                whenFalse: fixUtopiaElement(newElement.whenFalse, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+              }
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath
@@ -3412,4 +3431,27 @@ export function elementHasOnlyTextChildren(element: ElementInstanceMetadata): bo
   )
   const hasTextChildren = textChildren.length > 0
   return hasTextChildren && allChildrenText
+}
+
+export function isEntryAConditionalSlot(
+  metadata: ElementInstanceMetadataMap,
+  navigatorEntry: NavigatorEntry,
+): boolean {
+  const parentPath = EP.parentPath(navigatorEntry.elementPath)
+  const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  if (parentElement == null) {
+    return false
+  }
+
+  const isParentConditional =
+    parentElement != null &&
+    isRight(parentElement.element) &&
+    isJSXConditionalExpression(parentElement.element.value)
+
+  const isNullValue =
+    isSyntheticNavigatorEntry(navigatorEntry) &&
+    isNullJSXAttributeValue(navigatorEntry.childOrAttribute)
+
+  return isParentConditional && isNullValue
 }
