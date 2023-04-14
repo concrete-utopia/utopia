@@ -56,6 +56,8 @@ import {
   DragOutlineControl,
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { wrapInContainerCommand } from '../../commands/wrap-in-conditional-command'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -214,6 +216,13 @@ function dragToInsertStrategyFactory(
             return getInsertionCommandsWithFrames(s.subject, s.frame)
           })
 
+          const insertionSubjectWrapper = insertionSubjects[0].insertionSubjectWrapper
+          const wrapperUID =
+            insertionSubjectWrapper != null
+              ? customStrategyState.duplicatedElementNewUids[insertionSubjects[0].uid] ??
+                generateUidWithExistingComponents(canvasState.projectContents)
+              : 'empty'
+
           const reparentCommand = updateFunctionCommand(
             'always',
             (editorState, transient): Array<EditorStatePatch> => {
@@ -230,10 +239,43 @@ function dragToInsertStrategyFactory(
             },
           )
 
-          return strategyApplicationResult([
-            ...insertionCommandsWithFrames.map((c) => c.command),
-            reparentCommand,
-          ])
+          const newPath = EP.appendToPath(targetParent, insertionSubjects[0].uid)
+
+          const optionalWrappingCommand =
+            insertionSubjectWrapper != null
+              ? [
+                  updateFunctionCommand(
+                    'always',
+                    (editorState, lifecycle): Array<EditorStatePatch> =>
+                      foldAndApplyCommandsInner(
+                        editorState,
+                        [],
+                        [
+                          wrapInContainerCommand(
+                            'always',
+                            newPath,
+                            wrapperUID,
+                            insertionSubjectWrapper,
+                          ),
+                        ],
+                        lifecycle,
+                      ).statePatches,
+                  ),
+                ]
+              : []
+
+          return strategyApplicationResult(
+            [
+              ...insertionCommandsWithFrames.map((c) => c.command),
+              reparentCommand,
+              ...optionalWrappingCommand,
+            ],
+            {
+              duplicatedElementNewUids: {
+                [insertionSubjects[0].uid]: wrapperUID,
+              },
+            },
+          )
         }
       }
 
