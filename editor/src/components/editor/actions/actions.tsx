@@ -2820,10 +2820,17 @@ export const UPDATE_FNS = {
       editorForAction,
       false,
       (editor) => {
-        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
-        if (children.length === 0) {
-          const showToastAction = showToast(notice('Unwrap only works on child elements'))
-          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
+        const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
+        const supportsChildren = MetadataUtils.targetSupportsChildren(
+          editor.projectContents,
+          editor.jsxMetadata,
+          editor.nodeModules.files,
+          editor.canvas.openFile?.filename,
+          action.target,
+        )
+
+        if (!(supportsChildren || MetadataUtils.isConditionalFromMetadata(element))) {
+          return editor
         }
 
         const parentPath = EP.parentPath(action.target)
@@ -2837,6 +2844,7 @@ export const UPDATE_FNS = {
           'forward',
         )
         let newSelection: ElementPath[] = []
+        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
         const withChildrenMoved = children.reduce((working, child) => {
           const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
             child.elementPath,

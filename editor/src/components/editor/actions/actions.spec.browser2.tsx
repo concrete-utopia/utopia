@@ -349,5 +349,51 @@ describe('actions', () => {
         ),
       )
     })
+    it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
+      const testCode = `
+				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+					<img
+						src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+						alt='Utopia logo'
+						data-uid='bbb'
+					/>
+				</div>
+			`
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+						<img
+							src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+							alt='Utopia logo'
+							data-uid='bbb'
+						/>
+					</div>`,
+        ),
+      )
+    })
+    it(`Unwrap on an element without children deletes the element`, async () => {
+      const testCode = `
+				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+					<div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+				</div>
+			`
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}} />`,
+        ),
+      )
+    })
   })
 })
