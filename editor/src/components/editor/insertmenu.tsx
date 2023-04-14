@@ -326,7 +326,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                           newUID,
                           component.importsToAdd,
                           component.defaultSize,
-                          { wrapInConditional: true },
+                          { wrapInContainer: 'conditional' },
                         ),
                         createInteractionSessionCommand,
                       ],
@@ -334,22 +334,19 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                     )
                   }
                   case 'JSX_FRAGMENT':
-                    /**
-                     * FIXME: similar to wrap in conditional
-                     */
-                    return
-                  // return this.props.editorDispatch(
-                  //   [
-                  //     enableInsertModeForJSXElement(
-                  //       jsxFragment(newUID, [defaultDivElement(`${newUID}-wrapper`)], true),
-                  //       newUID,
-                  //       component.importsToAdd,
-                  //       component.defaultSize,
-                  //     ),
-                  //     createInteractionSessionCommand,
-                  //   ],
-                  //   'everyone',
-                  // )
+                    return this.props.editorDispatch(
+                      [
+                        enableInsertModeForJSXElement(
+                          defaultDivElement(newUID),
+                          newUID,
+                          component.importsToAdd,
+                          component.defaultSize,
+                          { wrapInContainer: 'fragment' },
+                        ),
+                        createInteractionSessionCommand,
+                      ],
+                      'everyone',
+                    )
                   default:
                     assertNever(component.element)
                 }

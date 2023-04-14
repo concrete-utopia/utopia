@@ -516,15 +516,20 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
   options?: {
     textEdit?: boolean
-    wrapInConditional?: boolean
+    wrapInContainer?: InsertionSubjectWrapper
   },
 ): SwitchEditorMode {
-  const wrapper: InsertionSubjectWrapper | null =
-    options?.wrapInConditional === true ? 'conditional' : null
-
   return switchEditorMode(
     EditorModes.insertMode([
-      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false, wrapper),
+      insertionSubject(
+        uid,
+        element,
+        size,
+        importsToAdd,
+        null,
+        options?.textEdit ?? false,
+        options?.wrapInContainer ?? null,
+      ),
     ]),
   )
 }

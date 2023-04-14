@@ -57,8 +57,6 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInContainerCommand
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const withElementRemoved = removeElementAtPath(command.target, components)
 
-      // Add the target as the child of the true case of a conditional
-      const elementUID = EP.toUid(command.target)
       const wrapper = getInsertionSubjectWrapper(command.wrapper, command.wrapperUID, elementToWrap)
 
       // Insert the conditional at the initial index
@@ -82,11 +80,10 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInContainerCommand
       )
 
       const wrapperPath = EP.appendToPath(targetParent, wrapper.uid)
-      const newPath = EP.appendToPath(wrapperPath, elementUID)
 
       editorStatePatches.push({
         selectedViews: {
-          $set: [newPath],
+          $set: [wrapperPath],
         },
       })
     },
