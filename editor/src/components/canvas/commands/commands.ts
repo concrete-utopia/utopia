@@ -66,10 +66,7 @@ import {
 } from './add-contain-layout-if-needed-command'
 import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-command'
 import { DeleteElement, runDeleteElement } from './delete-element-command'
-import {
-  runWrapInConditionalCommand,
-  WrapInConditionalCommand,
-} from './wrap-in-conditional-command'
+import { runWrapInConditionalCommand, WrapInContainerCommand } from './wrap-in-conditional-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -118,7 +115,7 @@ export type CanvasCommand =
   | AddContainLayoutIfNeeded
   | RearrangeChildren
   | DeleteElement
-  | WrapInConditionalCommand
+  | WrapInContainerCommand
 
 export function runCanvasCommand(
   editorState: EditorState,

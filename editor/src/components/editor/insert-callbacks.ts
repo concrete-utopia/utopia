@@ -36,7 +36,8 @@ export function useCheckInsertModeForElementType(
             subject.element.type === 'JSX_ELEMENT' &&
             subject.element.name.baseVariable === elementName &&
             subject.textEdit === (insertOptions?.textEdit ?? false) &&
-            subject.wrapInConditional === (insertOptions?.wrapInConditional ?? false),
+            (subject.insertionSubjectWrapper === 'conditional') ===
+              (insertOptions?.wrapInConditional ?? false),
         )
       )
     },

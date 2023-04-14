@@ -435,6 +435,7 @@ import {
   TextEditMode,
   Coordinates,
   TextEditableElementState,
+  InsertionSubjectWrapper,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -2833,6 +2834,15 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
+export const InsertionSubjectWrapperKeepDeepEquality: KeepDeepEqualityCall<
+  InsertionSubjectWrapper
+> = (oldValue, newValue) => {
+  if (oldValue === newValue) {
+    return keepDeepEqualityResult(newValue, true)
+  }
+  return keepDeepEqualityResult(oldValue, false)
+}
+
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine7EqualityCalls(
     (subject) => subject.uid,
@@ -2847,8 +2857,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     (subject) => subject.textEdit,
     BooleanKeepDeepEquality,
-    (subject) => subject.wrapInConditional,
-    BooleanKeepDeepEquality,
+    (subject) => subject.insertionSubjectWrapper,
+    nullableDeepEquality(InsertionSubjectWrapperKeepDeepEquality),
     insertionSubject,
   )
 

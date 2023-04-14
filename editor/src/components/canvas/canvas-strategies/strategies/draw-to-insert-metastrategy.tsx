@@ -14,6 +14,7 @@ import {
   emptyComments,
   JSXAttributes,
   jsExpressionValue,
+  jsxConditionalExpression,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -23,7 +24,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { InsertionSubject } from '../../../editor/editor-modes'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -65,7 +66,7 @@ import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/lay
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
-import { wrapInConditionalCommand } from '../../commands/wrap-in-conditional-command'
+import { wrapInContainerCommand } from '../../commands/wrap-in-conditional-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 
@@ -186,7 +187,7 @@ export function drawToInsertStrategyFactory(
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
           const wrapperUID =
-            insertionSubject.wrapInConditional === true
+            insertionSubject.insertionSubjectWrapper != null
               ? customStrategyState.duplicatedElementNewUids[insertionSubject.uid] ??
                 generateUidWithExistingComponents(canvasState.projectContents)
               : 'empty'
@@ -234,20 +235,30 @@ export function drawToInsertStrategyFactory(
 
               const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
 
-              const optionalWrappingCommand = insertionSubject.wrapInConditional
-                ? [
-                    updateFunctionCommand(
-                      'always',
-                      (editorState, lifecycle): Array<EditorStatePatch> =>
-                        foldAndApplyCommandsInner(
-                          editorState,
-                          [],
-                          [wrapInConditionalCommand('always', newPath, wrapperUID)],
-                          lifecycle,
-                        ).statePatches,
-                    ),
-                  ]
-                : []
+              const insertionSubjectWrapper = insertionSubject.insertionSubjectWrapper
+
+              const optionalWrappingCommand =
+                insertionSubjectWrapper != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                wrapperUID,
+                                insertionSubjectWrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
 
               return strategyApplicationResult(
                 [
@@ -292,20 +303,30 @@ export function drawToInsertStrategyFactory(
 
               const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
 
-              const optionalWrappingCommand = insertionSubject.wrapInConditional
-                ? [
-                    updateFunctionCommand(
-                      'always',
-                      (editorState, lifecycle): Array<EditorStatePatch> =>
-                        foldAndApplyCommandsInner(
-                          editorState,
-                          [],
-                          [wrapInConditionalCommand('always', newPath, wrapperUID)],
-                          lifecycle,
-                        ).statePatches,
-                    ),
-                  ]
-                : []
+              const insertionSubjectWrapper = insertionSubject.insertionSubjectWrapper
+
+              const optionalWrappingCommand =
+                insertionSubjectWrapper != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                wrapperUID,
+                                insertionSubjectWrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],

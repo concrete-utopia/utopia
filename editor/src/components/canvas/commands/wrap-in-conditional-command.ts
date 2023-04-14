@@ -2,7 +2,8 @@ import {
   emptyComments,
   jsExpressionValue,
   jsxConditionalExpression,
-  JSXElement,
+  JSXElementChild,
+  jsxFragment,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import {
@@ -10,37 +11,42 @@ import {
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
-  modifyUnderlyingElementForOpenFile,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import { InsertionSubjectWrapper } from '../../editor/editor-modes'
+import { assertNever } from '../../../core/shared/utils'
 
-export interface WrapInConditionalCommand extends BaseCommand {
+type ContainerToWrapIn = InsertionSubjectWrapper
+
+export interface WrapInContainerCommand extends BaseCommand {
   type: 'WRAP_IN_CONDITIONAL'
   whenToRun: WhenToRun
   target: ElementPath
   wrapperUID: string
+  wrapper: ContainerToWrapIn
 }
 
-export function wrapInConditionalCommand(
+export function wrapInContainerCommand(
   whenToRun: WhenToRun,
   target: ElementPath,
   wrapperUID: string,
-): WrapInConditionalCommand {
+  wrapper: ContainerToWrapIn,
+): WrapInContainerCommand {
   return {
     type: 'WRAP_IN_CONDITIONAL',
     whenToRun: whenToRun,
     target: target,
     wrapperUID: wrapperUID,
+    wrapper: wrapper,
   }
 }
 
-export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalCommand> = (
+export const runWrapInConditionalCommand: CommandFunction<WrapInContainerCommand> = (
   editor: EditorState,
-  command: WrapInConditionalCommand,
+  command: WrapInContainerCommand,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
 
@@ -53,15 +59,7 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
 
       // Add the target as the child of the true case of a conditional
       const elementUID = EP.toUid(command.target)
-      const wrapperUID = command.wrapperUID
-      const wrapper = jsxConditionalExpression(
-        wrapperUID,
-        jsExpressionValue(true, emptyComments),
-        'true',
-        elementToWrap,
-        jsExpressionValue(null, emptyComments),
-        emptyComments,
-      )
+      const wrapper = getInsertionSubjectWrapper(command.wrapper, command.wrapperUID, elementToWrap)
 
       // Insert the conditional at the initial index
       const targetParent = EP.parentPath(command.target)
@@ -83,8 +81,8 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
         ),
       )
 
-      const conditionalPath = EP.appendToPath(targetParent, wrapperUID)
-      const newPath = EP.appendToPath(conditionalPath, elementUID)
+      const wrapperPath = EP.appendToPath(targetParent, wrapper.uid)
+      const newPath = EP.appendToPath(wrapperPath, elementUID)
 
       editorStatePatches.push({
         selectedViews: {
@@ -97,5 +95,27 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInConditionalComma
   return {
     editorStatePatches: editorStatePatches,
     commandDescription: `Wrapped Element ${EP.toUid(command.target)} in a conditional`,
+  }
+}
+
+const getInsertionSubjectWrapper = (
+  insertionSubjectWrapper: InsertionSubjectWrapper,
+  wrapperUID: string,
+  elementToWrap: JSXElementChild,
+) => {
+  switch (insertionSubjectWrapper) {
+    case 'conditional':
+      return jsxConditionalExpression(
+        wrapperUID,
+        jsExpressionValue(true, emptyComments),
+        'true',
+        elementToWrap,
+        jsExpressionValue(null, emptyComments),
+        emptyComments,
+      )
+    case 'fragment':
+      return jsxFragment(wrapperUID, [elementToWrap], true)
+    default:
+      assertNever(insertionSubjectWrapper)
   }
 }
