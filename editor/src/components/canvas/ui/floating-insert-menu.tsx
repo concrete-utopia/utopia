@@ -69,6 +69,8 @@ import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
 
+export const FloatingMenuTestId = 'floating-menu-test-id'
+
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
   key: string
@@ -676,6 +678,7 @@ export var FloatingMenu = React.memo(() => {
         position: 'relative',
         fontSize: 11,
       }}
+      data-testid={FloatingMenuTestId}
     >
       <FlexColumn
         style={{
