@@ -149,7 +149,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -742,9 +742,9 @@ export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
   //}
 }
 
-export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
+export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
-    action: 'UNWRAP_GROUP_OR_VIEW',
+    action: 'UNWRAP_ELEMENT',
     target: target,
   }
 }

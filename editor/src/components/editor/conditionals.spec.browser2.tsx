@@ -28,7 +28,7 @@ import {
   deleteSelected,
   pasteJSXElements,
   selectComponents,
-  unwrapGroupOrView,
+  unwrapElement,
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { EditorState } from './store/editor-state'
@@ -456,7 +456,7 @@ describe('conditionals', () => {
       )
 
       await act(async () => {
-        await renderResult.dispatch([unwrapGroupOrView(targetConditional)], true)
+        await renderResult.dispatch([unwrapElement(targetConditional)], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

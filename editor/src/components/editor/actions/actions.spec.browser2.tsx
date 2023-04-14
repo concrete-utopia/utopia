@@ -8,7 +8,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import { deleteSelected, selectComponents, unwrapGroupOrView } from './action-creators'
+import { deleteSelected, selectComponents, unwrapElement } from './action-creators'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
 async function deleteFromScene(
@@ -271,7 +271,7 @@ describe('actions', () => {
       })
     })
   })
-  describe('UNWRAP_GROUP_OR_VIEW', () => {
+  describe('UNWRAP_ELEMENT', () => {
     it(`Unwraps a content-affecting element`, async () => {
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -285,7 +285,7 @@ describe('actions', () => {
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -308,7 +308,7 @@ describe('actions', () => {
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -341,7 +341,7 @@ describe('actions', () => {
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -365,7 +365,7 @@ describe('actions', () => {
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -389,7 +389,7 @@ describe('actions', () => {
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -410,7 +410,7 @@ describe('actions', () => {
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/fragment'))], true)
+      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`

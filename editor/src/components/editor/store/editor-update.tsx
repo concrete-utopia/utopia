@@ -265,8 +265,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
-    case 'UNWRAP_GROUP_OR_VIEW':
-      return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, derivedState, dispatch)
+    case 'UNWRAP_ELEMENT':
+      return UPDATE_FNS.UNWRAP_ELEMENT(action, state, derivedState, dispatch)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
