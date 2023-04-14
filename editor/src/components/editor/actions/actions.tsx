@@ -2833,7 +2833,15 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        const parentPath = EP.parentPath(action.target)
+        const parentPath = MetadataUtils.getReparentTargetOfTarget(
+          editorForAction.jsxMetadata,
+          action.target,
+        )
+        if (parentPath != null && reparentTargetParentIsConditionalClause(parentPath)) {
+          // TODO support unwrapping conditional clause
+          return editor
+        }
+
         const parentFrame =
           parentPath == null
             ? (Utils.zeroRectangle as CanvasRectangle)
