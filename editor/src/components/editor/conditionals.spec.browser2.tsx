@@ -431,11 +431,11 @@ describe('conditionals', () => {
   })
   describe('unwrap', () => {
     it('can unwrap a conditional', async () => {
-      const elementUid = 'bbb'
       const startSnippet = `
         <div data-uid='aaa'>
           {
-            true ? <div data-uid='${elementUid}'>hello there</div> : <div data-uid='ccc'>another div</div>
+            // @utopia/uid=conditional
+            true ? <div data-uid='bbb'>hello there</div> : <div data-uid='ccc'>another div</div>
           }
         </div>
       `
@@ -444,25 +444,49 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const bbbPath = forceNotNull(
-        `Missing ${elementUid} element`,
-        Object.keys(renderResult.getEditorState().editor.jsxMetadata).find((path) =>
-          path.includes(elementUid),
-        ),
-      )
-      const targetConditional = forceNotNull(
-        'Missing conditional path from conditional test',
-        EP.parentPath(EP.fromString(bbbPath)),
-      )
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
       await act(async () => {
-        await renderResult.dispatch([unwrapElement(targetConditional)], true)
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
       })
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
-              <div data-uid='${elementUid}'>hello there</div>
+              <div data-uid='bbb'>hello there</div>
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional that is pinned to false', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=false
+          true ? (
+            <div data-uid='bbb' data-testid='bbb'>hello</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bello</div>
+          )
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+            <div data-uid='ccc' data-testid='ccc'>bello</div>
             </div>
          `),
       )
