@@ -279,6 +279,8 @@ describe('Select Mode Advanced Cases', () => {
   })
 })
 
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkFocusedPath", "checkSelectedPaths"] }] */
+
 describe('Select Mode Clicking', () => {
   // The below tests are to ensure we're not inadvertently handling clicks too many times,
   // which could either mean focusing something that wasn't meant to be focused, or skipping

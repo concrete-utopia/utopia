@@ -116,20 +116,21 @@ export function findFirstParentWithValidElementPathInner(
 
   let filteredValidPathsMappedToDynamic: Array<ElementPath> = []
   switch (allowDescendantsFromPath) {
+    // case 'allow-descendants-from-path':
+    // for (const validPath of validStaticElementPaths) {
+    //   const validPathFromString = EP.fromString(validPath)
+    //   for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
+    //     if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
+    //       const depthDiff =
+    //         EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
+    //       filteredValidPathsMappedToDynamic.push(
+    //         EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
+    //       )
+    //     }
+    //   }
+    // }
+    // break
     case 'allow-descendants-from-path':
-      for (const validPath of validStaticElementPaths) {
-        const validPathFromString = EP.fromString(validPath)
-        for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
-          if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
-            const depthDiff =
-              EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
-            filteredValidPathsMappedToDynamic.push(
-              EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
-            )
-          }
-        }
-      }
-      break
     case 'search-dom-only':
       for (const validPath of validStaticElementPaths) {
         const pathToAdd = staticAndDynamicTargetElementPaths.find(
