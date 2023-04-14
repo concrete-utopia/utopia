@@ -272,7 +272,7 @@ describe('actions', () => {
     })
   })
   describe('UNWRAP_GROUP_OR_VIEW', () => {
-    it(`Unwraps a group`, async () => {
+    it(`Unwraps a content-effecting element`, async () => {
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <div data-uid='bbb'>
