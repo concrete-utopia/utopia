@@ -15,22 +15,23 @@ import {
 } from '../../core/shared/math-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
-import { getPathsOnDomElement } from '../../core/shared/uid-utils'
+import { getPathsOnDomElementOrNode } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 import { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 
-type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
+type FindParentSceneValidPathsCache = Map<Element | Node, Array<ElementPath> | null>
 
 export function findParentSceneValidPaths(
-  target: Element,
+  target: Element | Node,
   mutableCache: FindParentSceneValidPathsCache,
 ): Array<ElementPath> | null {
   const cacheResult = mutableCache.get(target)
   if (cacheResult === undefined) {
-    const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
+    const targetIsElement = 'attributes' in target // TODO clean this code up
+    const validPaths = targetIsElement ? getDOMAttribute(target, 'data-utopia-valid-paths') : null
     if (validPaths != null) {
       const result = validPaths.split(' ').map(EP.fromString)
       mutableCache.set(target, result)
@@ -52,7 +53,7 @@ export function findParentSceneValidPaths(
 // Take a DOM element, and try to find the nearest selectable path for it
 export function findFirstParentWithValidElementPath(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
-  target: Element,
+  target: Element | Node,
 ): ElementPath | null {
   const parentSceneValidPathsCache = new Map()
 
@@ -79,14 +80,39 @@ export function findFirstParentWithValidElementPath(
     : firstParentFromDom
 }
 
+function getElementsOrTextNodesUnderPoint(x: number, y: number): Array<Element | ChildNode> {
+  const elements = document.elementsFromPoint(x, y)
+  return elements.flatMap((element) => {
+    return [...getTextNodeForElement(element, x, y), element]
+  })
+}
+
+function getTextNodeForElement(element: Element, x: number, y: number): Array<ChildNode> {
+  var nodes = element.childNodes
+  for (const node of nodes) {
+    if (node.nodeType === node.TEXT_NODE) {
+      var range = document.createRange()
+      range.selectNode(node)
+      var rects = range.getClientRects()
+      for (const rect of rects) {
+        if (x > rect.left && x < rect.right && y > rect.top && y < rect.bottom) {
+          return [node]
+        }
+      }
+    }
+  }
+
+  return []
+}
+
 // Take a DOM element, and try to find the nearest selectable path for it
 export function findFirstParentWithValidElementPathInner(
   validDynamicElementPathsForLookup: Set<string> | 'no-filter',
-  target: Element,
+  target: Element | Node,
   allowDescendantsFromPath: 'allow-descendants-from-path' | 'search-dom-only',
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
 ): ElementPath | null {
-  const dynamicElementPaths = getPathsOnDomElement(target)
+  const dynamicElementPaths = getPathsOnDomElementOrNode(target)
   const staticAndDynamicTargetElementPaths = dynamicElementPaths.map((p) => {
     return {
       static: EP.toString(EP.makeLastPartOfPathStatic(p)),
@@ -176,7 +202,7 @@ export function getValidTargetAtPoint(
   if (point == null) {
     return null
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = getElementsOrTextNodesUnderPoint(point.x, point.y)
   return findFirstValidParentForSingleElement(validElementPathsForLookup, elementsUnderPoint)
 }
 
@@ -187,7 +213,7 @@ export function getAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = getElementsOrTextNodesUnderPoint(point.x, point.y)
   // TODO FIXME we should take the zero-sized elements from Canvas.getAllTargetsAtPoint, and insert them (in a correct-enough order) here. See PR for context https://github.com/concrete-utopia/utopia/pull/2345
   return findFirstValidParentsForAllElements(validElementPathsForLookup, elementsUnderPoint)
 }
@@ -198,7 +224,7 @@ const findFirstValidParentForSingleElement = memoize(findFirstValidParentForSing
 
 function findFirstValidParentForSingleElementUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
-  elementsUnderPoint: Array<Element>,
+  elementsUnderPoint: Array<Element | Node>,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -221,7 +247,7 @@ const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllE
 
 function findFirstValidParentsForAllElementsUncached(
   validElementPathsForLookup: Array<ElementPath> | 'no-filter',
-  elementsUnderPoint: Array<Element>,
+  elementsUnderPoint: Array<Element | Node>,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -285,7 +311,7 @@ export function getSelectionOrAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = getElementsOrTextNodesUnderPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup === 'no-filter'
       ? 'no-filter'

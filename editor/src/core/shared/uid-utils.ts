@@ -440,9 +440,7 @@ export function getPathWithStringsOnDomElement(element: Element): Array<PathWith
   return getPathsWithStringFromString(pathsAttribute)
 }
 
-export function getPathWithStringsOnDomNodeSteganography(
-  childNode: ChildNode,
-): Array<PathWithString> {
+export function getPathWithStringsOnDomNodeSteganography(childNode: Node): Array<PathWithString> {
   if (childNode.nodeType !== childNode.TEXT_NODE) {
     return []
   }
@@ -455,9 +453,18 @@ export function getPathWithStringsOnDomNodeSteganography(
   return getPathsWithStringFromString(decodedText)
 }
 
-export function getPathsOnDomElement(element: Element): Array<ElementPath> {
+function getPathsOnDomElement(element: Element): Array<ElementPath> {
   const pathsAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
   return getPathsFromString(pathsAttribute)
+}
+
+export function getPathsOnDomElementOrNode(element: Element | Node): Array<ElementPath> {
+  if ('attributes' in element) {
+    // this is an Element, not a text node
+    return getPathsOnDomElement(element)
+  } else {
+    return getPathWithStringsOnDomNodeSteganography(element).map((p) => p.path)
+  }
 }
 
 export function getPathStringsOnDomElement(element: Element): Array<string> {
