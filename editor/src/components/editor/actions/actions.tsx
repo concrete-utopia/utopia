@@ -2852,7 +2852,10 @@ export const UPDATE_FNS = {
           'forward',
         )
         let newSelection: ElementPath[] = []
-        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
+        const children = MetadataUtils.getChildrenOrdered(
+          editor.jsxMetadata,
+          action.target,
+        ).reverse()
         const withChildrenMoved = children.reduce((working, child) => {
           const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
             child.elementPath,

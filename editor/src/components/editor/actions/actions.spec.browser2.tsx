@@ -274,9 +274,10 @@ describe('actions', () => {
   describe('UNWRAP_GROUP_OR_VIEW', () => {
     it(`Unwraps a group`, async () => {
       const testCode = `
-				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 					<div data-uid='bbb'>
 						<div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+						<div data-uid='ddd' style={{width: 60, height: 60}} />
 					</div>
 				</div>
 			`
@@ -288,15 +289,16 @@ describe('actions', () => {
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 						<div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+						<div data-uid='ddd' style={{width: 60, height: 60}} />
 					</div>`,
         ),
       )
     })
     it(`Unwraps an absolute element and keeps the visual position of its children`, async () => {
       const testCode = `
-				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 					<div data-uid='bbb' style={{position: 'absolute', left: 30, top: 30, width: 150, height: 150}}>
 						<div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 15, width: 100}} />
 					</div>
@@ -310,7 +312,7 @@ describe('actions', () => {
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 						<div data-uid='ccc' style={{position: 'absolute', left: 50, top: 80, bottom: 135, width: 100}} />
 					</div>`,
         ),
@@ -318,7 +320,7 @@ describe('actions', () => {
     })
     it(`Unwraps an flex element`, async () => {
       const testCode = `
-				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 					<div
 						data-uid='bbb'
 						style={{
@@ -343,7 +345,7 @@ describe('actions', () => {
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 						<div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
 					</div>`,
         ),
@@ -351,7 +353,7 @@ describe('actions', () => {
     })
     it(`Doesn't unwrap an image, as it cannot have child elements, no changes in the code result`, async () => {
       const testCode = `
-				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 					<img
 						src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
 						alt='Utopia logo'
@@ -367,7 +369,7 @@ describe('actions', () => {
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 						<img
 							src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
 							alt='Utopia logo'
@@ -379,7 +381,7 @@ describe('actions', () => {
     })
     it(`Unwrap on an element without children deletes the element`, async () => {
       const testCode = `
-				<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}}>
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
 					<div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
 				</div>
 			`
@@ -391,8 +393,32 @@ describe('actions', () => {
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{position: 'relative', width: 300, height: 300}} />`,
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
         ),
+      )
+    })
+    it(`Unwraps a fragment`, async () => {
+      const testCode = `
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+					<React.Fragment data-uid='fragment'>
+						<div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+						<div data-uid='ccc' style={{width: 100, height: 50}} />
+					</React.Fragment>
+				</div>
+			`
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch([unwrapGroupOrView(makeTargetPath('aaa/fragment'))], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+				<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+					<div data-uid='bbb' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+					<div data-uid='ccc' style={{width: 100, height: 50}} />
+				</div>
+			`),
       )
     })
   })
