@@ -599,12 +599,6 @@ in pkgs.mkShell {
     })
   ] ++ packagesToUse;
 
-  # This is required for a digital envelope routines::unsupported error thrown by this version of node
-  NODE_OPTIONS = "--openssl-legacy-provider";
-
-  # FIXME The version of amazonka is marked as broken
-  # NIXPKGS_ALLOW_BROKEN=1;
-
   # Makes the electron runner use this executable instead.
   ELECTRON_OVERRIDE_DIST_PATH = if stdenv.isLinux then "${pkgs.electron}/bin" else null;
 }
