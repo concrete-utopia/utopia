@@ -68,6 +68,7 @@ executable utopia-web
       JuicyPixels
     , aeson >=2.0
     , aeson-pretty
+    , aws
     , base >=4.7 && <5
     , base16-bytestring
     , base64
@@ -104,7 +105,6 @@ executable utopia-web
     , magic
     , mime
     , mime-types
-    , minio-hs
     , modern-uri
     , monad-control
     , monad-logger
@@ -143,6 +143,7 @@ executable utopia-web
     , unliftio
     , unordered-containers
     , uri-bytestring
+    , utf8-string
     , utopia-clientmodel
     , uuid
     , vector
@@ -208,6 +209,7 @@ test-suite utopia-web-test
       JuicyPixels
     , aeson >=2.0
     , aeson-pretty
+    , aws
     , base >=4.7 && <5
     , base16-bytestring
     , base64
@@ -246,7 +248,6 @@ test-suite utopia-web-test
     , magic
     , mime
     , mime-types
-    , minio-hs
     , modern-uri
     , monad-control
     , monad-logger
@@ -292,6 +293,7 @@ test-suite utopia-web-test
     , unliftio
     , unordered-containers
     , uri-bytestring
+    , utf8-string
     , utopia-clientmodel
     , uuid
     , vector

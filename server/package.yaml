@@ -28,6 +28,7 @@ flags:
 dependencies:
   - aeson >=2.0
   - aeson-pretty
+  - aws
   - base >= 4.7 && < 5
   - base16-bytestring
   - base64
@@ -65,7 +66,6 @@ dependencies:
   - magic
   - mime
   - mime-types
-  - minio-hs
   - modern-uri
   - monad-control
   - monad-logger
@@ -104,6 +104,7 @@ dependencies:
   - unix
   - unordered-containers
   - uri-bytestring
+  - utf8-string
   - utopia-clientmodel
   - uuid
   - vector

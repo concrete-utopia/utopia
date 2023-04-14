@@ -26,7 +26,7 @@ import           Data.Profunctor.Product
 import qualified Data.Serialize                  as S
 import qualified Data.Text.Encoding              as TE
 import           Data.Time
-import           Database.PostgreSQL.Simple     
+import           Database.PostgreSQL.Simple
 import           Opaleye
 import           Protolude                       hiding (State)
 import           Utopia.Web.Database
@@ -118,13 +118,13 @@ instance Storage SessionStorage where
   runTransactionM sto trxn = do
     usePool (pool sto) $ \connection -> do
       withTransaction connection $ do
-        runReaderT trxn connection 
+        runReaderT trxn connection
   getSession sto sessionId = lookupSession sto sessionId
   deleteSession _ sessionId = persistentSessionTableDeleteByKey $ toPathPiece sessionId
   deleteAllSessionsOfAuthId _ authId = persistentSessionTableDeleteByAuthId authId
   insertSession sto session = do
     connection <- ask
-    existingSession <- lookupSession sto (sessionKey session) 
+    existingSession <- lookupSession sto (sessionKey session)
     case existingSession of
       Just old -> throwSS $ SessionAlreadyExists old session
       Nothing -> liftIO $ void $ runInsert connection $ Insert
@@ -138,7 +138,7 @@ instance Storage SessionStorage where
     connection <- ask
     case existingSession of
       Just _ -> liftIO $ void $ runUpdate connection $ Update
-                                                     { uTable = persistentSessionTable 
+                                                     { uTable = persistentSessionTable
                                                      , uUpdateWith = updateEasy (const $ sessionToTable session)
                                                      , uWhere = persistentSessionTableKeyPredicate $ toPathPiece $ sessionKey session
                                                      , uReturning = rCount
