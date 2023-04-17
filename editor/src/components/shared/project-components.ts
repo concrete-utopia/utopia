@@ -381,7 +381,7 @@ const samplesDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Sample text',
-        elementToInsert: jsxElementWithoutUID('span', [], [jsxTextBlock('Utopia rules')]),
+        elementToInsert: jsxElementWithoutUID('span', [], [jsxTextBlock('Sample text')]),
         importsToAdd: {},
       },
     ],
