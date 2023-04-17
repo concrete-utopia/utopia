@@ -15,6 +15,7 @@ import {
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
+import { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 
@@ -29,15 +30,16 @@ export function useCheckInsertModeForElementType(
     Substores.restOfEditor,
     (store) => {
       const mode = store.editor.mode
+      const isTextEditInsertOptionSet = insertOptions?.textEdit ?? false
+      const isWrapInConditionalInsertOptionSet = insertOptions?.wrapInConditional ?? false
       return (
         mode.type === 'insert' &&
         mode.subjects.some(
           (subject) =>
             subject.element.type === 'JSX_ELEMENT' &&
             subject.element.name.baseVariable === elementName &&
-            subject.textEdit === (insertOptions?.textEdit ?? false) &&
-            (subject.insertionSubjectWrapper === 'conditional') ===
-              (insertOptions?.wrapInConditional ?? false),
+            subject.textEdit === isTextEditInsertOptionSet &&
+            shouldSubjectBeWrappedWithConditional(subject, isWrapInConditionalInsertOptionSet),
         )
       )
     },
@@ -117,4 +119,11 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
     },
     [dispatch, projectContentsRef, elementFactory],
   )
+}
+
+function shouldSubjectBeWrappedWithConditional(
+  subject: InsertionSubject,
+  isWrapInConditionalInsertOptionSet: boolean,
+): boolean {
+  return subject.insertionSubjectWrapper === 'conditional' && isWrapInConditionalInsertOptionSet
 }
