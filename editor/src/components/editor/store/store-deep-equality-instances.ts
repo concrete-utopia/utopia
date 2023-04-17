@@ -2834,14 +2834,8 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
-export const InsertionSubjectWrapperKeepDeepEquality: KeepDeepEqualityCall<
-  InsertionSubjectWrapper
-> = (oldValue, newValue) => {
-  if (oldValue === newValue) {
-    return keepDeepEqualityResult(newValue, true)
-  }
-  return keepDeepEqualityResult(oldValue, false)
-}
+export const InsertionSubjectWrapperKeepDeepEquality: KeepDeepEqualityCall<InsertionSubjectWrapper> =
+  createCallWithTripleEquals()
 
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine7EqualityCalls(
