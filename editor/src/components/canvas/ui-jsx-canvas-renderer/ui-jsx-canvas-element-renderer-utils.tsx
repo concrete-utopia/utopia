@@ -361,6 +361,35 @@ export function renderCoreElement(
         elementPath,
       )
 
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([actualElement])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+        }
+
+        return buildSpyWrappedElement(
+          actualElement,
+          textEditorProps,
+          childPath!,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return renderCoreElement(
         actualElement,
         childPath,
@@ -401,6 +430,35 @@ export function renderCoreElement(
         )
       }
 
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const text = trimAndJoinTextFromJSXElements([element])
+        const textContent = unescapeHTML(text ?? '')
+        const textEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return jsxAttributeToValue(filePath, inScope, requireResult, element, elementPath)
     default:
       const _exhaustiveCheck: never = element
@@ -422,7 +480,7 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
         }
         break
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        if (c.transpiledJavascript === `return ${c.javascript}`) {
+        if (c.transpiledJavascript.startsWith(`return ${c.javascript}`)) {
           combinedText += `{${c.originalJavascript}}`
         }
         break
