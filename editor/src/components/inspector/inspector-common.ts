@@ -53,6 +53,7 @@ import { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
 import { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
+import { AllElementProps } from '../editor/store/editor-state'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -694,16 +695,19 @@ export function detectPackedSpacedSetting(
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropHugStrategies('horizontal'),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropHugStrategies('vertical'),
     ) ?? []),
   ]
@@ -713,16 +717,19 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropFillStrategies('horizontal', 'default', false),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropFillStrategies('vertical', 'default', false),
     ) ?? []),
   ]
@@ -787,6 +794,7 @@ export function setElementTopLeft(
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   if (elementPaths.length === 0) {
     return []
@@ -798,7 +806,7 @@ export function toggleResizeToFitSetToFixed(
 
   return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
-    : resizeToFitCommands(metadata, elementPaths)
+    : resizeToFitCommands(metadata, elementPaths, allElementProps)
 }
 
 export function getFixedFillHugOptionsForElement(
