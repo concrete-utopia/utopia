@@ -23,8 +23,7 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/core/es-modules/package-manager/utopia-api-typings.ts",
-    "preinstall": "npx only-allow pnpm",
-    "postinstall": "patch-package"
+    "preinstall": "npx only-allow pnpm"
   },
   "repository": {
     "type": "git",
@@ -75,8 +74,12 @@
     "jest-environment-jsdom": "27.2.3",
     "lint-staged": "^9.4.3",
     "npm-dts": "1.3.1",
-    "patch-package": "6.5.1",
     "prettier": "2.0.5",
     "typescript": "4.0.5"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@emotion/react@11.1.2": "patches/@emotion__react@11.1.2.patch"
+    }
   }
 }

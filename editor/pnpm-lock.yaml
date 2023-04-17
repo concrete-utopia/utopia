@@ -1,5 +1,43 @@
 lockfileVersion: 5.4
 
+patchedDependencies:
+  '@emotion/react@11.1.2':
+    hash: l23vr2jl6b3o5l3eanlyfmxl6q
+    path: patches/@emotion__react@11.1.2.patch
+  '@types/react-helmet@6.1.0':
+    hash: g2jxqzs4imdskfndmd2dh2jcni
+    path: patches/@types__react-helmet@6.1.0.patch
+  babel-eslint@10.0.1:
+    hash: 5mfawfwqhov474admln32ofh3m
+    path: patches/babel-eslint@10.0.1.patch
+  eslint-plugin-jsx-a11y@6.5.1:
+    hash: 5wlsrnjcorawie777qour2ptie
+    path: patches/eslint-plugin-jsx-a11y@6.5.1.patch
+  karma-mocha-reporter@2.2.5:
+    hash: mok7ytollbnywezj4pomfmw2yy
+    path: patches/karma-mocha-reporter@2.2.5.patch
+  keycode@2.2.1:
+    hash: ijco5rdhqzhtzo47bw5o33xhhu
+    path: patches/keycode@2.2.1.patch
+  react-contexify@5.0.0:
+    hash: 32bg6f6k4pz5sbtodfdfpncmtu
+    path: patches/react-contexify@5.0.0.patch
+  react-dom@18.1.0:
+    hash: abari7w75zfr6mrhvamxwmfpxm
+    path: patches/react-dom@18.1.0.patch
+  react-select@3.1.0:
+    hash: t5nmcyzy5uxlteq6gsp6gbc254
+    path: patches/react-select@3.1.0.patch
+  react@18.1.0:
+    hash: 47cciibm4ysmleigs33s763fqu
+    path: patches/react@18.1.0.patch
+  reselect@4.1.7:
+    hash: lchp3amipq5ospj3jcph7hcfwu
+    path: patches/reselect@4.1.7.patch
+  use-context-selector@1.3.9:
+    hash: 2j5b55brghbi7pju3qvaqzwbdi
+    path: patches/use-context-selector@1.3.9.patch
+
 specifiers:
   '@babel/cli': ^7.8.4
   '@babel/code-frame': ^7.5.5
@@ -193,7 +231,6 @@ specifiers:
   object-path-immutable: 3.0.0
   onigasm: 2.2.4
   only-allow: ^1.0.0
-  patch-package: 6.5.1
   path: 0.12.7
   path-parse: 1.0.6
   pegjs: 0.10.0
@@ -285,7 +322,7 @@ dependencies:
   '@babel/traverse': 7.15.4
   '@babel/types': 7.15.6
   '@emotion/cache': 10.0.29
-  '@emotion/react': 11.1.2_gdgxr7fdmsbhtbuls64pcvulza
+  '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_gdgxr7fdmsbhtbuls64pcvulza
   '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0_kf2s5ttaepyzuejtstis4wzmwe
   '@emotion/styled-base': 11.0.0
@@ -301,7 +338,7 @@ dependencies:
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-  babel-eslint: 10.0.1_eslint@6.8.0
+  babel-eslint: 10.0.1_5mfawfwqhov474admln32ofh3m_eslint@6.8.0
   babel-plugin-syntax-jsx: 6.18.0
   babel-plugin-transform-react-jsx: 6.24.1
   browserfs: 2.0.0
@@ -313,7 +350,7 @@ dependencies:
   create-react-class: 15.6.3
   css-tree: 1.1.3
   eslint-plugin-import: 2.25.3_o5qc6eitjww7eqrkfjp7lje6uq
-  eslint-plugin-jsx-a11y: 6.5.1_eslint@6.8.0
+  eslint-plugin-jsx-a11y: 6.5.1_5wlsrnjcorawie777qour2ptie_eslint@6.8.0
   eslint-plugin-react: 7.23.2_eslint@6.8.0
   eslint-plugin-react-hooks: 4.2.0_eslint@6.8.0
   eslint4b: 6.6.0
@@ -333,7 +370,7 @@ dependencies:
   jotai-devtools: 0.2.0_jotai@2.0.0+react@18.1.0
   json5: 0.5.1
   jszip: 3.5.0
-  keycode: 2.2.1
+  keycode: 2.2.1_ijco5rdhqzhtzo47bw5o33xhhu
   localforage: 1.7.3
   lodash.clamp: 4.0.3
   lru-cache: 7.10.1
@@ -358,11 +395,11 @@ dependencies:
   rc-table: 7.8.6_ef5jwxihqo6n7gxfmzogljlgcm
   re-reselect: 4.0.1_reselect@4.1.7
   re-resizable: 6.9.1_ef5jwxihqo6n7gxfmzogljlgcm
-  react: 18.1.0
-  react-contexify: 5.0.0_ef5jwxihqo6n7gxfmzogljlgcm
+  react: 18.1.0_47cciibm4ysmleigs33s763fqu
+  react-contexify: 5.0.0_32bg6f6k4pz5sbtodfdfpncmtu_ef5jwxihqo6n7gxfmzogljlgcm
   react-dnd: 16.0.0_7cpxmzzodpxnolj5zcc5cr63ji
   react-dnd-html5-backend: 16.0.0
-  react-dom: 18.1.0_react@18.1.0
+  react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
   react-error-overlay: github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42
   react-helmet: 6.1.0_react@18.1.0
   react-highlight-words: 0.17.0_react@18.1.0
@@ -370,7 +407,7 @@ dependencies:
   react-merge-refs: 1.0.0
   react-onclickoutside: 6.9.0_ef5jwxihqo6n7gxfmzogljlgcm
   react-popper: 2.2.3_luamgza7xv6i2k5kfnj4s4czvu
-  react-select: 3.1.0_ef5jwxihqo6n7gxfmzogljlgcm
+  react-select: 3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm
   react-spring: 9.0.0-rc.3_5vzz734aui5gu3jm6wlduec5ym
   react-syntax-highlighter: 12.2.1_react@18.1.0
   react-timeago: 7.1.0_react@18.1.0
@@ -379,7 +416,7 @@ dependencies:
   react-vtree: 2.0.0_7r23lgncqphirlptfj2v6vu42q
   react-window: 1.8.7_ef5jwxihqo6n7gxfmzogljlgcm
   react-windowed-select: 3.1.2_hoopuhfcxzwq3qcfqmjjrgp5yu
-  reselect: 4.1.7
+  reselect: 4.1.7_lchp3amipq5ospj3jcph7hcfwu
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
   semver: 7.3.2
@@ -393,7 +430,7 @@ dependencies:
   twind: 0.16.16_typescript@4.6.4
   typescript: 4.6.4
   url-join: 4.0.1
-  use-context-selector: 1.3.9_tvz7qjexdclsfyfjk6db43e66q
+  use-context-selector: 1.3.9_2j5b55brghbi7pju3qvaqzwbdi_tvz7qjexdclsfyfjk6db43e66q
   utopia-api: file:../utopia-api_mqm2tfoqktrfeah4tnjtdfd5o4
   utopia-vscode-common: file:../utopia-vscode-common
   uuid: 8.3.2
@@ -452,7 +489,7 @@ devDependencies:
   '@types/react': 18.0.9
   '@types/react-dnd': 3.0.2_7cpxmzzodpxnolj5zcc5cr63ji
   '@types/react-dom': 18.0.3
-  '@types/react-helmet': 6.1.0
+  '@types/react-helmet': 6.1.0_g2jxqzs4imdskfndmd2dh2jcni
   '@types/react-highlight-words': 0.16.3
   '@types/react-onclickoutside': 6.7.3
   '@types/react-select': 3.0.15
@@ -510,7 +547,7 @@ devDependencies:
   karma: 6.4.1
   karma-chrome-launcher: 3.1.1
   karma-mocha: 2.0.1
-  karma-mocha-reporter: 2.2.5_karma@6.4.1
+  karma-mocha-reporter: 2.2.5_mok7ytollbnywezj4pomfmw2yy_karma@6.4.1
   karma-parallel: 0.3.1_karma@6.4.1
   karma-viewport: 1.0.8
   karma-webpack: 5.0.0_webpack@5.52.0
@@ -522,7 +559,6 @@ devDependencies:
   node-fetch: 2.6.1
   null-loader: 4.0.1_webpack@5.52.0
   only-allow: 1.0.0
-  patch-package: 6.5.1
   pegjs: 0.10.0
   pretty-format: 26.1.0
   react-test-renderer: 16.9.0_react@18.1.0
@@ -582,8 +618,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /@ant-design/react-slick/0.26.3_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -596,8 +632,8 @@ packages:
       classnames: 2.2.6
       json2mq: 0.2.0
       lodash: 4.17.21
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -2351,7 +2387,7 @@ packages:
       '@emotion/serialize': 0.11.16
       '@emotion/sheet': 0.9.4
       '@emotion/utils': 0.11.3
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /@emotion/css/10.0.27:
@@ -2394,7 +2430,7 @@ packages:
     resolution: {integrity: sha512-igX9a37DR2ZPGYtV6suZ6whr8pTFtyHL3K/oLUotxpSVO2ASaprmAe2Dkq7tBo7CRY7MMDrAa9nuQP9/YG8FxQ==}
     dev: false
 
-  /@emotion/react/11.1.2_gdgxr7fdmsbhtbuls64pcvulza:
+  /@emotion/react/11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_gdgxr7fdmsbhtbuls64pcvulza:
     resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -2415,10 +2451,11 @@ packages:
       '@emotion/weak-memoize': 0.2.5
       '@types/react': 18.0.9
       hoist-non-react-statics: 3.3.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
+    patched: true
 
-  /@emotion/react/11.1.2_hckexctj6og6b6fgnwzdyzgtia:
+  /@emotion/react/11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_hckexctj6og6b6fgnwzdyzgtia:
     resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -2439,8 +2476,9 @@ packages:
       '@emotion/weak-memoize': 0.2.5
       '@types/react': 17.0.25
       hoist-non-react-statics: 3.3.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
+    patched: true
 
   /@emotion/serialize/0.11.16:
     resolution: {integrity: sha512-G3J4o8by0VRrO+PFeSc3js2myYNOXVJ3Ya+RGVxnshRYgsvErfAOglKAiy1Eo1vhzxqtUvjCyS5gtewzkmvSSg==}
@@ -2500,11 +2538,11 @@ packages:
       '@babel/runtime': 7.15.4
       '@emotion/babel-plugin': 11.3.0_@babel+core@7.15.5
       '@emotion/is-prop-valid': 1.1.0
-      '@emotion/react': 11.1.2_gdgxr7fdmsbhtbuls64pcvulza
+      '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_gdgxr7fdmsbhtbuls64pcvulza
       '@emotion/serialize': 1.0.2
       '@emotion/utils': 1.0.0
       '@types/react': 18.0.9
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /@emotion/stylis/0.7.1:
@@ -2547,7 +2585,7 @@ packages:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       prop-types: 15.6.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       scheduler: 0.19.1
     dev: true
 
@@ -2859,7 +2897,7 @@ packages:
       '@react-spring/animated': 9.0.0-rc.3_react@18.1.0
       '@react-spring/core': 9.0.0-rc.3_react@18.1.0
       '@react-spring/shared': 9.0.0-rc.3
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /@react-spring/native/9.0.0-rc.3_react@18.1.0:
@@ -2872,7 +2910,7 @@ packages:
       '@react-spring/animated': 9.0.0-rc.3_react@18.1.0
       '@react-spring/core': 9.0.0-rc.3_react@18.1.0
       '@react-spring/shared': 9.0.0-rc.3
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /@react-spring/shared/9.0.0-rc.3:
@@ -2895,7 +2933,7 @@ packages:
       '@react-spring/animated': 9.0.0-rc.3_react@18.1.0
       '@react-spring/core': 9.0.0-rc.3_react@18.1.0
       '@react-spring/shared': 9.0.0-rc.3
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       three: 0.140.2
     dev: false
 
@@ -2909,8 +2947,8 @@ packages:
       '@react-spring/animated': 9.0.0-rc.3_react@18.1.0
       '@react-spring/core': 9.0.0-rc.3_react@18.1.0
       '@react-spring/shared': 9.0.0-rc.3
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /@react-spring/zdog/9.0.0-rc.3_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -2925,8 +2963,8 @@ packages:
       '@react-spring/animated': 9.0.0-rc.3_react@18.1.0
       '@react-spring/core': 9.0.0-rc.3_react@18.1.0
       '@react-spring/shared': 9.0.0-rc.3
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /@react-three/fiber/8.0.14_5vzz734aui5gu3jm6wlduec5ym:
@@ -2953,8 +2991,8 @@ packages:
     dependencies:
       '@babel/runtime': 7.17.9
       '@types/react-reconciler': 0.26.6
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-merge-refs: 1.1.0
       react-reconciler: 0.27.0_react@18.1.0
       react-use-measure: 2.1.1_ef5jwxihqo6n7gxfmzogljlgcm
@@ -3107,7 +3145,7 @@ packages:
     peerDependencies:
       react: '>= 16.3.0'
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /@svgr/babel-plugin-add-jsx-attribute/5.4.0:
@@ -3214,8 +3252,8 @@ packages:
       '@babel/runtime': 7.16.5
       '@testing-library/dom': 8.13.0
       '@types/react-dom': 18.0.3
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: true
 
   /@tippyjs/react/4.1.0_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -3224,8 +3262,8 @@ packages:
       react: '>=16.8'
       react-dom: '>=16.8'
     dependencies:
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       tippy.js: 6.2.6
     dev: false
 
@@ -3601,11 +3639,12 @@ packages:
     dependencies:
       '@types/react': 18.0.9
 
-  /@types/react-helmet/6.1.0:
+  /@types/react-helmet/6.1.0_g2jxqzs4imdskfndmd2dh2jcni:
     resolution: {integrity: sha512-PYRoU1XJFOzQ3BHvWL1T8iDNbRjdMDJMT5hFmZKGbsq09kbSqJy61uwEpTrbTNWDopVphUT34zUSVLK9pjsgYQ==}
     dependencies:
       '@types/react': 18.0.9
     dev: true
+    patched: true
 
   /@types/react-highlight-words/0.16.3:
     resolution: {integrity: sha512-ZarU4+/R593xctDXy/SkyWeS/dg5sG8TxZ2DATd2EdDKHlfqCPnOYzHEo/7XaYpCoSCgk5Sp1sVNhnOzC/ezJg==}
@@ -3978,7 +4017,7 @@ packages:
     peerDependencies:
       react: ^16.8.0
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /@vitejs/plugin-react/1.1.1:
@@ -4141,7 +4180,7 @@ packages:
       react: '>=16.13'
     dependencies:
       lodash: 4.17.21
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
   /@xtuc/ieee754/1.2.0:
@@ -4154,6 +4193,7 @@ packages:
 
   /@yarnpkg/lockfile/1.1.0:
     resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==}
+    dev: false
 
   /JSONStream/1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
@@ -4495,8 +4535,8 @@ packages:
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
       rc-upload: 3.2.1
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       scroll-into-view-if-needed: 2.2.28
       warning: 4.0.3
     transitivePeerDependencies:
@@ -4705,6 +4745,7 @@ packages:
   /at-least-node/1.0.0:
     resolution: {integrity: sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==}
     engines: {node: '>= 4.0.0'}
+    dev: false
 
   /atob/2.1.2:
     resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
@@ -4740,7 +4781,7 @@ packages:
       js-tokens: 3.0.2
     dev: true
 
-  /babel-eslint/10.0.1_eslint@6.8.0:
+  /babel-eslint/10.0.1_5mfawfwqhov474admln32ofh3m_eslint@6.8.0:
     resolution: {integrity: sha512-z7OT1iNV+TjOwHNLLyJk+HN+YVWX+CLE6fPD2SymJZOZQBs+QIexFjhm4keGTm8MW9xr4EC9Q0PbaLB24V5GoQ==}
     engines: {node: '>=6'}
     deprecated: babel-eslint is now @babel/eslint-parser. This package will no longer receive updates.
@@ -4757,6 +4798,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: false
+    patched: true
 
   /babel-helper-builder-react-jsx/6.26.0:
     resolution: {integrity: sha1-Of+DE7dci2Xc7/HzHTg+D/KkCKA=}
@@ -5668,6 +5710,7 @@ packages:
 
   /ci-info/2.0.0:
     resolution: {integrity: sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==}
+    dev: false
 
   /ci-info/3.2.0:
     resolution: {integrity: sha512-dVqRX7fLUm8J6FgHJ418XuIgDLZDkYcDFTeL6TA2gt5WlIZUQrrH6EZrNClwT/H0FateUsZkGIOPRrLbP+PR9A==}
@@ -6061,7 +6104,7 @@ packages:
       emotion: 9.2.12
       emotion-theming: 9.2.9_md2woffurl5yt3dayrtnpfbjvy
       linkifyjs: 2.1.9_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-emotion: 9.2.12_beus4p4qy2l5kloq3acohbokce
       react-inspector: 2.3.1_react@18.1.0
     transitivePeerDependencies:
@@ -7073,7 +7116,7 @@ packages:
     dependencies:
       hoist-non-react-statics: 2.5.5
       prop-types: 15.6.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /emotion/9.2.12:
@@ -7561,7 +7604,7 @@ packages:
       - typescript
     dev: true
 
-  /eslint-plugin-jsx-a11y/6.5.1_eslint@6.8.0:
+  /eslint-plugin-jsx-a11y/6.5.1_5wlsrnjcorawie777qour2ptie_eslint@6.8.0:
     resolution: {integrity: sha512-sVCFKX9fllURnXT2JwLN5Qgo24Ug5NF6dxhkmxsMEUZhXRcGg+X3e1JbJ84YePQKBl5E0ZjAH5Q4rkdcGY99+g==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -7581,6 +7624,7 @@ packages:
       language-tags: 1.0.5
       minimatch: 3.0.4
     dev: false
+    patched: true
 
   /eslint-plugin-prettier/3.1.2_rksq37tsby3pjnerlnzfi7d6w4:
     resolution: {integrity: sha512-GlolCC9y3XZfv3RQfwGew7NnuFDKsfI4lbvRK+PIIo23SFH+LemGs4cKwzAaRa+Mdb+lQO/STaIayno8T5sJJA==}
@@ -8232,6 +8276,7 @@ packages:
     resolution: {integrity: sha512-1IMnbjt4KzsQfnhnzNd8wUEgXZ44IzZaZmnLYx7D5FZlaHt2gW20Cri8Q+E/t5tIj4+epTBub+2Zxu/vNILzqQ==}
     dependencies:
       micromatch: 4.0.4
+    dev: false
 
   /flat-cache/2.0.1:
     resolution: {integrity: sha512-LoQe6yDuUMDzQAEH8sgmh4Md6oZnc/7PjtwjNFSzveXqSHt6ka9fPBuso7IGf9Rz4uqnSnWiFH2B/zj24a5ReA==}
@@ -8411,6 +8456,7 @@ packages:
       graceful-fs: 4.2.8
       jsonfile: 6.1.0
       universalify: 2.0.0
+    dev: false
 
   /fs-minipass/2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
@@ -8962,7 +9008,7 @@ packages:
     dependencies:
       '@types/htmlparser2': 3.10.1
       html-dom-parser: 0.3.0
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-property: 1.0.1
       style-to-object: 0.3.0
     dev: false
@@ -9415,6 +9461,7 @@ packages:
     hasBin: true
     dependencies:
       ci-info: 2.0.0
+    dev: false
 
   /is-ci/3.0.0:
     resolution: {integrity: sha512-kDXyttuLeslKAHYL/K28F2YkM3x5jvFPEw3yXbRptXydjD9rpLEz+C5K5iutY9ZiUu6AP41JdvRQwF4Iqs4ZCQ==}
@@ -10455,7 +10502,7 @@ packages:
     dependencies:
       '@redux-devtools/extension': 3.2.5
       jotai: 2.0.0_react@18.1.0
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - redux
     dev: false
@@ -10469,7 +10516,7 @@ packages:
       react:
         optional: true
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /js-base64/2.6.4:
@@ -10712,7 +10759,7 @@ packages:
       which: 1.3.1
     dev: true
 
-  /karma-mocha-reporter/2.2.5_karma@6.4.1:
+  /karma-mocha-reporter/2.2.5_mok7ytollbnywezj4pomfmw2yy_karma@6.4.1:
     resolution: {integrity: sha1-FRIAlejtgZGG5HoLAS8810GJVWA=}
     peerDependencies:
       karma: '>=0.13'
@@ -10722,6 +10769,7 @@ packages:
       log-symbols: 2.2.0
       strip-ansi: 4.0.0
     dev: true
+    patched: true
 
   /karma-mocha/2.0.1:
     resolution: {integrity: sha512-Tzd5HBjm8his2OA4bouAsATYEpZrp9vC7z5E5j4C5Of5Rrs1jY67RAwXNcVmd/Bnk1wgvQRou0zGVLey44G4tQ==}
@@ -10797,9 +10845,10 @@ packages:
       - utf-8-validate
     dev: true
 
-  /keycode/2.2.1:
+  /keycode/2.2.1_ijco5rdhqzhtzo47bw5o33xhhu:
     resolution: {integrity: sha512-Rdgz9Hl9Iv4QKi8b0OlCRQEzp4AgVxyCtz5S/+VIHezDmrDhkp2N2TqBWOLz0/gbeREXOOiI9/4b8BY9uw2vFg==}
     dev: false
+    patched: true
 
   /keyv/4.0.3:
     resolution: {integrity: sha512-zdGa2TOpSZPq5mU6iowDARnMBZgtCqJ11dJROFi6tg6kTn4nuUdU09lFyLFSaHrWqpIJ+EBq4E8/Dc0Vx5vLdA==}
@@ -10835,6 +10884,7 @@ packages:
     resolution: {integrity: sha512-nIeuVSzdCCs6TDPTqI8w1Yre34sSq7AkZ4B3sfOBbI2CgVSB4Du4aLQijFU2+lhAFCwt9+42Hel6lQNIv6AntQ==}
     dependencies:
       graceful-fs: 4.2.8
+    dev: false
 
   /kleur/3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
@@ -10892,8 +10942,8 @@ packages:
       react: '>= 0.14.0'
       react-dom: '>= 0.14.0'
     dependencies:
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /lint-staged/8.1.7:
@@ -11428,8 +11478,8 @@ packages:
       react-dom: '>=16.9.0'
     dependencies:
       hoist-non-react-statics: 3.3.2
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       shallowequal: 1.1.0
     dev: false
 
@@ -12019,6 +12069,7 @@ packages:
     dependencies:
       is-docker: 2.2.1
       is-wsl: 2.2.0
+    dev: false
 
   /open/8.2.1:
     resolution: {integrity: sha512-rXILpcQlkF/QuFez2BJDf3GsqpjGKbkUUToAIGo9A0Q6ZkoSGogZJulrUdwRkrAsoQvoZsrjCYt8+zblOk7JQQ==}
@@ -12276,6 +12327,7 @@ packages:
       slash: 2.0.0
       tmp: 0.0.33
       yaml: 1.10.2
+    dev: false
 
   /path-browserify/0.0.1:
     resolution: {integrity: sha512-BapA40NHICOS+USX9SN4tyhq+A2RrN/Ws5F0Z5aMHDp98Fl86lX8Oti8B7uN93L4Ifv4fHOEA+pQw87gmMO/lQ==}
@@ -13049,8 +13101,8 @@ packages:
       dom-align: 1.12.2
       lodash: 4.17.21
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -13066,8 +13118,8 @@ packages:
       prop-types: 15.7.2
       raf: 3.4.1
       rc-util: 4.21.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-lifecycles-compat: 3.0.4
     dev: false
 
@@ -13081,8 +13133,8 @@ packages:
       classnames: 2.2.6
       raf: 3.4.1
       rc-util: 4.21.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-cascader/1.2.0_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13136,7 +13188,7 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - react-dom
     dev: false
@@ -13150,8 +13202,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-field-form/1.4.4_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13163,7 +13215,7 @@ packages:
       '@babel/runtime': 7.20.13
       async-validator: 3.5.2
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - react-dom
     dev: false
@@ -13188,7 +13240,7 @@ packages:
       rc-menu: 8.3.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - react-dom
     dev: false
@@ -13219,8 +13271,8 @@ packages:
       classnames: 2.2.6
       raf: 3.4.1
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-motion/2.4.4_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13232,8 +13284,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-notification/4.4.0_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13247,8 +13299,8 @@ packages:
       classnames: 2.2.6
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-pagination/2.2.5_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13259,8 +13311,8 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-picker/1.6.4_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13276,8 +13328,8 @@ packages:
       moment: 2.29.1
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       shallowequal: 1.1.0
     dev: false
 
@@ -13308,8 +13360,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -13322,8 +13374,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -13340,8 +13392,8 @@ packages:
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
       rc-virtual-list: 1.1.6_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       warning: 4.0.3
     dev: false
 
@@ -13356,8 +13408,8 @@ packages:
       classnames: 2.2.6
       rc-tooltip: 4.2.3_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       shallowequal: 1.1.0
     dev: false
 
@@ -13371,8 +13423,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-switch/3.2.2_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13384,8 +13436,8 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-table/7.8.6_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13400,8 +13452,8 @@ packages:
       raf: 3.4.1
       rc-resize-observer: 0.2.6_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       shallowequal: 1.1.0
     dev: false
 
@@ -13454,8 +13506,8 @@ packages:
       rc-select: 11.0.13_ef5jwxihqo6n7gxfmzogljlgcm
       rc-tree: 3.11.0_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-tree/3.11.0_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13470,8 +13522,8 @@ packages:
       rc-motion: 2.4.4_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
       rc-virtual-list: 3.4.1_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-tree/3.3.1_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13486,8 +13538,8 @@ packages:
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
       rc-virtual-list: 1.1.6_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-trigger/2.6.5_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13543,8 +13595,8 @@ packages:
       react-dom: '>=16.9.0'
     dependencies:
       '@babel/runtime': 7.20.13
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-is: 16.13.1
       shallowequal: 1.1.0
     dev: false
@@ -13559,8 +13611,8 @@ packages:
       classnames: 2.2.6
       raf: 3.4.1
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /rc-virtual-list/3.4.1_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13573,8 +13625,8 @@ packages:
       classnames: 2.2.6
       rc-resize-observer: 1.0.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /re-reselect/4.0.1_reselect@4.1.7:
@@ -13582,7 +13634,7 @@ packages:
     peerDependencies:
       reselect: '>1.0.0'
     dependencies:
-      reselect: 4.1.7
+      reselect: 4.1.7_lchp3amipq5ospj3jcph7hcfwu
     dev: false
 
   /re-resizable/6.9.1_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13592,11 +13644,11 @@ packages:
       react-dom: ^16.13.1 || ^17.0.0
     dependencies:
       fast-memoize: 2.5.2
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
-  /react-contexify/5.0.0_ef5jwxihqo6n7gxfmzogljlgcm:
+  /react-contexify/5.0.0_32bg6f6k4pz5sbtodfdfpncmtu_ef5jwxihqo6n7gxfmzogljlgcm:
     resolution: {integrity: sha512-2FIp7lxJ6dtfGr8EZ4uVV5p5TQjd0n2h/JU7PrejNIMiCeZWvSVPFh4lj1ZvjXosglBvP7q5JQQ8yUCdSaMSaw==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -13604,9 +13656,10 @@ packages:
       react-dom: '>=16'
     dependencies:
       clsx: 1.1.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
+    patched: true
 
   /react-dnd-html5-backend/16.0.0:
     resolution: {integrity: sha512-be3lKEbbT8FQcoTjFlQ4ZXG/NVrFNJu9W0INc5rm/5EFQpHCkz+xpbB2U8j9uh5Bvk7AsJyQrZznEut0hrNPIA==}
@@ -13635,16 +13688,17 @@ packages:
       dnd-core: 16.0.1
       fast-deep-equal: 3.1.3
       hoist-non-react-statics: 3.3.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
 
-  /react-dom/18.1.0_react@18.1.0:
+  /react-dom/18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0:
     resolution: {integrity: sha512-fU1Txz7Budmvamp7bshe4Zi32d0ll7ect+ccxNu9FlObT605GOEB8BfO4tmRJ39R5Zj831VCpvQ05QPBW5yb+w==}
     peerDependencies:
       react: ^18.1.0
     dependencies:
       loose-envify: 1.4.0
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       scheduler: 0.22.0
+    patched: true
 
   /react-emotion/9.2.12_beus4p4qy2l5kloq3acohbokce:
     resolution: {integrity: sha512-qt7XbxnEKX5sZ73rERJ92JMbEOoyOwG3BuCRFRkXrsJhEe+rFBRTljRw7yOLHZUCQC4GBObZhjXIduQ8S0ZpYw==}
@@ -13655,7 +13709,7 @@ packages:
       babel-plugin-emotion: 9.2.11
       create-emotion-styled: 9.2.8_prop-types@15.6.2
       emotion: 9.2.12
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - prop-types
     dev: false
@@ -13671,7 +13725,7 @@ packages:
     dependencies:
       object-assign: 4.1.1
       prop-types: 15.7.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-fast-compare: 3.2.0
       react-side-effect: 2.1.1_react@18.1.0
     dev: false
@@ -13684,7 +13738,7 @@ packages:
       highlight-words-core: 1.2.2
       memoize-one: 4.0.3
       prop-types: 15.7.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-hot-loader/4.12.12_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13699,8 +13753,8 @@ packages:
       hoist-non-react-statics: 3.3.2
       loader-utils: 1.4.0
       prop-types: 15.7.2
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
       source-map: 0.7.3
@@ -13712,7 +13766,7 @@ packages:
       react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
     dependencies:
       prop-types: 15.7.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-input-autosize/3.0.0_react@18.1.0:
@@ -13721,7 +13775,7 @@ packages:
       react: ^16.3.0 || ^17.0.0
     dependencies:
       prop-types: 15.7.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-inspector/2.3.1_react@18.1.0:
@@ -13732,7 +13786,7 @@ packages:
       babel-runtime: 6.26.0
       is-dom: 1.1.0
       prop-types: 15.7.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-is/16.13.1:
@@ -13747,7 +13801,7 @@ packages:
     peerDependencies:
       react: '>=16.8'
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-lifecycles-compat/3.0.4:
@@ -13768,8 +13822,8 @@ packages:
       react: ^15.5.x || ^16.x
       react-dom: ^15.5.x || ^16.x
     dependencies:
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /react-popper/2.2.3_luamgza7xv6i2k5kfnj4s4czvu:
@@ -13779,7 +13833,7 @@ packages:
       react: ^16.8.0
     dependencies:
       '@popperjs/core': 2.4.4
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-fast-compare: 3.2.0
       warning: 4.0.3
     dev: false
@@ -13795,7 +13849,7 @@ packages:
       react: ^18.0.0
     dependencies:
       loose-envify: 1.4.0
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       scheduler: 0.21.0
     dev: true
 
@@ -13804,7 +13858,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /react-select/3.1.0_ef5jwxihqo6n7gxfmzogljlgcm:
+  /react-select/3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm:
     resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
     peerDependencies:
       react: ^16.8.0
@@ -13816,11 +13870,12 @@ packages:
       '@emotion/css': 10.0.27
       memoize-one: 5.2.1
       prop-types: 15.7.2
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-input-autosize: 2.2.2_react@18.1.0
       react-transition-group: 4.4.2_ef5jwxihqo6n7gxfmzogljlgcm
     dev: false
+    patched: true
 
   /react-select/4.3.1_356o67lhailtc3vwidrfzjrksa:
     resolution: {integrity: sha512-HBBd0dYwkF5aZk1zP81Wx5UsLIIT2lSvAY2JiJo199LjoLHoivjn9//KsmvQMEFGNhe58xyuOITjfxKCcGc62Q==}
@@ -13830,11 +13885,11 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       '@emotion/cache': 11.4.0
-      '@emotion/react': 11.1.2_hckexctj6og6b6fgnwzdyzgtia
+      '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_hckexctj6og6b6fgnwzdyzgtia
       memoize-one: 5.2.1
       prop-types: 15.7.2
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-input-autosize: 3.0.0_react@18.1.0
       react-transition-group: 4.4.2_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
@@ -13847,7 +13902,7 @@ packages:
     peerDependencies:
       react: ^16.3.0 || ^17.0.0
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-spring/9.0.0-rc.3_5vzz734aui5gu3jm6wlduec5ym:
@@ -13881,7 +13936,7 @@ packages:
       highlight.js: 9.15.10
       lowlight: 1.12.1
       prismjs: 1.25.0
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       refractor: 2.10.1
     dev: false
 
@@ -13892,7 +13947,7 @@ packages:
     dependencies:
       object-assign: 4.1.1
       prop-types: 15.6.2
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-is: 16.13.1
       scheduler: 0.15.0
     dev: true
@@ -13902,7 +13957,7 @@ packages:
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-transition-group/4.4.2_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13915,8 +13970,8 @@ packages:
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.7.2
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /react-use-gesture/6.0.2_react@18.1.0:
@@ -13925,7 +13980,7 @@ packages:
     peerDependencies:
       react: '>= 16.8.0'
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /react-use-measure/2.1.1_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13935,8 +13990,8 @@ packages:
       react-dom: '>=16.13'
     dependencies:
       debounce: 1.2.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: true
 
   /react-virtualized-auto-sizer/1.0.2_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -13946,8 +14001,8 @@ packages:
       react: ^15.3.0 || ^16.0.0-alpha
       react-dom: ^15.3.0 || ^16.0.0-alpha
     dependencies:
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /react-vtree/2.0.0_7r23lgncqphirlptfj2v6vu42q:
@@ -13960,8 +14015,8 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       '@types/react-window': 1.8.5
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-window: 1.8.7_ef5jwxihqo6n7gxfmzogljlgcm
     dev: false
 
@@ -13974,8 +14029,8 @@ packages:
     dependencies:
       '@babel/runtime': 7.17.9
       memoize-one: 5.2.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /react-windowed-select/3.1.2_hoopuhfcxzwq3qcfqmjjrgp5yu:
@@ -13988,19 +14043,20 @@ packages:
       '@types/react-dom': 17.0.9
       '@types/react-select': 4.0.18
       '@types/react-window': 1.8.5
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-select: 4.3.1_356o67lhailtc3vwidrfzjrksa
       react-window: 1.8.7_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - '@babel/core'
     dev: false
 
-  /react/18.1.0:
+  /react/18.1.0_47cciibm4ysmleigs33s763fqu:
     resolution: {integrity: sha512-4oL8ivCz5ZEPyclFQXaNksK3adutVS8l2xzZU0cqEFrE9Sb7fC0EFK5uEk74wIreL1DERyjvsU915j1pcT2uEQ==}
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
+    patched: true
 
   /read-only-stream/2.0.0:
     resolution: {integrity: sha1-JyT9aoET1zdkrCiNQ4YnDB2/F/A=}
@@ -14201,9 +14257,10 @@ packages:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
     dev: true
 
-  /reselect/4.1.7:
+  /reselect/4.1.7_lchp3amipq5ospj3jcph7hcfwu:
     resolution: {integrity: sha512-Zu1xbUt3/OPwsXL46hvOOoQrap2azE7ZQbokq61BQfiXvhewsKDwhMeZjTX9sX0nvw1t/U5Audyn1I9P/m9z0A==}
     dev: false
+    patched: true
 
   /resize-observer-polyfill/1.5.0:
     resolution: {integrity: sha512-M2AelyJDVR/oLnToJLtuDJRBBWUGUvvGigj1411hXhAdyFWqMaqHp7TixW3FpiLuVaikIcR1QL+zqoJoZlOgpg==}
@@ -15347,7 +15404,7 @@ packages:
     peerDependencies:
       react: '>=17.0'
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
   /svg-parser/2.0.4:
@@ -16012,7 +16069,7 @@ packages:
       querystring: 0.2.0
     dev: true
 
-  /use-context-selector/1.3.9_tvz7qjexdclsfyfjk6db43e66q:
+  /use-context-selector/1.3.9_2j5b55brghbi7pju3qvaqzwbdi_tvz7qjexdclsfyfjk6db43e66q:
     resolution: {integrity: sha512-YgzRyeFjoJXwFn2qLVAuIbV6EQ8DOuzu3SS/eiCxyAyvBhcn02jYSz8c5v22QQU3LW6Ez/Iyo62kKvS7Kdqt3A==}
     peerDependencies:
       react: '>=16.8.0'
@@ -16025,17 +16082,18 @@ packages:
       react-native:
         optional: true
     dependencies:
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       scheduler: 0.17.0
     dev: false
+    patched: true
 
   /use-memo-one/1.1.2_react@18.1.0:
     resolution: {integrity: sha512-u2qFKtxLsia/r8qG0ZKkbytbztzRb317XCkT7yP8wxL0tZ/CzK2G+WWie5vWvpyeP7+YoPIwbJoIHJ4Ba4k0oQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /use-sync-external-store/1.2.0_react@18.1.0:
@@ -16043,7 +16101,7 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
   /use/3.1.1:
@@ -16750,7 +16808,7 @@ packages:
       react:
         optional: true
     dependencies:
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
   /zustand/4.1.5_immer@3.2.0+react@18.1.0:
@@ -16766,7 +16824,7 @@ packages:
         optional: true
     dependencies:
       immer: 3.2.0
-      react: 18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
       use-sync-external-store: 1.2.0_react@18.1.0
     dev: false
 
@@ -16780,13 +16838,13 @@ packages:
       react: 18.1.0
       react-dom: 18.1.0
     dependencies:
-      '@emotion/react': 11.1.2_gdgxr7fdmsbhtbuls64pcvulza
+      '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_gdgxr7fdmsbhtbuls64pcvulza
       '@emotion/serialize': 1.0.2
       '@emotion/styled': 11.0.0_kf2s5ttaepyzuejtstis4wzmwe
       '@emotion/styled-base': 11.0.0
       patch-package: 6.5.1
-      react: 18.1.0
-      react-dom: 18.1.0_react@18.1.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       uuid: 3.3.2
     transitivePeerDependencies:
       - '@babel/core'
