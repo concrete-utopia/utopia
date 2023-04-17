@@ -404,7 +404,7 @@ describe('Inserting into absolute', () => {
 
     it('Should insert a fragment', async () => {
       const renderResult = await setupInsertTest(inputCode)
-      await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
+      await enterInsertModeFromInsertMenu(renderResult, 'Fragment')
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
@@ -456,7 +456,7 @@ describe('Inserting into absolute', () => {
                 backgroundColor: '#d3d3d3',
               }}
             >
-            {true ? (
+            <React.Fragment>
               <div
                 style={{
                   backgroundColor: '#aaaaaa33',
@@ -468,7 +468,7 @@ describe('Inserting into absolute', () => {
                 }}
                 data-uid='ddd'
               />
-            ) : null}
+            </React.Fragment>
             </div>
             <div
               data-uid='ccc'
