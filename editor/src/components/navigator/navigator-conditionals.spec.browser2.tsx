@@ -1,50 +1,46 @@
-import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import {
-  TestSceneUID,
-  renderTestEditorWithCode,
-  EditorRenderResult,
-  getPrintedUiJsCode,
-} from '../../components/canvas/ui-jsx.test-utils'
-import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
 import { fireEvent, screen } from '@testing-library/react'
-import { selectComponents } from '../editor/actions/meta-actions'
-import * as EP from '../../core/shared/element-path'
 import { act } from 'react-dom/test-utils'
 import {
-  conditionalClauseNavigatorEntry,
-  DerivedState,
-  EditorState,
-  navigatorEntryToKey,
-  regularNavigatorEntry,
-  syntheticNavigatorEntry,
-  varSafeNavigatorEntryToKey,
-} from '../editor/store/editor-state'
-import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { navigatorDepth } from './navigator-utils'
-import { compose2Optics, compose3Optics, Optic } from '../../core/shared/optics/optics'
+  EditorRenderResult,
+  TestSceneUID,
+  getPrintedUiJsCode,
+  renderTestEditorWithCode,
+} from '../../components/canvas/ui-jsx.test-utils'
 import { forElementOptic } from '../../core/model/common-optics'
-import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import {
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
 import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
-import {
-  isJSXConditionalExpression,
-  isJSXElement,
-  JSXElementChild,
-} from '../../core/shared/element-template'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
+import { getDomRectCenter } from '../../core/shared/dom-utils'
+import * as EP from '../../core/shared/element-path'
+import { JSXElementChild, isJSXConditionalExpression } from '../../core/shared/element-template'
+import { WindowPoint, offsetPoint, windowPoint } from '../../core/shared/math-utils'
+import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
+import { unsafeGet } from '../../core/shared/optics/optic-utilities'
+import { Optic, compose3Optics } from '../../core/shared/optics/optics'
+import { ElementPath } from '../../core/shared/project-file-types'
 import { getUtopiaID } from '../../core/shared/uid-utils'
-import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { pressKey } from '../canvas/event-helpers.test-utils'
-import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { elementPaste, pasteJSXElements } from '../editor/actions/action-creators'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { getTargetParentForPaste } from '../../utils/clipboard'
-import { fromTypeGuard } from '../../core/shared/optics/optic-creators'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { conditionalClause, ReparentTargetParent } from '../editor/store/reparent-target'
+import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import { elementPaste, pasteJSXElements } from '../editor/actions/action-creators'
+import { selectComponents } from '../editor/actions/meta-actions'
+import {
+  DerivedState,
+  EditorState,
+  conditionalClauseNavigatorEntry,
+  navigatorEntryToKey,
+  regularNavigatorEntry,
+  syntheticNavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../editor/store/editor-state'
+import { ReparentTargetParent, conditionalClause } from '../editor/store/reparent-target'
+import { NavigatorItemTestId } from './navigator-item/navigator-item'
+import { navigatorDepth } from './navigator-utils'
+import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -317,6 +313,56 @@ export var ${BakedInStoryboardVariableName} = (
 `
 }
 
+function getProjectCodeEmptySingleConditional(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      style={{
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 400,
+        height: 700,
+      }}
+      data-uid='${TestSceneUID}'
+      data-testid='${TestSceneUID}'
+    >
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='containing-div'
+        data-testid='containing-div'
+      >
+        {
+          // @utopia/uid=conditional
+          true ? null : null
+        }
+        <div
+          style={{
+            height: 150,
+            width: 150,
+            position: 'absolute',
+            left: 300,
+            top: 300,
+            backgroundColor: 'darkblue',
+          }}
+          data-uid='sibling-div'
+          data-testid='sibling-div'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+}
+
 function navigatorStructure(editorState: EditorState, deriveState: DerivedState): string {
   const lines = deriveState.visibleNavigatorTargets.map((target) => {
     const targetAsText = navigatorEntryToKey(target)
@@ -557,6 +603,100 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
+  it('can reorder to before the conditional', async () => {
+    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
+
+    const expectedNavigatorStructure = `  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`
+
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(expectedNavigatorStructure)
+
+    // Select the entry we plan to drag.
+    const elementPathToDrag = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/sibling-div`,
+    )
+
+    await act(async () => {
+      await renderResult.dispatch(selectComponents([elementPathToDrag], false), false)
+      await renderResult.getDispatchFollowUpActionsFinished()
+    })
+
+    // Getting info relating to what element will be dragged.
+    const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+    )
+    const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
+    const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)
+
+    // Getting info relating to where the element will be dragged to.
+    const elementPathToTarget = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1`,
+    )
+    const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget))}`,
+    )
+    const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
+    const navigatorEntryToTargetCenter = getDomRectCenter(navigatorEntryToTargetRect)
+    const dragTo = {
+      x: navigatorEntryToTargetCenter.x,
+      y: navigatorEntryToTargetCenter.y + 3,
+    }
+
+    const dragDelta = {
+      x: dragTo.x - navigatorEntryToDragCenter.x,
+      y: dragTo.y - navigatorEntryToDragCenter.y,
+    }
+
+    FOR_TESTS_setNextGeneratedUids(['fragment'])
+
+    await act(async () =>
+      dragElement(
+        renderResult,
+        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+        TopDropTargetLineTestId(
+          varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
+        ),
+        windowPoint(navigatorEntryToDragCenter),
+        windowPoint(dragDelta),
+        'apply-hover-events',
+      ),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
+  })
   it('dragging into an empty inactive clause, takes the place of the empty value', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
@@ -679,6 +819,66 @@ describe('conditionals in the navigator', () => {
       )}`,
     })
     expect(got).toEqual(projectCode)
+  })
+  it('dragging in between clauses does nothing', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCodeEmptySingleConditional(),
+      'await-first-dom-report',
+    )
+
+    const dragMeElement = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-regular_utopia_storyboard_uid/scene_aaa/containing_div/sibling_div`,
+    )
+
+    const dragMeElementRect = dragMeElement.getBoundingClientRect()
+    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
+    const firstDivElement = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-drag-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional/a25_attribute`,
+    )
+    const firstDivElementRect = firstDivElement.getBoundingClientRect()
+    const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
+    const dragTo = {
+      x: firstDivElementCenter.x,
+      y: firstDivElementRect.y + 3,
+    }
+
+    const dragDelta = windowPoint({
+      x: dragTo.x - dragMeElementCenter.x,
+      y: dragTo.y - dragMeElementCenter.y,
+    })
+
+    const targetElement = EP.fromString(
+      'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+    )
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(selectComponents([targetElement], false), false)
+      await dispatchDone
+    })
+
+    act(() =>
+      dragElement(
+        renderResult,
+        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/containing_div/sibling_div`,
+        `navigator-item-drop-after-conditional_clause_utopia_storyboard_uid/scene_aaa/containing_div/conditional_true-case`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+      ),
+    )
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+        'regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional',
+        'conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case',
+        'synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/a25-attribute',
+        'conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case',
+        'synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/129-attribute',
+        'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+      ],
+    )
   })
   it('dragging out of an inactive clause, replaces with null', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')

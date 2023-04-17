@@ -1,5 +1,5 @@
 /* eslint-disable jest/expect-expect */
-import { act } from '@testing-library/react'
+import { act, within } from '@testing-library/react'
 import { forElementOptic } from '../../core/model/common-optics'
 import { conditionalWhenTrueOptic } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -34,8 +34,107 @@ import { EditorState } from './store/editor-state'
 import { ReparentTargetParent } from './store/reparent-target'
 import { ElementPaste } from './action-types'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
 
 describe('conditionals', () => {
+  describe('inspector', () => {
+    it('labels for empty', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          {
+            // @utopia/uid=cond1
+            true ? null : null
+          }
+          {
+            // @utopia/uid=cond2
+            true ? 'hello' : null
+          }
+          {
+            // @utopia/uid=cond3
+            true ? null : 'world'
+          }
+          {
+            // @utopia/uid=cond4
+            true ? 'hello' : 'world'
+          }
+          </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/cond1')])
+      {
+        const emptyLabelsInConditionalInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('Empty')
+
+        expect(emptyLabelsInConditionalInspector.length).toEqual(2)
+
+        const helloLabelsInInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('hello')
+
+        expect(helloLabelsInInspector.length).toEqual(0)
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/cond2')])
+      {
+        const emptyLabelsInConditionalInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('Empty')
+
+        expect(emptyLabelsInConditionalInspector.length).toEqual(1)
+
+        const helloLabelsInInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('hello')
+
+        expect(helloLabelsInInspector.length).toEqual(1)
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/cond3')])
+      {
+        const emptyLabelsInConditionalInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('Empty')
+
+        expect(emptyLabelsInConditionalInspector.length).toEqual(1)
+
+        const worldLabelsInInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('world')
+
+        expect(worldLabelsInInspector.length).toEqual(1)
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/cond4')])
+      {
+        const emptyLabelsInConditionalInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('Empty')
+
+        expect(emptyLabelsInConditionalInspector.length).toEqual(0)
+
+        const helloLabelsInInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('hello')
+
+        expect(helloLabelsInInspector.length).toEqual(1)
+
+        const worldLabelsInInspector = within(
+          editor.renderedDOM.getByTestId(ConditionalSectionTestId),
+        ).queryAllByText('world')
+
+        expect(worldLabelsInInspector.length).toEqual(1)
+      }
+    })
+  })
   describe('deletion', () => {
     it('replaces a branch with null', async () => {
       const startSnippet = `
