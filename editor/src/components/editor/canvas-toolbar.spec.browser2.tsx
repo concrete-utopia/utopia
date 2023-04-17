@@ -1,3 +1,4 @@
+import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import * as EP from '../../core/shared/element-path'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
@@ -84,6 +85,8 @@ describe('canvas toolbar', () => {
       y: targetElementBounds.y + 1005,
     })
 
+    FOR_TESTS_setNextGeneratedUids(['new-div'])
+
     const insertConditionalButton = editor.renderedDOM.getByTestId(InsertConditionalButtonTestId)
     const insertConditionalButtonRect = insertConditionalButton.getBoundingClientRect()
     await mouseClickAtPoint(insertConditionalButton, getDomRectCenter(insertConditionalButtonRect))
@@ -144,7 +147,7 @@ describe('canvas toolbar', () => {
                     width: 1000,
                     height: 1000,
                   }}
-                  data-uid='876'
+                  data-uid='new-div'
                 />
                 ) : null}
             </div>
