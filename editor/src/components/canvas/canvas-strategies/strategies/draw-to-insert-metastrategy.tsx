@@ -66,7 +66,7 @@ import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/lay
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
-import { wrapInContainerCommand } from '../../commands/wrap-in-conditional-command'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 

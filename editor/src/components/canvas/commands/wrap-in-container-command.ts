@@ -22,7 +22,7 @@ import { assertNever } from '../../../core/shared/utils'
 type ContainerToWrapIn = InsertionSubjectWrapper
 
 export interface WrapInContainerCommand extends BaseCommand {
-  type: 'WRAP_IN_CONDITIONAL'
+  type: 'WRAP_IN_CONTAINER'
   whenToRun: WhenToRun
   target: ElementPath
   wrapperUID: string
@@ -36,7 +36,7 @@ export function wrapInContainerCommand(
   wrapper: ContainerToWrapIn,
 ): WrapInContainerCommand {
   return {
-    type: 'WRAP_IN_CONDITIONAL',
+    type: 'WRAP_IN_CONTAINER',
     whenToRun: whenToRun,
     target: target,
     wrapperUID: wrapperUID,
@@ -44,7 +44,7 @@ export function wrapInContainerCommand(
   }
 }
 
-export const runWrapInConditionalCommand: CommandFunction<WrapInContainerCommand> = (
+export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> = (
   editor: EditorState,
   command: WrapInContainerCommand,
 ) => {
@@ -59,7 +59,7 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInContainerCommand
 
       const wrapper = getInsertionSubjectWrapper(command.wrapper, command.wrapperUID, elementToWrap)
 
-      // Insert the conditional at the initial index
+      // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
       const insertionResult = insertElementAtPath(
         editor.projectContents,
@@ -91,7 +91,7 @@ export const runWrapInConditionalCommand: CommandFunction<WrapInContainerCommand
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Wrapped Element ${EP.toUid(command.target)} in a conditional`,
+    commandDescription: `Wrapped Element ${EP.toUid(command.target)} in a ${command.wrapper}`,
   }
 }
 

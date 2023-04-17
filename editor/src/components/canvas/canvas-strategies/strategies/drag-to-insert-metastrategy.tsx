@@ -57,7 +57,7 @@ import {
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
-import { wrapInContainerCommand } from '../../commands/wrap-in-conditional-command'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
