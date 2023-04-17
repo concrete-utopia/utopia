@@ -910,6 +910,7 @@ export interface AddStoryboardFile {
 export interface UpdateChildText {
   action: 'UPDATE_CHILD_TEXT'
   target: ElementPath
+  editingTheChildrenContent: false | 'children' | 'whenTrue' | 'whenFalse'
   text: string
 }
 

@@ -1456,10 +1456,15 @@ export function sendLinterRequestMessage(
   }
 }
 
-export function updateChildText(target: ElementPath, text: string): UpdateChildText {
+export function updateChildText(
+  target: ElementPath,
+  text: string,
+  editingTheChildrenContent: false | 'children' | 'whenTrue' | 'whenFalse',
+): UpdateChildText {
   return {
     action: 'UPDATE_CHILD_TEXT',
     target: target,
+    editingTheChildrenContent: editingTheChildrenContent,
     text: text,
   }
 }

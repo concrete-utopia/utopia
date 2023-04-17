@@ -56,7 +56,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
+import { TextEditorProps, TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
@@ -366,12 +366,13 @@ export function renderCoreElement(
       if (elementIsTextEdited) {
         const text = trimAndJoinTextFromJSXElements([actualElement])
         const textContent = unescapeHTML(text ?? '')
-        const textEditorProps = {
+        const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
+          editingTheChildrenContent: conditionValue ? 'whenTrue' : 'whenFalse',
         }
 
         return buildSpyWrappedElement(
@@ -435,12 +436,13 @@ export function renderCoreElement(
       if (elementIsTextEdited) {
         const text = trimAndJoinTextFromJSXElements([element])
         const textContent = unescapeHTML(text ?? '')
-        const textEditorProps = {
+        const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
           component: React.Fragment,
           passthroughProps: {},
+          editingTheChildrenContent: false,
         }
 
         return buildSpyWrappedElement(
@@ -664,12 +666,13 @@ function renderJSXElement(
     if (elementIsTextEdited) {
       const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
       const textContent = unescapeHTML(text ?? '')
-      const textEditorProps = {
+      const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
         component: FinalElement,
         passthroughProps: finalProps,
+        editingTheChildrenContent: 'children',
       }
 
       return buildSpyWrappedElement(

@@ -414,6 +414,7 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
+  modifyOpenJsxChildAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4927,24 +4928,62 @@ export const UPDATE_FNS = {
     action: UpdateChildText,
     editorStore: EditorStoreUnpatched,
   ): EditorStoreUnpatched => {
-    const withUpdatedText = modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        if (action.text.trim() === '') {
-          return {
-            ...element,
-            children: [],
-          }
-        } else {
-          return {
-            ...element,
-            children: [jsxTextBlock(action.text)],
-          }
-        }
-      },
-      editorStore.unpatchedEditor,
-      RevisionsState.ParsedAheadNeedsReparsing,
-    )
+    const { editingTheChildrenContent } = action
+    const withUpdatedText = (() => {
+      if (editingTheChildrenContent === 'children') {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            if (action.text.trim() === '') {
+              return {
+                ...element,
+                children: [],
+              }
+            } else {
+              const result = {
+                ...element,
+                children: [jsxTextBlock(action.text)],
+              }
+              return result
+            }
+          },
+          editorStore.unpatchedEditor,
+          RevisionsState.ParsedAheadNeedsReparsing,
+        )
+      } else if (
+        editingTheChildrenContent === 'whenFalse' ||
+        editingTheChildrenContent === 'whenTrue'
+      ) {
+        return modifyOpenJsxElementOrConditionalAtPath(
+          action.target,
+          (element) => {
+            const result = {
+              ...element,
+              [editingTheChildrenContent]: jsxTextBlock(action.text),
+            }
+            return result
+          },
+          editorStore.unpatchedEditor,
+          RevisionsState.ParsedAheadNeedsReparsing,
+        )
+      } else if (editingTheChildrenContent === false) {
+        return modifyOpenJsxChildAtPath(
+          action.target,
+          (element) => {
+            const comments = 'comments' in element ? element.comments : emptyComments
+            if (action.text.trim() === '') {
+              return jsExpressionValue(null, comments, element.uid)
+            } else {
+              return jsExpressionValue(action.text, comments, element.uid)
+            }
+          },
+          editorStore.unpatchedEditor,
+          RevisionsState.ParsedAheadNeedsReparsing,
+        )
+      } else {
+        assertNever(editingTheChildrenContent)
+      }
+    })()
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
 
     if (withUpdatedText === withCollapsedElements) {

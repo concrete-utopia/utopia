@@ -35,6 +35,7 @@ import {
   isIntrinsicElement,
   jsxFragment,
   JSXConditionalExpression,
+  isJSXArbitraryBlock,
 } from '../shared/element-template'
 import {
   isParseSuccess,
@@ -248,6 +249,7 @@ function transformAtPathOptionally(
         }
       }
       if (firstUIDOrIndex in element.elementsWithin) {
+        // TODO I think this should never run and in fact throw an error
         const updated = findAndTransformAtPathInner(
           element.elementsWithin[firstUIDOrIndex],
           workingPath,
@@ -263,15 +265,20 @@ function transformAtPathOptionally(
           }
         }
       }
+    } else if (isJSXArbitraryBlock(element)) {
+      if (getUtopiaID(element) === firstUIDOrIndex && tailPath.length === 0) {
+        return transform(element)
+      }
     } else if (isJSXConditionalExpression(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
         const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
-          return {
+          const result = {
             ...element,
             whenTrue: updatedWhenTrue,
           }
+          return result
         }
         if (updatedWhenFalse != null) {
           return {

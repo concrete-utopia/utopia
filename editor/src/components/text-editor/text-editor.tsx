@@ -41,8 +41,9 @@ import { TextRelatedProperties } from '../../core/properties/css-properties'
 
 export const TextEditorSpanId = 'text-editor'
 
-interface TextEditorProps {
+export interface TextEditorProps {
   elementPath: ElementPath
+  editingTheChildrenContent: false | 'children' | 'whenTrue' | 'whenFalse'
   text: string
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
@@ -217,7 +218,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditor = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps } = props
+  const { elementPath, text, component, passthroughProps, editingTheChildrenContent } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -279,12 +280,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         } else {
           if (elementState != null && savedContentRef.current !== content) {
             savedContentRef.current = content
-            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content)]))
+            requestAnimationFrame(() =>
+              dispatch([getSaveAction(elementPath, content, editingTheChildrenContent)]),
+            )
           }
         }
       }
     }
-  }, [dispatch, elementPath, elementState, metadataRef])
+  }, [dispatch, elementPath, elementState, editingTheChildrenContent, metadataRef])
 
   React.useEffect(() => {
     if (myElement.current == null) {
@@ -344,11 +347,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([getSaveAction(elementPath, content), updateEditorMode(EditorModes.selectMode())])
+      dispatch([
+        getSaveAction(elementPath, content, editingTheChildrenContent),
+        updateEditorMode(EditorModes.selectMode()),
+      ])
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode())])
     }
-  }, [dispatch, elementPath, elementState])
+  }, [dispatch, elementPath, elementState, editingTheChildrenContent])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -484,6 +490,10 @@ function filterEventHandlerProps(props: Record<string, any>) {
   return filteredProps
 }
 
-function getSaveAction(elementPath: ElementPath, content: string): EditorAction {
-  return updateChildText(elementPath, escapeHTML(content))
+function getSaveAction(
+  elementPath: ElementPath,
+  content: string,
+  editingTheChildrenContent: false | 'children' | 'whenTrue' | 'whenFalse',
+): EditorAction {
+  return updateChildText(elementPath, escapeHTML(content), editingTheChildrenContent)
 }
