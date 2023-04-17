@@ -189,7 +189,7 @@ describe('Floating insert menu', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <span data-uid='sample-text'>Utopia rules</span>
+    <span data-uid='sample-text'>Sample text</span>
   </div>`),
     )
   })
