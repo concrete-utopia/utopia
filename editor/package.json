@@ -21,7 +21,7 @@
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "test-base": "jest --config ./jest.config.js",
     "test": "pnpm run test-base --maxWorkers '50%'",
-    "test-ci": "NODE_OPTIONS='--max_old_space_size=6656 --openssl-legacy-provider' xvfb-run -a pnpm run test-base -- --maxWorkers=1",
+    "test-ci": "NODE_OPTIONS='--max_old_space_size=6656 --openssl-legacy-provider' xvfb-run -a pnpm run test-base --maxWorkers=1",
     "test-debug": "NODE_OPTIONS='--inspect-brk --openssl-legacy-provider' jest --config ./jest.config.js --runInBand",
     "test-watch": "pnpm run test -- --watch",
     "test-update-snapshot": "pnpm run test -- --updateSnapshot",
