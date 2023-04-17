@@ -27,6 +27,7 @@ import {
   CanvasRectangle,
   isInfinityRectangle,
   offsetPoint,
+  windowPoint,
 } from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
@@ -58,7 +59,7 @@ function ensureInInsertMode(renderResult: EditorRenderResult): void {
 
 async function enterInsertModeFromInsertMenu(
   renderResult: EditorRenderResult,
-  elementType: 'div' | 'img' = 'div',
+  elementType: string = 'div',
 ) {
   const insertButton = renderResult.renderedDOM.getByTestId(`insert-item-${elementType}`)
   const insertButtonBounds = insertButton.getBoundingClientRect()
@@ -159,6 +160,8 @@ function isIndicatorBetweenSiblingsBBBCCC(
     )
   }
 }
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runInsertTest", "runClickToInsertTest", "drawToInsertTestMaybeAddsFlexGrow", "testDragToInsertImageAspectRatio" ] }] */
 
 describe('Inserting into absolute', () => {
   const inputCode = makeTestProjectCodeWithSnippet(`
@@ -313,6 +316,174 @@ describe('Inserting into absolute', () => {
         width: xDelta,
         height: xDelta,
       })
+    })
+
+    it('Should insert a conditional', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+      await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
+
+      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const dragDelta = windowPoint({ x: 50, y: 40 })
+
+      const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: targetElementBounds.x + 5,
+        y: targetElementBounds.y + 5,
+      })
+      const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: startPoint.x + dragDelta.x,
+        y: startPoint.y + dragDelta.y,
+      })
+
+      // Move before starting dragging
+      await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+      // Highlight should show the candidate parent
+      expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+      // Drag from inside bbb to inside ccc
+      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // Check that the inserted element is a child of bbb
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='aaa'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+              position: 'relative',
+            }}
+          >
+            <div
+              data-uid='bbb'
+              data-testid='bbb'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 380,
+                height: 180,
+                backgroundColor: '#d3d3d3',
+              }}
+            >
+            {true ? (
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: 50,
+                  height: 40,
+                }}
+                data-uid='ddd'
+              />
+            ) : null}
+            </div>
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 200,
+                width: 380,
+                height: 190,
+                backgroundColor: '#FF0000',
+              }}
+            />
+          </div>
+        `),
+      )
+    })
+
+    it('Should insert a fragment', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+      await enterInsertModeFromInsertMenu(renderResult, 'Fragment')
+
+      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const dragDelta = windowPoint({ x: 50, y: 40 })
+
+      const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: targetElementBounds.x + 5,
+        y: targetElementBounds.y + 5,
+      })
+      const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: startPoint.x + dragDelta.x,
+        y: startPoint.y + dragDelta.y,
+      })
+
+      // Move before starting dragging
+      await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+      // Highlight should show the candidate parent
+      expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+      // Drag from inside bbb to inside ccc
+      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // Check that the inserted element is a child of bbb
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='aaa'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+              position: 'relative',
+            }}
+          >
+            <div
+              data-uid='bbb'
+              data-testid='bbb'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 380,
+                height: 180,
+                backgroundColor: '#d3d3d3',
+              }}
+            >
+            <React.Fragment>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: 50,
+                  height: 40,
+                }}
+                data-uid='ddd'
+              />
+            </React.Fragment>
+            </div>
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 200,
+                width: 380,
+                height: 190,
+                backgroundColor: '#FF0000',
+              }}
+            />
+          </div>
+        `),
+      )
     })
   })
 

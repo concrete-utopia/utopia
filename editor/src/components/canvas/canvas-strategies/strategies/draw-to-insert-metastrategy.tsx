@@ -14,6 +14,7 @@ import {
   emptyComments,
   JSXAttributes,
   jsExpressionValue,
+  jsxConditionalExpression,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -23,7 +24,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { InsertionSubject } from '../../../editor/editor-modes'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -39,6 +40,7 @@ import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-rep
 import {
   CanvasStrategyFactory,
   findCanvasStrategy,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
@@ -65,7 +67,9 @@ import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/lay
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -183,6 +187,11 @@ export function drawToInsertStrategyFactory(
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
           if (interactionSession.interactionData.drag != null) {
             const insertionCommand = getInsertionCommands(
               insertionSubject,
@@ -225,11 +234,44 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([
-                insertionCommand.command,
-                reparentCommand,
-                resizeCommand,
-              ])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand =
+                maybeWrapperWithUid != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
+
+              return strategyApplicationResult(
+                [
+                  insertionCommand.command,
+                  reparentCommand,
+                  resizeCommand,
+                  ...optionalWrappingCommand,
+                ],
+                {
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+                  },
+                },
+              )
             }
           } else if (strategyLifecycle === 'end-interaction') {
             const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
@@ -258,7 +300,39 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([insertionCommand.command, reparentCommand])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand =
+                maybeWrapperWithUid != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
+
+              return strategyApplicationResult(
+                [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                {
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+                  },
+                },
+              )
             }
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened

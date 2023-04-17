@@ -35,8 +35,9 @@ async function startDraggingFromInsertMenuDivButtonToPoint(
   targetPoint: { x: number; y: number },
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
+  elementType: string = 'div',
 ): Promise<void> {
-  const insertButton = renderResult.renderedDOM.getByTestId('insert-item-div')
+  const insertButton = renderResult.renderedDOM.getByTestId(`insert-item-${elementType}`)
   const insertButtonBounds = insertButton.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -70,8 +71,14 @@ async function dragFromInsertMenuDivButtonToPoint(
   modifiers: Modifiers,
   renderResult: EditorRenderResult,
   showDragOutline: 'show-drag-outline' | 'no-drag-outline',
+  elementType: string = 'div',
 ) {
-  await startDraggingFromInsertMenuDivButtonToPoint(targetPoint, modifiers, renderResult)
+  await startDraggingFromInsertMenuDivButtonToPoint(
+    targetPoint,
+    modifiers,
+    renderResult,
+    elementType,
+  )
   const dragOutlineControl = await renderResult.renderedDOM.queryByTestId(DragOutlineControlTestId)
   if (showDragOutline === 'show-drag-outline') {
     expect(dragOutlineControl).not.toBeNull()
@@ -254,6 +261,150 @@ describe('Dragging from the insert menu into an absolute layout', () => {
               data-uid='ddd'
             />
           </div>
+        </div>
+      `),
+    )
+  })
+
+  it('Should insert a conditional into an absolute layout', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+
+    const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
+    const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+    const targetPoint = {
+      x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+      y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+    }
+
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+      'Conditional',
+    )
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='larger'
+            data-testid='larger'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            {true ? (
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 140,
+                  top: 40,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='ddd'
+              />
+            ) : null}
+          </div>
+          <div
+            data-uid='smaller'
+            data-testid='smaller'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 20,
+              height: 20,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Should insert a fragment into an absolute layout', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+
+    const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
+    const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+    const targetPoint = {
+      x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+      y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+    }
+
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+      'Fragment',
+    )
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+          }}
+        >
+          <div
+            data-uid='larger'
+            data-testid='larger'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 10,
+              width: 380,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          >
+            <React.Fragment>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 140,
+                  top: 40,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='ddd'
+              />
+            </React.Fragment>
+          </div>
+          <div
+            data-uid='smaller'
+            data-testid='smaller'
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 200,
+              width: 20,
+              height: 20,
+              backgroundColor: '#FF0000',
+            }}
+          />
         </div>
       `),
     )
