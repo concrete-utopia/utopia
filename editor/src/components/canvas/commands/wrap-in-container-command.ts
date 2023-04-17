@@ -18,6 +18,8 @@ import * as EP from '../../../core/shared/element-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
+import { absolute } from '../../../utils/utils'
+import { getZIndexOfElement } from '../../../core/model/element-template-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -56,6 +58,11 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
     (success, elementToWrap, _underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const withElementRemoved = removeElementAtPath(command.target, components)
+      const indexInParent = getZIndexOfElement(
+        success.topLevelElements,
+        EP.dynamicPathToStaticPath(command.target),
+      )
+      const index = indexInParent >= 0 ? absolute(indexInParent) : null
 
       const wrapper = getInsertionSubjectWrapper(command.wrapper, command.wrapperUID, elementToWrap)
 
@@ -67,7 +74,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         targetParent,
         wrapper,
         withElementRemoved,
-        null, // FIXME Find the index position of the original element
+        index,
       )
 
       editorStatePatches.push(
