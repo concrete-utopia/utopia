@@ -37,6 +37,8 @@ import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 
+export const InsertConditionalButtonTestId = 'insert-mode-conditional'
+
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
@@ -243,6 +245,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
           <Tooltip title='Insert conditional' placement='bottom'>
             <InsertModeButton
+              testid={InsertConditionalButtonTestId}
               iconType='conditional'
               primary={conditionalInsertion}
               onClick={insertConditionalCallback}
@@ -346,6 +349,7 @@ interface InsertModeButtonProps {
   primary?: boolean
   keepActiveInLiveMode?: boolean
   style?: React.CSSProperties
+  testid?: string
   onClick: (event: React.MouseEvent<Element>) => void
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
@@ -360,6 +364,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
 
   return (
     <SquareButton
+      data-testid={props.testid}
       style={{ ...props.style, borderRadius: 4 }}
       primary={primary}
       highlight

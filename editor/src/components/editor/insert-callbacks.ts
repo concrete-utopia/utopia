@@ -101,7 +101,10 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
       const newUID = generateUidWithExistingComponents(projectContentsRef.current)
 
       dispatch([
-        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, insertOptions),
+        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, {
+          textEdit: insertOptions?.textEdit,
+          wrapInContainer: insertOptions.wrapInConditional === true ? 'conditional' : undefined,
+        }),
         CanvasActions.createInteractionSession(
           createHoverInteractionViaMouse(
             CanvasMousePositionRaw!,
