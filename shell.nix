@@ -556,7 +556,7 @@ let
 
   scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
 
-  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile pkgs.google-chrome ];
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.xlibsWrapper pkgs.xorg.libxkbfile pkgs.google-chrome ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
     Cocoa
     CoreServices
