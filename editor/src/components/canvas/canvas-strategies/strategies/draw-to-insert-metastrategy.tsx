@@ -40,6 +40,7 @@ import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-rep
 import {
   CanvasStrategyFactory,
   findCanvasStrategy,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
@@ -186,11 +187,11 @@ export function drawToInsertStrategyFactory(
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
-          const wrapperUID =
-            insertionSubject.insertionSubjectWrapper != null
-              ? customStrategyState.duplicatedElementNewUids[insertionSubject.uid] ??
-                generateUidWithExistingComponents(canvasState.projectContents)
-              : 'empty'
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
           if (interactionSession.interactionData.drag != null) {
             const insertionCommand = getInsertionCommands(
               insertionSubject,
@@ -235,10 +236,8 @@ export function drawToInsertStrategyFactory(
 
               const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
 
-              const insertionSubjectWrapper = insertionSubject.insertionSubjectWrapper
-
               const optionalWrappingCommand =
-                insertionSubjectWrapper != null
+                maybeWrapperWithUid != null
                   ? [
                       updateFunctionCommand(
                         'always',
@@ -250,8 +249,8 @@ export function drawToInsertStrategyFactory(
                               wrapInContainerCommand(
                                 'always',
                                 newPath,
-                                wrapperUID,
-                                insertionSubjectWrapper,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
                               ),
                             ],
                             lifecycle,
@@ -268,8 +267,8 @@ export function drawToInsertStrategyFactory(
                   ...optionalWrappingCommand,
                 ],
                 {
-                  duplicatedElementNewUids: {
-                    [insertionSubject.uid]: wrapperUID,
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
                   },
                 },
               )
@@ -303,10 +302,8 @@ export function drawToInsertStrategyFactory(
 
               const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
 
-              const insertionSubjectWrapper = insertionSubject.insertionSubjectWrapper
-
               const optionalWrappingCommand =
-                insertionSubjectWrapper != null
+                maybeWrapperWithUid != null
                   ? [
                       updateFunctionCommand(
                         'always',
@@ -318,8 +315,8 @@ export function drawToInsertStrategyFactory(
                               wrapInContainerCommand(
                                 'always',
                                 newPath,
-                                wrapperUID,
-                                insertionSubjectWrapper,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
                               ),
                             ],
                             lifecycle,
@@ -331,8 +328,8 @@ export function drawToInsertStrategyFactory(
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
                 {
-                  duplicatedElementNewUids: {
-                    [insertionSubject.uid]: wrapperUID,
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
                   },
                 },
               )

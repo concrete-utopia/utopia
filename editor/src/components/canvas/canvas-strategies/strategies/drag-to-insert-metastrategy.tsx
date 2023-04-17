@@ -20,7 +20,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor, Utils } from '../../../../uuiui-deps'
-import { InsertionSubject } from '../../../editor/editor-modes'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -34,6 +34,7 @@ import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
@@ -216,12 +217,11 @@ function dragToInsertStrategyFactory(
             return getInsertionCommandsWithFrames(s.subject, s.frame)
           })
 
-          const insertionSubjectWrapper = insertionSubjects[0].insertionSubjectWrapper
-          const wrapperUID =
-            insertionSubjectWrapper != null
-              ? customStrategyState.duplicatedElementNewUids[insertionSubjects[0].uid] ??
-                generateUidWithExistingComponents(canvasState.projectContents)
-              : 'empty'
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
 
           const reparentCommand = updateFunctionCommand(
             'always',
@@ -242,7 +242,7 @@ function dragToInsertStrategyFactory(
           const newPath = EP.appendToPath(targetParent, insertionSubjects[0].uid)
 
           const optionalWrappingCommand =
-            insertionSubjectWrapper != null
+            maybeWrapperWithUid != null
               ? [
                   updateFunctionCommand(
                     'always',
@@ -254,8 +254,8 @@ function dragToInsertStrategyFactory(
                           wrapInContainerCommand(
                             'always',
                             newPath,
-                            wrapperUID,
-                            insertionSubjectWrapper,
+                            maybeWrapperWithUid.uid,
+                            maybeWrapperWithUid.wrapper,
                           ),
                         ],
                         lifecycle,
@@ -271,8 +271,8 @@ function dragToInsertStrategyFactory(
               ...optionalWrappingCommand,
             ],
             {
-              duplicatedElementNewUids: {
-                [insertionSubjects[0].uid]: wrapperUID,
+              strategyGeneratedUidsCache: {
+                [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
               },
             },
           )

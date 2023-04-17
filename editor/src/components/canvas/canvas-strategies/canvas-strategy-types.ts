@@ -14,6 +14,7 @@ export interface CustomStrategyState {
   escapeHatchActivated: boolean
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
+  strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -23,6 +24,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     escapeHatchActivated: false,
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
+    strategyGeneratedUidsCache: {},
   }
 }
 
