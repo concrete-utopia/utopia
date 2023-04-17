@@ -591,7 +591,7 @@ export function insertJSXElementChild(
   }
 }
 
-export function getZIndexOfElement(
+export function getIndexInParent(
   topLevelElements: Array<TopLevelElement>,
   target: StaticElementPath,
 ): number {

@@ -19,7 +19,7 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { absolute } from '../../../utils/utils'
-import { getZIndexOfElement } from '../../../core/model/element-template-utils'
+import { getIndexInParent } from '../../../core/model/element-template-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -58,7 +58,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
     (success, elementToWrap, _underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const withElementRemoved = removeElementAtPath(command.target, components)
-      const indexInParent = getZIndexOfElement(
+      const indexInParent = getIndexInParent(
         success.topLevelElements,
         EP.dynamicPathToStaticPath(command.target),
       )
