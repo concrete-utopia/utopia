@@ -511,7 +511,7 @@ Array [
         "element": Object {
           "children": Array [
             Object {
-              "text": "Utopia rules",
+              "text": "Sample text",
               "type": "JSX_TEXT_BLOCK",
               "uid": "",
             },
@@ -1058,7 +1058,7 @@ Array [
         "element": Object {
           "children": Array [
             Object {
-              "text": "Utopia rules",
+              "text": "Sample text",
               "type": "JSX_TEXT_BLOCK",
               "uid": "",
             },
