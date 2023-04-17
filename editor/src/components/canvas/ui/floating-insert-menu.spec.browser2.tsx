@@ -149,6 +149,50 @@ describe('Floating insert menu', () => {
   </div>`),
     )
   })
+
+  it('can insert a span with sample text', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    FOR_TESTS_setNextGeneratedUid('sample-text')
+
+    await insertViaAddElementPopup(editor, 'sampl')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+    <span data-uid='sample-text'>Utopia rules</span>
+  </div>`),
+    )
+  })
 })
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
