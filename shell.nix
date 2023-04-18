@@ -30,11 +30,19 @@ let
   ]);
 
   baseEditorScripts = [
+    (pkgs.writeScriptBin "install-utopia-api" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
+      pnpm install
+      pnpm run build
+    '')
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       pnpm install
+      install-utopia-api
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       pnpm install
@@ -42,6 +50,7 @@ let
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
+      install-utopia-api
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       pnpm install

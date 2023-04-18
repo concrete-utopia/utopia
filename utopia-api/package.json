@@ -22,7 +22,6 @@
     "test-watch": "jest --watch",
     "build": "tsc",
     "watch": "tsc --watch",
-    "dts-bundle": "npm-dts generate && node update-dts.js index.d.ts ../editor/src/core/es-modules/package-manager/utopia-api-typings.ts",
     "preinstall": "npx only-allow pnpm"
   },
   "repository": {
@@ -74,7 +73,6 @@
     "jest": "27.2.3",
     "jest-environment-jsdom": "27.2.3",
     "lint-staged": "^9.4.3",
-    "npm-dts": "1.3.1",
     "prettier": "2.0.5",
     "typescript": "4.6.4"
   },
