@@ -298,7 +298,7 @@ import {
   ToggleProperty,
   ToggleSelectionLock,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateConfigFromVSCode,
@@ -516,6 +516,12 @@ import {
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  isTextContainingConditional,
+  unwrapConditionalClause,
+  unwrapTextContainingConditional,
+} from './unwrap-conditionals-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2810,70 +2816,114 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UNWRAP_GROUP_OR_VIEW: (
-    action: UnwrapGroupOrView,
+  UNWRAP_ELEMENT: (
+    action: UnwrapElement,
     editorForAction: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
       editorForAction,
       false,
       (editor) => {
-        if (action.onlyForGroups) {
-          // TOOD groups
-          // bail early, we shouldn't delete a non-group view
+        const supportsChildren = MetadataUtils.targetSupportsChildren(
+          editor.projectContents,
+          editor.jsxMetadata,
+          editor.nodeModules.files,
+          editor.canvas.openFile?.filename,
+          action.target,
+        )
+
+        const elementIsContentAffecting = treatElementAsContentAffecting(
+          editor.jsxMetadata,
+          editor.allElementProps,
+          action.target,
+        )
+
+        if (!(supportsChildren || elementIsContentAffecting)) {
           return editor
         }
 
-        const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
-        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
-        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
-          return editor
-        }
+        const parentPath = MetadataUtils.getReparentTargetOfTarget(
+          editorForAction.jsxMetadata,
+          action.target,
+        )
 
-        const parentPath = EP.parentPath(action.target)
-        const parentFrame =
-          parentPath == null
-            ? (Utils.zeroRectangle as CanvasRectangle)
-            : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
         const indexPosition: IndexPosition = indexPositionForAdjustment(
           action.target,
           editor,
           'forward',
         )
-        let newSelection: ElementPath[] = []
-        const withChildrenMoved = children.reduce((working, child) => {
-          const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-            child.elementPath,
-            editor.jsxMetadata,
-          )
-          const result = editorMoveTemplate(
-            child.elementPath,
-            child.elementPath,
-            childFrame,
+        const children = MetadataUtils.getChildrenOrdered(
+          editor.jsxMetadata,
+          action.target,
+        ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
+
+        if (parentPath != null && reparentTargetParentIsConditionalClause(parentPath)) {
+          return unwrapConditionalClause(editor, action.target, parentPath)
+        }
+
+        if (elementIsContentAffecting) {
+          if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
+            return unwrapTextContainingConditional(editor, action.target, dispatch)
+          }
+
+          const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
+            builtInDependencies,
+            children.map((child) => child.elementPath),
             indexPosition,
             parentPath,
-            parentFrame,
-            working,
-            null,
-            null,
+            editor,
           )
-          if (result.newPath != null) {
-            newSelection.push(result.newPath)
-          }
-          return result.editor
-        }, editor)
-        const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-        return {
-          ...withViewDeleted,
-          selectedViews: newSelection,
-          canvas: {
-            ...withViewDeleted.canvas,
-            domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-          },
+          return {
+            ...withViewDeleted,
+            selectedViews: newPaths,
+            canvas: {
+              ...withViewDeleted.canvas,
+              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+            },
+          }
+        } else {
+          const parentFrame =
+            parentPath == null
+              ? (Utils.zeroRectangle as CanvasRectangle)
+              : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
+
+          let newSelection: ElementPath[] = []
+          const withChildrenMoved = children.reduce((working, child) => {
+            const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+              child.elementPath,
+              editor.jsxMetadata,
+            )
+            const result = editorMoveTemplate(
+              child.elementPath,
+              child.elementPath,
+              childFrame,
+              indexPosition,
+              parentPath,
+              parentFrame,
+              working,
+              null,
+              null,
+            )
+            if (result.newPath != null) {
+              newSelection.push(result.newPath)
+            }
+            return result.editor
+          }, editor)
+          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+
+          return {
+            ...withViewDeleted,
+            selectedViews: newSelection,
+            canvas: {
+              ...withViewDeleted.canvas,
+              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+            },
+          }
         }
       },
       dispatch,
