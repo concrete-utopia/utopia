@@ -179,7 +179,20 @@ export function getNavigatorTargets(
     }
   }
 
-  const canvasRoots = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
+  function getCanvasRoots(trees: ElementPathTree[]): ElementPath[] {
+    if (projectTree.length <= 0) {
+      return []
+    }
+
+    const storyboardTree = trees.find((e) => EP.isStoryboardPath(e.path))
+    if (storyboardTree == null) {
+      return []
+    }
+
+    return storyboardTree.children.map((c) => c.path)
+  }
+
+  const canvasRoots = getCanvasRoots(projectTree)
   fastForEach(canvasRoots, (childElement) => {
     const subTree = getSubTree(projectTree, childElement)
 
