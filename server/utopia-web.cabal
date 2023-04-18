@@ -57,6 +57,7 @@ executable utopia-web
       Paths_utopia_web
   hs-source-dirs:
       src
+      app
   default-extensions:
       Strict
       StrictData
@@ -165,7 +166,6 @@ test-suite utopia-web-test
       Test.Utopia.Web.Executors.Test
       Test.Utopia.Web.Packager.NPM
       Test.Utopia.Web.Servant
-      Main
       Utopia.Web.Assets
       Utopia.Web.Auth
       Utopia.Web.Auth.Github
