@@ -19,13 +19,13 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
-  newParent: InsertionPath<ElementPath>
+  newParent: InsertionPath
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
-  newParent: InsertionPath<ElementPath>,
+  newParent: InsertionPath,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',

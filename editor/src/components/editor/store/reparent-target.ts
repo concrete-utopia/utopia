@@ -45,7 +45,7 @@ export interface ConditionalClauseInsertionPath {
   elementPath: StaticElementPath
 }
 
-export function conditionalClause(
+export function conditionalClauseInsertionPath(
   elementPath: StaticElementPath | ElementPath,
   propName: ConditionalCase,
 ): ConditionalClauseInsertionPath {
@@ -81,7 +81,7 @@ export function getElementPathFromInsertionPath(
 }
 
 // export function dynamicReparentTargetParentToStaticReparentTargetParent(
-//   reparentTargetParent: InsertionPath<ElementPath>,
+//   reparentTargetParent: InsertionPath,
 // ): InsertionPath<StaticElementPath> {
 //   if (insertionPathIsSlot(reparentTargetParent)) {
 //     return conditionalClause(

@@ -454,7 +454,7 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: InsertionPath<ElementPath>,
+  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
@@ -689,7 +689,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: InsertionPath<ElementPath> | null,
+  parentPath: InsertionPath | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {

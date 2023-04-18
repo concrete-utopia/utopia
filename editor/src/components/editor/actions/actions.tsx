@@ -831,7 +831,7 @@ export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
   indexPosition: IndexPosition,
-  newParent: InsertionPath<ElementPath> | null,
+  newParent: InsertionPath | null,
   editor: EditorModel,
 ): {
   editor: EditorModel
@@ -1767,7 +1767,7 @@ export const UPDATE_FNS = {
     const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
 
     function reparentToIndexPosition(
-      newParentPath: InsertionPath<ElementPath>,
+      newParentPath: InsertionPath,
       indexPosition: IndexPosition,
     ): EditorModel {
       const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
@@ -2370,7 +2370,7 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          let viewPath: InsertionPath<ElementPath> | null = null
+          let viewPath: InsertionPath | null = null
 
           let isParentFlex: boolean = false
           if (insertionPathIsArray(parentPath)) {

@@ -85,11 +85,11 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: InsertionPath<ElementPath> | null,
+  targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
-  let newParent: InsertionPath<ElementPath>
+  let newParent: InsertionPath
   if (targetParent == null) {
     const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
     if (storyboardElementPath == null) {

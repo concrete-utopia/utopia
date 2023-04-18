@@ -128,7 +128,7 @@ import { getConditionalClausePath, reorderConditionalChildPathTrees } from './co
 import { getUtopiaID } from '../shared/uid-utils'
 import {
   arrayInsertionPath,
-  conditionalClause,
+  conditionalClauseInsertionPath,
   InsertionPath,
   insertionPathIsArray,
 } from '../../components/editor/store/reparent-target'
@@ -1990,9 +1990,9 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClause(parentElement.elementPath, 'true-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case')
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClause(parentElement.elementPath, 'false-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
         }
       }
       return arrayInsertionPath(parentElement.elementPath, 'children', null)

@@ -346,7 +346,7 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: InsertionPath<ElementPath>
+  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
@@ -466,7 +466,7 @@ export interface SaveImageDoNothing {
 
 export interface SaveImageInsertWith {
   type: 'SAVE_IMAGE_INSERT_WITH'
-  parentPath: InsertionPath<ElementPath> | null
+  parentPath: InsertionPath | null
   frame: CanvasRectangle
   multiplier: number
 }

@@ -42,7 +42,7 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   arrayInsertionPath,
-  conditionalClause,
+  conditionalClauseInsertionPath,
   InsertionPath,
 } from '../components/editor/store/reparent-target'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
@@ -316,7 +316,10 @@ export function getTargetParentForPaste(
         if (!isNullJSXAttributeValue(clause)) {
           return null
         }
-        return conditionalClause(EP.dynamicPathToStaticPath(parentPath), conditionalCase)
+        return conditionalClauseInsertionPath(
+          EP.dynamicPathToStaticPath(parentPath),
+          conditionalCase,
+        )
       }
     }
   }

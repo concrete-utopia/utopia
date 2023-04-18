@@ -194,7 +194,7 @@ import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   arrayInsertionPath,
   ConditionalClause,
-  conditionalClause,
+  conditionalClauseInsertionPath,
   InsertionPath,
 } from './reparent-target'
 
@@ -1939,9 +1939,11 @@ export function addSceneToJSXComponents(
   const storyboardComponentUID =
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
-    const storyboardComponentElementPath = EP.elementPath([
-      staticElementPath([storyboardComponentUID]),
-    ])
+    const storyboardComponentElementPath = arrayInsertionPath(
+      EP.elementPath([staticElementPath([storyboardComponentUID])]),
+      'children',
+      null,
+    )
     return insertJSXElementChild(
       projectContents,
       openFile,
@@ -2241,7 +2243,7 @@ export function reparentTargetFromNavigatorEntry(
     case 'REGULAR':
       return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
     case 'CONDITIONAL_CLAUSE':
-      return conditionalClause(navigatorEntry.elementPath, navigatorEntry.clause)
+      return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)
   }

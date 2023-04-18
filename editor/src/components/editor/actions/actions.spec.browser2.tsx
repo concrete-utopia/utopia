@@ -283,7 +283,7 @@ describe('actions', () => {
       name: string
       startingCode: string
       elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
-      pasteInto: InsertionPath<ElementPath>
+      pasteInto: InsertionPath
       want: string
     }
     const tests: Array<PasteTest> = [
