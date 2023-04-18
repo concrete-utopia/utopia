@@ -15,6 +15,7 @@ import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { IndexPosition } from '../../../utils/utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
@@ -72,7 +73,11 @@ export const runAddElement: CommandFunction<AddElement> = (
       const editorStatePatchNewParentFile = getPatchForComponentChange(
         parentSuccess.topLevelElements,
         withElementInserted,
-        { ...parentSuccess.imports, ...command.importsToAdd },
+        mergeImports(
+          underlyingFilePathNewParent,
+          parentSuccess.imports,
+          command.importsToAdd ?? {},
+        ),
         underlyingFilePathNewParent,
       )
 

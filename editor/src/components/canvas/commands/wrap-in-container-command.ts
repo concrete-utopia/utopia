@@ -18,6 +18,7 @@ import * as EP from '../../../core/shared/element-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -78,7 +79,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          { ...success.imports, ...imports },
+          mergeImports(underlyingFilePath, success.imports, imports),
           underlyingFilePath,
         ),
       )
