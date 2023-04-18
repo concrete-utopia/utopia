@@ -1,8 +1,22 @@
+import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import * as EP from '../../core/shared/element-path'
 import { shiftModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep, setFeatureForBrowserTests } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
-import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import {
+  renderTestEditorWithCode,
+  EditorRenderResult,
+  makeTestProjectCodeWithComponentInnards,
+  getPrintedUiJsCode,
+  TestSceneUID,
+  TestAppUID,
+  makeTestProjectCodeWithSnippet,
+} from '../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
@@ -190,6 +204,99 @@ describe('add layout system', () => {
     expect(child.style.width).toEqual('100px')
     expect(child.style.height).toEqual('120px')
   })
+
+  it('adding flex layout to a container with non-dom element children', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 30,
+        top: 528,
+        width: 624,
+        height: 298,
+      }}
+      data-uid='01a'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 52,
+          top: 80,
+          width: 87,
+          height: 180,
+        }}
+        data-uid='91d'
+      />
+      <React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 181,
+            top: 80,
+            width: 63,
+            height: 169,
+          }}
+          data-uid='21a'
+        />
+        <React.Fragment>
+          <React.Fragment>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 303,
+                top: 106,
+                width: 36,
+                height: 154,
+              }}
+              data-uid='d17'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 378,
+                top: 125,
+                width: 47,
+                height: 106,
+              }}
+              data-uid='c9a'
+            />
+          </React.Fragment>
+        </React.Fragment>
+      </React.Fragment>
+      {true ? (
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 449,
+            top: 122,
+            width: 121,
+            height: 88,
+          }}
+          data-uid='9c4'
+        />
+      ) : null}
+    </div>`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`),
+    ])
+
+    await expectSingleUndoStep(editor, async () => {
+      await pressKey('a', { modifiers: shiftModifier })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(makeTestProjectCodeWithSnippet(``))
+  })
+
+  // xit('adding flex layout to a container with non-dom element children, with some children out of order', async () => {})
 })
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {

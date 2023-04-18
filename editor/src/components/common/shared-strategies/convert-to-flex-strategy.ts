@@ -8,13 +8,17 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { AllContentAffectingNonDomElementTypes } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  AllContentAffectingNonDomElementTypes,
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+} from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
+import { AllElementProps } from '../../editor/store/editor-state'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -29,6 +33,7 @@ type FlexAlignItems = 'center' | 'flex-end'
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
     const parentInstance = MetadataUtils.findElementByElementPath(metadata, path)
@@ -36,10 +41,7 @@ export function convertLayoutToFlexCommands(
       return []
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
-
-    if (areAnyChildrenNonDomElement(metadata, childrenPaths)) {
-      // This is a known limitation and future TODO. we must early return now to avoid bizarro layouts
+    if (MetadataUtils.isConditionalFromMetadata(parentInstance)) {
       return [
         showToastCommand(
           'Cannot be converted to Flex yet',
@@ -48,6 +50,12 @@ export function convertLayoutToFlexCommands(
         ),
       ]
     }
+
+    const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      MetadataUtils.getChildrenPathsUnordered(metadata, path),
+    )
 
     const parentFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
@@ -114,16 +122,6 @@ export function convertLayoutToFlexCommands(
       ]),
       ...rearrangeCommands,
     ]
-  })
-}
-
-function areAnyChildrenNonDomElement(
-  metadata: ElementInstanceMetadataMap,
-  children: Array<ElementPath>,
-): boolean {
-  return children.some((childPath) => {
-    const contentAffectingType = getElementContentAffectingType(metadata, {}, childPath)
-    return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
   })
 }
 
