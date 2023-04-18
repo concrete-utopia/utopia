@@ -343,8 +343,8 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
         elementToInsert: jsxConditionalExpressionWithoutUID(
           jsExpressionValue(true, emptyComments),
           'true',
-          jsExpressionValue(null, emptyComments),
-          jsExpressionValue(null, emptyComments),
+          jsExpressionValue('True branch', emptyComments),
+          jsExpressionValue('False branch', emptyComments),
           emptyComments,
         ),
         importsToAdd: {},
@@ -359,8 +359,14 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Fragment',
-        elementToInsert: jsxFragmentWithoutUID([], false),
-        importsToAdd: {},
+        elementToInsert: jsxFragmentWithoutUID([], true),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        },
       },
     ],
   },
