@@ -290,9 +290,9 @@ describe('actions', () => {
       {
         name: 'a single element',
         startingCode: `
-		<div data-uid='aaa'>
-			<div data-uid='bbb'>foo</div>
-			<div data-uid='ccc'>bar</div>
+        <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
 		</div>
 		`,
         elements: (renderResult) => {
@@ -307,20 +307,20 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa']),
         want: `
-		<div data-uid='aaa'>
-			<div data-uid='bbb'>foo</div>
-			<div data-uid='ccc'>bar</div>
-			<div data-uid='aab'>foo</div>
+        <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
+            <div data-uid='aab'>foo</div>
 		</div>
 		`,
       },
       {
         name: 'multiple elements',
         startingCode: `
-		<div data-uid='aaa'>
-			<div data-uid='bbb'>foo</div>
-			<div data-uid='ccc'>bar</div>
-			<div data-uid='ddd'>baz</div>
+        <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
+            <div data-uid='ddd'>baz</div>
 		</div>
 		`,
         elements: (renderResult) => {
@@ -341,12 +341,12 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa']),
         want: `
-		<div data-uid='aaa'>
-			<div data-uid='bbb'>foo</div>
-			<div data-uid='ccc'>bar</div>
-			<div data-uid='ddd'>baz</div>
-			<div data-uid='aab'>foo</div>
-			<div data-uid='aac'>bar</div>
+        <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
+            <div data-uid='ddd'>baz</div>
+            <div data-uid='aab'>foo</div>
+            <div data-uid='aac'>bar</div>
 		</div>
 		`,
       },
@@ -354,14 +354,14 @@ describe('actions', () => {
         name: 'a fragment',
         startingCode: `
 		<div data-uid='root'>
-			<div data-uid='aaa'>
-				<div data-uid='bbb'>foo</div>
-				<div data-uid='ccc'>bar</div>
-			</div>
-			<>
-				<div data-uid='ddd'>hello</div>
-				<div data-uid='eee'>there</div>
-			</>
+            <div data-uid='aaa'>
+                <div data-uid='bbb'>foo</div>
+                <div data-uid='ccc'>bar</div>
+            </div>
+            <>
+                <div data-uid='ddd'>hello</div>
+                <div data-uid='eee'>there</div>
+            </>
 		</div>
 		`,
         elements: (renderResult) => {
@@ -377,31 +377,31 @@ describe('actions', () => {
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
         want: `
 		<div data-uid='root'>
-			<div data-uid='aaa'>
-				<div data-uid='bbb'>foo</div>
-				<div data-uid='ccc'>bar</div>
-				<>
-					<div data-uid='aab'>hello</div>
-					<div data-uid='aac'>there</div>
-				</>
-			</div>
-			<>
-				<div data-uid='ddd'>hello</div>
-				<div data-uid='eee'>there</div>
-			</>
-		</div>
+            <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
+                <>
+                    <div data-uid='aab'>hello</div>
+                    <div data-uid='aac'>there</div>
+                </>
+            </div>
+            <>
+                <div data-uid='ddd'>hello</div>
+                <div data-uid='eee'>there</div>
+            </>
+        </div>
 		`,
       },
       {
         name: 'an empty fragment',
         startingCode: `
-		<div data-uid='root'>
-			<div data-uid='aaa'>
-				<div data-uid='bbb'>foo</div>
-				<div data-uid='ccc'>bar</div>
-			</div>
-			<></>
-		</div>
+        <div data-uid='root'>
+            <div data-uid='aaa'>
+                <div data-uid='bbb'>foo</div>
+                <div data-uid='ccc'>bar</div>
+            </div>
+            <></>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
@@ -415,33 +415,33 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
         want: `
-		<div data-uid='root'>
-			<div data-uid='aaa'>
-				<div data-uid='bbb'>foo</div>
-				<div data-uid='ccc'>bar</div>
-				<></>
-			</div>
-			<></>
-		</div>
+        <div data-uid='root'>
+            <div data-uid='aaa'>
+                <div data-uid='bbb'>foo</div>
+                <div data-uid='ccc'>bar</div>
+                <></>
+            </div>
+            <></>
+        </div>
 		`,
       },
       {
         name: 'a conditional',
         startingCode: `
 		<div data-uid='root'>
-			<div data-uid='aaa'>
-				<div data-uid='bbb'>foo</div>
-				<div data-uid='ccc'>bar</div>
-			</div>
-			{
-				// @utopia/uid=conditional
-				true ? (
-					<div data-uid='ddd'>true</div>
-				): (
-					<div data-uid='eee'>false</div>
-				)
-			}
-		</div>
+            <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
+            </div>
+            {
+                // @utopia/uid=conditional
+                true ? (
+                    <div data-uid='ddd'>true</div>
+                ): (
+                    <div data-uid='eee'>false</div>
+                )
+            }
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional'])
@@ -456,38 +456,38 @@ describe('actions', () => {
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
         want: `
 		<div data-uid='root'>
-			<div data-uid='aaa'>
-				<div data-uid='bbb'>foo</div>
-				<div data-uid='ccc'>bar</div>
-				{
-					// @utopia/uid=conditional
-					true ? (
-						<div data-uid='aab'>true</div>
-					): (
-						<div data-uid='aac'>false</div>
-					)
-				}
-			</div>
-			{
-				// @utopia/uid=conditional
-				true ? (
-					<div data-uid='ddd'>true</div>
-				): (
-					<div data-uid='eee'>false</div>
-				)
-			}
-		</div>
+            <div data-uid='aaa'>
+            <div data-uid='bbb'>foo</div>
+            <div data-uid='ccc'>bar</div>
+                {
+                    // @utopia/uid=conditional
+                    true ? (
+                        <div data-uid='aab'>true</div>
+                    ): (
+                        <div data-uid='aac'>false</div>
+                    )
+                }
+            </div>
+            {
+                // @utopia/uid=conditional
+                true ? (
+                    <div data-uid='ddd'>true</div>
+                ): (
+                    <div data-uid='eee'>false</div>
+                )
+            }
+        </div>
 		`,
       },
       {
         name: 'an element inside a fragment',
         startingCode: `
-		<div data-uid='root'>
-			<>
-				<div data-uid='aaa'>foo</div>
-			</>
-			<div data-uid='bbb'>bar</div>
-		</div>
+        <div data-uid='root'>
+            <>
+                <div data-uid='aaa'>foo</div>
+            </>
+            <div data-uid='bbb'>bar</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
@@ -501,25 +501,25 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', '38e']),
         want: `
-		<div data-uid='root'>
-			<>
-				<div data-uid='aaa'>foo</div>
-				<div data-uid='aab'>bar</div>
-			</>
-			<div data-uid='bbb'>bar</div>
-		</div>
+        <div data-uid='root'>
+            <>
+                <div data-uid='aaa'>foo</div>
+                <div data-uid='aab'>bar</div>
+            </>
+            <div data-uid='bbb'>bar</div>
+        </div>
 		`,
       },
       {
         name: 'multiple elements inside a fragment',
         startingCode: `
-		<div data-uid='root'>
-			<>
-				<div data-uid='aaa'>foo</div>
-			</>
-			<div data-uid='bbb'>bar</div>
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            <>
+                <div data-uid='aaa'>foo</div>
+            </>
+            <div data-uid='bbb'>bar</div>
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const fooPath = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
@@ -539,27 +539,27 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', '38e']),
         want: `
-		<div data-uid='root'>
-			<>
-				<div data-uid='aaa'>foo</div>
-				<div data-uid='aab'>bar</div>
-				<div data-uid='aac'>baz</div>
-			</>
-			<div data-uid='bbb'>bar</div>
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            <>
+            	<div data-uid='aaa'>foo</div>
+                <div data-uid='aab'>bar</div>
+                <div data-uid='aac'>baz</div>
+            </>
+            <div data-uid='bbb'>bar</div>
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
       },
       {
         name: 'an element inside an empty conditional branch (true)',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? null : <div data-uid='aaa'>foo</div>
-			}
-			<div data-uid='bbb'>bar</div>
-		</div>
+        <div data-uid='root'>
+        	{
+                // @utopia/uid=conditional
+                true ? null : <div data-uid='aaa'>foo</div>
+            }
+            <div data-uid='bbb'>bar</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
@@ -573,25 +573,25 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aab'>bar</div> : <div data-uid='aaa'>foo</div>
-			}
-			<div data-uid='bbb'>bar</div>
-		</div>
+        <div data-uid='root'>
+            {
+            	// @utopia/uid=conditional
+                true ? <div data-uid='aab'>bar</div> : <div data-uid='aaa'>foo</div>
+            }
+            <div data-uid='bbb'>bar</div>
+        </div>
 		`,
       },
       {
         name: 'an element inside an empty conditional branch (false)',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : null
-			}
-			<div data-uid='bbb'>bar</div>
-		</div>
+        <div data-uid='root'>
+            {
+            	// @utopia/uid=conditional
+                true ? <div data-uid='aaa'>foo</div> : null
+            }
+            <div data-uid='bbb'>bar</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
@@ -605,25 +605,25 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : <div data-uid='aab'>bar</div>
-			}
-			<div data-uid='bbb'>bar</div>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? <div data-uid='aaa'>foo</div> : <div data-uid='aab'>bar</div>
+            }
+            <div data-uid='bbb'>bar</div>
+    	</div>
 		`,
       },
       {
         name: 'an element inside a non-empty conditional branch (does nothing)',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-			}
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+            }
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
@@ -640,26 +640,26 @@ describe('actions', () => {
           elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
         },
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-			}
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+            }
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
       },
       {
         name: 'multiple elements into an empty conditional branch (true)',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? null : <div data-uid='aaa'>foo</div>
-			}
-			<div data-uid='bbb'>bar</div>
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            {
+            	// @utopia/uid=conditional
+                true ? null : <div data-uid='aaa'>foo</div>
+            }
+            <div data-uid='bbb'>bar</div>
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const barPath = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
@@ -682,32 +682,32 @@ describe('actions', () => {
           elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
         },
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? (
-					<>
-						<div data-uid='aab'>bar</div>
-						<div data-uid='aac'>baz</div>
-					</>
-				) : <div data-uid='aaa'>foo</div>
-			}
-			<div data-uid='bbb'>bar</div>
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            {
+            	// @utopia/uid=conditional
+                true ? (
+                    <>
+                    	<div data-uid='aab'>bar</div>
+                    	<div data-uid='aac'>baz</div>
+                    </>
+                ) : <div data-uid='aaa'>foo</div>
+            }
+            <div data-uid='bbb'>bar</div>
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
       },
       {
         name: 'multiple elements into an empty conditional branch (false)',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : null
-			}
-			<div data-uid='bbb'>bar</div>
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? <div data-uid='aaa'>foo</div> : null
+            }
+            <div data-uid='bbb'>bar</div>
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const barPath = EP.appendNewElementPath(TestScenePath, ['root', 'bbb'])
@@ -730,34 +730,34 @@ describe('actions', () => {
           elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
         },
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : (
-					<>
-						<div data-uid='aab'>bar</div>
-						<div data-uid='aac'>baz</div>
-					</>
-				)
-			}
-			<div data-uid='bbb'>bar</div>
-			<div data-uid='ccc'>baz</div>
-		</div>
+        <div data-uid='root'>
+        	{
+            	// @utopia/uid=conditional
+                true ? <div data-uid='aaa'>foo</div> : (
+                    <>
+                    	<div data-uid='aab'>bar</div>
+                    	<div data-uid='aac'>baz</div>
+                    </>
+                )
+            }
+            <div data-uid='bbb'>bar</div>
+            <div data-uid='ccc'>baz</div>
+        </div>
 		`,
       },
       {
         name: 'an fragment inside an empty conditional branch',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? null : <div data-uid='aaa'>foo</div>
-			}
-			<>
-				<div data-uid='bbb'>bar</div>
-				<div data-uid='ccc'>baz</div>
-			</>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? null : <div data-uid='aaa'>foo</div>
+            }
+            <>
+            	<div data-uid='bbb'>bar</div>
+                <div data-uid='ccc'>baz</div>
+            </>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
@@ -774,40 +774,40 @@ describe('actions', () => {
           elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
         },
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? (
-					<>
-						<div data-uid='aab'>bar</div>
-						<div data-uid='aac'>baz</div>
-					</>
-				) : <div data-uid='aaa'>foo</div>
-			}
-			<>
-				<div data-uid='bbb'>bar</div>
-				<div data-uid='ccc'>baz</div>
-			</>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? (
+                    <>
+                    	<div data-uid='aab'>bar</div>
+                    	<div data-uid='aac'>baz</div>
+                    </>
+                ) : <div data-uid='aaa'>foo</div>
+            }
+            <>
+                <div data-uid='bbb'>bar</div>
+                <div data-uid='ccc'>baz</div>
+            </>
+        </div>
 		`,
       },
       {
         name: 'multiple fragments inside an empty conditional branch',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? null : <div data-uid='aaa'>foo</div>
-			}
-			<>
-				<div data-uid='bbb'>bar</div>
-				<div data-uid='ccc'>baz</div>
-			</>
-			<>
-				<div data-uid='ddd'>qux</div>
-				<div data-uid='eee'>waldo</div>
-			</>
-		</div>
+        <div data-uid='root'>
+            {
+                // @utopia/uid=conditional
+                true ? null : <div data-uid='aaa'>foo</div>
+            }
+            <>
+            	<div data-uid='bbb'>bar</div>
+                <div data-uid='ccc'>baz</div>
+            </>
+            <>
+                <div data-uid='ddd'>qux</div>
+                <div data-uid='eee'>waldo</div>
+            </>
+        </div>
 		`,
         elements: (renderResult) => {
           const firstPath = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
@@ -830,42 +830,42 @@ describe('actions', () => {
           elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
         },
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? (
-					<>
-						<>
-							<div data-uid='aab'>bar</div>
-							<div data-uid='aac'>baz</div>
-						</>
-						<>
-							<div data-uid='aae'>qux</div>
-							<div data-uid='aaf'>waldo</div>
-						</>
-					</>
-				) : <div data-uid='aaa'>foo</div>
-			}
-			<>
-				<div data-uid='bbb'>bar</div>
-				<div data-uid='ccc'>baz</div>
-			</>
-			<>
-				<div data-uid='ddd'>qux</div>
-				<div data-uid='eee'>waldo</div>
-			</>
-		</div>
+      <div data-uid='root'>
+      {
+        // @utopia/uid=conditional
+        true ? (
+          <>
+            <>
+              <div data-uid='aab'>bar</div>
+              <div data-uid='aac'>baz</div>
+            </>
+            <>
+              <div data-uid='aae'>qux</div>
+              <div data-uid='aaf'>waldo</div>
+            </>
+          </>
+        ) : <div data-uid='aaa'>foo</div>
+      }
+      <>
+        <div data-uid='bbb'>bar</div>
+        <div data-uid='ccc'>baz</div>
+      </>
+      <>
+        <div data-uid='ddd'>qux</div>
+        <div data-uid='eee'>waldo</div>
+      </>
+    </div>
 		`,
       },
       {
         name: 'an active conditional branch',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : null
-			}
-		</div>
+    <div data-uid='root'>
+      {
+        // @utopia/uid=conditional
+        true ? <div data-uid='aaa'>foo</div> : null
+      }
+    </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'aaa'])
@@ -879,24 +879,24 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? <div data-uid='aaa'>foo</div> : null
-			}
-			<div data-uid='aab'>foo</div>
+    <div data-uid='root'>
+      {
+        // @utopia/uid=conditional
+        true ? <div data-uid='aaa'>foo</div> : null
+      }
+      <div data-uid='aab'>foo</div>
 		</div>
 		`,
       },
       {
         name: 'an inactive conditional branch',
         startingCode: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? null : <div data-uid='aaa'>foo</div>
-			}
-		</div>
+    <div data-uid='root'>
+      {
+        // @utopia/uid=conditional
+        true ? null : <div data-uid='aaa'>foo</div>
+      }
+    </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25'])
@@ -914,13 +914,13 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
         want: `
-		<div data-uid='root'>
-			{
-				// @utopia/uid=conditional
-				true ? null : <div data-uid='aaa'>foo</div>
-			}
-			<div data-uid='aab' style={{ display: 'block' }}>foo</div>
-		</div>
+    <div data-uid='root'>
+      {
+        // @utopia/uid=conditional
+        true ? null : <div data-uid='aaa'>foo</div>
+      }
+      <div data-uid='aab' style={{ display: 'block' }}>foo</div>
+    </div>
 		`,
       },
     ]
