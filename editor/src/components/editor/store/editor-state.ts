@@ -191,7 +191,12 @@ import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { arrayInsertionPath, conditionalClause, InsertionPath } from './reparent-target'
+import {
+  arrayInsertionPath,
+  ConditionalClause,
+  conditionalClause,
+  InsertionPath,
+} from './reparent-target'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2102,12 +2107,6 @@ export function regularNavigatorEntriesEqual(
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
-
-export interface ConditionalClause<P extends ElementPath> {
-  elementPath: P
-  clause: ConditionalCase
-}
-
 export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
   type: 'CONDITIONAL_CLAUSE'
 }
