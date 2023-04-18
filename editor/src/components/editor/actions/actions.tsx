@@ -2857,7 +2857,7 @@ export const UPDATE_FNS = {
         const children = MetadataUtils.getChildrenOrdered(
           editor.jsxMetadata,
           action.target,
-        ).reverse()
+        ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
 
         if (parentPath != null && reparentTargetParentIsConditionalClause(parentPath)) {
           return unwrapConditionalClause(editor, action.target, parentPath)
@@ -2868,7 +2868,6 @@ export const UPDATE_FNS = {
             return unwrapTextContainingConditional(editor, action.target, dispatch)
           }
 
-          // this movetemplate uses commands!
           const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
             builtInDependencies,
             children.map((child) => child.elementPath),
