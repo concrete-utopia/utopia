@@ -46,7 +46,7 @@ import {
   getAllUniqueUids,
   guaranteeUniqueUids,
   isSceneElement,
-  getZIndexOfElement,
+  getIndexInParent,
 } from '../../core/model/element-template-utils'
 import {
   fixUtopiaElement,
@@ -2720,7 +2720,7 @@ export function duplicate(
           underlyingInstancePath,
           utopiaComponents,
         )
-        const elementIndex = getZIndexOfElement(
+        const elementIndex = getIndexInParent(
           success.topLevelElements,
           EP.dynamicPathToStaticPath(path),
         )
