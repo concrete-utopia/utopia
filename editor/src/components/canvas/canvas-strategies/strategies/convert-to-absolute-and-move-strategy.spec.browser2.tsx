@@ -923,7 +923,9 @@ describe('Convert to absolute/escape hatch', () => {
     ([parentLayoutSystem, type]) => {
       it(`dragging group-like element ${type} out of sibling bounds in ${parentLayoutSystem} context`, async () => {
         const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(codeWithGroupLikeELementForEscapeHatch('flow', type)),
+          makeTestProjectCodeWithSnippet(
+            codeWithGroupLikeELementForEscapeHatch(parentLayoutSystem, type),
+          ),
           'await-first-dom-report',
         )
 

@@ -3,10 +3,9 @@ import { act, within } from '@testing-library/react'
 import { forElementOptic } from '../../core/model/common-optics'
 import { conditionalWhenTrueOptic } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isLeft, isRight } from '../../core/shared/either'
+import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
-  JSXElementChild,
   emptyComments,
   isJSExpressionValue,
   isJSXConditionalExpression,
@@ -16,9 +15,10 @@ import {
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import { Optic, compose6Optics } from '../../core/shared/optics/optics'
+import { forceNotNull } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
-  EditorRenderResult,
   TestScenePath,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -30,12 +30,11 @@ import {
   selectComponents,
   wrapInElement,
 } from '../editor/actions/action-creators'
+import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
+import { ElementPaste } from './action-types'
+import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
 import { ReparentTargetParent } from './store/reparent-target'
-import { ElementPaste } from './action-types'
-import { forceNotNull } from '../../core/shared/optional-utils'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
-import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -870,18 +869,4 @@ async function runPaste({
   })
 
   return getPrintedUiJsCode(renderResult.getEditorState())
-}
-
-function getElementFromRenderResult(
-  renderResult: EditorRenderResult,
-  path: ElementPath,
-): JSXElementChild {
-  const element = MetadataUtils.findElementByElementPath(
-    renderResult.getEditorState().editor.jsxMetadata,
-    path,
-  )
-  if (element == null || isLeft(element.element)) {
-    throw new Error('element is invalid')
-  }
-  return element.element.value
 }
