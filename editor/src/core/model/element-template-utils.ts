@@ -517,6 +517,7 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+
   function getConditionalCase(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
@@ -527,6 +528,7 @@ export function insertJSXElementChild(
     }
     return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
   }
+
   const targetParentIncludingStoryboardRoot =
     targetParent ?? getStoryboardElementPath(projectContents, openFile)
   if (targetParentIncludingStoryboardRoot == null) {
@@ -558,6 +560,7 @@ export function insertJSXElementChild(
               } else {
                 // for wrapping multiple elements
                 return jsxFragment(
+                  // should insert <React.Fragment>, should ensure React is imported
                   generateUidWithExistingComponents(projectContents),
                   [elementToInsert, clauseValue],
                   false,
@@ -587,6 +590,7 @@ export function insertJSXElementChild(
         }
       },
     )
+
     return insertChildAndDetails(updatedComponents, details)
   }
 }
