@@ -117,7 +117,13 @@ export function getActionsForClipboardItems(
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(target, elements, metadata)]
+      return [
+        EditorActions.pasteJSXElements(
+          arrayInsertionPath(target, 'children', null), // what about conditionals?
+          elements,
+          metadata,
+        ),
+      ]
     }, clipboardData)
 
     // Handle adding files into the project like pasted images.

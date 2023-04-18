@@ -503,11 +503,12 @@ import { fromField, traverseArray } from '../../../core/shared/optics/optic-crea
 import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
 import {
   commonReparentTargetFromArray,
-  dynamicReparentTargetParentToStaticReparentTargetParent,
   getElementPathFromInsertionPath,
   InsertionPath,
   insertionPathIsSlot,
   insertionPathIsArray,
+  arrayInsertionPath,
+  insertionPathIsConditionalClause,
 } from '../store/reparent-target'
 import {
   findMaybeConditionalExpression,
@@ -1812,7 +1813,10 @@ export const UPDATE_FNS = {
           assertNever(dropTarget)
       }
 
-      return reparentToIndexPosition(newParentPath, indexPosition)
+      return reparentToIndexPosition(
+        arrayInsertionPath(newParentPath, 'children', null),
+        indexPosition,
+      )
     } else {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
@@ -2264,7 +2268,7 @@ export const UPDATE_FNS = {
         const withInsertedElement = insertElementAtPath(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
-          targetParent,
+          arrayInsertionPath(targetParent, 'children', null),
           action.jsxElement,
           utopiaComponents,
           null,
@@ -2343,7 +2347,7 @@ export const UPDATE_FNS = {
               (firstPathMatchingCommonParent) =>
                 MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
               orderedActionTargets.find((target) =>
-                EP.pathsEqual(EP.parentPath(target), parentPath),
+                EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
               ),
             )
           }
@@ -2374,7 +2378,10 @@ export const UPDATE_FNS = {
 
           let isParentFlex: boolean = false
           if (insertionPathIsArray(parentPath)) {
-            const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+            const parent = MetadataUtils.findElementByElementPath(
+              editor.jsxMetadata,
+              parentPath.elementPath,
+            )
             isParentFlex = parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           }
 
@@ -2446,15 +2453,20 @@ export const UPDATE_FNS = {
                 withTargetAdded = insertResult.components
                 detailsOfUpdate = insertResult.insertionDetails
               } else {
-                const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                  targetThatIsRootElementOfCommonParent ?? parentPath,
-                )
+                const staticTarget =
+                  targetThatIsRootElementOfCommonParent == null
+                    ? parentPath
+                    : arrayInsertionPath(targetThatIsRootElementOfCommonParent, 'children', null)
+
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
                   getElementPathFromInsertionPath(staticTarget),
                   (oldRoot) => {
-                    if (insertionPathIsSlot(staticTarget) && isJSXConditionalExpression(oldRoot)) {
-                      const clauseOptic = getClauseOptic(staticTarget.clause)
+                    if (
+                      insertionPathIsConditionalClause(staticTarget) &&
+                      isJSXConditionalExpression(oldRoot)
+                    ) {
+                      const clauseOptic = getClauseOptic(staticTarget.propName)
                       return modify(
                         clauseOptic,
                         (clauseElement) => {
@@ -2480,8 +2492,16 @@ export const UPDATE_FNS = {
               }
 
               viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), newUID)
-                : EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID)
+                ? arrayInsertionPath(
+                    EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), newUID),
+                    'children',
+                    null,
+                  )
+                : arrayInsertionPath(
+                    EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID),
+                    'children',
+                    null,
+                  )
 
               const importsToAdd: Imports =
                 action.whatToWrapWith === 'default-empty-div'
@@ -2571,7 +2591,9 @@ export const UPDATE_FNS = {
           indexInParent = optionalMap(
             (firstPathMatchingCommonParent) =>
               MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
-            orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
+            orderedActionTargets.find((target) =>
+              EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
+            ),
           )
         }
 
@@ -2654,17 +2676,19 @@ export const UPDATE_FNS = {
               }
 
               if (isJSXConditionalExpression(elementToInsert)) {
-                const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                  targetThatIsRootElementOfCommonParent ?? parentPath,
-                )
-                if (insertionPathIsSlot(staticTarget)) {
+                const staticTarget =
+                  targetThatIsRootElementOfCommonParent == null
+                    ? parentPath
+                    : arrayInsertionPath(targetThatIsRootElementOfCommonParent, 'children', null)
+
+                if (insertionPathIsConditionalClause(staticTarget)) {
                   withTargetAdded = insertChildAndDetails(
                     transformJSXComponentAtPath(
                       utopiaJSXComponents,
                       getElementPathFromInsertionPath(staticTarget),
                       (oldRoot) => {
                         if (isJSXConditionalExpression(oldRoot)) {
-                          const clauseOptic = getClauseOptic(staticTarget.clause)
+                          const clauseOptic = getClauseOptic(staticTarget.propName)
                           return modify(
                             clauseOptic,
                             (clauseElement) => {
@@ -2695,19 +2719,21 @@ export const UPDATE_FNS = {
                 ) {
                   withTargetAdded = withInsertedElement()
                 } else {
-                  const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                    targetThatIsRootElementOfCommonParent ?? parentPath,
-                  )
+                  const staticTarget =
+                    targetThatIsRootElementOfCommonParent == null
+                      ? parentPath
+                      : arrayInsertionPath(targetThatIsRootElementOfCommonParent, 'children', null)
+
                   withTargetAdded = insertChildAndDetails(
                     transformJSXComponentAtPath(
                       utopiaJSXComponents,
                       getElementPathFromInsertionPath(staticTarget),
                       (oldRoot) => {
                         if (
-                          insertionPathIsSlot(staticTarget) &&
+                          insertionPathIsConditionalClause(staticTarget) &&
                           isJSXConditionalExpression(oldRoot)
                         ) {
-                          const clauseOptic = getClauseOptic(staticTarget.clause)
+                          const clauseOptic = getClauseOptic(staticTarget.propName)
                           return modify(
                             clauseOptic,
                             (clauseElement) => {
@@ -3145,7 +3171,8 @@ export const UPDATE_FNS = {
         if (insertionPathIsSlot(action.pasteInto)) {
           return true
         }
-        const parentPath = EP.parentPath(action.pasteInto)
+        const parentPath = EP.parentPath(action.pasteInto.elementPath)
+        // TODO SPIKE KILL THIS
         if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
           return true
         }
@@ -5281,7 +5308,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              action.targetParent,
+              arrayInsertionPath(action.targetParent, 'children', null),
               element,
               withMaybeUpdatedParent,
               action.indexPosition,
@@ -5303,7 +5330,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              action.targetParent,
+              arrayInsertionPath(action.targetParent, 'children', null),
               element,
               utopiaComponents,
               action.indexPosition,
@@ -5322,7 +5349,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              action.targetParent,
+              arrayInsertionPath(action.targetParent, 'children', null),
               element,
               utopiaComponents,
               action.indexPosition,

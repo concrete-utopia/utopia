@@ -16,6 +16,7 @@ import { isLeft } from '../shared/either'
 import { emptyImports } from '../workers/common/project-file-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { ElementPath } from '../shared/project-file-types'
+import { arrayInsertionPath } from '../../components/editor/store/reparent-target'
 
 describe('pasteJSXElements', () => {
   it('removes pin related layout props when pasting to flex element', async () => {
@@ -129,7 +130,11 @@ function createPasteElementAction(metadata: ElementInstanceMetadataMap, elementP
   const elementToPaste = elementToPasteMetadata.element.value
 
   const pasteElements = pasteJSXElements(
-    EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target']),
+    arrayInsertionPath(
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target']),
+      'children',
+      null,
+    ),
     [elementPaste(elementToPaste, emptyImports(), elementPath)],
     metadata,
   )

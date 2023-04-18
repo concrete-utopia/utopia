@@ -40,6 +40,7 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
+  arrayInsertionPath,
   getElementPathFromInsertionPath,
   InsertionPath,
   insertionPathIsArray,
@@ -96,7 +97,7 @@ export function getReparentOutcome(
       console.warn(`Unable to find storyboard path.`)
       return null
     } else {
-      newParent = storyboardElementPath
+      newParent = arrayInsertionPath(storyboardElementPath, 'children', null)
     }
   } else {
     newParent = targetParent
@@ -106,7 +107,7 @@ export function getReparentOutcome(
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
     insertionPathIsArray(newParent) &&
-    EP.pathsEqual(newParent, EP.parentPath(toReparent.target))
+    EP.pathsEqual(newParent.elementPath, EP.parentPath(toReparent.target))
   ) {
     return {
       commands: [],

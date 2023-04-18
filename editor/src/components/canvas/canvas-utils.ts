@@ -184,6 +184,7 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
+import { arrayInsertionPath } from '../editor/store/reparent-target'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2160,7 +2161,7 @@ function editorReparentNoStyleChange(
               const withInserted = insertElementAtPath(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
-                underlyingNewParentPath,
+                arrayInsertionPath(underlyingNewParentPath, 'children', null),
                 updatedUnderlyingElement,
                 updatedUtopiaComponents,
                 indexPosition,
@@ -2287,7 +2288,7 @@ export function moveTemplate(
                   const insertResult = insertElementAtPath(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
-                    underlyingNewParentPath,
+                    arrayInsertionPath(underlyingNewParentPath, 'children', null),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
@@ -2761,16 +2762,21 @@ export function duplicate(
               }
             uid = duplicateNewUID.newUID
           }
-          let newPath: ElementPath
-          if (newParentPath == null) {
-            const storyboardUID = Utils.forceNotNull(
-              'Could not find storyboard element',
-              getStoryboardUID(utopiaComponents),
-            )
-            newPath = EP.elementPath([[storyboardUID, uid]])
-          } else {
-            newPath = EP.appendToPath(newParentPath, uid)
-          }
+
+          const newParentPathNotNull =
+            newParentPath != null
+              ? newParentPath
+              : EP.elementPath([
+                  [
+                    Utils.forceNotNull(
+                      'Could not find storyboard element',
+                      getStoryboardUID(utopiaComponents),
+                    ),
+                  ],
+                ])
+
+          const newPath: ElementPath = EP.appendToPath(newParentPathNotNull, uid)
+
           // Update the original frames to be the duplicate ones.
           if (newOriginalFrames != null && newPath != null) {
             newOriginalFrames = newOriginalFrames.map((originalFrame) => {
@@ -2806,7 +2812,7 @@ export function duplicate(
             const insertResult = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
-              newParentPath,
+              arrayInsertionPath(newParentPathNotNull, 'children', null),
               newElement,
               utopiaComponents,
               position(),
@@ -2881,7 +2887,7 @@ export function reorderComponent(
     workingComponents = insertElementAtPath(
       projectContents,
       openFile,
-      parentPath,
+      arrayInsertionPath(parentPath, 'children', null),
       jsxElement,
       workingComponents,
       adjustedIndexPosition,
