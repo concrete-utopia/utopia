@@ -2283,7 +2283,7 @@ export const UPDATE_FNS = {
         const updatedImports = mergeImports(
           underlyingFilePath,
           success.imports,
-          action.importsToAdd,
+          mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
         )
         return {
           ...success,
@@ -2421,6 +2421,7 @@ export const UPDATE_FNS = {
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               let withTargetAdded: Array<UtopiaJSXComponent>
+              let importsAddedDuringInsert: Imports = {}
 
               const elementToInsertWithPositionAttribute = isParentFlex
                 ? setPositionAttribute(elementToInsert, 'relative')
@@ -2444,6 +2445,7 @@ export const UPDATE_FNS = {
                     indexInParent,
                   ),
                 )
+                importsAddedDuringInsert = insertResult.importsToAdd
                 withTargetAdded = insertResult.components
                 detailsOfUpdate = insertResult.insertionDetails
               } else {
@@ -2499,7 +2501,11 @@ export const UPDATE_FNS = {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+                  imports: mergeImports(
+                    targetSuccess.filePath,
+                    success.imports,
+                    mergeImports(targetSuccess.filePath, importsAddedDuringInsert, importsToAdd),
+                  ),
                 }
               }, parseSuccess)
             },
@@ -2756,7 +2762,15 @@ export const UPDATE_FNS = {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded.components,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+                  imports: mergeImports(
+                    targetSuccess.filePath,
+                    success.imports,
+                    mergeImports(
+                      targetSuccess.filePath,
+                      withTargetAdded.importsToAdd,
+                      importsToAdd,
+                    ),
+                  ),
                 }
               }, parseSuccess)
             },
@@ -5380,7 +5394,11 @@ export const UPDATE_FNS = {
           const updatedImports = mergeImports(
             underlyingFilePath,
             success.imports,
-            action.toInsert.importsToAdd,
+            mergeImports(
+              underlyingFilePath,
+              withInsertedElement.importsToAdd,
+              action.toInsert.importsToAdd,
+            ),
           )
           return {
             ...success,

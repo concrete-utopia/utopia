@@ -42,6 +42,7 @@ import {
   StaticElementPathPart,
   StaticElementPath,
   ElementPath,
+  Imports,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -493,15 +494,18 @@ export function removeJSXElementChild(
 export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
+  importsToAdd: Imports
 }
 
 export function insertChildAndDetails(
   components: Array<UtopiaJSXComponent>,
   insertionDetails: string | null = null,
+  importsToAdd: Imports = {},
 ): InsertChildAndDetails {
   return {
     components: components,
     insertionDetails: insertionDetails,
+    importsToAdd: importsToAdd,
   }
 }
 
@@ -536,6 +540,7 @@ export function insertJSXElementChild(
   } else {
     const parentPath = getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot)
     let details: string | null = null
+    let importsToAdd: Imports = {}
     const updatedComponents = transformJSXComponentAtPath(
       components,
       parentPath,
@@ -559,6 +564,13 @@ export function insertJSXElementChild(
                 return parentElement
               } else {
                 // for wrapping multiple elements
+                importsToAdd = {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
+                }
                 return jsxFragment(
                   // should insert <React.Fragment>, should ensure React is imported
                   generateUidWithExistingComponents(projectContents),
@@ -591,7 +603,7 @@ export function insertJSXElementChild(
       },
     )
 
-    return insertChildAndDetails(updatedComponents, details)
+    return insertChildAndDetails(updatedComponents, details, importsToAdd)
   }
 }
 

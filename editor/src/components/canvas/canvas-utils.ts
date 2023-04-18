@@ -184,6 +184,7 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
+import { mergeImports } from '../../core/workers/common/project-file-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2169,6 +2170,11 @@ function editorReparentNoStyleChange(
 
               return {
                 ...workingSuccess,
+                imports: mergeImports(
+                  underlyingFilePath,
+                  underlyingElementSuccess.imports,
+                  withInserted.importsToAdd,
+                ),
                 topLevelElements: applyUtopiaJSXComponentsChanges(
                   workingSuccess.topLevelElements,
                   withInserted.components,
@@ -2297,6 +2303,11 @@ export function moveTemplate(
 
                   return {
                     ...workingSuccess,
+                    imports: mergeImports(
+                      underlyingFilePath,
+                      underlyingElementSuccess.imports,
+                      insertResult.importsToAdd,
+                    ),
                     topLevelElements: applyUtopiaJSXComponentsChanges(
                       workingSuccess.topLevelElements,
                       updatedUtopiaComponents,
@@ -2828,6 +2839,7 @@ export function duplicate(
 
             return {
               ...success,
+              imports: mergeImports(underlyingFilePath, success.imports, insertResult.importsToAdd),
               topLevelElements: applyUtopiaJSXComponentsChanges(
                 success.topLevelElements,
                 utopiaComponents,
@@ -2879,6 +2891,7 @@ export function reorderComponent(
     )
 
     workingComponents = insertElementAtPath(
+      // TODO: bubble up imports
       projectContents,
       openFile,
       parentPath,
