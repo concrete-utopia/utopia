@@ -78,7 +78,7 @@ export function clearInsertableComponentUniqueIDs(
   }
 }
 
-export interface InsertableComponentSamples {
+export interface InsertableComponentGroupSamples {
   type: 'SAMPLES_GROUP'
 }
 
@@ -149,7 +149,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupProjectDependency
   | InsertableComponentGroupConditionals
   | InsertableComponentGroupFragment
-  | InsertableComponentSamples
+  | InsertableComponentGroupSamples
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
