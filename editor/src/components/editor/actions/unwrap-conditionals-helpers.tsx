@@ -38,6 +38,7 @@ export function unwrapConditionalClause(
   target: ElementPath,
   parentPath: ConditionalClause<ElementPath>,
 ): EditorState {
+  let newSelection: Array<ElementPath> = []
   const withElementMoved = modifyUnderlyingTargetElement(
     parentPath.elementPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
@@ -58,9 +59,12 @@ export function unwrapConditionalClause(
                   if (clauseElement.children.length === 0) {
                     return jsExpressionValue(null, emptyComments)
                   } else if (clauseElement.children.length === 1) {
-                    return clauseElement.children[0]
+                    const childElement = clauseElement.children[0]
+                    newSelection.push(EP.appendToPath(parentPath.elementPath, childElement.uid))
+                    return childElement
                   } else {
                     const newUID = generateUidWithExistingComponents(editor.projectContents)
+                    newSelection.push(EP.appendToPath(parentPath.elementPath, newUID))
                     return jsxFragment(newUID, clauseElement.children, false)
                   }
                 }
@@ -85,9 +89,8 @@ export function unwrapConditionalClause(
       }
     },
   )
-  // TODO update selected views
-  // TODO update frame
-  return withElementMoved
+
+  return { ...withElementMoved, selectedViews: newSelection }
 }
 export function unwrapTextContainingConditional(
   editor: EditorState,
