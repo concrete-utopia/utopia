@@ -607,7 +607,7 @@ export function insertJSXElementChild(
   }
 }
 
-export function getZIndexOfElement(
+export function getIndexInParent(
   topLevelElements: Array<TopLevelElement>,
   target: StaticElementPath,
 ): number {
@@ -619,7 +619,7 @@ export function getZIndexOfElement(
   if (parentElement != null) {
     const elementUID = EP.toUid(target)
     return parentElement.children.findIndex((child) => {
-      return isJSXElementLike(child) && getUtopiaID(child) === elementUID
+      return getUtopiaID(child) === elementUID
     })
   } else {
     return -1
