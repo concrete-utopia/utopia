@@ -192,6 +192,7 @@ let
       set -e
       build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      yarn
       yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode" ''
