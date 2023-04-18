@@ -577,7 +577,13 @@ export function handleKeyDown(
                   [],
                   true,
                 ),
-                importsToAdd: {},
+                importsToAdd: {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
+                },
               }),
             ]
           : []

@@ -12,6 +12,7 @@ import {
   jsxConditionalExpressionWithoutUID,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
+  jsxTextBlock,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -359,7 +360,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Fragment',
-        elementToInsert: jsxFragmentWithoutUID([], true),
+        elementToInsert: jsxFragmentWithoutUID([jsxTextBlock('Fragment')], true),
         importsToAdd: {
           react: {
             importedAs: 'React',

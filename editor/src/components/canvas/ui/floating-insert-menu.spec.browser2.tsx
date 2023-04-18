@@ -52,7 +52,7 @@ describe('Floating insert menu', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    {true ? null : null}
+    {true ? 'True branch' : 'False branch'}
   </div>`),
     )
   })
@@ -94,7 +94,7 @@ describe('Floating insert menu', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <></>
+    <React.Fragment>Fragment</React.Fragment>
   </div>`),
     )
   })

@@ -3165,18 +3165,26 @@ export const UPDATE_FNS = {
       // when targeting a conditional, wrap multiple elements into a fragment
       if (action.elements.length > 1 && isConditionalTarget()) {
         const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
-        const mergedImports = elements
+        const mergedImportsFromElements = elements
           .map((e) => e.importsToAdd)
           .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+        const mergedImportsWithReactImport = {
+          ...mergedImportsFromElements,
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        }
         const fragment = jsxFragment(
           fragmentUID,
           elements.map((e) => e.element),
-          false,
+          true,
         )
         elements = [
           {
             element: fragment,
-            importsToAdd: mergedImports,
+            importsToAdd: mergedImportsWithReactImport,
             originalElementPath: EP.fromString(fragmentUID),
           },
         ]
