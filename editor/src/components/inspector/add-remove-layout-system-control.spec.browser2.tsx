@@ -366,7 +366,7 @@ describe('add layout system', () => {
     )
   })
 
-  // xit('adding flex layout to a container with non-dom element children, with some children out of order', async () => {})
+  // TODO it('adding flex layout to a container with non-dom element children, with some children out of order', async () => {})
 })
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
