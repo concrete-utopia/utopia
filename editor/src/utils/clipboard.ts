@@ -40,7 +40,11 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { conditionalClause, InsertionPath } from '../components/editor/store/reparent-target'
+import {
+  arrayInsertionPath,
+  conditionalClause,
+  InsertionPath,
+} from '../components/editor/store/reparent-target'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
@@ -138,7 +142,7 @@ export function getActionsForClipboardItems(
         pastedImages,
         parentCenter,
         canvasScale,
-        target,
+        arrayInsertionPath(target, 'children', null),
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -152,7 +156,7 @@ export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
   scale: number,
-  parentPath: InsertionPath<ElementPath> | null,
+  parentPath: InsertionPath | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -286,7 +290,7 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-): InsertionPath<ElementPath> | null {
+): InsertionPath | null {
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]
@@ -312,7 +316,7 @@ export function getTargetParentForPaste(
         if (!isNullJSXAttributeValue(clause)) {
           return null
         }
-        return conditionalClause(parentPath, conditionalCase)
+        return conditionalClause(EP.dynamicPathToStaticPath(parentPath), conditionalCase)
       }
     }
   }
@@ -335,7 +339,7 @@ export function getTargetParentForPaste(
         ) &&
         !insertingSourceIntoItself
       ) {
-        return parentTarget
+        return arrayInsertionPath(parentTarget, 'children', null)
       } else {
         const parentOfSelected = EP.parentPath(parentTarget)
         if (
@@ -347,7 +351,7 @@ export function getTargetParentForPaste(
             parentOfSelected,
           )
         ) {
-          return parentOfSelected
+          return arrayInsertionPath(parentOfSelected, 'children', null)
         } else {
           return null
         }

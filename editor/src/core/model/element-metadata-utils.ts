@@ -127,6 +127,7 @@ import {
 import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
+  arrayInsertionPath,
   conditionalClause,
   InsertionPath,
   insertionPathIsArray,
@@ -1877,11 +1878,11 @@ export const MetadataUtils = {
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
-    reparentTargetParent: InsertionPath<ElementPath>,
+    reparentTargetParent: InsertionPath,
   ): ElementPath {
     if (insertionPathIsArray(reparentTargetParent)) {
       // This is an element path, so return directly.
-      return reparentTargetParent
+      return reparentTargetParent.elementPath
     } else {
       // Resolve this to the element in the clause.
       const targetElement = this.findElementByElementPath(
@@ -1903,7 +1904,9 @@ export const MetadataUtils = {
             if (isJSXConditionalExpression(element)) {
               return getConditionalClausePath(
                 reparentTargetParent.elementPath,
-                reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
+                reparentTargetParent.propName === 'true-case'
+                  ? element.whenTrue
+                  : element.whenFalse,
               )
             } else {
               throw new Error(
@@ -1976,7 +1979,7 @@ export const MetadataUtils = {
   getReparentTargetOfTarget(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
-  ): InsertionPath<ElementPath> | null {
+  ): InsertionPath | null {
     const parentElement = this.getParent(metadata, target)
     if (parentElement == null) {
       return null
@@ -1992,7 +1995,7 @@ export const MetadataUtils = {
           return conditionalClause(parentElement.elementPath, 'false-case')
         }
       }
-      return parentElement.elementPath
+      return arrayInsertionPath(parentElement.elementPath, 'children', null)
     }
   },
 }

@@ -10,23 +10,26 @@ export interface ConditionalClause<P extends ElementPath> {
   clause: ConditionalCase
 }
 
-export function conditionalClause<P extends ElementPath>(
-  elementPath: P,
-  clause: ConditionalCase,
-): ConditionalClause<P> {
-  return {
-    elementPath: elementPath,
-    clause: clause,
-  }
-}
-
 export type InsertionPath = ArrayInsertionPath | SlotInsertionPath | ConditionalClauseInsertionPath
 
 export interface ArrayInsertionPath {
   type: 'ARRAY_INSERTION'
-  propName: string
+  propName: 'children'
   elementPath: StaticElementPath
   indexPosition: IndexPosition | null
+}
+
+export function arrayInsertionPath(
+  elementPath: StaticElementPath | ElementPath,
+  propName: 'children',
+  indexPosition: IndexPosition | null,
+): ArrayInsertionPath {
+  return {
+    type: 'ARRAY_INSERTION',
+    elementPath: EP.dynamicPathToStaticPath(elementPath),
+    propName: propName,
+    indexPosition: indexPosition,
+  }
 }
 
 export interface SlotInsertionPath {
@@ -40,6 +43,17 @@ export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   propName: ConditionalCase
   elementPath: StaticElementPath
+}
+
+export function conditionalClause(
+  elementPath: StaticElementPath | ElementPath,
+  propName: ConditionalCase,
+): ConditionalClauseInsertionPath {
+  return {
+    type: 'CONDITIONAL_CLAUSE_INSERTION',
+    elementPath: EP.dynamicPathToStaticPath(elementPath),
+    propName: propName,
+  }
 }
 
 export function insertionPathIsSlot(
@@ -56,7 +70,7 @@ export function insertionPathIsArray(
 
 export function insertionPathIsConditionalClause(
   reparentTargetParent: InsertionPath,
-): reparentTargetParent is ArrayInsertionPath {
+): reparentTargetParent is ConditionalClauseInsertionPath {
   return reparentTargetParent.type === 'CONDITIONAL_CLAUSE_INSERTION'
 }
 
@@ -114,7 +128,7 @@ export function commonReparentTargetFromArray(
   if (workingArray.length === 0) {
     return null
   }
-  return drop(1, workingArray).reduce<InsertionPath> | null>((working, target) => {
+  return drop(1, workingArray).reduce<InsertionPath | null>((working, target) => {
     if (working == null) {
       return working
     } else {

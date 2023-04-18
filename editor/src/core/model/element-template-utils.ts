@@ -522,14 +522,28 @@ export function insertJSXElementChild(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
     target: InsertionPath,
-  ) {
+  ): ConditionalCase {
     if (insertionPathIsConditionalClause(target)) {
-      return target.
+      return target.propName
     }
-    return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
+    throw new Error('trying to get at conditional case with a non-conditional insertion path')
   }
-  const targetParentIncludingStoryboardRoot =
-    targetParent ?? getStoryboardElementPath(projectContents, openFile)
+
+  const storyboardPath = getStoryboardElementPath(projectContents, openFile)
+
+  // TODO the caller could should provde the storyboard root path if they want to insert to the storyboard root
+  const targetParentIncludingStoryboardRoot: InsertionPath | null =
+    targetParent ??
+    // TODO this is the ugliest code I wrote today
+    (storyboardPath == null
+      ? null
+      : {
+          type: 'ARRAY_INSERTION',
+          propName: 'children',
+          elementPath: storyboardPath,
+          indexPosition: null,
+        })
+
   if (targetParentIncludingStoryboardRoot == null) {
     return insertChildAndDetails(components)
   } else {
@@ -581,7 +595,7 @@ export function insertJSXElementChild(
           }
           return {
             ...parentElement,
-            children: updatedChildren,
+            [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
           }
         } else {
           return parentElement
