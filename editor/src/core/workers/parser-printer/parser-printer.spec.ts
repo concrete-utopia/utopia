@@ -883,7 +883,7 @@ function getSizing(n) {
 }
 var spacing = 20
 export var whatever = (props) => <View data-uid='aaa'>
-  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={getSizing(spacing)} right={20} top={-20} onClick={function(){console.log('click')}} />
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={getSizing(spacing)} right={20} top={-20} onClick={function click(){console.log('click')}} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))

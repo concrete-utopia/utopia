@@ -91,7 +91,7 @@ import {
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
-import { fastForEach } from '../../shared/utils'
+import { assertNever, fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { emptySet } from '../../shared/set-utils'
@@ -781,6 +781,24 @@ function walkElements(
   }
 }
 
+function walkJSXAttributes(
+  jsxAttributes: JSXAttributes,
+  walkWith: (elem: JSXElementChild) => void,
+): void {
+  for (const attributeEntry of jsxAttributes) {
+    switch (attributeEntry.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        walkAllJSXElementChilds(attributeEntry.value, walkWith)
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        walkAllJSXElementChilds(attributeEntry.spreadValue, walkWith)
+        break
+      default:
+        assertNever(attributeEntry)
+    }
+  }
+}
+
 function walkAllJSXElementChilds(
   jsxElementChild: JSXElementChild,
   walkWith: (elem: JSXElementChild) => void,
@@ -791,6 +809,7 @@ function walkAllJSXElementChilds(
       fastForEach(jsxElementChild.children, (child) => {
         walkAllJSXElementChilds(child, walkWith)
       })
+      walkJSXAttributes(jsxElementChild.props, walkWith)
       break
     case 'JSX_TEXT_BLOCK':
       break
@@ -806,6 +825,7 @@ function walkAllJSXElementChilds(
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
+      walkAllJSXElementChilds(jsxElementChild.condition, walkWith)
       walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
       walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
       break
