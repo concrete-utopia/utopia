@@ -461,7 +461,7 @@ Array [
             },
             "type": "ATTRIBUTE_VALUE",
             "uid": "",
-            "value": null,
+            "value": "False branch",
           },
           "whenTrue": Object {
             "comments": Object {
@@ -470,7 +470,7 @@ Array [
             },
             "type": "ATTRIBUTE_VALUE",
             "uid": "",
-            "value": null,
+            "value": "True branch",
           },
         },
         "importsToAdd": Object {},
@@ -489,11 +489,23 @@ Array [
       Object {
         "defaultSize": null,
         "element": Object {
-          "children": Array [],
-          "longForm": false,
+          "children": Array [
+            Object {
+              "text": "Fragment",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
+          ],
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
-        "importsToAdd": Object {},
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -976,7 +988,7 @@ Array [
             },
             "type": "ATTRIBUTE_VALUE",
             "uid": "",
-            "value": null,
+            "value": "False branch",
           },
           "whenTrue": Object {
             "comments": Object {
@@ -985,7 +997,7 @@ Array [
             },
             "type": "ATTRIBUTE_VALUE",
             "uid": "",
-            "value": null,
+            "value": "True branch",
           },
         },
         "importsToAdd": Object {},
@@ -1004,11 +1016,23 @@ Array [
       Object {
         "defaultSize": null,
         "element": Object {
-          "children": Array [],
-          "longForm": false,
+          "children": Array [
+            Object {
+              "text": "Fragment",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
+          ],
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
-        "importsToAdd": Object {},
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
