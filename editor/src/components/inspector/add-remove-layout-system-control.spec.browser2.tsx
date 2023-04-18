@@ -11,7 +11,6 @@ import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
   renderTestEditorWithCode,
   EditorRenderResult,
-  makeTestProjectCodeWithComponentInnards,
   getPrintedUiJsCode,
   TestSceneUID,
   TestAppUID,
@@ -216,7 +215,7 @@ describe('add layout system', () => {
         width: 624,
         height: 298,
       }}
-      data-uid='01a'
+      data-uid='container'
     >
       <div
         style={{
@@ -286,14 +285,85 @@ describe('add layout system', () => {
     )
 
     await selectComponentsForTest(editor, [
-      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/ccc`),
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
     await expectSingleUndoStep(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(makeTestProjectCodeWithSnippet(``))
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 30,
+        top: 528,
+        width: 'max-content',
+        height: 'max-content',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 41,
+        padding: '80px 52px',
+      }}
+      data-uid='container'
+      data-testid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 87,
+          height: 180,
+          contain: 'layout',
+        }}
+        data-uid='91d'
+      />
+      <React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 63,
+            height: 169,
+            contain: 'layout',
+          }}
+          data-uid='21a'
+        />
+        <React.Fragment>
+          <React.Fragment>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 36,
+                height: 154,
+                contain: 'layout',
+              }}
+              data-uid='d17'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 47,
+                height: 106,
+                contain: 'layout',
+              }}
+              data-uid='c9a'
+            />
+          </React.Fragment>
+        </React.Fragment>
+      </React.Fragment>
+      {true ? (
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 121,
+            height: 88,
+            contain: 'layout',
+          }}
+          data-uid='9c4'
+        />
+      ) : null}
+      </div>`),
+    )
   })
 
   // xit('adding flex layout to a container with non-dom element children, with some children out of order', async () => {})
