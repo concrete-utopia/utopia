@@ -293,7 +293,7 @@ describe('actions', () => {
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
-		</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -311,7 +311,7 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='aab'>foo</div>
-		</div>
+        </div>
 		`,
       },
       {
@@ -321,7 +321,7 @@ describe('actions', () => {
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
             <div data-uid='ddd'>baz</div>
-		</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const fooPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -347,13 +347,13 @@ describe('actions', () => {
             <div data-uid='ddd'>baz</div>
             <div data-uid='aab'>foo</div>
             <div data-uid='aac'>bar</div>
-		</div>
+        </div>
 		`,
       },
       {
         name: 'a fragment',
         startingCode: `
-		<div data-uid='root'>
+        <div data-uid='root'>
             <div data-uid='aaa'>
                 <div data-uid='bbb'>foo</div>
                 <div data-uid='ccc'>bar</div>
@@ -362,7 +362,7 @@ describe('actions', () => {
                 <div data-uid='ddd'>hello</div>
                 <div data-uid='eee'>there</div>
             </>
-		</div>
+        </div>
 		`,
         elements: (renderResult) => {
           const path = EP.appendNewElementPath(TestScenePath, ['root', '38e'])
@@ -376,7 +376,7 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
         want: `
-		<div data-uid='root'>
+		    <div data-uid='root'>
             <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
             <div data-uid='ccc'>bar</div>
@@ -879,13 +879,13 @@ describe('actions', () => {
         },
         pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
         want: `
-    <div data-uid='root'>
-      {
-        // @utopia/uid=conditional
-        true ? <div data-uid='aaa'>foo</div> : null
-      }
-      <div data-uid='aab'>foo</div>
-		</div>
+      <div data-uid='root'>
+        {
+          // @utopia/uid=conditional
+          true ? <div data-uid='aaa'>foo</div> : null
+        }
+        <div data-uid='aab'>foo</div>
+      </div>
 		`,
       },
       {
