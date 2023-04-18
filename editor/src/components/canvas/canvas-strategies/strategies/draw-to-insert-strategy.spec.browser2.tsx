@@ -31,7 +31,11 @@ import {
 } from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
+import {
+  expectSingleUndoStep,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../../../utils/utils.test-utils'
 import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
@@ -1546,6 +1550,93 @@ describe('Inserting into flex row', () => {
             }}
             data-uid='ddd'
           />
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          /> 
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Inserting a wrapped element into the 0th position in flex', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+    await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
+
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 25,
+      y: targetElementBounds.y + 305,
+    })
+
+    // Move before starting dragging
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    // Highlight should show the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
+
+    await expectSingleUndoStep(renderResult, () =>
+      // Drag horizontally close to the zero position
+      mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the inserted element is a sibling of bbb, position is before bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          {true ? (
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 20,
+                height: 300,
+                contain: 'layout',
+              }}
+              data-uid='ddd'
+            />
+          ) : null}
           <div
             data-uid='bbb'
             data-testid='bbb'

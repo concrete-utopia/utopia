@@ -13,7 +13,7 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
-  getZIndexOfElement,
+  getIndexInParent,
   insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
@@ -1155,7 +1155,7 @@ function indexPositionForAdjustment(
           openUIJSFileKey,
           0,
           (success) => {
-            return getZIndexOfElement(success.topLevelElements, EP.asStatic(target))
+            return getIndexInParent(success.topLevelElements, EP.asStatic(target))
           },
         )
         return {
