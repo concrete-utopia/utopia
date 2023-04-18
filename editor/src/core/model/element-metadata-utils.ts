@@ -128,8 +128,8 @@ import { getConditionalClausePath, reorderConditionalChildPathTrees } from './co
 import { getUtopiaID } from '../shared/uid-utils'
 import {
   conditionalClause,
-  ReparentTargetParent,
-  reparentTargetParentIsElementPath,
+  InsertionPath,
+  insertionPathIsArray,
 } from '../../components/editor/store/reparent-target'
 import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
@@ -1877,9 +1877,9 @@ export const MetadataUtils = {
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
-    reparentTargetParent: ReparentTargetParent<ElementPath>,
+    reparentTargetParent: InsertionPath<ElementPath>,
   ): ElementPath {
-    if (reparentTargetParentIsElementPath(reparentTargetParent)) {
+    if (insertionPathIsArray(reparentTargetParent)) {
       // This is an element path, so return directly.
       return reparentTargetParent
     } else {
@@ -1976,7 +1976,7 @@ export const MetadataUtils = {
   getReparentTargetOfTarget(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
-  ): ReparentTargetParent<ElementPath> | null {
+  ): InsertionPath<ElementPath> | null {
     const parentElement = this.getParent(metadata, target)
     if (parentElement == null) {
       return null

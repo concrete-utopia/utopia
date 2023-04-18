@@ -40,7 +40,7 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { conditionalClause, ReparentTargetParent } from '../components/editor/store/reparent-target'
+import { conditionalClause, InsertionPath } from '../components/editor/store/reparent-target'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
@@ -152,7 +152,7 @@ export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
   scale: number,
-  parentPath: ReparentTargetParent<ElementPath> | null,
+  parentPath: InsertionPath<ElementPath> | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -286,7 +286,7 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-): ReparentTargetParent<ElementPath> | null {
+): InsertionPath<ElementPath> | null {
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]

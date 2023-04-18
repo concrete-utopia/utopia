@@ -65,9 +65,10 @@ import {
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  insertionPathIsConditionalClause,
+  insertionPathIsSlot,
 } from '../../components/editor/store/reparent-target'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
@@ -508,7 +509,7 @@ export function insertChildAndDetails(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ReparentTargetParent<StaticElementPath> | null,
+  targetParent: InsertionPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -520,10 +521,10 @@ export function insertJSXElementChild(
   function getConditionalCase(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
-    target: ReparentTargetParent<ElementPath>,
+    target: InsertionPath,
   ) {
-    if (reparentTargetParentIsConditionalClause(target)) {
-      return target.clause
+    if (insertionPathIsConditionalClause(target)) {
+      return target.
     }
     return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
   }
@@ -532,7 +533,7 @@ export function insertJSXElementChild(
   if (targetParentIncludingStoryboardRoot == null) {
     return insertChildAndDetails(components)
   } else {
-    const parentPath = getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot)
+    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
     let details: string | null = null
     const updatedComponents = transformJSXComponentAtPath(
       components,

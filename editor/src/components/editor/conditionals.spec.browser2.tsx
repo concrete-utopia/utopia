@@ -34,7 +34,7 @@ import { ConditionalSectionTestId } from '../inspector/sections/layout-section/c
 import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
-import { ReparentTargetParent } from './store/reparent-target'
+import { InsertionPath } from './store/reparent-target'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -848,7 +848,7 @@ async function runPaste({
   targets,
 }: {
   startSnippet: string
-  pasteInto: ReparentTargetParent<ElementPath>
+  pasteInto: InsertionPath<ElementPath>
   targets: Array<ElementPath>
 }) {
   const renderResult = await renderTestEditorWithCode(

@@ -3,6 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import { ConditionalCase } from '../../../core/model/conditionals'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
+import { IndexPosition } from '../../../utils/utils'
 
 export interface ConditionalClause<P extends ElementPath> {
   elementPath: P
@@ -19,87 +20,90 @@ export function conditionalClause<P extends ElementPath>(
   }
 }
 
-export type ReparentTargetParent<P extends ElementPath> = P | ConditionalClause<P>
+export type InsertionPath = ArrayInsertionPath | SlotInsertionPath | ConditionalClauseInsertionPath
 
-export function reparentTargetParentIsConditionalClause<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is ConditionalClause<P> {
-  return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
+export interface ArrayInsertionPath {
+  type: 'ARRAY_INSERTION'
+  propName: string
+  elementPath: StaticElementPath
+  indexPosition: IndexPosition | null
 }
 
-export function reparentTargetParentIsElementPath<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is P {
-  return !reparentTargetParentIsConditionalClause(reparentTargetParent)
+export interface SlotInsertionPath {
+  type: 'SLOT_INSERTION'
+  propName: string
+  elementPath: StaticElementPath
+  nullable: boolean
 }
 
-export function getElementPathFromReparentTargetParent<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): P {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return reparentTargetParent.elementPath
-  } else {
-    return reparentTargetParent
-  }
+export interface ConditionalClauseInsertionPath {
+  type: 'CONDITIONAL_CLAUSE_INSERTION'
+  propName: ConditionalCase
+  elementPath: StaticElementPath
 }
 
-export function dynamicReparentTargetParentToStaticReparentTargetParent(
-  reparentTargetParent: ReparentTargetParent<ElementPath>,
-): ReparentTargetParent<StaticElementPath> {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return conditionalClause(
-      EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
-      reparentTargetParent.clause,
-    )
-  } else {
-    return EP.dynamicPathToStaticPath(reparentTargetParent)
-  }
+export function insertionPathIsSlot(
+  reparentTargetParent: InsertionPath,
+): reparentTargetParent is SlotInsertionPath {
+  return reparentTargetParent.type === 'SLOT_INSERTION'
 }
 
-export function reparentTargetToString<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): string {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return `${reparentTargetParent.clause} of ${EP.toString(reparentTargetParent.elementPath)}`
-  } else {
-    return EP.toString(reparentTargetParent)
-  }
+export function insertionPathIsArray(
+  reparentTargetParent: InsertionPath,
+): reparentTargetParent is ArrayInsertionPath {
+  return reparentTargetParent.type === 'ARRAY_INSERTION'
 }
 
+export function insertionPathIsConditionalClause(
+  reparentTargetParent: InsertionPath,
+): reparentTargetParent is ArrayInsertionPath {
+  return reparentTargetParent.type === 'CONDITIONAL_CLAUSE_INSERTION'
+}
+
+export function getElementPathFromInsertionPath(
+  reparentTargetParent: InsertionPath,
+): StaticElementPath {
+  return reparentTargetParent.elementPath
+}
+
+// export function dynamicReparentTargetParentToStaticReparentTargetParent(
+//   reparentTargetParent: InsertionPath<ElementPath>,
+// ): InsertionPath<StaticElementPath> {
+//   if (insertionPathIsSlot(reparentTargetParent)) {
+//     return conditionalClause(
+//       EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
+//       reparentTargetParent.clause,
+//     )
+//   } else {
+//     return EP.dynamicPathToStaticPath(reparentTargetParent)
+//   }
+// }
+
+export function insertionPathToString(reparentTargetParent: InsertionPath): string {
+  return `${reparentTargetParent.propName} of ${EP.toString(reparentTargetParent.elementPath)}`
+}
+
+// TODO: do we need this
 export function commonReparentTarget(
-  first: ReparentTargetParent<ElementPath>,
-  second: ReparentTargetParent<ElementPath>,
-): ReparentTargetParent<ElementPath> | null {
-  if (reparentTargetParentIsElementPath(first)) {
-    if (reparentTargetParentIsElementPath(second)) {
-      return EP.closestSharedAncestor(first, second, true)
-    } else {
-      return EP.closestSharedAncestor(first, second.elementPath, true)
-    }
-  } else {
-    if (reparentTargetParentIsElementPath(second)) {
-      return EP.closestSharedAncestor(first.elementPath, second, true)
-    } else {
-      if (EP.pathsEqual(first.elementPath, second.elementPath)) {
-        if (first.clause === second.clause) {
-          // If the clauses are the same (both 'true-case' or both 'false-case'), then refer specifically to that case.
-          return first
-        } else {
-          // As the clauses are not the same, but this is the same conditional refer to the conditional instead.
-          return first.elementPath
-        }
-      } else {
-        // Best effort result which doesn't handle the clauses.
-        return EP.closestSharedAncestor(first.elementPath, second.elementPath, true)
-      }
-    }
+  first: InsertionPath,
+  second: InsertionPath,
+): InsertionPath | null {
+  const ancestor = EP.closestSharedAncestor(first.elementPath, second.elementPath, true)
+  if (ancestor == null) {
+    return null
+  }
+  return {
+    type: 'ARRAY_INSERTION',
+    elementPath: EP.dynamicPathToStaticPath(ancestor),
+    propName: 'children',
+    indexPosition: null,
   }
 }
 
 export function commonReparentTargetFromArray(
-  array: Array<ReparentTargetParent<ElementPath> | null>,
-): ReparentTargetParent<ElementPath> | null {
-  let workingArray: Array<ReparentTargetParent<ElementPath>> = []
+  array: Array<InsertionPath | null>,
+): InsertionPath | null {
+  let workingArray: Array<InsertionPath> = []
   for (const arrayElem of array) {
     if (arrayElem == null) {
       return null
@@ -110,14 +114,11 @@ export function commonReparentTargetFromArray(
   if (workingArray.length === 0) {
     return null
   }
-  return drop(1, workingArray).reduce<ReparentTargetParent<ElementPath> | null>(
-    (working, target) => {
-      if (working == null) {
-        return working
-      } else {
-        return commonReparentTarget(working, target)
-      }
-    },
-    workingArray[0],
-  )
+  return drop(1, workingArray).reduce<InsertionPath> | null>((working, target) => {
+    if (working == null) {
+      return working
+    } else {
+      return commonReparentTarget(working, target)
+    }
+  }, workingArray[0])
 }

@@ -40,9 +40,9 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetParentIsElementPath,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  insertionPathIsArray,
 } from '../../../../components/editor/store/reparent-target'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
 
@@ -85,11 +85,11 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: ReparentTargetParent<ElementPath> | null,
+  targetParent: InsertionPath<ElementPath> | null,
   whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
-  let newParent: ReparentTargetParent<ElementPath>
+  let newParent: InsertionPath<ElementPath>
   if (targetParent == null) {
     const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
     if (storyboardElementPath == null) {
@@ -105,7 +105,7 @@ export function getReparentOutcome(
   // Early exit if there's no need to make any change.
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
-    reparentTargetParentIsElementPath(newParent) &&
+    insertionPathIsArray(newParent) &&
     EP.pathsEqual(newParent, EP.parentPath(toReparent.target))
   ) {
     return {
@@ -114,7 +114,7 @@ export function getReparentOutcome(
     }
   }
 
-  const newParentElementPath = getElementPathFromReparentTargetParent(newParent)
+  const newParentElementPath = getElementPathFromInsertionPath(newParent)
 
   // Lookup the filename that will be added to.
   const newTargetFilePath = forceNotNull(

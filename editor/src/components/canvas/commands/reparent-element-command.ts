@@ -1,8 +1,8 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  insertionPathIsSlot,
 } from '../../../components/editor/store/reparent-target'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -19,13 +19,13 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
-  newParent: ReparentTargetParent<ElementPath>
+  newParent: InsertionPath<ElementPath>
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
-  newParent: ReparentTargetParent<ElementPath>,
+  newParent: InsertionPath<ElementPath>,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
@@ -45,7 +45,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     editorState,
     (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
-        getElementPathFromReparentTargetParent(command.newParent),
+        getElementPathFromInsertionPath(command.newParent),
         editorState,
         (
           successNewParent,
@@ -116,7 +116,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   )
 
   let parentDescription: string
-  if (reparentTargetParentIsConditionalClause(command.newParent)) {
+  if (insertionPathIsSlot(command.newParent)) {
     parentDescription = `${EP.toUid(command.newParent.elementPath)} (${
       command.newParent.clause
     } clause)`
