@@ -1,11 +1,9 @@
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
-  isJSXFragment,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -15,7 +13,6 @@ import {
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -29,6 +26,7 @@ import {
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
+import { UtopiaTheme } from '../../uuiui'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -135,7 +133,7 @@ export function getNavigatorTargets(
         }
 
         // Get the clause path.
-        const clausePath = getConditionalClausePath(path, clauseValue, conditionalCase)
+        const clausePath = getConditionalClausePath(path, clauseValue)
 
         // Create the entry for the name of the clause.
         const clauseTitleEntry = conditionalClauseNavigatorEntry(
@@ -211,5 +209,5 @@ export function getConditionalClausePathForNavigatorEntry(
   }
   const clauseElement =
     navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
-  return getConditionalClausePath(navigatorEntry.elementPath, clauseElement, navigatorEntry.clause)
+  return getConditionalClausePath(navigatorEntry.elementPath, clauseElement)
 }

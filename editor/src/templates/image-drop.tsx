@@ -238,7 +238,7 @@ function actionsForDroppedImage(
   })
   return {
     actions: saveImageActions,
-    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null, false),
+    singleSubject: insertionSubject(newUID, newElement, elementSize, {}, null, false, null),
     imageAssetInfo: {
       uid: newUID,
       fileType: image.fileType,

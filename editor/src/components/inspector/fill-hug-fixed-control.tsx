@@ -14,7 +14,7 @@ import { CSSNumber, cssNumber, CSSNumberType, UnknownOrEmptyInput } from './comm
 import { metadataSelector, selectedViewsSelector, useComputedSizeRef } from './inpector-selectors'
 import {
   Axis,
-  detectFillHugFixedState,
+  detectFillHugFixedStateMultiselect,
   FixedHugFill,
   FixedHugFillMode,
   getFixedFillHugOptionsForElement,
@@ -85,10 +85,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const widthCurrentValue = useEditorState(
     Substores.metadata,
     (store) =>
-      detectFillHugFixedState(
+      detectFillHugFixedStateMultiselect(
         'horizontal',
         metadataSelector(store),
-        selectedViewsSelector(store)[0] ?? null,
+        selectedViewsSelector(store),
       ),
     'FillHugFixedControl widthCurrentValue',
     isFixedHugFillEqual,
@@ -108,10 +108,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const fillsContainerHorizontallyRef = useRefEditorState(
     (store) =>
-      detectFillHugFixedState(
+      detectFillHugFixedStateMultiselect(
         'horizontal',
         metadataSelector(store),
-        selectedViewsSelector(store)[0] ?? null,
+        selectedViewsSelector(store),
       ).fixedHugFill?.type === 'fill',
   )
 
@@ -120,10 +120,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const heightCurrentValue = useEditorState(
     Substores.metadata,
     (store) =>
-      detectFillHugFixedState(
+      detectFillHugFixedStateMultiselect(
         'vertical',
         metadataSelector(store),
-        selectedViewsSelector(store)[0] ?? null,
+        selectedViewsSelector(store),
       ),
     'FillHugFixedControl heightCurrentValue',
     isFixedHugFillEqual,
@@ -143,10 +143,10 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const fillsContainerVerticallyRef = useRefEditorState(
     (store) =>
-      detectFillHugFixedState(
+      detectFillHugFixedStateMultiselect(
         'vertical',
         metadataSelector(store),
-        selectedViewsSelector(store)[0] ?? null,
+        selectedViewsSelector(store),
       ).fixedHugFill?.type === 'fill',
   )
 

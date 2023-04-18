@@ -7,10 +7,14 @@ import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
+import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { AllContentAffectingNonDomElementTypes } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
+import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -33,6 +37,17 @@ export function convertLayoutToFlexCommands(
     }
 
     const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+
+    if (areAnyChildrenNonDomElement(metadata, childrenPaths)) {
+      // This is a known limitation and future TODO. we must early return now to avoid bizarro layouts
+      return [
+        showToastCommand(
+          'Cannot be converted to Flex yet',
+          'NOTICE',
+          'cannot-convert-children-to-flex',
+        ),
+      ]
+    }
 
     const parentFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
@@ -58,6 +73,7 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
+        ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -84,6 +100,7 @@ export function convertLayoutToFlexCommands(
       : []
 
     return [
+      ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -98,6 +115,23 @@ export function convertLayoutToFlexCommands(
       ...rearrangeCommands,
     ]
   })
+}
+
+function areAnyChildrenNonDomElement(
+  metadata: ElementInstanceMetadataMap,
+  children: Array<ElementPath>,
+): boolean {
+  return children.some((childPath) => {
+    const contentAffectingType = getElementContentAffectingType(metadata, {}, childPath)
+    return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
+  })
+}
+
+function ifElementIsFragmentFirstConvertItToFrame(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): Array<CanvasCommand> {
+  return convertFragmentToFrame(metadata, {}, target) ?? []
 }
 
 function guessMatchingFlexSetup(

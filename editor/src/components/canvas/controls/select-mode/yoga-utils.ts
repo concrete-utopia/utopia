@@ -66,7 +66,7 @@ export function getNewIndex(
   // if the target is not yet a children of the parent, we set currentIndex to Infinity so the logic below acts as if it would be the last sibling
   let alreadyAChild: boolean = true
   let currentIndex: number = Infinity
-  const viewZIndex = MetadataUtils.getViewZIndexFromMetadata(componentMetadata, target)
+  const viewZIndex = MetadataUtils.getIndexInParent(componentMetadata, target)
   if (viewZIndex >= 0) {
     currentIndex = viewZIndex
   } else {

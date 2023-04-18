@@ -12,6 +12,7 @@ import {
   jsxConditionalExpressionWithoutUID,
   jsxElementWithoutUID,
   jsxFragmentWithoutUID,
+  jsxTextBlock,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -75,6 +76,10 @@ export function clearInsertableComponentUniqueIDs(
     ...insertableComponentToFix,
     element: updatedElement,
   }
+}
+
+export interface InsertableComponentGroupSamples {
+  type: 'SAMPLES_GROUP'
 }
 
 export interface InsertableComponentGroupHTML {
@@ -144,6 +149,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupProjectDependency
   | InsertableComponentGroupConditionals
   | InsertableComponentGroupFragment
+  | InsertableComponentGroupSamples
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -173,6 +179,8 @@ export function clearInsertableComponentGroupUniqueIDs(
 
 export function getInsertableGroupLabel(insertableType: InsertableComponentGroupType): string {
   switch (insertableType.type) {
+    case 'SAMPLES_GROUP':
+      return 'Sample elements'
     case 'HTML_GROUP':
       return 'HTML Elements'
     case 'PROJECT_DEPENDENCY_GROUP':
@@ -193,6 +201,7 @@ export function getInsertableGroupPackageStatus(
   insertableType: InsertableComponentGroupType,
 ): PackageStatus {
   switch (insertableType.type) {
+    case 'SAMPLES_GROUP':
     case 'HTML_GROUP':
     case 'PROJECT_COMPONENT_GROUP':
     case 'CONDITIONALS_GROUP':
@@ -360,6 +369,19 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
       {
         insertMenuLabel: 'Fragment',
         elementToInsert: jsxFragmentWithoutUID([], false),
+        importsToAdd: {},
+      },
+    ],
+  },
+}
+
+const samplesDescriptors: ComponentDescriptorsForFile = {
+  sampleText: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Sample text',
+        elementToInsert: jsxElementWithoutUID('span', [], [jsxTextBlock('Sample text')]),
         importsToAdd: {},
       },
     ],
@@ -549,6 +571,9 @@ export function getComponentGroups(
 
   // Add fragment group.
   addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
+
+  // Add samples group
+  addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {

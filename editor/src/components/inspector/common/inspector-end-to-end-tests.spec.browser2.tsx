@@ -283,6 +283,110 @@ describe('inspector tests with real metadata', () => {
       `"detected"`,
     )
   })
+  it('TLWH layout controls in multiselect', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              left: 55,
+              top: 98,
+              width: 266,
+              height: 124,
+            }}
+            data-uid={'bbb'}
+          ></div>
+          <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#DDDDDD',
+            left: 100,
+            top: 100,
+            width: 150,
+            height: 160,
+          }}
+          data-uid={'ccc'}
+        ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetPath1 = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath2 = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetPath1, targetPath2], false)], false)
+      await dispatchDone
+    })
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath1)]
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-height',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-top-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-left-number-input',
+    )) as HTMLInputElement
+    const bottomControl = (await renderResult.renderedDOM.findByTestId(
+      'position-bottom-number-input',
+    )) as HTMLInputElement
+    const rightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-right-number-input',
+    )) as HTMLInputElement
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"266"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"124px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"124"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"55"`)
+    matchInlineSnapshotBrowser(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(bottomControl.value, `"178"`)
+    matchInlineSnapshotBrowser(
+      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-identical-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(rightControl.value, `"79"`)
+    matchInlineSnapshotBrowser(
+      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-identical-unset"`,
+    )
+  })
   it('TLBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -2831,7 +2935,7 @@ describe('inspector tests with real metadata', () => {
         {
           // @utopia/uid=conditional
           [].length === 0 ? (
-          <div data-uid='bbb' data-testid='bbb'><div>Another div</div></div>
+          <div data-uid='bbb' data-testid='bbb' style={{ position: 'absolute', width: 22, height: 22 }}><div>Another div</div></div>
         ) : (
           <h1 data-uid='ccc' data-testid='ccc'>hello there</h1>
         )}
