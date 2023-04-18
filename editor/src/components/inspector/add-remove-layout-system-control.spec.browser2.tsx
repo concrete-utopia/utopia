@@ -307,7 +307,6 @@ describe('add layout system', () => {
         padding: '80px 52px',
       }}
       data-uid='container'
-      data-testid='container'
     >
       <div
         style={{
