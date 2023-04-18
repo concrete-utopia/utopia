@@ -1,5 +1,4 @@
 import React from 'react'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { JSXElement } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
@@ -16,20 +15,31 @@ import {
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
+import { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 
-export function useCheckInsertModeForElementType(elementName: string): boolean {
+export function useCheckInsertModeForElementType(
+  elementName: string,
+  insertOptions?: {
+    textEdit?: boolean
+    wrapInConditional?: boolean
+  },
+): boolean {
   return useEditorState(
     Substores.restOfEditor,
     (store) => {
       const mode = store.editor.mode
+      const isTextEditInsertOptionSet = insertOptions?.textEdit ?? false
+      const isWrapInConditionalInsertOptionSet = insertOptions?.wrapInConditional ?? false
       return (
         mode.type === 'insert' &&
         mode.subjects.some(
           (subject) =>
             subject.element.type === 'JSX_ELEMENT' &&
-            subject.element.name.baseVariable === elementName,
+            subject.element.name.baseVariable === elementName &&
+            subject.textEdit === isTextEditInsertOptionSet &&
+            shouldSubjectBeWrappedWithConditional(subject, isWrapInConditionalInsertOptionSet),
         )
       )
     },
@@ -60,10 +70,22 @@ export function useEnterDrawToInsertForButton(): (event: React.MouseEvent<Elemen
   return useEnterDrawToInsertForElement(defaultButtonElement)
 }
 
+export function useEnterDrawToInsertForConditional(): (event: React.MouseEvent<Element>) => void {
+  const conditionalInsertCallback = useEnterDrawToInsertForElement(defaultDivElement)
+
+  return React.useCallback(
+    (event: React.MouseEvent<Element>): void => {
+      conditionalInsertCallback(event, { wrapInConditional: true })
+    },
+    [conditionalInsertCallback],
+  )
+}
+
 function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXElement): (
   event: React.MouseEvent<Element>,
   insertOptions?: {
     textEdit?: boolean
+    wrapInConditional?: boolean
   },
 ) => void {
   const dispatch = useDispatch()
@@ -74,13 +96,17 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
       event: React.MouseEvent<Element>,
       insertOptions: {
         textEdit?: boolean
+        wrapInConditional?: boolean
       } = {},
     ): void => {
       const modifiers = Modifier.modifiersForEvent(event)
       const newUID = generateUidWithExistingComponents(projectContentsRef.current)
 
       dispatch([
-        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, insertOptions),
+        enableInsertModeForJSXElement(elementFactory(newUID), newUID, {}, null, {
+          textEdit: insertOptions?.textEdit,
+          wrapInContainer: insertOptions.wrapInConditional === true ? 'conditional' : undefined,
+        }),
         CanvasActions.createInteractionSession(
           createHoverInteractionViaMouse(
             CanvasMousePositionRaw!,
@@ -93,4 +119,11 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
     },
     [dispatch, projectContentsRef, elementFactory],
   )
+}
+
+function shouldSubjectBeWrappedWithConditional(
+  subject: InsertionSubject,
+  isWrapInConditionalInsertOptionSet: boolean,
+): boolean {
+  return subject.insertionSubjectWrapper === 'conditional' && isWrapInConditionalInsertOptionSet
 }

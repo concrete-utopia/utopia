@@ -20,7 +20,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor, Utils } from '../../../../uuiui-deps'
-import { InsertionSubject } from '../../../editor/editor-modes'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -34,6 +34,7 @@ import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
@@ -56,6 +57,8 @@ import {
   DragOutlineControl,
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -214,6 +217,12 @@ function dragToInsertStrategyFactory(
             return getInsertionCommandsWithFrames(s.subject, s.frame)
           })
 
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
+
           const reparentCommand = updateFunctionCommand(
             'always',
             (editorState, transient): Array<EditorStatePatch> => {
@@ -230,10 +239,43 @@ function dragToInsertStrategyFactory(
             },
           )
 
-          return strategyApplicationResult([
-            ...insertionCommandsWithFrames.map((c) => c.command),
-            reparentCommand,
-          ])
+          const newPath = EP.appendToPath(targetParent, insertionSubjects[0].uid)
+
+          const optionalWrappingCommand =
+            maybeWrapperWithUid != null
+              ? [
+                  updateFunctionCommand(
+                    'always',
+                    (editorState, lifecycle): Array<EditorStatePatch> =>
+                      foldAndApplyCommandsInner(
+                        editorState,
+                        [],
+                        [
+                          wrapInContainerCommand(
+                            'always',
+                            newPath,
+                            maybeWrapperWithUid.uid,
+                            maybeWrapperWithUid.wrapper,
+                          ),
+                        ],
+                        lifecycle,
+                      ).statePatches,
+                  ),
+                ]
+              : []
+
+          return strategyApplicationResult(
+            [
+              ...insertionCommandsWithFrames.map((c) => c.command),
+              reparentCommand,
+              ...optionalWrappingCommand,
+            ],
+            {
+              strategyGeneratedUidsCache: {
+                [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
+              },
+            },
+          )
         }
       }
 

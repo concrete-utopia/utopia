@@ -233,7 +233,7 @@ import type {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
 } from '../action-types'
-import { EditorModes, insertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -516,11 +516,20 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
   options?: {
     textEdit?: boolean
+    wrapInContainer?: InsertionSubjectWrapper
   },
 ): SwitchEditorMode {
   return switchEditorMode(
     EditorModes.insertMode([
-      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+      insertionSubject(
+        uid,
+        element,
+        size,
+        importsToAdd,
+        null,
+        options?.textEdit ?? false,
+        options?.wrapInContainer ?? null,
+      ),
     ]),
   )
 }

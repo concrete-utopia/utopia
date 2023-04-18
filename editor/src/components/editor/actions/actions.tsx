@@ -13,7 +13,7 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
-  getZIndexOfElement,
+  getIndexInParent,
   insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
@@ -1161,7 +1161,7 @@ function indexPositionForAdjustment(
           openUIJSFileKey,
           0,
           (success) => {
-            return getZIndexOfElement(success.topLevelElements, EP.asStatic(target))
+            return getIndexInParent(success.topLevelElements, EP.asStatic(target))
           },
         )
         return {
@@ -3254,23 +3254,10 @@ export const UPDATE_FNS = {
             workingEditorState.jsxMetadata,
             resolvedTarget,
           )
-          const pastedElementIsFlex =
-            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-              currentValue.originalElementPath,
-              action.targetOriginalContextMetadata,
-            )
 
           const pastedElementMetadata = MetadataUtils.findElementByElementPath(
             action.targetOriginalContextMetadata,
             currentValue.originalElementPath,
-          )
-          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
-          const pastedElementIsConditional =
-            MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
-
-          const parentOfPasteInto = MetadataUtils.findElementByElementPath(
-            editor.jsxMetadata,
-            resolvedTarget,
           )
 
           function maybePasteIntoConditionalBranch(
@@ -3298,34 +3285,29 @@ export const UPDATE_FNS = {
 
           const pasteIntoConditionalBranch = maybePasteIntoConditionalBranch(resolvedTarget)
 
-          const continueWithPaste =
-            pasteIntoConditionalBranch != null
-              ? isNullJSXAttributeValue(pasteIntoConditionalBranch)
-              : pastedElementIsAbsolute ||
-                pastedElementIsFlex ||
-                pastedElementIsConditional ||
-                MetadataUtils.isConditionalFromMetadata(parentOfPasteInto) ||
-                isJSXFragment(currentValue.element)
-
-          if (continueWithPaste) {
-            const propertyChangeCommands = getReparentPropertyChanges(
-              reparentStrategy.strategy,
-              newPath,
-              resolvedTarget,
-              action.targetOriginalContextMetadata,
-              workingEditorState.jsxMetadata,
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename,
-              pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-            )
-
-            const allCommands = [...reparentCommands, ...propertyChangeCommands]
-
-            return foldAndApplyCommandsSimple(workingEditorState, allCommands)
-          } else {
+          if (
+            pasteIntoConditionalBranch != null &&
+            !isNullJSXAttributeValue(pasteIntoConditionalBranch)
+          ) {
+            // do not allow pasting into non-empty conditional branches
             return workingEditorState
           }
+
+          const propertyChangeCommands = getReparentPropertyChanges(
+            reparentStrategy.strategy,
+            newPath,
+            resolvedTarget,
+            action.targetOriginalContextMetadata,
+            workingEditorState.jsxMetadata,
+            workingEditorState.projectContents,
+            workingEditorState.canvas.openFile?.filename,
+            pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+            pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+          )
+
+          const allCommands = [...reparentCommands, ...propertyChangeCommands]
+
+          return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
     } else {
@@ -5291,80 +5273,128 @@ export const UPDATE_FNS = {
     } else {
       let newSelectedViews: ElementPath[] = []
       let detailsOfUpdate: string | null = null
+      let withInsertedElement: InsertChildAndDetails | null = null
+
       const withNewElement = modifyUnderlyingTargetElement(
         action.targetParent,
         openFilename,
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
-          if (action.toInsert.element.type !== 'JSX_ELEMENT') {
-            return success
-          }
-
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
-          const propsWithUid = forceRight(
-            setJSXValueAtPath(
-              action.toInsert.element.props,
-              PP.create(UTOPIA_UID_KEY),
-              jsExpressionValue(newUID, emptyComments),
-            ),
-            `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
-          )
-          // Potentially add in some default position and sizing.
-          let props = propsWithUid
-          if (action.styleProps === 'add-size') {
-            const sizesToSet: Array<ValueAtPath> = [
-              { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
-              {
-                path: PP.create('style', 'height'),
-                value: jsExpressionValue(100, emptyComments),
-              },
-            ]
-            const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
-            if (isRight(withSizeUpdates)) {
-              props = withSizeUpdates.value
-            } else {
-              console.error('Unable to set sizes on element.')
-              return success
-            }
-          }
-
-          const insertedElementName = action.toInsert.element.name
-          let withMaybeUpdatedParent = utopiaComponents
-          let insertedElementChildren: JSXElementChildren = []
-
-          if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
-            withMaybeUpdatedParent = transformElementAtPath(
-              utopiaComponents,
-              action.targetParent,
-              (parentElement) => {
-                if (isJSXElement(parentElement)) {
-                  insertedElementChildren.push(...parentElement.children)
-                  return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
-                } else {
-                  throw new Error(`Not handled yet.`)
-                }
-              },
+          if (action.toInsert.element.type === 'JSX_ELEMENT') {
+            const propsWithUid = forceRight(
+              setJSXValueAtPath(
+                action.toInsert.element.props,
+                PP.create(UTOPIA_UID_KEY),
+                jsExpressionValue(newUID, emptyComments),
+              ),
+              `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
             )
+            // Potentially add in some default position and sizing.
+            let props = propsWithUid
+            if (action.styleProps === 'add-size') {
+              const sizesToSet: Array<ValueAtPath> = [
+                { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
+                {
+                  path: PP.create('style', 'height'),
+                  value: jsExpressionValue(100, emptyComments),
+                },
+              ]
+              const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
+              if (isRight(withSizeUpdates)) {
+                props = withSizeUpdates.value
+              } else {
+                console.error('Unable to set sizes on element.')
+                return success
+              }
+            }
+
+            const insertedElementName = action.toInsert.element.name
+            let withMaybeUpdatedParent = utopiaComponents
+            let insertedElementChildren: JSXElementChildren = []
+
+            if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
+              withMaybeUpdatedParent = transformElementAtPath(
+                utopiaComponents,
+                action.targetParent,
+                (parentElement) => {
+                  if (isJSXElement(parentElement)) {
+                    insertedElementChildren.push(...parentElement.children)
+                    return jsxElement(
+                      parentElement.name,
+                      parentElement.uid,
+                      parentElement.props,
+                      [],
+                    )
+                  } else {
+                    throw new Error(`Not handled yet.`)
+                  }
+                },
+              )
+            }
+
+            insertedElementChildren.push(...action.toInsert.element.children)
+            const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              openFilename,
+              action.targetParent,
+              element,
+              withMaybeUpdatedParent,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(action.targetParent, newUID)
+            newSelectedViews.push(newPath)
+          } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
+            const element = jsxConditionalExpression(
+              newUID,
+              action.toInsert.element.condition,
+              action.toInsert.element.originalConditionString,
+              action.toInsert.element.whenTrue,
+              action.toInsert.element.whenFalse,
+              action.toInsert.element.comments,
+            )
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              openFilename,
+              action.targetParent,
+              element,
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(action.targetParent, newUID)
+            newSelectedViews.push(newPath)
+          } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
+            const element = jsxFragment(
+              newUID,
+              action.toInsert.element.children,
+              action.toInsert.element.longForm,
+            )
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              openFilename,
+              action.targetParent,
+              element,
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(action.targetParent, newUID)
+            newSelectedViews.push(newPath)
+          } else {
+            assertNever(action.toInsert.element)
           }
-
-          insertedElementChildren.push(...action.toInsert.element.children)
-          const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
-
-          const withInsertedElement = insertElementAtPath(
-            editor.projectContents,
-            openFilename,
-            action.targetParent,
-            element,
-            withMaybeUpdatedParent,
-            action.indexPosition,
-          )
-          detailsOfUpdate = withInsertedElement.insertionDetails
-
-          const newPath = EP.appendToPath(action.targetParent, newUID)
-          newSelectedViews.push(newPath)
 
           const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
             success.topLevelElements,
