@@ -41,6 +41,7 @@ import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
+  childInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
@@ -116,7 +117,7 @@ export function getActionsForClipboardItems(
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(target, elements, metadata)]
+      return [EditorActions.pasteJSXElements(childInsertionPath(target), elements, metadata)]
     }, clipboardData)
 
     // Handle adding files into the project like pasted images.
@@ -141,7 +142,7 @@ export function getActionsForClipboardItems(
         pastedImages,
         parentCenter,
         canvasScale,
-        target,
+        childInsertionPath(target),
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -155,7 +156,7 @@ export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
   scale: number,
-  parentPath: InsertionPath<ElementPath> | null,
+  parentPath: InsertionPath | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -289,7 +290,7 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-): InsertionPath<ElementPath> | null {
+): InsertionPath | null {
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]
@@ -338,7 +339,7 @@ export function getTargetParentForPaste(
         ) &&
         !insertingSourceIntoItself
       ) {
-        return parentTarget
+        return childInsertionPath(parentTarget)
       } else {
         const parentOfSelected = EP.parentPath(parentTarget)
         if (
@@ -350,7 +351,7 @@ export function getTargetParentForPaste(
             parentOfSelected,
           )
         ) {
-          return parentOfSelected
+          return childInsertionPath(parentOfSelected)
         } else {
           return null
         }

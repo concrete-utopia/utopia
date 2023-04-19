@@ -55,7 +55,7 @@ import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { forceNotNull } from '../shared/optional-utils'
+import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import {
   ConditionalCase,
   conditionalWhenFalseOptic,
@@ -65,6 +65,7 @@ import {
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import {
+  childInsertionPath,
   getElementPathFromReparentTargetParent,
   InsertionPath,
   isConditionalClauseInsertionPath,
@@ -508,7 +509,7 @@ export function insertChildAndDetails(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: InsertionPath<StaticElementPath> | null,
+  targetParent: InsertionPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -520,15 +521,22 @@ export function insertJSXElementChild(
   function getConditionalCase(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
-    target: InsertionPath<ElementPath>,
+    target: InsertionPath,
   ) {
     if (isConditionalClauseInsertionPath(target)) {
       return target.clause
     }
-    return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
+
+    // TODO this should be deleted and an invariant error should be thrown
+    return (
+      maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target.elementPath) ??
+      'true-case'
+    )
   }
   const targetParentIncludingStoryboardRoot =
-    targetParent ?? getStoryboardElementPath(projectContents, openFile)
+    targetParent ??
+    optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
+
   if (targetParentIncludingStoryboardRoot == null) {
     return insertChildAndDetails(components)
   } else {

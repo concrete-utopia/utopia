@@ -18,14 +18,14 @@ import { IndexPosition } from '../../../utils/utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
-  parentPath: InsertionPath<ElementPath>
+  parentPath: InsertionPath
   element: JSXElementChild
   indexPosition?: IndexPosition
 }
 
 export function addElement(
   whenToRun: WhenToRun,
-  parentPath: InsertionPath<ElementPath>,
+  parentPath: InsertionPath,
   element: JSXElementChild,
   indexPosition?: IndexPosition,
 ): AddElement {

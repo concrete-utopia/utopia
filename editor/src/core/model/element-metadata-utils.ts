@@ -127,6 +127,7 @@ import {
 import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
+  childInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
   isChildInsertionPath,
@@ -1877,11 +1878,11 @@ export const MetadataUtils = {
   },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
-    reparentTargetParent: InsertionPath<ElementPath>,
+    reparentTargetParent: InsertionPath,
   ): ElementPath {
     if (isChildInsertionPath(reparentTargetParent)) {
       // This is an element path, so return directly.
-      return reparentTargetParent
+      return reparentTargetParent.elementPath
     } else {
       // Resolve this to the element in the clause.
       const targetElement = this.findElementByElementPath(
@@ -1976,7 +1977,7 @@ export const MetadataUtils = {
   getReparentTargetOfTarget(
     metadata: ElementInstanceMetadataMap,
     target: ElementPath,
-  ): InsertionPath<ElementPath> | null {
+  ): InsertionPath | null {
     const parentElement = this.getParent(metadata, target)
     if (parentElement == null) {
       return null
@@ -1992,7 +1993,7 @@ export const MetadataUtils = {
           return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
         }
       }
-      return parentElement.elementPath
+      return childInsertionPath(parentElement.elementPath)
     }
   },
 }

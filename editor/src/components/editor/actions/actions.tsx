@@ -508,6 +508,7 @@ import {
   InsertionPath,
   isConditionalClauseInsertionPath,
   isChildInsertionPath,
+  childInsertionPath,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -838,7 +839,7 @@ export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
   indexPosition: IndexPosition,
-  newParent: InsertionPath<ElementPath> | null,
+  newParent: InsertionPath | null,
   editor: EditorModel,
 ): {
   editor: EditorModel
@@ -1774,7 +1775,7 @@ export const UPDATE_FNS = {
     const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
 
     function reparentToIndexPosition(
-      newParentPath: InsertionPath<ElementPath>,
+      newParentPath: InsertionPath,
       indexPosition: IndexPosition,
     ): EditorModel {
       const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
@@ -1819,7 +1820,7 @@ export const UPDATE_FNS = {
           assertNever(dropTarget)
       }
 
-      return reparentToIndexPosition(newParentPath, indexPosition)
+      return reparentToIndexPosition(childInsertionPath(newParentPath), indexPosition)
     } else {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
@@ -2271,7 +2272,7 @@ export const UPDATE_FNS = {
         const withInsertedElement = insertElementAtPath(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
-          targetParent,
+          childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
           null,
@@ -2350,7 +2351,7 @@ export const UPDATE_FNS = {
               (firstPathMatchingCommonParent) =>
                 MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
               orderedActionTargets.find((target) =>
-                EP.pathsEqual(EP.parentPath(target), parentPath),
+                EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
               ),
             )
           }
@@ -2377,11 +2378,14 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          let viewPath: InsertionPath<ElementPath> | null = null
+          let viewPath: InsertionPath | null = null
 
           let isParentFlex: boolean = false
           if (isChildInsertionPath(parentPath)) {
-            const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+            const parent = MetadataUtils.findElementByElementPath(
+              editor.jsxMetadata,
+              parentPath.elementPath,
+            )
             isParentFlex = parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           }
 
@@ -2455,7 +2459,9 @@ export const UPDATE_FNS = {
                 detailsOfUpdate = insertResult.insertionDetails
               } else {
                 const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                  targetThatIsRootElementOfCommonParent ?? parentPath,
+                  // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
+                  optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ??
+                    parentPath,
                 )
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
@@ -2490,12 +2496,15 @@ export const UPDATE_FNS = {
                 )
               }
 
-              viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(
-                    getElementPathFromReparentTargetParent(parentPath),
-                    newUID,
-                  )
-                : EP.appendToPath(getElementPathFromReparentTargetParent(parentPath), newUID)
+              // TODO this is wrong: sometimes this should not be childInsertionPath
+              viewPath = childInsertionPath(
+                anyTargetIsARootElement
+                  ? EP.appendNewElementPath(
+                      getElementPathFromReparentTargetParent(parentPath),
+                      newUID,
+                    )
+                  : EP.appendToPath(getElementPathFromReparentTargetParent(parentPath), newUID),
+              )
 
               const importsToAdd: Imports =
                 action.whatToWrapWith === 'default-empty-div'
@@ -2585,7 +2594,9 @@ export const UPDATE_FNS = {
           indexInParent = optionalMap(
             (firstPathMatchingCommonParent) =>
               MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
-            orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
+            orderedActionTargets.find((target) =>
+              EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
+            ),
           )
         }
 
@@ -2670,7 +2681,9 @@ export const UPDATE_FNS = {
 
               if (isJSXConditionalExpression(elementToInsert)) {
                 const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                  targetThatIsRootElementOfCommonParent ?? parentPath,
+                  // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
+                  optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ??
+                    parentPath,
                 )
                 if (isConditionalClauseInsertionPath(staticTarget)) {
                   withTargetAdded = insertChildAndDetails(
@@ -2711,7 +2724,9 @@ export const UPDATE_FNS = {
                   withTargetAdded = withInsertedElement()
                 } else {
                   const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                    targetThatIsRootElementOfCommonParent ?? parentPath,
+                    // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
+                    optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ??
+                      parentPath,
                   )
                   withTargetAdded = insertChildAndDetails(
                     transformJSXComponentAtPath(
@@ -2890,7 +2905,10 @@ export const UPDATE_FNS = {
           const parentFrame =
             parentPath == null
               ? (Utils.zeroRectangle as CanvasRectangle)
-              : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
+              : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+                  parentPath.elementPath,
+                  editor.jsxMetadata,
+                )
 
           let newSelection: ElementPath[] = []
           const withChildrenMoved = children.reduce((working, child) => {
@@ -2903,7 +2921,7 @@ export const UPDATE_FNS = {
               child.elementPath,
               childFrame,
               indexPosition,
-              parentPath,
+              parentPath?.elementPath ?? null,
               parentFrame,
               working,
               null,
@@ -3207,8 +3225,9 @@ export const UPDATE_FNS = {
         if (isConditionalClauseInsertionPath(action.pasteInto)) {
           return true
         }
-        const parentPath = EP.parentPath(action.pasteInto)
+        const parentPath = EP.parentPath(action.pasteInto.elementPath)
         if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
+          // TODO invariant violation!
           return true
         }
         return false
@@ -5308,7 +5327,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              action.targetParent,
+              childInsertionPath(action.targetParent),
               element,
               withMaybeUpdatedParent,
               action.indexPosition,
@@ -5330,7 +5349,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              action.targetParent,
+              childInsertionPath(action.targetParent),
               element,
               utopiaComponents,
               action.indexPosition,
@@ -5349,7 +5368,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              action.targetParent,
+              childInsertionPath(action.targetParent),
               element,
               utopiaComponents,
               action.indexPosition,

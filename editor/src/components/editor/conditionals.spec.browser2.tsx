@@ -35,7 +35,11 @@ import { ConditionalSectionTestId } from '../inspector/sections/layout-section/c
 import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
-import { InsertionPath, conditionalClauseInsertionPath } from './store/insertion-path'
+import {
+  InsertionPath,
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+} from './store/insertion-path'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -674,7 +678,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
         targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
       })
 
@@ -708,7 +712,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
         targets: [
           EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -981,7 +985,7 @@ async function runPaste({
   targets,
 }: {
   startSnippet: string
-  pasteInto: InsertionPath<ElementPath>
+  pasteInto: InsertionPath
   targets: Array<ElementPath>
 }) {
   const renderResult = await renderTestEditorWithCode(

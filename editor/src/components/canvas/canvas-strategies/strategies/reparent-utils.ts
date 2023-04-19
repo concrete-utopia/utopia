@@ -40,6 +40,7 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
+  childInsertionPath,
   getElementPathFromReparentTargetParent,
   InsertionPath,
   isChildInsertionPath,
@@ -85,18 +86,18 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: InsertionPath<ElementPath> | null,
+  targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
-  let newParent: InsertionPath<ElementPath>
+  let newParent: InsertionPath
   if (targetParent == null) {
     const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
     if (storyboardElementPath == null) {
       console.warn(`Unable to find storyboard path.`)
       return null
     } else {
-      newParent = storyboardElementPath
+      newParent = childInsertionPath(storyboardElementPath)
     }
   } else {
     newParent = targetParent
@@ -106,7 +107,7 @@ export function getReparentOutcome(
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
     isChildInsertionPath(newParent) &&
-    EP.pathsEqual(newParent, EP.parentPath(toReparent.target))
+    EP.pathsEqual(newParent.elementPath, EP.parentPath(toReparent.target))
   ) {
     return {
       commands: [],

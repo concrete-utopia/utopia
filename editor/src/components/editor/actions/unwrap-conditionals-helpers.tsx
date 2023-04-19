@@ -29,7 +29,7 @@ import {
   insertElementAtPath,
   modifyUnderlyingTargetElement,
 } from '../store/editor-state'
-import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { ConditionalClauseInsertionPath, childInsertionPath } from '../store/insertion-path'
 import { deleteView } from './action-creators'
 import { UPDATE_FNS } from './actions'
 
@@ -128,7 +128,7 @@ export function unwrapTextContainingConditional(
         const updatedComponents = insertElementAtPath(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
-          targetParent,
+          childInsertionPath(targetParent),
           elementToInsert,
           components,
           absolute(originalIndexPosition),

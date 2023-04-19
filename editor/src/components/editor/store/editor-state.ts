@@ -192,6 +192,7 @@ import { getNavigatorTargets } from '../../../components/navigator/navigator-uti
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
+  childInsertionPath,
   conditionalClauseInsertionPath,
   ConditionalClauseInsertionPath,
   dynamicReparentTargetParentToStaticReparentTargetParent,
@@ -1945,7 +1946,7 @@ export function addSceneToJSXComponents(
     return insertJSXElementChild(
       projectContents,
       openFile,
-      storyboardComponentElementPath,
+      childInsertionPath(storyboardComponentElementPath),
       newSceneElement,
       components,
       null,
@@ -1970,7 +1971,7 @@ export function removeElementAtPath(
 export function insertElementAtPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: InsertionPath<ElementPath> | null,
+  targetParent: InsertionPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -2242,10 +2243,10 @@ export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNaviga
 
 export function reparentTargetFromNavigatorEntry(
   navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-): InsertionPath<ElementPath> {
+): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
-      return navigatorEntry.elementPath
+      return childInsertionPath(navigatorEntry.elementPath)
     case 'CONDITIONAL_CLAUSE':
       return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:

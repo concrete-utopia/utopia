@@ -1368,7 +1368,7 @@ describe('conditionals in the navigator', () => {
     startingCode: string
     pathToCopy: ElementPath
     pathToPasteInto: ElementPath
-    expectedTargetPasteParent: InsertionPath<ElementPath>
+    expectedTargetPasteParent: InsertionPath
     expectedToasts: Array<string>
     expectedNavigatorStructure: string
     postPasteValidation: (
