@@ -15,6 +15,7 @@ import {
   pasteJSXElements,
   selectComponents,
   unwrapElement,
+  wrapInElement,
 } from './action-creators'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
@@ -22,6 +23,7 @@ import { act } from '@testing-library/react'
 import { ReparentTargetParent } from '../store/reparent-target'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
+import { defaultDivElement } from '../defaults'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1102,6 +1104,80 @@ describe('actions', () => {
           <div data-uid='ccc' style={{width: 100, height: 50}} />
         </div>
       `),
+      )
+    })
+  })
+  describe('WRAP_IN_ELEMENT', () => {
+    it(`Wraps in 2 elements`, async () => {
+      const testUID = 'bbb'
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+            element: defaultDivElement(testUID),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </div>
+          </div>`,
+        ),
+      )
+    })
+    it(`Wraps in 2 elements inside a flex layout`, async () => {
+      const testUID = 'zzz'
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
+            <div data-uid='ccc' style={{width: 100, height: 60}} />
+            <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+            <div data-uid='eee' style={{width: 100, height: 60}} />
+          </div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
+            element: defaultDivElement(testUID),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
+              <div data-uid='ccc' style={{width: 100, height: 60}} />
+              <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
+                <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+                <div data-uid='eee' style={{width: 100, height: 60}} />
+              </div>
+            </div>
+          </div>`,
+        ),
       )
     })
   })
