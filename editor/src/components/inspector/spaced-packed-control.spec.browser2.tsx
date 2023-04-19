@@ -1,6 +1,6 @@
 import * as EP from '../../core/shared/element-path'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
   setFeatureForBrowserTests,
@@ -30,7 +30,7 @@ describe('spaced - packed control', () => {
     const div = editor.renderedDOM.getByTestId(ParentId)
     expect(div.style.gap).toEqual('48px')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickButton(editor, SpacedLabelCopy)
     })
     expect(div.style.gap).toEqual('')
@@ -43,8 +43,8 @@ describe('spaced - packed control', () => {
 
     const div = editor.renderedDOM.getByTestId(ParentId)
 
-    await expectSingleUndoStep(editor, () => clickButton(editor, SpacedLabelCopy))
-    await expectSingleUndoStep(editor, () => clickButton(editor, PackedLabelCopy))
+    await expectSingleUndo2Saves(editor, () => clickButton(editor, SpacedLabelCopy))
+    await expectSingleUndo2Saves(editor, () => clickButton(editor, PackedLabelCopy))
     expect(div.style.justifyContent).toEqual('flex-start')
   })
 

@@ -32,7 +32,7 @@ import {
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   setFeatureForBrowserTests,
   wait,
 } from '../../../../utils/utils.test-utils'
@@ -1605,7 +1605,7 @@ describe('Inserting into flex row', () => {
     )
     expect(indicatorBeforeSibling).toEqual(true)
 
-    await expectSingleUndoStep(renderResult, () =>
+    await expectSingleUndo2Saves(renderResult, () =>
       // Drag horizontally close to the zero position
       mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint),
     )

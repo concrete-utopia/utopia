@@ -329,7 +329,7 @@ export async function renderTestEditorWithModel(
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
-    alreadySaved: false,
+    saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
   }
 

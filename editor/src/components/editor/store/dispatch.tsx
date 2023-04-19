@@ -193,7 +193,7 @@ function processAction(
     userState: working.userState,
     workers: working.workers,
     persistence: working.persistence,
-    alreadySaved: working.alreadySaved,
+    saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
   }
 }
@@ -502,7 +502,7 @@ export function editorDispatch(
 
   const frozenEditorState = editorWithModelChecked.editorState
 
-  const alreadySaved = result.alreadySaved
+  const saveCountThisSession = result.saveCountThisSession
 
   const isLoaded = editorFilteredForFiles.isLoaded
   const shouldSave =
@@ -510,7 +510,7 @@ export function editorDispatch(
     (isLoaded &&
       !isLoadAction &&
       editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
-      (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
+      (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0)) &&
       isBrowserEnvironment)
 
   // Include asset renames with the history.
@@ -558,7 +558,7 @@ export function editorDispatch(
       result.entireUpdateFinished,
       editorWithModelChecked.modelUpdateFinished,
     ]),
-    alreadySaved: alreadySaved || shouldSave,
+    saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
   }
 
@@ -820,7 +820,7 @@ function editorDispatchInner(
       persistence: storedState.persistence,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
-      alreadySaved: storedState.alreadySaved,
+      saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
     }
   } else {
