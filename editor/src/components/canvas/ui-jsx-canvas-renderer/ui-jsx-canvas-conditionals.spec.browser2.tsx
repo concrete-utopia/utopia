@@ -1,8 +1,6 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import * as EP from '../../../core/shared/element-path'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 
 const appFilePath = '/src/app.js'
@@ -21,13 +19,16 @@ export var App = (props) => {
         height: '100%'
       }}
     >
-      {[0, 1].length > 1 ? (
-        [0, 1].length === 2 ? (
-          <div data-uid='div-inside-conditionals' />
-        ) : null
-      ) : (
-        5
-      )}
+      {
+        // @utopia/uid=conditional1
+        [0, 1].length > 1 ? (
+            // @utopia/uid=conditional2
+            [0, 1].length === 2 ? (
+            <div data-uid='div-inside-conditionals' />
+          ) : null
+        ) : (
+          5
+        )}
     </div>
   )
 }
@@ -63,18 +64,7 @@ async function createAndRenderProject() {
 }
 
 describe('a project with conditionals', () => {
-  setFeatureForBrowserTests('Conditional support', true)
   it('fills the content of the navigator', async () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'mock1',
-      'conditional2',
-      'mock2',
-      'conditional1',
-      'mock1',
-      'conditional2',
-      'mock2',
-      'conditional1',
-    ])
     const renderedProject = await createAndRenderProject()
     const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
     const pathStrings = navigatorTargets.map(navigatorEntryToKey)
@@ -83,14 +73,14 @@ describe('a project with conditionals', () => {
       'regular-storyboard/scene/app',
       'regular-storyboard/scene/app:app-root',
       'regular-storyboard/scene/app:app-root/conditional1',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-then',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals-then',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2/else-case-else',
-      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/else-case-attribute',
-      'conditional-clause-storyboard/scene/app:app-root/conditional1/else-case-else',
-      'synthetic-storyboard/scene/app:app-root/conditional1/else-case-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/60c-attribute',
+      'conditional-clause-storyboard/scene/app:app-root/conditional1-false-case',
+      'synthetic-storyboard/scene/app:app-root/conditional1/30e-attribute',
     ])
   })
 })

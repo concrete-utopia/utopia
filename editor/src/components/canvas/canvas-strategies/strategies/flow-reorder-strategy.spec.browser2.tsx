@@ -23,6 +23,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
@@ -609,8 +610,9 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
         'regular-utopia-storyboard-uid/scene-aaa/app-entity',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc', // <- ccc moves to above the fragment
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/fragment',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
       ])
 
       await renderResult.getDispatchFollowUpActionsFinished()

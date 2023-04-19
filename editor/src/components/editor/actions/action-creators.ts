@@ -3,12 +3,14 @@ import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
-  JSXAttribute,
+  JSExpression,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
   JSXElementChild,
+  JSXConditionalExpression,
+  JSXFragment,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -147,7 +149,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -228,8 +230,10 @@ import type {
   CopyProperties,
   MergeWithPrevUndo,
   SetConditionalOverriddenCondition,
+  SwitchConditionalBranches,
+  UpdateConditionalExpression,
 } from '../action-types'
-import { EditorModes, insertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -249,6 +253,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
 } from '../store/editor-state'
+import { ReparentTargetParent } from '../store/reparent-target'
 
 export function clearSelection(): EditorAction {
   return {
@@ -300,7 +305,7 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
 export function setProperty(
   element: ElementPath,
   property: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetProperty {
   return {
     action: 'SET_PROPERTY',
@@ -449,7 +454,7 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: ElementPath,
+  pasteInto: ReparentTargetParent<ElementPath>,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
@@ -511,11 +516,20 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
   options?: {
     textEdit?: boolean
+    wrapInContainer?: InsertionSubjectWrapper
   },
 ): SwitchEditorMode {
   return switchEditorMode(
     EditorModes.insertMode([
-      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+      insertionSubject(
+        uid,
+        element,
+        size,
+        importsToAdd,
+        null,
+        options?.textEdit ?? false,
+        options?.wrapInContainer ?? null,
+      ),
     ]),
   )
 }
@@ -675,7 +689,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: ElementPath | null,
+  parentPath: ReparentTargetParent<ElementPath> | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {
@@ -737,12 +751,10 @@ export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
   //}
 }
 
-export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
+export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
-    // TODO make it only run when the target is a group
-    action: 'UNWRAP_GROUP_OR_VIEW',
+    action: 'UNWRAP_ELEMENT',
     target: target,
-    onlyForGroups: false,
   }
 }
 
@@ -770,7 +782,10 @@ export function wrapInView(
 
 export function wrapInElement(
   targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports },
+  whatToWrapWith: {
+    element: JSXElement | JSXConditionalExpression | JSXFragment
+    importsToAdd: Imports
+  },
 ): WrapInElement {
   return {
     action: 'WRAP_IN_ELEMENT',
@@ -1188,7 +1203,7 @@ export function saveDOMReport(
 export function setProp_UNSAFE(
   target: ElementPath,
   propertyPath: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetProp {
   return {
     action: 'SET_PROP',
@@ -1202,7 +1217,7 @@ export function setProp_UNSAFE(
 export function setPropWithElementPath_UNSAFE(
   target: StaticElementPathPart,
   propertyPath: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetPropWithElementPath {
   return {
     action: 'SET_PROP_WITH_ELEMENT_PATH',
@@ -1215,7 +1230,7 @@ export function setPropWithElementPath_UNSAFE(
 export function setPropTransient(
   target: ElementPath,
   propertyPath: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): SetPropTransient {
   return {
     action: 'SET_PROP_TRANSIENT',
@@ -1754,5 +1769,23 @@ export function setConditionalOverriddenCondition(
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,
     condition: condition,
+  }
+}
+
+export function updateConditionalExpression(
+  target: ElementPath,
+  expression: string,
+): UpdateConditionalExpression {
+  return {
+    action: 'UPDATE_CONIDTIONAL_EXPRESSION',
+    target: target,
+    expression: expression,
+  }
+}
+
+export function switchConditionalBranches(target: ElementPath): SwitchConditionalBranches {
+  return {
+    action: 'SWITCH_CONDITIONAL_BRANCHES',
+    target: target,
   }
 }

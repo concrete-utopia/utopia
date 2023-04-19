@@ -28,8 +28,11 @@ import {
   EdgePositionRight,
   EdgePositionBottom,
   EdgePositionTop,
+  EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
+  expectElementWithTestIdNotToBeRendered,
+  expectElementWithTestIdToBeRendered,
   selectComponentsForTest,
   setFeatureForBrowserTests,
   wait,
@@ -50,7 +53,19 @@ import { MaxContent } from '../../../inspector/inspector-common'
 import {
   SizeLabelTestId,
   ResizePointTestId,
+  AbsoluteResizeControlTestId,
+  SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
+import { isRight } from '../../../../core/shared/either'
+import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
+import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -321,6 +336,28 @@ async function doDblClickTest(
   return div
 }
 
+async function doSnapDrag(
+  editor: EditorRenderResult,
+  delta: { x: number; y: number },
+  edgePosition: EdgePosition,
+  callback: () => Promise<void>,
+) {
+  const canvasControl = editor.renderedDOM.getByTestId(
+    `resize-control-${edgePosition.x}-${edgePosition.y}`,
+  )
+
+  const resizeCornerBounds = canvasControl.getBoundingClientRect()
+  const startPoint = windowPoint({
+    x: resizeCornerBounds.x + 2,
+    y: resizeCornerBounds.y + 2,
+  })
+
+  await mouseDragFromPointWithDelta(canvasControl, startPoint, delta, {
+    modifiers: emptyModifiers,
+    midDragCallback: callback,
+  })
+}
+
 const projectForEdgeDblClick = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -388,6 +425,117 @@ export var storyboard = (
     >
       hello there
     </div>
+  </Storyboard>
+)
+`
+
+const projectForMultiSelectResize = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 146,
+        top: 118,
+        width: 305,
+        height: 233,
+      }}
+      data-uid='one'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 213,
+        top: 377,
+        width: 178,
+        height: 179,
+      }}
+      data-uid='two'
+    />
+    <div
+      style={{
+        backgroundColor: '#00acff',
+        position: 'absolute',
+        left: 759,
+        top: 155,
+        width: 228,
+        height: 254,
+      }}
+      data-uid='horizontal'
+      data-testid='horizontal'
+    />
+    <div
+      style={{
+        backgroundColor: '#2b8f65',
+        position: 'absolute',
+        left: 70,
+        top: 779,
+        width: 267,
+        height: 275,
+      }}
+      data-uid='vertical'
+      data-testid='vertical'
+    />
+  </Storyboard>
+)
+`
+
+const projectWithGroupsForResize = (type: ContentAffectingType) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    ${getOpeningGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#00acff',
+          position: 'absolute',
+          left: 379.5,
+          top: 94.5,
+          width: 163,
+          height: 184,
+        }}
+        data-uid='aac'
+        data-label='eee'
+      />
+      <div
+        style={{
+          backgroundColor: '#ff0001',
+          position: 'absolute',
+          left: 980.5,
+          top: 62.5,
+          width: 306,
+          height: 239,
+        }}
+        data-uid='aad'
+        data-label='eee'
+      />
+      ${getClosingGroupLikeTag(type)}
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 258.5,
+        top: -193,
+        width: 243,
+        height: 195,
+      }}
+      data-uid='98d'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -431,
+        top: 754.5,
+        width: 447,
+        height: 266,
+      }}
+      data-uid='5ce'
+    />
   </Storyboard>
 )
 `
@@ -466,6 +614,8 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Resize Strategy', () => {
   it('the size label is not shown when an empty fragment is selected', async () => {
@@ -1183,6 +1333,139 @@ export var storyboard = (
     expect(supportsStyleRect.width).toEqual(100)
     expect(supportsStyleRect.height).toEqual(100)
   })
+  describe('snap lines', () => {
+    it('horizontal snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+
+      await doSnapDrag(editor, { x: 0, y: -147 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(1)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('YAxisGuideline')
+      })
+    })
+    it('vertical snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+      await doSnapDrag(editor, { x: -114, y: 0 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(1)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('XAxisGuideline')
+      })
+    })
+    it('both vertical and horizontal snap lines are shown when resizing a multiselection', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+      await doSnapDrag(editor, { x: -114, y: -147 }, EdgePositionBottomRight, async () => {
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(2)
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+        ).toEqual('XAxisGuideline')
+        expect(
+          editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+        ).toEqual('YAxisGuideline')
+      })
+    })
+
+    describe('groups', () => {
+      AllContentAffectingTypes.forEach((type) => {
+        describe(`– ${type} parents`, () => {
+          it('vertical snap lines are shown', async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithGroupsForResize(type),
+              'await-first-dom-report',
+            )
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
+            await doSnapDrag(editor, { x: -121, y: 0 }, EdgePositionBottomLeft, async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+            })
+          })
+          it('horizontal snap lines are shown', async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithGroupsForResize(type),
+              'await-first-dom-report',
+            )
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
+            await doSnapDrag(editor, { x: -10, y: 453 }, EdgePositionBottomLeft, async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(1)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('YAxisGuideline')
+            })
+          })
+          it('both snap lines are shown', async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithGroupsForResize(type),
+              'await-first-dom-report',
+            )
+
+            if (type === 'conditional') {
+              const path = Object.values(editor.getEditorState().editor.jsxMetadata).find((value) =>
+                isRight(value.element) && value.element.value.type === 'JSX_CONDITIONAL_EXPRESSION'
+                  ? value
+                  : null,
+              )!.elementPath
+              await selectComponentsForTest(editor, [path])
+            } else {
+              await selectComponentsForTest(editor, [EP.fromString(`sb/children-affecting`)])
+            }
+
+            await doSnapDrag(editor, { x: -121, y: 453 }, EdgePositionBottomLeft, async () => {
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+              ).toEqual(2)
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[0].guideline.type,
+              ).toEqual('XAxisGuideline')
+              expect(
+                editor.getEditorState().editor.canvas.controls.snappingGuidelines[1].guideline.type,
+              ).toEqual('YAxisGuideline')
+            })
+          })
+        })
+      })
+    })
+  })
 })
 
 describe('Absolute Resize Strategy Canvas Controls', () => {
@@ -1200,22 +1483,57 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-outlines-control')
-    expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-bounds-control')
-    expect(parentBoundsControlBeforeDrag).toBeNull()
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
-    const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
-    expect(parentOutlineControl).toBeDefined()
-    const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
-    expect(parentBoundsControl).toBeDefined()
+    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+    expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
   })
+
+  describe('when a content-affecting element is resized the parent outlines become visible', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      it(`resizing a ${type}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 170, bottom: 240 }} data-uid='container'>
+            ${getOpeningGroupLikeTag(type)}
+              <div
+                style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+                data-uid='bbb'
+                data-testid='bbb'
+              />
+              ${getClosingGroupLikeTag(type)}
+          </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+
+        const target = EP.appendNewElementPath(TestScenePath, ['container', GroupLikeElementUid])
+        await startDragUsingActions(
+          renderResult,
+          target,
+          EdgePositionLeft,
+          canvasPoint({ x: 5, y: 5 }),
+        )
+
+        await wait(ControlDelay + 10)
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+      })
+    })
+  })
+
   it('snap guidelines are visible when an absolute positioned element(bbb) is resized and snaps to its sibling (ccc)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1363,81 +1681,233 @@ describe('double click on resize corner', () => {
   })
 })
 
-describe('Absolute Resize Group-like behaviors', () => {
-  async function makeResizeInGrupProject(targets: Array<ElementPath>): Promise<string> {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            contain: 'layout',
-          }}
-          data-uid='aaa'
-        >
-          <div data-uid='bbb' data-testid='bbb'>
-            <View
-              style={{
-                backgroundColor: '#aaaaaa33',
-                contain: 'layout',
-                position: 'absolute',
-                width: 80,
-                height: 100,
-                left: 40,
-                top: 50,
-              }}
-              data-uid='ccc'
-              data-testid='ccc'
-            />
-            <View
-              style={{
-                backgroundColor: '#aaaaaa33',
-                contain: 'layout',
-                position: 'absolute',
-                width: 130,
-                height: 120,
-                left: 170,
-                top: 70,
-              }}
-              data-uid='ddd'
-            />
-          </div>
+async function makeResizeInGroupProject(
+  type: ContentAffectingType,
+  targets: Array<ElementPath>,
+): Promise<string> {
+  FOR_TESTS_setNextGeneratedUids([
+    'skip1',
+    'skip2',
+    'skip3',
+    'skip4',
+    'skip5',
+    'skip6',
+    'skip7',
+    'skip8',
+    'skip9',
+    'skip10',
+    'children-affecting',
+  ])
+
+  const renderResult = await renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='aaa'
+      >
+        ${getOpeningGroupLikeTag(type)}
           <View
             style={{
               backgroundColor: '#aaaaaa33',
+              contain: 'layout',
               position: 'absolute',
-              width: 40,
-              height: 40,
-              left: 30,
-              top: 330,
+              width: 80,
+              height: 100,
+              left: 40,
+              top: 50,
             }}
-            data-uid='xxx'
+            data-uid='ccc'
+            data-testid='ccc'
+          />
+          <View
+            style={{
+              backgroundColor: '#aaaaaa33',
+              contain: 'layout',
+              position: 'absolute',
+              width: 130,
+              height: 120,
+              left: 170,
+              top: 70,
+            }}
+            data-uid='ddd'
+          />
+          ${getClosingGroupLikeTag(type)}
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            width: 40,
+            height: 40,
+            left: 30,
+            top: 330,
+          }}
+          data-uid='xxx'
+        />
+      </div>
+    `),
+    'await-first-dom-report',
+  )
+
+  await renderResult.getDispatchFollowUpActionsFinished()
+
+  const initialCode = getPrintedUiJsCode(renderResult.getEditorState())
+
+  const dragDelta = windowPoint({ x: -30, y: -30 })
+
+  await renderResult.dispatch([selectComponents(targets, false)], true)
+  await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
+  await renderResult.getDispatchFollowUpActionsFinished()
+
+  const result = getPrintedUiJsCode(renderResult.getEditorState())
+  renderResult.renderedDOM.unmount()
+
+  // make sure something actually changed in the project
+  expect(result).not.toEqual(initialCode)
+
+  return result
+}
+
+describe('Absolute Resize Group-like behaviors', () => {
+  AllContentAffectingTypes.forEach((type) => {
+    describe(`group-like ${type} element`, () => {
+      it('resizing a group is the same as multiselect resizing the children', async () => {
+        const groupResizeResult = await makeResizeInGroupProject(type, [
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting']),
+        ])
+        const multiselectResult = await makeResizeInGroupProject(type, [
+          EP.appendNewElementPath(TestScenePath, [
+            'aaa',
+            'children-affecting',
+            'inner-fragment',
+            'ccc',
+          ]),
+          EP.appendNewElementPath(TestScenePath, [
+            'aaa',
+            'children-affecting',
+            'inner-fragment',
+            'ddd',
+          ]),
+        ])
+
+        expect(groupResizeResult).toEqual(multiselectResult)
+      })
+    })
+  })
+})
+
+describe('Absolute Resize Control', () => {
+  it('Resize control is placed on small elements outside of the draggable frame area', async () => {
+    const width = SmallElementSize
+    const height = SmallElementSize
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
           />
         </div>
       `),
       'await-first-dom-report',
     )
 
-    const dragDelta = windowPoint({ x: -30, y: -30 })
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
 
-    await renderResult.dispatch([selectComponents(targets, false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionTopLeft, emptyModifiers)
-    await renderResult.getDispatchFollowUpActionsFinished()
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('5px')
 
-    const result = getPrintedUiJsCode(renderResult.getEditorState())
-    renderResult.renderedDOM.unmount()
-    return result
-  }
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('5px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
 
-  it('resizing a group is the same as multiselect resizing the children', async () => {
-    const groupResizeResult = await makeResizeInGrupProject([
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-    ])
-    const multiselectResult = await makeResizeInGrupProject([
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ddd']),
-    ])
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('5px')
 
-    expect(groupResizeResult).toEqual(multiselectResult)
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('5px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+  })
+  it('Resize control on non-small elements extend into the draggable frame area', async () => {
+    const width = SmallElementSize + 1
+    const height = SmallElementSize + 1
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await selectComponentsForTest(renderResult, [target])
+
+    const resizeControlTop = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+    )
+    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlTop.style.top).toEqual('')
+    expect(resizeControlTop.style.left).toEqual('')
+    expect(resizeControlTop.style.width).toEqual(`${width}px`)
+    expect(resizeControlTop.style.height).toEqual('10px')
+
+    const resizeControlRight = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+    )
+    expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlRight.style.top).toEqual('')
+    expect(resizeControlRight.style.left).toEqual(`${width}px`)
+    expect(resizeControlRight.style.width).toEqual('10px')
+    expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+    )
+    expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
+    expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+    expect(resizeControlBottom.style.left).toEqual('')
+    expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+    expect(resizeControlBottom.style.height).toEqual('10px')
+
+    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+    )
+    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+    expect(resizeControlLeft.style.top).toEqual('')
+    expect(resizeControlLeft.style.left).toEqual('')
+    expect(resizeControlLeft.style.width).toEqual('10px')
+    expect(resizeControlLeft.style.height).toEqual(`${height}px`)
   })
 })

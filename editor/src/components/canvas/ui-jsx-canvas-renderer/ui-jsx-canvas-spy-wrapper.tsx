@@ -8,12 +8,11 @@ import {
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
-  ChildOrAttribute,
   JSXElementChild,
-  childOrBlockIsChild,
+  isJSXArbitraryBlock,
   isJSXConditionalExpression,
   JSXConditionalExpression,
-  ConditionalValue,
+  ConditionValue,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -22,19 +21,45 @@ import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+
+// Should the condition value of conditional expression change (which maybe be done by overriding it),
+// then the values we have accumulated in the spy metadata may need to be cleaned up.
+export function clearOpposingConditionalSpyValues(
+  metadataContext: UiJsxCanvasContextData,
+  conditional: JSXConditionalExpression,
+  conditionValue: boolean,
+  elementPath: ElementPath,
+): void {
+  const opposingElement = conditionValue ? conditional.whenFalse : conditional.whenTrue
+  const pathToOpposing = EP.appendToPath(elementPath, getUtopiaID(opposingElement))
+  const opposingPathString = EP.toString(pathToOpposing)
+  const metadata = metadataContext.current.spyValues.metadata
+  // Search for this and should we find it, only then should we attempt to clear the metadata.
+  // As walking all the keys is somewhat expensive.
+  if (opposingPathString in metadata) {
+    for (const metadataKey of Object.keys(metadata)) {
+      const metadataEntry = metadata[metadataKey]
+      const metadataPath = metadataEntry.elementPath
+      // This is one of the descendants or the value of the opposing clause
+      // of the conditional.
+      if (EP.isDescendantOfOrEqualTo(metadataPath, pathToOpposing)) {
+        delete metadata[metadataKey]
+      }
+    }
+  }
+}
 
 export function addFakeSpyEntry(
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
-  elementOrAttribute: ChildOrAttribute,
+  elementOrAttribute: JSXElementChild,
   filePath: string,
   imports: Imports,
-  conditionalValue: ConditionalValue,
+  conditionValue: ConditionValue,
 ): void {
   let element: Either<string, JSXElementChild>
-  if (childOrBlockIsChild(elementOrAttribute)) {
-    element = right(elementOrAttribute)
-  } else {
+  if (isJSXArbitraryBlock(elementOrAttribute)) {
     const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
     element = left(
       foldEither(
@@ -51,6 +76,8 @@ export function addFakeSpyEntry(
         simpleAttributeValue,
       ),
     )
+  } else {
+    element = right(elementOrAttribute)
   }
   const instanceMetadata: ElementInstanceMetadata = {
     element: element,
@@ -76,7 +103,7 @@ export function addFakeSpyEntry(
       },
       element,
     ),
-    conditionalValue: conditionalValue,
+    conditionValue: conditionValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -121,7 +148,7 @@ export function buildSpyWrappedElement(
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
-      conditionalValue: 'not-a-conditional',
+      conditionValue: 'not-a-conditional',
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

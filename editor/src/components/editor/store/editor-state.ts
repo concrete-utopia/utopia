@@ -11,21 +11,21 @@ import {
   UtopiaJSXComponent,
   isJSXElement,
   emptyJsxMetadata,
-  JSXAttribute,
+  JSExpression,
   walkElements,
   JSXAttributes,
   isJSXConditionalExpression,
   JSXConditionalExpression,
-  ChildOrAttribute,
-  childOrBlockIsChild,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
   removeJSXElementChild,
   transformJSXComponentAtPath,
-  getUtopiaID,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
+  InsertChildAndDetails,
+  insertChildAndDetails,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -185,10 +185,18 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ThenOrElse } from '../../../core/model/conditionals'
+import { ConditionalCase } from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
+import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+import {
+  conditionalClause,
+  ConditionalClause,
+  dynamicReparentTargetParentToStaticReparentTargetParent,
+  ReparentTargetParent,
+} from './reparent-target'
 
 const ObjectPathImmutable: any = OPI
 
@@ -602,8 +610,8 @@ export const DefaultTheme: ThemeSetting = 'system'
 export type DropTargetType = 'before' | 'after' | 'reparent' | null
 
 export interface DropTargetHint {
-  displayAtElementPath: NavigatorEntry | null
-  moveToElementPath: NavigatorEntry | null
+  displayAtEntry: NavigatorEntry | null
+  moveToEntry: NavigatorEntry | null
   type: DropTargetType
 }
 
@@ -814,12 +822,12 @@ export function editorStateCanvasTextEditor(
 
 export interface EditorStateCanvasTransientProperty {
   elementPath: ElementPath
-  attributesToUpdate: { [key: string]: JSXAttribute }
+  attributesToUpdate: { [key: string]: JSExpression }
 }
 
 export function editorStateCanvasTransientProperty(
   elementPath: ElementPath,
-  attributesToUpdate: { [key: string]: JSXAttribute },
+  attributesToUpdate: { [key: string]: JSExpression },
 ): EditorStateCanvasTransientProperty {
   return {
     elementPath: elementPath,
@@ -1553,7 +1561,7 @@ export function getOpenTextFileKey(model: EditorState): string | null {
     return null
   } else {
     const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
-    if (isTextFile(projectFile)) {
+    if (projectFile != null && isTextFile(projectFile)) {
       return openFilename
     } else {
       return null
@@ -1801,7 +1809,7 @@ function getImportedUtopiaJSXComponents(
   pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
   const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     let resolvedFilePaths: Array<string> = []
     for (const toImport of Object.keys(file.fileContents.parsed.imports)) {
       const resolveResult = resolve(filePath, toImport)
@@ -1914,7 +1922,7 @@ export function addNewScene(model: EditorState, newSceneElement: JSXElement): Ed
         model.canvas.openFile?.filename ?? null,
         components,
         newSceneElement,
-      ),
+      ).components,
     model,
   )
 }
@@ -1924,7 +1932,7 @@ export function addSceneToJSXComponents(
   openFile: string | null,
   components: UtopiaJSXComponent[],
   newSceneElement: JSXElement,
-): UtopiaJSXComponent[] {
+): InsertChildAndDetails {
   const storyoardComponentRootElement = components.find(
     (c) => c.name === BakedInStoryboardVariableName,
   )?.rootElement
@@ -1943,11 +1951,9 @@ export function addSceneToJSXComponents(
       null,
     )
   } else {
-    return components
+    return insertChildAndDetails(components)
   }
 }
-
-const emptyImports: Imports = {}
 
 export function removeElementAtPath(
   target: ElementPath,
@@ -1964,12 +1970,15 @@ export function removeElementAtPath(
 export function insertElementAtPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ElementPath | null,
+  targetParent: ReparentTargetParent<ElementPath> | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
-): Array<UtopiaJSXComponent> {
-  const staticTarget = targetParent == null ? null : EP.dynamicPathToStaticPath(targetParent)
+): InsertChildAndDetails {
+  const staticTarget =
+    targetParent == null
+      ? null
+      : dynamicReparentTargetParentToStaticReparentTargetParent(targetParent)
   return insertJSXElementChild(
     projectContents,
     openFile,
@@ -2102,16 +2111,13 @@ export function regularNavigatorEntriesEqual(
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
-
-export interface ConditionalClauseNavigatorEntry {
+export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
   type: 'CONDITIONAL_CLAUSE'
-  elementPath: ElementPath
-  clause: ThenOrElse
 }
 
 export function conditionalClauseNavigatorEntry(
   elementPath: ElementPath,
-  clause: ThenOrElse,
+  clause: ConditionalCase,
 ): ConditionalClauseNavigatorEntry {
   return {
     type: 'CONDITIONAL_CLAUSE',
@@ -2130,12 +2136,12 @@ export function conditionalClauseNavigatorEntriesEqual(
 export interface SyntheticNavigatorEntry {
   type: 'SYNTHETIC'
   elementPath: ElementPath
-  childOrAttribute: ChildOrAttribute
+  childOrAttribute: JSXElementChild
 }
 
 export function syntheticNavigatorEntry(
   elementPath: ElementPath,
-  childOrAttribute: ChildOrAttribute,
+  childOrAttribute: JSXElementChild,
 ): SyntheticNavigatorEntry {
   return {
     type: 'SYNTHETIC',
@@ -2161,25 +2167,17 @@ export function navigatorEntriesEqual(
   second: NavigatorEntry | null,
 ): boolean {
   if (first == null) {
-    if (second == null) {
-      return true
-    } else {
-      return false
-    }
+    return second == null
+  } else if (second == null) {
+    return false
+  } else if (first.type === 'REGULAR' && second.type === 'REGULAR') {
+    return regularNavigatorEntriesEqual(first, second)
+  } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
+    return conditionalClauseNavigatorEntriesEqual(first, second)
+  } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
+    return syntheticNavigatorEntriesEqual(first, second)
   } else {
-    if (second == null) {
-      return false
-    } else {
-      if (first.type === 'REGULAR' && second.type === 'REGULAR') {
-        return regularNavigatorEntriesEqual(first, second)
-      } else if (first.type === 'CONDITIONAL_CLAUSE' && second.type === 'CONDITIONAL_CLAUSE') {
-        return conditionalClauseNavigatorEntriesEqual(first, second)
-      } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
-        return syntheticNavigatorEntriesEqual(first, second)
-      } else {
-        return false
-      }
-    }
+    return false
   }
 }
 
@@ -2190,9 +2188,9 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
-        ? `element-${getUtopiaID(entry.childOrAttribute)}`
-        : `attribute`
+      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+        ? `attribute`
+        : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     default:
       assertNever(entry)
@@ -2206,9 +2204,9 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = childOrBlockIsChild(entry.childOrAttribute)
-        ? `element_${getUtopiaID(entry.childOrAttribute)}`
-        : `attribute`
+      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+        ? `attribute`
+        : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
     default:
       assertNever(entry)
@@ -2232,6 +2230,26 @@ export const conditionalClauseNavigatorEntryOptic: Optic<
   NavigatorEntry,
   ConditionalClauseNavigatorEntry
 > = fromTypeGuard(isConditionalClauseNavigatorEntry)
+
+export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is SyntheticNavigatorEntry {
+  return entry.type === 'SYNTHETIC'
+}
+
+export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
+  fromTypeGuard(isSyntheticNavigatorEntry)
+
+export function reparentTargetFromNavigatorEntry(
+  navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
+): ReparentTargetParent<ElementPath> {
+  switch (navigatorEntry.type) {
+    case 'REGULAR':
+      return navigatorEntry.elementPath
+    case 'CONDITIONAL_CLAUSE':
+      return navigatorEntry
+    default:
+      assertNever(navigatorEntry)
+  }
+}
 
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
@@ -2466,8 +2484,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     navigator: {
       minimised: false,
       dropTargetHint: {
-        displayAtElementPath: null,
-        moveToElementPath: null,
+        displayAtEntry: null,
+        moveToEntry: null,
         type: null,
       },
       collapsedViews: [],
@@ -2533,6 +2551,7 @@ export interface OriginalCanvasAndLocalFrame {
 
 function getElementWarningsInner(
   rootMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
 ): ComplexMap<ElementPath, ElementWarnings> {
   let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
   Object.values(rootMetadata).forEach((elementMetadata) => {
@@ -2545,26 +2564,23 @@ function getElementWarningsInner(
 
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.
-    let absoluteWithUnpositionedParent: boolean = false
-    if (
-      elementMetadata.specialSizeMeasurements.position === 'absolute' &&
-      !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-    ) {
-      absoluteWithUnpositionedParent = true
-    }
+    const isParentGroupLike = treatElementAsContentAffecting(
+      rootMetadata,
+      allElementProps,
+      EP.parentPath(elementMetadata.elementPath),
+    )
 
-    // Build the warnings object and add it to the map.
-    if (
-      widthOrHeightZero !== defaultElementWarnings.widthOrHeightZero ||
-      absoluteWithUnpositionedParent !== defaultElementWarnings.absoluteWithUnpositionedParent
-    ) {
-      const warnings: ElementWarnings = {
-        widthOrHeightZero: widthOrHeightZero,
-        absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
-        dynamicSceneChildWidthHeightPercentage: false,
-      }
-      result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
+    const isParentNotConfiguredForPins =
+      MetadataUtils.isPositionAbsolute(elementMetadata) &&
+      !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
+    const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentGroupLike
+
+    const warnings: ElementWarnings = {
+      widthOrHeightZero: widthOrHeightZero,
+      absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
+      dynamicSceneChildWidthHeightPercentage: false,
     }
+    result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
   })
   return result
 }
@@ -2579,6 +2595,7 @@ type CacheableDerivedState = {
 
 function deriveCacheableStateInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
@@ -2588,7 +2605,7 @@ function deriveCacheableStateInner(
     hiddenInNavigator,
   )
 
-  const warnings = getElementWarnings(jsxMetadata)
+  const warnings = getElementWarnings(jsxMetadata, allElementProps)
 
   return {
     navigatorTargets: navigatorTargets,
@@ -2616,6 +2633,7 @@ export function deriveState(
     elementWarnings: warnings,
   } = deriveCacheableState(
     editor.jsxMetadata,
+    editor.allElementProps,
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
   )
@@ -2802,8 +2820,8 @@ export function editorModelFromPersistentModel(
     saveError: false,
     navigator: {
       dropTargetHint: {
-        displayAtElementPath: null,
-        moveToElementPath: null,
+        displayAtEntry: null,
+        moveToEntry: null,
         type: null,
       },
       collapsedViews: [],
@@ -3176,7 +3194,7 @@ export function getHighlightBoundsForFile(
   fullPath: string,
 ): HighlightBoundsForUids | null {
   const file = getContentsTreeFileFromString(editor.projectContents, fullPath)
-  if (isTextFile(file)) {
+  if (file != null && isTextFile(file)) {
     if (isParseSuccess(file.fileContents.parsed)) {
       return getHighlightBoundsFromParseResult(file.fileContents.parsed)
     }
@@ -3247,7 +3265,7 @@ export function modifyParseSuccessAtPath(
   revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
-  if (isTextFile(projectFile)) {
+  if (projectFile != null && isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
     if (isParseSuccess(parsedFileContents)) {
       const updatedParseSuccess = modifyParseSuccess(parsedFileContents)

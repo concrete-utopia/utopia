@@ -2,15 +2,23 @@ import deepEqual from 'fast-deep-equal'
 //TODO: pass in colorTheme to utility functions to get rid of colorTheme here:
 import { colorTheme, UtopiaTheme } from '../../../uuiui/styles/theme'
 import {
-  isJSXAttributeNotFound,
-  isJSXAttributeValue,
-  isPartOfJSXAttributeValue,
+  JSXAttributes,
+  modifiableAttributeIsAttributeNotFound,
+  modifiableAttributeIsAttributeValue,
+  modifiableAttributeIsPartOfAttributeValue,
+  StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
-import { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
-import { isLeft, isRight, Either } from '../../../core/shared/either'
+import {
+  GetModifiableAttributeResult,
+  getModifiableJSXAttributeAtPath,
+} from '../../../core/shared/jsx-attributes'
+import { isLeft, isRight, Either, right, defaultEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
-import { ParsedPropertiesKeys } from './css-utils'
+import { CSSNumber, ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
 import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import * as PP from '../../../core/shared/property-path'
+import { IcnColor } from '../../../uuiui'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 
 export interface ControlStyles {
   fontStyle: string
@@ -32,6 +40,7 @@ export interface ControlStyles {
   railColor: string
   showContent: boolean
   unsettable: boolean
+  iconColor: IcnColor
 }
 
 export type ControlStatus =
@@ -45,6 +54,7 @@ export type ControlStatus =
   | 'detected-fromcss' // this single-selected element's property is detected from measurement, and we know it comes from a CSS Stylesheet (might be via Emotion)
   | 'detected' // this single-selected element's property is detected from measurement
   | 'trivial-default' // this single-selected element's property is detected from measurement and we think its not important to show it to the user
+  | 'overridden' // this single-selected element's property is overridden with a fixed value (using standard utopia comments)
   | 'multiselect-identical-simple' // all elements in this multi-selection have this property 'simple', with identical values
   | 'multiselect-simple-unknown-css' // at least one element in the multiselection is 'unknown-css', and the rest are 'simple' or 'unset'
   | 'multiselect-identical-unset' // all elements in this multi-selection have this property either 'simple' or 'unset', with identical values
@@ -67,6 +77,7 @@ const AllControlStatuses: Array<ControlStatus> = [
   'detected-fromcss',
   'detected',
   'trivial-default',
+  'overridden',
   'multiselect-identical-simple',
   'multiselect-simple-unknown-css',
   'multiselect-identical-unset',
@@ -92,6 +103,7 @@ export function isControlledStatus(controlStatus: ControlStatus): boolean {
     case 'unoverwritable':
     case 'detected':
     case 'detected-fromcss':
+    case 'overridden':
     case 'multiselect-identical-simple':
     case 'multiselect-simple-unknown-css':
     case 'multiselect-identical-unset':
@@ -134,6 +146,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     let unknown = false
     let showContent = true
     let unsettable = true
+    let iconColor: IcnColor = 'main'
 
     switch (status) {
       case 'simple':
@@ -215,6 +228,16 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         showContent = true
         unsettable = false
         break
+      case 'overridden':
+        interactive = true
+        mainColor = colorTheme.brandNeonPink.value
+        borderColor = colorTheme.brandNeonPink.value
+        secondaryColor = colorTheme.primary.value
+        trackColor = colorTheme.primary.value
+        strokePrimaryColor = colorTheme.primary.value
+        showContent = true
+        iconColor = 'overridden'
+        break
       default:
         break
     }
@@ -239,6 +262,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       showContent,
       unknown,
       unsettable,
+      iconColor,
     }
   },
 )
@@ -329,11 +353,11 @@ function isSet(
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
-    if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
+    if (modifiableAttributeIsAttributeNotFound(modifiableAttributeResult.value)) {
       return spiedValue != null
     } else if (
-      isJSXAttributeValue(modifiableAttributeResult.value) ||
-      isPartOfJSXAttributeValue(modifiableAttributeResult.value)
+      modifiableAttributeIsAttributeValue(modifiableAttributeResult.value) ||
+      modifiableAttributeIsPartOfAttributeValue(modifiableAttributeResult.value)
     ) {
       return modifiableAttributeResult.value.value !== undefined
     } else {
@@ -349,11 +373,11 @@ function isControlled(
   if (isLeft(modifiableAttributeResult)) {
     return true
   } else {
-    if (isJSXAttributeNotFound(modifiableAttributeResult.value)) {
+    if (modifiableAttributeIsAttributeNotFound(modifiableAttributeResult.value)) {
       return spiedValue != null
     } else if (
-      isJSXAttributeValue(modifiableAttributeResult.value) ||
-      isPartOfJSXAttributeValue(modifiableAttributeResult.value)
+      modifiableAttributeIsAttributeValue(modifiableAttributeResult.value) ||
+      modifiableAttributeIsPartOfAttributeValue(modifiableAttributeResult.value)
     ) {
       return false
     } else {
@@ -556,4 +580,39 @@ export function isNotUnsetDefaultOrDetected(controlStatus: ControlStatus): boole
     controlStatus !== 'detected' &&
     controlStatus !== 'detected-fromcss'
   )
+}
+
+export function getFallbackControlStatusForProperty(
+  property: keyof ParsedCSSProperties,
+  jsxAttributes: JSXAttributes,
+  attributeMetadatada: StyleAttributeMetadata | null,
+): ControlStatus {
+  const modifiableAttribute = getModifiableJSXAttributeAtPath(
+    jsxAttributes,
+    PP.create('style', property),
+  )
+
+  const simpleAttribute = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(jsxAttributes), PP.create('style', property)),
+  )
+
+  const fromStyleSheet =
+    attributeMetadatada != null && attributeMetadatada[property]?.fromStyleSheet === true
+
+  const overwritable = isOverwritable(modifiableAttribute)
+  const controlled = isControlled(modifiableAttribute, null)
+
+  const unknown = simpleAttribute != null && overwritable
+  if (controlled) {
+    return 'controlled'
+  } else if (unknown) {
+    return 'simple-unknown-css'
+  } else if (!overwritable) {
+    return 'unoverwritable'
+  } else if (fromStyleSheet) {
+    return 'detected-fromcss'
+  } else {
+    return 'detected'
+  }
 }

@@ -23,11 +23,8 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
-import { getDragTargets } from './shared-move-strategies-helpers'
-import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  treatElementAsContentAffecting,
-} from './group-like-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
+import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -46,9 +43,9 @@ export function absoluteDuplicateStrategy(
   }
 
   const isDragging = interactionSession.interactionData.drag != null
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const flattenedSelectionForMultiSelect = flattenSelection(selectedElements)
 
-  if (!isApplicable(canvasState, filteredSelectedElements)) {
+  if (!isApplicable(canvasState, flattenedSelectionForMultiSelect)) {
     return null
   }
 
@@ -58,13 +55,13 @@ export function absoluteDuplicateStrategy(
     controlsToRender: [
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
+        props: { targets: flattenedSelectionForMultiSelect },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ImmediateParentBounds,
-        props: { targets: filteredSelectedElements },
+        props: { targets: flattenedSelectionForMultiSelect },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -78,7 +75,7 @@ export function absoluteDuplicateStrategy(
         let duplicateCommands: Array<CanvasCommand> = []
         let newPaths: Array<ElementPath> = []
 
-        filteredSelectedElements.forEach((selectedElement) => {
+        flattenedSelectionForMultiSelect.forEach((selectedElement) => {
           const selectedElementString = EP.toString(selectedElement)
           const newUid =
             duplicatedElementNewUids[selectedElementString] ??

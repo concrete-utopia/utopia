@@ -20,11 +20,14 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
+import { AllElementProps } from '../../editor/store/editor-state'
+import { treatElementAsContentAffecting } from '../canvas-strategies/strategies/group-like-helpers'
 
 export const SnappingThreshold = 5
 
 export function collectParentAndSiblingGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   targets: Array<ElementPath>,
 ): Array<GuidelineWithRelevantPoints> {
   const allPaths = MetadataUtils.getAllPaths(componentMetadata)
@@ -34,20 +37,22 @@ export function collectParentAndSiblingGuidelines(
       componentMetadata,
       target,
     )
-    if (!pinnedAndNotAbsolutePositioned) {
+    const isElementGrouplike = treatElementAsContentAffecting(
+      componentMetadata,
+      allElementProps,
+      target,
+    )
+
+    if (isElementGrouplike || !pinnedAndNotAbsolutePositioned) {
       const parent = EP.parentPath(target)
       Utils.fastForEach(allPaths, (maybeTarget) => {
         // for now we only snap to parents and sibligns and not us or our descendants
         const isSibling = EP.isSiblingOf(maybeTarget, target)
         const isParent = EP.pathsEqual(parent, maybeTarget)
-        const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
-          componentMetadata,
-          maybeTarget,
-        )
         const notSelectedOrDescendantOfSelected = targets.every(
           (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
         )
-        if ((isSibling || isParent) && !isFragment && notSelectedOrDescendantOfSelected) {
+        if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null && isFiniteRectangle(frame)) {
             result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))

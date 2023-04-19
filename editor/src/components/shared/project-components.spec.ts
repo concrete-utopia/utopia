@@ -6,7 +6,11 @@ import {
 import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import { simpleDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
 import { PropertyControlsInfo } from '../custom-code/code-file'
-import { getComponentGroups, getDependencyStatus } from './project-components'
+import {
+  clearInsertableComponentGroupUniqueIDs,
+  getComponentGroups,
+  getDependencyStatus,
+} from './project-components'
 
 describe('getComponentGroups', () => {
   it('returns all the various default groups', () => {
@@ -26,7 +30,7 @@ describe('getComponentGroups', () => {
       simpleDefaultProjectPreParsed().projectContents,
       dependencies,
       '/src/app.js',
-    )
+    ).map(clearInsertableComponentGroupUniqueIDs)
 
     expect(actualResult).toMatchSnapshot()
   })
@@ -52,7 +56,7 @@ describe('getComponentGroups', () => {
       simpleDefaultProjectPreParsed().projectContents,
       dependencies,
       '/src/app.js',
-    )
+    ).map(clearInsertableComponentGroupUniqueIDs)
 
     expect(actualResult).toMatchSnapshot()
   })

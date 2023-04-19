@@ -1,3 +1,4 @@
+import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -57,7 +58,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         return
       }
 
-      const withElementInserted = insertElementAtPath(
+      const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
         targetParent,
@@ -71,11 +72,12 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
       editorStatePatches.push(
         getPatchForComponentChange(
           success.topLevelElements,
-          withElementInserted,
+          insertionResult.components,
           updatedImports,
           underlyingFilePath,
         ),
       )
+      editorStatePatches.push(includeToastPatch(insertionResult.insertionDetails, editor))
       selectedViews.push(EP.appendToPath(targetParent, subject.element.uid))
     },
   )

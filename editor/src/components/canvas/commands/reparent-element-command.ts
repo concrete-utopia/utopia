@@ -1,3 +1,9 @@
+import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
+import {
+  getElementPathFromReparentTargetParent,
+  ReparentTargetParent,
+  reparentTargetParentIsConditionalClause,
+} from '../../../components/editor/store/reparent-target'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -13,13 +19,13 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
-  newParent: ElementPath
+  newParent: ReparentTargetParent<ElementPath>
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
-  newParent: ElementPath,
+  newParent: ReparentTargetParent<ElementPath>,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
@@ -39,7 +45,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     editorState,
     (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
-        command.newParent,
+        getElementPathFromReparentTargetParent(command.newParent),
         editorState,
         (
           successNewParent,
@@ -51,7 +57,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const withElementInserted = insertElementAtPath(
+            const insertionResult = insertElementAtPath(
               editorState.projectContents,
               underlyingFilePathTarget,
               command.newParent,
@@ -61,18 +67,21 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
-              withElementInserted,
+              insertionResult.components,
               successTarget.imports,
               underlyingFilePathTarget,
             )
 
-            editorStatePatches = [editorStatePatchOldParentFile]
+            editorStatePatches = [
+              editorStatePatchOldParentFile,
+              includeToastPatch(insertionResult.insertionDetails, editorState),
+            ]
           } else {
             const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
-            const withElementInserted = insertElementAtPath(
+            const insertionResult = insertElementAtPath(
               editorState.projectContents,
               underlyingFilePathNewParent,
               command.newParent,
@@ -90,22 +99,35 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
             const editorStatePatchNewParentFile = getPatchForComponentChange(
               successNewParent.topLevelElements,
-              withElementInserted,
+              insertionResult.components,
               successNewParent.imports,
               underlyingFilePathNewParent,
             )
 
-            editorStatePatches = [editorStatePatchOldParentFile, editorStatePatchNewParentFile]
+            editorStatePatches = [
+              editorStatePatchOldParentFile,
+              editorStatePatchNewParentFile,
+              includeToastPatch(insertionResult.insertionDetails, editorState),
+            ]
           }
         },
       )
     },
   )
 
+  let parentDescription: string
+  if (reparentTargetParentIsConditionalClause(command.newParent)) {
+    parentDescription = `${EP.toUid(command.newParent.elementPath)} (${
+      command.newParent.clause
+    } clause)`
+  } else {
+    parentDescription = EP.toUid(command.newParent)
+  }
+
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
-      command.newParent,
-    )}`,
+    commandDescription: `Reparent Element ${EP.toUid(
+      command.target,
+    )} to new parent ${parentDescription}`,
   }
 }

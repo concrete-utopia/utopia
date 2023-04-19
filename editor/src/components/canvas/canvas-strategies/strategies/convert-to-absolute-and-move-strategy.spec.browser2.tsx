@@ -12,19 +12,49 @@ import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { localRectangle, LocalRectangle } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  localRectangle,
+  LocalRectangle,
+  nullIfInfinity,
+  offsetPoint,
+  offsetRect,
+} from '../../../../core/shared/math-utils'
 import { fastForEach } from '../../../../core/shared/utils'
-import { runEscapeHatch, setFocusedElement } from '../../../editor/actions/action-creators'
+import {
+  runEscapeHatch,
+  selectComponents,
+  setFocusedElement,
+} from '../../../editor/actions/action-creators'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { mapArrayToDictionary } from '../../../../core/shared/array-utils'
+import { cartesianProduct, mapArrayToDictionary } from '../../../../core/shared/array-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { keyDown, mouseDownAtPoint, mouseMoveToPoint } from '../../event-helpers.test-utils'
+import {
+  keyDown,
+  mouseDownAtPoint,
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+  mouseUpAtPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
+import {
+  AllContentAffectingNonDomElementTypes,
+  AllContentAffectingTypes,
+  ContentAffectingType,
+  treatElementAsContentAffecting,
+} from './group-like-helpers'
+import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../../../utils/utils.test-utils'
 
 const complexProject = () => {
   const code = `
@@ -708,85 +738,536 @@ describe('Convert to absolute/escape hatch', () => {
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
     expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
   })
+  ;(['flex', 'flow'] as const).forEach((parentLayoutSystem) =>
+    it(`DOES NOT BECOME the active strategy when dragging for multiselection across the hierarchy for ${parentLayoutSystem} parent`, async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject(parentLayoutSystem)),
+        'await-first-dom-report',
+      )
 
-  it('becomes the active strategy when dragging flow elements out of sibling bounds', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flow')),
-      'await-first-dom-report',
-    )
+      await renderResult.dispatch(
+        [
+          selectComponents(
+            [
+              EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child1`),
+              EP.fromString(
+                `utopia-storyboard-uid/scene-aaa/app-entity:container/child3/grandchild`,
+              ),
+            ],
+            false,
+          ),
+        ],
+        true,
+      )
 
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child1')
-    const elementBounds = element.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child1')
+      const elementBounds = element.getBoundingClientRect()
 
-    await mouseDownAtPoint(
-      canvasControlsLayer,
-      {
-        x: elementBounds.x + 10,
+      await mouseDownAtPoint(
+        canvasControlsLayer,
+        {
+          x: elementBounds.x + 10,
+          y: elementBounds.y + 10,
+        },
+        { modifiers: cmdModifier },
+      )
+
+      // Drag without going outside the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 50,
         y: elementBounds.y + 10,
-      },
-      { modifiers: cmdModifier },
-    )
+      })
 
-    // Drag without going outside the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 50,
-      y: elementBounds.y + 10,
-    })
+      const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(midDragStrategy).not.toBeNull()
+      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
 
-    const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(midDragStrategy).not.toBeNull()
-    expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
-
-    // Now drag until we have passed the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 110,
-      y: elementBounds.y + 10,
-    })
-
-    const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(endDragStrategy).not.toBeNull()
-    expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
-  })
-
-  it('becomes the active strategy when dragging flex elements out of sibling bounds', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flex')),
-      'await-first-dom-report',
-    )
-
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child1')
-    const elementBounds = element.getBoundingClientRect()
-
-    await mouseDownAtPoint(
-      canvasControlsLayer,
-      {
-        x: elementBounds.x + 10,
+      // Now drag until we have passed the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 110,
         y: elementBounds.y + 10,
-      },
-      { modifiers: cmdModifier },
-    )
+      })
 
-    // Drag without going outside the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 50,
-      y: elementBounds.y + 10,
+      const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(endDragStrategy).not.toBeNull()
+      expect(endDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // HOWEVER!!!! pressing space now makes the strategy active!!!!!!
+      keyDown('Space')
+      const keydownStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    }),
+  )
+  ;(['flex', 'flow'] as const).forEach((parentLayoutSystem) =>
+    it(`does become the active strategy when dragging for single selection in ${parentLayoutSystem} parent`, async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject(parentLayoutSystem)),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [
+          selectComponents(
+            [
+              EP.fromString(
+                `utopia-storyboard-uid/scene-aaa/app-entity:container/child3/grandchild`,
+              ),
+            ],
+            false,
+          ),
+        ],
+        true,
+      )
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('child1')
+      const elementBounds = element.getBoundingClientRect()
+
+      await mouseDownAtPoint(
+        canvasControlsLayer,
+        {
+          x: elementBounds.x + 10,
+          y: elementBounds.y + 10,
+        },
+        { modifiers: cmdModifier },
+      )
+
+      // Drag without going outside the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 50,
+        y: elementBounds.y + 10,
+      })
+
+      const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(midDragStrategy).not.toBeNull()
+      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // Now drag until we have passed the sibling bounds
+      await mouseMoveToPoint(canvasControlsLayer, {
+        x: elementBounds.x + 110,
+        y: elementBounds.y + 10,
+      })
+
+      const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(endDragStrategy).not.toBeNull()
+      expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+      // pressing space keeps the strategy active
+      keyDown('Space')
+      const keydownStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    }),
+  )
+
+  cartesianProduct(['flex', 'flow'] as const, ['single-select', 'multiselect'] as const).forEach(
+    ([parentLayoutSystem, multiselect]) => {
+      it(`dragging ${parentLayoutSystem} elements out of sibling bounds`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(codeForDragToEscapeHatchProject('flow')),
+          'await-first-dom-report',
+        )
+
+        await renderResult.dispatch(
+          [
+            selectComponents(
+              multiselect === 'multiselect'
+                ? [
+                    EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child1`),
+                    EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child2`),
+                  ]
+                : [EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:container/child1`)],
+              false,
+            ),
+          ],
+          true,
+        )
+
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const element = renderResult.renderedDOM.getByTestId('child1')
+        const elementBounds = element.getBoundingClientRect()
+
+        await mouseDownAtPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 10,
+            y: elementBounds.y + 10,
+          },
+          { modifiers: cmdModifier },
+        )
+
+        // Drag without going outside the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 50,
+          y: elementBounds.y + 10,
+        })
+
+        const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(midDragStrategy).not.toBeNull()
+        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+        // Now drag until we have passed the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        })
+
+        const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(endDragStrategy).not.toBeNull()
+        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      })
+    },
+  )
+
+  cartesianProduct(['flex', 'flow'] as const, AllContentAffectingNonDomElementTypes).forEach(
+    ([parentLayoutSystem, type]) => {
+      it(`dragging group-like element ${type} out of sibling bounds in ${parentLayoutSystem} context`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(
+            codeWithGroupLikeELementForEscapeHatch(parentLayoutSystem, type),
+          ),
+          'await-first-dom-report',
+        )
+
+        const groupElementPath = EP.fromString(
+          `utopia-storyboard-uid/scene-aaa/app-entity:container/children-affecting`,
+        )
+        const child2 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child2'])
+        const child3 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child3'])
+
+        const jsxMetadataBefore = renderResult.getEditorState().editor.jsxMetadata
+        const child2OriginalBounds = nullIfInfinity(
+          MetadataUtils.findElementByElementPath(jsxMetadataBefore, child2)?.globalFrame,
+        )
+        const child3OriginalBounds = nullIfInfinity(
+          MetadataUtils.findElementByElementPath(jsxMetadataBefore, child3)?.globalFrame,
+        )
+
+        await renderResult.dispatch([selectComponents([groupElementPath], false)], true)
+
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const element = renderResult.renderedDOM.getByTestId('child2')
+        const elementBounds = element.getBoundingClientRect()
+
+        await mouseDownAtPoint(
+          canvasControlsLayer,
+          {
+            x: elementBounds.x + 10,
+            y: elementBounds.y + 10,
+          },
+          { modifiers: cmdModifier },
+        )
+
+        // Drag without going outside the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 50,
+          y: elementBounds.y + 10,
+        })
+
+        const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(midDragStrategy).not.toBeNull()
+        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+        // Now drag until we have passed the sibling bounds
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        })
+
+        const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(endDragStrategy).not.toBeNull()
+        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+
+        await mouseUpAtPoint(canvasControlsLayer, {
+          x: elementBounds.x + 110,
+          y: elementBounds.y + 10,
+        })
+
+        const jsxMetadataAfter = renderResult.getEditorState().editor.jsxMetadata
+        const allElementPropsAfter = renderResult.getEditorState().editor.allElementProps
+
+        expect(
+          treatElementAsContentAffecting(jsxMetadataAfter, allElementPropsAfter, groupElementPath),
+        ).toEqual(true) // make sure the original group-like element remained group-like
+
+        // check that the children became absolute
+        expect(
+          MetadataUtils.findElementByElementPath(jsxMetadataAfter, child2)?.specialSizeMeasurements
+            .position,
+        ).toEqual('absolute')
+        expect(
+          MetadataUtils.findElementByElementPath(jsxMetadataAfter, child3)?.specialSizeMeasurements
+            .position,
+        ).toEqual('absolute')
+
+        const child2ResultBounds = MetadataUtils.findElementByElementPath(
+          jsxMetadataAfter,
+          child2,
+        )?.globalFrame
+        const child3ResultBounds = MetadataUtils.findElementByElementPath(
+          jsxMetadataAfter,
+          child3,
+        )?.globalFrame
+
+        expect(offsetRect(child2OriginalBounds!, canvasPoint({ x: 100, y: 0 }))).toEqual(
+          child2ResultBounds,
+        )
+        expect(offsetRect(child3OriginalBounds!, canvasPoint({ x: 100, y: 0 }))).toEqual(
+          child3ResultBounds,
+        )
+      })
+    },
+  )
+
+  describe('Escape Hatch Strategy', () => {
+    it('does not activate when drag threshold is not reached', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 1, y: 1 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+      )
     })
 
-    const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(midDragStrategy).not.toBeNull()
-    expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    it('Runs the escape hatch strategy', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+            <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+              <View
+                style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
+                data-uid='bbb'
+              />
+            </View>
+        `),
+        'await-first-dom-report',
+      )
 
-    // Now drag until we have passed the sibling bounds
-    await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + 110,
-      y: elementBounds.y + 10,
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const action = runEscapeHatch([targetElement])
+
+      await initialEditor.dispatch([action], true)
+      await initialEditor.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
+            data-uid='bbb'
+          />
+        </View>`,
+        ),
+      )
     })
 
-    const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(endDragStrategy).not.toBeNull()
-    expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    it('works on a flow element with all pins', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '50%',
+            height: '20%',
+            right: 200,
+            bottom: 320,
+            top: 0,
+            left: 0
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
+
+    it('works on a flow element without siblings', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
+
+    it('works on a flow element without siblings where width and height is percentage', async () => {
+      const initialEditor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '50%',
+            height: '20%',
+            right: 200,
+            bottom: 320,
+            top: 0,
+            left: 0
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+      </View>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetElement = EP.elementPath([
+        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
+        ['aaa', 'bbb'],
+      ])
+
+      await selectComponentsForTest(initialEditor, [targetElement])
+
+      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+
+      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const viewCenter = canvasPoint({
+        x: viewBounds.left + viewBounds.width / 2,
+        y: viewBounds.top + viewBounds.height / 2,
+      })
+
+      await mouseDragFromPointToPoint(
+        canvas,
+        viewCenter,
+        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
+      )
+
+      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </View>`,
+        ),
+      )
+    })
   })
 })
 
@@ -828,7 +1309,66 @@ function codeForDragToEscapeHatchProject(flowOrFlex: 'flow' | 'flex'): string {
           contain: 'layout',
         }}
         data-uid='child3'
+      >
+        <div
+          style={{
+            backgroundColor: '#000088',
+            width: 50,
+            height: 50,
+            contain: 'layout',
+          }}
+          data-uid='grandchild'
+        />
+      </div>
+    </div>
+  `
+}
+
+function codeWithGroupLikeELementForEscapeHatch(
+  flowOrFlex: 'flow' | 'flex',
+  type: ContentAffectingType,
+): string {
+  return `
+    <div
+      style={{
+        width: 400,
+        height: 400,
+        ${flowOrFlex === 'flex' ? "display: 'flex'," : ''}
+        ${flowOrFlex === 'flex' ? "flexDirection: 'column'," : ''}
+      }}
+      data-uid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#FF0000',
+          width: 100,
+          height: 100,
+          contain: 'layout',
+        }}
+        data-uid='child1'
+        data-testid='child1'
       />
+      ${getOpeningGroupLikeTag(type)}
+        <div
+          style={{
+            backgroundColor: '#00FF00',
+            width: 100,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='child2'
+          data-testid='child2'
+        />
+        <div
+          style={{
+            backgroundColor: '#0000FF',
+            width: 100,
+            height: 100,
+            contain: 'layout',
+          }}
+          data-uid='child3'
+        />
+      ${getClosingGroupLikeTag(type)}
     </div>
   `
 }

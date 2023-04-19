@@ -7,9 +7,9 @@ import {
 import { isRight, right } from '../../core/shared/either'
 import {
   isJSXElement,
-  JSXAttribute,
+  JSExpression,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   ComputedStyle,
   StyleAttributeMetadata,
@@ -72,7 +72,10 @@ import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
-import { isStrategyActive } from '../canvas/canvas-strategies/canvas-strategies'
+import {
+  isKeyboardAbsoluteStrategy,
+  isStrategyActive,
+} from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -82,6 +85,7 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
+import { GroupSection } from './convert-to-group-dropdown'
 
 export interface ElementPathElement {
   name?: string
@@ -231,7 +235,10 @@ export function shouldInspectorUpdate(
   strategyState: StrategyState,
   elementsToRerender: ElementsToRerender,
 ): boolean {
-  return !isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements'
+  return (
+    (!isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements') ||
+    isKeyboardAbsoluteStrategy(strategyState.currentStrategy)
+  )
 }
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
@@ -344,6 +351,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
+          <ConditionalSection paths={selectedViews} />
           <TargetSelectorSection
             targets={props.targets}
             selectedTargetPath={props.selectedTargetPath}
@@ -352,17 +360,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <FlexSection />
-          <SizingSection />
           <PositionSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
             toggleAspectRatioLock={toggleAspectRatioLock}
           />
-          {when(
-            isFeatureEnabled('Conditional support'),
-            <ConditionalSection paths={selectedViews} />,
-          )}
+          <SizingSection />
+          <FlexSection />
           <StyleSection />
           <WarningSubsection />
           <ImgSection />
@@ -556,7 +560,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
       const newPath = [...(parent?.path ?? []), label]
       const newPropertyPath = PP.createFromArray(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
+        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsExpressionValue({}, emptyComments)),
       )
       dispatch(actions, 'everyone')
       setSelectedTarget(newPath)
@@ -663,7 +667,7 @@ export const InspectorContextProvider = React.memo<{
   )
 
   const onSubmitValueForHooks = React.useCallback(
-    (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
+    (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)
@@ -699,7 +703,7 @@ export const InspectorContextProvider = React.memo<{
   )
 
   const collectActionsToSubmitValue = React.useCallback(
-    (newValue: JSXAttribute, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+    (newValue: JSExpression, path: PropertyPath, transient: boolean): Array<EditorAction> => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)

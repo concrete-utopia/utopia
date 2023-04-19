@@ -1,13 +1,13 @@
 import {
   JSXElement,
   jsxElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElementName,
   jsxAttributesFromMap,
   JSXElementChildren,
   emptyComments,
   jsxTextBlock,
-  JSXAttribute,
+  JSExpression,
   jsxAttributesEntry,
   simpleAttribute,
 } from '../../core/shared/element-template'
@@ -21,16 +21,16 @@ export function defaultSceneElement(
   children: JSXElementChildren,
 ): JSXElement {
   const props = jsxAttributesFromMap({
-    'data-uid': jsxAttributeValue(uid, emptyComments),
-    'data-label': jsxAttributeValue(label, emptyComments),
+    'data-uid': jsExpressionValue(uid, emptyComments),
+    'data-label': jsExpressionValue(label, emptyComments),
     style: defaultSceneElementStyle(frame),
   })
 
   return jsxElement(jsxElementName('Scene', []), uid, props, children)
 }
 
-export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSXAttribute {
-  return jsxAttributeValue(
+export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSExpression {
+  return jsExpressionValue(
     {
       position: 'absolute',
       ...frame,
@@ -39,8 +39,8 @@ export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSXAttr
   )
 }
 
-export function defaultViewElementStyle(): JSXAttribute {
-  return jsxAttributeValue(
+export function defaultViewElementStyle(): JSExpression {
+  return jsExpressionValue(
     {
       backgroundColor: '#aaaaaa33',
       position: 'absolute',
@@ -55,7 +55,7 @@ export function defaultViewElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultViewElementStyle(),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
@@ -66,13 +66,13 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
     jsxElementName('animated', ['div']),
     uid,
     jsxAttributesFromMap({
-      style: jsxAttributeValue(
+      style: jsExpressionValue(
         {
           backgroundColor: '#aaaaaa33',
         },
         emptyComments,
       ),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
@@ -83,13 +83,13 @@ export function defaultTransparentViewElement(uid: string): JSXElement {
     jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
-      style: jsxAttributeValue(
+      style: jsExpressionValue(
         {
           position: 'absolute',
         },
         emptyComments,
       ),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
@@ -100,14 +100,14 @@ export function defaultUnstyledDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
 }
 
-export function defaultTextElementStyle(): JSXAttribute {
-  return jsxAttributeValue(
+export function defaultTextElementStyle(): JSExpression {
+  return jsExpressionValue(
     {
       fontSize: 16,
     },
@@ -115,8 +115,8 @@ export function defaultTextElementStyle(): JSXAttribute {
   )
 }
 
-export function defaultRectangleElementStyle(): JSXAttribute {
-  return jsxAttributeValue(
+export function defaultRectangleElementStyle(): JSExpression {
+  return jsExpressionValue(
     {
       backgroundColor: '#FF69B4AB',
       position: 'absolute',
@@ -131,7 +131,7 @@ export function defaultRectangleElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultRectangleElementStyle(),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
@@ -143,7 +143,7 @@ export function defaultEllipseElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultViewElementStyle(),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
@@ -155,7 +155,7 @@ export function defaultDivElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       style: defaultViewElementStyle(),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
@@ -166,19 +166,18 @@ export function defaultSpanElement(uid: string): JSXElement {
     jsxElementName('span', []),
     uid,
     jsxAttributesFromMap({
-      style: jsxAttributeValue(
+      style: jsExpressionValue(
         {
           position: 'absolute',
           wordBreak: 'break-word',
         },
         emptyComments,
       ),
-      'data-uid': jsxAttributeValue(uid, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
   )
 }
-export const DefaultTextWidth = 200
 
 export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(
@@ -194,15 +193,15 @@ export function defaultButtonElement(uid: string): JSXElement {
     jsxElementName('button', []),
     uid,
     jsxAttributesFromMap({
-      'data-uid': jsxAttributeValue(uid, emptyComments),
-      style: jsxAttributeValue({ position: 'absolute' }, emptyComments),
+      'data-uid': jsExpressionValue(uid, emptyComments),
+      style: jsExpressionValue({ position: 'absolute' }, emptyComments),
     }),
     [],
   )
 }
 
-export function defaultFlexRowOrColStyle(): JSXAttribute {
-  return jsxAttributeValue(
+export function defaultFlexRowOrColStyle(): JSExpression {
+  return jsExpressionValue(
     {
       position: 'absolute',
     },

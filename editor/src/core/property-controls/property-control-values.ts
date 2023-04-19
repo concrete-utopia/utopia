@@ -42,17 +42,17 @@ import {
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
 import {
-  isJSXAttributeOtherJavaScript,
-  JSXAttribute,
+  modifiableAttributeIsAttributeOtherJavaScript,
+  JSExpression,
   jsxArrayValue,
-  jsxAttributeValue,
-  jsxAttributeOtherJavaScript,
-  jsxAttributeNestedArray,
-  jsxAttributeNestedObject,
+  jsExpressionValue,
+  jsExpressionOtherJavaScript,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
   jsxPropertyAssignment,
   emptyComments,
   JSXArrayValue,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsAttributeNotFound,
 } from '../shared/element-template'
 import {
   ModifiableAttribute,
@@ -62,7 +62,7 @@ import {
 import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { forEachValue, mapToArray, objectValues } from '../shared/object-utils'
-type Printer<T> = (value: T) => JSXAttribute
+type Printer<T> = (value: T) => JSExpression
 
 export function parseColorValue(value: unknown): ParseResult<CSSColor> {
   return foldEither(
@@ -199,7 +199,7 @@ function unwrapAndParseObjectValues(objectControls: {
         const missingKey = foldEither(
           (_) => false,
           (attr) => {
-            return isJSXAttributeNotFound(attr)
+            return modifiableAttributeIsAttributeNotFound(attr)
           },
           valuesForKey.rawValue,
         )
@@ -238,7 +238,7 @@ function jsUnwrapper(
   rawValue: Either<string, ModifiableAttribute>,
   realValue: unknown,
 ): string | null {
-  if (isRight(rawValue) && isJSXAttributeOtherJavaScript(rawValue.value)) {
+  if (isRight(rawValue) && modifiableAttributeIsAttributeOtherJavaScript(rawValue.value)) {
     return rawValue.value.javascript
   } else {
     return null
@@ -416,20 +416,20 @@ export function getPropertyControlNames(propertyControls: PropertyControls): Arr
   return result
 }
 
-function printSimple<T>(value: T): JSXAttribute {
-  return jsxAttributeValue(value, emptyComments)
+function printSimple<T>(value: T): JSExpression {
+  return jsExpressionValue(value, emptyComments)
 }
 
-function printColor(value: unknown): JSXAttribute {
+function printColor(value: unknown): JSExpression {
   if (isCSSColor(value) || value === undefined) {
     return printColorToJsx(value)
   } else {
-    return jsxAttributeValue(`${value}`, emptyComments)
+    return jsExpressionValue(`${value}`, emptyComments)
   }
 }
 
-function printJS<T>(value: T): JSXAttribute {
-  return jsxAttributeOtherJavaScript(`${value}`, ``, [], null, {})
+function printJS<T>(value: T): JSExpression {
+  return jsExpressionOtherJavaScript(`${value}`, ``, [], null, {})
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
@@ -473,16 +473,16 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
 
 function printerForArray<T>(control: RegularControlDescription): Printer<Array<T>> {
   const printContentsValue = printerForPropertyControl(control)
-  return (array: Array<T>): JSXAttribute => {
+  return (array: Array<T>): JSExpression => {
     const printedContents = array.map((value) =>
       jsxArrayValue(printContentsValue(value), emptyComments),
     )
-    return jsxAttributeNestedArray(printedContents, emptyComments)
+    return jsExpressionNestedArray(printedContents, emptyComments)
   }
 }
 
 function printerForTuple(controls: Array<RegularControlDescription>): Printer<Array<unknown>> {
-  return (array: Array<unknown>): JSXAttribute => {
+  return (array: Array<unknown>): JSExpression => {
     const length = Math.min(array.length, controls.length)
     let printedContents: Array<JSXArrayValue> = []
 
@@ -493,14 +493,14 @@ function printerForTuple(controls: Array<RegularControlDescription>): Printer<Ar
       printedContents.push(jsxArrayValue(printContentsValue(value), emptyComments))
     }
 
-    return jsxAttributeNestedArray(printedContents, emptyComments)
+    return jsExpressionNestedArray(printedContents, emptyComments)
   }
 }
 
 function printerForObject(objectControls: {
   [prop: string]: RegularControlDescription
 }): Printer<{ [prop: string]: unknown }> {
-  return (objectToPrint: { [prop: string]: unknown }): JSXAttribute => {
+  return (objectToPrint: { [prop: string]: unknown }): JSExpression => {
     const printedContents = mapToArray((value, key) => {
       const valueControl = objectControls[key]
       const valuePrinter =
@@ -508,12 +508,12 @@ function printerForObject(objectControls: {
       return jsxPropertyAssignment(key, valuePrinter(value), emptyComments, emptyComments)
     }, objectToPrint)
 
-    return jsxAttributeNestedObject(printedContents, emptyComments)
+    return jsExpressionNestedObject(printedContents, emptyComments)
   }
 }
 
 function printerForUnion<T>(controls: Array<RegularControlDescription>): Printer<T> {
-  return (value: T): JSXAttribute => {
+  return (value: T): JSExpression => {
     const controlToUse = findFirstSuitableControl(controls, left('ignore'), value)
     if (controlToUse == null) {
       return printSimple(value)

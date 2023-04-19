@@ -1,10 +1,12 @@
 import {
-  JSXAttribute,
+  JSExpression,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
   SettableLayoutSystem,
   JSXElementChild,
+  JSXConditionalExpression,
+  JSXFragment,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
@@ -75,6 +77,7 @@ import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
+import { ReparentTargetParent } from './store/reparent-target'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -198,7 +201,7 @@ export type SetProperty = {
   action: 'SET_PROPERTY'
   element: ElementPath
   property: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export type SetCanvasFrames = {
@@ -343,7 +346,7 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: ElementPath
+  pasteInto: ReparentTargetParent<ElementPath>
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
@@ -463,7 +466,7 @@ export interface SaveImageDoNothing {
 
 export interface SaveImageInsertWith {
   type: 'SAVE_IMAGE_INSERT_WITH'
-  parentPath: ElementPath | null
+  parentPath: ReparentTargetParent<ElementPath> | null
   frame: CanvasRectangle
   multiplier: number
 }
@@ -506,7 +509,10 @@ export interface WrapInView {
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports }
+  whatToWrapWith: {
+    element: JSXElement | JSXConditionalExpression | JSXFragment
+    importsToAdd: Imports
+  }
 }
 
 export interface OpenFloatingInsertMenu {
@@ -518,10 +524,9 @@ export interface CloseFloatingInsertMenu {
   action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
-export interface UnwrapGroupOrView {
-  action: 'UNWRAP_GROUP_OR_VIEW'
+export interface UnwrapElement {
+  action: 'UNWRAP_ELEMENT'
   target: ElementPath
-  onlyForGroups: boolean
 }
 
 export interface UpdateFrameDimensions {
@@ -753,14 +758,14 @@ export interface SetProp {
   action: 'SET_PROP'
   target: ElementPath
   propertyPath: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export interface SetPropWithElementPath {
   action: 'SET_PROP_WITH_ELEMENT_PATH'
   target: StaticElementPathPart
   propertyPath: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export interface SetFilebrowserRenamingTarget {
@@ -806,6 +811,12 @@ export interface SetConditionalOverriddenCondition {
   action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION'
   target: ElementPath
   condition: boolean | null
+}
+
+export interface UpdateConditionalExpression {
+  action: 'UPDATE_CONIDTIONAL_EXPRESSION'
+  target: ElementPath
+  expression: string
 }
 
 export interface AddImports {
@@ -1020,7 +1031,7 @@ export interface SetPropTransient {
   action: 'SET_PROP_TRANSIENT'
   target: ElementPath
   propertyPath: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
 
 export interface ClearTransientProps {
@@ -1102,6 +1113,11 @@ export interface UpdateColorSwatches {
   colorSwatches: Array<ColorSwatch>
 }
 
+export interface SwitchConditionalBranches {
+  action: 'SWITCH_CONDITIONAL_BRANCHES'
+  target: ElementPath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1171,7 +1187,7 @@ export type EditorAction =
   | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
-  | UnwrapGroupOrView
+  | UnwrapElement
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls
   | UpdateFrameDimensions
@@ -1280,6 +1296,8 @@ export type EditorAction =
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
+  | SwitchConditionalBranches
+  | UpdateConditionalExpression
 
 export type DispatchPriority =
   | 'everyone'

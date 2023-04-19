@@ -117,6 +117,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
+            data-testid='positioncontrols-catcher-pin-top'
             onMouseDown={handlePinMouseDown('top')}
           />
           <path
@@ -152,6 +153,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
+            data-testid='positioncontrols-catcher-pin-bottom'
             onMouseDown={handlePinMouseDown('bottom')}
           />
           <path
@@ -167,6 +169,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
+            data-testid='positioncontrols-catcher-pin-right'
             onMouseDown={handlePinMouseDown('right')}
           />
           <path
@@ -197,6 +200,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
+            data-testid='positioncontrols-catcher-pin-left'
             onMouseDown={handlePinMouseDown('left')}
           />
           <g transform={`translate(${HorizontalDividerStart},${VerticalDividerStart})`}>

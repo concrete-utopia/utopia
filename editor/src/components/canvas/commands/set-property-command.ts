@@ -1,5 +1,5 @@
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import {
   ElementPath,
   PropertyPath,
@@ -55,7 +55,7 @@ export const runSetProperty: CommandFunction<SetProperty> = (
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorState,
     command.element,
-    [{ path: command.property, value: jsxAttributeValue(command.value, emptyComments) }],
+    [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
   )
 
   return {

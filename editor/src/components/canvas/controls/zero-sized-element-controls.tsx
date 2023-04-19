@@ -8,7 +8,7 @@ import { useColorTheme } from '../../../uuiui'
 import {
   ElementInstanceMetadata,
   emptyComments,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import {
   clearHighlightedViews,
@@ -386,7 +386,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         return setProp_UNSAFE(
           element.elementPath,
           prop.path,
-          jsxAttributeValue(prop.value, emptyComments),
+          jsExpressionValue(prop.value, emptyComments),
         )
       })
       dispatch([...setPropActions, CanvasActions.clearInteractionSession(false)], 'everyone')

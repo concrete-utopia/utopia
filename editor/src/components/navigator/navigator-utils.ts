@@ -1,19 +1,18 @@
 import { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
+  ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
-  isJSXFragment,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { foldEither, isRight } from '../../core/shared/either'
+import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import {
+  ConditionalClauseNavigatorEntry,
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   NavigatorEntry,
-  navigatorEntryToKey,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
@@ -26,7 +25,8 @@ import {
 } from '../../core/shared/element-path-tree'
 import { objectValues } from '../../core/shared/object-utils'
 import { fastForEach } from '../../core/shared/utils'
-import { getConditionalClausePath, ThenOrElse } from '../../core/model/conditionals'
+import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
+import { UtopiaTheme } from '../../uuiui'
 
 function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -43,39 +43,20 @@ export function navigatorDepth(
   for (const ancestorPath of EP.getAncestors(path)) {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
     if (elementMetadata != null) {
-      // If fragments are not supported, shift the depth back by 1 as they will not be included in the
-      // hierarchy.
-      if (!isFeatureEnabled('Fragment support')) {
-        const isFragment = foldEither(
-          () => false,
-          (e) => isJSXFragment(e),
-          elementMetadata.element,
-        )
-        if (isFragment) {
-          result = result - 1
-        }
-      }
-
-      // A conditional ancestor will shift this by an additional 1, for the clause.
-      if (isFeatureEnabled('Conditional support')) {
-        const isConditional = foldEither(
-          () => false,
-          (e) => isJSXConditionalExpression(e),
-          elementMetadata.element,
-        )
-        if (isConditional) {
-          result = result + 1
-        }
+      const isConditional = foldEither(
+        () => false,
+        (e) => isJSXConditionalExpression(e),
+        elementMetadata.element,
+      )
+      if (isConditional) {
+        result = result + 1
       }
     }
   }
 
   // For the clause entry itself, this needs to step back by 1.
-  if (
-    isFeatureEnabled('Conditional support') &&
-    isConditionalClauseNavigatorEntry(navigatorEntry)
-  ) {
-    result = result - 1
+  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+    result = result + 1
   }
 
   return result
@@ -91,8 +72,9 @@ export function getNavigatorTargets(
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
-  // Note: This will not necessarily be representative of the structured ordering in
-  // the code that produced these elements.
+  // Note: This value will not necessarily be representative of the structured ordering in
+  // the code that produced these elements, between siblings, as a result of it
+  // relying on `metadata`, which has insertion ordering.
   const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map((subTree) => {
     return reorderTree(subTree, metadata)
   })
@@ -105,14 +87,11 @@ export function getNavigatorTargets(
     if (subTree != null) {
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-      const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(metadata, path)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       navigatorTargets.push(regularNavigatorEntry(path))
       if (
         !collapsedAncestor &&
         !isHiddenInNavigator &&
-        (isFeatureEnabled('Fragment support') || !isFragment) &&
-        (isFeatureEnabled('Conditional support') || !isConditional) &&
         !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
@@ -140,24 +119,34 @@ export function getNavigatorTargets(
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
         conditional: JSXConditionalExpression,
-        thenOrElse: ThenOrElse,
+        conditionalCase: ConditionalCase,
       ): void {
-        const clauseValue = thenOrElse === 'then' ? conditional.whenTrue : conditional.whenFalse
+        const clauseValue =
+          conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+
+        function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
+          if (newCollapsedAncestor) {
+            return
+          }
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
+        }
 
         // Get the clause path.
-        const clausePath = getConditionalClausePath(path, clauseValue, thenOrElse)
+        const clausePath = getConditionalClausePath(path, clauseValue)
 
         // Create the entry for the name of the clause.
-        const clauseTitleEntry = conditionalClauseNavigatorEntry(clausePath, thenOrElse)
-        navigatorTargets.push(clauseTitleEntry)
-        visibleNavigatorTargets.push(clauseTitleEntry)
+        const clauseTitleEntry = conditionalClauseNavigatorEntry(
+          conditionalSubTree.path,
+          conditionalCase,
+        )
+        addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
         // Create the entry for the value of the clause.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
         if (elementMetadata == null) {
           const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          navigatorTargets.push(clauseValueEntry)
-          visibleNavigatorTargets.push(clauseValueEntry)
+          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
 
         // Walk the clause of the conditional.
@@ -165,11 +154,11 @@ export function getNavigatorTargets(
           return EP.pathsEqual(childPath.path, clausePath)
         })
         if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, collapsedAncestor)
+          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
         }
       }
 
-      if (isFeatureEnabled('Conditional support') && isConditional) {
+      if (isConditional) {
         // Add in the additional elements for a conditional.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (
@@ -179,8 +168,8 @@ export function getNavigatorTargets(
         ) {
           const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
 
-          walkConditionalClause(subTree, jsxConditionalElement, 'then')
-          walkConditionalClause(subTree, jsxConditionalElement, 'else')
+          walkConditionalClause(subTree, jsxConditionalElement, 'true-case')
+          walkConditionalClause(subTree, jsxConditionalElement, 'false-case')
         } else {
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
@@ -190,7 +179,20 @@ export function getNavigatorTargets(
     }
   }
 
-  const canvasRoots = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
+  function getCanvasRoots(trees: ElementPathTree[]): ElementPath[] {
+    if (projectTree.length <= 0) {
+      return []
+    }
+
+    const storyboardTree = trees.find((e) => EP.isStoryboardPath(e.path))
+    if (storyboardTree == null) {
+      return []
+    }
+
+    return storyboardTree.children.map((c) => c.path)
+  }
+
+  const canvasRoots = getCanvasRoots(projectTree)
   fastForEach(canvasRoots, (childElement) => {
     const subTree = getSubTree(projectTree, childElement)
 
@@ -201,4 +203,24 @@ export function getNavigatorTargets(
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
+}
+
+export function getConditionalClausePathForNavigatorEntry(
+  navigatorEntry: ConditionalClauseNavigatorEntry,
+  elementMetadata: ElementInstanceMetadata,
+): ElementPath | null {
+  if (elementMetadata == null) {
+    return null
+  }
+  const element = elementMetadata.element
+  if (isLeft(element)) {
+    return null
+  }
+  const jsxElement = element.value
+  if (!isJSXConditionalExpression(jsxElement)) {
+    return null
+  }
+  const clauseElement =
+    navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
+  return getConditionalClausePath(navigatorEntry.elementPath, clauseElement)
 }

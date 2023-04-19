@@ -2,6 +2,7 @@ import { isJSXElement } from '../../../../core/shared/element-template'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   canvasRectangle,
+  canvasVector,
   CanvasVector,
   nullIfInfinity,
   offsetPoint,
@@ -10,7 +11,12 @@ import {
 } from '../../../../core/shared/math-utils'
 import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
-import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
+import {
+  CanvasFrameAndTarget,
+  EdgePosition,
+  EdgePositionBottom,
+  EdgePositionRight,
+} from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -20,7 +26,6 @@ import {
   CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
@@ -35,6 +40,7 @@ import {
   getMovementDeltaFromKey,
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -43,6 +49,7 @@ interface VectorAndEdge {
 
 function pressesToVectorAndEdges(
   accumulatedPresses: Array<AccumulatedPresses>,
+  maxNegativeMovement: CanvasVector,
 ): Array<VectorAndEdge> {
   let result: Array<VectorAndEdge> = []
 
@@ -62,17 +69,28 @@ function pressesToVectorAndEdges(
         }
         if (foundVectorAndEdge == null) {
           result.push({
-            movement: keyPressMovement,
+            movement: getLimitedMovement(keyPressMovement, maxNegativeMovement),
             edge: edgePosition,
           })
         } else {
-          foundVectorAndEdge.movement = offsetPoint(foundVectorAndEdge.movement, keyPressMovement)
+          const accumulatedMovement = offsetPoint(foundVectorAndEdge.movement, keyPressMovement)
+          foundVectorAndEdge.movement = getLimitedMovement(accumulatedMovement, maxNegativeMovement)
         }
       }
     })
   })
 
   return result
+}
+
+function getLimitedMovement(
+  movement: CanvasVector,
+  maxNegativeMovement: CanvasVector,
+): CanvasVector {
+  return {
+    x: Math.max(movement.x, maxNegativeMovement.x),
+    y: Math.max(movement.y, maxNegativeMovement.y),
+  } as CanvasVector
 }
 
 function getFitness(interactionSession: InteractionSession | null): number {
@@ -94,11 +112,13 @@ function getFitness(interactionSession: InteractionSession | null): number {
   return 0
 }
 
+export const ResizeMinimumValue = 1
+
 export function keyboardAbsoluteResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
   if (
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {
@@ -122,13 +142,18 @@ export function keyboardAbsoluteResizeStrategy(
     fitness: getFitness(interactionSession),
     apply: () => {
       if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
-        const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-        const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses)
-
-        // Start with the frame as it is at the start of the interaction.
-        let newFrame =
+        const originalFrame =
           getMultiselectBounds(canvasState.startingMetadata, selectedElements) ??
           canvasRectangle(zeroRectangle)
+        const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
+        const maxNegativeMovement = canvasVector({
+          x: -originalFrame.width + ResizeMinimumValue,
+          y: -originalFrame.height + ResizeMinimumValue,
+        })
+        const movementsWithEdges = pressesToVectorAndEdges(accumulatedPresses, maxNegativeMovement)
+
+        // Start with the frame as it is at the start of the interaction.
+        let newFrame = originalFrame
 
         let commands: Array<CanvasCommand> = []
         let intendedBounds: Array<CanvasFrameAndTarget> = []
@@ -194,16 +219,10 @@ function getEdgePositionFromKey(key: KeyCharacter): EdgePosition | null {
   switch (key) {
     case 'left':
     case 'right':
-      return {
-        x: 1,
-        y: 0.5,
-      } as EdgePosition
+      return EdgePositionRight
     case 'up':
     case 'down':
-      return {
-        x: 0.5,
-        y: 1,
-      } as EdgePosition
+      return EdgePositionBottom
     default:
       return null
   }

@@ -1,6 +1,8 @@
 import { createSelector } from 'reselect'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { useRefEditorState } from '../editor/store/store-hook'
 import { MetadataSubstate, SelectedViewsSubstate } from '../editor/store/store-hook-substore-types'
 import {
   DefaultFlexDirection,
@@ -42,3 +44,16 @@ export const numberOfFlexContainersSelector = createSelector(
   selectedViewsSelector,
   numberOfFlexContainers,
 )
+
+export function useComputedSizeRef(prop: 'width' | 'height'): { readonly current: number | null } {
+  return useRefEditorState((store) => {
+    const metadata = metadataSelector(store)
+    const elementPath = selectedViewsSelector(store)[0]
+    if (elementPath == null) {
+      return null
+    }
+
+    const localFrame = MetadataUtils.getFrameOrZeroRect(elementPath, metadata)
+    return localFrame[prop]
+  })
+}

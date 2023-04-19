@@ -9,7 +9,17 @@ import {
 import { KeyboardInteractionTimeout } from '../interaction-state'
 import sinon, { SinonFakeTimers } from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
+import {
+  NavigatorEntry,
+  navigatorEntryToKey,
+} from '../../../../components/editor/store/editor-state'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  getRegularNavigatorTargets,
+} from './group-like-helpers.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import { assertNever } from '../../../../core/shared/utils'
 
 const TestProject = (
   display: 'block' | 'inline-block',
@@ -106,7 +116,7 @@ const TestProjectMixedInlineFlow = `
 </div>
 `
 
-const TestProjectWithFragment = `
+const TestProjectWithFragment = (type: ContentAffectingType) => `
     <div
       style={{
         backgroundColor: '#aaaaaa33',
@@ -129,7 +139,7 @@ const TestProjectWithFragment = `
         }}
         data-uid='child1'
       />
-      <React.Fragment data-uid='fragment'>
+      ${getOpeningGroupLikeTag(type)}
         <div
           style={{
             backgroundColor: '#aaaaaa33',
@@ -137,7 +147,7 @@ const TestProjectWithFragment = `
             height: 171,
             contain: 'layout',
           }}
-          data-uid='fragment-child1'
+          data-uid='children-affecting-child1'
         />
         <div
           style={{
@@ -146,9 +156,9 @@ const TestProjectWithFragment = `
             height: 184,
             contain: 'layout',
           }}
-          data-uid='fragment-child2'
+          data-uid='children-affecting-child2'
         />
-      </React.Fragment>
+      ${getClosingGroupLikeTag(type)}
       <div
         style={{
           backgroundColor: '#ff0000',
@@ -722,171 +732,183 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
   })
 
-  describe('with fragments', () => {
-    setFeatureForBrowserTests('Fragment support', true)
+  AllContentAffectingTypes.forEach((type) => {
+    describe('with children-affecting elements', () => {
+      it(`pressing the arrow keys reorders in a flex layout, in a ${type}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(TestProjectWithFragment(type)),
+          'await-first-dom-report',
+        )
 
-    it('pressing the arrow keys reorders in a flex layout, with a fragment present', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment),
-        'await-first-dom-report',
-      )
+        await renderResult.dispatch(
+          [
+            selectComponents(
+              [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:parent/child1')],
+              false,
+            ),
+          ],
+          true,
+        )
 
-      await renderResult.dispatch(
-        [
-          selectComponents(
-            [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:parent/child1')],
-            false,
-          ),
-        ],
-        true,
-      )
+        // pressing keyboard up and down reorders elements
+        await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
-      // pressing keyboard up and down reorders elements
-      await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+        const expectedNavigatorTargetsAfterArrowDown: string[] = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowDown,
+        )
 
-      const expectedNavigatorTargetsAfterArrowDown = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowDown)
+        await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
 
-      await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+        const expectedNavigatorTargetsAfterArrowUp = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowUp,
+        )
 
-      const expectedNavigatorTargetsAfterArrowUp = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowUp)
+        // pressing keyboard left and right reorders elements
+        await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
-      // pressing keyboard left and right reorders elements
-      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+        const expectedNavigatorTargetsAfterArrowRight = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowRight,
+        )
 
-      const expectedNavigatorTargetsAfterArrowRight = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowRight)
+        await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
-      await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+        const expectedNavigatorTargetsAfterArrowLeft = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowLeft,
+        )
+      })
 
-      const expectedNavigatorTargetsAfterArrowLeft = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
-    })
+      it(`pressing the arrow keys reorders in a flex layout, with a ${type} selected`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(TestProjectWithFragment(type)),
+          'await-first-dom-report',
+        )
 
-    it('pressing the arrow keys reorders in a flex layout, with a fragment selected', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(TestProjectWithFragment),
-        'await-first-dom-report',
-      )
+        await renderResult.dispatch(
+          [
+            selectComponents(
+              [
+                EP.fromString(
+                  'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
+                ),
+              ],
+              false,
+            ),
+          ],
+          true,
+        )
 
-      await renderResult.dispatch(
-        [
-          selectComponents(
-            [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment')],
-            false,
-          ),
-        ],
-        true,
-      )
+        await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
 
-      await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+        const expectedNavigatorTargetsAfterArrowLeft = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting', // <- the children-affecting element moves to the left of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowLeft,
+        )
 
-      const expectedNavigatorTargetsAfterArrowLeft = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
+        await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
 
-      await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+        const expectedNavigatorTargetsAfterArrowRight = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // <- the children-affecting element moves to the right of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowRight,
+        )
 
-      const expectedNavigatorTargetsAfterArrowRight = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowRight)
+        await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+        const expectedNavigatorTargetsAfterArrowUp = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting', // <- the children-affecting element moves to the left of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowUp,
+        )
 
-      await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
-      const expectedNavigatorTargetsAfterArrowUp = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the left of child1
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowUp)
+        // pressing keyboard up and down reorders elements
+        await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
 
-      // pressing keyboard up and down reorders elements
-      await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
-
-      const expectedNavigatorTargetsAfterArrowDown = [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment', // <- the fragment moves to the right of child1
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child1',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment/fragment-child2',
-        'regular-utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
-      ]
-      expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
-      ).toEqual(expectedNavigatorTargetsAfterArrowDown)
+        const expectedNavigatorTargetsAfterArrowDown = [
+          'utopia-storyboard-uid/scene-aaa',
+          'utopia-storyboard-uid/scene-aaa/app-entity',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting', // <- the children-affecting element moves to the right of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
+        ]
+        expect(getRegularNavigatorTargets(renderResult)).toEqual(
+          expectedNavigatorTargetsAfterArrowDown,
+        )
+      })
     })
   })
 })

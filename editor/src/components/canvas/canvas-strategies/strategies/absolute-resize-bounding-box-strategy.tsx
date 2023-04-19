@@ -11,6 +11,7 @@ import {
   canvasRectangleToLocalRectangle,
   isInfinityRectangle,
   rectangleDifference,
+  roundRectangleToNearestWhole,
   roundTo,
   SimpleRectangle,
   transformFrameUsingBoundingBox,
@@ -57,7 +58,7 @@ import {
   supportsAbsoluteResize,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
-import { getDragTargets, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 
@@ -65,11 +66,16 @@ export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
-  const filteredSelectedElements = getDragTargets(targets)
+  const originalTargets = flattenSelection(
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+  )
+  const retargetedTargets = flattenSelection(
+    retargetStrategyToChildrenOfContentAffectingElements(canvasState),
+  )
+
   if (
-    filteredSelectedElements.length === 0 ||
-    !filteredSelectedElements.every((element) => {
+    retargetedTargets.length === 0 ||
+    !retargetedTargets.every((element) => {
       return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)
     })
   ) {
@@ -82,25 +88,25 @@ export function absoluteResizeBoundingBoxStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'zero-size-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ImmediateParentBounds,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -117,11 +123,11 @@ export function absoluteResizeBoundingBoxStrategy(
           const drag = interactionSession.interactionData.drag
           const originalBoundingBox = getMultiselectBounds(
             canvasState.startingMetadata,
-            filteredSelectedElements,
+            retargetedTargets,
           )
           const anySelectedElementAspectRatioLocked = isAnySelectedElementAspectRatioLocked(
             canvasState.startingMetadata,
-            filteredSelectedElements,
+            retargetedTargets,
           )
           if (originalBoundingBox != null) {
             const lockedAspectRatio = getLockedAspectRatio(
@@ -141,7 +147,7 @@ export function absoluteResizeBoundingBoxStrategy(
               centerBased,
             )
             const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
-              filteredSelectedElements,
+              originalTargets,
               canvasState.startingMetadata,
               edgePosition,
               newBoundingBox,
@@ -151,61 +157,58 @@ export function absoluteResizeBoundingBoxStrategy(
               canvasState.startingAllElementProps,
             )
 
-            const commandsForSelectedElements = filteredSelectedElements.flatMap(
-              (selectedElement) => {
-                const element = getElementFromProjectContents(
-                  selectedElement,
-                  canvasState.projectContents,
-                  canvasState.openFile,
-                )
-                const originalFrame = MetadataUtils.getFrameInCanvasCoords(
-                  selectedElement,
-                  canvasState.startingMetadata,
-                )
+            const commandsForSelectedElements = retargetedTargets.flatMap((selectedElement) => {
+              const element = getElementFromProjectContents(
+                selectedElement,
+                canvasState.projectContents,
+                canvasState.openFile,
+              )
+              const originalFrame = MetadataUtils.getFrameInCanvasCoords(
+                selectedElement,
+                canvasState.startingMetadata,
+              )
 
-                if (
-                  element == null ||
-                  originalFrame == null ||
-                  isInfinityRectangle(originalFrame)
-                ) {
-                  return []
-                }
+              if (element == null || originalFrame == null || isInfinityRectangle(originalFrame)) {
+                return []
+              }
 
-                const newFrame = transformFrameUsingBoundingBox(
+              const newFrame = roundRectangleToNearestWhole(
+                transformFrameUsingBoundingBox(
                   snappedBoundingBox,
                   originalBoundingBox,
                   originalFrame,
-                )
-                const metadata = MetadataUtils.findElementByElementPath(
-                  canvasState.startingMetadata,
+                ),
+              )
+              const metadata = MetadataUtils.findElementByElementPath(
+                canvasState.startingMetadata,
+                selectedElement,
+              )
+              const elementParentBounds =
+                metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+
+              const elementParentFlexDirection =
+                metadata?.specialSizeMeasurements.parentFlexDirection ?? null
+
+              return [
+                ...createResizeCommandsFromFrame(
+                  element,
                   selectedElement,
-                )
-                const elementParentBounds =
-                  metadata?.specialSizeMeasurements.immediateParentBounds ?? null
+                  newFrame,
+                  originalFrame,
+                  elementParentBounds,
+                  elementParentFlexDirection,
+                  edgePosition,
+                ),
+                pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
+              ]
+            })
 
-                const elementParentFlexDirection =
-                  metadata?.specialSizeMeasurements.parentFlexDirection ?? null
-
-                return [
-                  ...createResizeCommandsFromFrame(
-                    element,
-                    selectedElement,
-                    newFrame,
-                    originalFrame,
-                    elementParentBounds,
-                    elementParentFlexDirection,
-                    edgePosition,
-                  ),
-                  setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector), // TODO I think this will override the previous snapping guidelines
-                  pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
-                ]
-              },
-            )
             return strategyApplicationResult([
               ...commandsForSelectedElements,
+              setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(targets),
+              setElementsToRerenderCommand(retargetedTargets),
             ])
           }
         } else {

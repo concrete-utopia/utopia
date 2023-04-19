@@ -1,6 +1,17 @@
+import * as EP from '../../../../core/shared/element-path'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 
 describe('adjust opacity with the keyboard', () => {
   describe('no opacity specified', () => {
@@ -102,6 +113,28 @@ describe('adjust opacity with the keyboard', () => {
       expect(div.style.opacity).toEqual('0.2')
     })
   })
+
+  describe('retargets to group children', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      it(`applies opacity to ${type}`, async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+
+        await pressKey('3')
+        await pressKey('0')
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.opacity).toEqual('0.3')
+        expect(bbb.style.opacity).toEqual('0.3')
+      })
+    })
+  })
 })
 
 async function doSelect(editor: EditorRenderResult) {
@@ -137,6 +170,45 @@ export var storyboard = (
     >
       hello
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    ${getOpeningGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+    ${getClosingGroupLikeTag(type)}
   </Storyboard>
 )
 `

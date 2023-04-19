@@ -4,7 +4,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   emptyComments,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -26,7 +26,7 @@ import { applyValuesAtPath } from './adjust-number-command'
 import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 
-type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
+export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
 export interface AdjustCssLengthProperty extends BaseCommand {
   type: 'ADJUST_CSS_LENGTH_PROPERTY'
@@ -178,7 +178,7 @@ function setPixelValue(
   const propsToUpdate: Array<ValueAtPath> = [
     {
       path: targetProperty,
-      value: jsxAttributeValue(newValue, emptyComments),
+      value: jsExpressionValue(newValue, emptyComments),
     },
   ]
 
@@ -217,7 +217,7 @@ function updatePixelValueByPixel(
   const propsToUpdate: Array<ValueAtPath> = [
     {
       path: targetProperty,
-      value: jsxAttributeValue(newValue, emptyComments),
+      value: jsExpressionValue(newValue, emptyComments),
     },
   ]
 
@@ -274,7 +274,7 @@ function updatePercentageValueByPixel(
   const propsToUpdate: Array<ValueAtPath> = [
     {
       path: targetProperty,
-      value: jsxAttributeValue(newValue, emptyComments),
+      value: jsExpressionValue(newValue, emptyComments),
     },
   ]
 

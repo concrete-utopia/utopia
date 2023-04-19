@@ -11,13 +11,14 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { InteractionSession, KeyState } from '../interaction-state'
+import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
 import { getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 export function keyboardSetOpacityStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
 
   if (selectedElements.length === 0) {
     return null

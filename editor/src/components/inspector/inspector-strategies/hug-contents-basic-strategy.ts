@@ -18,6 +18,7 @@ import {
   hugContentsApplicableForText,
   MaxContent,
   nukeSizingPropsForAxisCommand,
+  removeExtraPinsWhenSettingSize,
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
@@ -47,6 +48,7 @@ function hugContentsSingleElement(
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
 
   const basicCommands = [
+    ...removeExtraPinsWhenSettingSize(axis, elementMetadata),
     nukeSizingPropsForAxisCommand(axis, elementPath),
     setHugContentForAxis(
       axis,
@@ -57,7 +59,7 @@ function hugContentsSingleElement(
 
   const chilren = MetadataUtils.getChildrenPathsUnordered(metadata, elementPath)
   const transformChildrenToFixedCommands = chilren.flatMap((child) => {
-    const state = detectFillHugFixedState(axis, metadata, child)
+    const state = detectFillHugFixedState(axis, metadata, child).fixedHugFill
     if (state?.type === 'fixed' || state?.type === 'hug') {
       return []
     }

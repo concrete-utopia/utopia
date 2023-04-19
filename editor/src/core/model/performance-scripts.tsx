@@ -44,7 +44,7 @@ import { CanvasControlsContainerID } from '../../components/canvas/controls/new-
 import { forceNotNull } from '../shared/optional-utils'
 import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { NavigatorContainerId } from '../../components/navigator/navigator'
-import { emptyComments, jsxAttributeValue } from '../shared/element-template'
+import { emptyComments, jsExpressionValue } from '../shared/element-template'
 import { last } from '../shared/array-utils'
 import { load } from '../../components/editor/actions/actions'
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -624,7 +624,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
           setProp_UNSAFE(
             childTargetPath!,
             PP.create('style'),
-            jsxAttributeValue(childStyleValue, emptyComments),
+            jsExpressionValue(childStyleValue, emptyComments),
           ),
         ],
         'everyone',
@@ -811,7 +811,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
           setProp_UNSAFE(
             childTargetPath!,
             PP.create('style'),
-            jsxAttributeValue(childStyleValue, emptyComments),
+            jsExpressionValue(childStyleValue, emptyComments),
           ),
         ],
         'everyone',

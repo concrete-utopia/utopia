@@ -7,20 +7,19 @@ import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
-  childOrBlockIsChild,
   ElementInstanceMetadata,
+  JSXConditionalExpression,
   getJSXElementNameLastPart,
-  isJSXConditionalExpression,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { getValueFromComplexMap } from '../../../utils/map'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
-  defaultElementWarnings,
   DropTargetHint,
   EditorStorePatched,
+  isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
   navigatorEntryToKey,
@@ -28,19 +27,17 @@ import {
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import {
-  DragSelection,
   NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
 } from './navigator-item-dnd-container'
-import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
-import { foldEither } from '../../../core/shared/either'
 import { navigatorDepth } from '../navigator-utils'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
   navigatorEntry: NavigatorEntry
-  getDragSelections: () => Array<DragSelection>
+  getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
 }
@@ -63,7 +60,7 @@ const targetInNavigatorItemsSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const canBeReparentedIntoSelector = createCachedSelector(
+const elementSupportsChildrenSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
   targetElementMetadataSelector,
   targetInNavigatorItemsSelector,
@@ -75,29 +72,15 @@ const canBeReparentedIntoSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-const labelSelector = createCachedSelector(
+export const labelSelector = createCachedSelector(
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
-  (elementMetadata, allElementProps) => {
+  (metadata, elementMetadata, allElementProps) => {
     if (elementMetadata == null) {
       return 'Element 👻'
     }
-    return MetadataUtils.getElementLabelFromMetadata(allElementProps, elementMetadata)
-  },
-)((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
-
-const elementWarningsSelector = createCachedSelector(
-  (store: DerivedSubstate) => store.derived.elementWarnings,
-  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
-  (elementWarnings, navigatorEntry) => {
-    if (isRegularNavigatorEntry(navigatorEntry)) {
-      return (
-        getValueFromComplexMap(EP.toString, elementWarnings, navigatorEntry.elementPath) ??
-        defaultElementWarnings
-      )
-    } else {
-      return defaultElementWarnings
-    }
+    return MetadataUtils.getElementLabelFromMetadata(metadata, allElementProps, elementMetadata)
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
@@ -118,7 +101,7 @@ const noOfChildrenSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-function getNavigatorEntryLabel(
+export function getNavigatorEntryLabel(
   navigatorEntry: NavigatorEntry,
   labelForTheElement: string,
 ): string {
@@ -127,44 +110,35 @@ function getNavigatorEntryLabel(
       return labelForTheElement
     case 'CONDITIONAL_CLAUSE':
       switch (navigatorEntry.clause) {
-        case 'then':
-          return 'Then'
-        case 'else':
-          return 'Else'
+        case 'true-case':
+          return 'TRUE'
+        case 'false-case':
+          return 'FALSE'
         default:
           throw assertNever(navigatorEntry.clause)
       }
     case 'SYNTHETIC': {
-      if (childOrBlockIsChild(navigatorEntry.childOrAttribute)) {
-        switch (navigatorEntry.childOrAttribute.type) {
-          case 'JSX_ELEMENT':
-            return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
-          case 'JSX_ARBITRARY_BLOCK':
-            return 'Unknown'
-          case 'JSX_TEXT_BLOCK':
-            return navigatorEntry.childOrAttribute.text
-          case 'JSX_FRAGMENT':
-            return 'Fragment'
-          case 'JSX_CONDITIONAL_EXPRESSION':
-            return 'Conditional'
-          default:
-            throw assertNever(navigatorEntry.childOrAttribute)
-        }
-      } else {
-        const simpleAttributeValue = jsxSimpleAttributeToValue(navigatorEntry.childOrAttribute)
-        return foldEither(
-          () => 'Unknown',
-          (value) => {
-            if (value === null) {
-              return 'null'
-            } else if (value === undefined) {
-              return 'undefined'
-            } else {
-              return value.toString()
-            }
-          },
-          simpleAttributeValue,
-        )
+      switch (navigatorEntry.childOrAttribute.type) {
+        case 'JSX_ELEMENT':
+          return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+          return '(code)'
+        case 'JSX_TEXT_BLOCK':
+          return navigatorEntry.childOrAttribute.text
+        case 'JSX_FRAGMENT':
+          return 'Fragment'
+        case 'JSX_CONDITIONAL_EXPRESSION':
+          return 'Conditional'
+        case 'ATTRIBUTE_VALUE':
+          return `${navigatorEntry.childOrAttribute.value}`
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return '(code)'
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return '(code)'
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return '(code)'
+        default:
+          throw assertNever(navigatorEntry.childOrAttribute)
       }
     }
     default:
@@ -178,7 +152,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) =>
-      isRegularNavigatorEntry(props.navigatorEntry) &&
+      !isConditionalClauseNavigatorEntry(props.navigatorEntry) &&
       EP.containsPath(props.navigatorEntry.elementPath, store.editor.selectedViews),
     'NavigatorItemWrapper isSelected',
   )
@@ -198,12 +172,44 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper noOfChildren',
   )
 
-  const canBeReparentedInto = useEditorState(
+  const elementSupportsChildren = useEditorState(
     Substores.fullStore,
     // this is not good
-    (store) => canBeReparentedIntoSelector(store, props.navigatorEntry),
-    'NavigatorItemWrapper canBeReparentedIntoSelector',
+    (store) => elementSupportsChildrenSelector(store, props.navigatorEntry),
+    'NavigatorItemWrapper elementSupportsChildren',
   )
+
+  const parentElement = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        EP.parentPath(props.navigatorEntry.elementPath),
+      ),
+    'NavigatorItemWrapper parentElement',
+  )
+
+  function isNullConditionalBranch(
+    entry: NavigatorEntry,
+    maybeConditional: JSXConditionalExpression | null,
+  ) {
+    if (maybeConditional == null) {
+      return false
+    }
+    const truePath = EP.appendToPath(
+      EP.parentPath(entry.elementPath),
+      maybeConditional.whenTrue.uid,
+    )
+    const branch = EP.pathsEqual(entry.elementPath, truePath)
+      ? maybeConditional.whenTrue
+      : maybeConditional.whenFalse
+    return isNullJSXAttributeValue(branch)
+  }
+
+  const canReparentInto =
+    elementSupportsChildren ||
+    isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
+    isNullConditionalBranch(props.navigatorEntry, maybeConditionalExpression(parentElement))
 
   const labelForTheElement = useEditorState(
     Substores.metadata,
@@ -220,12 +226,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper entryDepth',
   )
 
-  const elementWarnings = useEditorState(
-    Substores.derived,
-    (store) => elementWarningsSelector(store, props.navigatorEntry),
-    'NavigatorItemWrapper elementWarningsSelector',
-  )
-
   const visibleNavigatorTargets = useEditorState(
     Substores.derived,
     (store) => store.derived.visibleNavigatorTargets,
@@ -240,15 +240,28 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         // dragging around the navigator but we don't want the entire navigator to re-render each time.
         let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
         if (
-          isRegularNavigatorEntry(props.navigatorEntry) &&
-          store.editor.navigator.dropTargetHint.displayAtElementPath != null &&
+          (isRegularNavigatorEntry(props.navigatorEntry) ||
+            isConditionalClauseNavigatorEntry(props.navigatorEntry)) &&
+          store.editor.navigator.dropTargetHint.displayAtEntry != null &&
           navigatorEntriesEqual(
-            store.editor.navigator.dropTargetHint.displayAtElementPath,
+            store.editor.navigator.dropTargetHint.displayAtEntry,
             props.navigatorEntry,
           )
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
         }
+
+        if (
+          isSyntheticNavigatorEntry(props.navigatorEntry) &&
+          maybeConditionalExpression(parentElement) != null
+        ) {
+          possiblyAppropriateDropTargetHint = {
+            type: store.editor.navigator.dropTargetHint.type ?? 'reparent',
+            displayAtEntry: null,
+            moveToEntry: null,
+          }
+        }
+
         const elementIsCollapsed = EP.containsPath(
           props.navigatorEntry.elementPath,
           store.editor.navigator.collapsedViews,
@@ -274,15 +287,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,
-    getDragSelections: props.getDragSelections,
+    getCurrentlySelectedEntries: props.getCurrentlySelectedEntries,
     getSelectedViewsInRange: props.getSelectedViewsInRange,
     appropriateDropTargetHint: appropriateDropTargetHint,
-    canReparentInto: canBeReparentedInto,
+    canReparentInto: canReparentInto,
     noOfChildren: noOfChildren,
     label: label,
     isElementVisible: isElementVisible,
     renamingTarget: renamingTarget,
-    elementWarnings: elementWarnings,
     windowStyle: props.windowStyle,
     visibleNavigatorTargets: visibleNavigatorTargets,
   }

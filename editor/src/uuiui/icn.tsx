@@ -19,6 +19,7 @@ export type IcnColor =
   | 'on-light-main'
   | 'darkgray'
   | 'black'
+  | 'overridden'
 
 export type IcnResultingColor =
   | 'white'
@@ -31,6 +32,7 @@ export type IcnResultingColor =
   | 'red'
   | 'orange'
   | 'colourful'
+  | 'pink'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
   const currentTheme: Theme = useEditorState(
@@ -52,6 +54,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'orange'
       case 'error':
         return 'red'
+      case 'overridden':
+        return 'pink'
       case 'component':
         return 'purple'
       case 'on-highlight-main':
@@ -77,6 +81,8 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
         return 'purple'
       case 'error':
         return 'red'
+      case 'overridden':
+        return 'pink'
       case 'warning':
         return 'orange'
       case 'on-highlight-main':
@@ -114,6 +120,7 @@ export interface IcnProps extends IcnPropsBase {
   onMouseUp?: (event: React.MouseEvent<HTMLImageElement>) => void
   onMouseOver?: (event: React.MouseEvent<HTMLImageElement>) => void
   onMouseLeave?: (event: React.MouseEvent<HTMLImageElement>) => void
+  testId?: string
 }
 
 const defaultIcnWidth = 16
@@ -181,6 +188,7 @@ export const Icn = React.memo(
         onMouseUp={isDisabled ? undefined : props.onMouseUp}
         onMouseOver={props.onMouseOver}
         onMouseLeave={props.onMouseLeave}
+        data-testid={props.testId}
       />
     )
     if (props.tooltipText == null) {

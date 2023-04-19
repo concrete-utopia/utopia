@@ -527,43 +527,10 @@ const FlexGrowShrinkRow = React.memo(() => {
 
 const OtherPinsRow = React.memo((props: PinControlsProps) => {
   const { resetPins: resetPinsFn, framePins, togglePin } = props
-  let firstXAxisControl: React.ReactElement = <div />
-  let secondXAxisControl: React.ReactElement = <div />
-  let firstYAxisControl: React.ReactElement = <div />
-  let secondYAxisControl: React.ReactElement = <div />
-  // TODO LAYOUT update these when there are new ways to set centerX/centerY
-  // const centerXInfo = useInspectorLayoutInfo('PinnedCenterX')
-  // const topInfo = useInspectorLayoutInfo('top')
-  // if (centerXInfo.value == null) {
-  // No CenterX value, just show top and bottom.
-  firstXAxisControl = pinsLayoutNumberControl('top')
-  secondXAxisControl = pinsLayoutNumberControl('bottom')
-  // } else {
-  //   // We have a CenterX value, so put that first and then top or bottom after it.
-  //   firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterX')
-  //   if (topInfo.value == null) {
-  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'bottom')
-  //   } else {
-  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'top')
-  //   }
-  // }
-
-  // TODO LAYOUT update these when there are new ways to set centerX/centerY
-  // const centerYInfo = useInspectorLayoutInfo('PinnedCenterY')
-  // const leftInfo = useInspectorLayoutInfo('left')
-  // if (centerYInfo.value == null) {
-  // No CenterY value, just show left and right.
-  firstYAxisControl = pinsLayoutNumberControl('left')
-  secondYAxisControl = pinsLayoutNumberControl('right')
-  // } else {
-  //   // We have a CenterY value, so put that first and then left or right after it.
-  //   firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterY')
-  //   if (leftInfo.value == null) {
-  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'right')
-  //   } else {
-  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'left')
-  //   }
-  // }
+  const firstXAxisControl: React.ReactElement = pinsLayoutNumberControl('top')
+  const secondXAxisControl: React.ReactElement = pinsLayoutNumberControl('bottom')
+  const firstYAxisControl: React.ReactElement = pinsLayoutNumberControl('left')
+  const secondYAxisControl: React.ReactElement = pinsLayoutNumberControl('right')
 
   return (
     <UIGridRow

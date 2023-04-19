@@ -6,7 +6,7 @@ import {
 } from './parser-printer.test-utils'
 import {
   jsxElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   utopiaJSXComponent,
   defaultPropsParam,
   clearTopLevelElementUniqueIDs,
@@ -16,9 +16,10 @@ import {
   destructuredParamPart,
   destructuredArray,
   omittedParam,
-  jsxAttributeOtherJavaScript,
+  jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   emptyComments,
+  clearJSXElementChildUniqueIDs,
 } from '../../shared/element-template'
 import { printCode, printCodeOptions } from './parser-printer'
 import {
@@ -175,7 +176,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -211,7 +212,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -219,7 +220,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'props',
-        jsxAttributeOtherJavaScript(
+        jsExpressionOtherJavaScript(
           '{thing: true}',
           `return ({
   thing: true
@@ -262,7 +263,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -299,7 +300,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -340,7 +341,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -348,7 +349,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop',
-        jsxAttributeOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
       ),
     )
     const propsParam = functionParam(
@@ -388,7 +389,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -429,7 +430,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -437,7 +438,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'renamedProp',
-        jsxAttributeOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
       ),
     )
     const propsParam = functionParam(
@@ -476,7 +477,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -519,7 +520,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -557,7 +558,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -565,7 +566,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop',
-        jsxAttributeOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
       ),
     )
     const propsParam = functionParam(false, destructuredArray([destructuredParam]))
@@ -601,7 +602,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -643,7 +644,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -698,7 +699,7 @@ describe('Parsing a function component with props', () => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [],
     )
@@ -707,7 +708,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'renamedProp2',
-        jsxAttributeOtherJavaScript(
+        jsExpressionOtherJavaScript(
           '{thing: true}',
           `return ({
   thing: true
@@ -730,7 +731,7 @@ describe('Parsing a function component with props', () => {
       false,
       regularParam(
         'prop1',
-        jsxAttributeOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
+        jsExpressionOtherJavaScript('5', 'return 5;', [], expect.objectContaining({}), {}),
       ),
     )
     const destructuredArrayParam = functionParam(
@@ -769,13 +770,15 @@ describe('Parsing a function component with props', () => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithPropsDestructuredInTheFunction),
     )
-    const view = jsxElement(
-      'View',
-      'aaa',
-      jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
-      }),
-      [],
+    const view = clearJSXElementChildUniqueIDs(
+      jsxElement(
+        'View',
+        'aaa',
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+        [],
+      ),
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -809,13 +812,15 @@ describe('Parsing a function component with props', () => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithARenamedFunction),
     )
-    const view = jsxElement(
-      'View',
-      'aaa',
-      jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
-      }),
-      [],
+    const view = clearJSXElementChildUniqueIDs(
+      jsxElement(
+        'View',
+        'aaa',
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+        [],
+      ),
     )
     const exported = utopiaJSXComponent(
       'whatever',

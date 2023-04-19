@@ -582,7 +582,11 @@ function attemptToResolveParsedComponents(
   return flatMapEither((resolvedFilePath) => {
     resolvedFromThisOrigin.push(toImport)
     const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    if (
+      projectFile != null &&
+      isTextFile(projectFile) &&
+      isParseSuccess(projectFile.fileContents.parsed)
+    ) {
       const exportsDetail = projectFile.fileContents.parsed.exportsDetail
       // Should only use the full scope and components support if the file contains components
       // or if it does any kind of re-exporting as we can't guarantee that the re-exported

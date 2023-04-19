@@ -16,7 +16,7 @@ import {
   jsxTestElement,
   jsxTextBlock,
   jsxElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   elementInstanceMetadata,
   emptyComputedStyle,
   ElementInstanceMetadataMap,
@@ -73,7 +73,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -90,7 +90,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -108,7 +108,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentPropsGrandchild: ElementProps = {
@@ -130,7 +130,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -145,7 +145,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
@@ -163,7 +163,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
@@ -181,7 +181,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
@@ -196,7 +196,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentSceneElement: ElementInstanceMetadata = {
@@ -211,7 +211,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testComponentSceneElementProps: ElementProps = {
@@ -233,7 +233,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
@@ -248,7 +248,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testStoryboardElement: ElementInstanceMetadata = {
@@ -263,7 +263,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
   importInfo: null,
-  conditionalValue: 'not-a-conditional',
+  conditionValue: 'not-a-conditional',
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
@@ -352,7 +352,7 @@ function dummyInstanceDataForElementType(
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: importInfo,
-    conditionalValue: 'not-a-conditional',
+    conditionValue: 'not-a-conditional',
   }
 }
 
@@ -777,7 +777,7 @@ describe('getElementLabel', () => {
   const spanElement = jsxElement(
     'span',
     'span-1',
-    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('span-1', emptyComments) }),
+    jsxAttributesFromMap({ 'data-uid': jsExpressionValue('span-1', emptyComments) }),
     [textBlock],
   )
   const spanElementMetadata = elementInstanceMetadata(
@@ -800,7 +800,7 @@ describe('getElementLabel', () => {
   const divElement = jsxElement(
     'div',
     'div-1',
-    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('div-1', emptyComments) }),
+    jsxAttributesFromMap({ 'data-uid': jsExpressionValue('div-1', emptyComments) }),
     [spanElement],
   )
   const divElementMetadata = elementInstanceMetadata(
@@ -842,15 +842,6 @@ describe('getStoryboardMetadata', () => {
 })
 
 describe('getting the root paths', () => {
-  it('getAllStoryboardChildren returns instance metadata of all children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenUnordered(testJsxMetadata)
-    const expectedResult: Array<ElementInstanceMetadata> = [
-      testComponentSceneElement,
-      testStoryboardChildElement,
-    ]
-    expect(actualResult).toEqual(expectedResult)
-  })
-
   it('getAllStoryboardChildrenPaths returns paths of all children of the storyboard', () => {
     const actualResult = MetadataUtils.getAllStoryboardChildrenPathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
@@ -860,10 +851,13 @@ describe('getting the root paths', () => {
     expect(actualResult).toEqual(expectedResult)
   })
 
-  it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
-    const actualResult = MetadataUtils.getAllCanvasRootPathsUnordered(testJsxMetadata)
+  it('getAllCanvasSelectablePathsUnordered returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
+    const actualResult = MetadataUtils.getAllCanvasSelectablePathsUnordered(testJsxMetadata)
     const expectedResult: Array<ElementPath> = [
-      testComponentRoot1.elementPath,
+      testComponentMetadataChild1.elementPath,
+      testComponentMetadataChild2.elementPath,
+      testComponentMetadataChild3.elementPath,
+      testComponentSceneChildElement.elementPath,
       testStoryboardChildElement.elementPath,
     ]
     expect(actualResult).toEqual(expectedResult)

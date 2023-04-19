@@ -1405,7 +1405,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             \\"
             data-uid=\\"scene-aaa\\"
           >
-            <div id=\\"nasty-div\\" data-uid=\\"031~~~1\\" data-path=\\"d1b~~~2/031~~~1\\">
+            <div id=\\"nasty-div\\" data-uid=\\"ce9~~~1\\" data-path=\\"d1b~~~2/ce9~~~1\\">
               huhahuha
             </div>
           </div>

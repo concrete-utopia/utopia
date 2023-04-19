@@ -20,8 +20,12 @@ function swapAxesCommands(
   currentFlexDirection: FlexDirection | null,
   flexDirectionToBeApplied: FlexDirection,
 ): Array<CanvasCommand> {
-  const horizontalSizing = detectFillHugFixedState('horizontal', metadata, selectedElement)
-  const verticalSizing = detectFillHugFixedState('vertical', metadata, selectedElement)
+  const horizontalSizing = detectFillHugFixedState(
+    'horizontal',
+    metadata,
+    selectedElement,
+  ).fixedHugFill
+  const verticalSizing = detectFillHugFixedState('vertical', metadata, selectedElement).fixedHugFill
   if (
     flexDirectionToBeApplied.startsWith('col') &&
     currentFlexDirection?.startsWith('row') &&

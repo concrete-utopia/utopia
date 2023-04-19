@@ -19,7 +19,7 @@ import {
 } from '../../core/shared/math-utils'
 import { MapLike } from 'typescript'
 import { duplicateSelected, setProp_UNSAFE } from '../editor/actions/action-creators'
-import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../utils/utils.test-utils'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-helpers.test-utils'
@@ -226,7 +226,7 @@ describe('DOM Walker tests', () => {
         setProp_UNSAFE(
           targetElement,
           PP.create('style', 'left'),
-          jsxAttributeValue(5, emptyComments),
+          jsExpressionValue(5, emptyComments),
         ),
       ],
       true,

@@ -1,11 +1,30 @@
 /// <reference types="karma-viewport" />
 
-import { renderTestEditorWithCode } from '../../components/canvas/ui-jsx.test-utils'
+import {
+  AllContentAffectingTypes,
+  ContentAffectingType,
+} from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from '../../components/canvas/canvas-strategies/strategies/group-like-helpers.test-utils'
+import {
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  TestAppUID,
+  TestSceneUID,
+} from '../../components/canvas/ui-jsx.test-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { cartesianProduct } from '../shared/array-utils'
 import { Either, isRight } from '../shared/either'
-import { elementPath, toString } from '../shared/element-path'
-import { canvasRectangle, localRectangle } from '../shared/math-utils'
+import { elementPath, fromString, toString } from '../shared/element-path'
+import { canvasRectangle, localRectangle, zeroCanvasRect } from '../shared/math-utils'
+import { ElementPath } from '../shared/project-file-types'
+import { MetadataUtils } from './element-metadata-utils'
 import { elementOnlyHasTextChildren } from './element-template-utils'
-import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
+import { wait } from './performance-scripts'
+import { BakedInStoryboardUID } from './scene-utils'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -72,8 +91,6 @@ describe('Frame calculation for fragments', () => {
     )
   })
   it('Conditionals have metadata and their frame is the frame of the active branch', async () => {
-    FOR_TESTS_setNextGeneratedUids(['foo1', 'foo2', 'foo3', 'foo4', 'cond']) // ugly, but the conditional is the 5th uid which is generated
-
     const condComponentPath = 'story/scene/app:root/cond'
     const trueBranchComponentPath = 'story/scene/app:root/cond/truebranch'
 
@@ -87,6 +104,245 @@ describe('Frame calculation for fragments', () => {
     )
     expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].localFrame).toEqual(
       renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].localFrame,
+    )
+  })
+})
+
+const elementPathInInnards = (suffix: string): ElementPath =>
+  fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:${suffix}`)
+
+describe('globalContentBoxForChildren calculation', () => {
+  it('`globalContentBoxForChildren` of an absolute positioned div is the same as its globalFrame', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='container'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 94,
+          top: 107,
+          width: 205,
+          height: 162,
+        }}
+      >
+        <div
+          data-uid='child'
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 46,
+            top: 38,
+            width: 138,
+            height: 71,
+          }}
+        />
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [elementPathInInnards('container')])
+
+    const containerInstance = MetadataUtils.findElementByElementPath(
+      editor.getEditorState().editor.jsxMetadata,
+      elementPathInInnards('container'),
+    )
+    if (containerInstance == null) {
+      throw new Error('containerInstance should not be null')
+    }
+
+    const globalFrameOfContainer = MetadataUtils.getFrameInCanvasCoords(
+      elementPathInInnards('container'),
+      editor.getEditorState().editor.jsxMetadata,
+    )
+
+    expect(globalFrameOfContainer).not.toBeNull()
+    expect(globalFrameOfContainer).not.toEqual(zeroCanvasRect)
+
+    const globalContentBoxForChildrenOfContainer =
+      MetadataUtils.getGlobalContentBoxForChildren(containerInstance)
+
+    expect(globalContentBoxForChildrenOfContainer).not.toBeNull()
+    expect(globalContentBoxForChildrenOfContainer).not.toEqual(zeroCanvasRect)
+
+    expect(globalFrameOfContainer).toEqual(globalContentBoxForChildrenOfContainer)
+
+    const globalFrameOfChild = MetadataUtils.getFrameInCanvasCoords(
+      elementPathInInnards('container/child'),
+      editor.getEditorState().editor.jsxMetadata,
+    )
+
+    expect(globalFrameOfChild).not.toBeNull()
+    expect(globalFrameOfChild).not.toEqual(zeroCanvasRect)
+
+    const childInstance = MetadataUtils.findElementByElementPath(
+      editor.getEditorState().editor.jsxMetadata,
+      elementPathInInnards('container/child'),
+    )
+    if (childInstance == null) {
+      throw new Error('childInstance should not be null')
+    }
+
+    const globalContentBoxForChildrenOfChild =
+      MetadataUtils.getGlobalContentBoxForChildren(childInstance)
+
+    expect(globalContentBoxForChildrenOfChild).not.toBeNull()
+    expect(globalContentBoxForChildrenOfChild).not.toEqual(zeroCanvasRect)
+
+    expect(globalFrameOfChild).toEqual(globalContentBoxForChildrenOfChild)
+  })
+
+  describe('content-affecting elements', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      it(`globalContentBoxForChildren of a ${type} is the same as the globalContentBoxForChildren of its parent`, async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='container'
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 94,
+              top: 107,
+              width: 205,
+              height: 162,
+            }}
+          >
+          ${getOpeningGroupLikeTag(type)}
+            <div
+              data-uid='child'
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 46,
+                top: 38,
+                width: 138,
+                height: 71,
+              }}
+            />
+            ${getClosingGroupLikeTag(type)}
+          </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [
+          elementPathInInnards(`container/${GroupLikeElementUid}`),
+        ])
+
+        const containerInstance = MetadataUtils.findElementByElementPath(
+          editor.getEditorState().editor.jsxMetadata,
+          elementPathInInnards('container'),
+        )
+        if (containerInstance == null) {
+          throw new Error('containerInstance should not be null')
+        }
+
+        const globalContentBoxForChildrenOfContainer =
+          MetadataUtils.getGlobalContentBoxForChildren(containerInstance)
+
+        expect(globalContentBoxForChildrenOfContainer).not.toBeNull()
+        expect(globalContentBoxForChildrenOfContainer).not.toEqual(zeroCanvasRect)
+
+        const childInstance = MetadataUtils.findElementByElementPath(
+          editor.getEditorState().editor.jsxMetadata,
+          elementPathInInnards(`container/${GroupLikeElementUid}`),
+        )
+        if (childInstance == null) {
+          throw new Error('childInstance should not be null')
+        }
+
+        const globalContentBoxForChildrenOfChildrenAffectingElement =
+          MetadataUtils.getGlobalContentBoxForChildren(childInstance)
+
+        expect(globalContentBoxForChildrenOfContainer).not.toBeNull()
+        expect(globalContentBoxForChildrenOfContainer).not.toEqual(zeroCanvasRect)
+
+        expect(globalContentBoxForChildrenOfContainer).toEqual(
+          globalContentBoxForChildrenOfChildrenAffectingElement,
+        )
+      })
+    })
+  })
+
+  describe('nested content-affecting elements', () => {
+    cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(
+      ([outerType, innerType]) => {
+        it(`globalContentBoxForChildren of a ${innerType} wrapped in a ${outerType} is the same as the globalContentBoxForChildren of their closest non-content affecting parent`, async () => {
+          const editor = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='container'
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 94,
+              top: 107,
+              width: 205,
+              height: 162,
+            }}
+          >
+          ${getOpeningGroupLikeTag(outerType, {
+            outerUid: 'outer-caf',
+            innerUid: 'inner-caf-fragment',
+          })}
+          ${getOpeningGroupLikeTag(innerType)}
+            <div
+              data-uid='child'
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 46,
+                top: 38,
+                width: 138,
+                height: 71,
+              }}
+            />
+            ${getClosingGroupLikeTag(innerType)}
+            ${getClosingGroupLikeTag(outerType)}
+          </div>
+          `),
+            'await-first-dom-report',
+          )
+
+          await selectComponentsForTest(editor, [
+            elementPathInInnards(`container/outer-caf/inner-caf-fragment/${GroupLikeElementUid}`),
+          ])
+
+          const containerInstance = MetadataUtils.findElementByElementPath(
+            editor.getEditorState().editor.jsxMetadata,
+            elementPathInInnards('container'),
+          )
+          if (containerInstance == null) {
+            throw new Error('containerInstance should not be null')
+          }
+
+          const globalContentBoxForChildrenOfContainer =
+            MetadataUtils.getGlobalContentBoxForChildren(containerInstance)
+
+          expect(globalContentBoxForChildrenOfContainer).not.toBeNull()
+          expect(globalContentBoxForChildrenOfContainer).not.toEqual(zeroCanvasRect)
+
+          const childInstance = MetadataUtils.findElementByElementPath(
+            editor.getEditorState().editor.jsxMetadata,
+            elementPathInInnards(`container/outer-caf/inner-caf-fragment/${GroupLikeElementUid}`),
+          )
+          if (childInstance == null) {
+            throw new Error('containerInstance should not be null')
+          }
+
+          const globalContentBoxForChildrenOfChildrenAffectingElement =
+            MetadataUtils.getGlobalContentBoxForChildren(childInstance)
+
+          expect(globalContentBoxForChildrenOfChildrenAffectingElement).not.toBeNull()
+          expect(globalContentBoxForChildrenOfChildrenAffectingElement).not.toEqual(zeroCanvasRect)
+
+          expect(globalContentBoxForChildrenOfContainer).toEqual(
+            globalContentBoxForChildrenOfChildrenAffectingElement,
+          )
+        })
+      },
     )
   })
 })
@@ -268,7 +524,9 @@ export var App = (props) => {
       }}
       data-uid='root'
     >
-      {[].length === 0 ? (
+      {
+        // @utopia/uid=cond
+        [].length === 0 ? (
         <div
           style={{
             left: 33,

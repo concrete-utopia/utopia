@@ -79,11 +79,11 @@ import {
   ElementsWithin,
   isArraySpread,
   isArrayValue,
-  isJSXArbitraryBlock,
-  isJSXAttributeFunctionCall,
-  isJSXAttributeNestedArray,
-  isJSXAttributeNestedObject,
-  isJSXAttributeOtherJavaScript,
+  isJSExpressionOtherJavaScript,
+  modifiableAttributeIsAttributeFunctionCall,
+  modifiableAttributeIsAttributeNestedArray,
+  modifiableAttributeIsAttributeNestedObject,
+  modifiableAttributeIsAttributeOtherJavaScript,
   isJSXAttributeValue,
   isJSXElement,
   isJSXFragment,
@@ -98,17 +98,17 @@ import {
   JSXArraySpread,
   JSXArrayValue,
   jsxArrayValue,
-  JSXAttribute,
-  jsxAttributeFunctionCall,
-  JSXAttributeFunctionCall,
-  jsxAttributeNestedArray,
-  JSXAttributeNestedArray,
-  jsxAttributeNestedObject,
-  JSXAttributeNestedObject,
-  JSXAttributeOtherJavaScript,
+  JSExpression,
+  jsExpressionFunctionCall,
+  JSExpressionFunctionCall,
+  jsExpressionNestedArray,
+  JSExpressionNestedArray,
+  jsExpressionNestedObject,
+  JSExpressionNestedObject,
+  JSExpressionOtherJavaScript,
   JSXAttributes,
-  jsxAttributeValue,
-  JSXAttributeValue,
+  jsExpressionValue,
+  JSExpressionValue,
   jsxElement,
   JSXElement,
   JSXElementChild,
@@ -169,10 +169,11 @@ import {
   sameFileOrigin,
   ImportedOrigin,
   importedOrigin,
-  childOrBlockIsChild,
-  childOrBlockIsAttribute,
-  ChildOrAttribute,
-  ConditionalValue,
+  ConditionValue,
+  JSXConditionalExpressionWithoutUID,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
+  jsxConditionalExpression,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -408,6 +409,7 @@ import {
   componentDescriptor,
   ComponentDescriptor,
   ComponentDescriptorsForFile,
+  ComponentElementToInsert,
   componentInfo,
   ComponentInfo,
   CurriedResolveFn,
@@ -436,6 +438,7 @@ import {
   TextEditMode,
   Coordinates,
   TextEditableElementState,
+  InsertionSubjectWrapper,
 } from '../editor-modes'
 import { EditorPanel } from '../../common/actions'
 import { notice, Notice, NoticeLevel } from '../../common/notice'
@@ -488,7 +491,7 @@ import {
   RepositoryEntryPermissions,
 } from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ThenOrElse } from '../../../core/model/conditionals'
+import { ConditionalCase } from '../../../core/model/conditionals'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -512,18 +515,6 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
     transientCanvasState,
   )
 }
-export const ChildOrAttributeKeepDeepEquality: KeepDeepEqualityCall<ChildOrAttribute> = (
-  oldValue,
-  newValue,
-) => {
-  if (childOrBlockIsChild(oldValue) && childOrBlockIsChild(newValue)) {
-    return JSXElementChildKeepDeepEquality()(oldValue, newValue)
-  } else if (childOrBlockIsAttribute(oldValue) && childOrBlockIsAttribute(newValue)) {
-    return JSXAttributeKeepDeepEqualityCall(oldValue, newValue)
-  } else {
-    return keepDeepEqualityResult(newValue, false)
-  }
-}
 
 export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RegularNavigatorEntry> =
   combine1EqualityCall(
@@ -537,7 +528,7 @@ export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCa
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.clause,
-    createCallWithTripleEquals<ThenOrElse>(),
+    createCallWithTripleEquals<ConditionalCase>(),
     conditionalClauseNavigatorEntry,
   )
 
@@ -546,7 +537,7 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
-    ChildOrAttributeKeepDeepEquality,
+    JSXElementChildKeepDeepEquality(),
     syntheticNavigatorEntry,
   )
 
@@ -578,16 +569,16 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
 
 export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> =
   combine3EqualityCalls(
-    (hint) => hint.displayAtElementPath,
+    (hint) => hint.displayAtEntry,
     nullableDeepEquality(NavigatorEntryKeepDeepEquality),
-    (hint) => hint.moveToElementPath,
+    (hint) => hint.moveToEntry,
     nullableDeepEquality(NavigatorEntryKeepDeepEquality),
     (hint) => hint.type,
     createCallWithTripleEquals(),
     (displayAtElementPath, moveToElementPath, type) => {
       return {
-        displayAtElementPath: displayAtElementPath,
-        moveToElementPath: moveToElementPath,
+        displayAtEntry: displayAtElementPath,
+        moveToEntry: moveToElementPath,
         type: type,
       }
     },
@@ -705,13 +696,15 @@ export function JSXAttributeValueValueKeepDeepEqualityCall(
   return createCallFromIntrospectiveKeepDeep<any>()(oldValue, newValue)
 }
 
-export const JSXAttributeValueKeepDeepEqualityCall: KeepDeepEqualityCall<JSXAttributeValue<any>> =
-  combine2EqualityCalls(
+export const JSXAttributeValueKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpressionValue<any>> =
+  combine3EqualityCalls(
     (attribute) => attribute.value,
     JSXAttributeValueValueKeepDeepEqualityCall,
     (attribute) => attribute.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    jsxAttributeValue,
+    (attribute) => attribute.uid,
+    createCallWithTripleEquals<string>(),
+    jsExpressionValue,
   )
 
 export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
@@ -755,28 +748,39 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
     },
   )
 
-export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeOtherJavaScript> {
-  return combine6EqualityCalls(
+export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
+  return combine7EqualityCalls(
     (attribute) => attribute.javascript,
-    createCallWithTripleEquals(),
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.originalJavascript,
+    createCallWithTripleEquals<string>(),
     (attribute) => attribute.transpiledJavascript,
-    createCallWithTripleEquals(),
+    createCallWithTripleEquals<string>(),
     (attribute) => attribute.definedElsewhere,
     arrayDeepEquality(createCallWithTripleEquals()),
     (attribute) => attribute.sourceMap,
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (attribute) => attribute.uniqueID,
+    (attribute) => attribute.uid,
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
-    (javascript, transpiledJavascript, definedElsewhere, sourceMap, uniqueID, elementsWithin) => {
+    (
+      originalJavascript,
+      javascript,
+      transpiledJavascript,
+      definedElsewhere,
+      sourceMap,
+      uniqueID,
+      elementsWithin,
+    ) => {
       return {
         type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+        originalJavascript: originalJavascript,
         javascript: javascript,
         transpiledJavascript: transpiledJavascript,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
-        uniqueID: uniqueID,
+        uid: uniqueID,
         elementsWithin: elementsWithin,
       }
     },
@@ -815,13 +819,15 @@ export function JSXArrayElementKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXA
   }
 }
 
-export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeNestedArray> {
-  return combine2EqualityCalls(
+export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionNestedArray> {
+  return combine3EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXArrayElementKeepDeepEqualityCall()),
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    jsxAttributeNestedArray,
+    (attribute) => attribute.uid,
+    createCallWithTripleEquals<string>(),
+    jsExpressionNestedArray,
   )
 }
 
@@ -861,42 +867,55 @@ export function JSXPropertyKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXPrope
   }
 }
 
-export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeNestedObject> {
-  return combine2EqualityCalls(
+export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionNestedObject> {
+  return combine3EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXPropertyKeepDeepEqualityCall()),
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    jsxAttributeNestedObject,
+    (value) => value.uid,
+    createCallWithTripleEquals<string>(),
+    jsExpressionNestedObject,
   )
 }
 
-export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributeFunctionCall> {
-  return combine2EqualityCalls(
+export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionFunctionCall> {
+  return combine3EqualityCalls(
     (value) => value.functionName,
     createCallWithTripleEquals(),
     (value) => value.parameters,
     arrayDeepEquality(JSXAttributeKeepDeepEqualityCall),
-    jsxAttributeFunctionCall,
+    (value) => value.uid,
+    createCallWithTripleEquals<string>(),
+    jsExpressionFunctionCall,
   )
 }
 
-export const JSXAttributeKeepDeepEqualityCall: KeepDeepEqualityCall<JSXAttribute> = (
+export const JSXAttributeKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression> = (
   oldAttribute,
   newAttribute,
 ) => {
   if (isJSXAttributeValue(oldAttribute) && isJSXAttributeValue(newAttribute)) {
     return JSXAttributeValueKeepDeepEqualityCall(oldAttribute, newAttribute)
   } else if (
-    isJSXAttributeOtherJavaScript(oldAttribute) &&
-    isJSXAttributeOtherJavaScript(newAttribute)
+    modifiableAttributeIsAttributeOtherJavaScript(oldAttribute) &&
+    modifiableAttributeIsAttributeOtherJavaScript(newAttribute)
   ) {
     return JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSXAttributeNestedArray(oldAttribute) && isJSXAttributeNestedArray(newAttribute)) {
+  } else if (
+    modifiableAttributeIsAttributeNestedArray(oldAttribute) &&
+    modifiableAttributeIsAttributeNestedArray(newAttribute)
+  ) {
     return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSXAttributeNestedObject(oldAttribute) && isJSXAttributeNestedObject(newAttribute)) {
+  } else if (
+    modifiableAttributeIsAttributeNestedObject(oldAttribute) &&
+    modifiableAttributeIsAttributeNestedObject(newAttribute)
+  ) {
     return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSXAttributeFunctionCall(oldAttribute) && isJSXAttributeFunctionCall(newAttribute)) {
+  } else if (
+    modifiableAttributeIsAttributeFunctionCall(oldAttribute) &&
+    modifiableAttributeIsAttributeFunctionCall(newAttribute)
+  ) {
     return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldAttribute, newAttribute)
   } else {
     return keepDeepEqualityResult(newAttribute, false)
@@ -972,44 +991,6 @@ export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<Eleme
   return objectDeepEquality(JSXElementKeepDeepEquality)
 }
 
-export const JSXArbitraryBlockKeepDeepEquality: KeepDeepEqualityCall<JSXArbitraryBlock> =
-  combine7EqualityCalls(
-    (block) => block.originalJavascript,
-    createCallWithTripleEquals(),
-    (block) => block.javascript,
-    createCallWithTripleEquals(),
-    (block) => block.transpiledJavascript,
-    createCallWithTripleEquals(),
-    (block) => block.definedElsewhere,
-    arrayDeepEquality(createCallWithTripleEquals()),
-    (block) => block.sourceMap,
-    nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (block) => block.uniqueID,
-    createCallWithTripleEquals(),
-    (block) => block.elementsWithin,
-    ElementsWithinKeepDeepEqualityCall(),
-    (
-      originalJavascript,
-      javascript,
-      transpiledJavascript,
-      definedElsewhere,
-      sourceMap,
-      uniqueID,
-      elementsWithin,
-    ) => {
-      return {
-        type: 'JSX_ARBITRARY_BLOCK',
-        originalJavascript: originalJavascript,
-        javascript: javascript,
-        transpiledJavascript: transpiledJavascript,
-        definedElsewhere: definedElsewhere,
-        sourceMap: sourceMap,
-        uniqueID: uniqueID,
-        elementsWithin: elementsWithin,
-      }
-    },
-  )
-
 export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
   return combine7EqualityCalls(
     (block) => block.javascript,
@@ -1022,7 +1003,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
     arrayDeepEquality(createCallWithTripleEquals()),
     (block) => block.sourceMap,
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (block) => block.uniqueID,
+    (block) => block.uid,
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
@@ -1032,7 +1013,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
       definedWithin: Array<string>,
       definedElsewhere: Array<string>,
       sourceMap: RawSourceMap | null,
-      uniqueID: string,
+      uid: string,
       elementsWithin: ElementsWithin,
     ) => {
       return {
@@ -1042,7 +1023,7 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
         definedWithin: definedWithin,
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
-        uniqueID: uniqueID,
+        uid: uid,
         elementsWithin: elementsWithin,
       }
     },
@@ -1053,12 +1034,34 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
   return (oldElement, newElement) => {
     if (isJSXElement(oldElement) && isJSXElement(newElement)) {
       return JSXElementKeepDeepEquality(oldElement, newElement)
-    } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
-      return JSXArbitraryBlockKeepDeepEquality(oldElement, newElement)
     } else if (isJSXTextBlock(oldElement) && isJSXTextBlock(newElement)) {
       return JSXTextBlockKeepDeepEquality(oldElement, newElement)
     } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
       return JSXFragmentKeepDeepEquality(oldElement, newElement)
+    } else if (isJSXConditionalExpression(oldElement) && isJSXConditionalExpression(newElement)) {
+      return JSXConditionalExpressionKeepDeepEquality(oldElement, newElement)
+    } else if (oldElement.type === 'ATTRIBUTE_VALUE' && newElement.type === 'ATTRIBUTE_VALUE') {
+      return JSXAttributeValueKeepDeepEqualityCall(oldElement, newElement)
+    } else if (
+      oldElement.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+      newElement.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+    ) {
+      return JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldElement, newElement)
+    } else if (
+      oldElement.type === 'ATTRIBUTE_NESTED_ARRAY' &&
+      newElement.type === 'ATTRIBUTE_NESTED_ARRAY'
+    ) {
+      return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldElement, newElement)
+    } else if (
+      oldElement.type === 'ATTRIBUTE_NESTED_OBJECT' &&
+      newElement.type === 'ATTRIBUTE_NESTED_OBJECT'
+    ) {
+      return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldElement, newElement)
+    } else if (
+      oldElement.type === 'ATTRIBUTE_FUNCTION_CALL' &&
+      newElement.type === 'ATTRIBUTE_FUNCTION_CALL'
+    ) {
+      return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldElement, newElement)
     } else {
       return keepDeepEqualityResult(newElement, false)
     }
@@ -1144,13 +1147,13 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
   combine2EqualityCalls(
     (block) => block.text,
     createCallWithTripleEquals(),
-    (block) => block.uniqueID,
+    (block) => block.uid,
     createCallWithTripleEquals(),
     (text, uniqueID) => {
       return {
         type: 'JSX_TEXT_BLOCK',
         text: text,
-        uniqueID: uniqueID,
+        uid: uniqueID,
       }
     },
   )
@@ -1171,6 +1174,39 @@ export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = co
     }
   },
 )
+
+export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXConditionalExpression> =
+  combine6EqualityCalls(
+    (conditional) => conditional.uid,
+    StringKeepDeepEquality,
+    (conditional) => conditional.condition,
+    JSXAttributeKeepDeepEqualityCall,
+    (conditional) => conditional.originalConditionString,
+    StringKeepDeepEquality,
+    (conditional) => conditional.whenTrue,
+    JSXElementChildKeepDeepEquality(),
+    (conditional) => conditional.whenFalse,
+    JSXElementChildKeepDeepEquality(),
+    (conditional) => conditional.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    (
+      uid,
+      condition,
+      originalConditionString,
+      whenTrue,
+      whenFalse,
+      comments,
+    ): JSXConditionalExpression => {
+      return jsxConditionalExpression(
+        uid,
+        condition,
+        originalConditionString,
+        whenTrue,
+        whenFalse,
+        comments,
+      )
+    },
+  )
 
 export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
   combine2EqualityCalls(
@@ -1416,10 +1452,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const renderedChildrenCount = oldSize.renderedChildrenCount === newSize.renderedChildrenCount
-    const globalContentBoxEquals = nullableDeepEquality(CanvasRectangleKeepDeepEquality)(
-      oldSize.globalContentBox,
-      newSize.globalContentBox,
-    ).areEqual
+    const globalContentBoxEquals = nullableDeepEquality(
+      MaybeInfinityCanvasRectangleKeepDeepEquality,
+    )(oldSize.globalContentBoxForChildren, newSize.globalContentBoxForChildren).areEqual
     const floatEquals = oldSize.float === newSize.float
     const hasPositionOffsetEquals = oldSize.hasPositionOffset === newSize.hasPositionOffset
     const textDirectionEquals = oldSize.parentTextDirection === newSize.parentTextDirection
@@ -1505,7 +1540,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.alignItems,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
-        newSize.globalContentBox,
+        newSize.globalContentBoxForChildren,
         newSize.float,
         newSize.hasPositionOffset,
         newSize.parentTextDirection,
@@ -1537,8 +1572,8 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
   createCallWithShallowEquals()
 
-const ConditionalValueKeepDeepEquality: KeepDeepEqualityCall<ConditionalValue> = unionDeepEquality(
-  createCallWithTripleEquals<ConditionalValue>(),
+const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = unionDeepEquality(
+  createCallWithTripleEquals<ConditionValue>(),
   BooleanKeepDeepEquality,
   (p): p is 'not-a-conditional' => p === 'not-a-conditional',
   (p): p is boolean => typeof p === 'boolean',
@@ -1568,8 +1603,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.importInfo,
     nullableDeepEquality(ImportInfoKeepDeepEquality),
-    (metadata) => metadata.conditionalValue,
-    ConditionalValueKeepDeepEquality,
+    (metadata) => metadata.conditionValue,
+    ConditionValueKeepDeepEquality,
     elementInstanceMetadata,
   )
 
@@ -2779,12 +2814,20 @@ export const CodeResultCacheKeepDeepEquality: KeepDeepEqualityCall<CodeResultCac
     codeResultCache,
   )
 
+export const ComponentElementToInsertKeepDeepEquality: KeepDeepEqualityCall<ComponentElementToInsert> =
+  unionDeepEquality(
+    createCallWithTripleEquals<ComponentElementToInsert>(),
+    JSXElementWithoutUIDKeepDeepEquality(),
+    (p): p is JSXConditionalExpressionWithoutUID => p.type === 'JSX_CONDITIONAL_EXPRESSION',
+    (p): p is JSXElementWithoutUID => p.type === 'JSX_ELEMENT',
+  )
+
 export const ComponentInfoKeepDeepEquality: KeepDeepEqualityCall<ComponentInfo> =
   combine3EqualityCalls(
     (info) => info.insertMenuLabel,
     StringKeepDeepEquality,
     (info) => info.elementToInsert,
-    JSXElementWithoutUIDKeepDeepEquality(),
+    ComponentElementToInsertKeepDeepEquality,
     (info) => info.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     componentInfo,
@@ -2829,8 +2872,11 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
   size,
 )
 
+export const InsertionSubjectWrapperKeepDeepEquality: KeepDeepEqualityCall<InsertionSubjectWrapper> =
+  createCallWithTripleEquals()
+
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (subject) => subject.uid,
     StringKeepDeepEquality,
     (subject) => subject.element,
@@ -2843,6 +2889,8 @@ export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSub
     nullableDeepEquality(TargetedInsertionParentKeepDeepEquality),
     (subject) => subject.textEdit,
     BooleanKeepDeepEquality,
+    (subject) => subject.insertionSubjectWrapper,
+    nullableDeepEquality(InsertionSubjectWrapperKeepDeepEquality),
     insertionSubject,
   )
 

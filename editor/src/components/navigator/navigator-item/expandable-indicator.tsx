@@ -30,6 +30,7 @@ export const ExpandableIndicator: React.FunctionComponent<
         }}
         onMouseDown={props.onMouseDown}
         onClick={props.onClick}
+        testId={`${props.testId}-button`}
       />
     </div>
   )

@@ -9,6 +9,7 @@ import { colorTheme } from '../../uuiui'
 interface TitleButtonProps {
   onClick: () => void
   color?: string
+  testId?: string
 }
 
 const TitleButton = styled(Button)((props) => ({ fontWeight: 500, fontSize: 10 }))
@@ -17,6 +18,7 @@ export const SquareButton: React.FC<React.PropsWithChildren<TitleButtonProps>> =
   onClick,
   color,
   children,
+  testId,
 }) => {
   const bgColor = color == null ? {} : { backgroundColor: color }
   const ButtonEl = styled(TitleButton)((props) => ({
@@ -36,6 +38,7 @@ export const SquareButton: React.FC<React.PropsWithChildren<TitleButtonProps>> =
           opacity: 0.7,
         },
       }}
+      data-testid={testId}
     >
       {children}
     </ButtonEl>

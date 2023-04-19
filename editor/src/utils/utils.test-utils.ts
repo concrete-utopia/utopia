@@ -27,13 +27,12 @@ import {
   getDefinedElsewhereFromAttributes,
   jsxElement,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   getJSXElementNameAsString,
   JSXElement,
   walkElements,
   emptyComments,
 } from '../core/shared/element-template'
-import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import {
@@ -74,6 +73,7 @@ import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { fireEvent } from '@testing-library/react'
 import { FeatureName, isFeatureEnabled, setFeatureEnabled } from './feature-switches'
+import { getUtopiaID } from '../core/shared/uid-utils'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -237,7 +237,7 @@ export function createFakeMetadataForComponents(
             component.name ?? 'default',
             componentUID,
             jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue(componentUID, emptyComments),
+              'data-uid': jsExpressionValue(componentUID, emptyComments),
             }),
             [],
           ),
@@ -342,7 +342,7 @@ function createFakeMetadataForJSXElement(
       attributeMetadatada: emptyAttributeMetadatada,
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
-      conditionalValue: 'not-a-conditional',
+      conditionValue: 'not-a-conditional',
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -377,7 +377,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
-    conditionalValue: 'not-a-conditional',
+    conditionValue: 'not-a-conditional',
   }
 }
 
@@ -492,3 +492,17 @@ export function setFeatureForUnitTests(featureName: FeatureName, newValue: boole
     setFeatureEnabled(featureName, originalFSValue)
   })
 }
+
+function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTMLElement[] {
+  return editor.renderedDOM.queryAllByTestId(testId)
+}
+
+export const expectElementWithTestIdToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(1)
+
+export const expectElementWithTestIdNotToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)

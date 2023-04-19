@@ -48,7 +48,7 @@ import {
 } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
-import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
+import { jsExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 import { EditorAction } from '../../../editor/action-types'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'

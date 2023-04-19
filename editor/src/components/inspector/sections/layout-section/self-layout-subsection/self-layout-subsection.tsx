@@ -3,7 +3,7 @@ import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
   emptyComments,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../../../core/shared/element-template'
 import { shallowEqual } from '../../../../../core/shared/equality-utils'
 import { fastForEach } from '../../../../../core/shared/utils'

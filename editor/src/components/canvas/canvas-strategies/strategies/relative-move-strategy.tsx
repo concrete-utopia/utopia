@@ -16,7 +16,7 @@ import { InteractionSession } from '../interaction-state'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
-  getDragTargets,
+  flattenSelection,
 } from './shared-move-strategies-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 
@@ -28,7 +28,7 @@ export function relativeMoveStrategy(
   if (selectedElements.length === 0) {
     return null
   }
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const filteredSelectedElements = flattenSelection(selectedElements)
   const last = filteredSelectedElements[filteredSelectedElements.length - 1]
   const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
   if (
@@ -77,6 +77,7 @@ export function relativeMoveStrategy(
           interactionSession.activeControl.type === 'BOUNDING_AREA'
         ) {
           return applyMoveCommon(
+            filteredSelectedElements,
             filteredSelectedElements,
             canvasState,
             interactionSession,

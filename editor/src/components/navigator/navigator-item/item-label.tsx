@@ -5,7 +5,7 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { renameComponent } from '../actions'
-import { StringInput, flexRowStyle } from '../../../uuiui'
+import { StringInput, flexRowStyle, colorTheme, Icons } from '../../../uuiui'
 import {
   isRegularNavigatorEntry,
   navigatorEntriesEqual,
@@ -100,6 +100,13 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          fontWeight: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
+          color: this.props.target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
+          textTransform: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
         }}
         onDoubleClick={(event) => {
           if (!this.props.isDynamic && event.altKey && isRegularNavigatorEntry(this.props.target)) {

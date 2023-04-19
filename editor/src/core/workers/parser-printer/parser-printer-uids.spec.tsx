@@ -4,12 +4,12 @@ import { directory, getComponentsFromTopLevelElements } from '../../model/projec
 import { uniq } from '../../shared/array-utils'
 import {
   emptyComments,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
   jsxArbitraryBlock,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   utopiaJSXComponent,
 } from '../../shared/element-template'
@@ -360,11 +360,11 @@ export var app = (props) => {
             const rootElement = tle.rootElement
             if (isJSXElement(rootElement)) {
               const firstChild = rootElement.children[0]
-              if (isJSXArbitraryBlock(firstChild)) {
+              if (isJSExpressionOtherJavaScript(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
                 const updatedAttributes = jsxAttributesFromMap({
-                  style: jsxAttributeValue(
+                  style: jsExpressionValue(
                     {
                       backgroundColor: 'red',
                       position: 'absolute',

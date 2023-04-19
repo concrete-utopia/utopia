@@ -1,5 +1,5 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { LayoutHelpers, TopLeftWidthHeight } from '../../../../core/layout/layout-helpers'
+import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
   MetadataUtils,
@@ -13,7 +13,8 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
+  jsxConditionalExpression,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -23,7 +24,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { InsertionSubject } from '../../../editor/editor-modes'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -35,14 +36,11 @@ import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import {
   CanvasStrategyFactory,
   findCanvasStrategy,
+  getWrapperWithGeneratedUid,
   MetaCanvasStrategy,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
@@ -64,12 +62,14 @@ import { getApplicableReparentFactories } from './reparent-metastrategy'
 import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
-import { omit } from '../../../../core/shared/object-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/layout-helpers-new'
 import { MapLike } from 'typescript'
 import { FullFrame } from '../../../frame'
-import { DefaultTextWidth } from '../../../editor/defaults'
+import { MaxContent } from '../../../inspector/inspector-common'
+import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
+import { wildcardPatch } from '../../commands/wildcard-patch-command'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -120,7 +120,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   }, applicableReparentFactories)
 }
 
-function getDrawToInsertStrategyName(
+export function getDrawToInsertStrategyName(
   strategyType: ReparentStrategy,
   parentDisplayType: 'flex' | 'flow',
 ) {
@@ -160,7 +160,6 @@ export function drawToInsertStrategyFactory(
     return null
   }
   const insertionSubject = insertionSubjects[0]
-  const predictedElementPath = EP.appendToPath(targetParent, insertionSubject.uid)
   return {
     id: name,
     name: name,
@@ -178,12 +177,6 @@ export function drawToInsertStrategyFactory(
         show: 'visible-only-while-active',
       }),
       controlWithProps({
-        control: DragOutlineControl,
-        props: dragTargetsElementPaths([predictedElementPath]),
-        key: 'ghost-outline-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
         control: FlexReparentTargetIndicator,
         props: {},
         key: 'flex-reparent-target-indicator',
@@ -194,6 +187,11 @@ export function drawToInsertStrategyFactory(
     apply: (strategyLifecycle) => {
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
+          const maybeWrapperWithUid = getWrapperWithGeneratedUid(
+            customStrategyState,
+            canvasState,
+            insertionSubjects,
+          )
           if (interactionSession.interactionData.drag != null) {
             const insertionCommand = getInsertionCommands(
               insertionSubject,
@@ -236,16 +234,47 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([
-                insertionCommand.command,
-                reparentCommand,
-                resizeCommand,
-              ])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand =
+                maybeWrapperWithUid != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
+
+              return strategyApplicationResult(
+                [
+                  insertionCommand.command,
+                  reparentCommand,
+                  resizeCommand,
+                  ...optionalWrappingCommand,
+                ],
+                {
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+                  },
+                },
+              )
             }
           } else if (strategyLifecycle === 'end-interaction') {
-            const defaultSizeType = insertionSubject.textEdit
-              ? 'text-edit-only-width'
-              : 'default-size'
+            const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
             const insertionCommand = getInsertionCommands(
               insertionSubject,
               interactionSession,
@@ -271,7 +300,39 @@ export function drawToInsertStrategyFactory(
                 },
               )
 
-              return strategyApplicationResult([insertionCommand.command, reparentCommand])
+              const newPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+              const optionalWrappingCommand =
+                maybeWrapperWithUid != null
+                  ? [
+                      updateFunctionCommand(
+                        'always',
+                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                          foldAndApplyCommandsInner(
+                            editorState,
+                            [],
+                            [
+                              wrapInContainerCommand(
+                                'always',
+                                newPath,
+                                maybeWrapperWithUid.uid,
+                                maybeWrapperWithUid.wrapper,
+                              ),
+                            ],
+                            lifecycle,
+                          ).statePatches,
+                      ),
+                    ]
+                  : []
+
+              return strategyApplicationResult(
+                [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                {
+                  strategyGeneratedUidsCache: {
+                    [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+                  },
+                },
+              )
             }
           } else {
             // drag is null, the cursor is not moved yet, but the mousedown already happened
@@ -299,20 +360,28 @@ function getHighlightAndReorderIndicatorCommands(
     const highlightParentCommand = updateHighlightedViews('mid-interaction', [targetParent])
 
     if (targetIndex != null && targetIndex > -1) {
-      return [highlightParentCommand, showReorderIndicator(targetParent, targetIndex)]
+      return [
+        highlightParentCommand,
+        showReorderIndicator(targetParent, targetIndex),
+        clearSelectionCommand,
+      ]
     } else {
-      return [highlightParentCommand]
+      return [highlightParentCommand, clearSelectionCommand]
     }
   } else {
-    return []
+    return [clearSelectionCommand]
   }
 }
+
+const clearSelectionCommand: CanvasCommand = wildcardPatch('mid-interaction', {
+  selectedViews: { $set: [] },
+})
 
 function getInsertionCommands(
   subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
-  sizing: 'zero-size' | 'default-size' | 'text-edit-only-width',
+  sizing: 'zero-size' | 'default-size' | 'hug',
 ): { command: InsertElementInsertionSubject; frame: CanvasRectangle } | null {
   if (
     interactionSession.interactionData.type === 'DRAG' &&
@@ -349,21 +418,18 @@ function getInsertionCommands(
       command: insertElementInsertionSubject('always', updatedInsertionSubject),
       frame: frame,
     }
-  } else if (
-    interactionSession.interactionData.type === 'DRAG' &&
-    sizing === 'text-edit-only-width'
-  ) {
+  } else if (interactionSession.interactionData.type === 'DRAG' && sizing === 'hug') {
     const pointOnCanvas = interactionSession.interactionData.dragStart
     const frame = canvasRectangle({
       x: pointOnCanvas.x,
       y: pointOnCanvas.y,
-      width: DefaultTextWidth,
+      width: 0,
       height: 0,
     })
 
-    const updatedAttributesWithPosition = getStyleAttributesForPartialFrame(
+    const updatedAttributesWithPosition = getStyleAttributesForFixedPositionAndSizeHug(
       subject,
-      omit(['height'], frame),
+      frame,
     )
 
     const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
@@ -427,27 +493,28 @@ function getStyleAttributesForFrameInAbsolutePosition(
   )
 }
 
-function getStyleAttributesForPartialFrame(
+function getStyleAttributesForFixedPositionAndSizeHug(
   subject: InsertionSubject,
-  frame: Partial<CanvasRectangle>,
+  frame: CanvasRectangle,
 ): JSXAttributes {
-  const frameToPinnedProp = {
-    left: frame.x,
-    top: frame.y,
-    width: frame.width,
-    height: frame.height,
-  }
-  const propsToSet: Array<ValueAtPath> = mapDropNulls((pinnedProp) => {
-    const value = frameToPinnedProp[pinnedProp]
-    if (value != null) {
-      return {
-        path: stylePropPathMappingFn(pinnedProp, ['style']),
-        value: jsxAttributeValue(value, emptyComments),
-      }
-    } else {
-      return null
-    }
-  }, Object.keys(frameToPinnedProp) as Array<keyof TopLeftWidthHeight>)
+  const propsToSet: Array<ValueAtPath> = [
+    {
+      path: stylePropPathMappingFn('left', ['style']),
+      value: jsExpressionValue(frame.x, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('top', ['style']),
+      value: jsExpressionValue(frame.y, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('width', ['style']),
+      value: jsExpressionValue(MaxContent, emptyComments),
+    },
+    {
+      path: stylePropPathMappingFn('height', ['style']),
+      value: jsExpressionValue(MaxContent, emptyComments),
+    },
+  ]
 
   const layoutProps = setJSXValuesAtPaths(subject.element.props, propsToSet)
   // Assign the new properties

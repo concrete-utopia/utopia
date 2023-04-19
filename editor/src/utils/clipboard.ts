@@ -1,13 +1,26 @@
 import { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import { EditorState, getOpenUIJSFileKey } from '../components/editor/store/editor-state'
+import {
+  EditorState,
+  getOpenUIJSFileKey,
+  withUnderlyingTarget,
+} from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+  isNullJSXAttributeValue,
+} from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import { isParseSuccess, ElementPath, isTextFile } from '../core/shared/project-file-types'
+import {
+  isParseSuccess,
+  ElementPath,
+  isTextFile,
+  NodeModules,
+} from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
@@ -27,6 +40,8 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { conditionalClause, ReparentTargetParent } from '../components/editor/store/reparent-target'
+import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -67,6 +82,7 @@ export function setClipboardData(
 
 export function getActionsForClipboardItems(
   projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
   openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
@@ -79,11 +95,15 @@ export function getActionsForClipboardItems(
     const possibleTarget = getTargetParentForPaste(
       projectContents,
       selectedViews,
+      nodeModules,
+      openFile,
       componentMetadata,
       pasteTargetsToIgnore,
     )
     const target =
-      possibleTarget == null ? getStoryboardElementPath(projectContents, openFile) : possibleTarget
+      possibleTarget == null
+        ? getStoryboardElementPath(projectContents, openFile)
+        : MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, possibleTarget)
     if (target == null) {
       console.warn(`Unable to find the storyboard path.`)
       return []
@@ -132,7 +152,7 @@ export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
   scale: number,
-  parentPath: ElementPath | null,
+  parentPath: ReparentTargetParent<ElementPath> | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -187,7 +207,11 @@ export function createClipboardDataFromSelection(
       editor.projectContents,
       targetPathSuccess.filePath,
     )
-    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    if (
+      projectFile != null &&
+      isTextFile(projectFile) &&
+      isParseSuccess(projectFile.fileContents.parsed)
+    ) {
       const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
       const elementToPaste = findElementAtPath(target, components)
       if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {
@@ -258,9 +282,42 @@ function filterMetadataForCopy(
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   selectedViews: Array<ElementPath>,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-): ElementPath | null {
+): ReparentTargetParent<ElementPath> | null {
+  // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
+  if (selectedViews.length === 1) {
+    const targetPath = selectedViews[0]
+    const parentPath = EP.parentPath(targetPath)
+    const parentElement = withUnderlyingTarget(
+      parentPath,
+      projectContents,
+      nodeModules,
+      openFile,
+      null,
+      (_, element) => {
+        return element
+      },
+    )
+
+    if (parentElement != null && isJSXConditionalExpression(parentElement)) {
+      // Check if the target parent is an attribute,
+      // if so replace the target parent instead of trying to insert into it.
+      const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
+      if (conditionalCase != null) {
+        const clause =
+          conditionalCase === 'true-case' ? parentElement.whenTrue : parentElement.whenFalse
+        if (!isNullJSXAttributeValue(clause)) {
+          return null
+        }
+        return conditionalClause(parentPath, conditionalCase)
+      }
+    }
+  }
+
+  // Regular handling which attempts to find a common parent.
   if (selectedViews.length > 0) {
     const parentTarget = EP.getCommonParent(selectedViews, true)
     if (parentTarget == null) {
@@ -268,15 +325,28 @@ export function getTargetParentForPaste(
     } else {
       // we should not paste the source into itself
       const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
-
       if (
-        MetadataUtils.targetSupportsChildren(projectContents, metadata, parentTarget) &&
+        MetadataUtils.targetSupportsChildren(
+          projectContents,
+          metadata,
+          nodeModules,
+          openFile,
+          parentTarget,
+        ) &&
         !insertingSourceIntoItself
       ) {
         return parentTarget
       } else {
         const parentOfSelected = EP.parentPath(parentTarget)
-        if (MetadataUtils.targetSupportsChildren(projectContents, metadata, parentOfSelected)) {
+        if (
+          MetadataUtils.targetSupportsChildren(
+            projectContents,
+            metadata,
+            nodeModules,
+            openFile,
+            parentOfSelected,
+          )
+        ) {
           return parentOfSelected
         } else {
           return null

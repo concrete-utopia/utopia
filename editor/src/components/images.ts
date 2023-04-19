@@ -3,7 +3,7 @@ import {
   ElementInstanceMetadata,
   emptyComments,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   jsxElement,
   jsxElementName,
@@ -179,7 +179,7 @@ export function createInsertImageAction(
     projectContents[imagePath],
   )
   if (imageDetails.type === 'IMAGE_FILE') {
-    const srcAttribute = jsxAttributeValue(`.${imagePath}`, emptyComments)
+    const srcAttribute = jsExpressionValue(`.${imagePath}`, emptyComments)
     const width = imageDetails.width ?? 100
     const height = imageDetails.height ?? 100
     const { frame } = getFrameAndMultiplier(
@@ -193,9 +193,9 @@ export function createInsertImageAction(
       jsxElementName('img', []),
       newUID,
       jsxAttributesFromMap({
-        alt: jsxAttributeValue('', emptyComments),
+        alt: jsExpressionValue('', emptyComments),
         src: srcAttribute,
-        style: jsxAttributeValue(
+        style: jsExpressionValue(
           {
             left: frame.x,
             top: frame.y,
@@ -204,7 +204,7 @@ export function createInsertImageAction(
           },
           emptyComments,
         ),
-        'data-uid': jsxAttributeValue(newUID, emptyComments),
+        'data-uid': jsExpressionValue(newUID, emptyComments),
       }),
       [],
     )
@@ -265,9 +265,9 @@ export interface JSXImageOptions {
 
 export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): JSXElement {
   const propsForElement = jsxAttributesFromMap({
-    'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
-    src: jsxAttributeValue(options.src, emptyComments),
-    style: jsxAttributeValue(
+    'data-aspect-ratio-locked': jsExpressionValue(true, emptyComments),
+    src: jsExpressionValue(options.src, emptyComments),
+    style: jsExpressionValue(
       {
         position: 'absolute',
         width: options.width,
@@ -282,7 +282,7 @@ export function createJsxImage(uid: string, options: Partial<JSXImageOptions>): 
   return jsxElement(
     'img',
     uid,
-    setJSXAttributesAttribute(propsForElement, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    setJSXAttributesAttribute(propsForElement, 'data-uid', jsExpressionValue(uid, emptyComments)),
     [],
   )
 }

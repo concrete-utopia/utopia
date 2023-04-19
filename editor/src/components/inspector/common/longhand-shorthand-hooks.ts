@@ -1,7 +1,7 @@
 import deepEqual from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEquals, NO_OP } from '../../../core/shared/utils'
@@ -296,7 +296,7 @@ function createUnsetActions<
           setProp_UNSAFE(
             selectedView,
             longhandPropertyPath,
-            jsxAttributeValue(undefined, emptyComments),
+            jsExpressionValue(undefined, emptyComments),
           ),
         ]
       }, selectedViewsRef.current)

@@ -1,29 +1,24 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { NumberInput, PopupList, SimpleCSSNumberInput } from '../../uuiui'
-import { getControlStyles, SelectOption } from '../../uuiui-deps'
+import { NumberInput, PopupList } from '../../uuiui'
+import { getControlStyles, InspectorRowHoverCSS, SelectOption } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import {
-  CSSNumber,
-  cssNumber,
-  CSSNumberType,
-  EmptyInputValue,
-  UnknownOrEmptyInput,
-} from './common/css-utils'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { CSSNumber, cssNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
+import { metadataSelector, selectedViewsSelector, useComputedSizeRef } from './inpector-selectors'
 import {
   Axis,
-  detectFillHugFixedState,
+  detectFillHugFixedStateMultiselect,
   FixedHugFill,
   FixedHugFillMode,
   getFixedFillHugOptionsForElement,
+  isFixedHugFillEqual,
 } from './inspector-common'
 import {
   setPropFillStrategies,
@@ -37,22 +32,6 @@ import {
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
-
-function isFixedHugFillEqual(a: FixedHugFill | undefined, b: FixedHugFill | undefined): boolean {
-  if (a === undefined && b === undefined) {
-    return true
-  }
-
-  if (a?.type !== b?.type) {
-    return false
-  }
-
-  if ((a?.type === 'fixed' && b?.type === 'fixed') || (a?.type === 'fill' && b?.type === 'fill')) {
-    return a.value.value === b.value.value && a.value.unit === b.value.unit
-  }
-
-  return true
-}
 
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
@@ -77,21 +56,6 @@ function selectOption(mode: FixedHugFillMode): SelectOption {
     label: selectOptionLabel(mode),
   }
 }
-
-function elementComputedDimension(
-  prop: 'width' | 'height',
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath | null,
-): number | null {
-  if (elementPath == null) {
-    return null
-  }
-
-  const localFrame = MetadataUtils.getFrameOrZeroRect(elementPath, metadata)
-  return localFrame[prop]
-}
-
-const simpleControlStyles = getControlStyles('simple')
 
 interface FillHugFixedControlProps {}
 
@@ -121,68 +85,78 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const widthCurrentValue = useEditorState(
     Substores.metadata,
     (store) =>
-      detectFillHugFixedState(
+      detectFillHugFixedStateMultiselect(
         'horizontal',
         metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      ) ?? undefined,
+        selectedViewsSelector(store),
+      ),
     'FillHugFixedControl widthCurrentValue',
     isFixedHugFillEqual,
   )
 
-  const fillsContainerHorizontallyRef = useRefEditorState(
-    (store) =>
-      detectFillHugFixedState(
-        'horizontal',
-        metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      )?.type === 'fill',
+  const widthControlStyles = React.useMemo(
+    () => getControlStyles(widthCurrentValue.controlStatus),
+    [widthCurrentValue],
+  )
+  const widthInputControlStatus = React.useMemo(
+    () =>
+      isNumberInputEnabled(widthCurrentValue.fixedHugFill)
+        ? widthCurrentValue.controlStatus
+        : 'disabled',
+    [widthCurrentValue],
   )
 
-  const widthComputedValueRef = useRefEditorState(
+  const fillsContainerHorizontallyRef = useRefEditorState(
     (store) =>
-      elementComputedDimension(
-        'width',
+      detectFillHugFixedStateMultiselect(
+        'horizontal',
         metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      ) ?? 0,
+        selectedViewsSelector(store),
+      ).fixedHugFill?.type === 'fill',
   )
+
+  const widthComputedValueRef = useComputedSizeRef('width')
 
   const heightCurrentValue = useEditorState(
     Substores.metadata,
     (store) =>
-      detectFillHugFixedState(
+      detectFillHugFixedStateMultiselect(
         'vertical',
         metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      ) ?? undefined,
+        selectedViewsSelector(store),
+      ),
     'FillHugFixedControl heightCurrentValue',
     isFixedHugFillEqual,
   )
 
-  const fillsContainerVerticallyRef = useRefEditorState(
-    (store) =>
-      detectFillHugFixedState(
-        'vertical',
-        metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      )?.type === 'fill',
+  const heightControlStyles = React.useMemo(
+    () => getControlStyles(heightCurrentValue.controlStatus),
+    [heightCurrentValue],
+  )
+  const heightInputControlStatus = React.useMemo(
+    () =>
+      isNumberInputEnabled(heightCurrentValue.fixedHugFill)
+        ? heightCurrentValue.controlStatus
+        : 'disabled',
+    [heightCurrentValue],
   )
 
-  const heightComputedValueRef = useRefEditorState(
+  const fillsContainerVerticallyRef = useRefEditorState(
     (store) =>
-      elementComputedDimension(
-        'height',
+      detectFillHugFixedStateMultiselect(
+        'vertical',
         metadataSelector(store),
-        selectedViewsSelector(store).at(0) ?? null,
-      ) ?? 0,
+        selectedViewsSelector(store),
+      ).fixedHugFill?.type === 'fill',
   )
+
+  const heightComputedValueRef = useComputedSizeRef('height')
 
   const onSubmitHeight = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(
-        heightComputedValueRef.current,
+        heightComputedValueRef.current ?? 0,
         'vertical',
         value,
         fillsContainerHorizontallyRef.current,
@@ -211,7 +185,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) {
         return
       }
-      if (heightCurrentValue?.type === 'fill') {
+      if (heightCurrentValue.fixedHugFill?.type === 'fill') {
         if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
           return
@@ -223,7 +197,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           setPropFillStrategies('vertical', value.value, false),
         )
       }
-      if (heightCurrentValue?.type === 'fixed') {
+      if (heightCurrentValue.fixedHugFill?.type === 'fixed') {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -232,7 +206,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         )
       }
     },
-    [dispatch, heightCurrentValue?.type, metadataRef, selectedViewsRef],
+    [dispatch, heightCurrentValue.fixedHugFill?.type, metadataRef, selectedViewsRef],
   )
 
   const onAdjustWidth = React.useCallback(
@@ -243,7 +217,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       ) {
         return
       }
-      if (widthCurrentValue?.type === 'fill') {
+      if (widthCurrentValue.fixedHugFill?.type === 'fill') {
         if (value.unit != null && value.unit !== '%') {
           // fill mode only accepts percentage or valueless numbers
           return
@@ -255,7 +229,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           setPropFillStrategies('horizontal', value.value, false),
         )
       }
-      if (widthCurrentValue?.type === 'fixed') {
+      if (widthCurrentValue.fixedHugFill?.type === 'fixed') {
         executeFirstApplicableStrategy(
           dispatch,
           metadataRef.current,
@@ -264,14 +238,14 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         )
       }
     },
-    [dispatch, metadataRef, selectedViewsRef, widthCurrentValue?.type],
+    [dispatch, metadataRef, selectedViewsRef, widthCurrentValue.fixedHugFill?.type],
   )
 
   const onSubmitWidth = React.useCallback(
     ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
       const strategy = strategyForMode(
-        widthComputedValueRef.current,
+        widthComputedValueRef.current ?? 0,
         'horizontal',
         value,
         fillsContainerVerticallyRef.current,
@@ -290,65 +264,83 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     return null
   }
 
-  const widthValue = optionalMap(pickFixedValue, widthCurrentValue) ?? undefined
-  const heightValue = optionalMap(pickFixedValue, heightCurrentValue) ?? undefined
+  const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
+  const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
 
   return (
     <div
       style={{
         display: 'grid',
         gridTemplateRows: '1fr 1fr',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 4,
-        padding: 4,
+        gridTemplateColumns: '1fr',
       }}
     >
-      <PopupList
-        value={optionalMap(selectOption, widthCurrentValue?.type) ?? undefined}
-        options={options}
-        onSubmitValue={onSubmitWidth}
-        controlStyles={simpleControlStyles}
-      />
-      <NumberInput
-        id={FillFixedHugControlId('width')}
-        testId={FillFixedHugControlId('width')}
-        value={widthValue}
-        onSubmitValue={onAdjustWidth}
-        onTransientSubmitValue={NO_OP}
-        onForcedSubmitValue={NO_OP}
-        controlStatus={isNumberInputEnabled(widthCurrentValue) ? undefined : 'disabled'}
-        numberType={pickNumberType(widthCurrentValue)}
-        incrementControls={true}
-        stepSize={1}
-        minimum={0}
-        maximum={Infinity}
-        labelInner={'W'}
-        defaultUnitToHide={null}
-        focusOnMount={false}
-      />
-      <PopupList
-        value={optionalMap(selectOption, heightCurrentValue?.type) ?? undefined}
-        options={options}
-        onSubmitValue={onSubmitHeight}
-        controlStyles={simpleControlStyles}
-      />
-      <NumberInput
-        id={FillFixedHugControlId('height')}
-        testId={FillFixedHugControlId('height')}
-        value={heightValue}
-        onSubmitValue={onAdjustHeight}
-        onTransientSubmitValue={NO_OP}
-        onForcedSubmitValue={NO_OP}
-        controlStatus={isNumberInputEnabled(heightCurrentValue) ? undefined : 'disabled'}
-        numberType={pickNumberType(heightCurrentValue)}
-        incrementControls={true}
-        stepSize={1}
-        minimum={0}
-        maximum={Infinity}
-        labelInner={'H'}
-        defaultUnitToHide={null}
-        focusOnMount={false}
-      />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 4,
+          padding: 4,
+        }}
+        css={InspectorRowHoverCSS}
+      >
+        <PopupList
+          value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
+          options={options}
+          onSubmitValue={onSubmitWidth}
+          controlStyles={widthControlStyles}
+        />
+        <NumberInput
+          id={FillFixedHugControlId('width')}
+          testId={FillFixedHugControlId('width')}
+          value={widthValue}
+          onSubmitValue={onAdjustWidth}
+          onTransientSubmitValue={NO_OP}
+          onForcedSubmitValue={NO_OP}
+          controlStatus={widthInputControlStatus}
+          numberType={pickNumberType(widthCurrentValue.fixedHugFill)}
+          incrementControls={true}
+          stepSize={1}
+          minimum={0}
+          maximum={Infinity}
+          labelInner={'W'}
+          defaultUnitToHide={null}
+          focusOnMount={false}
+        />
+      </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 4,
+          padding: 4,
+        }}
+        css={InspectorRowHoverCSS}
+      >
+        <PopupList
+          value={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined}
+          options={options}
+          onSubmitValue={onSubmitHeight}
+          controlStyles={heightControlStyles}
+        />
+        <NumberInput
+          id={FillFixedHugControlId('height')}
+          testId={FillFixedHugControlId('height')}
+          value={heightValue}
+          onSubmitValue={onAdjustHeight}
+          onTransientSubmitValue={NO_OP}
+          onForcedSubmitValue={NO_OP}
+          controlStatus={heightInputControlStatus}
+          numberType={pickNumberType(heightCurrentValue.fixedHugFill)}
+          incrementControls={true}
+          stepSize={1}
+          minimum={0}
+          maximum={Infinity}
+          labelInner={'H'}
+          defaultUnitToHide={null}
+          focusOnMount={false}
+        />
+      </div>
     </div>
   )
 })
@@ -381,7 +373,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
   return undefined
 }
 
-function pickNumberType(value: FixedHugFill | undefined): CSSNumberType {
+function pickNumberType(value: FixedHugFill | null): CSSNumberType {
   if (value?.type === 'fixed') {
     return 'AnyValid'
   }
@@ -391,6 +383,6 @@ function pickNumberType(value: FixedHugFill | undefined): CSSNumberType {
   return 'Unitless'
 }
 
-function isNumberInputEnabled(value: FixedHugFill | undefined): boolean {
+function isNumberInputEnabled(value: FixedHugFill | null): boolean {
   return value?.type === 'fixed' || value?.type === 'fill'
 }

@@ -1,11 +1,14 @@
+import { clearModifiableAttributeUniqueIDs } from '../../../core/shared/jsx-attributes'
 import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
   emptyComments,
-  jsxAttributeFunctionCall,
+  jsExpressionFunctionCall,
   jsxAttributeNestedObjectSimple,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxTestElement,
+  clearExpressionUniqueIDs,
+  clearJSXElementChildUniqueIDs,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
@@ -74,7 +77,7 @@ describe('toggleStyleProp', () => {
     const element = jsxTestElement(
       'View',
       jsxAttributesFromMap({
-        style: jsxAttributeValue(
+        style: jsExpressionValue(
           {
             backgroundColor: 'red',
           },
@@ -84,21 +87,23 @@ describe('toggleStyleProp', () => {
       [],
     )
 
-    const expectedElement = jsxTestElement(
-      'View',
-      jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-              jsxAttributeValue('red', emptyComments),
-            ]),
-          }),
-          emptyComments,
-        ),
-      }),
-      [],
+    const expectedElement = clearJSXElementChildUniqueIDs(
+      jsxTestElement(
+        'View',
+        jsxAttributesFromMap({
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              backgroundColor: jsExpressionFunctionCall(disabledFunctionName, [
+                jsExpressionValue('red', emptyComments),
+              ]),
+            }),
+            emptyComments,
+          ),
+        }),
+        [],
+      ),
     )
-    const toggledElement = simpleToggleProp(element)
+    const toggledElement = clearJSXElementChildUniqueIDs(simpleToggleProp(element))
     expect(toggledElement).toEqual(expectedElement)
   })
 
@@ -108,8 +113,8 @@ describe('toggleStyleProp', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-              jsxAttributeValue('red', emptyComments),
+            backgroundColor: jsExpressionFunctionCall(disabledFunctionName, [
+              jsExpressionValue('red', emptyComments),
             ]),
           }),
           emptyComments,
@@ -118,19 +123,21 @@ describe('toggleStyleProp', () => {
       [],
     )
 
-    const expectedElement = jsxTestElement(
-      'View',
-      jsxAttributesFromMap({
-        style: jsxAttributeValue(
-          {
-            backgroundColor: 'red',
-          },
-          emptyComments,
-        ),
-      }),
-      [],
+    const expectedElement = clearJSXElementChildUniqueIDs(
+      jsxTestElement(
+        'View',
+        jsxAttributesFromMap({
+          style: jsExpressionValue(
+            {
+              backgroundColor: 'red',
+            },
+            emptyComments,
+          ),
+        }),
+        [],
+      ),
     )
-    const toggledElement = simpleToggleProp(element)
+    const toggledElement = clearJSXElementChildUniqueIDs(simpleToggleProp(element))
     expect(toggledElement).toEqual(expectedElement)
   })
 
@@ -140,7 +147,7 @@ describe('toggleStyleProp', () => {
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
-            backgroundColor: jsxAttributeValue('red', emptyComments),
+            backgroundColor: jsExpressionValue('red', emptyComments),
           }),
           emptyComments,
         ),
@@ -148,73 +155,81 @@ describe('toggleStyleProp', () => {
       [],
     )
 
-    const expectedElement = jsxTestElement(
-      'View',
-      jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-              jsxAttributeValue('red', emptyComments),
-            ]),
-          }),
-          emptyComments,
-        ),
-      }),
-      [],
+    const expectedElement = clearJSXElementChildUniqueIDs(
+      jsxTestElement(
+        'View',
+        jsxAttributesFromMap({
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              backgroundColor: jsExpressionFunctionCall(disabledFunctionName, [
+                jsExpressionValue('red', emptyComments),
+              ]),
+            }),
+            emptyComments,
+          ),
+        }),
+        [],
+      ),
     )
-    const toggledElement = simpleToggleProp(element)
+    const toggledElement = clearJSXElementChildUniqueIDs(simpleToggleProp(element))
     expect(toggledElement).toEqual(expectedElement)
   })
 })
 
 describe('toggleSimple', () => {
   it('disables the attribute', () => {
-    const attribute = jsxAttributeValue('colorValue', emptyComments)
-    const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeValue('colorValue', emptyComments),
+    const attribute = jsExpressionValue('colorValue', emptyComments)
+    const expectedAttribute = jsExpressionFunctionCall(disabledFunctionName, [
+      jsExpressionValue('colorValue', emptyComments),
     ])
     const result = toggleSimple(attribute)
-    expect(result).toEqual(expectedAttribute)
+    expect(clearModifiableAttributeUniqueIDs(result)).toEqual(
+      clearModifiableAttributeUniqueIDs(expectedAttribute),
+    )
   })
 
   it('enables the attribute', () => {
-    const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeValue('colorValue', emptyComments),
+    const attribute = jsExpressionFunctionCall(disabledFunctionName, [
+      jsExpressionValue('colorValue', emptyComments),
     ])
-    const expectedAttribute = jsxAttributeValue('colorValue', emptyComments)
+    const expectedAttribute = jsExpressionValue('colorValue', emptyComments)
     const result = toggleSimple(attribute)
-    expect(result).toEqual(expectedAttribute)
+    expect(clearModifiableAttributeUniqueIDs(result)).toEqual(
+      clearModifiableAttributeUniqueIDs(expectedAttribute),
+    )
   })
 
   it('disables a nested object attribute', () => {
     const attribute = jsxAttributeNestedObjectSimple(
       jsxAttributesFromMap({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-          jsxAttributeValue('hello', emptyComments),
+        aParameter: jsExpressionFunctionCall('aHelperFunction', [
+          jsExpressionValue('hello', emptyComments),
         ]),
       }),
       emptyComments,
     )
-    const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
+    const expectedAttribute = jsExpressionFunctionCall(disabledFunctionName, [
       jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
-          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-            jsxAttributeValue('hello', emptyComments),
+          aParameter: jsExpressionFunctionCall('aHelperFunction', [
+            jsExpressionValue('hello', emptyComments),
           ]),
         }),
         emptyComments,
       ),
     ])
     const result = toggleSimple(attribute)
-    expect(result).toEqual(expectedAttribute)
+    expect(clearModifiableAttributeUniqueIDs(result)).toEqual(
+      clearModifiableAttributeUniqueIDs(expectedAttribute),
+    )
   })
 
   it('enables a nested object attribute', () => {
-    const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
+    const attribute = jsExpressionFunctionCall(disabledFunctionName, [
       jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
-          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-            jsxAttributeValue('hello', emptyComments),
+          aParameter: jsExpressionFunctionCall('aHelperFunction', [
+            jsExpressionValue('hello', emptyComments),
           ]),
         }),
         emptyComments,
@@ -222,14 +237,16 @@ describe('toggleSimple', () => {
     ])
     const expectedAttribute = jsxAttributeNestedObjectSimple(
       jsxAttributesFromMap({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
-          jsxAttributeValue('hello', emptyComments),
+        aParameter: jsExpressionFunctionCall('aHelperFunction', [
+          jsExpressionValue('hello', emptyComments),
         ]),
       }),
       emptyComments,
     )
     const result = toggleSimple(attribute)
-    expect(result).toEqual(expectedAttribute)
+    expect(clearModifiableAttributeUniqueIDs(result)).toEqual(
+      clearModifiableAttributeUniqueIDs(expectedAttribute),
+    )
   })
 })
 
@@ -901,7 +918,10 @@ describe('printBackgroundImage', () => {
         },
       ],
     ]
-    expect(validValues.map((valid) => printBackgroundImage(valid))).toMatchInlineSnapshot(`
+    const actualResult = validValues.map((valid) =>
+      clearExpressionUniqueIDs(printBackgroundImage(valid)),
+    )
+    expect(actualResult).toMatchInlineSnapshot(`
       Array [
         Object {
           "comments": Object {
@@ -909,6 +929,7 @@ describe('printBackgroundImage', () => {
             "trailingComments": Array [],
           },
           "type": "ATTRIBUTE_VALUE",
+          "uid": "",
           "value": "radial-gradient(#000 0%, #fff 100%)",
         },
         Object {
@@ -917,6 +938,7 @@ describe('printBackgroundImage', () => {
             "trailingComments": Array [],
           },
           "type": "ATTRIBUTE_VALUE",
+          "uid": "",
           "value": "linear-gradient(90deg, #000 0%, #fff 100%), linear-gradient(#000 0%, #000 100%)",
         },
         Object {
@@ -925,6 +947,7 @@ describe('printBackgroundImage', () => {
             "trailingComments": Array [],
           },
           "type": "ATTRIBUTE_VALUE",
+          "uid": "",
           "value": "linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%)*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%)*/ radial-gradient(#000 0%, #fff 100%)",
         },
       ]
@@ -1768,13 +1791,14 @@ describe('printBackgroundSize', () => {
       cssBGSize(cssDefault(parsedCurlyBrace([cssNumber(100, 'px')]), false)),
       cssBGSize(cssDefault(parsedCurlyBrace([cssNumber(100, '%'), cssNumber(100, '%')]), false)),
     ]
-    expect(printBackgroundSize(backgroundSize)).toMatchInlineSnapshot(`
+    expect(clearExpressionUniqueIDs(printBackgroundSize(backgroundSize))).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
           "leadingComments": Array [],
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "auto, auto auto, 100px, 100% 100%",
       }
     `)

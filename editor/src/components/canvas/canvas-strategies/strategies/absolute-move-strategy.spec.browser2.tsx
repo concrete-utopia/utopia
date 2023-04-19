@@ -24,6 +24,21 @@ import {
   mouseMoveToPoint,
   mouseUpAtPoint,
 } from '../../event-helpers.test-utils'
+import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
+import {
+  expectElementWithTestIdNotToBeRendered,
+  expectElementWithTestIdToBeRendered,
+  setFeatureForBrowserTests,
+  selectComponentsForTest,
+} from '../../../../utils/utils.test-utils'
+import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
+import { AllContentAffectingTypes } from './group-like-helpers'
+import {
+  getOpeningGroupLikeTag,
+  getClosingGroupLikeTag,
+  GroupLikeElementUid,
+  InnerFragmentId,
+} from './group-like-helpers.test-utils'
 
 async function dragElement(
   canvasControlsLayer: HTMLElement,
@@ -107,7 +122,10 @@ export const App2 = (props) => {
 
 export var App = (props) => {
   return (
-    <div data-uid='app-root'>
+    <div
+      data-uid='app-root'
+      style={{ width: '100%', height: '100%' }}
+    >
       <App2
         data-uid='app2'
         style={{
@@ -139,6 +157,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 function positioningFromCss(css: CSSStyleDeclaration) {
   return { left: css.left, top: css.top }
 }
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Move Strategy', () => {
   it('moves component instances that honour the position properties', async () => {
@@ -826,12 +846,10 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const parentOutlineControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-outlines-control')
-    expect(parentOutlineControlBeforeDrag).toBeNull()
-    const parentBoundsControlBeforeDrag =
-      renderResult.renderedDOM.queryByTestId('parent-bounds-control')
-    expect(parentBoundsControlBeforeDrag).toBeNull()
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     const targetElement = renderResult.renderedDOM.getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -844,13 +862,66 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       windowPoint({ x: 5, y: 5 }),
       emptyModifiers,
       async () => {
-        const parentOutlineControl = renderResult.renderedDOM.getByTestId('parent-outlines-control')
-        expect(parentOutlineControl).toBeDefined()
-        const parentBoundsControl = renderResult.renderedDOM.getByTestId('parent-bounds-control')
-        expect(parentBoundsControl).toBeDefined()
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
       },
     )
   })
+
+  describe('when a content affecting element is moved, parent outlines become visible', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      it(`moving a ${type}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 170, bottom: 240 }} data-uid='container' data-label='container'>
+            ${getOpeningGroupLikeTag(type)}
+            <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 100, height: 20 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+              ${getClosingGroupLikeTag(type)}
+          </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+
+        const target = EP.appendNewElementPath(TestScenePath, [
+          'container',
+          GroupLikeElementUid,
+          InnerFragmentId,
+        ])
+        await selectComponentsForTest(renderResult, [target])
+
+        const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+        const targetElementBounds = targetElement.getBoundingClientRect()
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+        const startPoint = windowPoint({
+          x: targetElementBounds.x + 5,
+          y: targetElementBounds.y + 5,
+        })
+
+        await dragElement(
+          canvasControlsLayer,
+          startPoint,
+          windowPoint({ x: 5, y: 5 }),
+          emptyModifiers,
+          async () => {
+            expectElementWithTestIdToBeRendered(
+              renderResult,
+              ImmediateParentOutlinesTestId([target]),
+            )
+            expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+          },
+        )
+      })
+    })
+  })
+
   it('when an absolute positioned element is selected the pin lines are visible', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

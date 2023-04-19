@@ -10,10 +10,11 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import {
+  clearExpressionUniqueIDs,
   emptyComments,
   getJSXAttribute,
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 
 function exampleProject(): string {
@@ -171,14 +172,15 @@ describe('Automatically derived property controls', () => {
       if (cardsAttribute == null) {
         throw new Error("The 'cards' attribute does not exist.")
       } else {
-        expect(cardsAttribute).toEqual(
-          jsxAttributeValue(
+        expect(clearExpressionUniqueIDs(cardsAttribute)).toEqual(
+          jsExpressionValue(
             [
               { hello: 'bello', n: 1 },
               { hello: 'yes', n: 5 },
               { hello: 'abc', n: 50 },
             ],
             emptyComments,
+            '',
           ),
         )
       }

@@ -146,29 +146,8 @@ const Canvas = {
         // Nothing is selected, so do nothing.
         return null
       case 1:
-        const getFirstValidParent = (path: ElementPath): ElementPath | null => {
-          const parentPath = EP.parentPath(path)
-          if (parentPath == null) {
-            return null
-          }
-          if (MetadataUtils.isElementPathFragmentFromMetadata(metadata, parentPath)) {
-            if (isFeatureEnabled('Fragment support')) {
-              return parentPath
-            }
-            return getFirstValidParent(parentPath)
-          }
-          if (MetadataUtils.isElementPathConditionalFromMetadata(metadata, parentPath)) {
-            if (isFeatureEnabled('Conditional support')) {
-              return parentPath
-            }
-            return getFirstValidParent(parentPath)
-          }
-          // not a fragment or conditional
-          return parentPath
-        }
-
         // Only a single element is selected...
-        const parentPath = getFirstValidParent(selectedViews[0])
+        const parentPath = EP.parentPath(selectedViews[0])
         if (parentPath == null) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'

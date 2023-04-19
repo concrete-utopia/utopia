@@ -10,6 +10,12 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
+export const ImmediateParentBoundsTestId = (targets: Array<ElementPath>): string =>
+  `${targets.map(EP.toString).sort()}-immediate-parent-bounds-control`
+
+export const ParentBoundsTestId = (targets: Array<ElementPath>): string =>
+  `${targets.map(EP.toString).sort()}-parent-bounds-control`
+
 interface ImmediateParentBoundsProps {
   targets: Array<ElementPath>
 }
@@ -48,7 +54,7 @@ export const ImmediateParentBounds = controlForStrategyMemoized(
 
     return parentFrame == null || isInfinityRectangle(parentFrame)
       ? null
-      : drawBounds(parentFrame, scale)
+      : drawBounds(parentFrame, scale, ImmediateParentBoundsTestId(targets))
   },
 )
 
@@ -79,13 +85,13 @@ export const ParentBounds = controlForStrategyMemoized(({ targetParent }: Parent
 
   return parentFrame == null || isInfinityRectangle(parentFrame)
     ? null
-    : drawBounds(parentFrame, scale)
+    : drawBounds(parentFrame, scale, ParentBoundsTestId([targetParent]))
 })
 
-function drawBounds(parentFrame: CanvasRectangle, scale: number) {
+function drawBounds(parentFrame: CanvasRectangle, scale: number, testId: string) {
   return (
-    <CanvasOffsetWrapper key={`parent-bounds`}>
-      <div style={{ pointerEvents: 'none' }} data-testid='parent-bounds-control'>
+    <CanvasOffsetWrapper key={testId}>
+      <div style={{ pointerEvents: 'none' }} data-testid={testId}>
         <CenteredCrossSVG
           id='parent-cross-top-left'
           centerX={parentFrame.x}

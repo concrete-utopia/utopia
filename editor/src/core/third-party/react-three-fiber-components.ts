@@ -6,11 +6,11 @@ import {
 } from '../../components/custom-code/code-file'
 import {
   emptyComments,
-  jsxAttributeOtherJavaScript,
+  jsExpressionOtherJavaScript,
   JSXAttributes,
   JSXAttributesEntry,
   jsxAttributesEntry,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElementWithoutUID,
   simpleAttribute,
 } from '../shared/element-template'
@@ -19,7 +19,7 @@ import { importAlias, importDetails, Imports } from '../shared/project-file-type
 function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
   return jsxAttributesEntry(
     key,
-    jsxAttributeOtherJavaScript(
+    jsExpressionOtherJavaScript(
       `THREE.${fromThree}`,
       `return THREE.${fromThree}`,
       ['THREE'],

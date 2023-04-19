@@ -25,7 +25,7 @@ export const ColorThemeComponent = React.memo(() => {
   useEffect(() => {
     const handlePreferredColorSchemeChange = () => {
       const preferredColorScheme = getPreferredColorScheme()
-      void sendSetVSCodeTheme(preferredColorScheme)
+      sendSetVSCodeTheme(preferredColorScheme)
       setTheme(preferredColorScheme)
     }
 

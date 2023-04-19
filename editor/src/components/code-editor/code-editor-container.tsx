@@ -9,10 +9,7 @@ import { VSCODE_EDITOR_IFRAME_ID } from '../../core/vscode/vscode-bridge'
 
 const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
   const projectID = props.projectID
-  const baseIframeSrc = createIframeUrl(
-    MONACO_EDITOR_IFRAME_BASE_URL,
-    'vscode-editor-outer-iframe/',
-  )
+  const baseIframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-iframe/')
   const url = new URL(baseIframeSrc)
   url.searchParams.append('project_id', projectID)
 

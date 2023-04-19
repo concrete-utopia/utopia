@@ -4,11 +4,11 @@ import {
   emptyComments,
   isJSXElement,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   jsxElement,
   jsxElementName,
 } from '../../../core/shared/element-template'
-import { findJSXElementChildAtPath, getUtopiaID } from '../../../core/model/element-template-utils'
+import { findJSXElementChildAtPath } from '../../../core/model/element-template-utils'
 import {
   directory,
   getUtopiaJSXComponentsFromSuccess,
@@ -95,6 +95,8 @@ import { NO_OP } from '../../../core/shared/utils'
 import { cssNumber } from '../../inspector/common/css-utils'
 import { testStaticElementPath } from '../../../core/shared/element-path.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
 
 const chaiExpect = Chai.expect
 
@@ -244,7 +246,7 @@ describe('action RENAME_COMPONENT', () => {
 
   it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
   it('renames an existing element', () =>
-    checkRename(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']), 'View'))
+    checkRename(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']), 'Group'))
 })
 
 describe('action TOGGLE_PANE', () => {
@@ -314,7 +316,11 @@ describe('action NAVIGATOR_REORDER', () => {
       regularNavigatorEntry(EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa'])),
     )
     const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
-    if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
+    if (
+      mainUIJSFile != null &&
+      isTextFile(mainUIJSFile) &&
+      isParseSuccess(mainUIJSFile.fileContents.parsed)
+    ) {
       const topLevelElements = mainUIJSFile.fileContents.parsed.topLevelElements
       const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
         mainUIJSFile.fileContents.parsed,
@@ -339,6 +345,7 @@ describe('action NAVIGATOR_REORDER', () => {
           StoryboardFilePath,
         )
         if (
+          updatedMainUIJSFile != null &&
           isTextFile(updatedMainUIJSFile) &&
           isParseSuccess(updatedMainUIJSFile.fileContents.parsed)
         ) {
@@ -404,8 +411,10 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     )
     const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (
+      oldUIJSFile != null &&
       isTextFile(oldUIJSFile) &&
       isParseSuccess(oldUIJSFile.fileContents.parsed) &&
+      mainUIJSFile != null &&
       isTextFile(mainUIJSFile) &&
       isParseSuccess(mainUIJSFile.fileContents.parsed)
     ) {
@@ -446,8 +455,10 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     )
     const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (
+      oldUIJSFile != null &&
       isTextFile(oldUIJSFile) &&
       isParseSuccess(oldUIJSFile.fileContents.parsed) &&
+      mainUIJSFile != null &&
       isTextFile(mainUIJSFile) &&
       isParseSuccess(mainUIJSFile.fileContents.parsed)
     ) {
@@ -537,7 +548,11 @@ describe('action DELETE_SELECTED', () => {
       updatedEditor.projectContents,
       StoryboardFilePath,
     )
-    if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
+    if (
+      mainUIJSFile != null &&
+      isTextFile(mainUIJSFile) &&
+      isParseSuccess(mainUIJSFile.fileContents.parsed)
+    ) {
       expect(
         Utils.pathOr(
           [],
@@ -665,7 +680,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
       'TestView',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
@@ -746,7 +761,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
       'TestView',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, null, {
@@ -778,39 +793,6 @@ describe('INSERT_JSX_ELEMENT', () => {
   })
 })
 
-describe('action MOVE_SELECTED_BACKWARD', () => {
-  it('moves the element backward', () => {
-    const { editor, derivedState, dispatch } = createEditorStates()
-    const editorWithSelectedView = {
-      ...editor,
-      selectedViews: [EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
-    }
-    const actionToRun = moveSelectedBackward()
-    const updatedEditor = runLocalEditorAction(
-      editorWithSelectedView,
-      derivedState,
-      defaultUserState,
-      workers,
-      actionToRun,
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-      builtInDependencies,
-    )
-    const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
-
-    const updatedZIndex = MetadataUtils.getViewZIndexFromMetadata(
-      updatedMetadata,
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
-    )
-    const oldZIndex = MetadataUtils.getViewZIndexFromMetadata(
-      editor.jsxMetadata,
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
-    )
-    expect(updatedZIndex).toBe(oldZIndex - 2)
-  })
-})
-
 describe('action UPDATE_FRAME_DIMENSIONS', () => {
   it('updates text element frame dimension', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
@@ -836,7 +818,11 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       updatedEditor.projectContents,
       StoryboardFilePath,
     )
-    if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
+    if (
+      mainUIJSFile != null &&
+      isTextFile(mainUIJSFile) &&
+      isParseSuccess(mainUIJSFile.fileContents.parsed)
+    ) {
       const components = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed)
       const textElement = Utils.forceNotNull(
         'Target text should exist',

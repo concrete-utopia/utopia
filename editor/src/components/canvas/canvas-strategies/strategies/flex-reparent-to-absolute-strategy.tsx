@@ -4,10 +4,6 @@ import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
 import { CanvasStrategyFactory, pickCanvasStateFromEditorState } from '../canvas-strategies'
 import {
@@ -26,7 +22,7 @@ import { treatElementAsContentAffecting } from './group-like-helpers'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { placeholderCloneCommands } from './reparent-utils'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function baseFlexReparentToAbsoluteStrategy(
   reparentTarget: ReparentTarget,
@@ -43,12 +39,6 @@ export function baseFlexReparentToAbsoluteStrategy(
       id: `FLEX_REPARENT_TO_ABSOLUTE`,
       name: `Reparent (Abs)`,
       controlsToRender: [
-        controlWithProps({
-          control: DragOutlineControl,
-          props: dragTargetsElementPaths(selectedElements),
-          key: 'ghost-outline-control',
-          show: 'visible-only-while-active',
-        }),
         controlWithProps({
           control: ParentOutlines,
           props: { targetParent: reparentTarget.newParent },
@@ -70,7 +60,7 @@ export function baseFlexReparentToAbsoluteStrategy(
       ],
       fitness: fitness,
       apply: (strategyLifecycle) => {
-        const filteredSelectedElements = getDragTargets(selectedElements)
+        const filteredSelectedElements = flattenSelection(selectedElements)
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,

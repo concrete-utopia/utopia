@@ -15,7 +15,7 @@ import Keyboard, {
   strictCheckModifiers,
 } from '../../utils/keyboard'
 import { Modifier, Modifiers } from '../../utils/modifiers'
-import Utils, { getChainSegmentEdge } from '../../utils/utils'
+import Utils from '../../utils/utils'
 import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
@@ -27,7 +27,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode, WrapInView } from './action-types'
+import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -35,7 +35,6 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultSpanElement,
-  defaultTransparentViewElement,
   defaultUnstyledDivElement,
   defaultViewElement,
 } from './defaults'
@@ -104,6 +103,7 @@ import {
   CONVERT_TO_FLEX_CONTAINER,
   REMOVE_ABSOLUTE_POSITIONING,
   RESIZE_TO_FIT,
+  JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -116,9 +116,10 @@ import {
   ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   jsxElement,
+  jsxFragment,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -138,15 +139,29 @@ import {
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
   isIntrinsicallyInlineElement,
+  setElementTopLeft,
+  nukeSizingPropsForAxisCommand,
 } from '../inspector/inspector-common'
 import { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  getElementContentAffectingType,
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+} from '../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../canvas/commands/set-css-length-command'
-import { isInfinityRectangle } from '../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  zeroCanvasPoint,
+  zeroCanvasRect,
+} from '../../core/shared/math-utils'
+import { parentPath } from '../../core/shared/element-path'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -453,6 +468,13 @@ export function handleKeyDown(
           return []
         }
       },
+      [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: () => {
+        if (isSelectMode(editor.mode)) {
+          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+        } else {
+          return []
+        }
+      },
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
         if (isInsertMode(editor.mode) || editor.rightMenu.selectedTab === RightMenuTab.Insert) {
           return MetaActions.cancelInsertModeActions('do-not-apply-changes')
@@ -525,7 +547,7 @@ export function handleKeyDown(
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
+          ? editor.selectedViews.map((target) => EditorActions.unwrapElement(target))
           : []
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
@@ -549,12 +571,14 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInElement(
-                editor.selectedViews,
-                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
+              EditorActions.wrapInElement(editor.selectedViews, {
+                element: jsxFragment(
                   generateUidWithExistingComponents(editor.projectContents),
+                  [],
+                  true,
                 ),
-              ),
+                importsToAdd: {},
+              }),
             ]
           : []
       },
@@ -741,7 +765,7 @@ export function handleKeyDown(
                 EditorActions.setProperty(
                   view,
                   PP.create('style', 'backgroundColor'),
-                  jsxAttributeValue(sRGBHex, emptyComments),
+                  jsExpressionValue(sRGBHex, emptyComments),
                 ),
               ),
             ),
@@ -871,46 +895,26 @@ export function handleKeyDown(
         }
 
         const commands = editor.selectedViews.flatMap((elementPath) => {
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
-          if (element == null) {
-            return []
-          }
-
-          const contentAffectingType = getElementContentAffectingType(
+          const maybeGroupConversionCommands = groupConversionCommands(
             editor.jsxMetadata,
             editor.allElementProps,
             elementPath,
           )
 
-          if (contentAffectingType === 'fragment') {
+          if (maybeGroupConversionCommands != null) {
+            return maybeGroupConversionCommands
+          }
+
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
+          if (element == null) {
             return []
           }
 
-          if (contentAffectingType === 'simple-div') {
-            const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(
-              elementPath,
-              editor.jsxMetadata,
-            )
-            if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
-              return []
-            }
-
-            return [
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'width'),
-                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.width)),
-                element.specialSizeMeasurements.parentFlexDirection ?? null,
-              ),
-              setCssLengthProperty(
-                'always',
-                elementPath,
-                PP.create('style', 'height'),
-                setExplicitCssValue(cssPixelLength(childrenBoundingFrame.height)),
-                element.specialSizeMeasurements.parentFlexDirection ?? null,
-              ),
-            ]
+          if (
+            MetadataUtils.isFragmentFromMetadata(element) ||
+            MetadataUtils.isConditionalFromMetadata(element)
+          ) {
+            return []
           }
 
           if (MetadataUtils.isPositionAbsolute(element)) {
@@ -1057,19 +1061,13 @@ function addCreateHoverInteractionActionToSwitchModeAction(
   switchModeAction: SwitchEditorMode,
   modifiers: Modifiers,
 ) {
-  return CanvasMousePositionRaw != null
-    ? [
-        switchModeAction,
-        CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(
-            CanvasMousePositionRaw,
-            modifiers,
-            boundingArea(),
-            'zero-drag-not-permitted',
-          ),
-        ),
-      ]
-    : [switchModeAction]
+  const mousePoint = CanvasMousePositionRaw ?? zeroCanvasPoint
+  return [
+    switchModeAction,
+    CanvasActions.createInteractionSession(
+      createHoverInteractionViaMouse(mousePoint, modifiers, boundingArea(), 'zero-drag-permitted'),
+    ),
+  ]
 }
 
 function detectBestWrapperElement(
@@ -1101,8 +1099,8 @@ function detectBestWrapperElement(
   }
 
   const props = jsxAttributesFromMap({
-    'data-uid': jsxAttributeValue(uid, emptyComments),
-    style: jsxAttributeValue(style, emptyComments),
+    'data-uid': jsExpressionValue(uid, emptyComments),
+    style: jsExpressionValue(style, emptyComments),
   })
 
   return {

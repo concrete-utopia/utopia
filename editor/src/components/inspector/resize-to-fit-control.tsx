@@ -32,8 +32,9 @@ const isApplicableSelector = createCachedSelector(
       selectedViews.length > 0 &&
       getFixedFillHugOptionsForElement(metadata, selectedViews[0]).has(mode)
     const isAlreadyApplied =
-      detectFillHugFixedState('horizontal', metadata, selectedViews[0])?.type === mode &&
-      detectFillHugFixedState('vertical', metadata, selectedViews[0])?.type === mode
+      detectFillHugFixedState('horizontal', metadata, selectedViews[0]).fixedHugFill?.type ===
+        mode &&
+      detectFillHugFixedState('vertical', metadata, selectedViews[0]).fixedHugFill?.type === mode
     return isApplicable && !isAlreadyApplied
   },
 )((_, mode) => mode)

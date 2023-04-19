@@ -57,12 +57,13 @@ import {
 } from '../canvas-strategy-types'
 import { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { applyMoveCommon, getDragTargets } from './shared-move-strategies-helpers'
+import { applyMoveCommon, flattenSelection } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import {
   replaceContentAffectingPathsWithTheirChildrenRecursive,
   retargetStrategyToChildrenOfContentAffectingElements,
+  retargetStrategyToTopMostGroupLikeElement,
 } from './group-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
@@ -73,11 +74,11 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const targets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
-  const filteredSelectedElements = getDragTargets(targets)
+  const originalTargets = retargetStrategyToTopMostGroupLikeElement(canvasState) // this needs a better variable name
+  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+
   if (
-    filteredSelectedElements.length === 0 ||
-    !filteredSelectedElements.every((element) => {
+    !retargetedTargets.every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,
@@ -91,10 +92,12 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const target = filteredSelectedElements[0]
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, target)
+  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets)
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
-  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(canvasState.startingMetadata, target)
+  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
+    canvasState.startingMetadata,
+    originalTargets,
+  )
 
   const autoLayoutSiblingsControl = hasAutoLayoutSiblings
     ? [
@@ -113,19 +116,24 @@ export function convertToAbsoluteAndMoveStrategy(
     controlsToRender: [
       controlWithProps({
         control: ImmediateParentOutlines,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ImmediateParentBounds,
-        props: { targets: filteredSelectedElements },
+        props: { targets: originalTargets },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
       ...autoLayoutSiblingsControl,
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: getFitness(interactionSession, hasAutoLayoutSiblings, autoLayoutSiblingsBounds),
+    fitness: getFitness(
+      interactionSession,
+      hasAutoLayoutSiblings,
+      autoLayoutSiblingsBounds,
+      originalTargets.length > 1,
+    ),
     apply: () => {
       if (
         interactionSession != null &&
@@ -146,6 +154,7 @@ export function convertToAbsoluteAndMoveStrategy(
           )
         }
         const absoluteMoveApplyResult = applyMoveCommon(
+          retargetedTargets,
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle contentAffecting elements
           canvasState,
           interactionSession,
@@ -185,6 +194,7 @@ function getFitness(
   interactionSession: InteractionSession | null,
   hasAutoLayoutSiblings: boolean,
   autoLayoutSiblingsBounds: CanvasRectangle | null,
+  multipleTargets: boolean,
 ): number {
   if (
     interactionSession != null &&
@@ -201,6 +211,10 @@ function getFitness(
     }
 
     if (!hasAutoLayoutSiblings) {
+      if (multipleTargets) {
+        // multi-selection should require a spacebar press to activate
+        return BaseWeight
+      }
       return DragConversionWeight
     }
 
@@ -222,9 +236,9 @@ const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { 
 
 function getAutoLayoutSiblingsBoundsInner(
   jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
+  targets: Array<ElementPath>,
 ): CanvasRectangle | null {
-  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, target)
+  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, targets)
   const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
   return boundingRectangleArray(autoLayoutSiblingsFrames)
 }
@@ -233,9 +247,13 @@ const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 }
 
 function getAutoLayoutSiblingsInner(
   jsxMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
+  targets: Array<ElementPath>,
 ): Array<ElementInstanceMetadata> {
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, target)
+  if (!targets.every((t) => EP.isSiblingOf(targets[0], t))) {
+    // this function only makes sense if the targets are siblings
+    return []
+  }
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, targets[0])
 }
 
 export function getEscapeHatchCommands(
@@ -247,7 +265,7 @@ export function getEscapeHatchCommands(
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const selectedElements = getDragTargets(_selectedElements)
+  const selectedElements = flattenSelection(_selectedElements)
   if (selectedElements.length === 0) {
     return { commands: [], intendedBounds: [] }
   }
@@ -322,6 +340,7 @@ function collectSetLayoutPropCommands(
       metadata,
       globalFrame,
     )
+
     const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
       if (globalFrame == null) {
         return []
@@ -331,20 +350,22 @@ function collectSetLayoutPropCommands(
       }
     })()
 
-    let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
-    const updatePinsCommands = createUpdatePinsCommands(
-      path,
-      metadata,
-      canvasState,
-      dragDelta,
-      newLocalFrame,
-    )
-    commands.push(...updatePinsCommands)
+    if (newLocalFrame != null) {
+      let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
+      const updatePinsCommands = createUpdatePinsCommands(
+        path,
+        metadata,
+        canvasState,
+        dragDelta,
+        newLocalFrame,
+      )
+      commands.push(...updatePinsCommands)
 
-    return { commands: commands, intendedBounds: intendedBounds }
-  } else {
-    return { commands: [], intendedBounds: [] }
+      return { commands: commands, intendedBounds: intendedBounds }
+    }
   }
+
+  return { commands: [], intendedBounds: [] }
 }
 
 function collectReparentCommands(

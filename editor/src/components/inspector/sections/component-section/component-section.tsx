@@ -69,11 +69,18 @@ import {
   StringInputPropertyControl,
   VectorPropertyControl,
 } from './property-control-controls'
-import { ComponentInfoBox } from './component-info-box'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
+import { InlineLink } from '../../../../uuiui/inline-button'
+import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
+import { openCodeEditorFile } from '../../../editor/actions/action-creators'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
+import { safeIndex } from '../../../../core/shared/array-utils'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -781,12 +788,49 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     setSectionExpanded((currentlyExpanded) => !currentlyExpanded)
   }, [setSectionExpanded])
 
+  const dispatch = useDispatch()
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'ComponentInfoBox selectedViews',
+  )
+
+  const target = safeIndex(selectedViews, 0) ?? null
+
+  const locationOfComponentInstance = useEditorState(
+    Substores.fullStore,
+    (state) => {
+      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
+      const importResult = getFilePathForImportedComponent(element)
+      if (importResult == null) {
+        const underlyingTarget = normalisePathToUnderlyingTarget(
+          state.editor.projectContents,
+          state.editor.nodeModules.files,
+          state.editor.canvas.openFile?.filename ?? '',
+          target,
+        )
+
+        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
+      } else {
+        return importResult
+      }
+    },
+    'ComponentSectionInner locationOfComponentInstance',
+  )
+
+  const OpenFile = React.useCallback(() => {
+    if (locationOfComponentInstance != null) {
+      dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
+    }
+  }, [dispatch, locationOfComponentInstance])
+
   return (
     <React.Fragment>
       <InspectorSectionHeader>
         <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
           <Icons.Component color='primary' />
-          <span>Component </span>
+          <InlineLink onClick={OpenFile}>Component</InlineLink>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
@@ -800,9 +844,6 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       {when(
         sectionExpanded,
         <React.Fragment>
-          {/* Information about the component as a whole */}
-          <ComponentInfoBox />
-          {/* List of component props with controls */}
           {propertyControlsAndTargets.map((controlsAndTargets) => (
             <PropertyControlsSection
               key={EP.toString(controlsAndTargets.targets[0])}

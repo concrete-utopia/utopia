@@ -14,12 +14,13 @@ import { isDirectory, directory, isImageFile } from '../core/model/project-file-
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
-import { mapValues, propOrNull } from '../core/shared/object-utils'
+import { mapValues, objectMap, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
-import { FileChecksums } from './editor/store/editor-state'
+import type { FileChecksums } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
+import { Optic, traversal } from '../core/shared/optics/optics'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -329,6 +330,29 @@ export function walkContentsTree(
     }
   })
 }
+
+interface PathAndFileEntry {
+  fullPath: string
+  file: ProjectFile
+}
+
+export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> = traversal(
+  (tree) => {
+    let result: Array<PathAndFileEntry> = []
+    walkContentsTree(tree, (fullPath, file) => {
+      result.push({ fullPath: fullPath, file: file })
+    })
+    return result
+  },
+  (tree: ProjectContentTreeRoot, modify: (entry: PathAndFileEntry) => PathAndFileEntry) => {
+    let result: ProjectContentTreeRoot = {}
+    walkContentsTree(tree, (fullPath, file) => {
+      const modified: PathAndFileEntry = modify({ fullPath: fullPath, file: file })
+      result = addFileToProjectContents(result, modified.fullPath, modified.file)
+    })
+    return result
+  },
+)
 
 export function walkContentsTreeForParseSuccess(
   tree: ProjectContentTreeRoot,

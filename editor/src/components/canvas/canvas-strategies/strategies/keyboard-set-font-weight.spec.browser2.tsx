@@ -1,6 +1,17 @@
+import { fromString } from '../../../../core/shared/element-path'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 
 describe('adjust font weight with the keyboard', () => {
   describe('no font weight specified', () => {
@@ -146,6 +157,27 @@ describe('adjust font weight with the keyboard', () => {
       expect(div.style.fontWeight).toEqual('200')
     })
   })
+
+  describe('retargets to group children', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      it(`sets font weight in ${type}`, async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [fromString(`sb/${GroupLikeElementUid}`)])
+        await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.fontWeight).toEqual('500')
+        expect(bbb.style.fontWeight).toEqual('500')
+      })
+    })
+  })
 })
 
 async function doSelect(editor: EditorRenderResult) {
@@ -165,11 +197,11 @@ async function doTestWithDelta(
   editor: EditorRenderResult,
   delta: { decreaseBy: number; increaseBy: number },
 ) {
-  for (let i = 0; i < delta.increaseBy; i++) {
+  for await (const _ of Array(delta.increaseBy)) {
     await pressKey('.', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
-  for (let i = 0; i < delta.decreaseBy; i++) {
+  for await (const _ of Array(delta.decreaseBy)) {
     await pressKey(',', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
@@ -221,6 +253,45 @@ export var storyboard = (
     >
       hello
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    ${getOpeningGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+    ${getClosingGroupLikeTag(type)}
   </Storyboard>
 )
 `

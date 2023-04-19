@@ -16,12 +16,13 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  findJSXElementLikeAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
   isJSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
@@ -30,7 +31,7 @@ import {
   ArbitraryJSBlock,
   TopLevelElement,
   getJSXElementNameAsString,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXFragment,
   isUtopiaJSXComponent,
   SettableLayoutSystem,
@@ -39,17 +40,20 @@ import {
   jsxElementNameEquals,
   isJSXElementLike,
   isJSXConditionalExpression,
-  childOrBlockIsChild,
+  isNullJSXAttributeValue,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
-  getUtopiaID,
   guaranteeUniqueUids,
-  setUtopiaID,
   isSceneElement,
-  getZIndexOfElement,
+  getIndexInParent,
 } from '../../core/model/element-template-utils'
-import { generateUID } from '../../core/shared/uid-utils'
+import {
+  fixUtopiaElement,
+  generateUID,
+  getUtopiaID,
+  setUtopiaID,
+} from '../../core/shared/uid-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -65,6 +69,7 @@ import {
   isTextFile,
   HighlightBoundsForUids,
   ExportsDetail,
+  NodeModules,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -120,6 +125,8 @@ import {
   ResizeOptions,
   AllElementProps,
   ElementProps,
+  NavigatorEntry,
+  isSyntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -172,10 +179,11 @@ import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
-import { uniqToasts } from '../editor/actions/toast-helpers'
+import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
+import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -455,7 +463,7 @@ export function updateFramesOfScenesAndComponents(
       null,
       (success, underlyingElement) => underlyingElement,
     )
-    if (element == null || !isJSXElement(element)) {
+    if (element == null || !(isJSXElement(element) || isJSXConditionalExpression(element))) {
       throw new Error(`Unexpected result when looking for element: ${element}`)
     }
 
@@ -469,6 +477,8 @@ export function updateFramesOfScenesAndComponents(
 
     const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
     const elementProps = editorState.allElementProps[EP.toString(target)] ?? {}
+
+    const elementAttributes = isJSXElement(element) ? element.props : []
 
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
@@ -497,6 +507,7 @@ export function updateFramesOfScenesAndComponents(
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
+                  workingEditorState.spyMetadata,
                 )
                 return {
                   ...success,
@@ -526,7 +537,7 @@ export function updateFramesOfScenesAndComponents(
               elementProps,
             )
             const valueFromAttributes = eitherToMaybe(
-              getSimpleAttributeAtPath(right(element.props), targetPropertyPath),
+              getSimpleAttributeAtPath(right(elementAttributes), targetPropertyPath),
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
@@ -539,7 +550,7 @@ export function updateFramesOfScenesAndComponents(
             if (shouldUnsetDraggedProp) {
               propsToUnset.push(targetPropertyPath)
             } else {
-              const newAttributeValue = jsxAttributeValue(newAttributeNumericValue, emptyComments)
+              const newAttributeValue = jsExpressionValue(newAttributeNumericValue, emptyComments)
 
               propsToSet.push({
                 path: targetPropertyPath,
@@ -605,7 +616,6 @@ export function updateFramesOfScenesAndComponents(
             )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
-            const elementAttributes = element.props
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
@@ -671,7 +681,7 @@ export function updateFramesOfScenesAndComponents(
                 }
                 propsToSet.push({
                   path: propPathToUpdate,
-                  value: jsxAttributeValue(valueToUse, emptyComments),
+                  value: jsExpressionValue(valueToUse, emptyComments),
                 })
               }
             })
@@ -682,7 +692,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             if (p !== 'width' && p !== 'height') {
-              const value = getLayoutProperty(p, right(element.props), styleStringInArray)
+              const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
               if (isLeft(value) || value.value != null) {
                 frameProps[p] = cssNumberAsNumberIfPossible(value.value)
                 propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
@@ -719,7 +729,7 @@ export function updateFramesOfScenesAndComponents(
           let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             const framePoint = framePointForPinnedProp(p)
-            const value = getLayoutProperty(p, right(element.props), styleStringInArray)
+            const value = getLayoutProperty(p, right(elementAttributes), styleStringInArray)
             if (isLeft(value) || value.value != null) {
               frameProps[framePoint] = cssNumberAsNumberIfPossible(value.value)
               propsToSkip.push(stylePropPathMappingFn(p, styleStringInArray))
@@ -858,7 +868,7 @@ function updateFrameValueForProp(
     if (existingProp == null) {
       return {
         path: stylePropPathMappingFn(framePoint, styleStringInArray),
-        value: jsxAttributeValue(delta, emptyComments),
+        value: jsExpressionValue(delta, emptyComments),
       }
     }
     const parsedProp = foldEither(
@@ -883,12 +893,12 @@ function updateFrameValueForProp(
         }
         return {
           path: stylePropPathMappingFn(framePoint, styleStringInArray),
-          value: jsxAttributeValue(valueToUse, emptyComments),
+          value: jsExpressionValue(valueToUse, emptyComments),
         }
       } else if (pinIsUnitlessOrPx) {
         return {
           path: stylePropPathMappingFn(framePoint, styleStringInArray),
-          value: jsxAttributeValue(parsedProp.value + delta, emptyComments),
+          value: jsExpressionValue(parsedProp.value + delta, emptyComments),
         }
       }
     }
@@ -1095,6 +1105,7 @@ export function collectGuidelines(
 
   let guidelines: Array<GuidelineWithRelevantPoints> = collectParentAndSiblingGuidelines(
     metadata,
+    allElementProps,
     selectedViews,
   )
 
@@ -1417,7 +1428,11 @@ export function snapPoint(
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
-  const shouldSnap = enableSnapping && !anythingPinnedAndNotAbsolutePositioned
+  const anyElementContentAffecting = selectedViews.some((elementPath) =>
+    treatElementAsContentAffecting(jsxMetadata, allElementProps, elementPath),
+  )
+  const shouldSnap =
+    enableSnapping && (anyElementContentAffecting || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
@@ -2012,6 +2027,7 @@ export function getReparentTargetFromState(
     editorState.hiddenInstances,
     position,
     editorState.projectContents,
+    editorState.nodeModules.files,
     editorState.canvas.openFile?.filename,
     editorState.allElementProps,
   )
@@ -2024,6 +2040,7 @@ export function getReparentTarget(
   hiddenInstances: Array<ElementPath>,
   pointOnCanvas: CanvasPoint,
   projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
   openFile: string | null | undefined,
   allElementProps: AllElementProps,
 ): {
@@ -2054,6 +2071,8 @@ export function getReparentTarget(
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       projectContents,
       componentMeta,
+      nodeModules,
+      openFile,
       possibleNewParent,
     )
   }
@@ -2127,30 +2146,38 @@ function editorReparentNoStyleChange(
             return editor
           }
           // Remove and then insert again at the new location.
-          return modifyParseSuccessAtPath(underlyingNewParentFilePath, editor, (workingSuccess) => {
-            let updatedUtopiaComponents: UtopiaJSXComponent[] = []
-            updatedUtopiaComponents = removeElementAtPath(
-              underlyingTarget,
-              utopiaComponentsIncludingScenes,
-            )
+          let detailsOfInsertion: string | null = null
+          const insertionResult = modifyParseSuccessAtPath(
+            underlyingNewParentFilePath,
+            editor,
+            (workingSuccess) => {
+              let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+              updatedUtopiaComponents = removeElementAtPath(
+                underlyingTarget,
+                utopiaComponentsIncludingScenes,
+              )
 
-            updatedUtopiaComponents = insertElementAtPath(
-              editor.projectContents,
-              editor.canvas.openFile?.filename ?? null,
-              underlyingNewParentPath,
-              updatedUnderlyingElement,
-              updatedUtopiaComponents,
-              indexPosition,
-            )
-
-            return {
-              ...workingSuccess,
-              topLevelElements: applyUtopiaJSXComponentsChanges(
-                workingSuccess.topLevelElements,
+              const withInserted = insertElementAtPath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+                underlyingNewParentPath,
+                updatedUnderlyingElement,
                 updatedUtopiaComponents,
-              ),
-            }
-          })
+                indexPosition,
+              )
+              detailsOfInsertion = withInserted.insertionDetails
+
+              return {
+                ...workingSuccess,
+                topLevelElements: applyUtopiaJSXComponentsChanges(
+                  workingSuccess.topLevelElements,
+                  withInserted.components,
+                ),
+              }
+            },
+          )
+
+          return includeToast(detailsOfInsertion, insertionResult)
         },
       )
     },
@@ -2247,6 +2274,7 @@ export function moveTemplate(
               flexContextChanged = flexContextChanged || didSwitch
 
               // Remove and then insert again at the new location.
+              let detailsOfUpdate: string | null = null
               workingEditorState = modifyParseSuccessAtPath(
                 underlyingNewParentFilePath,
                 workingEditorState,
@@ -2256,7 +2284,7 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  updatedUtopiaComponents = insertElementAtPath(
+                  const insertResult = insertElementAtPath(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     underlyingNewParentPath,
@@ -2264,6 +2292,8 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                     indexPosition,
                   )
+                  updatedUtopiaComponents = insertResult.components
+                  detailsOfUpdate = insertResult.insertionDetails
 
                   return {
                     ...workingSuccess,
@@ -2274,6 +2304,7 @@ export function moveTemplate(
                   }
                 },
               )
+              workingEditorState = includeToast(detailsOfUpdate, workingEditorState)
 
               // Validate the result of the re-insertion.
               if (newParentPath == null) {
@@ -2391,7 +2422,7 @@ function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPa
           const styleUpdated = setJSXValuesAtPaths(underlyingElement.props, [
             {
               path: PP.create('style', 'transition'),
-              value: jsxAttributeValue('none', emptyComments),
+              value: jsExpressionValue('none', emptyComments),
             },
           ])
           return foldEither(
@@ -2491,6 +2522,7 @@ function produceMoveTransientCanvasState(
 
   const moveGuidelines = collectParentAndSiblingGuidelines(
     workingEditorState.jsxMetadata,
+    workingEditorState.allElementProps,
     selectedViews,
   ).map((g) => g.guideline)
 
@@ -2676,6 +2708,7 @@ export function duplicate(
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
     ) => metadata
+    let detailsOfUpdate: string | null = null
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
@@ -2687,7 +2720,7 @@ export function duplicate(
           underlyingInstancePath,
           utopiaComponents,
         )
-        const elementIndex = getZIndexOfElement(
+        const elementIndex = getIndexInParent(
           success.topLevelElements,
           EP.dynamicPathToStaticPath(path),
         )
@@ -2714,7 +2747,18 @@ export function duplicate(
                   duplicateNewUID.newUID,
                 ]),
               }
-            }
+            } else if (isJSXConditionalExpression(newElement))
+              newElement = {
+                ...newElement,
+                whenTrue: fixUtopiaElement(newElement.whenTrue, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+                whenFalse: fixUtopiaElement(newElement.whenFalse, [
+                  ...existingIDs,
+                  duplicateNewUID.newUID,
+                ]),
+              }
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath
@@ -2759,7 +2803,7 @@ export function duplicate(
               }
             }
 
-            utopiaComponents = insertElementAtPath(
+            const insertResult = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
               newParentPath,
@@ -2767,6 +2811,8 @@ export function duplicate(
               utopiaComponents,
               position(),
             )
+            utopiaComponents = insertResult.components
+            detailsOfUpdate = insertResult.insertionDetails
 
             newSelectedViews.push(newPath)
             // duplicating and inserting the metadata to ensure we're not working with stale metadata
@@ -2791,6 +2837,7 @@ export function duplicate(
         }
       },
     )
+    workingEditorState = includeToast(detailsOfUpdate, workingEditorState)
     workingEditorState = {
       ...workingEditorState,
       jsxMetadata: metadataUpdate(workingEditorState.jsxMetadata),
@@ -2812,12 +2859,13 @@ export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
+  spyMetadata: ElementInstanceMetadataMap,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
   const jsxElement = findElementAtPath(target, workingComponents)
   const parentPath = EP.parentPath(target)
-  const parentElement = findJSXElementAtPath(parentPath, workingComponents)
+  const parentElement = findJSXElementLikeAtPath(parentPath, workingComponents)
 
   if (jsxElement != null && parentElement != null) {
     const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)
@@ -2837,7 +2885,7 @@ export function reorderComponent(
       jsxElement,
       workingComponents,
       adjustedIndexPosition,
-    )
+    ).components
   }
 
   return workingComponents
@@ -2867,7 +2915,11 @@ export function getParseSuccessOrTransientForFilePath(
   transientFilesState: TransientFilesState | null,
 ): GetParseSuccessOrTransientResult {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+  if (
+    projectFile != null &&
+    isTextFile(projectFile) &&
+    isParseSuccess(projectFile.fileContents.parsed)
+  ) {
     const parseSuccess = projectFile.fileContents.parsed
     const targetTransientFileState: TransientFileState | null =
       transientFilesState == null ? null : transientFilesState[filePath] ?? null
@@ -3009,7 +3061,7 @@ export function getValidElementPathsFromElement(
     }
 
     return paths
-  } else if (isJSXArbitraryBlock(element)) {
+  } else if (isJSExpressionOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
     // are used at the same level at which they're defined.
@@ -3049,21 +3101,19 @@ export function getValidElementPathsFromElement(
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
     fastForEach([element.whenTrue, element.whenFalse], (e) => {
-      if (childOrBlockIsChild(e)) {
-        paths.push(
-          ...getValidElementPathsFromElement(
-            focusedElementPath,
-            e,
-            path,
-            projectContents,
-            filePath,
-            false,
-            false,
-            transientFilesState,
-            resolve,
-          ),
-        )
-      }
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          path,
+          projectContents,
+          filePath,
+          false,
+          false,
+          transientFilesState,
+          resolve,
+        ),
+      )
     })
     return paths
   } else {
@@ -3381,4 +3431,27 @@ export function elementHasOnlyTextChildren(element: ElementInstanceMetadata): bo
   )
   const hasTextChildren = textChildren.length > 0
   return hasTextChildren && allChildrenText
+}
+
+export function isEntryAConditionalSlot(
+  metadata: ElementInstanceMetadataMap,
+  navigatorEntry: NavigatorEntry,
+): boolean {
+  const parentPath = EP.parentPath(navigatorEntry.elementPath)
+  const parentElement = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  if (parentElement == null) {
+    return false
+  }
+
+  const isParentConditional =
+    parentElement != null &&
+    isRight(parentElement.element) &&
+    isJSXConditionalExpression(parentElement.element.value)
+
+  const isNullValue =
+    isSyntheticNavigatorEntry(navigatorEntry) &&
+    isNullJSXAttributeValue(navigatorEntry.childOrAttribute)
+
+  return isParentConditional && isNullValue
 }

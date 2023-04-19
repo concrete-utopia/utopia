@@ -18,7 +18,7 @@ import {
   InteractionSession,
   paddingResizeHandle,
 } from '../../canvas-strategies/interaction-state'
-import { CSSCursor, EdgePiece } from '../../canvas-types'
+import { CSSCursor, EdgePiece, isHorizontalEdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   combinePaddings,
@@ -69,7 +69,8 @@ const PaddingResizeControlWidth = 3
 const PaddingResizeControlHeight = 12
 const PaddingResizeControlBorder = 1
 const PaddingResizeDragBorder = 1
-const PaddingResizeControlHitAreaWidth = 3
+const PaddingResizeControlHitAreaPaddingMainSide = 5
+const PaddingResizeControlHitAreaPaddingUnaffectedSide = 1
 
 type StoreSelector<T> = (s: CanvasSubstate) => T
 
@@ -176,11 +177,27 @@ const PaddingResizeControlI = React.memo(
       size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
     )
 
-    const [hitAreaWidth, borderWidth, dragBorderWidth] = [
-      PaddingResizeControlHitAreaWidth,
+    const [hitAreaPaddingMainSide, hitAreaPaddingUnaffectedSide, borderWidth, dragBorderWidth] = [
+      PaddingResizeControlHitAreaPaddingMainSide,
+      PaddingResizeControlHitAreaPaddingUnaffectedSide,
       PaddingResizeControlBorder,
       PaddingResizeDragBorder,
     ].map((v) => v / scale)
+
+    // We only want the mouse catchment area to be inside the element, so to prevent it from
+    // overflowing we apply padding on all sides of the pill control that are inside the element,
+    // and then use a margin to top up the difference so that the pill is always in the correct place
+    const controlPaddingForEdge = Math.min(
+      hitAreaPaddingMainSide,
+      props.paddingValue.renderedValuePx / 2 / scale,
+    )
+    const controlMarginForEdge = hitAreaPaddingMainSide - controlPaddingForEdge
+    const horizontalPadding = isHorizontalEdgePiece(props.edge)
+      ? hitAreaPaddingMainSide
+      : hitAreaPaddingUnaffectedSide
+    const verticalPadding = isHorizontalEdgePiece(props.edge)
+      ? hitAreaPaddingUnaffectedSide
+      : hitAreaPaddingMainSide
 
     const stripeColor = colorTheme.brandNeonPink.value
     const color = colorTheme.brandNeonPink.value
@@ -212,7 +229,14 @@ const PaddingResizeControlI = React.memo(
             pointerEvents: 'all',
             opacity: shown ? 1 : 0,
             position: 'absolute',
-            padding: hitAreaWidth,
+            paddingLeft: props.edge === 'left' ? controlPaddingForEdge : horizontalPadding,
+            paddingRight: props.edge === 'right' ? controlPaddingForEdge : horizontalPadding,
+            paddingTop: props.edge === 'top' ? controlPaddingForEdge : verticalPadding,
+            paddingBottom: props.edge === 'bottom' ? controlPaddingForEdge : verticalPadding,
+            marginLeft: props.edge === 'left' ? controlMarginForEdge : 0,
+            marginRight: props.edge === 'right' ? controlMarginForEdge : 0,
+            marginTop: props.edge === 'top' ? controlMarginForEdge : 0,
+            marginBottom: props.edge === 'bottom' ? controlMarginForEdge : 0,
             cursor: cursor,
             zIndex: 1,
           }}
@@ -220,6 +244,7 @@ const PaddingResizeControlI = React.memo(
           {!isDragging && indicatorShown && (
             <div
               style={{
+                pointerEvents: 'none',
                 position: 'absolute',
                 paddingTop: PaddingIndictorOffset(scale),
                 paddingLeft: PaddingIndictorOffset(scale),
@@ -246,7 +271,11 @@ interface PaddingControlProps {
 
 export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingControlProps) => {
   const selectedElements = props.targets
-  const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
+  const elementMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'Padding controls metadata',
+  )
 
   const hoveredViews = useEditorState(
     Substores.highlightedHoveredViews,
@@ -291,24 +320,24 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   }, [hoveredViews, selectedElements])
 
   const currentPadding = combinePaddings(
-    paddingFromSpecialSizeMeasurements(elementMetadata.current, selectedElements[0]),
-    simplePaddingFromMetadata(elementMetadata.current, selectedElements[0]),
+    paddingFromSpecialSizeMeasurements(elementMetadata, selectedElements[0]),
+    simplePaddingFromMetadata(elementMetadata, selectedElements[0]),
   )
 
   const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
     ref.current.style.height = numberToPxValue(boundingBox.height)
     ref.current.style.width = numberToPxValue(padding.paddingLeft?.renderedValuePx ?? 0)
   })
 
   const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
     ref.current.style.width = numberToPxValue(boundingBox.width)
     ref.current.style.height = numberToPxValue(padding.paddingTop?.renderedValuePx ?? 0)
   })
 
   const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
     ref.current.style.left = numberToPxValue(
       boundingBox.width - (padding.paddingRight?.renderedValuePx ?? 0),
     )
@@ -317,7 +346,7 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   })
 
   const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, selectedElements[0])
+    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
     ref.current.style.top = numberToPxValue(
       boundingBox.height - (padding.paddingBottom?.renderedValuePx ?? 0),
     )
