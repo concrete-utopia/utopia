@@ -459,6 +459,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         fixedProps.navigatorEntry = {
           type: 'CONDITIONAL_CLAUSE',
           elementPath: parentPath,
+          clauseElementPath: elementPath,
           clause: clause,
         }
       }

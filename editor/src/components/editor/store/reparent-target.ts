@@ -14,6 +14,7 @@ import { isRight } from '../../../core/shared/either'
 
 export interface ConditionalClause<P extends ElementPath> {
   elementPath: P
+  clauseElementPath: P
   clause: ConditionalCase
 }
 

@@ -1825,14 +1825,10 @@ export const UPDATE_FNS = {
             case 'CONDITIONAL_CLAUSE': {
               const newParent = reparentTargetFromNavigatorEntry(
                 dropTarget.target,
-                MetadataUtils.targetSupportsChildren(
-                  editor.projectContents,
-                  editor.jsxMetadata,
-                  editor.nodeModules.files,
-                  editor.canvas.openFile?.filename,
-                  dropTarget.target.elementPath,
-                ),
+                editor.projectContents,
                 editor.jsxMetadata,
+                editor.nodeModules.files,
+                editor.canvas.openFile?.filename,
               )
               return reparentToIndexPosition(newParent, absolute(0))
             }

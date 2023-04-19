@@ -2115,11 +2115,13 @@ export interface ConditionalClauseNavigatorEntry extends ConditionalClause<Eleme
 
 export function conditionalClauseNavigatorEntry(
   elementPath: ElementPath,
+  clauseElementPath: ElementPath,
   clause: ConditionalCase,
 ): ConditionalClauseNavigatorEntry {
   return {
     type: 'CONDITIONAL_CLAUSE',
     elementPath: elementPath,
+    clauseElementPath: clauseElementPath,
     clause: clause,
   }
 }
@@ -2238,38 +2240,25 @@ export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNaviga
 
 export function reparentTargetFromNavigatorEntry(
   navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-  supportsChildren: boolean,
+  projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
       return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
     case 'CONDITIONAL_CLAUSE':
-      // TODO: hate that the conditional clause entry does not contain the elementpath of the clause itself!
-      const conditionalElement = MetadataUtils.findElementByElementPath(
+      const supportsChildren = MetadataUtils.targetSupportsChildren(
+        projectContents,
         metadata,
-        navigatorEntry.elementPath,
+        nodeModules,
+        openFile,
+        navigatorEntry.clauseElementPath,
       )
-      if (conditionalElement == null) {
-        return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
-      }
-      const element = conditionalElement.element
-      if (isLeft(element)) {
-        return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
-      }
-      const jsxElement = element.value
-      if (!isJSXConditionalExpression(jsxElement)) {
-        return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
-      }
-
-      const clausePath = getConditionalClausePath(
-        navigatorEntry.elementPath,
-        navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse,
-      )
-
       return supportsChildren
-        ? conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
-        : arrayInsertionPath(clausePath, 'children', null)
+        ? arrayInsertionPath(navigatorEntry.clauseElementPath, 'children', null)
+        : conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)
   }

@@ -521,8 +521,10 @@ export const RegularNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Regular
   )
 
 export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.clauseElementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.clause,
     createCallWithTripleEquals<ConditionalCase>(),

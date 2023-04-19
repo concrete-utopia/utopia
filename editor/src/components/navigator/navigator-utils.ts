@@ -138,6 +138,7 @@ export function getNavigatorTargets(
         // Create the entry for the name of the clause.
         const clauseTitleEntry = conditionalClauseNavigatorEntry(
           conditionalSubTree.path,
+          clausePath,
           conditionalCase,
         )
         addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
