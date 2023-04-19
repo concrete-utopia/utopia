@@ -212,7 +212,14 @@ export function createElementIconPropsFromMetadata(
       height: 18,
     }
   }
-  const isText = MetadataUtils.isTextFromMetadata(element)
+
+  const isConditionalBranchText =
+    navigatorEntry != null &&
+    isSyntheticNavigatorEntry(navigatorEntry) &&
+    isJSXAttributeValue(navigatorEntry.childOrAttribute) &&
+    typeof navigatorEntry.childOrAttribute.value === 'string'
+
+  const isText = MetadataUtils.isTextFromMetadata(element) || isConditionalBranchText
   if (isText) {
     return {
       category: 'element',
