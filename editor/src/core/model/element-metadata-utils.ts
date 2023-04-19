@@ -127,9 +127,9 @@ import {
 import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
-  conditionalClause,
+  conditionalClauseInsertionPath,
   ReparentTargetParent,
-  reparentTargetParentIsElementPath,
+  isChildInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
@@ -1879,7 +1879,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: ReparentTargetParent<ElementPath>,
   ): ElementPath {
-    if (reparentTargetParentIsElementPath(reparentTargetParent)) {
+    if (isChildInsertionPath(reparentTargetParent)) {
       // This is an element path, so return directly.
       return reparentTargetParent
     } else {
@@ -1987,9 +1987,9 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClause(parentElement.elementPath, 'true-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case')
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClause(parentElement.elementPath, 'false-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
         }
       }
       return parentElement.elementPath

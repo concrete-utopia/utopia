@@ -192,7 +192,7 @@ import { getNavigatorTargets } from '../../../components/navigator/navigator-uti
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
-  conditionalClause,
+  conditionalClauseInsertionPath,
   ConditionalClause,
   dynamicReparentTargetParentToStaticReparentTargetParent,
   ReparentTargetParent,

@@ -9,7 +9,7 @@ export interface ConditionalClause<P extends ElementPath> {
   clause: ConditionalCase
 }
 
-export function conditionalClause<P extends ElementPath>(
+export function conditionalClauseInsertionPath<P extends ElementPath>(
   elementPath: P,
   clause: ConditionalCase,
 ): ConditionalClause<P> {
@@ -21,22 +21,22 @@ export function conditionalClause<P extends ElementPath>(
 
 export type ReparentTargetParent<P extends ElementPath> = P | ConditionalClause<P>
 
-export function reparentTargetParentIsConditionalClause<P extends ElementPath>(
+export function isConditionalClauseInsertionPath<P extends ElementPath>(
   reparentTargetParent: ReparentTargetParent<P>,
 ): reparentTargetParent is ConditionalClause<P> {
   return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
 }
 
-export function reparentTargetParentIsElementPath<P extends ElementPath>(
+export function isChildInsertionPath<P extends ElementPath>(
   reparentTargetParent: ReparentTargetParent<P>,
 ): reparentTargetParent is P {
-  return !reparentTargetParentIsConditionalClause(reparentTargetParent)
+  return !isConditionalClauseInsertionPath(reparentTargetParent)
 }
 
 export function getElementPathFromReparentTargetParent<P extends ElementPath>(
   reparentTargetParent: ReparentTargetParent<P>,
 ): P {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
+  if (isConditionalClauseInsertionPath(reparentTargetParent)) {
     return reparentTargetParent.elementPath
   } else {
     return reparentTargetParent
@@ -46,8 +46,8 @@ export function getElementPathFromReparentTargetParent<P extends ElementPath>(
 export function dynamicReparentTargetParentToStaticReparentTargetParent(
   reparentTargetParent: ReparentTargetParent<ElementPath>,
 ): ReparentTargetParent<StaticElementPath> {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return conditionalClause(
+  if (isConditionalClauseInsertionPath(reparentTargetParent)) {
+    return conditionalClauseInsertionPath(
       EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
       reparentTargetParent.clause,
     )
@@ -59,7 +59,7 @@ export function dynamicReparentTargetParentToStaticReparentTargetParent(
 export function reparentTargetToString<P extends ElementPath>(
   reparentTargetParent: ReparentTargetParent<P>,
 ): string {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
+  if (isConditionalClauseInsertionPath(reparentTargetParent)) {
     return `${reparentTargetParent.clause} of ${EP.toString(reparentTargetParent.elementPath)}`
   } else {
     return EP.toString(reparentTargetParent)
@@ -70,14 +70,14 @@ export function commonReparentTarget(
   first: ReparentTargetParent<ElementPath>,
   second: ReparentTargetParent<ElementPath>,
 ): ReparentTargetParent<ElementPath> | null {
-  if (reparentTargetParentIsElementPath(first)) {
-    if (reparentTargetParentIsElementPath(second)) {
+  if (isChildInsertionPath(first)) {
+    if (isChildInsertionPath(second)) {
       return EP.closestSharedAncestor(first, second, true)
     } else {
       return EP.closestSharedAncestor(first, second.elementPath, true)
     }
   } else {
-    if (reparentTargetParentIsElementPath(second)) {
+    if (isChildInsertionPath(second)) {
       return EP.closestSharedAncestor(first.elementPath, second, true)
     } else {
       if (EP.pathsEqual(first.elementPath, second.elementPath)) {

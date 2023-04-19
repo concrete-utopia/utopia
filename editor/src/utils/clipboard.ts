@@ -40,7 +40,10 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import { conditionalClause, ReparentTargetParent } from '../components/editor/store/insertion-path'
+import {
+  conditionalClauseInsertionPath,
+  ReparentTargetParent,
+} from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
@@ -312,7 +315,7 @@ export function getTargetParentForPaste(
         if (!isNullJSXAttributeValue(clause)) {
           return null
         }
-        return conditionalClause(parentPath, conditionalCase)
+        return conditionalClauseInsertionPath(parentPath, conditionalCase)
       }
     }
   }

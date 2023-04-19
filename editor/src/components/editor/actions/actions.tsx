@@ -506,8 +506,8 @@ import {
   dynamicReparentTargetParentToStaticReparentTargetParent,
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
-  reparentTargetParentIsElementPath,
+  isConditionalClauseInsertionPath,
+  isChildInsertionPath,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2345,7 +2345,7 @@ export const UPDATE_FNS = {
           return editor
         } else {
           let indexInParent: number | null = null
-          if (reparentTargetParentIsElementPath(parentPath)) {
+          if (isChildInsertionPath(parentPath)) {
             indexInParent = optionalMap(
               (firstPathMatchingCommonParent) =>
                 MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
@@ -2380,7 +2380,7 @@ export const UPDATE_FNS = {
           let viewPath: ReparentTargetParent<ElementPath> | null = null
 
           let isParentFlex: boolean = false
-          if (reparentTargetParentIsElementPath(parentPath)) {
+          if (isChildInsertionPath(parentPath)) {
             const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
             isParentFlex = parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           }
@@ -2435,7 +2435,7 @@ export const UPDATE_FNS = {
 
               if (
                 targetThatIsRootElementOfCommonParent == null &&
-                reparentTargetParentIsElementPath(parentPath)
+                isChildInsertionPath(parentPath)
               ) {
                 const insertResult = insertElementAtPath(
                   editor.projectContents,
@@ -2462,7 +2462,7 @@ export const UPDATE_FNS = {
                   getElementPathFromReparentTargetParent(staticTarget),
                   (oldRoot) => {
                     if (
-                      reparentTargetParentIsConditionalClause(staticTarget) &&
+                      isConditionalClauseInsertionPath(staticTarget) &&
                       isJSXConditionalExpression(oldRoot)
                     ) {
                       const clauseOptic = getClauseOptic(staticTarget.clause)
@@ -2581,7 +2581,7 @@ export const UPDATE_FNS = {
           }),
         )
         let indexInParent: number | null = null
-        if (parentPath != null && reparentTargetParentIsElementPath(parentPath)) {
+        if (parentPath != null && isChildInsertionPath(parentPath)) {
           indexInParent = optionalMap(
             (firstPathMatchingCommonParent) =>
               MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
@@ -2672,7 +2672,7 @@ export const UPDATE_FNS = {
                 const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
                   targetThatIsRootElementOfCommonParent ?? parentPath,
                 )
-                if (reparentTargetParentIsConditionalClause(staticTarget)) {
+                if (isConditionalClauseInsertionPath(staticTarget)) {
                   withTargetAdded = insertChildAndDetails(
                     transformJSXComponentAtPath(
                       utopiaJSXComponents,
@@ -2706,7 +2706,7 @@ export const UPDATE_FNS = {
               } else {
                 if (
                   targetThatIsRootElementOfCommonParent == null &&
-                  reparentTargetParentIsElementPath(parentPath)
+                  isChildInsertionPath(parentPath)
                 ) {
                   withTargetAdded = withInsertedElement()
                 } else {
@@ -2719,7 +2719,7 @@ export const UPDATE_FNS = {
                       getElementPathFromReparentTargetParent(staticTarget),
                       (oldRoot) => {
                         if (
-                          reparentTargetParentIsConditionalClause(staticTarget) &&
+                          isConditionalClauseInsertionPath(staticTarget) &&
                           isJSXConditionalExpression(oldRoot)
                         ) {
                           const clauseOptic = getClauseOptic(staticTarget.clause)
@@ -2860,7 +2860,7 @@ export const UPDATE_FNS = {
           action.target,
         ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
 
-        if (parentPath != null && reparentTargetParentIsConditionalClause(parentPath)) {
+        if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
           return unwrapConditionalClause(editor, action.target, parentPath)
         }
 
@@ -3204,7 +3204,7 @@ export const UPDATE_FNS = {
     }
     if (insertionAllowed) {
       function isConditionalTarget(): boolean {
-        if (reparentTargetParentIsConditionalClause(action.pasteInto)) {
+        if (isConditionalClauseInsertionPath(action.pasteInto)) {
           return true
         }
         const parentPath = EP.parentPath(action.pasteInto)

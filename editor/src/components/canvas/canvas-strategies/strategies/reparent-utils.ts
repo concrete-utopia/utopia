@@ -42,7 +42,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
-  reparentTargetParentIsElementPath,
+  isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
 
@@ -105,7 +105,7 @@ export function getReparentOutcome(
   // Early exit if there's no need to make any change.
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
-    reparentTargetParentIsElementPath(newParent) &&
+    isChildInsertionPath(newParent) &&
     EP.pathsEqual(newParent, EP.parentPath(toReparent.target))
   ) {
     return {

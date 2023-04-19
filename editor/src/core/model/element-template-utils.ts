@@ -67,7 +67,7 @@ import { modify } from '../shared/optics/optic-utilities'
 import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
-  reparentTargetParentIsConditionalClause,
+  isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
@@ -522,7 +522,7 @@ export function insertJSXElementChild(
     parentPath: ElementPath,
     target: ReparentTargetParent<ElementPath>,
   ) {
-    if (reparentTargetParentIsConditionalClause(target)) {
+    if (isConditionalClauseInsertionPath(target)) {
       return target.clause
     }
     return maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target) ?? 'true-case'
