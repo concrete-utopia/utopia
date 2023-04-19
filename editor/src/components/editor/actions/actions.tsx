@@ -425,7 +425,7 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { last, mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
+import { drop, last, mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
@@ -1823,7 +1823,17 @@ export const UPDATE_FNS = {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(dropTarget.target)
+              const newParent = reparentTargetFromNavigatorEntry(
+                dropTarget.target,
+                MetadataUtils.targetSupportsChildren(
+                  editor.projectContents,
+                  editor.jsxMetadata,
+                  editor.nodeModules.files,
+                  editor.canvas.openFile?.filename,
+                  dropTarget.target.elementPath,
+                ),
+                editor.jsxMetadata,
+              )
               return reparentToIndexPosition(newParent, absolute(0))
             }
             case 'SYNTHETIC': {

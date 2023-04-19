@@ -553,7 +553,27 @@ export function insertJSXElementChild(
       components,
       parentPath,
       (parentElement) => {
-        if (isJSXConditionalExpression(parentElement)) {
+        if (isJSXElementLike(parentElement)) {
+          let updatedChildren: Array<JSXElementChild>
+          if (indexPosition == null) {
+            updatedChildren = parentElement.children.concat(elementToInsert)
+          } else {
+            updatedChildren = Utils.addToArrayWithFill(
+              elementToInsert,
+              parentElement.children,
+              indexPosition,
+              makeE,
+            )
+          }
+          return {
+            ...parentElement,
+            [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
+          }
+        } else if (
+          targetParent != null &&
+          insertionPathIsConditionalClause(targetParent) &&
+          isJSXConditionalExpression(parentElement)
+        ) {
           // Determine which clause of the conditional we want to modify.
           const conditionalCase = getConditionalCase(
             parentElement,
@@ -581,22 +601,6 @@ export function insertJSXElementChild(
             },
             parentElement,
           )
-        } else if (isJSXElementLike(parentElement)) {
-          let updatedChildren: Array<JSXElementChild>
-          if (indexPosition == null) {
-            updatedChildren = parentElement.children.concat(elementToInsert)
-          } else {
-            updatedChildren = Utils.addToArrayWithFill(
-              elementToInsert,
-              parentElement.children,
-              indexPosition,
-              makeE,
-            )
-          }
-          return {
-            ...parentElement,
-            [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
-          }
         } else {
           return parentElement
         }

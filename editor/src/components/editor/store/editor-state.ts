@@ -185,7 +185,7 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ConditionalCase } from '../../../core/model/conditionals'
+import { ConditionalCase, getConditionalClausePath } from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
@@ -2238,12 +2238,38 @@ export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNaviga
 
 export function reparentTargetFromNavigatorEntry(
   navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
+  supportsChildren: boolean,
+  metadata: ElementInstanceMetadataMap,
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
       return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
     case 'CONDITIONAL_CLAUSE':
-      return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+      // TODO: hate that the conditional clause entry does not contain the elementpath of the clause itself!
+      const conditionalElement = MetadataUtils.findElementByElementPath(
+        metadata,
+        navigatorEntry.elementPath,
+      )
+      if (conditionalElement == null) {
+        return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
+      }
+      const element = conditionalElement.element
+      if (isLeft(element)) {
+        return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
+      }
+      const jsxElement = element.value
+      if (!isJSXConditionalExpression(jsxElement)) {
+        return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
+      }
+
+      const clausePath = getConditionalClausePath(
+        navigatorEntry.elementPath,
+        navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse,
+      )
+
+      return supportsChildren
+        ? conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+        : arrayInsertionPath(clausePath, 'children', null)
     default:
       assertNever(navigatorEntry)
   }

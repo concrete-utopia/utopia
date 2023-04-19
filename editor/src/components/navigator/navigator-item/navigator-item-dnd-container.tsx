@@ -121,6 +121,13 @@ function canDrop(
   dropTarget: 'top' | 'bottom' | 'hover',
 ): boolean {
   const isReparentTarget = draggedItem.appropriateDropTargetHint?.type === 'reparent'
+  const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
+    editorState.projectContents,
+    editorState.jsxMetadata,
+    editorState.nodeModules.files,
+    editorState.canvas.openFile?.filename,
+    draggedOnto.navigatorEntry.elementPath,
+  )
   if (isConditionalRoot(draggedOnto.navigatorEntry, editorState.jsxMetadata) && isReparentTarget) {
     // reparent target is the conditional root
     return false
@@ -132,7 +139,8 @@ function canDrop(
     return false
   } else if (
     !isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) &&
-    isNonEmptyConditionalBranch(draggedOnto.navigatorEntry.elementPath, editorState.jsxMetadata)
+    isNonEmptyConditionalBranch(draggedOnto.navigatorEntry.elementPath, editorState.jsxMetadata) &&
+    !targetSupportsChildren
   ) {
     // target is a direct conditional branch, non-empty
     return false
@@ -146,14 +154,7 @@ function canDrop(
     const childrenSupportedIfRequired =
       !isReparentTarget ||
       isConditionalClauseNavigatorEntry(draggedOnto.navigatorEntry) ||
-      (isRegularNavigatorEntry(draggedOnto.navigatorEntry) &&
-        MetadataUtils.targetSupportsChildren(
-          editorState.projectContents,
-          editorState.jsxMetadata,
-          editorState.nodeModules.files,
-          editorState.canvas.openFile?.filename,
-          draggedOnto.navigatorEntry.elementPath,
-        ))
+      (isRegularNavigatorEntry(draggedOnto.navigatorEntry) && targetSupportsChildren)
     const notSelectedItem = draggedItem.getCurrentlySelectedEntries().every((selection) => {
       return notDescendant(draggedOnto, selection.elementPath)
     })
