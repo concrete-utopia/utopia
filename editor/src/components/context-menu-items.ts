@@ -287,10 +287,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)(
-        [EditorActions.unwrapGroupOrView(data.selectedViews[0])],
-        'everyone',
-      )
+      requireDispatch(dispatch)([EditorActions.unwrapElement(data.selectedViews[0])], 'everyone')
     }
   },
 }
