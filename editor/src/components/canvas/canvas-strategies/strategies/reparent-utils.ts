@@ -43,7 +43,7 @@ import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
   reparentTargetParentIsElementPath,
-} from '../../../../components/editor/store/reparent-target'
+} from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
 
 interface GetReparentOutcomeResult {

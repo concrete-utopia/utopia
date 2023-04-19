@@ -196,7 +196,7 @@ import {
   ConditionalClause,
   dynamicReparentTargetParentToStaticReparentTargetParent,
   ReparentTargetParent,
-} from './reparent-target'
+} from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 

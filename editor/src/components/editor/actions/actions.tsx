@@ -508,7 +508,7 @@ import {
   ReparentTargetParent,
   reparentTargetParentIsConditionalClause,
   reparentTargetParentIsElementPath,
-} from '../store/reparent-target'
+} from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
   getClauseOptic,

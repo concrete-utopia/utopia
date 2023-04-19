@@ -253,7 +253,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
 } from '../store/editor-state'
-import { ReparentTargetParent } from '../store/reparent-target'
+import { ReparentTargetParent } from '../store/insertion-path'
 
 export function clearSelection(): EditorAction {
   return {

@@ -37,7 +37,7 @@ import {
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
-import { ReparentTargetParent, conditionalClause } from '../editor/store/reparent-target'
+import { ReparentTargetParent, conditionalClause } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { navigatorDepth } from './navigator-utils'
 import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'

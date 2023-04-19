@@ -2,7 +2,7 @@ import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
   reparentTargetToString,
-} from '../../../components/editor/store/reparent-target'
+} from '../../editor/store/insertion-path'
 import {
   EditorState,
   EditorStatePatch,

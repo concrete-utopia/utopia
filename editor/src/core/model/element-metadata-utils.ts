@@ -130,7 +130,7 @@ import {
   conditionalClause,
   ReparentTargetParent,
   reparentTargetParentIsElementPath,
-} from '../../components/editor/store/reparent-target'
+} from '../../components/editor/store/insertion-path'
 import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI

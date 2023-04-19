@@ -3,7 +3,7 @@ import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
   reparentTargetParentIsConditionalClause,
-} from '../../../components/editor/store/reparent-target'
+} from '../../editor/store/insertion-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'

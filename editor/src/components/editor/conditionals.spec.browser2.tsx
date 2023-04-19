@@ -35,7 +35,7 @@ import { ConditionalSectionTestId } from '../inspector/sections/layout-section/c
 import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
-import { ReparentTargetParent } from './store/reparent-target'
+import { ReparentTargetParent } from './store/insertion-path'
 
 describe('conditionals', () => {
   describe('inspector', () => {

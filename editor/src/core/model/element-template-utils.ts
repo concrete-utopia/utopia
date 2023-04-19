@@ -68,7 +68,7 @@ import {
   getElementPathFromReparentTargetParent,
   ReparentTargetParent,
   reparentTargetParentIsConditionalClause,
-} from '../../components/editor/store/reparent-target'
+} from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
 

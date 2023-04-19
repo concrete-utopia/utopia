@@ -77,7 +77,7 @@ import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
-import { ReparentTargetParent } from './store/reparent-target'
+import { ReparentTargetParent } from './store/insertion-path'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
