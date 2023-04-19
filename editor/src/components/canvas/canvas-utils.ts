@@ -184,7 +184,7 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
-import { arrayInsertionPath } from '../editor/store/reparent-target'
+import { InsertionPath, arrayInsertionPath } from '../editor/store/reparent-target'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2118,69 +2118,55 @@ export function getFrameChange(
 function editorReparentNoStyleChange(
   target: ElementPath,
   indexPosition: IndexPosition,
-  newParentPath: ElementPath,
+  newParentPath: InsertionPath,
   editor: EditorState,
 ): EditorState {
   // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
   return withUnderlyingTargetFromEditorState(
-    target,
+    newParentPath.elementPath,
     editor,
     editor,
-    (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      return withUnderlyingTargetFromEditorState(
-        newParentPath,
+    (
+      newParentSuccess,
+      underlyingNewParentElement,
+      underlyingNewParentPath,
+      underlyingNewParentFilePath,
+    ) => {
+      const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(newParentSuccess)
+      const updatedUnderlyingElement = findElementAtPath(target, utopiaComponentsIncludingScenes)
+      if (updatedUnderlyingElement == null) {
+        return editor
+      }
+      // Remove and then insert again at the new location.
+      let detailsOfInsertion: string | null = null
+      const insertionResult = modifyParseSuccessAtPath(
+        underlyingNewParentFilePath,
         editor,
-        editor,
-        (
-          newParentSuccess,
-          underlyingNewParentElement,
-          underlyingNewParentPath,
-          underlyingNewParentFilePath,
-        ) => {
-          const utopiaComponentsIncludingScenes =
-            getUtopiaJSXComponentsFromSuccess(newParentSuccess)
-          const updatedUnderlyingElement = findElementAtPath(
-            underlyingTarget,
-            utopiaComponentsIncludingScenes,
+        (workingSuccess) => {
+          let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+          updatedUtopiaComponents = removeElementAtPath(target, utopiaComponentsIncludingScenes)
+
+          const withInserted = insertElementAtPath(
+            editor.projectContents,
+            editor.canvas.openFile?.filename ?? null,
+            newParentPath,
+            updatedUnderlyingElement,
+            updatedUtopiaComponents,
+            indexPosition,
           )
-          if (updatedUnderlyingElement == null) {
-            return editor
+          detailsOfInsertion = withInserted.insertionDetails
+
+          return {
+            ...workingSuccess,
+            topLevelElements: applyUtopiaJSXComponentsChanges(
+              workingSuccess.topLevelElements,
+              withInserted.components,
+            ),
           }
-          // Remove and then insert again at the new location.
-          let detailsOfInsertion: string | null = null
-          const insertionResult = modifyParseSuccessAtPath(
-            underlyingNewParentFilePath,
-            editor,
-            (workingSuccess) => {
-              let updatedUtopiaComponents: UtopiaJSXComponent[] = []
-              updatedUtopiaComponents = removeElementAtPath(
-                underlyingTarget,
-                utopiaComponentsIncludingScenes,
-              )
-
-              const withInserted = insertElementAtPath(
-                editor.projectContents,
-                editor.canvas.openFile?.filename ?? null,
-                arrayInsertionPath(underlyingNewParentPath, 'children', null),
-                updatedUnderlyingElement,
-                updatedUtopiaComponents,
-                indexPosition,
-              )
-              detailsOfInsertion = withInserted.insertionDetails
-
-              return {
-                ...workingSuccess,
-                topLevelElements: applyUtopiaJSXComponentsChanges(
-                  workingSuccess.topLevelElements,
-                  withInserted.components,
-                ),
-              }
-            },
-          )
-
-          return includeToast(detailsOfInsertion, insertionResult)
         },
       )
+
+      return includeToast(detailsOfInsertion, insertionResult)
     },
   )
 }
@@ -2188,7 +2174,7 @@ function editorReparentNoStyleChange(
 export function editorMultiselectReparentNoStyleChange(
   targets: ElementPath[],
   indexPosition: IndexPosition,
-  newParentPath: ElementPath,
+  newParentPath: InsertionPath,
   editor: EditorState,
 ): EditorState {
   return targets.reduce<EditorState>((workingEditor, target) => {
