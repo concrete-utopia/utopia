@@ -450,8 +450,8 @@ export async function expectNoAction(
   return expectNUndoStepsNSaves(editor, 0, 0, action)
 }
 
-// FIXME This appears to be the default in a lot of cases,
-// but really we should only be experiencing 1 save in most cases
+// FIXME We should really only be expecting a single save, but we currently save
+// on changes to the parsed model as well as the printed code
 export async function expectSingleUndo2Saves(
   editor: EditorRenderResult,
   action: () => Promise<void>,

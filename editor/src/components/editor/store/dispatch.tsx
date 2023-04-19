@@ -618,6 +618,7 @@ export function editorDispatch(
 
 function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {
   return (
+    // FIXME We should be ripping out the parsed models before comparing the project contents here
     oldState.projectContents !== newState.projectContents ||
     oldState.githubSettings !== newState.githubSettings ||
     oldState.branchContents !== newState.branchContents
