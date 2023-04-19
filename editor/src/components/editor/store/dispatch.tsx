@@ -505,13 +505,11 @@ export function editorDispatch(
   const saveCountThisSession = result.saveCountThisSession
 
   const isLoaded = editorFilteredForFiles.isLoaded
-  const shouldSave =
-    forceSave ||
-    (isLoaded &&
-      !isLoadAction &&
-      editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
-      (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0)) &&
-      isBrowserEnvironment)
+  const canSave = isLoaded && !isLoadAction && isBrowserEnvironment
+  const shouldSaveIfNotForced =
+    editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
+    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0))
+  const shouldSave = canSave && (forceSave || shouldSaveIfNotForced)
 
   // Include asset renames with the history.
   let assetRenames: Array<History.AssetRename> = []
