@@ -41,7 +41,7 @@ import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
+  InsertionPath,
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
@@ -85,11 +85,11 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: ReparentTargetParent<ElementPath> | null,
+  targetParent: InsertionPath<ElementPath> | null,
   whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
-  let newParent: ReparentTargetParent<ElementPath>
+  let newParent: InsertionPath<ElementPath>
   if (targetParent == null) {
     const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
     if (storyboardElementPath == null) {

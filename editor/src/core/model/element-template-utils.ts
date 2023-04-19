@@ -66,7 +66,7 @@ import {
 import { modify } from '../shared/optics/optic-utilities'
 import {
   getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
+  InsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
@@ -508,7 +508,7 @@ export function insertChildAndDetails(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ReparentTargetParent<StaticElementPath> | null,
+  targetParent: InsertionPath<StaticElementPath> | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -520,7 +520,7 @@ export function insertJSXElementChild(
   function getConditionalCase(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
-    target: ReparentTargetParent<ElementPath>,
+    target: InsertionPath<ElementPath>,
   ) {
     if (isConditionalClauseInsertionPath(target)) {
       return target.clause

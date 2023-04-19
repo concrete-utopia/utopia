@@ -505,7 +505,7 @@ import {
   commonReparentTargetFromArray,
   dynamicReparentTargetParentToStaticReparentTargetParent,
   getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
+  InsertionPath,
   isConditionalClauseInsertionPath,
   isChildInsertionPath,
 } from '../store/insertion-path'
@@ -838,7 +838,7 @@ export function editorMoveMultiSelectedTemplates(
   builtInDependencies: BuiltInDependencies,
   targets: ElementPath[],
   indexPosition: IndexPosition,
-  newParent: ReparentTargetParent<ElementPath> | null,
+  newParent: InsertionPath<ElementPath> | null,
   editor: EditorModel,
 ): {
   editor: EditorModel
@@ -1774,7 +1774,7 @@ export const UPDATE_FNS = {
     const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
 
     function reparentToIndexPosition(
-      newParentPath: ReparentTargetParent<ElementPath>,
+      newParentPath: InsertionPath<ElementPath>,
       indexPosition: IndexPosition,
     ): EditorModel {
       const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
@@ -2377,7 +2377,7 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          let viewPath: ReparentTargetParent<ElementPath> | null = null
+          let viewPath: InsertionPath<ElementPath> | null = null
 
           let isParentFlex: boolean = false
           if (isChildInsertionPath(parentPath)) {

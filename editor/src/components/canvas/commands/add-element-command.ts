@@ -1,6 +1,6 @@
 import {
   getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
+  InsertionPath,
   reparentTargetToString,
 } from '../../editor/store/insertion-path'
 import {
@@ -18,14 +18,14 @@ import { IndexPosition } from '../../../utils/utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
-  parentPath: ReparentTargetParent<ElementPath>
+  parentPath: InsertionPath<ElementPath>
   element: JSXElementChild
   indexPosition?: IndexPosition
 }
 
 export function addElement(
   whenToRun: WhenToRun,
-  parentPath: ReparentTargetParent<ElementPath>,
+  parentPath: InsertionPath<ElementPath>,
   element: JSXElementChild,
   indexPosition?: IndexPosition,
 ): AddElement {

@@ -1,7 +1,7 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import {
   getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
+  InsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../editor/store/insertion-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
@@ -19,13 +19,13 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
-  newParent: ReparentTargetParent<ElementPath>
+  newParent: InsertionPath<ElementPath>
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
-  newParent: ReparentTargetParent<ElementPath>,
+  newParent: InsertionPath<ElementPath>,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',

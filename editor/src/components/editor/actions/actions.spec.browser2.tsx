@@ -19,7 +19,7 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
-import { ReparentTargetParent } from '../store/insertion-path'
+import { InsertionPath } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
 
@@ -288,7 +288,7 @@ describe('actions', () => {
       name: string
       startingCode: string
       elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
-      pasteInto: ReparentTargetParent<ElementPath>
+      pasteInto: InsertionPath<ElementPath>
       want: string
     }
     const tests: Array<PasteTest> = [

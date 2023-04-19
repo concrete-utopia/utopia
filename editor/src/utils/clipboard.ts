@@ -42,7 +42,7 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   conditionalClauseInsertionPath,
-  ReparentTargetParent,
+  InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
@@ -155,7 +155,7 @@ export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
   scale: number,
-  parentPath: ReparentTargetParent<ElementPath> | null,
+  parentPath: InsertionPath<ElementPath> | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
     return []
@@ -289,7 +289,7 @@ export function getTargetParentForPaste(
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
-): ReparentTargetParent<ElementPath> | null {
+): InsertionPath<ElementPath> | null {
   // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
   if (selectedViews.length === 1) {
     const targetPath = selectedViews[0]

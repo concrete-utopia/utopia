@@ -195,7 +195,7 @@ import {
   conditionalClauseInsertionPath,
   ConditionalClause,
   dynamicReparentTargetParentToStaticReparentTargetParent,
-  ReparentTargetParent,
+  InsertionPath,
 } from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
@@ -1970,7 +1970,7 @@ export function removeElementAtPath(
 export function insertElementAtPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: ReparentTargetParent<ElementPath> | null,
+  targetParent: InsertionPath<ElementPath> | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -2240,7 +2240,7 @@ export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNaviga
 
 export function reparentTargetFromNavigatorEntry(
   navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-): ReparentTargetParent<ElementPath> {
+): InsertionPath<ElementPath> {
   switch (navigatorEntry.type) {
     case 'REGULAR':
       return navigatorEntry.elementPath
