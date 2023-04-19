@@ -425,7 +425,7 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
+import { last, mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
 import { mergeProjectContents, TreeConflicts } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
 import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
@@ -2330,6 +2330,7 @@ export const UPDATE_FNS = {
           derived,
         )
         const parentPath = commonReparentTargetFromArray(
+          editorForAction.jsxMetadata,
           orderedActionTargets.map((actionTarget) => {
             return MetadataUtils.getReparentTargetOfTarget(
               editorForAction.jsxMetadata,
@@ -2579,6 +2580,7 @@ export const UPDATE_FNS = {
           derived,
         )
         const parentPath: InsertionPath | null = commonReparentTargetFromArray(
+          editorForAction.jsxMetadata,
           orderedActionTargets.map((actionTarget) => {
             return MetadataUtils.getReparentTargetOfTarget(
               editorForAction.jsxMetadata,
@@ -2622,14 +2624,18 @@ export const UPDATE_FNS = {
           const viewPath: InsertionPath = (() => {
             if (anyTargetIsARootElement) {
               return {
-                ...parentPath,
+                ...action.whatToWrapWith.insertionPathWithinWrapper,
                 elementPath: EP.dynamicPathToStaticPath(
-                  EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), newUID),
+                  EP.appendPartToPath(getElementPathFromInsertionPath(parentPath), [
+                    ...(last(action.whatToWrapWith.insertionPathWithinWrapper.elementPath.parts) ??
+                      []),
+                    newUID,
+                  ]),
                 ),
               }
             } else {
               return {
-                ...parentPath,
+                ...action.whatToWrapWith.insertionPathWithinWrapper,
                 elementPath: EP.dynamicPathToStaticPath(
                   EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID),
                 ),

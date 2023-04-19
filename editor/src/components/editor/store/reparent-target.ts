@@ -4,6 +4,13 @@ import { ConditionalCase } from '../../../core/model/conditionals'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 import { IndexPosition } from '../../../utils/utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+} from '../../../core/shared/element-template'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isRight } from '../../../core/shared/either'
 
 export interface ConditionalClause<P extends ElementPath> {
   elementPath: P
@@ -99,22 +106,46 @@ export function insertionPathToString(reparentTargetParent: InsertionPath): stri
 
 // TODO: do we need this
 export function commonReparentTarget(
+  metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
 ): InsertionPath | null {
-  const ancestor = EP.closestSharedAncestor(first.elementPath, second.elementPath, true)
-  if (ancestor == null) {
-    return null
+  const closestSharedAncestor = EP.dynamicPathToStaticPath(
+    forceNotNull(
+      `FIXME the common element path is null, it should be pointing to Storyboard`,
+      EP.closestSharedAncestor(first.elementPath, second.elementPath, true),
+    ),
+  )
+
+  if (EP.pathsEqual(closestSharedAncestor, first.elementPath)) {
+    return first
   }
-  return {
-    type: 'ARRAY_INSERTION',
-    elementPath: EP.dynamicPathToStaticPath(ancestor),
-    propName: 'children',
-    indexPosition: null,
+  if (EP.pathsEqual(closestSharedAncestor, second.elementPath)) {
+    return second
   }
+  const closestSharedAncestorElement = forceNotNull(
+    'FIXME found no element at the common path',
+    MetadataUtils.findElementByElementPath(metadata, closestSharedAncestor),
+  )
+  if (
+    isRight(closestSharedAncestorElement.element) &&
+    isJSXConditionalExpression(closestSharedAncestorElement.element.value)
+  ) {
+    if (closestSharedAncestorElement.conditionValue === 'not-a-conditional') {
+      throw new Error('found a conditional with not-a-conditional as the conditionValue')
+    }
+    // if the closest shared ancestor is a conditional, return the active branch
+    return conditionalClauseInsertionPath(
+      closestSharedAncestor,
+      closestSharedAncestorElement.conditionValue === true ? 'true-case' : 'false-case',
+    )
+  }
+
+  return arrayInsertionPath(closestSharedAncestor, 'children', null)
 }
 
 export function commonReparentTargetFromArray(
+  metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
 ): InsertionPath | null {
   let workingArray: Array<InsertionPath> = []
@@ -132,7 +163,7 @@ export function commonReparentTargetFromArray(
     if (working == null) {
       return working
     } else {
-      return commonReparentTarget(working, target)
+      return commonReparentTarget(metadata, working, target)
     }
   }, workingArray[0])
 }
