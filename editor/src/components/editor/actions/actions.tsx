@@ -4217,23 +4217,12 @@ export const UPDATE_FNS = {
     for (const fileUpdate of action.updates) {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
+        anyParsedUpdates = true
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
         switch (fileUpdate.type) {
-          case 'WORKER_CODE_UPDATE': {
-            // we use the new highlightBounds coming from the action
-            code = fileUpdate.code
-            updatedContents = updateParsedTextFileHighlightBounds(
-              existing.fileContents.parsed,
-              fileUpdate.highlightBounds,
-            )
-            break
-          }
           case 'WORKER_PARSED_UPDATE': {
-            anyParsedUpdates = true
-
-            // we use the new highlightBounds coming from the action
             code = existing.fileContents.code
             const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
             updatedContents = updateParsedTextFileHighlightBounds(
@@ -4242,7 +4231,7 @@ export const UPDATE_FNS = {
             )
             break
           }
-          case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
+          case 'WORKER_CODE_AND_PARSED_UPDATE':
             code = fileUpdate.code
             const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
             updatedContents = updateParsedTextFileHighlightBounds(
@@ -4703,9 +4692,6 @@ export const UPDATE_FNS = {
         }
       },
       editor,
-      RevisionsState.ParsedAheadNeedsReparsing,
-      // reparse needed because the new condition might be
-      // referencing variables from the outer scope
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
@@ -4966,7 +4952,6 @@ export const UPDATE_FNS = {
         }
       },
       editorStore.unpatchedEditor,
-      RevisionsState.ParsedAheadNeedsReparsing,
     )
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
 

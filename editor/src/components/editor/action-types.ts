@@ -663,14 +663,6 @@ export interface RemoveFileConflict {
   path: string
 }
 
-export interface WorkerCodeUpdate {
-  type: 'WORKER_CODE_UPDATE'
-  filePath: string
-  code: string
-  highlightBounds: HighlightBoundsForUids
-  lastRevisedTime: number
-}
-
 export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
@@ -689,7 +681,7 @@ export interface WorkerCodeAndParsedUpdate {
 
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
 export interface UpdateFromCodeEditor {
