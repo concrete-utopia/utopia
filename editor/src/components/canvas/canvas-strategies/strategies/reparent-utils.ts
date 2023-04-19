@@ -97,7 +97,7 @@ export function getReparentOutcome(
       console.warn(`Unable to find storyboard path.`)
       return null
     } else {
-      newParent = childInsertionPath(storyboardElementPath, 'children', null)
+      newParent = childInsertionPath(storyboardElementPath)
     }
   } else {
     newParent = targetParent

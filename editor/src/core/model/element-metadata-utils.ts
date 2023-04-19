@@ -1995,7 +1995,7 @@ export const MetadataUtils = {
           return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
         }
       }
-      return childInsertionPath(parentElement.elementPath, 'children', null)
+      return childInsertionPath(parentElement.elementPath)
     }
   },
 }

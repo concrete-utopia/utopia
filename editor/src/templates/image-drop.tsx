@@ -68,7 +68,7 @@ export async function insertImageFromClipboard(
     pastedImages,
     context.mousePosition,
     context.scale,
-    childInsertionPath(context.elementPath, 'children', null),
+    childInsertionPath(context.elementPath),
   )
 
   context.dispatch(actions, 'everyone')

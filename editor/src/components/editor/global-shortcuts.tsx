@@ -578,7 +578,7 @@ export function handleKeyDown(
                   [],
                   true,
                 ),
-                insertionPathWithinWrapper: childInsertionPath(emptyElementPath, 'children', null),
+                insertionPathWithinWrapper: childInsertionPath(emptyElementPath),
                 importsToAdd: {},
               }),
             ]
@@ -1086,7 +1086,7 @@ function detectBestWrapperElement(
   ) {
     return {
       element: defaultUnstyledDivElement(uid),
-      insertionPathWithinWrapper: childInsertionPath(emptyElementPath, 'children', null),
+      insertionPathWithinWrapper: childInsertionPath(emptyElementPath),
       importsToAdd: {},
     }
   }
@@ -1111,7 +1111,7 @@ function detectBestWrapperElement(
 
   return {
     element: jsxElement('div', uid, props, []),
-    insertionPathWithinWrapper: childInsertionPath(emptyElementPath, 'children', null),
+    insertionPathWithinWrapper: childInsertionPath(emptyElementPath),
     importsToAdd: {},
   }
 }

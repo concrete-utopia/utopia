@@ -386,7 +386,7 @@ function collectReparentCommands(
     canvasState.nodeModules,
     canvasState.openFile,
     pathToReparent(path),
-    childInsertionPath(targetParent, 'children', null),
+    childInsertionPath(targetParent),
     'always',
   )
   if (outcomeResult == null) {

@@ -121,7 +121,7 @@ export function baseAbsoluteReparentStrategy(
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  childInsertionPath(newParent, 'children', null),
+                  childInsertionPath(newParent),
                   'always',
                 )
 

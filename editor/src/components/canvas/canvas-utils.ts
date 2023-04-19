@@ -2274,7 +2274,7 @@ export function moveTemplate(
                   const insertResult = insertElementAtPath(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
-                    childInsertionPath(underlyingNewParentPath, 'children', null),
+                    childInsertionPath(underlyingNewParentPath),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
@@ -2798,7 +2798,7 @@ export function duplicate(
             const insertResult = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
-              childInsertionPath(newParentPathNotNull, 'children', null),
+              childInsertionPath(newParentPathNotNull),
               newElement,
               utopiaComponents,
               position(),
@@ -2873,7 +2873,7 @@ export function reorderComponent(
     workingComponents = insertElementAtPath(
       projectContents,
       openFile,
-      childInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath),
       jsxElement,
       workingComponents,
       adjustedIndexPosition,

@@ -119,7 +119,7 @@ export function getActionsForClipboardItems(
       const metadata = data.targetOriginalContextMetadata
       return [
         EditorActions.pasteJSXElements(
-          childInsertionPath(target, 'children', null), // what about conditionals?
+          childInsertionPath(target), // what about conditionals?
           elements,
           metadata,
         ),
@@ -148,7 +148,7 @@ export function getActionsForClipboardItems(
         pastedImages,
         parentCenter,
         canvasScale,
-        childInsertionPath(target, 'children', null),
+        childInsertionPath(target),
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -348,7 +348,7 @@ export function getTargetParentForPaste(
         ) &&
         !insertingSourceIntoItself
       ) {
-        return childInsertionPath(parentTarget, 'children', null)
+        return childInsertionPath(parentTarget)
       } else {
         const parentOfSelected = EP.parentPath(parentTarget)
         if (
@@ -360,7 +360,7 @@ export function getTargetParentForPaste(
             parentOfSelected,
           )
         ) {
-          return childInsertionPath(parentOfSelected, 'children', null)
+          return childInsertionPath(parentOfSelected)
         } else {
           return null
         }

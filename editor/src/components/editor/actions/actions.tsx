@@ -1812,10 +1812,7 @@ export const UPDATE_FNS = {
           assertNever(dropTarget)
       }
 
-      return reparentToIndexPosition(
-        childInsertionPath(newParentPath, 'children', null),
-        indexPosition,
-      )
+      return reparentToIndexPosition(childInsertionPath(newParentPath), indexPosition)
     } else {
       switch (dropTarget.type) {
         case 'REPARENT_ROW': {
@@ -2273,7 +2270,7 @@ export const UPDATE_FNS = {
         const withInsertedElement = insertElementAtPath(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
-          childInsertionPath(targetParent, 'children', null),
+          childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
           null,
@@ -2462,7 +2459,7 @@ export const UPDATE_FNS = {
                 const staticTarget =
                   targetThatIsRootElementOfCommonParent == null
                     ? parentPath
-                    : childInsertionPath(targetThatIsRootElementOfCommonParent, 'children', null)
+                    : childInsertionPath(targetThatIsRootElementOfCommonParent)
 
                 withTargetAdded = transformJSXComponentAtPath(
                   utopiaJSXComponents,
@@ -2500,13 +2497,9 @@ export const UPDATE_FNS = {
               viewPath = anyTargetIsARootElement
                 ? childInsertionPath(
                     EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), newUID),
-                    'children',
-                    null,
                   )
                 : childInsertionPath(
                     EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID),
-                    'children',
-                    null,
                   )
 
               const importsToAdd: Imports =
@@ -2713,7 +2706,7 @@ export const UPDATE_FNS = {
                 const staticTarget =
                   targetThatIsRootElementOfCommonParent == null
                     ? parentPath
-                    : childInsertionPath(targetThatIsRootElementOfCommonParent, 'children', null)
+                    : childInsertionPath(targetThatIsRootElementOfCommonParent)
 
                 if (isConditionalClauseInsertionPath(staticTarget)) {
                   withTargetAdded = insertChildAndDetails(
@@ -2756,7 +2749,7 @@ export const UPDATE_FNS = {
                   const staticTarget =
                     targetThatIsRootElementOfCommonParent == null
                       ? parentPath
-                      : childInsertionPath(targetThatIsRootElementOfCommonParent, 'children', null)
+                      : childInsertionPath(targetThatIsRootElementOfCommonParent)
 
                   withTargetAdded = insertChildAndDetails(
                     transformJSXComponentAtPath(
@@ -5329,7 +5322,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              childInsertionPath(action.targetParent, 'children', null),
+              childInsertionPath(action.targetParent),
               element,
               withMaybeUpdatedParent,
               action.indexPosition,
@@ -5351,7 +5344,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              childInsertionPath(action.targetParent, 'children', null),
+              childInsertionPath(action.targetParent),
               element,
               utopiaComponents,
               action.indexPosition,
@@ -5370,7 +5363,7 @@ export const UPDATE_FNS = {
             withInsertedElement = insertElementAtPath(
               editor.projectContents,
               openFilename,
-              childInsertionPath(action.targetParent, 'children', null),
+              childInsertionPath(action.targetParent),
               element,
               utopiaComponents,
               action.indexPosition,

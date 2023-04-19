@@ -22,21 +22,15 @@ export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
-  propName: 'children'
   elementPath: StaticElementPath
-  indexPosition: IndexPosition | null
 }
 
 export function childInsertionPath(
   elementPath: StaticElementPath | ElementPath,
-  propName: 'children',
-  indexPosition: IndexPosition | null,
 ): ChildInsertionPath {
   return {
     type: 'CHILD_INSERTION',
     elementPath: EP.dynamicPathToStaticPath(elementPath),
-    propName: propName,
-    indexPosition: indexPosition,
   }
 }
 
@@ -74,7 +68,7 @@ export function getElementPathFromInsertionPath(insertionPath: InsertionPath): S
 }
 
 export function insertionPathToString(insertionPath: InsertionPath): string {
-  return `${insertionPath.propName} of ${EP.toString(insertionPath.elementPath)}`
+  return `children of ${EP.toString(insertionPath.elementPath)}`
 }
 
 // TODO: do we need this
@@ -114,7 +108,7 @@ export function commonInsertionPath(
     )
   }
 
-  return childInsertionPath(closestSharedAncestor, 'children', null)
+  return childInsertionPath(closestSharedAncestor)
 }
 
 export function commonInsertionPathFromArray(

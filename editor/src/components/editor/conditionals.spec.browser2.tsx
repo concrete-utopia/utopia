@@ -574,8 +574,6 @@ describe('conditionals', () => {
         startSnippet,
         pasteInto: childInsertionPath(
           EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
-          'children',
-          null,
         ),
         targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
       })
@@ -612,8 +610,6 @@ describe('conditionals', () => {
         startSnippet,
         pasteInto: childInsertionPath(
           EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
-          'children',
-          null,
         ),
         targets: [
           EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),

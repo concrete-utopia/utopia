@@ -161,7 +161,7 @@ function applyStaticReparent(
             canvasState.nodeModules,
             canvasState.openFile,
             pathToReparent(target),
-            childInsertionPath(newParent, 'children', null),
+            childInsertionPath(newParent),
             'always',
           )
           let duplicatedElementNewUids: { [elementPath: string]: string } = {}

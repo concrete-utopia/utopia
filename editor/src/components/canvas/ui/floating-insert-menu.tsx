@@ -507,7 +507,7 @@ export var FloatingMenu = React.memo(() => {
               },
               insertionPathWithinWrapper:
                 element.type === 'JSX_FRAGMENT'
-                  ? childInsertionPath(emptyElementPath, 'children', null)
+                  ? childInsertionPath(emptyElementPath)
                   : conditionalClauseInsertionPath(emptyElementPath, 'true-case'),
               importsToAdd: emptyImports(),
             }),
@@ -577,11 +577,7 @@ export var FloatingMenu = React.memo(() => {
                   selectedViews,
                   {
                     element: newElement,
-                    insertionPathWithinWrapper: childInsertionPath(
-                      emptyElementPath,
-                      'children',
-                      null,
-                    ),
+                    insertionPathWithinWrapper: childInsertionPath(emptyElementPath),
                     importsToAdd: pickedInsertableComponent.importsToAdd,
                   },
                   isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
@@ -589,11 +585,7 @@ export var FloatingMenu = React.memo(() => {
                 )
               : wrapInElement(selectedViews, {
                   element: newElement,
-                  insertionPathWithinWrapper: childInsertionPath(
-                    emptyElementPath,
-                    'children',
-                    null,
-                  ),
+                  insertionPathWithinWrapper: childInsertionPath(emptyElementPath),
                   importsToAdd: pickedInsertableComponent.importsToAdd,
                 }),
           ]

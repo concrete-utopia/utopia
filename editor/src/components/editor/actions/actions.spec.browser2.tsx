@@ -309,11 +309,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['aaa']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
@@ -347,11 +343,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['aaa']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
@@ -386,11 +378,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
 		    <div data-uid='root'>
             <div data-uid='aaa'>
@@ -429,11 +417,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
         <div data-uid='root'>
             <div data-uid='aaa'>
@@ -473,11 +457,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
 		<div data-uid='root'>
             <div data-uid='aaa'>
@@ -523,11 +503,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', '38e']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
         want: `
         <div data-uid='root'>
             <>
@@ -565,11 +541,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', '38e']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
         want: `
         <div data-uid='root'>
             <>
@@ -605,8 +577,6 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
-          'children',
-          null,
         ),
         want: `
         <div data-uid='root'>
@@ -641,8 +611,6 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
-          'children',
-          null,
         ),
         want: `
         <div data-uid='root'>
@@ -917,11 +885,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root'])),
         want: `
       <div data-uid='root'>
         {
@@ -956,11 +920,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root']),
-          'children',
-          null,
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root'])),
         want: `
     <div data-uid='root'>
       {

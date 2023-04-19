@@ -1941,8 +1941,6 @@ export function addSceneToJSXComponents(
   if (storyboardComponentUID != null) {
     const storyboardComponentElementPath = childInsertionPath(
       EP.elementPath([staticElementPath([storyboardComponentUID])]),
-      'children',
-      null,
     )
     return insertJSXElementChild(
       projectContents,
@@ -2247,7 +2245,7 @@ export function reparentTargetFromNavigatorEntry(
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
-      return childInsertionPath(navigatorEntry.elementPath, 'children', null)
+      return childInsertionPath(navigatorEntry.elementPath)
     case 'CONDITIONAL_CLAUSE':
       const supportsChildren = MetadataUtils.targetSupportsChildren(
         projectContents,
@@ -2257,7 +2255,7 @@ export function reparentTargetFromNavigatorEntry(
         navigatorEntry.clauseElementPath,
       )
       return supportsChildren
-        ? childInsertionPath(navigatorEntry.clauseElementPath, 'children', null)
+        ? childInsertionPath(navigatorEntry.clauseElementPath)
         : conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)

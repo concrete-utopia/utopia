@@ -72,7 +72,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
-        childInsertionPath(targetParent, 'children', null),
+        childInsertionPath(targetParent),
         wrapper,
         withElementRemoved,
         index,

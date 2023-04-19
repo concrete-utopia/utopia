@@ -130,11 +130,7 @@ function createPasteElementAction(metadata: ElementInstanceMetadataMap, elementP
   const elementToPaste = elementToPasteMetadata.element.value
 
   const pasteElements = pasteJSXElements(
-    childInsertionPath(
-      EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target']),
-      'children',
-      null,
-    ),
+    childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'paste-target'])),
     [elementPaste(elementToPaste, emptyImports(), elementPath)],
     metadata,
   )

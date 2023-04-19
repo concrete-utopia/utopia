@@ -109,7 +109,7 @@ export function convertFragmentToGroup(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      childInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -172,7 +172,7 @@ export function convertFragmentToFrame(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      childInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -211,7 +211,7 @@ export function convertGroupToFragment(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      childInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath),
       jsxFragment(uid, children, true),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
@@ -338,7 +338,7 @@ export function convertFrameToFragmentCommands(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      childInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath),
       jsxFragment(uid, children, true),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),

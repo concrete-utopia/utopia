@@ -65,6 +65,7 @@ import {
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
 import {
+  childInsertionPath,
   getElementPathFromInsertionPath,
   InsertionPath,
   isChildInsertionPath,
@@ -534,14 +535,7 @@ export function insertJSXElementChild(
   const targetParentIncludingStoryboardRoot: InsertionPath | null =
     targetParent ??
     // TODO this is the ugliest code I wrote today
-    (storyboardPath == null
-      ? null
-      : {
-          type: 'CHILD_INSERTION',
-          propName: 'children',
-          elementPath: storyboardPath,
-          indexPosition: null,
-        })
+    (storyboardPath == null ? null : childInsertionPath(storyboardPath))
 
   if (targetParentIncludingStoryboardRoot == null) {
     return insertChildAndDetails(components)
@@ -572,7 +566,7 @@ export function insertJSXElementChild(
           }
           return {
             ...parentElement,
-            [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
+            children: updatedChildren,
           }
         } else if (isConditionalClauseInsertionPath(targetParent)) {
           if (!isJSXConditionalExpression(parentElement)) {

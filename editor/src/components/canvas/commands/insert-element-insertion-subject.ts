@@ -62,7 +62,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
       const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
-        childInsertionPath(targetParent, 'children', null),
+        childInsertionPath(targetParent),
         subject.element,
         utopiaComponents,
         null,
