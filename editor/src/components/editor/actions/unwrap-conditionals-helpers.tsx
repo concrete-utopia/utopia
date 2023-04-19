@@ -36,7 +36,7 @@ import { UPDATE_FNS } from './actions'
 export function unwrapConditionalClause(
   editor: EditorState,
   target: ElementPath,
-  parentPath: ConditionalClauseInsertionPath<ElementPath>,
+  parentPath: ConditionalClauseInsertionPath,
 ): EditorState {
   let newSelection: Array<ElementPath> = []
   const withElementMoved = modifyUnderlyingTargetElement(

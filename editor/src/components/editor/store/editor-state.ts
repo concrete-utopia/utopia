@@ -2111,9 +2111,10 @@ export function regularNavigatorEntriesEqual(
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
-export interface ConditionalClauseNavigatorEntry
-  extends ConditionalClauseInsertionPath<ElementPath> {
+export interface ConditionalClauseNavigatorEntry {
   type: 'CONDITIONAL_CLAUSE'
+  elementPath: StaticElementPath
+  clause: ConditionalCase
 }
 
 export function conditionalClauseNavigatorEntry(
@@ -2246,7 +2247,7 @@ export function reparentTargetFromNavigatorEntry(
     case 'REGULAR':
       return navigatorEntry.elementPath
     case 'CONDITIONAL_CLAUSE':
-      return navigatorEntry
+      return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)
   }
