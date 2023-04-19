@@ -67,6 +67,7 @@ import { modify } from '../shared/optics/optic-utilities'
 import {
   getElementPathFromInsertionPath,
   InsertionPath,
+  insertionPathIsArray,
   insertionPathIsConditionalClause,
   insertionPathIsSlot,
 } from '../../components/editor/store/reparent-target'
@@ -518,17 +519,6 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
-  function getConditionalCase(
-    conditional: JSXConditionalExpression,
-    parentPath: ElementPath,
-    target: InsertionPath,
-  ): ConditionalCase {
-    if (insertionPathIsConditionalClause(target)) {
-      return target.propName
-    }
-    throw new Error('trying to get at conditional case with a non-conditional insertion path')
-  }
-
   const storyboardPath = getStoryboardElementPath(projectContents, openFile)
 
   // TODO the caller could should provde the storyboard root path if they want to insert to the storyboard root
@@ -553,7 +543,13 @@ export function insertJSXElementChild(
       components,
       parentPath,
       (parentElement) => {
-        if (isJSXElementLike(parentElement)) {
+        if (targetParent == null) {
+          return parentElement
+        }
+        if (insertionPathIsArray(targetParent)) {
+          if (!isJSXElementLike(parentElement)) {
+            return parentElement
+          }
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)
@@ -569,11 +565,7 @@ export function insertJSXElementChild(
             ...parentElement,
             [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
           }
-        } else if (
-          targetParent != null &&
-          insertionPathIsConditionalClause(targetParent) &&
-          isJSXConditionalExpression(parentElement)
-        ) {
+        } else if (insertionPathIsConditionalClause(targetParent)) {
           return elementToInsert
         } else {
           return parentElement
