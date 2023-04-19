@@ -1,7 +1,9 @@
 import {
   emptyComments,
   jsExpressionValue,
+  jsxAttributesFromMap,
   jsxConditionalExpression,
+  jsxElement,
   JSXElementChild,
   jsxFragment,
 } from '../../../core/shared/element-template'
@@ -19,7 +21,12 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { absolute } from '../../../utils/utils'
-import { getIndexInParent } from '../../../core/model/element-template-utils'
+import {
+  generateUidWithExistingComponents,
+  getIndexInParent,
+} from '../../../core/model/element-template-utils'
+import { ProjectContentTreeRoot } from '../../assets'
+import { JSXAttributesPart, JSXAttributesEntry } from '../../../core/shared/element-template'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -64,7 +71,12 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       )
       const index = indexInParent >= 0 ? absolute(indexInParent) : null
 
-      const wrapper = getInsertionSubjectWrapper(command.wrapper, command.wrapperUID, elementToWrap)
+      const wrapper = getInsertionSubjectWrapper(
+        command.wrapper,
+        command.wrapperUID,
+        elementToWrap,
+        editor.projectContents,
+      )
 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
@@ -106,6 +118,7 @@ const getInsertionSubjectWrapper = (
   insertionSubjectWrapper: InsertionSubjectWrapper,
   wrapperUID: string,
   elementToWrap: JSXElementChild,
+  projectContents: ProjectContentTreeRoot,
 ) => {
   switch (insertionSubjectWrapper) {
     case 'conditional':
@@ -114,7 +127,7 @@ const getInsertionSubjectWrapper = (
         jsExpressionValue(true, emptyComments),
         'true',
         elementToWrap,
-        jsExpressionValue(null, emptyComments),
+        getInsertionSubjectWrapperConditionalFalseBranch(projectContents, elementToWrap),
         emptyComments,
       )
     case 'fragment':
@@ -122,4 +135,70 @@ const getInsertionSubjectWrapper = (
     default:
       assertNever(insertionSubjectWrapper)
   }
+}
+
+const falseBranchSideLength = 50
+
+function getInsertionSubjectWrapperConditionalFalseBranch(
+  projectContents: ProjectContentTreeRoot,
+  trueBranch: JSXElementChild,
+): JSXElementChild {
+  function isStyleProp(p: JSXAttributesPart): boolean {
+    return p.type === 'JSX_ATTRIBUTES_ENTRY' && p.key === 'style'
+  }
+
+  function getStyle(element: JSXElementChild): JSXAttributesEntry {
+    const emptyStyle: JSXAttributesEntry = {
+      type: 'JSX_ATTRIBUTES_ENTRY',
+      key: 'style',
+      value: jsExpressionValue({}, emptyComments),
+      comments: emptyComments,
+    }
+
+    if (element.type !== 'JSX_ELEMENT') {
+      return emptyStyle
+    }
+    const found = element.props.find(isStyleProp)
+    if (found == null || found.type !== 'JSX_ATTRIBUTES_ENTRY') {
+      return emptyStyle
+    }
+    return found
+  }
+
+  function getNumberProp(e: JSXAttributesEntry, key: string): number {
+    if (e.value.type !== 'ATTRIBUTE_VALUE') {
+      return 0
+    }
+    const value = e.value.value[key]
+    if (typeof value !== 'number') {
+      return 0
+    }
+    return value
+  }
+
+  const uid = generateUidWithExistingComponents(projectContents)
+
+  const trueBranchStyle = getStyle(trueBranch)
+  const left = getNumberProp(trueBranchStyle, 'left')
+  const top = getNumberProp(trueBranchStyle, 'top')
+
+  return jsxElement(
+    'div',
+    uid,
+    jsxAttributesFromMap({
+      style: jsExpressionValue(
+        {
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: left,
+          top: top,
+          width: falseBranchSideLength,
+          height: falseBranchSideLength,
+        },
+        emptyComments,
+      ),
+      'data-uid': jsExpressionValue(uid, emptyComments),
+    }),
+    [],
+  )
 }
