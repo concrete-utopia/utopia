@@ -1,16 +1,14 @@
-import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
-import * as EP from '../../../core/shared/element-path'
 import { ConditionalCase } from '../../../core/model/conditionals'
-import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { drop } from '../../../core/shared/array-utils'
-import { IndexPosition } from '../../../utils/utils'
-import { forceNotNull } from '../../../core/shared/optional-utils'
+import { isRight } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isRight } from '../../../core/shared/either'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 
 export interface ConditionalClause<P extends ElementPath> {
   elementPath: P
