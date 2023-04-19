@@ -3,10 +3,9 @@ import { act, within } from '@testing-library/react'
 import { forElementOptic } from '../../core/model/common-optics'
 import { conditionalWhenTrueOptic } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isLeft, isRight } from '../../core/shared/either'
+import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
-  JSXElementChild,
   emptyComments,
   isJSExpressionValue,
   isJSXConditionalExpression,
@@ -16,9 +15,10 @@ import {
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import { Optic, compose6Optics } from '../../core/shared/optics/optics'
+import { forceNotNull } from '../../core/shared/optional-utils'
 import { ElementPath } from '../../core/shared/project-file-types'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
-  EditorRenderResult,
   TestScenePath,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -28,14 +28,14 @@ import {
   deleteSelected,
   pasteJSXElements,
   selectComponents,
+  unwrapElement,
   wrapInElement,
 } from '../editor/actions/action-creators'
+import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
+import { ElementPaste } from './action-types'
+import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
 import { ReparentTargetParent } from './store/reparent-target'
-import { ElementPaste } from './action-types'
-import { forceNotNull } from '../../core/shared/optional-utils'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
-import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -527,6 +527,138 @@ describe('conditionals', () => {
       )
     })
   })
+  describe('unwrap', () => {
+    it('can unwrap a conditional', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? <div data-uid='bbb'>hello there</div> : <div data-uid='ccc'>another div</div>
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              <div data-uid='bbb'>hello there</div>
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional that is pinned to false', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=false
+          true ? (
+            <div data-uid='bbb' data-testid='bbb'>hello</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bello</div>
+          )
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+            <div data-uid='ccc' data-testid='ccc'>bello</div>
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional with only text', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          true ? 'hello': 'bello'
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {'hello'}
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional clause', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (
+              <div data-uid='bbb' data-testid='bbb'>
+                <span data-uid='ccc'>hello</span>
+              </div>
+            ) : (
+              'bello'
+            )
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              // @utopia/uid=conditional
+              true ? (
+                <span data-uid='ccc'>hello</span>
+              ) : (
+                'bello'
+              )
+            }
+          </div>
+         `),
+      )
+    })
+  })
   describe('paste', () => {
     it('can paste a single element into a conditional', async () => {
       const startSnippet = `
@@ -870,18 +1002,4 @@ async function runPaste({
   })
 
   return getPrintedUiJsCode(renderResult.getEditorState())
-}
-
-function getElementFromRenderResult(
-  renderResult: EditorRenderResult,
-  path: ElementPath,
-): JSXElementChild {
-  const element = MetadataUtils.findElementByElementPath(
-    renderResult.getEditorState().editor.jsxMetadata,
-    path,
-  )
-  if (element == null || isLeft(element.element)) {
-    throw new Error('element is invalid')
-  }
-  return element.element.value
 }

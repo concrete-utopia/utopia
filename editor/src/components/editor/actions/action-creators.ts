@@ -149,7 +149,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -233,7 +233,7 @@ import type {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
 } from '../action-types'
-import { EditorModes, insertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -516,11 +516,20 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
   options?: {
     textEdit?: boolean
+    wrapInContainer?: InsertionSubjectWrapper
   },
 ): SwitchEditorMode {
   return switchEditorMode(
     EditorModes.insertMode([
-      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+      insertionSubject(
+        uid,
+        element,
+        size,
+        importsToAdd,
+        null,
+        options?.textEdit ?? false,
+        options?.wrapInContainer ?? null,
+      ),
     ]),
   )
 }
@@ -742,12 +751,10 @@ export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
   //}
 }
 
-export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
+export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
-    // TODO make it only run when the target is a group
-    action: 'UNWRAP_GROUP_OR_VIEW',
+    action: 'UNWRAP_ELEMENT',
     target: target,
-    onlyForGroups: false,
   }
 }
 

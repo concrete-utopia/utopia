@@ -1,18 +1,23 @@
+import {
+  findMaybeConditionalExpression,
+  maybeBranchConditionalCase,
+} from '../../../../../core/model/conditionals'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { foldEither } from '../../../../../core/shared/either'
+import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   elementReferencesElsewhere,
 } from '../../../../../core/shared/element-template'
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { ProjectContentTreeRoot } from '../../../../assets'
 import { CSSCursor } from '../../../canvas-types'
 import { setCursorCommand } from '../../../commands/set-cursor-command'
 import {
   InteractionCanvasState,
-  strategyApplicationResult,
   StrategyApplicationResult,
+  strategyApplicationResult,
 } from '../../canvas-strategy-types'
-import { ProjectContentTreeRoot } from '../../../../assets'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -24,6 +29,11 @@ export function isAllowedToReparent(
   } else {
     const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
     if (metadata == null) {
+      const parentPath = EP.parentPath(target)
+      const conditional = findMaybeConditionalExpression(parentPath, startingMetadata)
+      if (conditional != null) {
+        return maybeBranchConditionalCase(parentPath, conditional, target) != null
+      }
       return false
     } else {
       return foldEither(

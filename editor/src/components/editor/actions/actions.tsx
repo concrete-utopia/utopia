@@ -13,7 +13,7 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
-  getZIndexOfElement,
+  getIndexInParent,
   insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
@@ -298,7 +298,7 @@ import {
   ToggleProperty,
   ToggleSelectionLock,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateConfigFromVSCode,
@@ -515,6 +515,13 @@ import {
   maybeBranchConditionalCase,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  isTextContainingConditional,
+  unwrapConditionalClause,
+  unwrapTextContainingConditional,
+} from './unwrap-conditionals-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1155,7 +1162,7 @@ function indexPositionForAdjustment(
           openUIJSFileKey,
           0,
           (success) => {
-            return getZIndexOfElement(success.topLevelElements, EP.asStatic(target))
+            return getIndexInParent(success.topLevelElements, EP.asStatic(target))
           },
         )
         return {
@@ -2809,70 +2816,114 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UNWRAP_GROUP_OR_VIEW: (
-    action: UnwrapGroupOrView,
+  UNWRAP_ELEMENT: (
+    action: UnwrapElement,
     editorForAction: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
       editorForAction,
       false,
       (editor) => {
-        if (action.onlyForGroups) {
-          // TOOD groups
-          // bail early, we shouldn't delete a non-group view
+        const supportsChildren = MetadataUtils.targetSupportsChildren(
+          editor.projectContents,
+          editor.jsxMetadata,
+          editor.nodeModules.files,
+          editor.canvas.openFile?.filename,
+          action.target,
+        )
+
+        const elementIsContentAffecting = treatElementAsContentAffecting(
+          editor.jsxMetadata,
+          editor.allElementProps,
+          action.target,
+        )
+
+        if (!(supportsChildren || elementIsContentAffecting)) {
           return editor
         }
 
-        const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
-        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, action.target)
-        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
-          return editor
-        }
+        const parentPath = MetadataUtils.getReparentTargetOfTarget(
+          editorForAction.jsxMetadata,
+          action.target,
+        )
 
-        const parentPath = EP.parentPath(action.target)
-        const parentFrame =
-          parentPath == null
-            ? (Utils.zeroRectangle as CanvasRectangle)
-            : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
         const indexPosition: IndexPosition = indexPositionForAdjustment(
           action.target,
           editor,
           'forward',
         )
-        let newSelection: ElementPath[] = []
-        const withChildrenMoved = children.reduce((working, child) => {
-          const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-            child.elementPath,
-            editor.jsxMetadata,
-          )
-          const result = editorMoveTemplate(
-            child.elementPath,
-            child.elementPath,
-            childFrame,
+        const children = MetadataUtils.getChildrenOrdered(
+          editor.jsxMetadata,
+          action.target,
+        ).reverse() // children are reversed so when they are readded one by one as 'forward' index they keep their original order
+
+        if (parentPath != null && reparentTargetParentIsConditionalClause(parentPath)) {
+          return unwrapConditionalClause(editor, action.target, parentPath)
+        }
+
+        if (elementIsContentAffecting) {
+          if (isTextContainingConditional(action.target, editor.jsxMetadata)) {
+            return unwrapTextContainingConditional(editor, action.target, dispatch)
+          }
+
+          const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
+            builtInDependencies,
+            children.map((child) => child.elementPath),
             indexPosition,
             parentPath,
-            parentFrame,
-            working,
-            null,
-            null,
+            editor,
           )
-          if (result.newPath != null) {
-            newSelection.push(result.newPath)
-          }
-          return result.editor
-        }, editor)
-        const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-        return {
-          ...withViewDeleted,
-          selectedViews: newSelection,
-          canvas: {
-            ...withViewDeleted.canvas,
-            domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-          },
+          return {
+            ...withViewDeleted,
+            selectedViews: newPaths,
+            canvas: {
+              ...withViewDeleted.canvas,
+              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+            },
+          }
+        } else {
+          const parentFrame =
+            parentPath == null
+              ? (Utils.zeroRectangle as CanvasRectangle)
+              : MetadataUtils.getFrameOrZeroRectInCanvasCoords(parentPath, editor.jsxMetadata)
+
+          let newSelection: ElementPath[] = []
+          const withChildrenMoved = children.reduce((working, child) => {
+            const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+              child.elementPath,
+              editor.jsxMetadata,
+            )
+            const result = editorMoveTemplate(
+              child.elementPath,
+              child.elementPath,
+              childFrame,
+              indexPosition,
+              parentPath,
+              parentFrame,
+              working,
+              null,
+              null,
+            )
+            if (result.newPath != null) {
+              newSelection.push(result.newPath)
+            }
+            return result.editor
+          }, editor)
+          const withViewDeleted = deleteElements([action.target], withChildrenMoved)
+
+          return {
+            ...withViewDeleted,
+            selectedViews: newSelection,
+            canvas: {
+              ...withViewDeleted.canvas,
+              domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+            },
+          }
         }
       },
       dispatch,
@@ -3204,23 +3255,10 @@ export const UPDATE_FNS = {
             workingEditorState.jsxMetadata,
             resolvedTarget,
           )
-          const pastedElementIsFlex =
-            MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-              currentValue.originalElementPath,
-              action.targetOriginalContextMetadata,
-            )
 
           const pastedElementMetadata = MetadataUtils.findElementByElementPath(
             action.targetOriginalContextMetadata,
             currentValue.originalElementPath,
-          )
-          const pastedElementIsAbsolute = MetadataUtils.isPositionAbsolute(pastedElementMetadata)
-          const pastedElementIsConditional =
-            MetadataUtils.isConditionalFromMetadata(pastedElementMetadata)
-
-          const parentOfPasteInto = MetadataUtils.findElementByElementPath(
-            editor.jsxMetadata,
-            resolvedTarget,
           )
 
           function maybePasteIntoConditionalBranch(
@@ -3248,34 +3286,29 @@ export const UPDATE_FNS = {
 
           const pasteIntoConditionalBranch = maybePasteIntoConditionalBranch(resolvedTarget)
 
-          const continueWithPaste =
-            pasteIntoConditionalBranch != null
-              ? isNullJSXAttributeValue(pasteIntoConditionalBranch)
-              : pastedElementIsAbsolute ||
-                pastedElementIsFlex ||
-                pastedElementIsConditional ||
-                MetadataUtils.isConditionalFromMetadata(parentOfPasteInto) ||
-                isJSXFragment(currentValue.element)
-
-          if (continueWithPaste) {
-            const propertyChangeCommands = getReparentPropertyChanges(
-              reparentStrategy.strategy,
-              newPath,
-              resolvedTarget,
-              action.targetOriginalContextMetadata,
-              workingEditorState.jsxMetadata,
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename,
-              pastedElementMetadata?.specialSizeMeasurements.position ?? null,
-              pastedElementMetadata?.specialSizeMeasurements.display ?? null,
-            )
-
-            const allCommands = [...reparentCommands, ...propertyChangeCommands]
-
-            return foldAndApplyCommandsSimple(workingEditorState, allCommands)
-          } else {
+          if (
+            pasteIntoConditionalBranch != null &&
+            !isNullJSXAttributeValue(pasteIntoConditionalBranch)
+          ) {
+            // do not allow pasting into non-empty conditional branches
             return workingEditorState
           }
+
+          const propertyChangeCommands = getReparentPropertyChanges(
+            reparentStrategy.strategy,
+            newPath,
+            resolvedTarget,
+            action.targetOriginalContextMetadata,
+            workingEditorState.jsxMetadata,
+            workingEditorState.projectContents,
+            workingEditorState.canvas.openFile?.filename,
+            pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+            pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+          )
+
+          const allCommands = [...reparentCommands, ...propertyChangeCommands]
+
+          return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
     } else {
@@ -3524,50 +3557,15 @@ export const UPDATE_FNS = {
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
     }
-
-    const newLayout = {
-      left: frame.x,
-      top: frame.y,
-      width: frame.width,
-      height: frame.height,
-    }
-
-    let errorMessage: string | null = null
-
-    const updatedEditor = modifyOpenJsxElementAtPath(
-      target,
-      (element: JSXElement) => {
-        const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
-          element.props,
-          newLayout,
-          styleStringInArray,
-        )
-
-        if (isLeft(updatedAttributes)) {
-          errorMessage = `Failed to reset pins: ${updatedAttributes.value}`
-          return element
-        } else {
-          return {
-            ...element,
-            props: updatedAttributes.value,
-          }
-        }
-      },
-      editor,
-    )
-
-    /* eslint-disable no-unreachable */
-    // this is faulty, as PinLayoutHelpers.setLayoutPropsToPinsWithFrame also erases all of props.layout, including properties that are not connected to the pins
-    throw new Error('WARNING RESET_PINS is not correctly implemented, please contact Balazs')
-
-    if (errorMessage != null) {
-      console.error(errorMessage)
-      const toastAction = showToast(notice(errorMessage!, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor)
-    } else {
-      return updatedEditor
-    }
-    /* eslint-enable no-unreachable */
+    const commands = [
+      deleteProperties('always', target, [
+        PP.create('style', 'left'),
+        PP.create('style', 'right'),
+        PP.create('style', 'top'),
+        PP.create('style', 'bottom'),
+      ]),
+    ]
+    return foldAndApplyCommandsSimple(editor, commands)
   },
   SET_CURSOR_OVERLAY: (action: SetCursorOverlay, editor: EditorModel): EditorModel => {
     if (editor.canvas.cursor === action.cursor) {
@@ -5241,80 +5239,128 @@ export const UPDATE_FNS = {
     } else {
       let newSelectedViews: ElementPath[] = []
       let detailsOfUpdate: string | null = null
+      let withInsertedElement: InsertChildAndDetails | null = null
+
       const withNewElement = modifyUnderlyingTargetElement(
         action.targetParent,
         openFilename,
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
-          if (action.toInsert.element.type !== 'JSX_ELEMENT') {
-            return success
-          }
-
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
-          const propsWithUid = forceRight(
-            setJSXValueAtPath(
-              action.toInsert.element.props,
-              PP.create(UTOPIA_UID_KEY),
-              jsExpressionValue(newUID, emptyComments),
-            ),
-            `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
-          )
-          // Potentially add in some default position and sizing.
-          let props = propsWithUid
-          if (action.styleProps === 'add-size') {
-            const sizesToSet: Array<ValueAtPath> = [
-              { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
-              {
-                path: PP.create('style', 'height'),
-                value: jsExpressionValue(100, emptyComments),
-              },
-            ]
-            const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
-            if (isRight(withSizeUpdates)) {
-              props = withSizeUpdates.value
-            } else {
-              console.error('Unable to set sizes on element.')
-              return success
-            }
-          }
-
-          const insertedElementName = action.toInsert.element.name
-          let withMaybeUpdatedParent = utopiaComponents
-          let insertedElementChildren: JSXElementChildren = []
-
-          if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
-            withMaybeUpdatedParent = transformElementAtPath(
-              utopiaComponents,
-              action.targetParent,
-              (parentElement) => {
-                if (isJSXElement(parentElement)) {
-                  insertedElementChildren.push(...parentElement.children)
-                  return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
-                } else {
-                  throw new Error(`Not handled yet.`)
-                }
-              },
+          if (action.toInsert.element.type === 'JSX_ELEMENT') {
+            const propsWithUid = forceRight(
+              setJSXValueAtPath(
+                action.toInsert.element.props,
+                PP.create(UTOPIA_UID_KEY),
+                jsExpressionValue(newUID, emptyComments),
+              ),
+              `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
             )
+            // Potentially add in some default position and sizing.
+            let props = propsWithUid
+            if (action.styleProps === 'add-size') {
+              const sizesToSet: Array<ValueAtPath> = [
+                { path: PP.create('style', 'width'), value: jsExpressionValue(100, emptyComments) },
+                {
+                  path: PP.create('style', 'height'),
+                  value: jsExpressionValue(100, emptyComments),
+                },
+              ]
+              const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
+              if (isRight(withSizeUpdates)) {
+                props = withSizeUpdates.value
+              } else {
+                console.error('Unable to set sizes on element.')
+                return success
+              }
+            }
+
+            const insertedElementName = action.toInsert.element.name
+            let withMaybeUpdatedParent = utopiaComponents
+            let insertedElementChildren: JSXElementChildren = []
+
+            if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
+              withMaybeUpdatedParent = transformElementAtPath(
+                utopiaComponents,
+                action.targetParent,
+                (parentElement) => {
+                  if (isJSXElement(parentElement)) {
+                    insertedElementChildren.push(...parentElement.children)
+                    return jsxElement(
+                      parentElement.name,
+                      parentElement.uid,
+                      parentElement.props,
+                      [],
+                    )
+                  } else {
+                    throw new Error(`Not handled yet.`)
+                  }
+                },
+              )
+            }
+
+            insertedElementChildren.push(...action.toInsert.element.children)
+            const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              openFilename,
+              action.targetParent,
+              element,
+              withMaybeUpdatedParent,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(action.targetParent, newUID)
+            newSelectedViews.push(newPath)
+          } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
+            const element = jsxConditionalExpression(
+              newUID,
+              action.toInsert.element.condition,
+              action.toInsert.element.originalConditionString,
+              action.toInsert.element.whenTrue,
+              action.toInsert.element.whenFalse,
+              action.toInsert.element.comments,
+            )
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              openFilename,
+              action.targetParent,
+              element,
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(action.targetParent, newUID)
+            newSelectedViews.push(newPath)
+          } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
+            const element = jsxFragment(
+              newUID,
+              action.toInsert.element.children,
+              action.toInsert.element.longForm,
+            )
+
+            withInsertedElement = insertElementAtPath(
+              editor.projectContents,
+              openFilename,
+              action.targetParent,
+              element,
+              utopiaComponents,
+              action.indexPosition,
+            )
+            detailsOfUpdate = withInsertedElement.insertionDetails
+
+            const newPath = EP.appendToPath(action.targetParent, newUID)
+            newSelectedViews.push(newPath)
+          } else {
+            assertNever(action.toInsert.element)
           }
-
-          insertedElementChildren.push(...action.toInsert.element.children)
-          const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
-
-          const withInsertedElement = insertElementAtPath(
-            editor.projectContents,
-            openFilename,
-            action.targetParent,
-            element,
-            withMaybeUpdatedParent,
-            action.indexPosition,
-          )
-          detailsOfUpdate = withInsertedElement.insertionDetails
-
-          const newPath = EP.appendToPath(action.targetParent, newUID)
-          newSelectedViews.push(newPath)
 
           const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
             success.topLevelElements,
