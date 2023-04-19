@@ -574,33 +574,7 @@ export function insertJSXElementChild(
           insertionPathIsConditionalClause(targetParent) &&
           isJSXConditionalExpression(parentElement)
         ) {
-          // Determine which clause of the conditional we want to modify.
-          const conditionalCase = getConditionalCase(
-            parentElement,
-            parentPath,
-            targetParentIncludingStoryboardRoot,
-          )
-          const toClauseOptic =
-            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
-          // Update the clause if it currently holds a null value.
-          return modify(
-            toClauseOptic,
-            (clauseValue) => {
-              if (isNullJSXAttributeValue(clauseValue)) {
-                return elementToInsert
-              } else if (isJSXFragment(clauseValue)) {
-                return parentElement
-              } else {
-                // for wrapping multiple elements
-                return jsxFragment(
-                  generateUidWithExistingComponents(projectContents),
-                  [elementToInsert, clauseValue],
-                  false,
-                )
-              }
-            },
-            parentElement,
-          )
+          return elementToInsert
         } else {
           return parentElement
         }
