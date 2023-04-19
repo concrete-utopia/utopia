@@ -519,6 +519,17 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+  function getConditionalCase(
+    conditional: JSXConditionalExpression,
+    parentPath: ElementPath,
+    target: InsertionPath,
+  ): ConditionalCase {
+    if (insertionPathIsConditionalClause(target)) {
+      return target.propName
+    }
+    throw new Error('trying to get at conditional case with a non-conditional insertion path')
+  }
+
   const storyboardPath = getStoryboardElementPath(projectContents, openFile)
 
   // TODO the caller could should provde the storyboard root path if they want to insert to the storyboard root
@@ -548,7 +559,7 @@ export function insertJSXElementChild(
         }
         if (insertionPathIsArray(targetParent)) {
           if (!isJSXElementLike(parentElement)) {
-            return parentElement
+            throw new Error('Target parent for array insertion doesnt have children')
           }
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
@@ -566,7 +577,25 @@ export function insertJSXElementChild(
             [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
           }
         } else if (insertionPathIsConditionalClause(targetParent)) {
-          return elementToInsert
+          if (!isJSXConditionalExpression(parentElement)) {
+            throw new Error('Target parent for array insertion doesnt have children')
+          }
+          // Determine which clause of the conditional we want to modify.
+          const conditionalCase = getConditionalCase(
+            parentElement,
+            parentPath,
+            targetParentIncludingStoryboardRoot,
+          )
+          const toClauseOptic =
+            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+          // Update the clause if it currently holds a null value.
+          return modify(
+            toClauseOptic,
+            () => {
+              return elementToInsert
+            },
+            parentElement,
+          )
         } else {
           return parentElement
         }
