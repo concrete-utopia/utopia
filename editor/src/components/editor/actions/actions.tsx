@@ -515,6 +515,7 @@ import {
   maybeBranchConditionalCase,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
   isTextContainingConditional,
@@ -3556,50 +3557,15 @@ export const UPDATE_FNS = {
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
     }
-
-    const newLayout = {
-      left: frame.x,
-      top: frame.y,
-      width: frame.width,
-      height: frame.height,
-    }
-
-    let errorMessage: string | null = null
-
-    const updatedEditor = modifyOpenJsxElementAtPath(
-      target,
-      (element: JSXElement) => {
-        const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
-          element.props,
-          newLayout,
-          styleStringInArray,
-        )
-
-        if (isLeft(updatedAttributes)) {
-          errorMessage = `Failed to reset pins: ${updatedAttributes.value}`
-          return element
-        } else {
-          return {
-            ...element,
-            props: updatedAttributes.value,
-          }
-        }
-      },
-      editor,
-    )
-
-    /* eslint-disable no-unreachable */
-    // this is faulty, as PinLayoutHelpers.setLayoutPropsToPinsWithFrame also erases all of props.layout, including properties that are not connected to the pins
-    throw new Error('WARNING RESET_PINS is not correctly implemented, please contact Balazs')
-
-    if (errorMessage != null) {
-      console.error(errorMessage)
-      const toastAction = showToast(notice(errorMessage!, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor)
-    } else {
-      return updatedEditor
-    }
-    /* eslint-enable no-unreachable */
+    const commands = [
+      deleteProperties('always', target, [
+        PP.create('style', 'left'),
+        PP.create('style', 'right'),
+        PP.create('style', 'top'),
+        PP.create('style', 'bottom'),
+      ]),
+    ]
+    return foldAndApplyCommandsSimple(editor, commands)
   },
   SET_CURSOR_OVERLAY: (action: SetCursorOverlay, editor: EditorModel): EditorModel => {
     if (editor.canvas.cursor === action.cursor) {
