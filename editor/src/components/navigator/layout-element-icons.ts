@@ -1,15 +1,13 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
 import {
-  isIntrinsicHTMLElement,
   isJSXElement,
   ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
   ElementInstanceMetadata,
-  isJSXFragment,
+  isJSXAttributeValue,
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
-import { Imports, ElementPath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
@@ -17,13 +15,10 @@ import { shallowEqual } from '../../core/shared/equality-utils'
 import {
   AllElementProps,
   isRegularNavigatorEntry,
+  isSyntheticNavigatorEntry,
   NavigatorEntry,
 } from '../editor/store/editor-state'
-import { isSpawnedActor } from 'xstate/lib/Actor'
-import {
-  getElementContentAffectingType,
-  treatElementAsContentAffecting,
-} from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { getElementContentAffectingType } from '../canvas/canvas-strategies/strategies/group-like-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
