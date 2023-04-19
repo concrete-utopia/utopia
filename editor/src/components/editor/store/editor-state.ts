@@ -193,7 +193,7 @@ import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/s
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   conditionalClauseInsertionPath,
-  ConditionalClause,
+  ConditionalClauseInsertionPath,
   dynamicReparentTargetParentToStaticReparentTargetParent,
   InsertionPath,
 } from './insertion-path'
@@ -2111,7 +2111,8 @@ export function regularNavigatorEntriesEqual(
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
-export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
+export interface ConditionalClauseNavigatorEntry
+  extends ConditionalClauseInsertionPath<ElementPath> {
   type: 'CONDITIONAL_CLAUSE'
 }
 

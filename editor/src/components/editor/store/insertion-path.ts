@@ -4,7 +4,7 @@ import { ConditionalCase } from '../../../core/model/conditionals'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 
-export interface ConditionalClause<P extends ElementPath> {
+export interface ConditionalClauseInsertionPath<P extends ElementPath> {
   elementPath: P
   clause: ConditionalCase
 }
@@ -12,18 +12,18 @@ export interface ConditionalClause<P extends ElementPath> {
 export function conditionalClauseInsertionPath<P extends ElementPath>(
   elementPath: P,
   clause: ConditionalCase,
-): ConditionalClause<P> {
+): ConditionalClauseInsertionPath<P> {
   return {
     elementPath: elementPath,
     clause: clause,
   }
 }
 
-export type InsertionPath<P extends ElementPath> = P | ConditionalClause<P>
+export type InsertionPath<P extends ElementPath> = P | ConditionalClauseInsertionPath<P>
 
 export function isConditionalClauseInsertionPath<P extends ElementPath>(
   reparentTargetParent: InsertionPath<P>,
-): reparentTargetParent is ConditionalClause<P> {
+): reparentTargetParent is ConditionalClauseInsertionPath<P> {
   return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
 }
 

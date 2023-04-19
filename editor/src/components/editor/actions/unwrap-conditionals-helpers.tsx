@@ -29,14 +29,14 @@ import {
   insertElementAtPath,
   modifyUnderlyingTargetElement,
 } from '../store/editor-state'
-import { ConditionalClause } from '../store/insertion-path'
+import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 import { deleteView } from './action-creators'
 import { UPDATE_FNS } from './actions'
 
 export function unwrapConditionalClause(
   editor: EditorState,
   target: ElementPath,
-  parentPath: ConditionalClause<ElementPath>,
+  parentPath: ConditionalClauseInsertionPath<ElementPath>,
 ): EditorState {
   let newSelection: Array<ElementPath> = []
   const withElementMoved = modifyUnderlyingTargetElement(
