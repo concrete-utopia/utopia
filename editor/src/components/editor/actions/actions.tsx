@@ -2334,6 +2334,7 @@ export const UPDATE_FNS = {
           derived,
         )
         const parentPath = commonReparentTargetFromArray(
+          editorForAction.jsxMetadata,
           orderedActionTargets.map((actionTarget) => {
             return MetadataUtils.getReparentTargetOfTarget(
               editorForAction.jsxMetadata,
@@ -2582,6 +2583,7 @@ export const UPDATE_FNS = {
           derived,
         )
         const parentPath = commonReparentTargetFromArray(
+          editorForAction.jsxMetadata,
           orderedActionTargets.map((actionTarget) => {
             return MetadataUtils.getReparentTargetOfTarget(
               editorForAction.jsxMetadata,

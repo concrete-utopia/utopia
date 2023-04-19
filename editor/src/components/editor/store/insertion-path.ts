@@ -5,6 +5,12 @@ import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+} from '../../../core/shared/element-template'
+import { isRight } from '../../../core/shared/either'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -75,6 +81,7 @@ export function reparentTargetToString(reparentTargetParent: InsertionPath): str
 }
 
 export function commonReparentTarget(
+  metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
 ): InsertionPath | null {
@@ -91,29 +98,29 @@ export function commonReparentTarget(
   if (EP.pathsEqual(closestSharedAncestor, second.elementPath)) {
     return second
   }
-  // TODO enable this!!
-  // const closestSharedAncestorElement = forceNotNull(
-  //   'FIXME found no element at the common path',
-  //   MetadataUtils.findElementByElementPath(metadata, closestSharedAncestor),
-  // )
-  // if (
-  //   isRight(closestSharedAncestorElement.element) &&
-  //   isJSXConditionalExpression(closestSharedAncestorElement.element.value)
-  // ) {
-  //   if (closestSharedAncestorElement.conditionValue === 'not-a-conditional') {
-  //     throw new Error('found a conditional with not-a-conditional as the conditionValue')
-  //   }
-  //   // if the closest shared ancestor is a conditional, return the active branch
-  //   return conditionalClauseInsertionPath(
-  //     closestSharedAncestor,
-  //     closestSharedAncestorElement.conditionValue === true ? 'true-case' : 'false-case',
-  //   )
-  // }
+  const closestSharedAncestorElement = forceNotNull(
+    'FIXME found no element at the common path',
+    MetadataUtils.findElementByElementPath(metadata, closestSharedAncestor),
+  )
+  if (
+    isRight(closestSharedAncestorElement.element) &&
+    isJSXConditionalExpression(closestSharedAncestorElement.element.value)
+  ) {
+    if (closestSharedAncestorElement.conditionValue === 'not-a-conditional') {
+      throw new Error('found a conditional with not-a-conditional as the conditionValue')
+    }
+    // if the closest shared ancestor is a conditional, return the active branch
+    return conditionalClauseInsertionPath(
+      closestSharedAncestor,
+      closestSharedAncestorElement.conditionValue === true ? 'true-case' : 'false-case',
+    )
+  }
 
   return childInsertionPath(closestSharedAncestor)
 }
 
 export function commonReparentTargetFromArray(
+  metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
 ): InsertionPath | null {
   let workingArray: Array<InsertionPath> = []
@@ -131,7 +138,7 @@ export function commonReparentTargetFromArray(
     if (working == null) {
       return working
     } else {
-      return commonReparentTarget(working, target)
+      return commonReparentTarget(metadata, working, target)
     }
   }, workingArray[0])
 }
