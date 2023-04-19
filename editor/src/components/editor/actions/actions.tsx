@@ -2578,7 +2578,7 @@ export const UPDATE_FNS = {
           action.targets,
           derived,
         )
-        const parentPath = commonReparentTargetFromArray(
+        const parentPath: InsertionPath | null = commonReparentTargetFromArray(
           orderedActionTargets.map((actionTarget) => {
             return MetadataUtils.getReparentTargetOfTarget(
               editorForAction.jsxMetadata,
@@ -2614,7 +2614,30 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          let viewPath: ElementPath | null = null
+          // reparent targets to the view
+          const indexPosition: IndexPosition = {
+            type: 'back',
+          }
+
+          const viewPath: InsertionPath = (() => {
+            if (anyTargetIsARootElement) {
+              return {
+                ...parentPath,
+                elementPath: EP.dynamicPathToStaticPath(
+                  EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), newUID),
+                ),
+              }
+            } else {
+              return {
+                ...parentPath,
+                elementPath: EP.dynamicPathToStaticPath(
+                  EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID),
+                ),
+              }
+            }
+            throw new Error('exhaustive check')
+          })()
+
           let detailsOfUpdate: string | null = null
 
           const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -2760,10 +2783,6 @@ export const UPDATE_FNS = {
                 }
               }
 
-              viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), newUID)
-                : EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID)
-
               const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
 
               detailsOfUpdate = withTargetAdded.insertionDetails
@@ -2777,15 +2796,6 @@ export const UPDATE_FNS = {
             },
           )
 
-          if (viewPath == null) {
-            return editor
-          }
-
-          // reparent targets to the view
-          const indexPosition: IndexPosition = {
-            type: 'back',
-          }
-
           const withElementsAdded = editorMultiselectReparentNoStyleChange(
             orderedActionTargets,
             indexPosition,
@@ -2795,7 +2805,7 @@ export const UPDATE_FNS = {
 
           return {
             ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath),
+            selectedViews: Utils.maybeToArray(viewPath.elementPath),
             highlightedViews: [],
           }
         }

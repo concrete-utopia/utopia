@@ -412,7 +412,16 @@ describe('conditionals', () => {
 
       await act(async () => {
         await renderResult.dispatch(
-          [wrapInElement([targetPath], { element: conditional, importsToAdd: {} })],
+          [
+            wrapInElement([targetPath], {
+              element: conditional,
+              insertionPathWithinWrapper: conditionalClauseInsertionPath(
+                EP.emptyElementPath,
+                'true-case',
+              ),
+              importsToAdd: {},
+            }),
+          ],
           true,
         )
       })
@@ -457,7 +466,16 @@ describe('conditionals', () => {
 
       await act(async () => {
         await renderResult.dispatch(
-          [wrapInElement(targetPaths, { element: conditional, importsToAdd: {} })],
+          [
+            wrapInElement(targetPaths, {
+              element: conditional,
+              insertionPathWithinWrapper: conditionalClauseInsertionPath(
+                EP.emptyElementPath,
+                'true-case',
+              ),
+              importsToAdd: {},
+            }),
+          ],
           true,
         )
       })
@@ -510,7 +528,16 @@ describe('conditionals', () => {
 
       await act(async () => {
         await renderResult.dispatch(
-          [wrapInElement([EP.fromString(targetPath)], { element: conditional, importsToAdd: {} })],
+          [
+            wrapInElement([EP.fromString(targetPath)], {
+              element: conditional,
+              insertionPathWithinWrapper: conditionalClauseInsertionPath(
+                EP.emptyElementPath,
+                'true-case',
+              ),
+              importsToAdd: {},
+            }),
+          ],
           true,
         )
       })

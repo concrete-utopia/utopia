@@ -158,10 +158,11 @@ import {
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../core/shared/math-utils'
-import { parentPath } from '../../core/shared/element-path'
+import { emptyElementPath, fromString, parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { InsertionPath, arrayInsertionPath } from './store/reparent-target'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -577,6 +578,7 @@ export function handleKeyDown(
                   [],
                   true,
                 ),
+                insertionPathWithinWrapper: arrayInsertionPath(emptyElementPath, 'children', null),
                 importsToAdd: {},
               }),
             ]
@@ -1074,7 +1076,7 @@ function detectBestWrapperElement(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
   makeUid: () => string,
-): { element: JSXElement; importsToAdd: Imports } {
+): { element: JSXElement; insertionPathWithinWrapper: InsertionPath; importsToAdd: Imports } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   const uid = makeUid()
   if (
@@ -1082,7 +1084,11 @@ function detectBestWrapperElement(
     element.specialSizeMeasurements.parentFlexDirection == null ||
     element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
   ) {
-    return { element: defaultUnstyledDivElement(uid), importsToAdd: {} }
+    return {
+      element: defaultUnstyledDivElement(uid),
+      insertionPathWithinWrapper: arrayInsertionPath(emptyElementPath, 'children', null),
+      importsToAdd: {},
+    }
   }
 
   const style: CSSProperties = {
@@ -1105,6 +1111,7 @@ function detectBestWrapperElement(
 
   return {
     element: jsxElement('div', uid, props, []),
+    insertionPathWithinWrapper: arrayInsertionPath(emptyElementPath, 'children', null),
     importsToAdd: {},
   }
 }

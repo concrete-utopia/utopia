@@ -503,7 +503,9 @@ export interface WrapInView {
   targets: ElementPath[]
   layoutSystem: SettableLayoutSystem
   newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
+  whatToWrapWith:
+    | { element: JSXElement; insertionPathWithinWrapper: InsertionPath; importsToAdd: Imports }
+    | 'default-empty-div'
 }
 
 export interface WrapInElement {
@@ -511,6 +513,7 @@ export interface WrapInElement {
   targets: ElementPath[]
   whatToWrapWith: {
     element: JSXElement | JSXConditionalExpression | JSXFragment
+    insertionPathWithinWrapper: InsertionPath
     importsToAdd: Imports
   }
 }

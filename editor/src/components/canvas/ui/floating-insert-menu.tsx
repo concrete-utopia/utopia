@@ -68,6 +68,10 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
+import {
+  arrayInsertionPath,
+  conditionalClauseInsertionPath,
+} from '../../editor/store/reparent-target'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -501,6 +505,10 @@ export var FloatingMenu = React.memo(() => {
                 ...element,
                 uid: generateUidWithExistingComponents(projectContentsRef.current),
               },
+              insertionPathWithinWrapper:
+                element.type === 'JSX_FRAGMENT'
+                  ? arrayInsertionPath(emptyElementPath, 'children', null)
+                  : conditionalClauseInsertionPath(emptyElementPath, 'true-case'),
               importsToAdd: emptyImports(),
             }),
           ]
@@ -569,6 +577,11 @@ export var FloatingMenu = React.memo(() => {
                   selectedViews,
                   {
                     element: newElement,
+                    insertionPathWithinWrapper: arrayInsertionPath(
+                      emptyElementPath,
+                      'children',
+                      null,
+                    ),
                     importsToAdd: pickedInsertableComponent.importsToAdd,
                   },
                   isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
@@ -576,6 +589,11 @@ export var FloatingMenu = React.memo(() => {
                 )
               : wrapInElement(selectedViews, {
                   element: newElement,
+                  insertionPathWithinWrapper: arrayInsertionPath(
+                    emptyElementPath,
+                    'children',
+                    null,
+                  ),
                   importsToAdd: pickedInsertableComponent.importsToAdd,
                 }),
           ]
