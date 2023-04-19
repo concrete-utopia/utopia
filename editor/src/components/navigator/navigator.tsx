@@ -12,10 +12,10 @@ import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
-import { FixedSizeList, ListChildComponentProps } from 'react-window'
+import { VariableSizeList, ListChildComponentProps } from 'react-window'
 import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
 import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
-import { last } from '../../core/shared/array-utils'
+import { last, safeIndex } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -25,6 +25,7 @@ import {
   NavigatorEntry,
   navigatorEntryToKey,
 } from '../editor/store/editor-state'
+import { getItemHeight } from './navigator-item/navigator-item'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -138,7 +139,7 @@ export const NavigatorComponent = React.memo(() => {
     'NavigatorComponent',
   )
 
-  const itemListRef = React.createRef<FixedSizeList>()
+  const itemListRef = React.createRef<VariableSizeList>()
 
   React.useEffect(() => {
     if (selectionIndex > 0) {
@@ -167,22 +168,34 @@ export const NavigatorComponent = React.memo(() => {
     [dispatch],
   )
 
+  const getItemSize = React.useCallback(
+    (entryIndex: number) => {
+      const navigatorTarget = safeIndex(visibleNavigatorTargets, entryIndex)
+      if (navigatorTarget == null) {
+        throw new Error(`Could not find navigator entry at index ${entryIndex}`)
+      } else {
+        return getItemHeight(navigatorTarget)
+      }
+    },
+    [visibleNavigatorTargets],
+  )
+
   const ItemList = (size: Size) => {
     if (size.height == null) {
       return null
     } else {
       return (
-        <FixedSizeList
+        <VariableSizeList
           ref={itemListRef}
           width={'100%'}
           height={size.height}
-          itemSize={UtopiaTheme.layout.rowHeight.smaller}
+          itemSize={getItemSize}
           itemCount={visibleNavigatorTargets.length}
           layout={'vertical'}
           style={{ overflowX: 'hidden' }}
         >
           {Item}
-        </FixedSizeList>
+        </VariableSizeList>
       )
     }
   }

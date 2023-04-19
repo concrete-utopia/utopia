@@ -53,6 +53,8 @@ import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-st
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -569,4 +571,21 @@ export function onlyFitWhenDraggingThisControl(
   } else {
     return 0
   }
+}
+
+export function getWrapperWithGeneratedUid(
+  customStrategyState: CustomStrategyState,
+  canvasState: InteractionCanvasState,
+  subjects: Array<InsertionSubject>,
+): { wrapper: InsertionSubjectWrapper; uid: string } | null {
+  const insertionSubjectWrapper = subjects.at(0)?.insertionSubjectWrapper ?? null
+  if (insertionSubjectWrapper == null) {
+    return null
+  }
+
+  const uid =
+    customStrategyState.strategyGeneratedUidsCache[subjects[0].uid] ??
+    generateUidWithExistingComponents(canvasState.projectContents)
+
+  return { wrapper: insertionSubjectWrapper, uid: uid }
 }

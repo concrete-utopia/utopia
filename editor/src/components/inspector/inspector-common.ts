@@ -1,7 +1,13 @@
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { allElemsEqual, mapDropNulls, strictEvery, stripNulls } from '../../core/shared/array-utils'
+import {
+  allElemsEqual,
+  mapDropNulls,
+  strictEvery,
+  stripNulls,
+  uniq,
+} from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -18,7 +24,7 @@ import {
   parseCSSLengthPercent,
   parseCSSNumber,
 } from './common/css-utils'
-import { assertNever } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -526,7 +532,7 @@ export type FixedHugFillMode = FixedHugFill['type']
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath | null,
+  elementPath: ElementPath,
 ): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
@@ -630,6 +636,35 @@ export function detectFillHugFixedState(
   return { fixedHugFill: null, controlStatus: 'unset' }
 }
 
+export function detectFillHugFixedStateMultiselect(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
+  if (elementPaths.length === 1) {
+    return detectFillHugFixedState(axis, metadata, elementPaths[0])
+  } else {
+    const results = elementPaths.map((path) => detectFillHugFixedState(axis, metadata, path))
+    let controlStatus: ControlStatus = results[0]?.controlStatus ?? 'off'
+    let value: FixedHugFill | null = results[0]?.fixedHugFill
+
+    fastForEach(results, (result) => {
+      if (!isFixedHugFillEqual(result, results[0])) {
+        controlStatus = 'multiselect-mixed-simple-or-unset'
+      }
+    })
+
+    const allControlStatus = uniq(results.map((result) => result.controlStatus))
+    if (allControlStatus.includes('unoverwritable')) {
+      controlStatus = 'multiselect-unoverwritable'
+    } else if (allControlStatus.includes('controlled')) {
+      controlStatus = 'multiselect-controlled'
+    }
+
+    return { fixedHugFill: value, controlStatus: controlStatus }
+  }
+}
+
 export const MaxContent = 'max-content' as const
 
 export type PackedSpaced = 'packed' | 'spaced'
@@ -724,6 +759,28 @@ export function addPositionAbsoluteTopLeft(
       parentFlexDirection,
     ),
     setProperty('always', elementPath, styleP('position'), 'absolute'),
+  ]
+}
+
+export function setElementTopLeft(
+  instance: ElementInstanceMetadata,
+  { top, left }: { top: number; left: number },
+): Array<CanvasCommand> {
+  return [
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(top, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(left, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
   ]
 }
 

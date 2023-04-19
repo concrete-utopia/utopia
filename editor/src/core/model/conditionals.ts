@@ -2,6 +2,7 @@ import { ElementPath } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
@@ -11,6 +12,8 @@ import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
+import { isRight } from '../shared/either'
+import { MetadataUtils } from './element-metadata-utils'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
@@ -18,7 +21,6 @@ export type ConditionalCase = 'true-case' | 'false-case'
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
   conditionalClause: JSXElementChild,
-  conditionalCase: ConditionalCase,
 ): ElementPath {
   return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
 }
@@ -36,11 +38,7 @@ export function reorderConditionalChildPathTrees(
     let result: Array<ElementPathTree> = []
 
     // The whenTrue clause should be first.
-    const trueCasePath = getConditionalClausePath(
-      conditionalPath,
-      conditional.whenTrue,
-      'true-case',
-    )
+    const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
     const trueCasePathTree = childPaths.find((childPath) =>
       EP.pathsEqual(childPath.path, trueCasePath),
     )
@@ -49,11 +47,7 @@ export function reorderConditionalChildPathTrees(
     }
 
     // The whenFalse clause should be second.
-    const falseCasePath = getConditionalClausePath(
-      conditionalPath,
-      conditional.whenFalse,
-      'false-case',
-    )
+    const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
     const falseCasePathTree = childPaths.find((childPath) =>
       EP.pathsEqual(childPath.path, falseCasePath),
     )
@@ -100,7 +94,6 @@ export function getConditionalCase(
   if (
     matchesOverriddenConditionalBranch(elementPath, parentPath, {
       clause: parent.whenTrue,
-      branch: 'true-case',
       wantOverride: true,
       parentOverride: parentOverride,
     })
@@ -123,14 +116,54 @@ export function matchesOverriddenConditionalBranch(
   parentPath: ElementPath,
   params: {
     clause: JSXElementChild
-    branch: ConditionalCase
     wantOverride: boolean
     parentOverride: boolean
   },
 ): boolean {
-  const { clause, branch, wantOverride, parentOverride } = params
+  const { clause, wantOverride, parentOverride } = params
   return (
     wantOverride === parentOverride &&
-    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause, branch))
+    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause))
   )
+}
+
+export function maybeConditionalExpression(
+  element: ElementInstanceMetadata | null,
+): JSXConditionalExpression | null {
+  if (
+    element != null &&
+    isRight(element.element) &&
+    isJSXConditionalExpression(element.element.value)
+  ) {
+    return element.element.value
+  }
+  return null
+}
+
+export function findMaybeConditionalExpression(
+  elementPath: ElementPath | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+): JSXConditionalExpression | null {
+  return maybeConditionalExpression(
+    MetadataUtils.findElementByElementPath(jsxMetadata, elementPath),
+  )
+}
+
+export function maybeBranchConditionalCase(
+  conditionalPath: ElementPath,
+  conditional: JSXConditionalExpression | null,
+  branchPath: ElementPath,
+): ConditionalCase | null {
+  if (conditional == null) {
+    return null
+  }
+  const truePath = EP.appendToPath(conditionalPath, conditional.whenTrue.uid)
+  const falsePath = EP.appendToPath(conditionalPath, conditional.whenFalse.uid)
+  if (EP.pathsEqual(truePath, branchPath)) {
+    return 'true-case'
+  } else if (EP.pathsEqual(falsePath, branchPath)) {
+    return 'false-case'
+  } else {
+    return null
+  }
 }

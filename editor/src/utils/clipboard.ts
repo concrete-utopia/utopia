@@ -11,8 +11,8 @@ import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadataMap,
-  isJSXArbitraryBlock,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
 } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import {
@@ -40,12 +40,8 @@ import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
-import {
-  conditionalClause,
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-} from '../components/editor/store/reparent-target'
-import { getConditionalClausePath, ConditionalCase } from '../core/model/conditionals'
+import { conditionalClause, ReparentTargetParent } from '../components/editor/store/reparent-target'
+import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -309,16 +305,14 @@ export function getTargetParentForPaste(
     if (parentElement != null && isJSXConditionalExpression(parentElement)) {
       // Check if the target parent is an attribute,
       // if so replace the target parent instead of trying to insert into it.
-      const truePath = getConditionalClausePath(targetPath, parentElement.whenTrue, 'true-case')
-      const conditionalCase: ConditionalCase = EP.pathsEqual(truePath, targetPath)
-        ? 'true-case'
-        : 'false-case'
-      const clause =
-        conditionalCase === 'true-case' ? parentElement.whenTrue : parentElement.whenFalse
-      if (isJSXArbitraryBlock(clause)) {
+      const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
+      if (conditionalCase != null) {
+        const clause =
+          conditionalCase === 'true-case' ? parentElement.whenTrue : parentElement.whenFalse
+        if (!isNullJSXAttributeValue(clause)) {
+          return null
+        }
         return conditionalClause(parentPath, conditionalCase)
-      } else {
-        return targetPath
       }
     }
   }
