@@ -51,10 +51,10 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const childrenPaths = replaceContentAffectingPathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      MetadataUtils.getChildrenPathsUnordered(metadata, path),
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) =>
+      isElementNonDOMElement(metadata, allElementProps, child)
+        ? replaceContentAffectingPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
+        : child,
     )
 
     const parentFlexDirection =
@@ -97,15 +97,29 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const allChildrenJSXElementLike = foldEither(
-      () => false,
-      (e) => isJSXElementLike(e) && e.children.every(isJSXElementLike),
-      parentInstance.element,
+    const rearrangedChildrenPaths = rearrangedPathsWithGroupsIntact(
+      metadata,
+      allElementProps,
+      path,
+      sortedChildrenPaths,
     )
 
-    const rearrangeCommands = allChildrenJSXElementLike
-      ? [rearrangeChildren('always', path, sortedChildrenPaths)]
-      : []
+    const rearrangeCommands =
+      rearrangedChildrenPaths != null
+        ? [
+            rearrangeChildren(
+              'always',
+              path,
+              rearrangedChildrenPaths.map(EP.dynamicPathToStaticPath),
+            ),
+          ]
+        : [
+            showToastCommand(
+              "Couldn't preserve visual order of children (yet)",
+              'NOTICE',
+              'cannot-convert-children-to-flex',
+            ),
+          ]
 
     return [
       ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
@@ -335,4 +349,138 @@ function guessAlignItems(
 
   // fallback: null, which implicitly means a default of flex-start
   return null
+}
+
+function isElementNonDOMElement(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): boolean {
+  const contentAffectingType = getElementContentAffectingType(
+    metadata,
+    allElementProps,
+    elementPath,
+  )
+  return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
+}
+
+interface NonDOMElementWithLeaves {
+  group: ElementPath // path to a non-DOM element
+  leaves: Set<string> // stringified element paths to the leaves in the tree of this element
+}
+
+interface TopLevelChildrenAndGroups {
+  topLevelChildren: Set<string> // children that are DOM elements and are immediate children of a the parent
+  nonDOMElementsWithLeaves: Array<NonDOMElementWithLeaves> // children that are non-DOM elements
+}
+
+function getTopLevelChildrenAndGroups(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  parentPath: ElementPath,
+): TopLevelChildrenAndGroups {
+  let topLevelChildren: Array<string> = []
+  let groups: Array<NonDOMElementWithLeaves> = []
+
+  const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+
+  for (const child of childrenPaths) {
+    if (isElementNonDOMElement(metadata, allElementProps, child)) {
+      groups.push({
+        group: child,
+        leaves: new Set(
+          replaceContentAffectingPathsWithTheirChildrenRecursive(metadata, allElementProps, [
+            child,
+          ]).map(EP.toString),
+        ),
+      })
+    } else {
+      topLevelChildren.push(EP.toString(child))
+    }
+  }
+
+  return { topLevelChildren: new Set(topLevelChildren), nonDOMElementsWithLeaves: groups }
+}
+
+/**
+ * Checks whether a prefix of `sortedChildren` is made up of the elements of `siblings`
+ * If the elements of `siblings` is a prefix of `sortedChildren`, the prefix is dropped and the rest of `sortedChildren` is returned
+ * Otherwise, null is returned, signaling failure
+ */
+function checkAllChildrenPartOfSingleGroup(
+  siblings: Set<string>,
+  sortedChildren: Array<ElementPath>,
+): Array<ElementPath> | null {
+  const workingSiblings = new Set([...siblings])
+  let workingChildren = sortedChildren
+
+  while (workingSiblings.size > 0) {
+    if (workingChildren.length === 0) {
+      // this is an invariant violation, since `siblings` should be a subset of `sortedChildren`
+      return null
+    }
+
+    const child = workingChildren[0]
+    const childPathString = EP.toString(child)
+
+    if (!workingSiblings.has(childPathString)) {
+      // this child was reordered here from another group, which we disallow for now
+      return null
+    }
+
+    workingSiblings.delete(childPathString)
+    workingChildren = workingChildren.slice(1)
+  }
+  return workingChildren
+}
+
+/**
+ * returns a list of element paths, so that non-dom element children are swapped out for their
+ */
+function rearrangedPathsWithGroupsIntact(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  parentPath: ElementPath,
+  sortedChildren: Array<ElementPath>,
+): Array<ElementPath> | null {
+  const childrenAndGroups = getTopLevelChildrenAndGroups(metadata, allElementProps, parentPath)
+
+  let workingSortedChildren = sortedChildren
+  let finalReorderedPaths: Array<ElementPath> = []
+
+  while (workingSortedChildren.length > 0) {
+    const child = workingSortedChildren[0]
+    const childPathString = EP.toString(child)
+
+    if (childrenAndGroups.topLevelChildren.has(childPathString)) {
+      finalReorderedPaths.push(child)
+      workingSortedChildren = workingSortedChildren.slice(1)
+    } else {
+      const groupWithChild = childrenAndGroups.nonDOMElementsWithLeaves.find((g) =>
+        g.leaves.has(childPathString),
+      )
+
+      if (groupWithChild == null) {
+        return null
+      }
+
+      const restOfChildren = checkAllChildrenPartOfSingleGroup(
+        groupWithChild.leaves,
+        workingSortedChildren,
+      )
+
+      if (restOfChildren == null) {
+        return null
+      }
+
+      // so that a group belonging to multiple children isn't pushed multiple times
+      if (!EP.pathsEqual(finalReorderedPaths.at(-1) ?? null, child)) {
+        finalReorderedPaths.push(groupWithChild.group)
+      }
+
+      workingSortedChildren = restOfChildren
+    }
+  }
+
+  return finalReorderedPaths
 }
