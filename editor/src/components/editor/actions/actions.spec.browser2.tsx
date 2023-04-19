@@ -15,10 +15,10 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
 import {
-  arrayInsertionPath,
+  childInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
-} from '../store/reparent-target'
+} from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
 
@@ -309,7 +309,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['aaa']),
           'children',
           null,
@@ -347,7 +347,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['aaa']),
           'children',
           null,
@@ -386,7 +386,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
           'children',
           null,
@@ -429,7 +429,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
           'children',
           null,
@@ -473,7 +473,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
           'children',
           null,
@@ -523,7 +523,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', '38e']),
           'children',
           null,
@@ -565,7 +565,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', '38e']),
           'children',
           null,
@@ -603,7 +603,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
           'children',
           null,
@@ -639,7 +639,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
           'children',
           null,
@@ -917,7 +917,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root']),
           'children',
           null,
@@ -956,7 +956,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root']),
           'children',
           null,

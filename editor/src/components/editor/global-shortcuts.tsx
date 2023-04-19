@@ -162,7 +162,7 @@ import { emptyElementPath, fromString, parentPath } from '../../core/shared/elem
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { InsertionPath, arrayInsertionPath } from './store/reparent-target'
+import { InsertionPath, childInsertionPath } from './store/insertion-path'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -578,7 +578,7 @@ export function handleKeyDown(
                   [],
                   true,
                 ),
-                insertionPathWithinWrapper: arrayInsertionPath(emptyElementPath, 'children', null),
+                insertionPathWithinWrapper: childInsertionPath(emptyElementPath, 'children', null),
                 importsToAdd: {},
               }),
             ]
@@ -1086,7 +1086,7 @@ function detectBestWrapperElement(
   ) {
     return {
       element: defaultUnstyledDivElement(uid),
-      insertionPathWithinWrapper: arrayInsertionPath(emptyElementPath, 'children', null),
+      insertionPathWithinWrapper: childInsertionPath(emptyElementPath, 'children', null),
       importsToAdd: {},
     }
   }
@@ -1111,7 +1111,7 @@ function detectBestWrapperElement(
 
   return {
     element: jsxElement('div', uid, props, []),
-    insertionPathWithinWrapper: arrayInsertionPath(emptyElementPath, 'children', null),
+    insertionPathWithinWrapper: childInsertionPath(emptyElementPath, 'children', null),
     importsToAdd: {},
   }
 }

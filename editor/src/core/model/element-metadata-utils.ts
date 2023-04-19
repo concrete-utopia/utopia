@@ -127,11 +127,11 @@ import {
 import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import {
-  arrayInsertionPath,
+  childInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
-  insertionPathIsArray,
-} from '../../components/editor/store/reparent-target'
+  isChildInsertionPath,
+} from '../../components/editor/store/insertion-path'
 import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
 
 const ObjectPathImmutable: any = OPI
@@ -1880,7 +1880,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: InsertionPath,
   ): ElementPath {
-    if (insertionPathIsArray(reparentTargetParent)) {
+    if (isChildInsertionPath(reparentTargetParent)) {
       // This is an element path, so return directly.
       return reparentTargetParent.elementPath
     } else {
@@ -1995,7 +1995,7 @@ export const MetadataUtils = {
           return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
         }
       }
-      return arrayInsertionPath(parentElement.elementPath, 'children', null)
+      return childInsertionPath(parentElement.elementPath, 'children', null)
     }
   },
 }

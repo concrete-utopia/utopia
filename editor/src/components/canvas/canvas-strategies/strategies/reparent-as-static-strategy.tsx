@@ -3,7 +3,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { zeroCanvasRect } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
-import { arrayInsertionPath } from '../../../editor/store/reparent-target'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -161,7 +161,7 @@ function applyStaticReparent(
             canvasState.nodeModules,
             canvasState.openFile,
             pathToReparent(target),
-            arrayInsertionPath(newParent, 'children', null),
+            childInsertionPath(newParent, 'children', null),
             'always',
           )
           let duplicatedElementNewUids: { [elementPath: string]: string } = {}

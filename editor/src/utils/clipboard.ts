@@ -41,10 +41,10 @@ import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
-  arrayInsertionPath,
+  childInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
-} from '../components/editor/store/reparent-target'
+} from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
@@ -119,7 +119,7 @@ export function getActionsForClipboardItems(
       const metadata = data.targetOriginalContextMetadata
       return [
         EditorActions.pasteJSXElements(
-          arrayInsertionPath(target, 'children', null), // what about conditionals?
+          childInsertionPath(target, 'children', null), // what about conditionals?
           elements,
           metadata,
         ),
@@ -148,7 +148,7 @@ export function getActionsForClipboardItems(
         pastedImages,
         parentCenter,
         canvasScale,
-        arrayInsertionPath(target, 'children', null),
+        childInsertionPath(target, 'children', null),
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -348,7 +348,7 @@ export function getTargetParentForPaste(
         ) &&
         !insertingSourceIntoItself
       ) {
-        return arrayInsertionPath(parentTarget, 'children', null)
+        return childInsertionPath(parentTarget, 'children', null)
       } else {
         const parentOfSelected = EP.parentPath(parentTarget)
         if (
@@ -360,7 +360,7 @@ export function getTargetParentForPaste(
             parentOfSelected,
           )
         ) {
-          return arrayInsertionPath(parentOfSelected, 'children', null)
+          return childInsertionPath(parentOfSelected, 'children', null)
         } else {
           return null
         }

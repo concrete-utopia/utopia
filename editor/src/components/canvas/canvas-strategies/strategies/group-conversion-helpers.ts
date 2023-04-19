@@ -43,7 +43,7 @@ import { isLeft } from '../../../../core/shared/either'
 import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
-import { arrayInsertionPath } from '../../../editor/store/reparent-target'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -109,7 +109,7 @@ export function convertFragmentToGroup(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      arrayInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath, 'children', null),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -172,7 +172,7 @@ export function convertFragmentToFrame(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      arrayInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath, 'children', null),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -211,7 +211,7 @@ export function convertGroupToFragment(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      arrayInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath, 'children', null),
       jsxFragment(uid, children, true),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
@@ -338,7 +338,7 @@ export function convertFrameToFragmentCommands(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      arrayInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath, 'children', null),
       jsxFragment(uid, children, true),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),

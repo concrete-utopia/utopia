@@ -40,11 +40,11 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
-  arrayInsertionPath,
+  childInsertionPath,
   getElementPathFromInsertionPath,
   InsertionPath,
-  insertionPathIsArray,
-} from '../../../../components/editor/store/reparent-target'
+  isChildInsertionPath,
+} from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
 
 interface GetReparentOutcomeResult {
@@ -97,7 +97,7 @@ export function getReparentOutcome(
       console.warn(`Unable to find storyboard path.`)
       return null
     } else {
-      newParent = arrayInsertionPath(storyboardElementPath, 'children', null)
+      newParent = childInsertionPath(storyboardElementPath, 'children', null)
     }
   } else {
     newParent = targetParent
@@ -106,7 +106,7 @@ export function getReparentOutcome(
   // Early exit if there's no need to make any change.
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
-    insertionPathIsArray(newParent) &&
+    isChildInsertionPath(newParent) &&
     EP.pathsEqual(newParent.elementPath, EP.parentPath(toReparent.target))
   ) {
     return {

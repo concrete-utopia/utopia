@@ -20,7 +20,7 @@ import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { absolute } from '../../../utils/utils'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
-import { arrayInsertionPath } from '../../editor/store/reparent-target'
+import { childInsertionPath } from '../../editor/store/insertion-path'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -72,7 +72,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
-        arrayInsertionPath(targetParent, 'children', null),
+        childInsertionPath(targetParent, 'children', null),
         wrapper,
         withElementRemoved,
         index,

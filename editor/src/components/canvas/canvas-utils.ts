@@ -184,7 +184,7 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
-import { InsertionPath, arrayInsertionPath } from '../editor/store/reparent-target'
+import { InsertionPath, childInsertionPath } from '../editor/store/insertion-path'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2274,7 +2274,7 @@ export function moveTemplate(
                   const insertResult = insertElementAtPath(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
-                    arrayInsertionPath(underlyingNewParentPath, 'children', null),
+                    childInsertionPath(underlyingNewParentPath, 'children', null),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
@@ -2798,7 +2798,7 @@ export function duplicate(
             const insertResult = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
-              arrayInsertionPath(newParentPathNotNull, 'children', null),
+              childInsertionPath(newParentPathNotNull, 'children', null),
               newElement,
               utopiaComponents,
               position(),
@@ -2873,7 +2873,7 @@ export function reorderComponent(
     workingComponents = insertElementAtPath(
       projectContents,
       openFile,
-      arrayInsertionPath(parentPath, 'children', null),
+      childInsertionPath(parentPath, 'children', null),
       jsxElement,
       workingComponents,
       adjustedIndexPosition,

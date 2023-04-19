@@ -36,9 +36,9 @@ import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
 import {
   InsertionPath,
-  arrayInsertionPath,
+  childInsertionPath,
   conditionalClauseInsertionPath,
-} from './store/reparent-target'
+} from './store/insertion-path'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -572,7 +572,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
           'children',
           null,
@@ -610,7 +610,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: arrayInsertionPath(
+        pasteInto: childInsertionPath(
           EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
           'children',
           null,

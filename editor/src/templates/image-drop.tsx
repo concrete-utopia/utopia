@@ -27,7 +27,7 @@ import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-ut
 import { optionalMap } from '../core/shared/optional-utils'
 import { emptyComments, jsExpressionValue } from '../core/shared/element-template'
 import { fromString } from '../core/shared/element-path'
-import { arrayInsertionPath } from '../components/editor/store/reparent-target'
+import { childInsertionPath } from '../components/editor/store/insertion-path'
 
 export async function getPastedImages(dataTransfer: DataTransfer): Promise<ImageResult[]> {
   const result = await Clipboard.parseClipboardData(dataTransfer)
@@ -68,7 +68,7 @@ export async function insertImageFromClipboard(
     pastedImages,
     context.mousePosition,
     context.scale,
-    arrayInsertionPath(context.elementPath, 'children', null),
+    childInsertionPath(context.elementPath, 'children', null),
   )
 
   context.dispatch(actions, 'everyone')

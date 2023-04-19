@@ -2,9 +2,8 @@ import { includeToastPatch } from '../../../components/editor/actions/toast-help
 import {
   getElementPathFromInsertionPath,
   InsertionPath,
-  insertionPathIsConditionalClause,
-  insertionPathIsSlot,
-} from '../../../components/editor/store/reparent-target'
+  isConditionalClauseInsertionPath,
+} from '../../editor/store/insertion-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -117,7 +116,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   )
 
   let parentDescription: string
-  if (insertionPathIsConditionalClause(command.newParent)) {
+  if (isConditionalClauseInsertionPath(command.newParent)) {
     parentDescription = `${EP.toUid(command.newParent.elementPath)} (${
       command.newParent.propName
     } clause)`

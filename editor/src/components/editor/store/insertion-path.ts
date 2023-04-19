@@ -18,33 +18,26 @@ export interface ConditionalClause<P extends ElementPath> {
   clause: ConditionalCase
 }
 
-export type InsertionPath = ArrayInsertionPath | SlotInsertionPath | ConditionalClauseInsertionPath
+export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-export interface ArrayInsertionPath {
-  type: 'ARRAY_INSERTION'
+export interface ChildInsertionPath {
+  type: 'CHILD_INSERTION'
   propName: 'children'
   elementPath: StaticElementPath
   indexPosition: IndexPosition | null
 }
 
-export function arrayInsertionPath(
+export function childInsertionPath(
   elementPath: StaticElementPath | ElementPath,
   propName: 'children',
   indexPosition: IndexPosition | null,
-): ArrayInsertionPath {
+): ChildInsertionPath {
   return {
-    type: 'ARRAY_INSERTION',
+    type: 'CHILD_INSERTION',
     elementPath: EP.dynamicPathToStaticPath(elementPath),
     propName: propName,
     indexPosition: indexPosition,
   }
-}
-
-export interface SlotInsertionPath {
-  type: 'SLOT_INSERTION'
-  propName: string
-  elementPath: StaticElementPath
-  nullable: boolean
 }
 
 export interface ConditionalClauseInsertionPath {
@@ -64,49 +57,28 @@ export function conditionalClauseInsertionPath(
   }
 }
 
-export function insertionPathIsSlot(
-  reparentTargetParent: InsertionPath,
-): reparentTargetParent is SlotInsertionPath {
-  return reparentTargetParent.type === 'SLOT_INSERTION'
+export function isChildInsertionPath(
+  insertionPath: InsertionPath,
+): insertionPath is ChildInsertionPath {
+  return insertionPath.type === 'CHILD_INSERTION'
 }
 
-export function insertionPathIsArray(
-  reparentTargetParent: InsertionPath,
-): reparentTargetParent is ArrayInsertionPath {
-  return reparentTargetParent.type === 'ARRAY_INSERTION'
+export function isConditionalClauseInsertionPath(
+  insertionPath: InsertionPath,
+): insertionPath is ConditionalClauseInsertionPath {
+  return insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION'
 }
 
-export function insertionPathIsConditionalClause(
-  reparentTargetParent: InsertionPath,
-): reparentTargetParent is ConditionalClauseInsertionPath {
-  return reparentTargetParent.type === 'CONDITIONAL_CLAUSE_INSERTION'
+export function getElementPathFromInsertionPath(insertionPath: InsertionPath): StaticElementPath {
+  return insertionPath.elementPath
 }
 
-export function getElementPathFromInsertionPath(
-  reparentTargetParent: InsertionPath,
-): StaticElementPath {
-  return reparentTargetParent.elementPath
-}
-
-// export function dynamicReparentTargetParentToStaticReparentTargetParent(
-//   reparentTargetParent: InsertionPath,
-// ): InsertionPath<StaticElementPath> {
-//   if (insertionPathIsSlot(reparentTargetParent)) {
-//     return conditionalClause(
-//       EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
-//       reparentTargetParent.clause,
-//     )
-//   } else {
-//     return EP.dynamicPathToStaticPath(reparentTargetParent)
-//   }
-// }
-
-export function insertionPathToString(reparentTargetParent: InsertionPath): string {
-  return `${reparentTargetParent.propName} of ${EP.toString(reparentTargetParent.elementPath)}`
+export function insertionPathToString(insertionPath: InsertionPath): string {
+  return `${insertionPath.propName} of ${EP.toString(insertionPath.elementPath)}`
 }
 
 // TODO: do we need this
-export function commonReparentTarget(
+export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
@@ -142,10 +114,10 @@ export function commonReparentTarget(
     )
   }
 
-  return arrayInsertionPath(closestSharedAncestor, 'children', null)
+  return childInsertionPath(closestSharedAncestor, 'children', null)
 }
 
-export function commonReparentTargetFromArray(
+export function commonInsertionPathFromArray(
   metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
 ): InsertionPath | null {
@@ -164,7 +136,7 @@ export function commonReparentTargetFromArray(
     if (working == null) {
       return working
     } else {
-      return commonReparentTarget(metadata, working, target)
+      return commonInsertionPath(metadata, working, target)
     }
   }, workingArray[0])
 }

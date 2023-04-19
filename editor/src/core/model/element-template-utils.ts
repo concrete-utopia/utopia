@@ -67,12 +67,10 @@ import { modify } from '../shared/optics/optic-utilities'
 import {
   getElementPathFromInsertionPath,
   InsertionPath,
-  insertionPathIsArray,
-  insertionPathIsConditionalClause,
-  insertionPathIsSlot,
-} from '../../components/editor/store/reparent-target'
+  isChildInsertionPath,
+  isConditionalClauseInsertionPath,
+} from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
-import { isNullJSXAttributeValue } from '../shared/element-template'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -524,7 +522,7 @@ export function insertJSXElementChild(
     parentPath: ElementPath,
     target: InsertionPath,
   ): ConditionalCase {
-    if (insertionPathIsConditionalClause(target)) {
+    if (isConditionalClauseInsertionPath(target)) {
       return target.propName
     }
     throw new Error('trying to get at conditional case with a non-conditional insertion path')
@@ -539,7 +537,7 @@ export function insertJSXElementChild(
     (storyboardPath == null
       ? null
       : {
-          type: 'ARRAY_INSERTION',
+          type: 'CHILD_INSERTION',
           propName: 'children',
           elementPath: storyboardPath,
           indexPosition: null,
@@ -557,7 +555,7 @@ export function insertJSXElementChild(
         if (targetParent == null) {
           return parentElement
         }
-        if (insertionPathIsArray(targetParent)) {
+        if (isChildInsertionPath(targetParent)) {
           if (!isJSXElementLike(parentElement)) {
             throw new Error('Target parent for array insertion doesnt have children')
           }
@@ -576,7 +574,7 @@ export function insertJSXElementChild(
             ...parentElement,
             [targetParentIncludingStoryboardRoot.propName]: updatedChildren,
           }
-        } else if (insertionPathIsConditionalClause(targetParent)) {
+        } else if (isConditionalClauseInsertionPath(targetParent)) {
           if (!isJSXConditionalExpression(parentElement)) {
             throw new Error('Target parent for array insertion doesnt have children')
           }

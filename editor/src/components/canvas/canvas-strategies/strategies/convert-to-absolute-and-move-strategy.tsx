@@ -67,7 +67,7 @@ import {
 } from './group-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
-import { arrayInsertionPath } from '../../../editor/store/reparent-target'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -386,7 +386,7 @@ function collectReparentCommands(
     canvasState.nodeModules,
     canvasState.openFile,
     pathToReparent(path),
-    arrayInsertionPath(targetParent, 'children', null),
+    childInsertionPath(targetParent, 'children', null),
     'always',
   )
   if (outcomeResult == null) {

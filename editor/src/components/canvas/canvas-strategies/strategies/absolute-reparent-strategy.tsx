@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { arrayInsertionPath } from '../../../editor/store/reparent-target'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -121,7 +121,7 @@ export function baseAbsoluteReparentStrategy(
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  arrayInsertionPath(newParent, 'children', null),
+                  childInsertionPath(newParent, 'children', null),
                   'always',
                 )
 

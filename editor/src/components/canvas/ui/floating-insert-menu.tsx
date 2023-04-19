@@ -69,9 +69,9 @@ import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
 import {
-  arrayInsertionPath,
+  childInsertionPath,
   conditionalClauseInsertionPath,
-} from '../../editor/store/reparent-target'
+} from '../../editor/store/insertion-path'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -507,7 +507,7 @@ export var FloatingMenu = React.memo(() => {
               },
               insertionPathWithinWrapper:
                 element.type === 'JSX_FRAGMENT'
-                  ? arrayInsertionPath(emptyElementPath, 'children', null)
+                  ? childInsertionPath(emptyElementPath, 'children', null)
                   : conditionalClauseInsertionPath(emptyElementPath, 'true-case'),
               importsToAdd: emptyImports(),
             }),
@@ -577,7 +577,7 @@ export var FloatingMenu = React.memo(() => {
                   selectedViews,
                   {
                     element: newElement,
-                    insertionPathWithinWrapper: arrayInsertionPath(
+                    insertionPathWithinWrapper: childInsertionPath(
                       emptyElementPath,
                       'children',
                       null,
@@ -589,7 +589,7 @@ export var FloatingMenu = React.memo(() => {
                 )
               : wrapInElement(selectedViews, {
                   element: newElement,
-                  insertionPathWithinWrapper: arrayInsertionPath(
+                  insertionPathWithinWrapper: childInsertionPath(
                     emptyElementPath,
                     'children',
                     null,

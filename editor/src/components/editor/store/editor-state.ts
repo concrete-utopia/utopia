@@ -192,11 +192,11 @@ import { getNavigatorTargets } from '../../../components/navigator/navigator-uti
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
-  arrayInsertionPath,
+  childInsertionPath,
   ConditionalClause,
   conditionalClauseInsertionPath,
   InsertionPath,
-} from './reparent-target'
+} from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1939,7 +1939,7 @@ export function addSceneToJSXComponents(
   const storyboardComponentUID =
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
-    const storyboardComponentElementPath = arrayInsertionPath(
+    const storyboardComponentElementPath = childInsertionPath(
       EP.elementPath([staticElementPath([storyboardComponentUID])]),
       'children',
       null,
@@ -2247,7 +2247,7 @@ export function reparentTargetFromNavigatorEntry(
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
-      return arrayInsertionPath(navigatorEntry.elementPath, 'children', null)
+      return childInsertionPath(navigatorEntry.elementPath, 'children', null)
     case 'CONDITIONAL_CLAUSE':
       const supportsChildren = MetadataUtils.targetSupportsChildren(
         projectContents,
@@ -2257,7 +2257,7 @@ export function reparentTargetFromNavigatorEntry(
         navigatorEntry.clauseElementPath,
       )
       return supportsChildren
-        ? arrayInsertionPath(navigatorEntry.clauseElementPath, 'children', null)
+        ? childInsertionPath(navigatorEntry.clauseElementPath, 'children', null)
         : conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)

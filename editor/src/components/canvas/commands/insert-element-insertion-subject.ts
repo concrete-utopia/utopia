@@ -12,7 +12,7 @@ import {
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
 } from '../../editor/store/editor-state'
-import { arrayInsertionPath } from '../../editor/store/reparent-target'
+import { childInsertionPath } from '../../editor/store/insertion-path'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
@@ -62,7 +62,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
       const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
-        arrayInsertionPath(targetParent, 'children', null),
+        childInsertionPath(targetParent, 'children', null),
         subject.element,
         utopiaComponents,
         null,
