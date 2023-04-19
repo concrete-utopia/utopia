@@ -19,7 +19,7 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
-import { InsertionPath } from '../store/insertion-path'
+import { conditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
 
@@ -640,10 +640,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -682,10 +682,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -730,10 +730,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'false-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'false-case',
+        ),
         want: `
         <div data-uid='root'>
         	{
@@ -774,10 +774,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -830,10 +830,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
       <div data-uid='root'>
       {

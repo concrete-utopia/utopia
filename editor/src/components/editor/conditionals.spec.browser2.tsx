@@ -35,7 +35,7 @@ import { ConditionalSectionTestId } from '../inspector/sections/layout-section/c
 import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
-import { InsertionPath } from './store/insertion-path'
+import { InsertionPath, conditionalClauseInsertionPath } from './store/insertion-path'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -750,10 +750,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'true-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'true-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -787,10 +787,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'true-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'true-case',
+            ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
               EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
@@ -831,10 +831,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'true-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'true-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -868,10 +868,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'false-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'false-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -905,10 +905,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'false-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'false-case',
+            ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
               EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
@@ -949,10 +949,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'false-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'false-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 

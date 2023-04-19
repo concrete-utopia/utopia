@@ -2122,7 +2122,7 @@ export function conditionalClauseNavigatorEntry(
 ): ConditionalClauseNavigatorEntry {
   return {
     type: 'CONDITIONAL_CLAUSE',
-    elementPath: elementPath,
+    elementPath: EP.dynamicPathToStaticPath(elementPath),
     clause: clause,
   }
 }

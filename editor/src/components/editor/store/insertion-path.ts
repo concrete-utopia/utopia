@@ -5,16 +5,16 @@ import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 
 export interface ConditionalClauseInsertionPath<P extends ElementPath> {
-  elementPath: P
+  elementPath: StaticElementPath
   clause: ConditionalCase
 }
 
 export function conditionalClauseInsertionPath<P extends ElementPath>(
-  elementPath: P,
+  elementPath: ElementPath,
   clause: ConditionalCase,
 ): ConditionalClauseInsertionPath<P> {
   return {
-    elementPath: elementPath,
+    elementPath: EP.dynamicPathToStaticPath(elementPath),
     clause: clause,
   }
 }
@@ -35,11 +35,11 @@ export function isChildInsertionPath<P extends ElementPath>(
 
 export function getElementPathFromReparentTargetParent<P extends ElementPath>(
   reparentTargetParent: InsertionPath<P>,
-): P {
+): StaticElementPath {
   if (isConditionalClauseInsertionPath(reparentTargetParent)) {
     return reparentTargetParent.elementPath
   } else {
-    return reparentTargetParent
+    return EP.dynamicPathToStaticPath(reparentTargetParent)
   }
 }
 
