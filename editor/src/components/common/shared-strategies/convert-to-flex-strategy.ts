@@ -1,8 +1,12 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
-import { foldEither } from '../../../core/shared/either'
+import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXElementLike } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  isJSXElementLike,
+} from '../../../core/shared/element-template'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
@@ -42,6 +46,17 @@ export function convertLayoutToFlexCommands(
     }
 
     if (MetadataUtils.isConditionalFromMetadata(parentInstance)) {
+      return [
+        showToastCommand(
+          'Cannot be converted to Flex yet',
+          'NOTICE',
+          'cannot-convert-children-to-flex',
+        ),
+      ]
+    }
+
+    // FIXME: `childrenPaths` doesn't include text elements yet, and this causes `rearrangeChildren` throw an error
+    if (getElementTextChildrenCount(parentInstance) > 0) {
       return [
         showToastCommand(
           'Cannot be converted to Flex yet',
@@ -483,4 +498,18 @@ function rearrangedPathsWithGroupsIntact(
   }
 
   return finalReorderedPaths
+}
+
+function getElementTextChildrenCount(instance: ElementInstanceMetadata): number {
+  if (
+    isLeft(instance.element) ||
+    !(
+      instance.element.value.type === 'JSX_ELEMENT' ||
+      instance.element.value.type === 'JSX_FRAGMENT'
+    )
+  ) {
+    return 0
+  }
+
+  return instance.element.value.children.filter((e) => e.type === 'JSX_TEXT_BLOCK').length
 }
