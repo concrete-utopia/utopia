@@ -1940,7 +1940,7 @@ export function addSceneToJSXComponents(
     return insertJSXElementChild(
       projectContents,
       openFile,
-      childInsertionPath(storyboardComponentElementPath),
+      storyboardComponentElementPath,
       newSceneElement,
       components,
       null,
