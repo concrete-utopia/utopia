@@ -1,20 +1,16 @@
-import { ConditionalCase } from '../../../core/model/conditionals'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { drop } from '../../../core/shared/array-utils'
-import { isRight } from '../../../core/shared/either'
+import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
+import { ConditionalCase } from '../../../core/model/conditionals'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { drop } from '../../../core/shared/array-utils'
+import { assertNever } from '../../../core/shared/utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
-
-export interface ConditionalClause<P extends ElementPath> {
-  elementPath: P
-  clauseElementPath: P
-  clause: ConditionalCase
-}
+import { isRight } from '../../../core/shared/either'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -23,12 +19,13 @@ export interface ChildInsertionPath {
   intendedParentPath: StaticElementPath
 }
 
+// Insert element into the intended parent's props.children array.
 export function childInsertionPath(
-  intendedParentPath: StaticElementPath | ElementPath,
+  elementPath: StaticElementPath | ElementPath,
 ): ChildInsertionPath {
   return {
     type: 'CHILD_INSERTION',
-    intendedParentPath: EP.dynamicPathToStaticPath(intendedParentPath),
+    intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
   }
 }
 
@@ -38,21 +35,16 @@ export interface ConditionalClauseInsertionPath {
   clause: ConditionalCase
 }
 
+// Insert element into the intended parent's true or false branch expression
 export function conditionalClauseInsertionPath(
-  intendedParentPath: StaticElementPath | ElementPath,
+  elementPath: ElementPath,
   clause: ConditionalCase,
 ): ConditionalClauseInsertionPath {
   return {
     type: 'CONDITIONAL_CLAUSE_INSERTION',
-    intendedParentPath: EP.dynamicPathToStaticPath(intendedParentPath),
+    intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
     clause: clause,
   }
-}
-
-export function isChildInsertionPath(
-  insertionPath: InsertionPath,
-): insertionPath is ChildInsertionPath {
-  return insertionPath.type === 'CHILD_INSERTION'
 }
 
 export function isConditionalClauseInsertionPath(
@@ -61,15 +53,26 @@ export function isConditionalClauseInsertionPath(
   return insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION'
 }
 
+export function isChildInsertionPath(
+  insertionPath: InsertionPath,
+): insertionPath is ChildInsertionPath {
+  return insertionPath.type === 'CHILD_INSERTION'
+}
+
 export function getElementPathFromInsertionPath(insertionPath: InsertionPath): StaticElementPath {
   return insertionPath.intendedParentPath
 }
 
 export function insertionPathToString(insertionPath: InsertionPath): string {
-  return `children of ${EP.toString(insertionPath.intendedParentPath)}`
+  if (isConditionalClauseInsertionPath(insertionPath)) {
+    return `${insertionPath.clause} of ${EP.toString(insertionPath.intendedParentPath)}`
+  } else if (isChildInsertionPath(insertionPath)) {
+    return EP.toString(insertionPath.intendedParentPath)
+  } else {
+    assertNever(insertionPath)
+  }
 }
 
-// TODO: do we need this
 export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
@@ -77,7 +80,7 @@ export function commonInsertionPath(
 ): InsertionPath | null {
   const closestSharedAncestor = EP.dynamicPathToStaticPath(
     forceNotNull(
-      `FIXME the common element path is null, it should be pointing to Storyboard`,
+      `Invariant: the common element path is null, it should be pointing to Storyboard`,
       EP.closestSharedAncestor(first.intendedParentPath, second.intendedParentPath, true),
     ),
   )

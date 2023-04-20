@@ -55,7 +55,7 @@ import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { forceNotNull } from '../shared/optional-utils'
+import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import {
   ConditionalCase,
   conditionalWhenFalseOptic,

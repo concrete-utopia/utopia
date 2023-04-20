@@ -548,7 +548,7 @@ export function handleKeyDown(
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
-          ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
+          ? editor.selectedViews.map((target) => EditorActions.unwrapElement(target))
           : []
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {

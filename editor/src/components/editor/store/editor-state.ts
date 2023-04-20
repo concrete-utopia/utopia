@@ -191,12 +191,7 @@ import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import {
-  childInsertionPath,
-  ConditionalClause,
-  conditionalClauseInsertionPath,
-  InsertionPath,
-} from './insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath, InsertionPath } from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1945,7 +1940,7 @@ export function addSceneToJSXComponents(
     return insertJSXElementChild(
       projectContents,
       openFile,
-      storyboardComponentElementPath,
+      childInsertionPath(storyboardComponentElementPath),
       newSceneElement,
       components,
       null,
@@ -2107,8 +2102,11 @@ export function regularNavigatorEntriesEqual(
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
-export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
+export interface ConditionalClauseNavigatorEntry {
   type: 'CONDITIONAL_CLAUSE'
+  elementPath: ElementPath
+  clauseElementPath: ElementPath
+  clause: ConditionalCase
 }
 
 export function conditionalClauseNavigatorEntry(

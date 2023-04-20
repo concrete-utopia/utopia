@@ -28,6 +28,7 @@ import {
   deleteSelected,
   pasteJSXElements,
   selectComponents,
+  unwrapElement,
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
@@ -557,6 +558,138 @@ describe('conditionals', () => {
       )
     })
   })
+  describe('unwrap', () => {
+    it('can unwrap a conditional', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? <div data-uid='bbb'>hello there</div> : <div data-uid='ccc'>another div</div>
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              <div data-uid='bbb'>hello there</div>
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional that is pinned to false', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=false
+          true ? (
+            <div data-uid='bbb' data-testid='bbb'>hello</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bello</div>
+          )
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+            <div data-uid='ccc' data-testid='ccc'>bello</div>
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional with only text', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          true ? 'hello': 'bello'
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {'hello'}
+            </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional clause', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (
+              <div data-uid='bbb' data-testid='bbb'>
+                <span data-uid='ccc'>hello</span>
+              </div>
+            ) : (
+              'bello'
+            )
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            {
+              // @utopia/uid=conditional
+              true ? (
+                <span data-uid='ccc'>hello</span>
+              ) : (
+                'bello'
+              )
+            }
+          </div>
+         `),
+      )
+    })
+  })
   describe('paste', () => {
     it('can paste a single element into a conditional', async () => {
       const startSnippet = `
@@ -608,9 +741,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: childInsertionPath(
-          EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
         targets: [
           EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -653,7 +784,7 @@ describe('conditionals', () => {
           const got = await runPaste({
             startSnippet,
             pasteInto: conditionalClauseInsertionPath(
-              EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
@@ -690,7 +821,7 @@ describe('conditionals', () => {
           const got = await runPaste({
             startSnippet,
             pasteInto: conditionalClauseInsertionPath(
-              EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
             ),
             targets: [
@@ -734,7 +865,7 @@ describe('conditionals', () => {
           const got = await runPaste({
             startSnippet,
             pasteInto: conditionalClauseInsertionPath(
-              EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
@@ -771,7 +902,7 @@ describe('conditionals', () => {
           const got = await runPaste({
             startSnippet,
             pasteInto: conditionalClauseInsertionPath(
-              EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
@@ -808,7 +939,7 @@ describe('conditionals', () => {
           const got = await runPaste({
             startSnippet,
             pasteInto: conditionalClauseInsertionPath(
-              EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
             ),
             targets: [
@@ -852,7 +983,7 @@ describe('conditionals', () => {
           const got = await runPaste({
             startSnippet,
             pasteInto: conditionalClauseInsertionPath(
-              EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],

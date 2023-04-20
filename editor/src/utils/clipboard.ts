@@ -322,10 +322,7 @@ export function getTargetParentForPaste(
         if (!isNullJSXAttributeValue(clause)) {
           return null
         }
-        return conditionalClauseInsertionPath(
-          EP.dynamicPathToStaticPath(parentPath),
-          conditionalCase,
-        )
+        return conditionalClauseInsertionPath(parentPath, conditionalCase)
       }
     }
   }
