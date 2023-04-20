@@ -705,9 +705,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: childInsertionPath(
-          EP.dynamicPathToStaticPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
-        ),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
         targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
       })
 
