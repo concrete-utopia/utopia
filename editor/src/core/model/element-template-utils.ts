@@ -572,7 +572,6 @@ export function insertJSXElementChild(
                   },
                 }
                 return jsxFragment(
-                  // should insert <React.Fragment>, should ensure React is imported
                   generateUidWithExistingComponents(projectContents),
                   [elementToInsert, clauseValue],
                   false,

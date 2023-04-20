@@ -2171,8 +2171,8 @@ function editorReparentNoStyleChange(
               return {
                 ...workingSuccess,
                 imports: mergeImports(
-                  underlyingFilePath,
-                  underlyingElementSuccess.imports,
+                  underlyingNewParentFilePath,
+                  newParentSuccess.imports,
                   withInserted.importsToAdd,
                 ),
                 topLevelElements: applyUtopiaJSXComponentsChanges(
@@ -2891,7 +2891,6 @@ export function reorderComponent(
     )
 
     workingComponents = insertElementAtPath(
-      // TODO: bubble up imports
       projectContents,
       openFile,
       parentPath,

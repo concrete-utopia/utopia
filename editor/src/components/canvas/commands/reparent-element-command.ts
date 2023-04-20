@@ -107,7 +107,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               insertionResult.components,
               mergeImports(
                 underlyingFilePathNewParent,
-                successTarget.imports,
+                successNewParent.imports,
                 insertionResult.importsToAdd,
               ),
               underlyingFilePathNewParent,
