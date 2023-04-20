@@ -106,44 +106,50 @@ const branchNavigatorEntriesSelector = createCachedSelector(
   },
 )((_, paths) => paths.map(EP.toString).join(','))
 
+export function getConditionOverrideSelector(
+  jsxMetadata: ElementInstanceMetadataMap,
+  paths: ElementPath[],
+): ConditionOverride {
+  const elements = mapDropNulls((path) => {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    if (
+      elementMetadata == null ||
+      isLeft(elementMetadata.element) ||
+      !isJSXConditionalExpression(elementMetadata.element.value)
+    ) {
+      return null
+    }
+
+    return elementMetadata.element.value
+  }, paths)
+
+  if (elements.length === 0) {
+    return 'not-a-conditional'
+  }
+
+  let conditions = new Set<boolean | null>()
+  elements.forEach((element) => {
+    const flag = findUtopiaCommentFlag(element.comments, 'conditional')
+    if (isUtopiaCommentFlagConditional(flag)) {
+      conditions.add(flag.value)
+    }
+  })
+
+  switch (conditions.size) {
+    case 0:
+      return 'not-overridden'
+    case 1:
+      return conditions.values().next().value ?? 'not-overridden'
+    default:
+      return 'mixed'
+  }
+}
+
 const conditionOverrideSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
-  (jsxMetadata: ElementInstanceMetadataMap, paths: ElementPath[]): ConditionOverride => {
-    const elements = mapDropNulls((path) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-      if (
-        elementMetadata == null ||
-        isLeft(elementMetadata.element) ||
-        !isJSXConditionalExpression(elementMetadata.element.value)
-      ) {
-        return null
-      }
-
-      return elementMetadata.element.value
-    }, paths)
-
-    if (elements.length === 0) {
-      return 'not-a-conditional'
-    }
-
-    let conditions = new Set<boolean | null>()
-    elements.forEach((element) => {
-      const flag = findUtopiaCommentFlag(element.comments, 'conditional')
-      if (isUtopiaCommentFlagConditional(flag)) {
-        conditions.add(flag.value)
-      }
-    })
-
-    switch (conditions.size) {
-      case 0:
-        return 'not-overridden'
-      case 1:
-        return conditions.values().next().value ?? 'not-overridden'
-      default:
-        return 'mixed'
-    }
-  },
+  (jsxMetadata: ElementInstanceMetadataMap, paths: ElementPath[]): ConditionOverride =>
+    getConditionOverrideSelector(jsxMetadata, paths),
 )((_, paths) => paths.map(EP.toString).join(','))
 
 const conditionOverrideToControlStatus = (conditionOverride: ConditionOverride): ControlStatus => {
