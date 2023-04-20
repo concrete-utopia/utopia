@@ -372,7 +372,7 @@ function isElementNonDOMElement(
 }
 
 interface NonDOMElementWithLeaves {
-  group: ElementPath // path to a non-DOM element
+  element: ElementPath // path to a non-DOM element
   leaves: Set<string> // stringified element paths to the leaves in the tree of this element
 }
 
@@ -394,7 +394,7 @@ function getTopLevelChildrenAndGroups(
   for (const child of childrenPaths) {
     if (isElementNonDOMElement(metadata, allElementProps, child)) {
       groups.push({
-        group: child,
+        element: child,
         leaves: new Set(
           replaceContentAffectingPathsWithTheirChildrenRecursive(metadata, allElementProps, [
             child,
@@ -482,7 +482,7 @@ function rearrangedPathsWithGroupsIntact(
 
       // so that a group belonging to multiple children isn't pushed multiple times
       if (!EP.pathsEqual(finalReorderedPaths.at(-1) ?? null, child)) {
-        finalReorderedPaths.push(groupWithChild.group)
+        finalReorderedPaths.push(groupWithChild.element)
       }
 
       workingSortedChildren = restOfChildren
