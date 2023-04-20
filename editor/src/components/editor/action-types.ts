@@ -77,7 +77,7 @@ import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
 import { GithubOperationType } from './actions/action-creators'
 import { CanvasCommand } from '../canvas/commands/commands'
-import { ReparentTargetParent } from './store/reparent-target'
+import { InsertionPath } from './store/insertion-path'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -346,7 +346,7 @@ export interface ElementPaste {
 
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: ReparentTargetParent<ElementPath>
+  pasteInto: InsertionPath
   elements: Array<ElementPaste>
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
@@ -466,7 +466,7 @@ export interface SaveImageDoNothing {
 
 export interface SaveImageInsertWith {
   type: 'SAVE_IMAGE_INSERT_WITH'
-  parentPath: ReparentTargetParent<ElementPath> | null
+  parentPath: InsertionPath | null
   frame: CanvasRectangle
   multiplier: number
 }

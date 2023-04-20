@@ -1,39 +1,43 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TypeApplications  #-}
 
 module Utopia.Web.Assets where
 
+import           Aws.Aws
+import           Aws.Core
+import           Aws.S3
 import           Conduit
+import qualified Conduit                  as C
 import           Control.Lens
 import           Control.Monad.Fail
-import           Control.Monad.Trans.AWS
-import qualified Data.ByteString         as B
-import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString          as B
+import qualified Data.ByteString.Lazy     as BL
+import qualified Data.ByteString.UTF8     as B
+import qualified Data.Conduit.Combinators as C
 import           Data.Generics.Sum
-import           Data.List               hiding (intercalate)
-import           Data.Map.Strict         as M
+import           Data.List                hiding (intercalate)
+import           Data.Map.Strict          as M
 import           Data.String
-import           Data.Text               hiding (isInfixOf, isPrefixOf,
-                                          isSuffixOf)
+import           Data.Text                hiding (isInfixOf, isPrefixOf,
+                                           isSuffixOf)
 import           Data.Text.Strict.Lens
-import qualified Data.UUID               as U
+import           Data.Time
+import qualified Data.UUID                as U
 import           Data.UUID.V4
 import           Magic
-import           Network.AWS.Auth
-import           Network.AWS.Data.Text
-import           Network.AWS.S3
-import           Protolude               hiding (intercalate)
+import           Network.HTTP.Client
+import qualified Network.HTTP.Types       as H
+import           Protolude                hiding (intercalate, throwIO, try)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
-
-
-import           Data.Time
+import           UnliftIO                 (throwIO, try)
 
 data AWSResources = AWSResources
-                  { _awsEnv :: Env
-                  , _bucket :: BucketName
+                  { _awsConfiguration :: Configuration
+                  , _bucket           :: Bucket
                   }
 
 data LoadAssetResult = AssetUnmodified
@@ -121,91 +125,102 @@ generateUniqueFileID = do
 
 makeAmazonResources :: String -> String -> String -> IO AWSResources
 makeAmazonResources accessKey secretKey bucketName = do
-  amazonEnv <- newEnv $ FromKeys (AccessKey $ encodeUtf8 $ pack accessKey) (SecretKey $ encodeUtf8 $ pack secretKey)
-  let nameOfBucket = BucketName $ toS bucketName
+  amazonCredentials <- makeCredentials (B.fromString accessKey) (B.fromString secretKey)
+  basicConfig <- baseConfiguration
+  let amazonConfiguration = basicConfig { credentials = amazonCredentials }
+  let nameOfBucket = toS bucketName
   return $ AWSResources
-           { _awsEnv = amazonEnv
+           { _awsConfiguration = amazonConfiguration
            , _bucket = nameOfBucket
            }
 
 getAmazonResourcesFromEnvironment :: IO (Maybe AWSResources)
 getAmazonResourcesFromEnvironment = do
-  accessKey <- lookupEnv $ toS envAccessKey --AWS_ACCESS_KEY_ID
-  secretKey <- lookupEnv $ toS envSecretKey --AWS_SECRET_ACCESS_KEY
+  accessKey <- lookupEnv "AWS_ACCESS_KEY_ID"
+  secretKey <- lookupEnv "AWS_SECRET_ACCESS_KEY"
   bucketName <- lookupEnv "AWS_BUCKET_NAME"
   let possibleResources = makeAmazonResources <$> accessKey <*> secretKey <*> bucketName
   sequence possibleResources
 
-runInAWS :: AWSResources -> AWST (ResourceT IO) a -> IO a
-runInAWS resources awst = runResourceT $ runAWST (_awsEnv resources) awst
+s3Configuration :: S3Configuration NormalQuery
+s3Configuration = defServiceConfig
+
+runInAWS :: (Transaction r a, AsMemoryResponse a) => AWSResources -> ServiceConfiguration r NormalQuery -> r -> IO (MemoryResponse a)
+runInAWS AWSResources{..} s3Config request = do
+  simpleAws _awsConfiguration s3Config request
 
 assetPathToS3Path :: [Text] -> Text
 assetPathToS3Path assetPath = "projects/" <> intercalate "/" assetPath
 
-assetPathToObjectKey :: [Text] -> ObjectKey
-assetPathToObjectKey assetPath = ObjectKey $ assetPathToS3Path assetPath
+assetPathToObjectKey :: [Text] -> Object
+assetPathToObjectKey assetPath = assetPathToS3Path assetPath
 
-projectIDToThumbnailObjectKey :: Text -> ObjectKey
-projectIDToThumbnailObjectKey projectID = ObjectKey ("thumbnails/" <> projectID)
+projectIDToThumbnailObjectKey :: Text -> Object
+projectIDToThumbnailObjectKey projectID = "thumbnails/" <> projectID
 
-loadFileFromS3 :: BucketName -> ObjectKey -> Maybe Text -> AWST (ResourceT IO) LoadAssetResult
-loadFileFromS3 bucketName objectKey possibleETag = do
-  let getObjectRequest = set goIfNoneMatch possibleETag $ getObject bucketName objectKey
-  s3Response <- trying (_ServiceError . hasStatus 304) (send getObjectRequest)
-  case s3Response of
-    Right successfulResponse -> do
-      fileContents <- sinkBody (view gorsBody successfulResponse) sinkLazy
-      let etagFromS3 = firstOf (gorsETag . _Just . _Ctor @"ETag" . utf8) successfulResponse
-      pure $ AssetLoaded fileContents etagFromS3
-    Left _ ->
-      pure AssetUnmodified
+loadFileFromS3 :: AWSResources -> Object -> Maybe Text -> IO LoadAssetResult
+loadFileFromS3 resources objectKey possibleETag = do
+  let bucketName = _bucket resources
+  let request = (getObject bucketName objectKey) { goIfNoneMatch = possibleETag }
+  GetObjectMemoryResponse metadata response <- runInAWS resources s3Configuration request
+  let isUnmodified = responseStatus response == H.notModified304
+  let etag = omETag metadata
+  let loadedResponse = AssetLoaded (responseBody response) (Just etag)
+  let result = if isUnmodified then AssetUnmodified else loadedResponse
+  pure result
 
-checkFileExistsInS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) Bool
-checkFileExistsInS3 bucketName objectKey = do
-  let prefix = Just $ view _ObjectKey objectKey
-  let listObjectRequest = set lovPrefix prefix $ listObjectsV2 bucketName
-  listObjectResponse <- send listObjectRequest
-  let objectWithKey object = view oKey object == objectKey
-  return $ has (lovrsContents . folded . filtered objectWithKey) listObjectResponse
+checkFileExistsInS3 :: AWSResources -> Object -> IO Bool
+checkFileExistsInS3 resources objectKey = do
+  let bucketName = _bucket resources
+  let request = headObject bucketName objectKey
+  HeadObjectMemoryResponse metadata <- runInAWS resources s3Configuration request
+  pure $ isJust metadata
 
-loadPossibleFileFromS3 :: BucketName -> ObjectKey -> Maybe Text -> AWST (ResourceT IO) LoadAssetResult
-loadPossibleFileFromS3 bucketName objectKey possibleETag = do
-  exists <- checkFileExistsInS3 bucketName objectKey
-  if exists then loadFileFromS3 bucketName objectKey possibleETag else pure AssetNotFound
+loadPossibleFileFromS3 :: AWSResources -> Object -> Maybe Text -> IO LoadAssetResult
+loadPossibleFileFromS3 resources objectKey possibleETag = do
+  exists <- checkFileExistsInS3 resources objectKey
+  if exists then loadFileFromS3 resources objectKey possibleETag else pure AssetNotFound
 
 loadProjectAssetFromS3 :: AWSResources -> LoadAsset
-loadProjectAssetFromS3 resources assetPath possibleETag = runInAWS resources $ do
-  let bucketName = _bucket resources
+loadProjectAssetFromS3 resources assetPath possibleETag = do
   let objectKey = assetPathToObjectKey assetPath
-  loadPossibleFileFromS3 bucketName objectKey possibleETag
+  loadPossibleFileFromS3 resources objectKey possibleETag
 
 saveProjectAssetToS3 :: AWSResources -> [Text] -> BL.ByteString -> IO ()
-saveProjectAssetToS3 resources assetPath contents = runInAWS resources $ do
-  let putObjectRequest = putObject (_bucket resources) (assetPathToObjectKey assetPath) (toBody contents)
-  void $ send putObjectRequest
+saveProjectAssetToS3 resources assetPath contents = do
+  let bucketName = _bucket resources
+  let request = putObject bucketName (assetPathToObjectKey assetPath) (RequestBodyLBS contents)
+  void $ runInAWS resources s3Configuration request
 
 renameProjectAssetOnS3 :: AWSResources -> OldPathText -> NewPathText -> IO ()
-renameProjectAssetOnS3 resources (OldPath oldPath) (NewPath newPath) = runInAWS resources $ do
-  let copySource = "/" <> toText (_bucket resources) <> "/" <> assetPathToS3Path oldPath
-  let copyObjectRequest = copyObject (_bucket resources) copySource (assetPathToObjectKey newPath)
-  let deleteObjectRequest = deleteObject (_bucket resources) (assetPathToObjectKey oldPath)
-  _ <- send copyObjectRequest
-  void $ send deleteObjectRequest
+renameProjectAssetOnS3 resources (OldPath oldPath) (NewPath newPath) = do
+  let bucketName = _bucket resources
+  let newObjectPath = assetPathToObjectKey newPath
+  let oldObjectPath = assetPathToS3Path oldPath
+  let oldObjectId = ObjectId bucketName oldObjectPath Nothing
+  let copyRequest = copyObject bucketName newObjectPath oldObjectId CopyMetadata
+  let deleteRequest = DeleteObject { doObjectName = oldObjectPath, doBucket = bucketName }
+  void $ runInAWS resources s3Configuration copyRequest
+  void $ runInAWS resources s3Configuration deleteRequest
 
 deleteProjectAssetOnS3 :: AWSResources -> [Text] -> IO ()
-deleteProjectAssetOnS3 resources path = runInAWS resources $ do
-  let deleteObjectRequest = deleteObject (_bucket resources) (assetPathToObjectKey path)
-  void $ send deleteObjectRequest
+deleteProjectAssetOnS3 resources path = do
+  let bucketName = _bucket resources
+  let oldObjectPath = assetPathToS3Path path
+  let deleteRequest = DeleteObject { doObjectName = oldObjectPath, doBucket = bucketName }
+  void $ runInAWS resources s3Configuration deleteRequest
 
 loadProjectThumbnailFromS3 :: AWSResources -> Text -> Maybe Text -> IO LoadAssetResult
-loadProjectThumbnailFromS3 resources projectID possibleETag = runInAWS resources $ do
-  let bucketName = _bucket resources
-  loadPossibleFileFromS3 bucketName (projectIDToThumbnailObjectKey projectID) possibleETag
+loadProjectThumbnailFromS3 resources projectID possibleETag = do
+  let objectKey = projectIDToThumbnailObjectKey projectID
+  loadPossibleFileFromS3 resources objectKey possibleETag
 
 saveProjectThumbnailToS3 :: AWSResources -> Text -> BL.ByteString -> IO ()
-saveProjectThumbnailToS3 resources projectID contents = runInAWS resources $ do
-  let putObjectRequest = putObject (_bucket resources) (projectIDToThumbnailObjectKey projectID) (toBody contents)
-  void $ send putObjectRequest
+saveProjectThumbnailToS3 resources projectID contents = do
+  let bucketName = _bucket resources
+  let objectKey = projectIDToThumbnailObjectKey projectID
+  let request = putObject bucketName objectKey (RequestBodyLBS contents)
+  void $ runInAWS resources s3Configuration request
 
 data BlobEntryType = TextEntryType
                    | ImageEntryType

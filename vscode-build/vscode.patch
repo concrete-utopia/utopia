@@ -52,9 +52,32 @@ index 2d7da1aecf8..052f52383f0 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/package.json b/package.json
-index 2bca5115cac..dce7cb0cf6c 100644
+index 2bca5115cac..75f06b97e0b 100644
 --- a/package.json
 +++ b/package.json
+@@ -44,15 +44,15 @@
+     "valid-layers-check": "node build/lib/layersChecker.js",
+     "update-distro": "node build/npm/update-distro.js",
+     "web": "node resources/web/code-web.js",
+-    "compile-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-web",
+-    "watch-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js watch-web",
++    "compile-web": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js compile-web",
++    "watch-web": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js watch-web",
+     "eslint": "node build/eslint",
+     "playwright-install": "node build/azure-pipelines/common/installPlaywright.js",
+-    "compile-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
+-    "compile-extensions-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-extensions-build",
+-    "minify-vscode": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode",
+-    "minify-vscode-reh": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
+-    "minify-vscode-reh-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
++    "compile-build": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js compile-build",
++    "compile-extensions-build": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js compile-extensions-build",
++    "minify-vscode": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js minify-vscode",
++    "minify-vscode-reh": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
++    "minify-vscode-reh-web": "node --max_old_space_size=4095 --openssl-legacy-provider ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
+     "hygiene": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js hygiene",
+     "core-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js core-ci",
+     "extensions-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci"
 @@ -77,6 +77,7 @@
      "spdlog": "^0.13.0",
      "sudo-prompt": "9.2.1",

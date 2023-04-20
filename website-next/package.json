@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "export": "next build && next export",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider next dev",
+    "export": "NODE_OPTIONS=--openssl-legacy-provider next build && next export",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
