@@ -13,8 +13,8 @@ import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import {
-  AllContentAffectingNonDomElementTypes,
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  isElementNonDOMElement,
+  replaceNonDOMElementPathsWithTheirChildrenRecursive,
 } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
@@ -58,7 +58,7 @@ export function convertLayoutToFlexCommands(
 
     const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) =>
       isElementNonDOMElement(metadata, allElementProps, child)
-        ? replaceContentAffectingPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
+        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
         : child,
     )
 
@@ -359,19 +359,6 @@ function guessAlignItems(
   return null
 }
 
-function isElementNonDOMElement(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  elementPath: ElementPath,
-): boolean {
-  const contentAffectingType = getElementContentAffectingType(
-    metadata,
-    allElementProps,
-    elementPath,
-  )
-  return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
-}
-
 interface NonDOMElementWithLeaves {
   element: ElementPath // path to a non-DOM element
   leaves: Set<string> // stringified element paths to the leaves in the tree of this element
@@ -397,7 +384,7 @@ function getTopLevelChildrenAndGroups(
       groups.push({
         element: child,
         leaves: new Set(
-          replaceContentAffectingPathsWithTheirChildrenRecursive(metadata, allElementProps, [
+          replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [
             child,
           ]).map(EP.toString),
         ),

@@ -992,7 +992,6 @@ describe('Smart Convert To Flex if Fragment Children', () => {
 
     await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
 
-    // Expect that nothing changed
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='a'>
       <div
@@ -1223,6 +1222,178 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         />
       ) : null}
       </div>`),
+    )
+  })
+
+  it('sizeless divs acting as groups act as basis for calculations', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: -707,
+      top: 163,
+      width: 858,
+      height: 513,
+    }}
+    data-uid='container'
+  >
+    <React.Fragment>
+      <div data-uid='03e'>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 52,
+            top: 145,
+            width: 179,
+            height: 239,
+          }}
+          data-uid='6c1'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 241,
+            top: 145,
+            width: 73,
+            height: 239,
+          }}
+          data-uid='569'
+        />
+      </div>
+      <div data-uid='5d2'>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 353,
+            top: 145,
+            width: 144,
+            height: 239,
+          }}
+          data-uid='847'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 509,
+            top: 145,
+            width: 45,
+            height: 239,
+          }}
+          data-uid='d99'
+        />
+      </div>
+    </React.Fragment>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 588,
+        top: 145,
+        width: 93,
+        height: 132,
+      }}
+      data-uid='110'
+    />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    await expectSingleUndoStep(editor, async () => {
+      await pressKey('a', { modifiers: shiftModifier })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: -707,
+        top: 163,
+        width: 'max-content',
+        height: 'max-content',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 36.5,
+        padding: '145px 52px',
+      }}
+      data-uid='container'
+    >
+      <React.Fragment>
+        <div
+          data-uid='03e'
+          style={{ width: 262, height: 239 }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 52,
+              top: 145,
+              width: 179,
+              height: 239,
+            }}
+            data-uid='6c1'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 241,
+              top: 145,
+              width: 73,
+              height: 239,
+            }}
+            data-uid='569'
+          />
+        </div>
+        <div
+          data-uid='5d2'
+          style={{ width: 201, height: 239 }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 353,
+              top: 145,
+              width: 144,
+              height: 239,
+            }}
+            data-uid='847'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 509,
+              top: 145,
+              width: 45,
+              height: 239,
+            }}
+            data-uid='d99'
+          />
+        </div>
+      </React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 93,
+          height: 132,
+          contain: 'layout',
+        }}
+        data-uid='110'
+      />
+    </div>`),
     )
   })
 
