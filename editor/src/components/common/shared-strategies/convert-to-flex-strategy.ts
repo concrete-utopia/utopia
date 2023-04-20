@@ -102,7 +102,7 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const rearrangedChildrenPaths = rearrangedPathsWithGroupsIntact(
+    const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
       metadata,
       allElementProps,
       path,
@@ -369,19 +369,19 @@ interface TopLevelChildrenAndGroups {
   nonDOMElementsWithLeaves: Array<NonDOMElementWithLeaves> // children that are non-DOM elements
 }
 
-function getTopLevelChildrenAndGroups(
+function getTopLevelChildrenAndMeasurementBoundaries(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   parentPath: ElementPath,
 ): TopLevelChildrenAndGroups {
   let topLevelChildren: Array<string> = []
-  let groups: Array<NonDOMElementWithLeaves> = []
+  let maesurementBoundaries: Array<NonDOMElementWithLeaves> = []
 
   const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
 
   for (const child of childrenPaths) {
     if (isElementNonDOMElement(metadata, allElementProps, child)) {
-      groups.push({
+      maesurementBoundaries.push({
         element: child,
         leaves: new Set(
           replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [
@@ -394,7 +394,10 @@ function getTopLevelChildrenAndGroups(
     }
   }
 
-  return { topLevelChildren: new Set(topLevelChildren), nonDOMElementsWithLeaves: groups }
+  return {
+    topLevelChildren: new Set(topLevelChildren),
+    nonDOMElementsWithLeaves: maesurementBoundaries,
+  }
 }
 
 /**
@@ -419,7 +422,7 @@ function checkAllChildrenPartOfSingleGroup(
     const childPathString = EP.toString(child)
 
     if (!workingSiblings.has(childPathString)) {
-      // this child was reordered here from another group, which we disallow for now
+      // this child was reordered here from another measurement unit, which we disallow for now
       return null
     }
 
@@ -432,13 +435,17 @@ function checkAllChildrenPartOfSingleGroup(
 /**
  * returns a list of element paths, so that non-dom element children are swapped out for their
  */
-function rearrangedPathsWithGroupsIntact(
+function rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   parentPath: ElementPath,
   sortedChildren: Array<ElementPath>,
 ): Array<ElementPath> | null {
-  const childrenAndGroups = getTopLevelChildrenAndGroups(metadata, allElementProps, parentPath)
+  const childrenAndGroups = getTopLevelChildrenAndMeasurementBoundaries(
+    metadata,
+    allElementProps,
+    parentPath,
+  )
 
   let workingSortedChildren = sortedChildren
   let finalReorderedPaths: Array<ElementPath> = []
@@ -451,16 +458,16 @@ function rearrangedPathsWithGroupsIntact(
       finalReorderedPaths.push(child)
       workingSortedChildren = workingSortedChildren.slice(1)
     } else {
-      const groupWithChild = childrenAndGroups.nonDOMElementsWithLeaves.find((g) =>
+      const measurementBoundaryWithChild = childrenAndGroups.nonDOMElementsWithLeaves.find((g) =>
         g.leaves.has(childPathString),
       )
 
-      if (groupWithChild == null) {
+      if (measurementBoundaryWithChild == null) {
         return null
       }
 
       const restOfChildren = checkAllChildrenPartOfSingleGroup(
-        groupWithChild.leaves,
+        measurementBoundaryWithChild.leaves,
         workingSortedChildren,
       )
 
@@ -468,9 +475,8 @@ function rearrangedPathsWithGroupsIntact(
         return null
       }
 
-      // so that a group belonging to multiple children isn't pushed multiple times
       if (!EP.pathsEqual(finalReorderedPaths.at(-1) ?? null, child)) {
-        finalReorderedPaths.push(groupWithChild.element)
+        finalReorderedPaths.push(measurementBoundaryWithChild.element)
       }
 
       workingSortedChildren = restOfChildren

@@ -1578,11 +1578,11 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1/fragment-1-child-1',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1/fragment-1-child-2',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/first-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/first-child', // <- reordered here from the 1st place
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2/fragment-2-child-1',
       'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2/fragment-2-child-2',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/second-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/second-child', // <- reordered here from the 2nd place
     ])
   })
 
