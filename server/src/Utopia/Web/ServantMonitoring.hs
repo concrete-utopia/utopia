@@ -97,14 +97,14 @@ class HasEndpoint a where
     getEndpoint :: Proxy a -> Request -> Maybe Text
     mkPaths :: Proxy a -> [Text]
 
-instance (HasEndpoint (a :: *), HasEndpoint (b :: *)) => HasEndpoint (a :<|> b) where
+instance (HasEndpoint (a :: Type), HasEndpoint (b :: Type)) => HasEndpoint (a :<|> b) where
     getEndpoint _ req =
       getEndpoint (Proxy :: Proxy a) req `mplus`
       getEndpoint (Proxy :: Proxy b) req
     mkPaths _ =
         mkPaths (Proxy :: Proxy a) <> mkPaths (Proxy :: Proxy b)
 
-instance (KnownSymbol (path :: Symbol), HasEndpoint (sub :: *)) => HasEndpoint (path :> sub) where
+instance (KnownSymbol (path :: Symbol), HasEndpoint (sub :: Type)) => HasEndpoint (path :> sub) where
     getEndpoint _ req =
       case pathInfo req of
         pathPrefix:pathPieces | pathPrefix == T.pack (symbolVal (Proxy :: Proxy path)) -> do
@@ -116,7 +116,7 @@ instance (KnownSymbol (path :: Symbol), HasEndpoint (sub :: *)) => HasEndpoint (
           pathSuffix = mkPaths (Proxy :: Proxy sub)
       in map (\suffix -> pathPiece <> "." <> suffix) pathSuffix
 
-instance (KnownSymbol (capture :: Symbol), HasEndpoint (sub :: *)) => HasEndpoint (Capture capture a :> sub) where
+instance (KnownSymbol (capture :: Symbol), HasEndpoint (sub :: Type)) => HasEndpoint (Capture capture a :> sub) where
     getEndpoint _ req =
       case pathInfo req of
         _:pathPieces -> do
@@ -129,43 +129,43 @@ instance (KnownSymbol (capture :: Symbol), HasEndpoint (sub :: *)) => HasEndpoin
           pathSuffix = mkPaths (Proxy :: Proxy sub)
       in map (\suffix -> pathPiece <> "." <> suffix) pathSuffix
 
-instance HasEndpoint (sub :: *) => HasEndpoint (Header h a :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (Header h a :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (QueryParam' (mods :: [*]) (h :: Symbol) a :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (QueryParam' (mods :: [Type]) (h :: Symbol) a :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (QueryParams (h :: Symbol) a :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (QueryParams (h :: Symbol) a :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (QueryFlag h :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (QueryFlag h :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (ReqBody cts a :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (ReqBody cts a :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (RemoteHost :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (RemoteHost :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (IsSecure :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (IsSecure :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (HttpVersion :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (HttpVersion :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (Vault :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (Vault :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
-instance HasEndpoint (sub :: *) => HasEndpoint (WithNamedContext x y sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (WithNamedContext x y sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
@@ -186,7 +186,7 @@ instance HasEndpoint (RawM' m) where
     getEndpoint _ _ = Just "RAW"
     mkPaths _ = ["RAW"]
 
-instance HasEndpoint (sub :: *) => HasEndpoint (CaptureAll (h :: Symbol) a :> sub) where
+instance HasEndpoint (sub :: Type) => HasEndpoint (CaptureAll (h :: Symbol) a :> sub) where
     getEndpoint _ = getEndpoint (Proxy :: Proxy sub)
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 

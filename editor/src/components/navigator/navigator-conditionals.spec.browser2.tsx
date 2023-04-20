@@ -37,7 +37,7 @@ import {
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
-import { ReparentTargetParent, conditionalClause } from '../editor/store/reparent-target'
+import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { navigatorDepth } from './navigator-utils'
 import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
@@ -190,6 +190,46 @@ export var ${BakedInStoryboardVariableName} = (
         />
       </div>
     </Scene>
+  </Storyboard>
+)
+`
+}
+
+function getProjectCodeTree(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <div data-uid='aaa'>foo</div>
+    {
+      // @utopia/uid=cond1
+      true ? <div data-uid='bbb'>bbb</div> : null
+    }
+    <div data-uid='ccc'>
+      <div data-uid='ddd'>ddd</div>
+      {
+        // @utopia/uid=cond2
+        true ? (
+          <div data-uid='eee'>
+            {
+              // @utopia/uid=cond3
+              true ? <div data-uid='fff'>fff</div> : null
+            }
+            <div data-uid='ggg'>ggg</div>
+          </div>
+        ) : null
+      }
+    </div>
+    {
+      // @utopia/uid=cond4
+      true ? <div data-uid='hhh'>hhh</div> : null
+    }
+    {
+      // @utopia/uid=cond5
+      true ? <div data-uid='iii'>iii</div> : null
+    }
+    <div data-uid='jjj'>jjj</div>
   </Storyboard>
 )
 `
@@ -428,6 +468,48 @@ async function ensureNoopDrag({
 }
 
 describe('conditionals in the navigator', () => {
+  it('keeps conditionals position', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      getProjectCodeTree(),
+      'await-first-dom-report',
+    )
+    const want = `  regular-utopia-storyboard-uid/aaa
+  regular-utopia-storyboard-uid/cond1
+    conditional-clause-utopia-storyboard-uid/cond1-true-case
+      regular-utopia-storyboard-uid/cond1/bbb
+    conditional-clause-utopia-storyboard-uid/cond1-false-case
+      synthetic-utopia-storyboard-uid/cond1/a25-attribute
+  regular-utopia-storyboard-uid/ccc
+    regular-utopia-storyboard-uid/ccc/ddd
+    regular-utopia-storyboard-uid/ccc/cond2
+      conditional-clause-utopia-storyboard-uid/ccc/cond2-true-case
+        regular-utopia-storyboard-uid/ccc/cond2/eee
+          regular-utopia-storyboard-uid/ccc/cond2/eee/cond3
+            conditional-clause-utopia-storyboard-uid/ccc/cond2/eee/cond3-true-case
+              regular-utopia-storyboard-uid/ccc/cond2/eee/cond3/fff
+            conditional-clause-utopia-storyboard-uid/ccc/cond2/eee/cond3-false-case
+              synthetic-utopia-storyboard-uid/ccc/cond2/eee/cond3/129-attribute
+          regular-utopia-storyboard-uid/ccc/cond2/eee/ggg
+      conditional-clause-utopia-storyboard-uid/ccc/cond2-false-case
+        synthetic-utopia-storyboard-uid/ccc/cond2/328-attribute
+  regular-utopia-storyboard-uid/cond4
+    conditional-clause-utopia-storyboard-uid/cond4-true-case
+      regular-utopia-storyboard-uid/cond4/hhh
+    conditional-clause-utopia-storyboard-uid/cond4-false-case
+      synthetic-utopia-storyboard-uid/cond4/5ea-attribute
+  regular-utopia-storyboard-uid/cond5
+    conditional-clause-utopia-storyboard-uid/cond5-true-case
+      regular-utopia-storyboard-uid/cond5/iii
+    conditional-clause-utopia-storyboard-uid/cond5-false-case
+      synthetic-utopia-storyboard-uid/cond5/658-attribute
+  regular-utopia-storyboard-uid/jjj`
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(want)
+  })
   it('can not drag into a conditional', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
 
@@ -1286,7 +1368,7 @@ describe('conditionals in the navigator', () => {
     startingCode: string
     pathToCopy: ElementPath
     pathToPasteInto: ElementPath
-    expectedTargetPasteParent: ReparentTargetParent<ElementPath>
+    expectedTargetPasteParent: InsertionPath
     expectedToasts: Array<string>
     expectedNavigatorStructure: string
     postPasteValidation: (
@@ -1306,7 +1388,7 @@ describe('conditionals in the navigator', () => {
       pathToPasteInto: EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/a25`,
       ),
-      expectedTargetPasteParent: conditionalClause(
+      expectedTargetPasteParent: conditionalClauseInsertionPath(
         EP.fromString(
           `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
         ),
