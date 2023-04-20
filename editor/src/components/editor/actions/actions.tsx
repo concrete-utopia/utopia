@@ -2395,109 +2395,128 @@ export const UPDATE_FNS = {
               )
             }
 
-            function pathsToBeWrappedInFragment(): ElementPath[] {
-              const elements: ElementPath[] = action.targets.filter((path) => {
-                return !action.targets
-                  .filter((otherPath) => !EP.pathsEqual(otherPath, path))
-                  .some((otherPath) => EP.isDescendantOf(path, otherPath))
-              })
-              const parents = new Set<ElementPath>()
-              elements.forEach((e) => parents.add(EP.parentPath(e)))
-              if (parents.size !== 1) {
-                return []
-              }
-              return elements
-            }
+            // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
+            const staticTarget =
+              optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
 
-            function getTargetElement(path: ElementPath): JSXElementChild | null {
-              const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-              if (metadata == null || isLeft(metadata.element)) {
-                return null
-              }
-              return metadata.element.value
-            }
+            switch (elementToInsert.type) {
+              case 'JSX_FRAGMENT': {
+                function pathsToBeWrappedInFragment(): ElementPath[] {
+                  const elements: ElementPath[] = action.targets.filter((path) => {
+                    return !action.targets
+                      .filter((otherPath) => !EP.pathsEqual(otherPath, path))
+                      .some((otherPath) => EP.isDescendantOf(path, otherPath))
+                  })
+                  const parents = new Set<ElementPath>()
+                  elements.forEach((e) => parents.add(EP.parentPath(e)))
+                  if (parents.size !== 1) {
+                    return []
+                  }
+                  return elements
+                }
 
-            if (isJSXConditionalExpression(elementToInsert)) {
-              // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
-              const staticTarget =
-                optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
-              if (isConditionalClauseInsertionPath(staticTarget)) {
-                withTargetAdded = insertChildAndDetails(
-                  transformJSXComponentAtPath(
-                    utopiaJSXComponents,
-                    getElementPathFromInsertionPath(staticTarget),
-                    (oldRoot) => {
-                      if (isJSXConditionalExpression(oldRoot)) {
-                        const clauseOptic = getClauseOptic(staticTarget.clause)
-                        return modify(
-                          clauseOptic,
-                          (clauseElement) => {
-                            return { ...elementToInsert, whenTrue: clauseElement }
-                          },
-                          oldRoot,
-                        )
-                      } else {
-                        return { ...oldRoot }
-                      }
-                    },
-                  ),
-                )
-              } else {
-                withTargetAdded = withInsertedElement()
-              }
-            } else if (isJSXFragment(elementToInsert)) {
-              const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
-              if (children.length === 0) {
-                // nothing to do
-                return parseSuccess
-              }
-              withTargetAdded = withInsertedElement()
-            } else {
-              if (
-                targetThatIsRootElementOfCommonParent == null &&
-                isChildInsertionPath(parentPath)
-              ) {
-                withTargetAdded = withInsertedElement()
-              } else {
-                // TODO this entire targetThatIsRootElementOfCommonParent could be simplified by introducing a "rootElementInsertionPath" to InsertionPath
-                const staticTarget =
-                  optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ??
-                  parentPath
+                const children = pathsToBeWrappedInFragment()
+                if (children.length === 0) {
+                  // nothing to do
+                  return parseSuccess
+                }
 
-                withTargetAdded = insertChildAndDetails(
-                  transformJSXComponentAtPath(
-                    utopiaJSXComponents,
-                    getElementPathFromInsertionPath(staticTarget),
-                    (oldRoot) => {
-                      if (
-                        isConditionalClauseInsertionPath(staticTarget) &&
-                        isJSXConditionalExpression(oldRoot)
-                      ) {
-                        const clauseOptic = getClauseOptic(staticTarget.clause)
-                        return modify(
-                          clauseOptic,
-                          (clauseElement) => {
+                switch (parentPath.type) {
+                  case 'CHILD_INSERTION':
+                    withTargetAdded = withInsertedElement()
+                    break
+                  case 'CONDITIONAL_CLAUSE_INSERTION':
+                    withTargetAdded = withInsertedElement() // TODO, HAH THIS IS MISSING
+                    break
+                  default:
+                    const _exhaustiveCheck: never = parentPath
+                    return parseSuccess
+                }
+
+                break
+              }
+              case 'JSX_ELEMENT': {
+                switch (parentPath.type) {
+                  case 'CHILD_INSERTION':
+                    withTargetAdded = withInsertedElement()
+                    break
+                  case 'CONDITIONAL_CLAUSE_INSERTION':
+                    withTargetAdded = withTargetAdded = insertChildAndDetails(
+                      transformJSXComponentAtPath(
+                        utopiaJSXComponents,
+                        getElementPathFromInsertionPath(staticTarget),
+                        (oldRoot) => {
+                          if (
+                            isConditionalClauseInsertionPath(staticTarget) &&
+                            isJSXConditionalExpression(oldRoot)
+                          ) {
+                            const clauseOptic = getClauseOptic(staticTarget.clause)
+                            return modify(
+                              clauseOptic,
+                              (clauseElement) => {
+                                return jsxElement(
+                                  elementToInsert.name,
+                                  elementToInsert.uid,
+                                  elementToInsert.props,
+                                  [...elementToInsert.children, clauseElement],
+                                )
+                              },
+                              oldRoot,
+                            )
+                          } else {
                             return jsxElement(
                               elementToInsert.name,
                               elementToInsert.uid,
                               elementToInsert.props,
-                              [...elementToInsert.children, clauseElement],
+                              [...elementToInsert.children, oldRoot],
                             )
-                          },
-                          oldRoot,
-                        )
-                      } else {
-                        return jsxElement(
-                          elementToInsert.name,
-                          elementToInsert.uid,
-                          elementToInsert.props,
-                          [...elementToInsert.children, oldRoot],
-                        )
-                      }
-                    },
-                  ),
-                )
+                          }
+                        },
+                      ),
+                    )
+                    break
+                  default:
+                    const _exhaustiveCheck: never = parentPath
+                    return parseSuccess
+                }
+                break
               }
+              case 'JSX_CONDITIONAL_EXPRESSION': {
+                switch (staticTarget.type) {
+                  case 'CHILD_INSERTION':
+                    withTargetAdded = withInsertedElement()
+                    break
+                  case 'CONDITIONAL_CLAUSE_INSERTION':
+                    withTargetAdded = insertChildAndDetails(
+                      transformJSXComponentAtPath(
+                        utopiaJSXComponents,
+                        getElementPathFromInsertionPath(staticTarget),
+                        (oldRoot) => {
+                          if (isJSXConditionalExpression(oldRoot)) {
+                            const clauseOptic = getClauseOptic(staticTarget.clause)
+                            return modify(
+                              clauseOptic,
+                              (clauseElement) => {
+                                return { ...elementToInsert, whenTrue: clauseElement }
+                              },
+                              oldRoot,
+                            )
+                          } else {
+                            return { ...oldRoot }
+                          }
+                        },
+                      ),
+                    )
+                    break
+                  default:
+                    const _exhaustiveCheck: never = staticTarget
+                    return parseSuccess
+                }
+                break
+              }
+              default:
+                const _exhaustiveCheck: never = elementToInsert
+                return parseSuccess
             }
 
             viewPath = anyTargetIsARootElement
@@ -2527,7 +2546,6 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        // TODO UPDATE FRAME/CHILDREN FRAME TO HAVE NICE WRAPPING
         const frameChanges: Array<PinOrFlexFrameChange> = []
         const withWrapperViewAdded = {
           ...setCanvasFramesInnerNew(
