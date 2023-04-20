@@ -490,10 +490,16 @@ Array [
         "defaultSize": null,
         "element": Object {
           "children": Array [],
-          "longForm": false,
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
-        "importsToAdd": Object {},
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -1037,10 +1043,16 @@ Array [
         "defaultSize": null,
         "element": Object {
           "children": Array [],
-          "longForm": false,
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
-        "importsToAdd": Object {},
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
