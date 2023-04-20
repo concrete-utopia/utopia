@@ -100,7 +100,7 @@ executable utopia-web
     , http-media
     , http-types
     , lens
-    , lens-aeson
+    , lens-aeson ==1.1.3
     , lifted-async
     , lifted-base
     , magic
@@ -242,7 +242,7 @@ test-suite utopia-web-test
     , http-media
     , http-types
     , lens
-    , lens-aeson
+    , lens-aeson ==1.1.3
     , lifted-async
     , lifted-base
     , magic
