@@ -37,7 +37,7 @@ import {
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
-import { ReparentTargetParent, conditionalClause } from '../editor/store/reparent-target'
+import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { navigatorDepth } from './navigator-utils'
 import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
@@ -1368,7 +1368,7 @@ describe('conditionals in the navigator', () => {
     startingCode: string
     pathToCopy: ElementPath
     pathToPasteInto: ElementPath
-    expectedTargetPasteParent: ReparentTargetParent<ElementPath>
+    expectedTargetPasteParent: InsertionPath
     expectedToasts: Array<string>
     expectedNavigatorStructure: string
     postPasteValidation: (
@@ -1388,7 +1388,7 @@ describe('conditionals in the navigator', () => {
       pathToPasteInto: EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/a25`,
       ),
-      expectedTargetPasteParent: conditionalClause(
+      expectedTargetPasteParent: conditionalClauseInsertionPath(
         EP.fromString(
           `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
         ),

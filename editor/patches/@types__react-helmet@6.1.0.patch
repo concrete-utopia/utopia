@@ -1,0 +1,12 @@
+diff --git a/index.d.ts b/index.d.ts
+index 3f4c7dc..2f8b64d 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -36,6 +36,7 @@ export interface HelmetTags {
+ }
+ 
+ export interface HelmetProps {
++    children?: ReactNode;
+     async?: boolean;
+     base?: any;
+     bodyAttributes?: BodyProps;

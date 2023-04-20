@@ -21,12 +21,11 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { absolute } from '../../../utils/utils'
-import {
-  generateUidWithExistingComponents,
-  getIndexInParent,
-} from '../../../core/model/element-template-utils'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { JSXAttributesPart, JSXAttributesEntry } from '../../../core/shared/element-template'
+import { getIndexInParent } from '../../../core/model/element-template-utils'
+import { childInsertionPath } from '../../editor/store/insertion-path'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -83,7 +82,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
-        targetParent,
+        childInsertionPath(targetParent),
         wrapper,
         withElementRemoved,
         index,
