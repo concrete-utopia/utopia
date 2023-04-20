@@ -161,7 +161,7 @@ describe('canvas toolbar', () => {
                   data-uid='new-div'
                 />
                 ) : (
-                  <span
+                  <div
                     style={{
                       position: 'absolute',
                       left: 5,
@@ -172,7 +172,7 @@ describe('canvas toolbar', () => {
                     data-uid='false-branch'
                   >
                     False branch
-                  </span>
+                  </div>
                 )}
             </div>
             <div

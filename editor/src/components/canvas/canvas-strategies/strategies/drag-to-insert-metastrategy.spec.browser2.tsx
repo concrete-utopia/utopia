@@ -332,7 +332,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
                 data-uid='ddd'
               />
             ) : (
-              <span
+              <div
                 style={{
                   position: 'absolute',
                   left: 140,
@@ -343,7 +343,7 @@ describe('Dragging from the insert menu into an absolute layout', () => {
                 data-uid='false-branch'
               >
                 False branch
-              </span>
+              </div>
             )}
           </div>
           <div

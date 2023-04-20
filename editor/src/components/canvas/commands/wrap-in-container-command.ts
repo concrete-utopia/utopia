@@ -181,7 +181,7 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
   const trueBranchStyle = getStyle(trueBranch)
 
   return jsxElement(
-    'span',
+    'div',
     uid,
     jsxAttributesFromMap({
       style: jsExpressionValue(

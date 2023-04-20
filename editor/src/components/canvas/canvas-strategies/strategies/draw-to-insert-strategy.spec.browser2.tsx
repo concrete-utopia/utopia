@@ -403,7 +403,7 @@ describe('Inserting into absolute', () => {
                 data-uid='ddd'
               />
             ) : (
-              <span
+              <div
                 style={{
                   position: 'absolute',
                   left: 5,
@@ -414,7 +414,7 @@ describe('Inserting into absolute', () => {
                 data-uid='false-branch'
               >
                 False branch
-              </span>
+              </div>
             )}
             </div>
             <div
@@ -1674,7 +1674,7 @@ describe('Inserting into flex row', () => {
               data-uid='ddd'
             />
           ) : (
-            <span
+            <div
               style={{
                 position: 'absolute',
                 left: 0,
@@ -1685,7 +1685,7 @@ describe('Inserting into flex row', () => {
               data-uid='false-branch'
             >
               False branch
-            </span>
+            </div>
           )}
           <div
             data-uid='bbb'
