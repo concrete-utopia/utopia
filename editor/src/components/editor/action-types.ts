@@ -498,14 +498,6 @@ export type ResetPins = {
   target: ElementPath
 }
 
-export interface WrapInView {
-  action: 'WRAP_IN_VIEW'
-  targets: ElementPath[]
-  layoutSystem: SettableLayoutSystem
-  newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
-}
-
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
@@ -1183,7 +1175,6 @@ export type EditorAction =
   | SaveCurrentFile
   | SaveAsset
   | ResetPins
-  | WrapInView
   | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu

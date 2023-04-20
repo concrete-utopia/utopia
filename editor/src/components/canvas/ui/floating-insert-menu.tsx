@@ -35,7 +35,6 @@ import {
   closeFloatingInsertMenu,
   insertInsertable,
   updateJSXElementName,
-  wrapInView,
   wrapInElement,
 } from '../../editor/actions/action-creators'
 import {
@@ -158,26 +157,6 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
 
   return insertableComponents
-}
-
-function getIsFlexBasedOnName_KILLME_EXPERIMENTAL(name: JSXElementName): boolean {
-  return (
-    name.propertyPath.propertyElements.length === 0 &&
-    (name.baseVariable === 'FlexRow' || name.baseVariable === 'FlexCol')
-  )
-}
-
-function getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
-  name: JSXElementName,
-): 'horizontal' | 'vertical' | null {
-  if (name.propertyPath.propertyElements.length === 0) {
-    if (name.baseVariable === 'FlexRow') {
-      return 'horizontal'
-    } else if (name.baseVariable === 'FlexCol') {
-      return 'vertical'
-    }
-  }
-  return null
 }
 
 function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
@@ -556,28 +535,11 @@ export var FloatingMenu = React.memo(() => {
             pickedInsertableComponent.element.children,
           )
 
-          const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
-            newElement.name,
-          )
-          const flexDirection_KILLME = getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
-            newElement.name,
-          )
-
           actionsToDispatch = [
-            preserveVisualPositionForWrap
-              ? wrapInView(
-                  selectedViews,
-                  {
-                    element: newElement,
-                    importsToAdd: pickedInsertableComponent.importsToAdd,
-                  },
-                  isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
-                  flexDirection_KILLME,
-                )
-              : wrapInElement(selectedViews, {
-                  element: newElement,
-                  importsToAdd: pickedInsertableComponent.importsToAdd,
-                }),
+            wrapInElement(selectedViews, {
+              element: newElement,
+              importsToAdd: pickedInsertableComponent.importsToAdd,
+            }),
           ]
           break
         case 'insert':
@@ -630,7 +592,6 @@ export var FloatingMenu = React.memo(() => {
       fixedSizeForInsertion,
       addContentForInsertion,
       wrapContentForInsertion,
-      preserveVisualPositionForWrap,
     ],
   )
 

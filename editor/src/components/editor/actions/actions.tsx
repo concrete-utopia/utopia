@@ -321,7 +321,6 @@ import {
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
   WrapInElement,
-  WrapInView,
   UpdateGithubOperations,
   UpdateGithubChecksums,
   UpdateBranchContents,
@@ -2304,270 +2303,23 @@ export const UPDATE_FNS = {
       selectedViews: newSelectedViews,
     }
   },
-  WRAP_IN_VIEW: (
-    action: WrapInView,
-    editorForAction: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
-    // FIXME This and WRAP_IN_ELEMENT are very similar, the only difference being that this attempts to maintain
-    // the positioning. The two handlers should probably be combined, or perhaps have core shared logic extracted
-    return toastOnGeneratedElementsSelected(
-      `Generated elements can't be wrapped into other elements.`,
-      editorForAction,
-      false,
-      (editor) => {
-        const uiFileKey = getOpenUIJSFileKey(editor)
-        if (uiFileKey == null) {
-          return editor
-        }
-
-        const newUID =
-          action.whatToWrapWith === 'default-empty-div'
-            ? generateUidWithExistingComponents(editor.projectContents)
-            : action.whatToWrapWith.element.uid
-
-        const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
-          action.targets,
-          derived,
-        )
-        const parentPath = commonReparentTargetFromArray(
-          orderedActionTargets.map((actionTarget) => {
-            return MetadataUtils.getReparentTargetOfTarget(
-              editorForAction.jsxMetadata,
-              actionTarget,
-            )
-          }),
-        )
-
-        if (parentPath === null) {
-          return editor
-        } else {
-          let indexInParent: number | null = null
-          if (reparentTargetParentIsElementPath(parentPath)) {
-            indexInParent = optionalMap(
-              (firstPathMatchingCommonParent) =>
-                MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
-              orderedActionTargets.find((target) =>
-                EP.pathsEqual(EP.parentPath(target), parentPath),
-              ),
-            )
-          }
-          const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
-          const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
-            (elementPath) =>
-              EP.isRootElementOfInstance(elementPath) &&
-              EP.isParentOf(getElementPathFromReparentTargetParent(parentPath), elementPath),
-          )
-
-          if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-            return editor
-          }
-
-          const canvasFrames = action.targets.map((target) => {
-            return MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
-          })
-
-          const boundingBox = Utils.boundingRectangleArray(canvasFrames)
-
-          if (boundingBox == null) {
-            // TODO Should this wrap in a zero sized rectangle so the user can then manually resize that?
-            // we are trying to wrap something that is non-layoutable, just give up early
-            return editor
-          }
-
-          let viewPath: ReparentTargetParent<ElementPath> | null = null
-
-          let isParentFlex: boolean = false
-          if (reparentTargetParentIsElementPath(parentPath)) {
-            const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-            isParentFlex = parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
-          }
-
-          function setPositionAttribute(
-            elementToWrapWith: JSXElement,
-            position: 'absolute' | 'relative',
-          ): JSXElement {
-            return {
-              ...elementToWrapWith,
-              props: forceRight(
-                setJSXValueAtPath(
-                  elementToWrapWith.props,
-                  PP.create('style', 'position'), // todo make it optional
-                  jsExpressionValue(position, emptyComments),
-                ),
-              ),
-            }
-          }
-
-          const underlyingTarget = normalisePathToUnderlyingTarget(
-            editor.projectContents,
-            editor.nodeModules.files,
-            uiFileKey,
-            targetThatIsRootElementOfCommonParent ??
-              getElementPathFromReparentTargetParent(parentPath),
-          )
-          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-
-          function getElementToInsert(): JSXElement {
-            switch (action.whatToWrapWith) {
-              case 'default-empty-div':
-                return defaultTransparentViewElement(newUID)
-              default:
-                return action.whatToWrapWith.element
-            }
-          }
-
-          let detailsOfUpdate: string | null = null
-          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
-            targetSuccess.filePath,
-            editor,
-            (parseSuccess) => {
-              const elementToInsert = getElementToInsert()
-
-              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-              let withTargetAdded: Array<UtopiaJSXComponent>
-
-              const elementToInsertWithPositionAttribute = isParentFlex
-                ? setPositionAttribute(elementToInsert, 'relative')
-                : setPositionAttribute(elementToInsert, 'absolute')
-
-              if (
-                targetThatIsRootElementOfCommonParent == null &&
-                reparentTargetParentIsElementPath(parentPath)
-              ) {
-                const insertResult = insertElementAtPath(
-                  editor.projectContents,
-                  editor.canvas.openFile?.filename ?? null,
-                  parentPath,
-                  elementToInsertWithPositionAttribute,
-                  utopiaJSXComponents,
-                  optionalMap(
-                    (index) => ({
-                      type: 'before',
-                      index: index,
-                    }),
-                    indexInParent,
-                  ),
-                )
-                withTargetAdded = insertResult.components
-                detailsOfUpdate = insertResult.insertionDetails
-              } else {
-                const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                  targetThatIsRootElementOfCommonParent ?? parentPath,
-                )
-                withTargetAdded = transformJSXComponentAtPath(
-                  utopiaJSXComponents,
-                  getElementPathFromReparentTargetParent(staticTarget),
-                  (oldRoot) => {
-                    if (
-                      reparentTargetParentIsConditionalClause(staticTarget) &&
-                      isJSXConditionalExpression(oldRoot)
-                    ) {
-                      const clauseOptic = getClauseOptic(staticTarget.clause)
-                      return modify(
-                        clauseOptic,
-                        (clauseElement) => {
-                          return jsxElement(
-                            elementToInsert.name,
-                            elementToInsert.uid,
-                            elementToInsert.props,
-                            [...elementToInsert.children, clauseElement],
-                          )
-                        },
-                        oldRoot,
-                      )
-                    } else {
-                      return jsxElement(
-                        elementToInsert.name,
-                        elementToInsert.uid,
-                        elementToInsert.props,
-                        [...elementToInsert.children, oldRoot],
-                      )
-                    }
-                  },
-                )
-              }
-
-              viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(
-                    getElementPathFromReparentTargetParent(parentPath),
-                    newUID,
-                  )
-                : EP.appendToPath(getElementPathFromReparentTargetParent(parentPath), newUID)
-
-              const importsToAdd: Imports =
-                action.whatToWrapWith === 'default-empty-div'
-                  ? emptyImports()
-                  : action.whatToWrapWith.importsToAdd
-
-              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-                return {
-                  ...success,
-                  utopiaComponents: withTargetAdded,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
-                }
-              }, parseSuccess)
-            },
-          )
-
-          if (viewPath == null) {
-            return editor
-          }
-
-          const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
-            ? [] // if we are wrapping something in a Flex parent, try not adding frames here
-            : [getFrameChange(viewPath, boundingBox, isParentFlex)]
-          const withWrapperViewAdded = {
-            ...setCanvasFramesInnerNew(
-              includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
-              frameChanges,
-              null,
-            ),
-          }
-
-          // reparent targets to the view
-          const indexPosition: IndexPosition = {
-            type: 'back',
-          }
-
-          const withElementsAdded = editorMoveMultiSelectedTemplates(
-            builtInDependencies,
-            orderedActionTargets,
-            indexPosition,
-            viewPath,
-            withWrapperViewAdded,
-          ).editor
-
-          return {
-            ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath),
-            highlightedViews: [],
-          }
-        }
-      },
-      dispatch,
-    )
-  },
   WRAP_IN_ELEMENT: (
     action: WrapInElement,
     editorForAction: EditorModel,
     derived: DerivedState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Generated elements can't be wrapped into other elements.`,
       editorForAction,
       false,
       (editor) => {
+        // EARLY RETURNS
         const uiFileKey = getOpenUIJSFileKey(editor)
         if (uiFileKey == null) {
           return editor
         }
-
-        const newUID = action.whatToWrapWith.element.uid
-
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
           derived,
@@ -2580,8 +2332,24 @@ export const UPDATE_FNS = {
             )
           }),
         )
+        if (parentPath == null) {
+          return editor
+        }
+        // If any of the targets are a root element, we check that the parentPath is its parent
+        // If not, we bail and do nothing
+        // If it is, we add the new element as the root element of the parent instance
+        const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
+        const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
+          (elementPath) =>
+            EP.isRootElementOfInstance(elementPath) &&
+            EP.isParentOf(getElementPathFromReparentTargetParent(parentPath), elementPath),
+        )
+        if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
+          return editor
+        }
+
         let indexInParent: number | null = null
-        if (parentPath != null && reparentTargetParentIsElementPath(parentPath)) {
+        if (reparentTargetParentIsElementPath(parentPath)) {
           indexInParent = optionalMap(
             (firstPathMatchingCommonParent) =>
               MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
@@ -2589,207 +2357,216 @@ export const UPDATE_FNS = {
           )
         }
 
-        if (parentPath === null) {
-          return editor
-        } else {
-          // If any of the targets are a root element, we check that the parentPath is its parent
-          // If not, we bail and do nothing
-          // If it is, we add the new element as the root element of the parent instance
-          const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
-          const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
-            (elementPath) =>
-              EP.isRootElementOfInstance(elementPath) &&
-              EP.isParentOf(getElementPathFromReparentTargetParent(parentPath), elementPath),
-          )
+        // INSERT ELEMENT
+        let viewPath: ElementPath | null = null
+        let detailsOfUpdate: string | null = null
 
-          if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-            return editor
-          }
+        const underlyingTarget = normalisePathToUnderlyingTarget(
+          editor.projectContents,
+          editor.nodeModules.files,
+          uiFileKey,
+          targetThatIsRootElementOfCommonParent ??
+            getElementPathFromReparentTargetParent(parentPath),
+        )
 
-          let viewPath: ElementPath | null = null
-          let detailsOfUpdate: string | null = null
+        const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-          const underlyingTarget = normalisePathToUnderlyingTarget(
-            editor.projectContents,
-            editor.nodeModules.files,
-            uiFileKey,
-            targetThatIsRootElementOfCommonParent ??
-              getElementPathFromReparentTargetParent(parentPath),
-          )
+        const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
+          targetSuccess.filePath,
+          editor,
+          (parseSuccess) => {
+            const elementToInsert = action.whatToWrapWith.element
 
-          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+            const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+            let withTargetAdded: InsertChildAndDetails = insertChildAndDetails(utopiaJSXComponents)
 
-          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
-            targetSuccess.filePath,
-            editor,
-            (parseSuccess) => {
-              const elementToInsert = action.whatToWrapWith.element
+            function withInsertedElement() {
+              return insertElementAtPath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+                parentPath,
+                elementToInsert,
+                utopiaJSXComponents,
+                optionalMap(
+                  (index) => ({
+                    type: 'before',
+                    index: index,
+                  }),
+                  indexInParent,
+                ),
+              )
+            }
 
-              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-              let withTargetAdded: InsertChildAndDetails =
-                insertChildAndDetails(utopiaJSXComponents)
+            function pathsToBeWrappedInFragment(): ElementPath[] {
+              const elements: ElementPath[] = action.targets.filter((path) => {
+                return !action.targets
+                  .filter((otherPath) => !EP.pathsEqual(otherPath, path))
+                  .some((otherPath) => EP.isDescendantOf(path, otherPath))
+              })
+              const parents = new Set<ElementPath>()
+              elements.forEach((e) => parents.add(EP.parentPath(e)))
+              if (parents.size !== 1) {
+                return []
+              }
+              return elements
+            }
 
-              function withInsertedElement() {
-                return insertElementAtPath(
-                  editor.projectContents,
-                  editor.canvas.openFile?.filename ?? null,
-                  parentPath,
-                  elementToInsert,
-                  utopiaJSXComponents,
-                  optionalMap(
-                    (index) => ({
-                      type: 'before',
-                      index: index,
-                    }),
-                    indexInParent,
+            function getTargetElement(path: ElementPath): JSXElementChild | null {
+              const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+              if (metadata == null || isLeft(metadata.element)) {
+                return null
+              }
+              return metadata.element.value
+            }
+
+            if (isJSXConditionalExpression(elementToInsert)) {
+              const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
+                targetThatIsRootElementOfCommonParent ?? parentPath,
+              )
+              if (reparentTargetParentIsConditionalClause(staticTarget)) {
+                withTargetAdded = insertChildAndDetails(
+                  transformJSXComponentAtPath(
+                    utopiaJSXComponents,
+                    getElementPathFromReparentTargetParent(staticTarget),
+                    (oldRoot) => {
+                      if (isJSXConditionalExpression(oldRoot)) {
+                        const clauseOptic = getClauseOptic(staticTarget.clause)
+                        return modify(
+                          clauseOptic,
+                          (clauseElement) => {
+                            return { ...elementToInsert, whenTrue: clauseElement }
+                          },
+                          oldRoot,
+                        )
+                      } else {
+                        return { ...oldRoot }
+                      }
+                    },
                   ),
                 )
+              } else {
+                withTargetAdded = withInsertedElement()
               }
-
-              function pathsToBeWrappedInFragment(): ElementPath[] {
-                const elements: ElementPath[] = action.targets.filter((path) => {
-                  return !action.targets
-                    .filter((otherPath) => !EP.pathsEqual(otherPath, path))
-                    .some((otherPath) => EP.isDescendantOf(path, otherPath))
-                })
-                const parents = new Set<ElementPath>()
-                elements.forEach((e) => parents.add(EP.parentPath(e)))
-                if (parents.size !== 1) {
-                  return []
-                }
-                return elements
+            } else if (isJSXFragment(elementToInsert)) {
+              const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
+              if (children.length === 0) {
+                // nothing to do
+                return parseSuccess
               }
-
-              function getTargetElement(path: ElementPath): JSXElementChild | null {
-                const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-                if (metadata == null || isLeft(metadata.element)) {
-                  return null
-                }
-                return metadata.element.value
-              }
-
-              if (isJSXConditionalExpression(elementToInsert)) {
+              withTargetAdded = withInsertedElement()
+            } else {
+              if (
+                targetThatIsRootElementOfCommonParent == null &&
+                reparentTargetParentIsElementPath(parentPath)
+              ) {
+                withTargetAdded = withInsertedElement()
+              } else {
                 const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
                   targetThatIsRootElementOfCommonParent ?? parentPath,
                 )
-                if (reparentTargetParentIsConditionalClause(staticTarget)) {
-                  withTargetAdded = insertChildAndDetails(
-                    transformJSXComponentAtPath(
-                      utopiaJSXComponents,
-                      getElementPathFromReparentTargetParent(staticTarget),
-                      (oldRoot) => {
-                        if (isJSXConditionalExpression(oldRoot)) {
-                          const clauseOptic = getClauseOptic(staticTarget.clause)
-                          return modify(
-                            clauseOptic,
-                            (clauseElement) => {
-                              return { ...elementToInsert, whenTrue: clauseElement }
-                            },
-                            oldRoot,
-                          )
-                        } else {
-                          return { ...oldRoot }
-                        }
-                      },
-                    ),
-                  )
-                } else {
-                  withTargetAdded = withInsertedElement()
-                }
-              } else if (isJSXFragment(elementToInsert)) {
-                const children = mapDropNulls(getTargetElement, pathsToBeWrappedInFragment())
-                if (children.length === 0) {
-                  // nothing to do
-                  return parseSuccess
-                }
-                withTargetAdded = withInsertedElement()
-              } else {
-                if (
-                  targetThatIsRootElementOfCommonParent == null &&
-                  reparentTargetParentIsElementPath(parentPath)
-                ) {
-                  withTargetAdded = withInsertedElement()
-                } else {
-                  const staticTarget = dynamicReparentTargetParentToStaticReparentTargetParent(
-                    targetThatIsRootElementOfCommonParent ?? parentPath,
-                  )
-                  withTargetAdded = insertChildAndDetails(
-                    transformJSXComponentAtPath(
-                      utopiaJSXComponents,
-                      getElementPathFromReparentTargetParent(staticTarget),
-                      (oldRoot) => {
-                        if (
-                          reparentTargetParentIsConditionalClause(staticTarget) &&
-                          isJSXConditionalExpression(oldRoot)
-                        ) {
-                          const clauseOptic = getClauseOptic(staticTarget.clause)
-                          return modify(
-                            clauseOptic,
-                            (clauseElement) => {
-                              return jsxElement(
-                                elementToInsert.name,
-                                elementToInsert.uid,
-                                elementToInsert.props,
-                                [...elementToInsert.children, clauseElement],
-                              )
-                            },
-                            oldRoot,
-                          )
-                        } else {
-                          return jsxElement(
-                            elementToInsert.name,
-                            elementToInsert.uid,
-                            elementToInsert.props,
-                            [...elementToInsert.children, oldRoot],
-                          )
-                        }
-                      },
-                    ),
-                  )
-                }
+                withTargetAdded = insertChildAndDetails(
+                  transformJSXComponentAtPath(
+                    utopiaJSXComponents,
+                    getElementPathFromReparentTargetParent(staticTarget),
+                    (oldRoot) => {
+                      if (
+                        reparentTargetParentIsConditionalClause(staticTarget) &&
+                        isJSXConditionalExpression(oldRoot)
+                      ) {
+                        const clauseOptic = getClauseOptic(staticTarget.clause)
+                        return modify(
+                          clauseOptic,
+                          (clauseElement) => {
+                            return jsxElement(
+                              elementToInsert.name,
+                              elementToInsert.uid,
+                              elementToInsert.props,
+                              [...elementToInsert.children, clauseElement],
+                            )
+                          },
+                          oldRoot,
+                        )
+                      } else {
+                        return jsxElement(
+                          elementToInsert.name,
+                          elementToInsert.uid,
+                          elementToInsert.props,
+                          [...elementToInsert.children, oldRoot],
+                        )
+                      }
+                    },
+                  ),
+                )
               }
+            }
 
-              viewPath = anyTargetIsARootElement
-                ? EP.appendNewElementPath(
-                    getElementPathFromReparentTargetParent(parentPath),
-                    newUID,
-                  )
-                : EP.appendToPath(getElementPathFromReparentTargetParent(parentPath), newUID)
+            viewPath = anyTargetIsARootElement
+              ? EP.appendNewElementPath(
+                  getElementPathFromReparentTargetParent(parentPath),
+                  action.whatToWrapWith.element.uid,
+                )
+              : EP.appendToPath(
+                  getElementPathFromReparentTargetParent(parentPath),
+                  action.whatToWrapWith.element.uid,
+                )
 
-              const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
+            const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
 
-              detailsOfUpdate = withTargetAdded.insertionDetails
-              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-                return {
-                  ...success,
-                  utopiaComponents: withTargetAdded.components,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
-                }
-              }, parseSuccess)
-            },
-          )
+            detailsOfUpdate = withTargetAdded.insertionDetails
+            return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+              return {
+                ...success,
+                utopiaComponents: withTargetAdded.components,
+                imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+              }
+            }, parseSuccess)
+          },
+        )
 
-          if (viewPath == null) {
-            return editor
-          }
+        if (viewPath == null) {
+          return editor
+        }
 
-          // reparent targets to the view
-          const indexPosition: IndexPosition = {
-            type: 'back',
-          }
+        // APPLY FRAME CHANGES
+        const canvasFrames = action.targets.map((target) => {
+          return MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
+        })
 
-          const withElementsAdded = editorMultiselectReparentNoStyleChange(
-            orderedActionTargets,
-            indexPosition,
-            viewPath,
+        const boundingBox = Utils.boundingRectangleArray(canvasFrames)
+        if (boundingBox == null) {
+          // TODO Should this wrap in a zero sized rectangle so the user can then manually resize that?
+          // we are trying to wrap something that is non-layoutable, just give up early
+          return editor
+        }
+        const isParentFlex = true
+        const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
+          ? [] // if we are wrapping something in a Flex parent, try not adding frames here
+          : [getFrameChange(viewPath, boundingBox, isParentFlex)]
+        const withWrapperViewAdded = {
+          ...setCanvasFramesInnerNew(
             includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
-          )
+            frameChanges,
+            null,
+          ),
+        }
 
-          return {
-            ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath),
-            highlightedViews: [],
-          }
+        // REPARENT TARGET
+        const indexPosition: IndexPosition = {
+          type: 'back',
+        }
+
+        const withElementsAdded = editorMoveMultiSelectedTemplates(
+          builtInDependencies,
+          orderedActionTargets,
+          indexPosition,
+          viewPath,
+          includeToast(detailsOfUpdate, withWrapperViewAdded),
+        )
+
+        return {
+          ...withElementsAdded.editor,
+          selectedViews: Utils.maybeToArray(viewPath),
+          highlightedViews: [],
         }
       },
       dispatch,

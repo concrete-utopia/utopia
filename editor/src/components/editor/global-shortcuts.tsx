@@ -553,7 +553,7 @@ export function handleKeyDown(
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInView(
+              EditorActions.wrapInElement(
                 editor.selectedViews,
                 detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
                   generateUidWithExistingComponents(editor.projectContents),

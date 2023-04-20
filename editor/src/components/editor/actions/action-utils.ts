@@ -151,7 +151,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_PROPERTY':
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
-    case 'WRAP_IN_VIEW':
     case 'WRAP_IN_ELEMENT':
     case 'UNWRAP_ELEMENT':
     case 'SET_CANVAS_FRAMES':
