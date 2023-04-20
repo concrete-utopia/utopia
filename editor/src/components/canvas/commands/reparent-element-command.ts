@@ -118,7 +118,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   let parentDescription: string
   if (isConditionalClauseInsertionPath(command.newParent)) {
     parentDescription = `${EP.toUid(command.newParent.intendedParentPath)} (${
-      command.newParent.propName
+      command.newParent.clause
     } clause)`
   } else {
     parentDescription = EP.toUid(command.newParent.intendedParentPath)

@@ -1906,9 +1906,7 @@ export const MetadataUtils = {
             if (isJSXConditionalExpression(element)) {
               return getConditionalClausePath(
                 reparentTargetParent.intendedParentPath,
-                reparentTargetParent.propName === 'true-case'
-                  ? element.whenTrue
-                  : element.whenFalse,
+                reparentTargetParent.clause === 'true-case' ? element.whenTrue : element.whenFalse,
               )
             } else {
               throw new Error(

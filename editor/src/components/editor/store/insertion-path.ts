@@ -34,18 +34,18 @@ export function childInsertionPath(
 
 export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
-  propName: ConditionalCase
   intendedParentPath: StaticElementPath
+  clause: ConditionalCase
 }
 
 export function conditionalClauseInsertionPath(
   intendedParentPath: StaticElementPath | ElementPath,
-  propName: ConditionalCase,
+  clause: ConditionalCase,
 ): ConditionalClauseInsertionPath {
   return {
     type: 'CONDITIONAL_CLAUSE_INSERTION',
     intendedParentPath: EP.dynamicPathToStaticPath(intendedParentPath),
-    propName: propName,
+    clause: clause,
   }
 }
 

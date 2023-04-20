@@ -2469,7 +2469,7 @@ export const UPDATE_FNS = {
                       isConditionalClauseInsertionPath(staticTarget) &&
                       isJSXConditionalExpression(oldRoot)
                     ) {
-                      const clauseOptic = getClauseOptic(staticTarget.propName)
+                      const clauseOptic = getClauseOptic(staticTarget.clause)
                       return modify(
                         clauseOptic,
                         (clauseElement) => {
@@ -2716,7 +2716,7 @@ export const UPDATE_FNS = {
                       getElementPathFromInsertionPath(staticTarget),
                       (oldRoot) => {
                         if (isJSXConditionalExpression(oldRoot)) {
-                          const clauseOptic = getClauseOptic(staticTarget.propName)
+                          const clauseOptic = getClauseOptic(staticTarget.clause)
                           return modify(
                             clauseOptic,
                             (clauseElement) => {
@@ -2761,7 +2761,7 @@ export const UPDATE_FNS = {
                           isConditionalClauseInsertionPath(staticTarget) &&
                           isJSXConditionalExpression(oldRoot)
                         ) {
-                          const clauseOptic = getClauseOptic(staticTarget.propName)
+                          const clauseOptic = getClauseOptic(staticTarget.clause)
                           return modify(
                             clauseOptic,
                             (clauseElement) => {

@@ -524,7 +524,7 @@ export function insertJSXElementChild(
     target: InsertionPath,
   ): ConditionalCase {
     if (isConditionalClauseInsertionPath(target)) {
-      return target.propName
+      return target.clause
     }
     throw new Error('trying to get at conditional case with a non-conditional insertion path')
   }
