@@ -19,6 +19,7 @@ export interface ChildInsertionPath {
   intendedParentPath: StaticElementPath
 }
 
+// Insert element into the intended parent's props.children array.
 export function childInsertionPath(
   elementPath: StaticElementPath | ElementPath,
 ): ChildInsertionPath {
@@ -34,6 +35,7 @@ export interface ConditionalClauseInsertionPath {
   clause: ConditionalCase
 }
 
+// Insert element into the intended parent's true or false branch expression
 export function conditionalClauseInsertionPath(
   elementPath: ElementPath,
   clause: ConditionalCase,
