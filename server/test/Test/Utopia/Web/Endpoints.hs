@@ -25,7 +25,7 @@ import qualified Network.Socket.Wait            as W
 import           Prelude                        (String)
 import           Protolude
 import           Servant
-import           Servant.Client
+import           Servant.Client hiding ((//))
 import           Servant.Client.Core
 import           Servant.RawM.Client
 import           System.Timeout
