@@ -26,7 +26,11 @@ import {
   InsertionPath,
 } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
-import { JSXConditionalExpression } from '../../../core/shared/element-template'
+import {
+  JSXConditionalExpression,
+  jsxFragment,
+  jsxFragmentWithoutUID,
+} from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
 
 async function deleteFromScene(
@@ -1185,6 +1189,39 @@ describe('actions', () => {
               </div>
             </div>
           </div>`,
+        ),
+      )
+    })
+    it(`Wrap in 2 elements with a fragment`, async () => {
+      const testUID = 'zzz'
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+          <div data-uid='ddd' style={{width: 60, height: 60}} />
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
+            element: jsxFragment(testUID, [], true),
+            importsToAdd: {},
+          }),
+        ],
+        true,
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          ` <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              <React.Fragment>
+                <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+                <div data-uid='ddd' style={{width: 60, height: 60}} />
+              </React.Fragment>
+            </div>`,
         ),
       )
     })

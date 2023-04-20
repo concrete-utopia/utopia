@@ -2545,7 +2545,7 @@ export const UPDATE_FNS = {
           builtInDependencies,
           orderedActionTargets,
           indexPosition,
-          viewPath,
+          childInsertionPath(viewPath),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
         )
 
