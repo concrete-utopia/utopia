@@ -1882,28 +1882,30 @@ export const MetadataUtils = {
   ): ElementPath {
     if (isChildInsertionPath(reparentTargetParent)) {
       // This is an element path, so return directly.
-      return reparentTargetParent.elementPath
+      return reparentTargetParent.intendedElementPath
     } else {
       // Resolve this to the element in the clause.
       const targetElement = this.findElementByElementPath(
         metadata,
-        reparentTargetParent.elementPath,
+        reparentTargetParent.intendedElementPath,
       )
       if (targetElement == null) {
         throw new Error(
-          `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+          `Did not find a conditional at ${EP.toString(reparentTargetParent.intendedElementPath)}.`,
         )
       } else {
         return foldEither(
           () => {
             throw new Error(
-              `Did not find a conditional at ${EP.toString(reparentTargetParent.elementPath)}.`,
+              `Did not find a conditional at ${EP.toString(
+                reparentTargetParent.intendedElementPath,
+              )}.`,
             )
           },
           (element) => {
             if (isJSXConditionalExpression(element)) {
               return getConditionalClausePath(
-                reparentTargetParent.elementPath,
+                reparentTargetParent.intendedElementPath,
                 reparentTargetParent.propName === 'true-case'
                   ? element.whenTrue
                   : element.whenFalse,
@@ -1911,7 +1913,7 @@ export const MetadataUtils = {
             } else {
               throw new Error(
                 `Found a ${element.type} at ${EP.toString(
-                  reparentTargetParent.elementPath,
+                  reparentTargetParent.intendedElementPath,
                 )} instead of a conditional.`,
               )
             }

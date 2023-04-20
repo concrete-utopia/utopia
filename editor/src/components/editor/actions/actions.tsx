@@ -2350,7 +2350,7 @@ export const UPDATE_FNS = {
               (firstPathMatchingCommonParent) =>
                 MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
               orderedActionTargets.find((target) =>
-                EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
+                EP.pathsEqual(EP.parentPath(target), parentPath.intendedElementPath),
               ),
             )
           }
@@ -2383,7 +2383,7 @@ export const UPDATE_FNS = {
           if (isChildInsertionPath(parentPath)) {
             const parent = MetadataUtils.findElementByElementPath(
               editor.jsxMetadata,
-              parentPath.elementPath,
+              parentPath.intendedElementPath,
             )
             isParentFlex = parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           }
@@ -2592,7 +2592,7 @@ export const UPDATE_FNS = {
             (firstPathMatchingCommonParent) =>
               MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
             orderedActionTargets.find((target) =>
-              EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
+              EP.pathsEqual(EP.parentPath(target), parentPath.intendedElementPath),
             ),
           )
         }
@@ -2623,10 +2623,11 @@ export const UPDATE_FNS = {
             if (anyTargetIsARootElement) {
               return {
                 ...action.whatToWrapWith.insertionPathWithinWrapper,
-                elementPath: EP.dynamicPathToStaticPath(
+                intendedElementPath: EP.dynamicPathToStaticPath(
                   EP.appendPartToPath(getElementPathFromInsertionPath(parentPath), [
-                    ...(last(action.whatToWrapWith.insertionPathWithinWrapper.elementPath.parts) ??
-                      []),
+                    ...(last(
+                      action.whatToWrapWith.insertionPathWithinWrapper.intendedElementPath.parts,
+                    ) ?? []),
                     newUID,
                   ]),
                 ),
@@ -2634,7 +2635,7 @@ export const UPDATE_FNS = {
             } else {
               return {
                 ...action.whatToWrapWith.insertionPathWithinWrapper,
-                elementPath: EP.dynamicPathToStaticPath(
+                intendedElementPath: EP.dynamicPathToStaticPath(
                   EP.appendToPath(getElementPathFromInsertionPath(parentPath), newUID),
                 ),
               }
@@ -2809,7 +2810,7 @@ export const UPDATE_FNS = {
 
           return {
             ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath.elementPath),
+            selectedViews: Utils.maybeToArray(viewPath.intendedElementPath),
             highlightedViews: [],
           }
         }
@@ -3185,7 +3186,7 @@ export const UPDATE_FNS = {
         if (isConditionalClauseInsertionPath(action.pasteInto)) {
           return true
         }
-        const parentPath = EP.parentPath(action.pasteInto.elementPath)
+        const parentPath = EP.parentPath(action.pasteInto.intendedElementPath)
         // TODO SPIKE KILL THIS
         if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
           return true
