@@ -67,7 +67,7 @@ executable utopia-web
       z
   build-depends:
       JuicyPixels
-    , aeson >=2.0
+    , aeson ==2.0.3.0
     , aeson-pretty
     , aws
     , base >=4.7 && <5
@@ -207,7 +207,7 @@ test-suite utopia-web-test
       z
   build-depends:
       JuicyPixels
-    , aeson >=2.0
+    , aeson ==2.0.3.0
     , aeson-pretty
     , aws
     , base >=4.7 && <5
