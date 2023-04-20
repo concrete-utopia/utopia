@@ -1,7 +1,7 @@
 import {
-  getElementPathFromReparentTargetParent,
+  getElementPathFromInsertionPath,
   InsertionPath,
-  reparentTargetToString,
+  insertionPathToString,
 } from '../../editor/store/insertion-path'
 import {
   EditorState,
@@ -44,7 +44,7 @@ export const runAddElement: CommandFunction<AddElement> = (
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
-    getElementPathFromReparentTargetParent(command.parentPath),
+    getElementPathFromInsertionPath(command.parentPath),
     editorState,
     (
       parentSuccess,
@@ -80,6 +80,6 @@ export const runAddElement: CommandFunction<AddElement> = (
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Add Element to ${reparentTargetToString(command.parentPath)}`,
+    commandDescription: `Add Element to ${insertionPathToString(command.parentPath)}`,
   }
 }

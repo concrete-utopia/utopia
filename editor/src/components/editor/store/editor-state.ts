@@ -191,13 +191,7 @@ import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import {
-  childInsertionPath,
-  conditionalClauseInsertionPath,
-  ConditionalClauseInsertionPath,
-  dynamicReparentTargetParentToStaticReparentTargetParent,
-  InsertionPath,
-} from './insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath, InsertionPath } from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1976,14 +1970,10 @@ export function insertElementAtPath(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  const staticTarget =
-    targetParent == null
-      ? null
-      : dynamicReparentTargetParentToStaticReparentTargetParent(targetParent)
   return insertJSXElementChild(
     projectContents,
     openFile,
-    staticTarget,
+    targetParent,
     elementToInsert,
     components,
     indexPosition,

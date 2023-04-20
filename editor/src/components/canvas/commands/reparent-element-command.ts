@@ -1,6 +1,6 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import {
-  getElementPathFromReparentTargetParent,
+  getElementPathFromInsertionPath,
   InsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../editor/store/insertion-path'
@@ -45,7 +45,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     editorState,
     (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
-        getElementPathFromReparentTargetParent(command.newParent),
+        getElementPathFromInsertionPath(command.newParent),
         editorState,
         (
           successNewParent,

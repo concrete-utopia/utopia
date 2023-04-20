@@ -66,7 +66,7 @@ import {
 import { modify } from '../shared/optics/optic-utilities'
 import {
   childInsertionPath,
-  getElementPathFromReparentTargetParent,
+  getElementPathFromInsertionPath,
   InsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
@@ -540,7 +540,7 @@ export function insertJSXElementChild(
   if (targetParentIncludingStoryboardRoot == null) {
     return insertChildAndDetails(components)
   } else {
-    const parentPath = getElementPathFromReparentTargetParent(targetParentIncludingStoryboardRoot)
+    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
     let details: string | null = null
     const updatedComponents = transformJSXComponentAtPath(
       components,

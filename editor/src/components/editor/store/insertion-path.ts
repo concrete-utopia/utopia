@@ -57,30 +57,21 @@ export function isChildInsertionPath(
   return insertionPath.type === 'CHILD_INSERTION'
 }
 
-export function getElementPathFromReparentTargetParent(
-  reparentTargetParent: InsertionPath,
-): StaticElementPath {
-  return reparentTargetParent.elementPath
+export function getElementPathFromInsertionPath(insertionPath: InsertionPath): StaticElementPath {
+  return insertionPath.elementPath
 }
 
-// TODO DELETE THIS FUNCTION
-export function dynamicReparentTargetParentToStaticReparentTargetParent(
-  reparentTargetParent: InsertionPath,
-): InsertionPath {
-  return reparentTargetParent
-}
-
-export function reparentTargetToString(reparentTargetParent: InsertionPath): string {
-  if (isConditionalClauseInsertionPath(reparentTargetParent)) {
-    return `${reparentTargetParent.clause} of ${EP.toString(reparentTargetParent.elementPath)}`
-  } else if (isChildInsertionPath(reparentTargetParent)) {
-    return EP.toString(reparentTargetParent.elementPath)
+export function insertionPathToString(insertionPath: InsertionPath): string {
+  if (isConditionalClauseInsertionPath(insertionPath)) {
+    return `${insertionPath.clause} of ${EP.toString(insertionPath.elementPath)}`
+  } else if (isChildInsertionPath(insertionPath)) {
+    return EP.toString(insertionPath.elementPath)
   } else {
-    assertNever(reparentTargetParent)
+    assertNever(insertionPath)
   }
 }
 
-export function commonReparentTarget(
+export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
@@ -119,7 +110,7 @@ export function commonReparentTarget(
   return childInsertionPath(closestSharedAncestor)
 }
 
-export function commonReparentTargetFromArray(
+export function commonInsertionPathFromArray(
   metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
 ): InsertionPath | null {
@@ -138,7 +129,7 @@ export function commonReparentTargetFromArray(
     if (working == null) {
       return working
     } else {
-      return commonReparentTarget(metadata, working, target)
+      return commonInsertionPath(metadata, working, target)
     }
   }, workingArray[0])
 }

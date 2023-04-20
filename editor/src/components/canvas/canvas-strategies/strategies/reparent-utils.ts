@@ -41,7 +41,7 @@ import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   childInsertionPath,
-  getElementPathFromReparentTargetParent,
+  getElementPathFromInsertionPath,
   InsertionPath,
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
@@ -115,7 +115,7 @@ export function getReparentOutcome(
     }
   }
 
-  const newParentElementPath = getElementPathFromReparentTargetParent(newParent)
+  const newParentElementPath = getElementPathFromInsertionPath(newParent)
 
   // Lookup the filename that will be added to.
   const newTargetFilePath = forceNotNull(
