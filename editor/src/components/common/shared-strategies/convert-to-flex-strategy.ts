@@ -46,6 +46,7 @@ export function convertLayoutToFlexCommands(
     }
 
     if (MetadataUtils.isConditionalFromMetadata(parentInstance)) {
+      // we do not support retargeting to children of conditionals, the behavior is under design / development
       return [
         showToastCommand(
           'Cannot be converted to Flex yet',
