@@ -253,7 +253,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
 } from '../store/editor-state'
-import { ReparentTargetParent } from '../store/reparent-target'
+import { InsertionPath } from '../store/insertion-path'
 
 export function clearSelection(): EditorAction {
   return {
@@ -454,7 +454,7 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: ReparentTargetParent<ElementPath>,
+  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
@@ -689,7 +689,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: ReparentTargetParent<ElementPath> | null,
+  parentPath: InsertionPath | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {
