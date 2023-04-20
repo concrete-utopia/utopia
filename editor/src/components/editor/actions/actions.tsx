@@ -2526,9 +2526,11 @@ export const UPDATE_FNS = {
             return editor
           }
 
+          const viewPathNotNull: InsertionPath = viewPath as InsertionPath // OMG TYPESCRIPT!!!!!
+
           const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
             ? [] // if we are wrapping something in a Flex parent, try not adding frames here
-            : [getFrameChange(viewPath, boundingBox, isParentFlex)]
+            : [getFrameChange(viewPathNotNull.elementPath, boundingBox, isParentFlex)]
           const withWrapperViewAdded = {
             ...setCanvasFramesInnerNew(
               includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
@@ -2546,13 +2548,13 @@ export const UPDATE_FNS = {
             builtInDependencies,
             orderedActionTargets,
             indexPosition,
-            viewPath,
+            viewPathNotNull,
             withWrapperViewAdded,
           ).editor
 
           return {
             ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPath),
+            selectedViews: Utils.maybeToArray(viewPathNotNull.elementPath),
             highlightedViews: [],
           }
         }
