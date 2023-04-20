@@ -18,7 +18,10 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { RightMenuTab } from '../../../editor/store/editor-state'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
@@ -326,6 +329,17 @@ describe('Inserting into absolute', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
 
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'skip7',
+        'false-branch',
+      ])
+
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -388,7 +402,20 @@ describe('Inserting into absolute', () => {
                 }}
                 data-uid='ddd'
               />
-            ) : null}
+            ) : (
+              <span
+                style={{
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='false-branch'
+              >
+                False branch
+              </span>
+            )}
             </div>
             <div
               data-uid='ccc'
@@ -1577,6 +1604,16 @@ describe('Inserting into flex row', () => {
     const renderResult = await setupInsertTest(inputCode)
     await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
 
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'skip7',
+      'false-branch',
+    ])
     const targetElement = renderResult.renderedDOM.getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1636,7 +1673,20 @@ describe('Inserting into flex row', () => {
               }}
               data-uid='ddd'
             />
-          ) : null}
+          ) : (
+            <span
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 300,
+              }}
+              data-uid='false-branch'
+            >
+              False branch
+            </span>
+          )}
           <div
             data-uid='bbb'
             data-testid='bbb'
