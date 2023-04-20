@@ -920,7 +920,7 @@ describe('Smart Convert to Flex Fragment In Existing Flex', () => {
 })
 
 describe('Smart Convert To Flex if Fragment Children', () => {
-  it('for now, just refuse to convert if there are fragment children present.', async () => {
+  it('adding flex layout to a container with fragment children present.', async () => {
     const testProjectWithBadFragment = makeTestProjectCodeWithSnippet(`
     <div style={{ ...props.style }} data-uid='a'>
       <div
