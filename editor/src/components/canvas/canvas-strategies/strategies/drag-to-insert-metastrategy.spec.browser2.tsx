@@ -1,4 +1,7 @@
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
   expectSingleUndoStep,
@@ -283,6 +286,8 @@ describe('Dragging from the insert menu into an absolute layout', () => {
       y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
     }
 
+    FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
+
     await dragFromInsertMenuDivButtonToPoint(
       targetPoint,
       emptyModifiers,
@@ -326,7 +331,20 @@ describe('Dragging from the insert menu into an absolute layout', () => {
                 }}
                 data-uid='ddd'
               />
-            ) : null}
+            ) : (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 140,
+                  top: 40,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='false-branch'
+              >
+                False branch
+              </div>
+            )}
           </div>
           <div
             data-uid='smaller'
