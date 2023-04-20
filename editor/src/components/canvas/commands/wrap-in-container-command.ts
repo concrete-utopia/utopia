@@ -26,6 +26,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { JSXAttributesPart, JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
 import { childInsertionPath } from '../../editor/store/insertion-path'
+import { jsxTextBlock } from '../../../core/shared/element-template'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -136,7 +137,8 @@ const getInsertionSubjectWrapper = (
   }
 }
 
-const falseBranchSideLength = 50
+const defaultFalseBranchSideLength = 100
+const defaultFalseBranchText = 'False branch'
 
 function getInsertionSubjectWrapperConditionalFalseBranch(
   projectContents: ProjectContentTreeRoot,
@@ -164,40 +166,42 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
     return found
   }
 
-  function getNumberProp(e: JSXAttributesEntry, key: string): number {
+  function getNumberProp(e: JSXAttributesEntry, key: string): number | null {
     if (e.value.type !== 'ATTRIBUTE_VALUE') {
-      return 0
+      return null
     }
     const value = e.value.value[key]
     if (typeof value !== 'number') {
-      return 0
+      return null
     }
     return value
   }
 
   const uid = generateUidWithExistingComponents(projectContents)
-
   const trueBranchStyle = getStyle(trueBranch)
-  const left = getNumberProp(trueBranchStyle, 'left')
-  const top = getNumberProp(trueBranchStyle, 'top')
 
   return jsxElement(
-    'div',
+    'span',
     uid,
     jsxAttributesFromMap({
       style: jsExpressionValue(
         {
-          backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: left,
-          top: top,
-          width: falseBranchSideLength,
-          height: falseBranchSideLength,
+          left: getNumberProp(trueBranchStyle, 'left') ?? 0,
+          top: getNumberProp(trueBranchStyle, 'top') ?? 0,
+          width: Math.max(
+            getNumberProp(trueBranchStyle, 'width') ?? 0,
+            defaultFalseBranchSideLength,
+          ),
+          height: Math.max(
+            getNumberProp(trueBranchStyle, 'height') ?? 0,
+            defaultFalseBranchSideLength,
+          ),
         },
         emptyComments,
       ),
       'data-uid': jsExpressionValue(uid, emptyComments),
     }),
-    [],
+    [jsxTextBlock(defaultFalseBranchText)],
   )
 }
