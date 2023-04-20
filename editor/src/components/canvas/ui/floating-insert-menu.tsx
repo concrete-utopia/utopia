@@ -59,7 +59,7 @@ import {
 import { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { when } from '../../../utils/react-conditionals'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -507,10 +507,22 @@ export var FloatingMenu = React.memo(() => {
           break
         case 'insert':
           const targetParent = safeIndex(selectedViews, 0) ?? emptyElementPath
+
+          const importsToAdd: Imports =
+            element.type === 'JSX_FRAGMENT'
+              ? {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
+                }
+              : {}
+
           actionsToDispatch = [
             insertInsertable(
               targetParent,
-              insertableComponent({}, element, '', [], null),
+              insertableComponent(importsToAdd, element, '', [], null),
               fixedSizeForInsertion ? 'add-size' : 'do-not-add',
               wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
               floatingMenuState.indexPosition,

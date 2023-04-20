@@ -7,7 +7,7 @@ import {
   JSXElementChild,
   jsxFragment,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import {
   EditorState,
   EditorStatePatch,
@@ -20,6 +20,7 @@ import * as EP from '../../../core/shared/element-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { ProjectContentTreeRoot } from '../../assets'
@@ -71,7 +72,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       )
       const index = indexInParent >= 0 ? absolute(indexInParent) : null
 
-      const wrapper = getInsertionSubjectWrapper(
+      const { wrapper, imports } = getInsertionSubjectWrapper(
         command.wrapper,
         command.wrapperUID,
         elementToWrap,
@@ -93,7 +94,11 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          success.imports,
+          mergeImports(
+            underlyingFilePath,
+            success.imports,
+            mergeImports(underlyingFilePath, imports, insertionResult.importsToAdd),
+          ),
           underlyingFilePath,
         ),
       )
@@ -119,19 +124,34 @@ const getInsertionSubjectWrapper = (
   wrapperUID: string,
   elementToWrap: JSXElementChild,
   projectContents: ProjectContentTreeRoot,
-) => {
+): {
+  wrapper: JSXElementChild
+  imports: Imports
+} => {
   switch (insertionSubjectWrapper) {
     case 'conditional':
-      return jsxConditionalExpression(
-        wrapperUID,
-        jsExpressionValue(true, emptyComments),
-        'true',
-        elementToWrap,
-        getInsertionSubjectWrapperConditionalFalseBranch(projectContents, elementToWrap),
-        emptyComments,
-      )
+      return {
+        wrapper: jsxConditionalExpression(
+          wrapperUID,
+          jsExpressionValue(true, emptyComments),
+          'true',
+          elementToWrap,
+          getInsertionSubjectWrapperConditionalFalseBranch(projectContents, elementToWrap),
+          emptyComments,
+        ),
+        imports: {},
+      }
     case 'fragment':
-      return jsxFragment(wrapperUID, [elementToWrap], true)
+      return {
+        wrapper: jsxFragment(wrapperUID, [elementToWrap], true),
+        imports: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        },
+      }
     default:
       assertNever(insertionSubjectWrapper)
   }

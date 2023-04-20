@@ -42,6 +42,7 @@ import {
   StaticElementPathPart,
   StaticElementPath,
   ElementPath,
+  Imports,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -494,15 +495,18 @@ export function removeJSXElementChild(
 export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
+  importsToAdd: Imports
 }
 
 export function insertChildAndDetails(
   components: Array<UtopiaJSXComponent>,
   insertionDetails: string | null = null,
+  importsToAdd: Imports = {},
 ): InsertChildAndDetails {
   return {
     components: components,
     insertionDetails: insertionDetails,
+    importsToAdd: importsToAdd,
   }
 }
 
@@ -518,6 +522,7 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+
   function getConditionalCase(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
@@ -536,6 +541,7 @@ export function insertJSXElementChild(
       ) ?? 'true-case'
     )
   }
+
   const targetParentIncludingStoryboardRoot =
     targetParent ??
     optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
@@ -545,6 +551,7 @@ export function insertJSXElementChild(
   } else {
     const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
     let details: string | null = null
+    let importsToAdd: Imports = {}
     const updatedComponents = transformJSXComponentAtPath(
       components,
       parentPath,
@@ -568,6 +575,13 @@ export function insertJSXElementChild(
                 return parentElement
               } else {
                 // for wrapping multiple elements
+                importsToAdd = {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
+                }
                 return jsxFragment(
                   generateUidWithExistingComponents(projectContents),
                   [elementToInsert, clauseValue],
@@ -598,7 +612,8 @@ export function insertJSXElementChild(
         }
       },
     )
-    return insertChildAndDetails(updatedComponents, details)
+
+    return insertChildAndDetails(updatedComponents, details, importsToAdd)
   }
 }
 
