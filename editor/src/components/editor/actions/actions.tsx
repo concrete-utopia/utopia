@@ -381,7 +381,7 @@ import {
   getOpenTextFileKey,
   getOpenUIJSFileKey,
   FileChecksums,
-  insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
   LeftMenuTab,
   LeftPaneDefaultWidth,
   LeftPaneMinimumWidth,
@@ -840,6 +840,7 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
+  useNewInsertJSXElementChild_KILLME?: boolean,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -862,7 +863,12 @@ export function editorMoveMultiSelectedTemplates(
       return working
     } else {
       const { commands: reparentCommands, newPath } = outcomeResult
-      const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
+      const reorderCommand = reorderElement(
+        'on-complete',
+        newPath,
+        indexPosition,
+        useNewInsertJSXElementChild_KILLME,
+      )
 
       const withCommandsApplied = foldAndApplyCommandsSimple(working, [
         ...reparentCommands,
@@ -1783,6 +1789,7 @@ export const UPDATE_FNS = {
         indexPosition,
         newParentPath,
         editor,
+        true,
       )
 
       return {
@@ -1826,7 +1833,13 @@ export const UPDATE_FNS = {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(dropTarget.target)
+              const newParent = reparentTargetFromNavigatorEntry(
+                dropTarget.target,
+                editor.projectContents,
+                editor.jsxMetadata,
+                editor.nodeModules.files,
+                editor.canvas.openFile?.filename,
+              )
               return reparentToIndexPosition(newParent, absolute(0))
             }
             case 'SYNTHETIC': {
@@ -2268,7 +2281,7 @@ export const UPDATE_FNS = {
           return success
         }
 
-        const withInsertedElement = insertElementAtPath(
+        const withInsertedElement = insertElementAtPath_DEPRECATED(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
           childInsertionPath(targetParent),
@@ -2440,7 +2453,7 @@ export const UPDATE_FNS = {
                 targetThatIsRootElementOfCommonParent == null &&
                 isChildInsertionPath(parentPath)
               ) {
-                const insertResult = insertElementAtPath(
+                const insertResult = insertElementAtPath_DEPRECATED(
                   editor.projectContents,
                   editor.canvas.openFile?.filename ?? null,
                   parentPath,
@@ -2638,7 +2651,7 @@ export const UPDATE_FNS = {
                 insertChildAndDetails(utopiaJSXComponents)
 
               function withInsertedElement() {
-                return insertElementAtPath(
+                return insertElementAtPath_DEPRECATED(
                   editor.projectContents,
                   editor.canvas.openFile?.filename ?? null,
                   parentPath,
@@ -5317,7 +5330,7 @@ export const UPDATE_FNS = {
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
@@ -5339,7 +5352,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.comments,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
@@ -5358,7 +5371,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.longForm,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),

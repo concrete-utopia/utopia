@@ -26,7 +26,7 @@ import { absolute } from '../../../utils/utils'
 import { EditorDispatch } from '../action-types'
 import {
   EditorState,
-  insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
   modifyUnderlyingTargetElement,
 } from '../store/editor-state'
 import { ConditionalClauseInsertionPath, childInsertionPath } from '../store/insertion-path'
@@ -127,7 +127,7 @@ export function unwrapTextContainingConditional(
     (success) => {
       if (elementToInsert != null) {
         const components = getUtopiaJSXComponentsFromSuccess(success)
-        const updatedComponents = insertElementAtPath(
+        const updatedComponents = insertElementAtPath_DEPRECATED(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
           childInsertionPath(targetParent),
