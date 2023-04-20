@@ -611,4 +611,6 @@ in pkgs.mkShell {
 
   # Makes the electron runner use this executable instead.
   ELECTRON_OVERRIDE_DIST_PATH = if stdenv.isLinux then "${pkgs.electron}/bin" else null;
+  # Required for webpack builds
+  NODE_OPENSSL_OPTION = "--openssl-legacy-provider";
 }
