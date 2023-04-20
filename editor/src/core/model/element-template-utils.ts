@@ -529,8 +529,11 @@ export function insertJSXElementChild(
 
     // TODO this should be deleted and an invariant error should be thrown
     return (
-      maybeBranchConditionalCase(EP.parentPath(parentPath), conditional, target.elementPath) ??
-      'true-case'
+      maybeBranchConditionalCase(
+        EP.parentPath(parentPath),
+        conditional,
+        target.intendedParentPath,
+      ) ?? 'true-case'
     )
   }
   const targetParentIncludingStoryboardRoot =

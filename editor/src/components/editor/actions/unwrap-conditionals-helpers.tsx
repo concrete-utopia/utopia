@@ -40,7 +40,7 @@ export function unwrapConditionalClause(
 ): EditorState {
   let newSelection: Array<ElementPath> = []
   const withElementMoved = modifyUnderlyingTargetElement(
-    parentPath.elementPath,
+    parentPath.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
@@ -48,7 +48,7 @@ export function unwrapConditionalClause(
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const updatedComponents = transformJSXComponentAtPath(
         components,
-        EP.dynamicPathToStaticPath(parentPath.elementPath),
+        EP.dynamicPathToStaticPath(parentPath.intendedParentPath),
         (elem) => {
           if (isJSXConditionalExpression(elem)) {
             const clauseOptic = getClauseOptic(parentPath.clause)
@@ -60,11 +60,13 @@ export function unwrapConditionalClause(
                     return jsExpressionValue(null, emptyComments)
                   } else if (clauseElement.children.length === 1) {
                     const childElement = clauseElement.children[0]
-                    newSelection.push(EP.appendToPath(parentPath.elementPath, childElement.uid))
+                    newSelection.push(
+                      EP.appendToPath(parentPath.intendedParentPath, childElement.uid),
+                    )
                     return childElement
                   } else {
                     const newUID = generateUidWithExistingComponents(editor.projectContents)
-                    newSelection.push(EP.appendToPath(parentPath.elementPath, newUID))
+                    newSelection.push(EP.appendToPath(parentPath.intendedParentPath, newUID))
                     return jsxFragment(newUID, clauseElement.children, false)
                   }
                 }

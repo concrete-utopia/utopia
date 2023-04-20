@@ -2351,7 +2351,7 @@ export const UPDATE_FNS = {
               (firstPathMatchingCommonParent) =>
                 MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
               orderedActionTargets.find((target) =>
-                EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
+                EP.pathsEqual(EP.parentPath(target), parentPath.intendedParentPath),
               ),
             )
           }
@@ -2384,7 +2384,7 @@ export const UPDATE_FNS = {
           if (isChildInsertionPath(parentPath)) {
             const parent = MetadataUtils.findElementByElementPath(
               editor.jsxMetadata,
-              parentPath.elementPath,
+              parentPath.intendedParentPath,
             )
             isParentFlex = parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           }
@@ -2524,7 +2524,7 @@ export const UPDATE_FNS = {
 
           const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
             ? [] // if we are wrapping something in a Flex parent, try not adding frames here
-            : [getFrameChange(viewPathNotNull.elementPath, boundingBox, isParentFlex)]
+            : [getFrameChange(viewPathNotNull.intendedParentPath, boundingBox, isParentFlex)]
           const withWrapperViewAdded = {
             ...setCanvasFramesInnerNew(
               includeToast(detailsOfUpdate, withWrapperViewAddedNoFrame),
@@ -2548,7 +2548,7 @@ export const UPDATE_FNS = {
 
           return {
             ...withElementsAdded,
-            selectedViews: Utils.maybeToArray(viewPathNotNull.elementPath),
+            selectedViews: Utils.maybeToArray(viewPathNotNull.intendedParentPath),
             highlightedViews: [],
           }
         }
@@ -2593,7 +2593,7 @@ export const UPDATE_FNS = {
             (firstPathMatchingCommonParent) =>
               MetadataUtils.getIndexInParent(editor.jsxMetadata, firstPathMatchingCommonParent),
             orderedActionTargets.find((target) =>
-              EP.pathsEqual(EP.parentPath(target), parentPath.elementPath),
+              EP.pathsEqual(EP.parentPath(target), parentPath.intendedParentPath),
             ),
           )
         }
@@ -2899,7 +2899,7 @@ export const UPDATE_FNS = {
             parentPath == null
               ? (Utils.zeroRectangle as CanvasRectangle)
               : MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-                  parentPath.elementPath,
+                  parentPath.intendedParentPath,
                   editor.jsxMetadata,
                 )
 
@@ -2914,7 +2914,7 @@ export const UPDATE_FNS = {
               child.elementPath,
               childFrame,
               indexPosition,
-              parentPath?.elementPath ?? null,
+              parentPath?.intendedParentPath ?? null,
               parentFrame,
               working,
               null,
@@ -3218,7 +3218,7 @@ export const UPDATE_FNS = {
         if (isConditionalClauseInsertionPath(action.pasteInto)) {
           return true
         }
-        const parentPath = EP.parentPath(action.pasteInto.elementPath)
+        const parentPath = EP.parentPath(action.pasteInto.intendedParentPath)
         if (findMaybeConditionalExpression(parentPath, editor.jsxMetadata) != null) {
           // TODO invariant violation!
           return true
