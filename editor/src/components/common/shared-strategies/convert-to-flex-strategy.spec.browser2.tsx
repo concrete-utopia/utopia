@@ -8,6 +8,7 @@ import {
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
+import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/group-like-helpers.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../canvas/event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -1419,7 +1420,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
           width: 45,
           height: 180,
         }}
-        data-uid='b40'
+        data-uid='first-child'
       />
       <div
         style={{
@@ -1430,9 +1431,9 @@ describe('Smart Convert To Flex if Fragment Children', () => {
           width: 45,
           height: 180,
         }}
-        data-uid='12f'
+        data-uid='second-child'
       />
-      <React.Fragment>
+      <React.Fragment data-uid="fragment-1">
         <div
           style={{
             backgroundColor: '#fbcbb6',
@@ -1442,7 +1443,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 65,
             height: 96,
           }}
-          data-uid='b6c'
+          data-uid='fragment-1-child-1'
         />
         <div
           style={{
@@ -1453,10 +1454,10 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 40,
             height: 87,
           }}
-          data-uid='410'
+          data-uid='fragment-1-child-2'
         />
       </React.Fragment>
-      <React.Fragment>
+      <React.Fragment data-uid="fragment-2">
         <div
           style={{
             backgroundColor: '#c393cd',
@@ -1466,7 +1467,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 83,
             height: 97,
           }}
-          data-uid='1cb'
+          data-uid='fragment-2-child-1'
         />
         <div
           style={{
@@ -1477,7 +1478,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 38,
             height: 100,
           }}
-          data-uid='8d7'
+          data-uid='fragment-2-child-2'
         />
       </React.Fragment>
     </div>`),
@@ -1516,7 +1517,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 96,
             contain: 'layout',
           }}
-          data-uid='b6c'
+          data-uid='fragment-1-child-1'
         />
         <div
           style={{
@@ -1525,7 +1526,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 87,
             contain: 'layout',
           }}
-          data-uid='410'
+          data-uid='fragment-1-child-2'
         />
       </React.Fragment>
       <div
@@ -1535,7 +1536,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
           height: 180,
           contain: 'layout',
         }}
-        data-uid='b40'
+        data-uid='first-child'
       />
       <React.Fragment>
         <div
@@ -1545,7 +1546,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 97,
             contain: 'layout',
           }}
-          data-uid='1cb'
+          data-uid='fragment-2-child-1'
         />
         <div
           style={{
@@ -1554,7 +1555,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 100,
             contain: 'layout',
           }}
-          data-uid='8d7'
+          data-uid='fragment-2-child-2'
         />
       </React.Fragment>
       <div
@@ -1564,11 +1565,25 @@ describe('Smart Convert To Flex if Fragment Children', () => {
           height: 180,
           contain: 'layout',
         }}
-        data-uid='12f'
+        data-uid='second-child'
       />
       </div>
   `),
     )
+
+    expect(getRegularNavigatorTargets(editor)).toEqual([
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1/fragment-1-child-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1/fragment-1-child-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/first-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2/fragment-2-child-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2/fragment-2-child-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/second-child',
+    ])
   })
 
   it('reordering elements with overlapping groups is not allowed', async () => {
@@ -1584,7 +1599,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       }}
       data-uid='container'
     >
-      <React.Fragment>
+      <React.Fragment data-uid='fragment-1'>
         <div
           style={{
             backgroundColor: '#ed72c7',
@@ -1594,7 +1609,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 56,
             height: 171,
           }}
-          data-uid='cc8'
+          data-uid='fragment-1-child-1'
         />
         <div
           style={{
@@ -1605,10 +1620,10 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 30,
             height: 155,
           }}
-          data-uid='4e7'
+          data-uid='fragment-1-child-2'
         />
       </React.Fragment>
-      <React.Fragment>
+      <React.Fragment data-uid='fragment-2'>
         <div
           style={{
             backgroundColor: '#8bc0d4',
@@ -1618,7 +1633,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 44,
             height: 158,
           }}
-          data-uid='c35'
+          data-uid='fragment-2-child-1'
         />
         <div
           style={{
@@ -1629,7 +1644,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             width: 58,
             height: 146,
           }}
-          data-uid='163'
+          data-uid='fragment-2-child-2'
         />
       </React.Fragment>
       <div
@@ -1641,11 +1656,26 @@ describe('Smart Convert To Flex if Fragment Children', () => {
           width: 13,
           height: 232,
         }}
-        data-uid='0ed'
+        data-uid='element'
       />
     </div>`),
       'await-first-dom-report',
     )
+
+    const originalOrder: string[] = [
+      'utopia-storyboard-uid/scene-aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1/fragment-1-child-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-1/fragment-1-child-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2/fragment-2-child-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-2/fragment-2-child-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/element',
+    ]
+
+    expect(getRegularNavigatorTargets(editor)).toEqual(originalOrder)
 
     await selectComponentsForTest(editor, [
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
@@ -1654,6 +1684,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
     await expectSingleUndoStep(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
+
+    expect(getRegularNavigatorTargets(editor)).toEqual(originalOrder)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div
@@ -1679,7 +1711,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 171,
             contain: 'layout',
           }}
-          data-uid='cc8'
+          data-uid='fragment-1-child-1'
         />
         <div
           style={{
@@ -1688,7 +1720,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 155,
             contain: 'layout',
           }}
-          data-uid='4e7'
+          data-uid='fragment-1-child-2'
         />
       </React.Fragment>
       <React.Fragment>
@@ -1699,7 +1731,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 158,
             contain: 'layout',
           }}
-          data-uid='c35'
+          data-uid='fragment-2-child-1'
         />
         <div
           style={{
@@ -1708,7 +1740,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
             height: 146,
             contain: 'layout',
           }}
-          data-uid='163'
+          data-uid='fragment-2-child-2'
         />
       </React.Fragment>
       <div
@@ -1718,7 +1750,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
           height: 232,
           contain: 'layout',
         }}
-        data-uid='0ed'
+        data-uid='element'
       />
     </div>`),
     )
