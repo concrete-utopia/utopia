@@ -107,7 +107,7 @@ export function getReparentOutcome(
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
     isChildInsertionPath(newParent) &&
-    EP.pathsEqual(newParent.intendedElementPath, EP.parentPath(toReparent.target))
+    EP.pathsEqual(newParent.intendedParentPath, EP.parentPath(toReparent.target))
   ) {
     return {
       commands: [],

@@ -2123,7 +2123,7 @@ function editorReparentNoStyleChange(
 ): EditorState {
   // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
   return withUnderlyingTargetFromEditorState(
-    newParentPath.intendedElementPath,
+    newParentPath.intendedParentPath,
     editor,
     editor,
     (

@@ -20,31 +20,31 @@ export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
-  intendedElementPath: StaticElementPath
+  intendedParentPath: StaticElementPath
 }
 
 export function childInsertionPath(
-  elementPath: StaticElementPath | ElementPath,
+  intendedParentPath: StaticElementPath | ElementPath,
 ): ChildInsertionPath {
   return {
     type: 'CHILD_INSERTION',
-    intendedElementPath: EP.dynamicPathToStaticPath(elementPath),
+    intendedParentPath: EP.dynamicPathToStaticPath(intendedParentPath),
   }
 }
 
 export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   propName: ConditionalCase
-  intendedElementPath: StaticElementPath
+  intendedParentPath: StaticElementPath
 }
 
 export function conditionalClauseInsertionPath(
-  intendedElementPath: StaticElementPath | ElementPath,
+  intendedParentPath: StaticElementPath | ElementPath,
   propName: ConditionalCase,
 ): ConditionalClauseInsertionPath {
   return {
     type: 'CONDITIONAL_CLAUSE_INSERTION',
-    intendedElementPath: EP.dynamicPathToStaticPath(intendedElementPath),
+    intendedParentPath: EP.dynamicPathToStaticPath(intendedParentPath),
     propName: propName,
   }
 }
@@ -62,11 +62,11 @@ export function isConditionalClauseInsertionPath(
 }
 
 export function getElementPathFromInsertionPath(insertionPath: InsertionPath): StaticElementPath {
-  return insertionPath.intendedElementPath
+  return insertionPath.intendedParentPath
 }
 
 export function insertionPathToString(insertionPath: InsertionPath): string {
-  return `children of ${EP.toString(insertionPath.intendedElementPath)}`
+  return `children of ${EP.toString(insertionPath.intendedParentPath)}`
 }
 
 // TODO: do we need this
@@ -78,14 +78,14 @@ export function commonInsertionPath(
   const closestSharedAncestor = EP.dynamicPathToStaticPath(
     forceNotNull(
       `FIXME the common element path is null, it should be pointing to Storyboard`,
-      EP.closestSharedAncestor(first.intendedElementPath, second.intendedElementPath, true),
+      EP.closestSharedAncestor(first.intendedParentPath, second.intendedParentPath, true),
     ),
   )
 
-  if (EP.pathsEqual(closestSharedAncestor, first.intendedElementPath)) {
+  if (EP.pathsEqual(closestSharedAncestor, first.intendedParentPath)) {
     return first
   }
-  if (EP.pathsEqual(closestSharedAncestor, second.intendedElementPath)) {
+  if (EP.pathsEqual(closestSharedAncestor, second.intendedParentPath)) {
     return second
   }
   const closestSharedAncestorElement = forceNotNull(
