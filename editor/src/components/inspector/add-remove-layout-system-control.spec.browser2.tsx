@@ -1,21 +1,8 @@
-import { BakedInStoryboardUID } from '../../core/model/scene-utils'
-import * as EP from '../../core/shared/element-path'
 import { shiftModifier } from '../../utils/modifiers'
-import {
-  expectSingleUndoStep,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../utils/utils.test-utils'
+import { expectSingleUndoStep, setFeatureForBrowserTests } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
-import {
-  renderTestEditorWithCode,
-  EditorRenderResult,
-  getPrintedUiJsCode,
-  TestSceneUID,
-  TestAppUID,
-  makeTestProjectCodeWithSnippet,
-} from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode, EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
