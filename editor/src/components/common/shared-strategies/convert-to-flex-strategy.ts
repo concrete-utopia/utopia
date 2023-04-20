@@ -55,17 +55,6 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    // FIXME: `childrenPaths` doesn't include text elements yet, and this causes `rearrangeChildren` throw an error
-    if (getElementTextChildrenCount(parentInstance) > 0) {
-      return [
-        showToastCommand(
-          'Cannot be converted to Flex yet',
-          'NOTICE',
-          'cannot-convert-children-to-flex',
-        ),
-      ]
-    }
-
     const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) =>
       isElementNonDOMElement(metadata, allElementProps, child)
         ? replaceContentAffectingPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
@@ -119,8 +108,11 @@ export function convertLayoutToFlexCommands(
       sortedChildrenPaths,
     )
 
+    // FIXME: `childrenPaths` doesn't include text elements yet, and this causes `rearrangeChildren` throw an error
+    const containerHasNoTextChildren = getElementTextChildrenCount(parentInstance) === 0
+
     const rearrangeCommands =
-      rearrangedChildrenPaths != null
+      rearrangedChildrenPaths != null && containerHasNoTextChildren
         ? [
             rearrangeChildren(
               'always',
