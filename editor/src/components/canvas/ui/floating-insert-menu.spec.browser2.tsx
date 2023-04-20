@@ -52,7 +52,7 @@ describe('Floating insert menu', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    {true ? 'True branch' : 'False branch'}
+    {true ? null : null}
   </div>`),
     )
   })
