@@ -97,6 +97,17 @@ describe('canvas toolbar', () => {
     // Highlight should show the candidate parent
     expect(editor.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'skip7',
+      'false-branch',
+    ])
+
     // Drag from inside bbb to inside ccc
     await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
 
@@ -149,7 +160,20 @@ describe('canvas toolbar', () => {
                   }}
                   data-uid='new-div'
                 />
-                ) : null}
+                ) : (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      left: 5,
+                      top: 5,
+                      width: 1000,
+                      height: 1000,
+                    }}
+                    data-uid='false-branch'
+                  >
+                    False branch
+                  </span>
+                )}
             </div>
             <div
               data-uid='ccc'
