@@ -171,6 +171,9 @@ import {
   importedOrigin,
   ConditionValue,
   JSXConditionalExpressionWithoutUID,
+  isJSXConditionalExpression,
+  JSXConditionalExpression,
+  jsxConditionalExpression,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -1035,6 +1038,8 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
       return JSXTextBlockKeepDeepEquality(oldElement, newElement)
     } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
       return JSXFragmentKeepDeepEquality(oldElement, newElement)
+    } else if (isJSXConditionalExpression(oldElement) && isJSXConditionalExpression(newElement)) {
+      return JSXConditionalExpressionKeepDeepEquality(oldElement, newElement)
     } else if (oldElement.type === 'ATTRIBUTE_VALUE' && newElement.type === 'ATTRIBUTE_VALUE') {
       return JSXAttributeValueKeepDeepEqualityCall(oldElement, newElement)
     } else if (
@@ -1169,6 +1174,39 @@ export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = co
     }
   },
 )
+
+export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXConditionalExpression> =
+  combine6EqualityCalls(
+    (conditional) => conditional.uid,
+    StringKeepDeepEquality,
+    (conditional) => conditional.condition,
+    JSXAttributeKeepDeepEqualityCall,
+    (conditional) => conditional.originalConditionString,
+    StringKeepDeepEquality,
+    (conditional) => conditional.whenTrue,
+    JSXElementChildKeepDeepEquality(),
+    (conditional) => conditional.whenFalse,
+    JSXElementChildKeepDeepEquality(),
+    (conditional) => conditional.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    (
+      uid,
+      condition,
+      originalConditionString,
+      whenTrue,
+      whenFalse,
+      comments,
+    ): JSXConditionalExpression => {
+      return jsxConditionalExpression(
+        uid,
+        condition,
+        originalConditionString,
+        whenTrue,
+        whenFalse,
+        comments,
+      )
+    },
+  )
 
 export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
   combine2EqualityCalls(

@@ -44,20 +44,11 @@ import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook
 import { getConditionalClausePathForNavigatorEntry, navigatorDepth } from '../navigator-utils'
 import createCachedSelector from 're-reselect'
 import { getValueFromComplexMap } from '../../../utils/map'
-import { isSyntheticNavigatorEntry } from '../../editor/store/editor-state'
-import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    if (navigatorEntry.clause === 'true-case') {
-      // The TRUE label row will be the shortest size.
-      return UtopiaTheme.layout.rowHeight.smallest
-    } else {
-      // The FALSE label row should visually appear to be the shortest size.
-      // The size difference (against the TRUE label row) will be a top margin.
-      return UtopiaTheme.layout.rowHeight.smaller
-    }
+    return UtopiaTheme.layout.rowHeight.smallest
   } else {
     // Default size for everything else.
     return UtopiaTheme.layout.rowHeight.smaller
@@ -570,11 +561,6 @@ export const NavigatorItem: React.FunctionComponent<
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
     height: getItemHeight(navigatorEntry),
-    // This matches up with the implementation of `getItemHeight`.
-    marginTop:
-      isConditionalClauseNavigatorEntry(navigatorEntry) && navigatorEntry.clause === 'false-case'
-        ? '8px'
-        : undefined,
     ...resultingStyle.style,
   })
 
