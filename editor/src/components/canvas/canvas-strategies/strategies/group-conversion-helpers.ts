@@ -43,6 +43,7 @@ import { isLeft } from '../../../../core/shared/either'
 import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -108,7 +109,7 @@ export function convertFragmentToGroup(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      parentPath,
+      childInsertionPath(parentPath),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -173,7 +174,7 @@ export function convertFragmentToFrame(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      parentPath,
+      childInsertionPath(parentPath),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -212,7 +213,7 @@ export function convertGroupToFragment(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', parentPath, jsxFragment(uid, children, true), {
+    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
       importsToAdd: {
         react: {
@@ -343,7 +344,7 @@ export function convertFrameToFragmentCommands(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', parentPath, jsxFragment(uid, children, true), {
+    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
       importsToAdd: {
         react: {

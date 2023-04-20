@@ -31,7 +31,6 @@ import           Data.UUID                       hiding (null)
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple
 import           Opaleye
-import           Opaleye.Trans
 import           Protolude                       hiding (get)
 import           System.Environment
 import           System.Posix.User
@@ -134,7 +133,7 @@ getProjectContent :: ByteString -> IO Value
 getProjectContent content = either fail pure $ eitherDecodeStrict' content
 
 notDeletedProject :: FieldNullable SqlBool -> Field SqlBool
-notDeletedProject deletedFlag = isNull deletedFlag .|| deletedFlag .=== toFields (Just False)
+notDeletedProject deletedFlag = isNull deletedFlag .|| ((nullableToMaybeFields deletedFlag) .=== (nullableToMaybeFields (toFields (Just False))))
 
 printSql :: Default Unpackspec fields fields => Select fields -> IO ()
 printSql = putStrLn . fromMaybe "Empty select" . showSql
@@ -237,7 +236,7 @@ projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt
   let description = Nothing
    in ProjectMetadata{..}
 
-lookupProjectMetadata :: Maybe (ProjectFields -> Column PGBool) -> Maybe (UserDetailsFields -> Column PGBool) -> Connection -> IO [ProjectMetadata]
+lookupProjectMetadata :: Maybe (ProjectFields -> Column SqlBool) -> Maybe (UserDetailsFields -> Column SqlBool) -> Connection -> IO [ProjectMetadata]
 lookupProjectMetadata projectFilter userDetailsFilter connection = do
   metadataEntries <- runSelect connection $ do
     project@(projectId, ownerId, title, createdAt, modifiedAt, _, deleted) <- projectSelect
@@ -377,10 +376,20 @@ saveUserConfiguration metrics pool userId updatedShortcutConfig updatedTheme = i
     let encoded = fmap encode updatedTheme
     either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
   let newRecord = (toFields userId, toFields encodedShortcutConfig, toFields encodedTheme)
-  let insertConfig = void $ insert userConfigurationTable newRecord
-  let updateConfig = const $ void $ update userConfigurationTable (\(rowUserId, _, _) -> (rowUserId, toFields encodedShortcutConfig, toFields encodedTheme)) (\(rowUserId, _, _) -> rowUserId .== toFields userId)
-  runOpaleyeT connection $ transaction $ do
-    userConf <- queryFirst $ do
+  let insertConfig = void $ runInsert_ connection $ Insert
+                                                  { iTable = userConfigurationTable
+                                                  , iRows = [newRecord]
+                                                  , iReturning = rCount
+                                                  , iOnConflict = Nothing
+                                                  }
+  let updateConfig = const $ void $ runUpdate_ connection $ Update
+                                                          { uTable = userConfigurationTable
+                                                          , uUpdateWith = updateEasy (\(rowUserId, _, _) -> (rowUserId, toFields encodedShortcutConfig, toFields encodedTheme))
+                                                          , uWhere = (\(rowUserId, _, _) -> rowUserId .=== toFields userId)
+                                                          , uReturning = rCount
+                                                          }
+  withTransaction connection $ do
+    userConf <- fmap listToMaybe $ runSelect connection $ do
       (rowUserId, _, _) <- userConfigurationSelect
       where_ $ rowUserId .== toFields userId
       pure rowUserId

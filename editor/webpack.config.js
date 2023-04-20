@@ -241,7 +241,15 @@ const config = {
       { test: /graceful-fs/, use: 'null-loader' },
       // Match typescript
       {
-        exclude: /node_modules(?!\/utopia-api)/,
+        include: (filePath) => {
+          if (filePath.includes('node_modules')) {
+            // We need to use the ts-loader to load the utopia-api module,
+            // but nothing else from node_modules
+            return filePath.includes('/utopia-api/')
+          } else {
+            return true
+          }
+        },
         test: /\.tsx?$/,
         use: [
           {

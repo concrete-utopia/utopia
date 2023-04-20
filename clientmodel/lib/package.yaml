@@ -32,9 +32,9 @@ default-extensions:
 
 dependencies:
   - base
-  - aeson <2.1
+  - aeson >=2.0
   - generic-lens
-  - lens-aeson <1.2
+  - lens-aeson
   - relude
   - lens
   - tasty

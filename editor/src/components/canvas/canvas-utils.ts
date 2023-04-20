@@ -185,6 +185,7 @@ import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
+import { childInsertionPath } from '../editor/store/insertion-path'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2161,7 +2162,7 @@ function editorReparentNoStyleChange(
               const withInserted = insertElementAtPath(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
-                underlyingNewParentPath,
+                childInsertionPath(underlyingNewParentPath),
                 updatedUnderlyingElement,
                 updatedUtopiaComponents,
                 indexPosition,
@@ -2293,7 +2294,7 @@ export function moveTemplate(
                   const insertResult = insertElementAtPath(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
-                    underlyingNewParentPath,
+                    childInsertionPath(underlyingNewParentPath),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
@@ -2817,7 +2818,7 @@ export function duplicate(
             const insertResult = insertElementAtPath(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
-              newParentPath,
+              optionalMap(childInsertionPath, newParentPath),
               newElement,
               utopiaComponents,
               position(),
@@ -2893,7 +2894,7 @@ export function reorderComponent(
     workingComponents = insertElementAtPath(
       projectContents,
       openFile,
-      parentPath,
+      childInsertionPath(parentPath),
       jsxElement,
       workingComponents,
       adjustedIndexPosition,
