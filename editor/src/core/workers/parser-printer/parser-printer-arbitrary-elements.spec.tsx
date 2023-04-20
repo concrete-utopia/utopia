@@ -34,6 +34,7 @@ import {
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   JustImportViewAndReact,
+  simplifyParsedTextFileAttributes,
   testParseCode,
   testParseModifyPrint,
 } from './parser-printer.test-utils'
@@ -1020,7 +1021,9 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )`
-    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    const actualResult = simplifyParsedTextFileAttributes(
+      clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
+    )
     expect(actualResult).toMatchSnapshot()
   })
 

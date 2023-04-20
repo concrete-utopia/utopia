@@ -150,6 +150,13 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     },
   ],
   "highlightBounds": Object {
+    "6e3": Object {
+      "endCol": 24,
+      "endLine": 20,
+      "startCol": 19,
+      "startLine": 20,
+      "uid": "6e3",
+    },
     "aaa": Object {
       "endCol": 11,
       "endLine": 25,
@@ -163,6 +170,13 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startCol": 6,
       "startLine": 21,
       "uid": "aab",
+    },
+    "feb": Object {
+      "endCol": 22,
+      "endLine": 22,
+      "startCol": 17,
+      "startLine": 22,
+      "uid": "feb",
     },
   },
   "imports": Object {
@@ -597,6 +611,13 @@ Object {
       "startCol": 17,
       "startLine": 6,
       "uid": "5fd",
+    },
+    "6e3": Object {
+      "endCol": 53,
+      "endLine": 5,
+      "startCol": 48,
+      "startLine": 5,
+      "uid": "6e3",
     },
     "aaa": Object {
       "endCol": 56,
@@ -1064,6 +1085,13 @@ return { a: a };",
     },
   ],
   "highlightBounds": Object {
+    "854": Object {
+      "endCol": 48,
+      "endLine": 12,
+      "startCol": 43,
+      "startLine": 12,
+      "uid": "854",
+    },
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,

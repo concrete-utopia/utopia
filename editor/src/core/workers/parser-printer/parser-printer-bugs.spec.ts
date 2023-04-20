@@ -7,6 +7,7 @@ import {
   jsExpressionValue,
   UtopiaJSXComponent,
   clearAttributesUniqueIDs,
+  simplifyAttributesIfPossible,
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
@@ -128,7 +129,9 @@ export var App = props => {
               'data-uid': jsExpressionValue('xxx', emptyComments),
             }),
           )
-          expect(clearAttributesUniqueIDs(topComponent.rootElement.props)).toEqual(expectedProps)
+          expect(
+            simplifyAttributesIfPossible(clearAttributesUniqueIDs(topComponent.rootElement.props)),
+          ).toEqual(expectedProps)
         } else {
           throw new Error('Root element not a JSX element.')
         }
