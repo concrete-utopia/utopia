@@ -94,7 +94,7 @@ describe('Floating insert menu', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <React.Fragment>Fragment</React.Fragment>
+    <React.Fragment />
   </div>`),
     )
   })

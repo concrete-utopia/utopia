@@ -490,7 +490,7 @@ Array [
         "defaultSize": null,
         "element": Object {
           "children": Array [],
-          "longForm": false,
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
         "importsToAdd": Object {
@@ -1043,7 +1043,7 @@ Array [
         "defaultSize": null,
         "element": Object {
           "children": Array [],
-          "longForm": false,
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
         "importsToAdd": Object {
