@@ -84,10 +84,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
-import {
-  ConditionalSection,
-  getConditionOverrideSelector,
-} from './sections/layout-section/conditional-section'
+import { ConditionalSection } from './sections/layout-section/conditional-section'
 import { GroupSection } from './convert-to-group-dropdown'
 
 export interface ElementPathElement {
@@ -248,11 +245,14 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
 
-  const isConditionalSelected = useEditorState(
+  const onlyConditionalsSelected = useEditorState(
     Substores.metadata,
     (store) =>
-      getConditionOverrideSelector(store.editor.jsxMetadata, store.editor.selectedViews) !==
-      'not-a-conditional',
+      store.editor.selectedViews.every((path) =>
+        MetadataUtils.isConditionalFromMetadata(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+        ),
+      ),
     'Inspector isConditionalSelected',
   )
 
@@ -361,14 +361,16 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           }}
         >
           {unless(
-            isConditionalSelected,
-            <AlignmentButtons numberOfTargets={selectedViews.length} />,
+            onlyConditionalsSelected,
+            <>
+              <AlignmentButtons numberOfTargets={selectedViews.length} />
+              {when(isTwindEnabled(), <ClassNameSubsection />)}
+              {anyComponents ? <ComponentSection isScene={false} /> : null}
+            </>,
           )}
-          {when(isTwindEnabled(), <ClassNameSubsection />)}
-          {anyComponents ? <ComponentSection isScene={false} /> : null}
           <ConditionalSection paths={selectedViews} />
           {unless(
-            isConditionalSelected,
+            onlyConditionalsSelected,
             <>
               <TargetSelectorSection
                 targets={props.targets}
