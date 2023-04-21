@@ -116,7 +116,7 @@ module.exports = {
         '\\.[jt]sx?$': 'babel-jest',
       },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
-      transformIgnorePatterns: ['/node_modules/(?!utopia-api)'], // this lets ts-jest work on `/node_modules/utopia-api` which is a simlink to `../utopia-api`.
+      transformIgnorePatterns: ['<rootDir>/node_modules/.pnpm/(?!file+..+)'],
       setupFiles: ['./jest-setup-beforeall.js'],
     },
   ],

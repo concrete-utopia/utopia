@@ -19,9 +19,14 @@ import {
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { ElementPaste } from '../action-types'
 import { act } from '@testing-library/react'
-import { ReparentTargetParent } from '../store/reparent-target'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  InsertionPath,
+} from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
+import { expectNoAction, expectSingleUndoStep } from '../../../utils/utils.test-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -288,8 +293,9 @@ describe('actions', () => {
       name: string
       startingCode: string
       elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
-      pasteInto: ReparentTargetParent<ElementPath>
+      pasteInto: InsertionPath
       want: string
+      generatesUndoStep?: boolean
     }
     const tests: Array<PasteTest> = [
       {
@@ -310,7 +316,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
@@ -344,7 +350,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa'])),
         want: `
         <div data-uid='aaa'>
             <div data-uid='bbb'>foo</div>
@@ -379,7 +385,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
 		    <div data-uid='root'>
             <div data-uid='aaa'>
@@ -418,7 +424,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
         <div data-uid='root'>
             <div data-uid='aaa'>
@@ -458,7 +464,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'aaa']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
 		<div data-uid='root'>
             <div data-uid='aaa'>
@@ -504,7 +510,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', '38e']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
         want: `
         <div data-uid='root'>
             <>
@@ -542,7 +548,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', '38e']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', '38e'])),
         want: `
         <div data-uid='root'>
             <>
@@ -576,7 +582,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: childInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -608,7 +616,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: childInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -621,6 +631,7 @@ describe('actions', () => {
       },
       {
         name: 'an element inside a non-empty conditional branch (does nothing)',
+        generatesUndoStep: false,
         startingCode: `
         <div data-uid='root'>
             {
@@ -640,10 +651,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -682,19 +693,19 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
         <div data-uid='root'>
             {
             	// @utopia/uid=conditional
                 true ? (
-                    <>
+                    <React.Fragment>
                     	<div data-uid='aab'>bar</div>
                     	<div data-uid='aac'>baz</div>
-                    </>
+                    </React.Fragment>
                 ) : <div data-uid='aaa'>foo</div>
             }
             <div data-uid='bbb'>bar</div>
@@ -730,19 +741,19 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'false-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'false-case',
+        ),
         want: `
         <div data-uid='root'>
         	{
             	// @utopia/uid=conditional
                 true ? <div data-uid='aaa'>foo</div> : (
-                    <>
+                    <React.Fragment>
                     	<div data-uid='aab'>bar</div>
                     	<div data-uid='aac'>baz</div>
-                    </>
+                    </React.Fragment>
                 )
             }
             <div data-uid='bbb'>bar</div>
@@ -774,10 +785,10 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
         <div data-uid='root'>
             {
@@ -830,16 +841,16 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: {
-          clause: 'true-case',
-          elementPath: EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-        },
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
+        ),
         want: `
       <div data-uid='root'>
       {
         // @utopia/uid=conditional
         true ? (
-          <>
+          <React.Fragment>
             <>
               <div data-uid='aab'>bar</div>
               <div data-uid='aac'>baz</div>
@@ -848,7 +859,7 @@ describe('actions', () => {
               <div data-uid='aae'>qux</div>
               <div data-uid='aaf'>waldo</div>
             </>
-          </>
+          </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
       }
       <>
@@ -882,7 +893,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root'])),
         want: `
       <div data-uid='root'>
         {
@@ -917,7 +928,7 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['root']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root'])),
         want: `
     <div data-uid='root'>
       {
@@ -936,17 +947,22 @@ describe('actions', () => {
           'await-first-dom-report',
         )
 
-        await act(async () => {
-          await renderResult.dispatch(
-            [
-              pasteJSXElements(
-                test.pasteInto,
-                test.elements(renderResult),
-                renderResult.getEditorState().editor.jsxMetadata,
-              ),
-            ],
-            true,
-          )
+        const undoCheckerFn =
+          test.generatesUndoStep === false ? expectNoAction : expectSingleUndoStep
+
+        await undoCheckerFn(renderResult, async () => {
+          await act(async () => {
+            await renderResult.dispatch(
+              [
+                pasteJSXElements(
+                  test.pasteInto,
+                  test.elements(renderResult),
+                  renderResult.getEditorState().editor.jsxMetadata,
+                ),
+              ],
+              true,
+            )
+          })
         })
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(test.want),

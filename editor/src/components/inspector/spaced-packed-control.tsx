@@ -48,6 +48,8 @@ const packedSpacedSelector = createSelector(
 export const SpacedPackedControl = React.memo(() => {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
   const dispatch = useDispatch()
 
   const spacedPackedSetting = useEditorState(Substores.metadata, packedSpacedSelector, '')
@@ -60,6 +62,7 @@ export const SpacedPackedControl = React.memo(() => {
             dispatch,
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setSpacingModePackedStrategies,
           )
         case 'spaced':
@@ -67,13 +70,14 @@ export const SpacedPackedControl = React.memo(() => {
             dispatch,
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setSpacingModeSpaceBetweenStrategies,
           )
         default:
           assertNever(value)
       }
     },
-    [dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =

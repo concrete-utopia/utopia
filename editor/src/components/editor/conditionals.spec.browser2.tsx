@@ -35,7 +35,11 @@ import { ConditionalSectionTestId } from '../inspector/sections/layout-section/c
 import { ElementPaste } from './action-types'
 import { getElementFromRenderResult } from './actions/actions.test-utils'
 import { EditorState } from './store/editor-state'
-import { ReparentTargetParent } from './store/reparent-target'
+import {
+  InsertionPath,
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+} from './store/insertion-path'
 
 describe('conditionals', () => {
   describe('inspector', () => {
@@ -674,7 +678,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
         targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
       })
 
@@ -708,7 +712,7 @@ describe('conditionals', () => {
 
       const got = await runPaste({
         startSnippet,
-        pasteInto: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+        pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['aaa', 'cond'])),
         targets: [
           EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -750,10 +754,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'true-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'true-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -787,10 +791,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'true-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'true-case',
+            ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
               EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
@@ -803,10 +807,10 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? (
-                    <>
+                    <React.Fragment>
                       <div data-uid='aab'>copy me</div>
                       <div data-uid='aac'>another div</div>
-                    </>
+                    </React.Fragment>
                   ) : null
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -831,10 +835,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'true-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'true-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -868,10 +872,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'false-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'false-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -905,10 +909,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'false-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'false-case',
+            ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
               EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
@@ -921,10 +925,10 @@ describe('conditionals', () => {
                 {
                   // @utopia/uid=cond
                   true ? null : (
-                    <>
+                    <React.Fragment>
                       <div data-uid='aab'>copy me</div>
                       <div data-uid='aac'>another div</div>
-                    </>
+                    </React.Fragment>
                   )
                 }
                 <div data-uid='bbb'>copy me</div>
@@ -949,10 +953,10 @@ describe('conditionals', () => {
 
           const got = await runPaste({
             startSnippet,
-            pasteInto: {
-              clause: 'false-case',
-              elementPath: EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
-            },
+            pasteInto: conditionalClauseInsertionPath(
+              EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
+              'false-case',
+            ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
 
@@ -981,7 +985,7 @@ async function runPaste({
   targets,
 }: {
   startSnippet: string
-  pasteInto: ReparentTargetParent<ElementPath>
+  pasteInto: InsertionPath
   targets: Array<ElementPath>
 }) {
   const renderResult = await renderTestEditorWithCode(

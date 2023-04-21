@@ -54,14 +54,14 @@ getGithubOAuth2 = do
   maybeClientId <- getGithubOAuthClientId
   maybeClientSecret <- getGithubOAuthClientSecret
   maybeRedirectURL <- getGithubOAuthRedirectURL
-  oauthCallback <- case maybeRedirectURL of
-    Just urlToParse -> either (\err -> fail $ show err) (pure . pure) $ parseURI strictURIParserOptions $ C.pack urlToParse
-    Nothing         -> pure Nothing
   pure $ do
-    oauthClientId <- fmap T.pack maybeClientId
-    let oauthClientSecret = fmap T.pack maybeClientSecret
-    let oauthOAuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
-    let oauthAccessTokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
+    oauth2RedirectUri <- case maybeRedirectURL of
+      Just urlToParse -> either (\err -> fail $ show err) pure $ parseURI strictURIParserOptions $ C.pack urlToParse
+      Nothing         -> Nothing
+    oauth2ClientId <- fmap T.pack maybeClientId
+    oauth2ClientSecret <- fmap T.pack maybeClientSecret
+    let oauth2AuthorizeEndpoint = [uri|https://github.com/login/oauth/authorize|]
+    let oauth2TokenEndpoint = [uri|https://github.com/login/oauth/access_token|]
     pure $ OAuth2{..}
 
 getGithubAuthResources :: IO (Maybe GithubAuthResources)
@@ -75,7 +75,7 @@ getAuthorizationURI GithubAuthResources{..} = authorizationUrl _githubAuth & (qu
 
 getAccessToken :: GithubAuthResources -> ExchangeToken -> IO (Either Text OAuth2Token)
 getAccessToken GithubAuthResources{..} exchangeToken = do
-  result <- fetchAccessToken _githubManager _githubAuth exchangeToken
+  result <- runExceptT $ fetchAccessToken _githubManager _githubAuth exchangeToken
   pure $ first show result
 
 oauth2TokenToGithubAuthenticationDetails :: OAuth2Token -> Text -> IO GithubAuthenticationDetails
@@ -90,5 +90,5 @@ oauth2TokenToGithubAuthenticationDetails oauth2Token userId = do
 
 accessTokenFromRefreshToken :: GithubAuthResources -> RefreshToken -> IO (Either Text OAuth2Token)
 accessTokenFromRefreshToken GithubAuthResources{..} refreshToken = do
-  result <- refreshAccessToken _githubManager _githubAuth refreshToken
+  result <- runExceptT $ refreshAccessToken _githubManager _githubAuth refreshToken
   pure $ first show result

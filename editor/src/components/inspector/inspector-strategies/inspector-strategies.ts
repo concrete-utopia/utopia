@@ -126,8 +126,8 @@ export const updateFlexDirectionStrategies = (
 export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
   {
     name: 'Add flex layout',
-    strategy: (metadata, elementPaths) => {
-      return convertLayoutToFlexCommands(metadata, elementPaths)
+    strategy: (metadata, elementPaths, allElementProps) => {
+      return convertLayoutToFlexCommands(metadata, elementPaths, allElementProps)
     },
   },
 ]
