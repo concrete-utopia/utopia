@@ -368,8 +368,14 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Fragment',
-        elementToInsert: jsxFragmentWithoutUID([], false),
-        importsToAdd: {},
+        elementToInsert: jsxFragmentWithoutUID([], true),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        },
       },
     ],
   },

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -57,6 +57,7 @@ executable utopia-web
       Paths_utopia_web
   hs-source-dirs:
       src
+      app
   default-extensions:
       Strict
       StrictData
@@ -66,11 +67,9 @@ executable utopia-web
       z
   build-depends:
       JuicyPixels
-    , aeson <2.1
+    , aeson ==2.0.3.0
     , aeson-pretty
-    , amazonka ==1.6.1
-    , amazonka-core ==1.6.1
-    , amazonka-s3 ==1.6.1
+    , aws
     , base >=4.7 && <5
     , base16-bytestring
     , base64
@@ -94,14 +93,14 @@ executable utopia-web
     , generic-lens
     , github
     , hashable
-    , hoauth2 ==1.16.0
+    , hoauth2
     , http-api-data
     , http-client
     , http-client-tls
     , http-media
     , http-types
     , lens
-    , lens-aeson <1.2
+    , lens-aeson ==1.1.3
     , lifted-async
     , lifted-base
     , magic
@@ -112,8 +111,7 @@ executable utopia-web
     , monad-logger
     , mtl
     , network-uri
-    , opaleye
-    , opaleye-trans
+    , opaleye ==0.9.6.1
     , path
     , path-pieces
     , pathwalk
@@ -121,17 +119,17 @@ executable utopia-web
     , postgresql-simple-migration
     , process
     , product-profunctors
-    , protolude ==0.3.0
+    , protolude
     , resource-pool
     , rio
-    , servant ==0.18.3
+    , servant
     , servant-blaze
-    , servant-client ==0.18.3
+    , servant-client
     , servant-conduit
     , servant-rawm-client
     , servant-rawm-server
-    , servant-server ==0.18.3
-    , servant-websockets ==2.0.0
+    , servant-server
+    , servant-websockets
     , serversession ==1.0.2
     , split
     , string-conversions
@@ -143,14 +141,16 @@ executable utopia-web
     , time-manager
     , transformers
     , unix
+    , unliftio
     , unordered-containers
     , uri-bytestring
+    , utf8-string
     , utopia-clientmodel
     , uuid
     , vector
     , wai
     , wai-app-static
-    , wai-extra ==3.1.6
+    , wai-extra
     , wai-websockets
     , warp
     , websockets
@@ -166,7 +166,6 @@ test-suite utopia-web-test
       Test.Utopia.Web.Executors.Test
       Test.Utopia.Web.Packager.NPM
       Test.Utopia.Web.Servant
-      Main
       Utopia.Web.Assets
       Utopia.Web.Auth
       Utopia.Web.Auth.Github
@@ -208,11 +207,9 @@ test-suite utopia-web-test
       z
   build-depends:
       JuicyPixels
-    , aeson <2.1
+    , aeson ==2.0.3.0
     , aeson-pretty
-    , amazonka ==1.6.1
-    , amazonka-core ==1.6.1
-    , amazonka-s3 ==1.6.1
+    , aws
     , base >=4.7 && <5
     , base16-bytestring
     , base64
@@ -237,7 +234,7 @@ test-suite utopia-web-test
     , github
     , hashable
     , hedgehog
-    , hoauth2 ==1.16.0
+    , hoauth2
     , hspec
     , http-api-data
     , http-client
@@ -245,7 +242,7 @@ test-suite utopia-web-test
     , http-media
     , http-types
     , lens
-    , lens-aeson <1.2
+    , lens-aeson ==1.1.3
     , lifted-async
     , lifted-base
     , magic
@@ -256,8 +253,7 @@ test-suite utopia-web-test
     , monad-logger
     , mtl
     , network-uri
-    , opaleye
-    , opaleye-trans
+    , opaleye ==0.9.6.1
     , path
     , path-pieces
     , pathwalk
@@ -266,19 +262,19 @@ test-suite utopia-web-test
     , postgresql-simple-migration
     , process
     , product-profunctors
-    , protolude ==0.3.0
+    , protolude
     , random
     , resource-pool
     , rio
-    , servant ==0.18.3
+    , servant
     , servant-blaze
-    , servant-client ==0.18.3
+    , servant-client
     , servant-client-core
     , servant-conduit
     , servant-rawm-client
     , servant-rawm-server
-    , servant-server ==0.18.3
-    , servant-websockets ==2.0.0
+    , servant-server
+    , servant-websockets
     , serversession ==1.0.2
     , split
     , string-conversions
@@ -294,14 +290,16 @@ test-suite utopia-web-test
     , time-manager
     , transformers
     , unix
+    , unliftio
     , unordered-containers
     , uri-bytestring
+    , utf8-string
     , utopia-clientmodel
     , uuid
     , vector
     , wai
     , wai-app-static
-    , wai-extra ==3.1.6
+    , wai-extra
     , wai-websockets
     , warp
     , websockets

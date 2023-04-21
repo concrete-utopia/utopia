@@ -1,0 +1,13 @@
+diff --git a/index.js b/index.js
+index de36248..9412080 100644
+--- a/index.js
++++ b/index.js
+@@ -553,6 +553,8 @@ var MochaReporter = function (baseReporterDecorator, formatError, config) {
+         self._browsers.push(browser);
+     };
+ 
++    self.onBrowserLog = function(browser, log, type) {}
++
+     self.onRunComplete = function (browsers, results) {
+         browsers.forEach(function (browser) {
+             self.totalTime += browser.lastResult.totalTime;

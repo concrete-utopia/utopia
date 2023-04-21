@@ -1,8 +1,8 @@
 import {
-  getElementPathFromReparentTargetParent,
-  ReparentTargetParent,
-  reparentTargetToString,
-} from '../../../components/editor/store/reparent-target'
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  insertionPathToString,
+} from '../../editor/store/insertion-path'
 import {
   EditorState,
   EditorStatePatch,
@@ -11,30 +11,36 @@ import {
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { JSXElementChild } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { IndexPosition } from '../../../utils/utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
-  parentPath: ReparentTargetParent<ElementPath>
+  parentPath: InsertionPath
   element: JSXElementChild
   indexPosition?: IndexPosition
+  importsToAdd?: Imports
 }
 
 export function addElement(
   whenToRun: WhenToRun,
-  parentPath: ReparentTargetParent<ElementPath>,
+  parentPath: InsertionPath,
   element: JSXElementChild,
-  indexPosition?: IndexPosition,
+  options: Partial<{
+    indexPosition: IndexPosition
+    importsToAdd: Imports
+  }> = {},
 ): AddElement {
   return {
     whenToRun: whenToRun,
     type: 'ADD_ELEMENT',
     parentPath: parentPath,
     element: element,
-    indexPosition: indexPosition,
+    indexPosition: options.indexPosition,
+    importsToAdd: options.importsToAdd,
   }
 }
 
@@ -44,7 +50,7 @@ export const runAddElement: CommandFunction<AddElement> = (
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
-    getElementPathFromReparentTargetParent(command.parentPath),
+    getElementPathFromInsertionPath(command.parentPath),
     editorState,
     (
       parentSuccess,
@@ -67,7 +73,15 @@ export const runAddElement: CommandFunction<AddElement> = (
       const editorStatePatchNewParentFile = getPatchForComponentChange(
         parentSuccess.topLevelElements,
         withElementInserted,
-        parentSuccess.imports,
+        mergeImports(
+          underlyingFilePathNewParent,
+          parentSuccess.imports,
+          mergeImports(
+            underlyingFilePathNewParent,
+            insertionResult.importsToAdd,
+            command.importsToAdd ?? {},
+          ),
+        ),
         underlyingFilePathNewParent,
       )
 
@@ -80,6 +94,6 @@ export const runAddElement: CommandFunction<AddElement> = (
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Add Element to ${reparentTargetToString(command.parentPath)}`,
+    commandDescription: `Add Element to ${insertionPathToString(command.parentPath)}`,
   }
 }

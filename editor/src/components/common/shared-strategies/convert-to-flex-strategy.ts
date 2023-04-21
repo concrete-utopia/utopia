@@ -1,20 +1,28 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
-import { foldEither } from '../../../core/shared/either'
+import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXElementLike } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  isJSXElementLike,
+} from '../../../core/shared/element-template'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { AllContentAffectingNonDomElementTypes } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import {
+  isElementNonDOMElement,
+  replaceNonDOMElementPathsWithTheirChildrenRecursive,
+} from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
+import { AllElementProps } from '../../editor/store/editor-state'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -29,6 +37,7 @@ type FlexAlignItems = 'center' | 'flex-end'
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   return elementPaths.flatMap((path) => {
     const parentInstance = MetadataUtils.findElementByElementPath(metadata, path)
@@ -36,10 +45,8 @@ export function convertLayoutToFlexCommands(
       return []
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path)
-
-    if (areAnyChildrenNonDomElement(metadata, childrenPaths)) {
-      // This is a known limitation and future TODO. we must early return now to avoid bizarro layouts
+    if (MetadataUtils.isConditionalFromMetadata(parentInstance)) {
+      // we do not support retargeting to children of conditionals, the behavior is under design / development
       return [
         showToastCommand(
           'Cannot be converted to Flex yet',
@@ -48,6 +55,12 @@ export function convertLayoutToFlexCommands(
         ),
       ]
     }
+
+    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) =>
+      isElementNonDOMElement(metadata, allElementProps, child)
+        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
+        : child,
+    )
 
     const parentFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
@@ -89,15 +102,32 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const allChildrenJSXElementLike = foldEither(
-      () => false,
-      (e) => isJSXElementLike(e) && e.children.every(isJSXElementLike),
-      parentInstance.element,
+    const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
+      metadata,
+      allElementProps,
+      path,
+      sortedChildrenPaths,
     )
 
-    const rearrangeCommands = allChildrenJSXElementLike
-      ? [rearrangeChildren('always', path, sortedChildrenPaths)]
-      : []
+    // FIXME: `childrenPaths` doesn't include text elements yet, and this causes `rearrangeChildren` throw an error
+    const containerHasNoTextChildren = getElementTextChildrenCount(parentInstance) === 0
+
+    const rearrangeCommands =
+      rearrangedChildrenPaths != null && containerHasNoTextChildren
+        ? [
+            rearrangeChildren(
+              'always',
+              path,
+              rearrangedChildrenPaths.map(EP.dynamicPathToStaticPath),
+            ),
+          ]
+        : [
+            showToastCommand(
+              "Couldn't preserve visual order of children (yet)",
+              'NOTICE',
+              'cannot-convert-children-to-flex',
+            ),
+          ]
 
     return [
       ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
@@ -114,16 +144,6 @@ export function convertLayoutToFlexCommands(
       ]),
       ...rearrangeCommands,
     ]
-  })
-}
-
-function areAnyChildrenNonDomElement(
-  metadata: ElementInstanceMetadataMap,
-  children: Array<ElementPath>,
-): boolean {
-  return children.some((childPath) => {
-    const contentAffectingType = getElementContentAffectingType(metadata, {}, childPath)
-    return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
   })
 }
 
@@ -337,4 +357,145 @@ function guessAlignItems(
 
   // fallback: null, which implicitly means a default of flex-start
   return null
+}
+
+interface NonDOMElementWithLeaves {
+  element: ElementPath // path to a non-DOM element
+  leaves: Set<string> // stringified element paths to the leaves in the tree of this element
+}
+
+interface TopLevelChildrenAndGroups {
+  topLevelChildren: Set<string> // children that are DOM elements and are immediate children of a the parent
+  nonDOMElementsWithLeaves: Array<NonDOMElementWithLeaves> // children that are non-DOM elements
+}
+
+function getTopLevelChildrenAndMeasurementBoundaries(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  parentPath: ElementPath,
+): TopLevelChildrenAndGroups {
+  let topLevelChildren: Array<string> = []
+  let maesurementBoundaries: Array<NonDOMElementWithLeaves> = []
+
+  const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+
+  for (const child of childrenPaths) {
+    if (isElementNonDOMElement(metadata, allElementProps, child)) {
+      maesurementBoundaries.push({
+        element: child,
+        leaves: new Set(
+          replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [
+            child,
+          ]).map(EP.toString),
+        ),
+      })
+    } else {
+      topLevelChildren.push(EP.toString(child))
+    }
+  }
+
+  return {
+    topLevelChildren: new Set(topLevelChildren),
+    nonDOMElementsWithLeaves: maesurementBoundaries,
+  }
+}
+
+/**
+ * Checks whether a prefix of `sortedChildren` is made up of the elements of `siblings`
+ * If the elements of `siblings` is a prefix of `sortedChildren`, the prefix is dropped and the rest of `sortedChildren` is returned
+ * Otherwise, null is returned, signaling failure
+ */
+function checkAllChildrenPartOfSingleGroup(
+  siblings: Set<string>,
+  sortedChildren: Array<ElementPath>,
+): Array<ElementPath> | null {
+  const workingSiblings = new Set([...siblings])
+  let workingChildren = sortedChildren
+
+  while (workingSiblings.size > 0) {
+    if (workingChildren.length === 0) {
+      // this is an invariant violation, since `siblings` should be a subset of `sortedChildren`
+      return null
+    }
+
+    const child = workingChildren[0]
+    const childPathString = EP.toString(child)
+
+    if (!workingSiblings.has(childPathString)) {
+      // this child was reordered here from another measurement unit, which we disallow for now
+      return null
+    }
+
+    workingSiblings.delete(childPathString)
+    workingChildren = workingChildren.slice(1)
+  }
+  return workingChildren
+}
+
+/**
+ * returns a list of element paths, so that non-dom element children are swapped out for their
+ */
+function rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  parentPath: ElementPath,
+  sortedChildren: Array<ElementPath>,
+): Array<ElementPath> | null {
+  const childrenAndGroups = getTopLevelChildrenAndMeasurementBoundaries(
+    metadata,
+    allElementProps,
+    parentPath,
+  )
+
+  let workingSortedChildren = sortedChildren
+  let finalReorderedPaths: Array<ElementPath> = []
+
+  while (workingSortedChildren.length > 0) {
+    const child = workingSortedChildren[0]
+    const childPathString = EP.toString(child)
+
+    if (childrenAndGroups.topLevelChildren.has(childPathString)) {
+      finalReorderedPaths.push(child)
+      workingSortedChildren = workingSortedChildren.slice(1)
+    } else {
+      const measurementBoundaryWithChild = childrenAndGroups.nonDOMElementsWithLeaves.find((g) =>
+        g.leaves.has(childPathString),
+      )
+
+      if (measurementBoundaryWithChild == null) {
+        return null
+      }
+
+      const restOfChildren = checkAllChildrenPartOfSingleGroup(
+        measurementBoundaryWithChild.leaves,
+        workingSortedChildren,
+      )
+
+      if (restOfChildren == null) {
+        return null
+      }
+
+      if (!EP.pathsEqual(finalReorderedPaths.at(-1) ?? null, child)) {
+        finalReorderedPaths.push(measurementBoundaryWithChild.element)
+      }
+
+      workingSortedChildren = restOfChildren
+    }
+  }
+
+  return finalReorderedPaths
+}
+
+function getElementTextChildrenCount(instance: ElementInstanceMetadata): number {
+  if (
+    isLeft(instance.element) ||
+    !(
+      instance.element.value.type === 'JSX_ELEMENT' ||
+      instance.element.value.type === 'JSX_FRAGMENT'
+    )
+  ) {
+    return 0
+  }
+
+  return instance.element.value.children.filter((e) => e.type === 'JSX_TEXT_BLOCK').length
 }

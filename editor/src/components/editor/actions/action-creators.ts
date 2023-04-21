@@ -149,7 +149,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -253,7 +253,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
 } from '../store/editor-state'
-import { ReparentTargetParent } from '../store/reparent-target'
+import { InsertionPath } from '../store/insertion-path'
 
 export function clearSelection(): EditorAction {
   return {
@@ -454,7 +454,7 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: ReparentTargetParent<ElementPath>,
+  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
@@ -689,7 +689,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: ReparentTargetParent<ElementPath> | null,
+  parentPath: InsertionPath | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {
@@ -751,12 +751,10 @@ export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
   //}
 }
 
-export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
+export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
-    // TODO make it only run when the target is a group
-    action: 'UNWRAP_GROUP_OR_VIEW',
+    action: 'UNWRAP_ELEMENT',
     target: target,
-    onlyForGroups: false,
   }
 }
 
