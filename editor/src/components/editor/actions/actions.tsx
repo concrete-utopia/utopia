@@ -521,6 +521,7 @@ import {
   unwrapConditionalClause,
   unwrapTextContainingConditional,
 } from './unwrap-conditionals-helpers'
+import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2378,7 +2379,7 @@ export const UPDATE_FNS = {
             const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
             let withTargetAdded: InsertChildAndDetails = insertChildAndDetails(utopiaJSXComponents)
 
-            function withInsertedElement() {
+            function withInsertedJSXElement() {
               return insertElementAtPath(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
@@ -2391,6 +2392,38 @@ export const UPDATE_FNS = {
                     index: index,
                   }),
                   indexInParent,
+                ),
+              )
+            }
+
+            function withElementInsertedIntoJSXConditional(
+              staticTarget: ConditionalClauseInsertionPath,
+              element: JSXElement | JSXFragment,
+            ) {
+              return insertChildAndDetails(
+                transformJSXComponentAtPath(
+                  utopiaJSXComponents,
+                  getElementPathFromInsertionPath(staticTarget),
+                  (oldRoot) => {
+                    if (isJSXConditionalExpression(oldRoot)) {
+                      const clauseOptic = getClauseOptic(staticTarget.clause)
+                      return modify(
+                        clauseOptic,
+                        (clauseElement) => {
+                          return {
+                            ...element,
+                            children: [...element.children, clauseElement],
+                          }
+                        },
+                        oldRoot,
+                      )
+                    } else {
+                      return {
+                        ...element,
+                        children: [...element.children, oldRoot],
+                      }
+                    }
+                  },
                 ),
               )
             }
@@ -2421,62 +2454,36 @@ export const UPDATE_FNS = {
                   return parseSuccess
                 }
 
-                switch (parentPath.type) {
+                switch (staticTarget.type) {
                   case 'CHILD_INSERTION':
-                    withTargetAdded = withInsertedElement()
+                    withTargetAdded = withInsertedJSXElement()
                     break
                   case 'CONDITIONAL_CLAUSE_INSERTION':
-                    withTargetAdded = withInsertedElement() // TODO, HAH THIS IS MISSING
+                    withTargetAdded = withElementInsertedIntoJSXConditional(
+                      staticTarget,
+                      elementToInsert,
+                    )
                     break
                   default:
-                    const _exhaustiveCheck: never = parentPath
+                    const _exhaustiveCheck: never = staticTarget
                     return parseSuccess
                 }
 
                 break
               }
               case 'JSX_ELEMENT': {
-                switch (parentPath.type) {
+                switch (staticTarget.type) {
                   case 'CHILD_INSERTION':
-                    withTargetAdded = withInsertedElement()
+                    withTargetAdded = withInsertedJSXElement()
                     break
                   case 'CONDITIONAL_CLAUSE_INSERTION':
-                    withTargetAdded = insertChildAndDetails(
-                      transformJSXComponentAtPath(
-                        utopiaJSXComponents,
-                        getElementPathFromInsertionPath(staticTarget),
-                        (oldRoot) => {
-                          if (
-                            isConditionalClauseInsertionPath(staticTarget) &&
-                            isJSXConditionalExpression(oldRoot)
-                          ) {
-                            const clauseOptic = getClauseOptic(staticTarget.clause)
-                            return modify(
-                              clauseOptic,
-                              (clauseElement) => {
-                                return jsxElement(
-                                  elementToInsert.name,
-                                  elementToInsert.uid,
-                                  elementToInsert.props,
-                                  [...elementToInsert.children, clauseElement],
-                                )
-                              },
-                              oldRoot,
-                            )
-                          } else {
-                            return jsxElement(
-                              elementToInsert.name,
-                              elementToInsert.uid,
-                              elementToInsert.props,
-                              [...elementToInsert.children, oldRoot],
-                            )
-                          }
-                        },
-                      ),
+                    withTargetAdded = withElementInsertedIntoJSXConditional(
+                      staticTarget,
+                      elementToInsert,
                     )
                     break
                   default:
-                    const _exhaustiveCheck: never = parentPath
+                    const _exhaustiveCheck: never = staticTarget
                     return parseSuccess
                 }
                 break
@@ -2484,7 +2491,7 @@ export const UPDATE_FNS = {
               case 'JSX_CONDITIONAL_EXPRESSION': {
                 switch (staticTarget.type) {
                   case 'CHILD_INSERTION':
-                    withTargetAdded = withInsertedElement()
+                    withTargetAdded = withInsertedJSXElement()
                     break
                   case 'CONDITIONAL_CLAUSE_INSERTION':
                     withTargetAdded = insertChildAndDetails(
