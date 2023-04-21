@@ -98,56 +98,36 @@ const scene = {
   },
 }
 
-const backgroundURLs = {
-  primary: 'url(/editor/fills/light-primaryblue-p3.png)',
-  blue: 'url(/editor/fills/light-primaryblue-p3.png)',
-  lightblue: 'url(/editor/fills/light-lightblue-p3.png)',
-  paleblue: 'url(/editor/fills/light-paleblue-p3.png)',
-  purple: 'url(/editor/fills/dark-purple-p3.png)',
-  green: 'url(/editor/fills/dark-green-p3.png)',
-  lightgreen: 'url(/editor/fills/light-neongreen-p3.png)',
-  citronyellow: 'url(/editor/fills/light-citronyellow-p3.png)',
-  red: 'url(/editor/fills/dark-red-p3.png)',
-  almostBlack: 'url(/editor/fills/dark-almostblack-p3.png)',
-  noise: 'url(/editor/fills/noise.gif)',
-}
-
 // see type AlertLevel in editor-state.ts
 
 const noticeStyles: { [styleName: string]: React.CSSProperties } = {
   success: {
-    backgroundColor: base.neongreen.cssValue,
-    backgroundImage: backgroundURLs.green,
+    backgroundColor: colorTheme.primary.value,
     color: 'white',
   },
   info: {
-    backgroundColor: '#f1f1f1',
-    color: colorTheme.darkPrimary.value,
+    backgroundColor: colorTheme.black.value,
+    color: colorTheme.white.value,
   },
   primary: {
-    backgroundColor: base.blue.cssValue,
-    backgroundImage: backgroundURLs.blue,
-    color: 'white',
+    backgroundColor: colorTheme.primary.value,
+    color: colorTheme.white.value,
   },
   notice: {
     backgroundColor: base.blue.cssValue,
-    backgroundImage: backgroundURLs.paleblue,
-    color: 'white',
+    color: colorTheme.white.value,
   },
   warning: {
     backgroundColor: base.red.cssValue,
-    backgroundImage: backgroundURLs.red,
-    color: 'white',
+    color: colorTheme.white.value,
   },
   error: {
     backgroundColor: base.almostBlack.cssValue,
-    backgroundImage: backgroundURLs.almostBlack,
-    color: 'white',
+    color: colorTheme.white.value,
   },
   disconnected: {
     backgroundColor: base.almostBlack.cssValue,
-    backgroundImage: backgroundURLs.noise,
-    color: 'white',
+    color: colorTheme.white.value,
   },
 }
 
@@ -158,7 +138,7 @@ const textNoticeStyles = {
   notice: { color: base.darkgray.cssValue },
   warning: { color: base.red.cssValue },
   error: { color: base.red.cssValue },
-  disconnected: { background: backgroundURLs.noise, color: 'white' },
+  disconnected: { background: base.black.value, color: 'white' },
 }
 
 const fontStyles = {
@@ -208,7 +188,6 @@ const stripedBackground = (
 
 export const UtopiaStyles = {
   backgrounds: {
-    ...backgroundURLs,
     checkerboardBackground,
     stripedBackground,
   },

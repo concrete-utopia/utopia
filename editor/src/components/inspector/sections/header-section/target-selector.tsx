@@ -342,7 +342,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
 
           fontWeight: isSelected ? 600 : 400,
           fontStyle: target.selectorLength > 0 ? undefined : 'italic',
-          backgroundImage: isSelected ? UtopiaStyles.backgrounds.blue : undefined,
+          backgroundImage: isSelected ? colorTheme.primary.value : undefined,
           color: isSelected
             ? colorTheme.white.value
             : target.selectorLength > 0
