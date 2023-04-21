@@ -2126,7 +2126,7 @@ export function regularNavigatorEntriesEqual(
 }
 export interface ConditionalClauseNavigatorEntry {
   type: 'CONDITIONAL_CLAUSE'
-  elementPath: StaticElementPath
+  elementPath: ElementPath
   clause: ConditionalCase
 }
 
@@ -2136,7 +2136,7 @@ export function conditionalClauseNavigatorEntry(
 ): ConditionalClauseNavigatorEntry {
   return {
     type: 'CONDITIONAL_CLAUSE',
-    elementPath: EP.dynamicPathToStaticPath(elementPath),
+    elementPath: elementPath,
     clause: clause,
   }
 }

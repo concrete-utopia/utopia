@@ -7,6 +7,7 @@ import {
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import {
   EditorState,
   EditorStatePatch,
@@ -68,7 +69,11 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
               insertionResult.components,
-              successTarget.imports,
+              mergeImports(
+                underlyingFilePathTarget,
+                successTarget.imports,
+                insertionResult.importsToAdd,
+              ),
               underlyingFilePathTarget,
             )
 
@@ -100,7 +105,11 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const editorStatePatchNewParentFile = getPatchForComponentChange(
               successNewParent.topLevelElements,
               insertionResult.components,
-              successNewParent.imports,
+              mergeImports(
+                underlyingFilePathNewParent,
+                successNewParent.imports,
+                insertionResult.importsToAdd,
+              ),
               underlyingFilePathNewParent,
             )
 

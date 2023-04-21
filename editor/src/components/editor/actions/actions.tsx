@@ -2303,7 +2303,7 @@ export const UPDATE_FNS = {
         const updatedImports = mergeImports(
           underlyingFilePath,
           success.imports,
-          action.importsToAdd,
+          mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
         )
         return {
           ...success,
@@ -2444,6 +2444,7 @@ export const UPDATE_FNS = {
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               let withTargetAdded: Array<UtopiaJSXComponent>
+              let importsAddedDuringInsert: Imports = {}
 
               const elementToInsertWithPositionAttribute = isParentFlex
                 ? setPositionAttribute(elementToInsert, 'relative')
@@ -2467,6 +2468,7 @@ export const UPDATE_FNS = {
                     indexInParent,
                   ),
                 )
+                importsAddedDuringInsert = insertResult.importsToAdd
                 withTargetAdded = insertResult.components
                 detailsOfUpdate = insertResult.insertionDetails
               } else {
@@ -2523,7 +2525,11 @@ export const UPDATE_FNS = {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+                  imports: mergeImports(
+                    targetSuccess.filePath,
+                    success.imports,
+                    mergeImports(targetSuccess.filePath, importsAddedDuringInsert, importsToAdd),
+                  ),
                 }
               }, parseSuccess)
             },
@@ -2784,7 +2790,15 @@ export const UPDATE_FNS = {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded.components,
-                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+                  imports: mergeImports(
+                    targetSuccess.filePath,
+                    success.imports,
+                    mergeImports(
+                      targetSuccess.filePath,
+                      withTargetAdded.importsToAdd,
+                      importsToAdd,
+                    ),
+                  ),
                 }
               }, parseSuccess)
             },
@@ -3241,18 +3255,26 @@ export const UPDATE_FNS = {
       // when targeting a conditional, wrap multiple elements into a fragment
       if (action.elements.length > 1 && isConditionalTarget()) {
         const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
-        const mergedImports = elements
+        const mergedImportsFromElements = elements
           .map((e) => e.importsToAdd)
           .reduce((merged, imports) => ({ ...merged, ...imports }), {})
+        const mergedImportsWithReactImport = {
+          ...mergedImportsFromElements,
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        }
         const fragment = jsxFragment(
           fragmentUID,
           elements.map((e) => e.element),
-          false,
+          true,
         )
         elements = [
           {
             element: fragment,
-            importsToAdd: mergedImports,
+            importsToAdd: mergedImportsWithReactImport,
             originalElementPath: EP.fromString(fragmentUID),
           },
         ]
@@ -5395,7 +5417,11 @@ export const UPDATE_FNS = {
           const updatedImports = mergeImports(
             underlyingFilePath,
             success.imports,
-            action.toInsert.importsToAdd,
+            mergeImports(
+              underlyingFilePath,
+              withInsertedElement.importsToAdd,
+              action.toInsert.importsToAdd,
+            ),
           )
           return {
             ...success,

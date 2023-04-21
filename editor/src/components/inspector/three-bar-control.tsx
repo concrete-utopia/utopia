@@ -250,6 +250,7 @@ export const ThreeBarControl = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const dispatch = useDispatch()
 
@@ -274,9 +275,10 @@ export const ThreeBarControl = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         setFlexAlignStrategies('flex-start'),
       ),
-    [dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   const setAlignItemsCenter = React.useCallback(
@@ -285,9 +287,10 @@ export const ThreeBarControl = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         setFlexAlignStrategies('center'),
       ),
-    [dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   const setAlignItemsEnd = React.useCallback(
@@ -296,9 +299,10 @@ export const ThreeBarControl = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         setFlexAlignStrategies('flex-end'),
       ),
-    [dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   const shouldShow = nFlexContainers > 0 && packedSpacedSetting === 'spaced'
