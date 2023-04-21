@@ -1340,6 +1340,82 @@ describe('group selection', () => {
         ),
       )
     })
+
+    it('if react is not imported, it is added to the imports after the fragment has been inserted', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import { Scene, Storyboard } from 'utopia-api'
+      import { App } from '/src/app.js'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -114,
+              top: 498,
+              width: 35,
+              height: 197,
+            }}
+            data-uid='aaa'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -31,
+              top: 568,
+              width: 97,
+              height: 247,
+            }}
+            data-uid='bbb'
+          />
+        </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/aaa`), EP.fromString(`sb/bbb`)])
+
+      await expectSingleUndoStep(editor, async () => pressKey('g', { modifiers: cmdModifier }))
+
+      // note the added `import * as React`
+      expect(getPrintedUiJsCode(editor.getEditorState()))
+        .toEqual(`import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import * as React from 'react'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: -114,
+          top: 498,
+          width: 35,
+          height: 197,
+        }}
+        data-uid='aaa'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: -31,
+          top: 568,
+          width: 97,
+          height: 247,
+        }}
+        data-uid='bbb'
+      />
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+    })
   })
 })
 
