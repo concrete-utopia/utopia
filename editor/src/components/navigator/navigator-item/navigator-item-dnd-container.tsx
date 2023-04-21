@@ -45,6 +45,7 @@ import {
   ElementInstanceMetadataMap,
   JSXConditionalExpression,
   isJSXArbitraryBlock,
+  isJSXElementLike,
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import {
@@ -52,6 +53,7 @@ import {
   findMaybeConditionalExpression,
   maybeBranchConditionalCase,
 } from '../../../core/model/conditionals'
+import { isRight } from '../../../core/shared/either'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
   `navigator-item-drop-before-${safeComponentId}`
@@ -634,7 +636,15 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       return 'none'
     } else if (parentConditional != null && equalEntries) {
       // it's a conditional branch item
-      return 'child'
+      const element = MetadataUtils.findElementByElementPath(
+        metadata,
+        props.navigatorEntry.elementPath,
+      )
+      // if element is null than this is an empty slot
+      if (element == null) {
+        return 'child'
+      }
+      return 'solid'
     } else if (dropTargetHintType === 'reparent') {
       return isOverBottomHint || isOverParentOutline ? 'solid' : 'none'
     } else if (
