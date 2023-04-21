@@ -32,13 +32,15 @@ import {
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-import { AllContentAffectingTypes } from './group-like-helpers'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
 import {
   getOpeningGroupLikeTag,
   getClosingGroupLikeTag,
   GroupLikeElementUid,
   InnerFragmentId,
 } from './group-like-helpers.test-utils'
+import { getDomRectCenter } from '../../../../core/shared/dom-utils'
+import { cartesianProduct } from '../../../../core/shared/array-utils'
 
 async function dragElement(
   canvasControlsLayer: HTMLElement,
@@ -828,6 +830,262 @@ describe('Absolute Move Strategy', () => {
         </div>
       `),
     )
+  })
+  AllContentAffectingTypes.forEach((type) => {
+    it(`element with ${type} parent snaps to sibling within the ${type} parent`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 100,
+          top: -7,
+          width: 459,
+          height: 217,
+        }}
+        data-uid='container'
+      >
+        ${getOpeningGroupLikeTag(type)}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 45,
+              top: 77,
+              width: 79,
+              height: 119,
+            }}
+            data-uid='982'
+            data-testid='sibling'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 157,
+              top: 136,
+              width: 36,
+              height: 44,
+            }}
+            data-uid='b44'
+            data-testid='drag-me'
+          />
+        ${getClosingGroupLikeTag(type)}
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 265,
+            top: 38,
+            width: 88,
+            height: 129,
+          }}
+          data-uid='e5a'
+        />
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      const siblingElement = editor.renderedDOM.getByTestId('sibling')
+      const siblingBounds = siblingElement.getBoundingClientRect()
+
+      const targetElement = editor.renderedDOM.getByTestId('drag-me')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/drag-me`,
+        ),
+      ])
+
+      const delta = siblingBounds.top - targetElementBounds.top
+
+      const dragDelta = windowPoint({ x: -1, y: delta })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, dragDelta, {
+        midDragCallback: async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+        },
+      })
+    })
+  })
+
+  AllContentAffectingTypes.forEach((type) => {
+    it(`element with ${type} parent snaps to elements outside the ${type} parent`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 100,
+        top: -7,
+        width: 459,
+        height: 217,
+      }}
+      data-uid='container'
+    >
+      ${getOpeningGroupLikeTag(type)}
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 45,
+            top: 77,
+            width: 79,
+            height: 119,
+          }}
+          data-uid='982'
+          data-testid='sibling'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 157,
+            top: 136,
+            width: 36,
+            height: 44,
+          }}
+          data-uid='b44'
+          data-testid='drag-me'
+        />
+      ${getClosingGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 265,
+          top: 38,
+          width: 88,
+          height: 129,
+        }}
+        data-uid='element-outside'
+        data-testid='element-outside'
+      />
+    </div>`),
+        'await-first-dom-report',
+      )
+
+      const outsideElement = editor.renderedDOM.getByTestId('element-outside')
+      const outsideElementBounds = outsideElement.getBoundingClientRect()
+
+      const targetElement = editor.renderedDOM.getByTestId('drag-me')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/drag-me`,
+        ),
+      ])
+
+      const delta = outsideElementBounds.top - targetElementBounds.top
+
+      const dragDelta = windowPoint({ x: -1, y: delta })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, dragDelta, {
+        midDragCallback: async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+        },
+      })
+    })
+  })
+
+  cartesianProduct(AllContentAffectingTypes, AllContentAffectingTypes).forEach(([outer, inner]) => {
+    it(`element in ${inner}, nested in ${outer} parents snaps to elements in ${outer}`, async () => {
+      const innerContentAffectingUid = 'inner-content-affecting-uid'
+      const innerFragmentUid = 'inner-content-affecting-fragment-uid'
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(` <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 176,
+          top: 191,
+          width: 462,
+          height: 242,
+        }}
+        data-uid='container'
+      >
+        ${getOpeningGroupLikeTag(outer)}
+          ${getOpeningGroupLikeTag(inner, {
+            outerUid: innerContentAffectingUid,
+            innerUid: innerFragmentUid,
+          })}
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 60,
+                top: 75,
+                width: 76,
+                height: 111,
+              }}
+              data-uid='df3'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 182,
+                top: 141,
+                width: 33,
+                height: 61,
+              }}
+              data-uid='839'
+              data-testid='drag-me'
+            />
+            ${getClosingGroupLikeTag(inner)}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 286,
+              top: 51,
+              width: 39,
+              height: 159,
+            }}
+            data-uid='86d'
+            data-testid='element-outside'
+          />
+        ${getClosingGroupLikeTag(outer)}
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      const outsideElement = editor.renderedDOM.getByTestId('element-outside')
+      const outsideElementBounds = outsideElement.getBoundingClientRect()
+
+      const targetElement = editor.renderedDOM.getByTestId('drag-me')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/${GroupLikeElementUid}/${InnerFragmentId}/${innerContentAffectingUid}/${innerFragmentUid}/drag-me`,
+        ),
+      ])
+
+      const delta = outsideElementBounds.top - targetElementBounds.top
+
+      const dragDelta = windowPoint({ x: -1, y: delta })
+
+      await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, dragDelta, {
+        midDragCallback: async () => {
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            1,
+          )
+        },
+      })
+    })
   })
 })
 
