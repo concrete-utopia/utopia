@@ -6,6 +6,7 @@ import React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
 import { Notice, NoticeLevel } from './notice'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { assertNever } from '../../core/shared/utils'
 
 interface NoticeProps extends Notice {
   style?: React.CSSProperties
@@ -15,28 +16,35 @@ interface NoticeProps extends Notice {
 export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
   let resultingStyle = UtopiaStyles.noticeStyles.info
 
-  if (level === 'WARNING') {
-    resultingStyle = UtopiaStyles.noticeStyles.warning
-  } else if (level === 'ERROR') {
-    resultingStyle = UtopiaStyles.noticeStyles.error
-  } else if (level === 'SUCCESS') {
-    resultingStyle = UtopiaStyles.noticeStyles.success
-  } else if (level === 'PRIMARY') {
-    resultingStyle = UtopiaStyles.noticeStyles.primary
+  switch (level) {
+    case 'WARNING':
+      return UtopiaStyles.noticeStyles.warning
+    case 'ERROR':
+      return UtopiaStyles.noticeStyles.error
+    case 'SUCCESS':
+      return UtopiaStyles.noticeStyles.success
+    case 'PRIMARY':
+      return UtopiaStyles.noticeStyles.primary
+    case 'INFO':
+      return UtopiaStyles.noticeStyles.info
+    case 'NOTICE':
+      return UtopiaStyles.noticeStyles.notice
+    default:
+      assertNever(level)
   }
-  return resultingStyle
 }
 
 export const getPrefixForLevel = (level: NoticeLevel): string => {
-  let resultingPrefix = ''
-  if (level === 'WARNING') {
-    resultingPrefix = '﹗'
-  } else if (level === 'ERROR') {
-    resultingPrefix = '⚠️'
-  } else if (level === 'SUCCESS') {
-    resultingPrefix = '✓'
+  switch (level) {
+    case 'WARNING':
+      return '﹗'
+    case 'ERROR':
+      return '⚠️'
+    case 'SUCCESS':
+      return '✓'
+    default:
+      return ''
   }
-  return resultingPrefix
 }
 
 const ToastTimeout = 5500
