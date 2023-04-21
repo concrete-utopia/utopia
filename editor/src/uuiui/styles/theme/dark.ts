@@ -129,7 +129,7 @@ export const dark: typeof light = {
   canvasControlsImmediateParentMarks: createUtopiColor('rgba(0,0,0,0.25)'),
   // TODO vv refactor - only used by self-layout-subsection indirection
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
-  // TODO vv refactor - only used by inline button
+  // TODO vv refactor - following four *only* used by inline button
   canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
   canvasControlsInlineToggleHoverText: createUtopiColor('rgba(26,135,255,1)'),
