@@ -173,19 +173,13 @@ export function getConditionalActiveCase(
   conditional: JSXConditionalExpression,
   spyMetadata: ElementInstanceMetadataMap,
 ): ConditionalCase | null {
-  function fromBoolean(v: boolean): ConditionalCase {
-    return v ? 'true-case' : 'false-case'
-  }
-
   const override = getConditionalFlag(conditional)
   if (override != null) {
-    return fromBoolean(override)
+    return override ? 'true-case' : 'false-case'
   }
-
   const spy = spyMetadata[EP.toString(path)] ?? true
   if (spy.conditionValue === 'not-a-conditional') {
     return null
   }
-
-  return fromBoolean(spy.conditionValue)
+  return spy.conditionValue ? 'true-case' : 'false-case'
 }
