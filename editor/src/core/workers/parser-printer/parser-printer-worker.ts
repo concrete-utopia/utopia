@@ -92,6 +92,7 @@ function getParseFileResult(
     content,
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
+    'trim-bounds',
   )
   return createParseFileResult(filename, parseResult, lastRevisedTime)
 }

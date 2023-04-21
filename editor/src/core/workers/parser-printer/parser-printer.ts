@@ -2104,6 +2104,7 @@ export function lintAndParse(
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
+  shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
@@ -2114,7 +2115,7 @@ export function lintAndParse(
       oldParseResultForUIDComparison,
       alreadyExistingUIDs_MUTABLE,
     )
-    if (isParseSuccess(result)) {
+    if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
       return trimHighlightBounds(result)
     } else {
       return result

@@ -112,6 +112,7 @@ async function renderTestProject() {
       exampleFiles[modifiedFilename],
       null,
       emptySet(),
+      'trim-bounds',
     ) as ParsedTextFile
     if (!isParseSuccess(parsedFile)) {
       throw new Error('The test file parse failed')

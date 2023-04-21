@@ -5049,6 +5049,7 @@ describe('lintAndParse', () => {
     })`,
       null,
       emptySet(),
+      'trim-bounds',
     )
     expect(clearParseResultPassTimes(result)).toMatchSnapshot()
   })
