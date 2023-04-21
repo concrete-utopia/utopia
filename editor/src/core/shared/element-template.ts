@@ -581,11 +581,13 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
         attribute.parameters.map(clearAttributeSourceMaps),
+        attribute.uid,
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return jsExpressionNestedObject(
@@ -606,6 +608,7 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     default:
       const _exhaustiveCheck: never = attribute

@@ -1129,19 +1129,16 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"971\\", {
-                  locale: locale,
-                  React: React,
-                  utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
-                  callerThis: this
+                return React.createElement(RenderPropsFunctionChild, null, function (size) {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
                 });
               }
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"219\\", {
-                  callerThis: this
-                });
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
               }
             }]);
             return Picker;
@@ -1201,19 +1198,16 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"d1b\\", {
-                  locale: locale,
-                  React: React,
-                  utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
-                  callerThis: this
+                return React.createElement(RenderPropsFunctionChild, null, function (size) {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
                 });
               }
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"064\\", {
-                  callerThis: this
-                });
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
               }
             }]);
             return Picker;

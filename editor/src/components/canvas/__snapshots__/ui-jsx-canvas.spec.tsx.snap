@@ -1667,9 +1667,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <input
-        data-uid=\\"1d5\\"
+        data-uid=\\"852\\"
         style=\\"top: 10px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:1d5\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:852\\"
       />
     </div>
   </div>
@@ -38195,7 +38195,12 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       \\"
       data-uid=\\"scene\\"
     >
-      <div data-uid=\\"4cf~~~1\\" data-path=\\"4cf~~~1\\">great</div>
+      <div
+        data-uid=\\"aaa-unparsed-no-template-path\\"
+        data-path=\\"utopia-storyboard-uid/scene/app-entity:BBB\\"
+      >
+        great
+      </div>
     </div>
   </div>
 </div>
@@ -43281,8 +43286,8 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <div
-        data-uid=\\"691\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:691\\"
+        data-uid=\\"9e6\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:9e6\\"
         class=\\"css-16au7uv\\"
       >
         Utopia

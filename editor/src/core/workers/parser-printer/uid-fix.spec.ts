@@ -30,9 +30,9 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
+        4e0
+      434
+        112
       storyboard
         scene
           component"
@@ -50,11 +50,11 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      f0f
-        95f
-      344
-        3da
+        4e0
+      e86
+        c60
+      434
+        112
       storyboard
         scene
           component"
@@ -77,10 +77,10 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
+        4e0
       a61
-        344
-        3da
+        434
+        112
       storyboard
         scene
           component"
@@ -97,9 +97,9 @@ describe('fixParseSuccessUIDs', () => {
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
+        4e0
+      434
+        112
       storyboard
         scene
           component"
@@ -115,10 +115,10 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        95f
-        3da
+        4e0
+      434
+        c60
+        112
       storyboard
         scene
           component"
@@ -134,11 +134,11 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
-        f22
-        931
+        4e0
+      434
+        112
+        dda
+        03b
       storyboard
         scene
           component"
@@ -155,12 +155,12 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        686
-        3da
-        f22
-        931
+        4e0
+      434
+        a6c
+        112
+        dda
+        03b
       storyboard
         scene
           component"
@@ -210,20 +210,20 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        95f
-        3da
+        4e0
+      434
+        c60
+        112
       storyboard
         scene
           component"
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
-        95f
+        4e0
+      434
+        112
+        c60
       storyboard
         scene
           component"
@@ -262,11 +262,11 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
+        4e0
+      434
         593
           c85
-            random-uuid
+            f9b
       storyboard
         scene
           component"
