@@ -494,12 +494,14 @@ const ToastRenderer = React.memo(() => {
       key={'toast-stack'}
       style={{
         position: 'fixed',
-        bottom: 40,
+        bottom: 8,
         justifyContent: 'center',
-        left: '30%',
-        overflow: 'scroll',
-        maxHeight: '50%',
+        right: 260,
         zIndex: 100,
+        // padding required to not cut off the boxShadow on each toast
+        paddingTop: 50,
+        paddingLeft: 50,
+        paddingRight: 50,
       }}
     >
       {toasts.map((toast, index) => (
