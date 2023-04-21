@@ -117,8 +117,9 @@ export function convertFragmentToGroup(
         jsxAttributesFromMap({ 'data-uid': jsExpressionValue(uid, emptyComments) }),
         children,
       ),
-      emptyImports(),
-      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      },
     ),
   ]
 }
@@ -191,8 +192,9 @@ export function convertFragmentToFrame(
         }),
         children,
       ),
-      emptyImports(),
-      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      },
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
   ]
@@ -212,13 +214,16 @@ export function convertGroupToFragment(
 
   return [
     deleteElement('always', elementPath),
-    addElement(
-      'always',
-      childInsertionPath(parentPath),
-      jsxFragment(uid, children, true),
-      emptyImports(),
-      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
-    ),
+    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
+      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      importsToAdd: {
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      },
+    }),
   ]
 }
 
@@ -340,13 +345,16 @@ export function convertFrameToFragmentCommands(
 
   return [
     deleteElement('always', elementPath),
-    addElement(
-      'always',
-      childInsertionPath(parentPath),
-      jsxFragment(uid, children, true),
-      emptyImports(),
-      absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
-    ),
+    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
+      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+      importsToAdd: {
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      },
+    }),
     ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }

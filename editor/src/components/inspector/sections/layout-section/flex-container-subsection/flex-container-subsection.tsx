@@ -47,6 +47,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      allElementProps: store.editor.allElementProps,
     }
   })
   const dispatch = useDispatch()
@@ -56,6 +57,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.allElementProps,
         updateFlexDirectionStrategies(newFlexDirection),
       )
     },

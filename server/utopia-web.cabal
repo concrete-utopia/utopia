@@ -67,7 +67,7 @@ executable utopia-web
       z
   build-depends:
       JuicyPixels
-    , aeson >=2.0
+    , aeson ==2.0.3.0
     , aeson-pretty
     , aws
     , base >=4.7 && <5
@@ -100,7 +100,7 @@ executable utopia-web
     , http-media
     , http-types
     , lens
-    , lens-aeson
+    , lens-aeson ==1.1.3
     , lifted-async
     , lifted-base
     , magic
@@ -207,7 +207,7 @@ test-suite utopia-web-test
       z
   build-depends:
       JuicyPixels
-    , aeson >=2.0
+    , aeson ==2.0.3.0
     , aeson-pretty
     , aws
     , base >=4.7 && <5
@@ -242,7 +242,7 @@ test-suite utopia-web-test
     , http-media
     , http-types
     , lens
-    , lens-aeson
+    , lens-aeson ==1.1.3
     , lifted-async
     , lifted-base
     , magic

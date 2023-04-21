@@ -4,9 +4,8 @@ import { canvasRectangle, CanvasRectangle } from '../../core/shared/math-utils'
 import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../utils/modifiers'
 import {
   expectNoAction,
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
   wait,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
@@ -82,7 +81,7 @@ describe('shortcuts', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/${TestIdOne}`)])
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
       await editor.getDispatchFollowUpActionsFinished()
@@ -106,7 +105,7 @@ describe('shortcuts', () => {
         EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
       ])
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
       await editor.getDispatchFollowUpActionsFinished()
@@ -126,7 +125,7 @@ describe('shortcuts', () => {
 
       await selectComponentsForTest(editor, [EP.fromString('sb/span')])
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
       await editor.getDispatchFollowUpActionsFinished()
@@ -136,7 +135,7 @@ describe('shortcuts', () => {
       expect(div.style.width).toEqual('182px')
       expect(div.style.height).toEqual('130px')
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
       await editor.getDispatchFollowUpActionsFinished()
@@ -169,7 +168,7 @@ describe('shortcuts', () => {
 
       await selectComponentsForTest(editor, [EP.fromString('sb/group')])
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
 
@@ -220,7 +219,7 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [EP.fromString('sb/group')])
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
 
@@ -292,7 +291,7 @@ export var storyboard = (
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:wrapper/container`),
       ])
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await pressKey('x')
       })
 
@@ -319,7 +318,7 @@ export var storyboard = (
         )
         await selectComponentsForTest(editor, [EP.fromString('sb/outermost-group')])
 
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await pressKey('x')
         })
 
@@ -375,7 +374,7 @@ export var storyboard = (
           EP.fromString('sb/outermost-group/middle-group/group'),
         ])
 
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await pressKey('x')
         })
 
@@ -470,7 +469,7 @@ export var storyboard = (
           EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:wrapper/container`),
         ])
 
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await pressKey('x')
         })
 
@@ -767,7 +766,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       await pressKey('b', { modifiers: cmdModifier })
     })
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -798,7 +797,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       await pressKey('b', { modifiers: cmdModifier })
     })
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -827,7 +826,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       await pressKey('i', { modifiers: cmdModifier })
     })
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -858,7 +857,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       await pressKey('i', { modifiers: cmdModifier })
     })
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -889,7 +888,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       await pressKey('u', { modifiers: cmdModifier })
     })
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -920,7 +919,7 @@ describe('global shortcuts to set properties', () => {
     const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
     await renderResult.dispatch(selectComponents([target], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       await pressKey('u', { modifiers: cmdModifier })
     })
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -1306,7 +1305,7 @@ describe('group selection', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/bbb`),
       ])
 
-      await expectSingleUndoStep(renderResult, async () =>
+      await expectSingleUndo2Saves(renderResult, async () =>
         pressKey('g', { modifiers: cmdModifier }),
       )
 
@@ -1341,12 +1340,88 @@ describe('group selection', () => {
         ),
       )
     })
+
+    it('if react is not imported, it is added to the imports after the fragment has been inserted', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import { Scene, Storyboard } from 'utopia-api'
+      import { App } from '/src/app.js'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -114,
+              top: 498,
+              width: 35,
+              height: 197,
+            }}
+            data-uid='aaa'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -31,
+              top: 568,
+              width: 97,
+              height: 247,
+            }}
+            data-uid='bbb'
+          />
+        </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/aaa`), EP.fromString(`sb/bbb`)])
+
+      await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
+
+      // note the added `import * as React`
+      expect(getPrintedUiJsCode(editor.getEditorState()))
+        .toEqual(`import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import * as React from 'react'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: -114,
+          top: 498,
+          width: 35,
+          height: 197,
+        }}
+        data-uid='aaa'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: -31,
+          top: 568,
+          width: 97,
+          height: 247,
+        }}
+        data-uid='bbb'
+      />
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+    })
   })
 })
 
 async function doGroup(editor: EditorRenderResult) {
   await selectComponentsForTest(editor, [EP.fromString(`sb/e5b/6de`), EP.fromString(`sb/e5b/8f4`)])
-  await expectSingleUndoStep(editor, async () => pressKey('g', { modifiers: cmdModifier }))
+  await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
 }
 
 function expectBoundsToEqual(editor: EditorRenderResult, testId: string, bounds: CanvasRectangle) {
