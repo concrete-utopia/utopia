@@ -167,3 +167,19 @@ export function maybeBranchConditionalCase(
     return null
   }
 }
+
+export function getConditionalActiveCase(
+  path: ElementPath,
+  conditional: JSXConditionalExpression,
+  spyMetadata: ElementInstanceMetadataMap,
+): ConditionalCase | null {
+  const override = getConditionalFlag(conditional)
+  if (override != null) {
+    return override ? 'true-case' : 'false-case'
+  }
+  const spy = spyMetadata[EP.toString(path)] ?? true
+  if (spy.conditionValue === 'not-a-conditional') {
+    return null
+  }
+  return spy.conditionValue ? 'true-case' : 'false-case'
+}
