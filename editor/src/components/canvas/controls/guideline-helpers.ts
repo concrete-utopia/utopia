@@ -21,22 +21,42 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
 import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { AllElementProps } from '../../editor/store/editor-state'
-import { treatElementAsContentAffecting } from '../canvas-strategies/strategies/group-like-helpers'
+import {
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  treatElementAsContentAffecting,
+} from '../canvas-strategies/strategies/group-like-helpers'
+import { fastForEach } from '../../../core/shared/utils'
 
 export const SnappingThreshold = 5
+
+function getSnapTargetsForElementPath(
+  componentMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Array<ElementPath> {
+  const parent = getFirstNonContentAffectingParent(componentMetadata, allElementProps, elementPath)
+
+  const siblings = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    componentMetadata,
+    allElementProps,
+    MetadataUtils.getChildrenPathsUnordered(componentMetadata, parent),
+  ).filter((path) => !EP.isDescendantOfOrEqualTo(path, elementPath))
+
+  return [parent, ...siblings]
+}
 
 export function collectParentAndSiblingGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   targets: Array<ElementPath>,
 ): Array<GuidelineWithRelevantPoints> {
-  const allPaths = MetadataUtils.getAllPaths(componentMetadata)
   const result: Array<GuidelineWithRelevantPoints> = []
   Utils.fastForEach(targets, (target) => {
     const pinnedAndNotAbsolutePositioned = MetadataUtils.isPinnedAndNotAbsolutePositioned(
       componentMetadata,
       target,
     )
+
     const isElementGrouplike = treatElementAsContentAffecting(
       componentMetadata,
       allElementProps,
@@ -44,24 +64,32 @@ export function collectParentAndSiblingGuidelines(
     )
 
     if (isElementGrouplike || !pinnedAndNotAbsolutePositioned) {
-      const parent = EP.parentPath(target)
-      Utils.fastForEach(allPaths, (maybeTarget) => {
-        // for now we only snap to parents and sibligns and not us or our descendants
-        const isSibling = EP.isSiblingOf(maybeTarget, target)
-        const isParent = EP.pathsEqual(parent, maybeTarget)
-        const notSelectedOrDescendantOfSelected = targets.every(
-          (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
-        )
-        if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
-          const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
-          if (frame != null && isFiniteRectangle(frame)) {
-            result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
-          }
+      const snapTargets = getSnapTargetsForElementPath(
+        componentMetadata,
+        allElementProps,
+        target,
+      ).filter((snapTarget) => targets.every((t) => !EP.pathsEqual(snapTarget, t)))
+      fastForEach(snapTargets, (snapTarget) => {
+        const frame = MetadataUtils.getFrameInCanvasCoords(snapTarget, componentMetadata)
+        if (frame != null && isFiniteRectangle(frame)) {
+          result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
         }
       })
     }
   })
   return result
+}
+
+function getFirstNonContentAffectingParent(
+  componentMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): ElementPath {
+  const parentPath = EP.parentPath(elementPath)
+  if (!treatElementAsContentAffecting(componentMetadata, allElementProps, parentPath)) {
+    return parentPath
+  }
+  return getFirstNonContentAffectingParent(componentMetadata, allElementProps, parentPath)
 }
 
 export function collectSelfAndChildrenGuidelines(
