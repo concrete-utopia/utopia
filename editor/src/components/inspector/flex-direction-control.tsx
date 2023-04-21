@@ -11,6 +11,7 @@ import {
 import { EdgePieces } from '../canvas/padding-utils'
 import { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { FlexDirection } from './common/css-utils'
 import { CanvasControlWithProps } from './common/inspector-atoms'
@@ -48,6 +49,7 @@ export const FlexDirectionToggle = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const nFlexContainers = useEditorState(
     Substores.metadata,
@@ -63,9 +65,10 @@ export const FlexDirectionToggle = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         e.button === 0 ? 'column' : null,
       ),
-    [dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   const handleRowClick = React.useCallback(
@@ -74,9 +77,10 @@ export const FlexDirectionToggle = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         e.button === 0 ? 'row' : null,
       ),
-    [dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
@@ -154,11 +158,12 @@ function maybeSetFlexDirection(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
+  allElementProps: AllElementProps,
   desiredFlexDirection: FlexDirection | null,
 ) {
   const strategies =
     desiredFlexDirection == null
       ? removeFlexDirectionStrategies()
       : updateFlexDirectionStrategies(desiredFlexDirection)
-  executeFirstApplicableStrategy(dispatch, metadata, selectedViews, strategies)
+  executeFirstApplicableStrategy(dispatch, metadata, selectedViews, allElementProps, strategies)
 }

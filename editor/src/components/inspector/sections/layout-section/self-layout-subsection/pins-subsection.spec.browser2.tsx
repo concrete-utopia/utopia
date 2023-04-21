@@ -1,5 +1,5 @@
 import * as EP from '../../../../../core/shared/element-path'
-import { expectSingleUndoStep } from '../../../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves } from '../../../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../../../canvas/event-helpers.test-utils'
 import {
   getPrintedUiJsCode,
@@ -27,7 +27,7 @@ describe('Pins Section', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await renderResult.dispatch(selectComponents([targetPath], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       const pinControlRight = renderResult.renderedDOM.getByTestId(
         'positioncontrols-catcher-pin-right',
       )
@@ -67,7 +67,7 @@ describe('Pins Section', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await renderResult.dispatch(selectComponents([targetPath], false), true)
 
-    await expectSingleUndoStep(renderResult, async () => {
+    await expectSingleUndo2Saves(renderResult, async () => {
       const pinControlBottom = renderResult.renderedDOM.getByTestId(
         'positioncontrols-catcher-pin-bottom',
       )

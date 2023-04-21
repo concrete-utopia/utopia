@@ -184,6 +184,7 @@ import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
+import { mergeImports } from '../../core/workers/common/project-file-utils'
 import { childInsertionPath } from '../editor/store/insertion-path'
 
 export function getOriginalFrames(
@@ -2170,6 +2171,11 @@ function editorReparentNoStyleChange(
 
               return {
                 ...workingSuccess,
+                imports: mergeImports(
+                  underlyingNewParentFilePath,
+                  newParentSuccess.imports,
+                  withInserted.importsToAdd,
+                ),
                 topLevelElements: applyUtopiaJSXComponentsChanges(
                   workingSuccess.topLevelElements,
                   withInserted.components,
@@ -2298,6 +2304,11 @@ export function moveTemplate(
 
                   return {
                     ...workingSuccess,
+                    imports: mergeImports(
+                      underlyingFilePath,
+                      underlyingElementSuccess.imports,
+                      insertResult.importsToAdd,
+                    ),
                     topLevelElements: applyUtopiaJSXComponentsChanges(
                       workingSuccess.topLevelElements,
                       updatedUtopiaComponents,
@@ -2829,6 +2840,7 @@ export function duplicate(
 
             return {
               ...success,
+              imports: mergeImports(underlyingFilePath, success.imports, insertResult.importsToAdd),
               topLevelElements: applyUtopiaJSXComponentsChanges(
                 success.topLevelElements,
                 utopiaComponents,

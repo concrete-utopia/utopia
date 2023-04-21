@@ -101,33 +101,33 @@ const scene = {
 // see type AlertLevel in editor-state.ts
 
 const noticeStyles: { [styleName: string]: React.CSSProperties } = {
-  success: {
-    backgroundColor: colorTheme.primary.value,
-    color: 'white',
-  },
   info: {
-    backgroundColor: colorTheme.black.value,
-    color: colorTheme.white.value,
+    backgroundColor: base.almostBlack.cssValue,
+    color: base.offWhite.cssValue,
   },
-  primary: {
-    backgroundColor: colorTheme.primary.value,
-    color: colorTheme.white.value,
+  warning: {
+    backgroundColor: base.almostBlack.cssValue,
+    color: base.offWhite.cssValue,
   },
   notice: {
     backgroundColor: base.blue.cssValue,
-    color: colorTheme.white.value,
+    color: 'white',
   },
-  warning: {
-    backgroundColor: base.red.cssValue,
-    color: colorTheme.white.value,
+  success: {
+    backgroundColor: base.blue.cssValue,
+    color: base.offWhite.cssValue,
+  },
+  primary: {
+    backgroundColor: base.blue.cssValue,
+    color: base.offWhite.cssValue,
   },
   error: {
-    backgroundColor: base.almostBlack.cssValue,
-    color: colorTheme.white.value,
+    backgroundColor: base.red.cssValue,
+    color: base.offWhite.cssValue,
   },
   disconnected: {
     backgroundColor: base.almostBlack.cssValue,
-    color: colorTheme.white.value,
+    color: base.offWhite.cssValue,
   },
 }
 

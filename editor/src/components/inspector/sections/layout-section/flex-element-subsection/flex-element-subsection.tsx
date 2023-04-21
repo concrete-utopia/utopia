@@ -34,6 +34,7 @@ import { useDispatch } from '../../../../../components/editor/store/dispatch-con
 import { executeFirstApplicableStrategy } from '../../../../../components/inspector/inspector-strategies/inspector-strategy'
 import { CSSNumber } from '../../../../../components/inspector/common/css-utils'
 import { setPropFixedStrategies } from '../../../../../components/inspector/inspector-strategies/inspector-strategies'
+import { allElemsEqual } from '../../../../../core/shared/array-utils'
 
 function buildMarginProps(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
   return [
@@ -311,6 +312,7 @@ const FlexWidthControls = React.memo(() => {
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      allElementProps: store.editor.allElementProps,
     }
   })
   const dispatch = useDispatch()
@@ -320,6 +322,7 @@ const FlexWidthControls = React.memo(() => {
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.allElementProps,
         setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'horizontal', value),
       )
     },
@@ -342,6 +345,7 @@ const FlexHeightControls = React.memo(() => {
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      allElementProps: store.editor.allElementProps,
     }
   })
   const dispatch = useDispatch()
@@ -351,6 +355,7 @@ const FlexHeightControls = React.memo(() => {
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.allElementProps,
         setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'vertical', value),
       )
     },

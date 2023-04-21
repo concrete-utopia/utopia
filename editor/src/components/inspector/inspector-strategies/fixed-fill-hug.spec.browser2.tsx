@@ -5,7 +5,7 @@ import { isInfinityRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
@@ -48,7 +48,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -100,7 +100,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -122,7 +122,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -144,7 +144,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -165,7 +165,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(child.style.flexGrow).toEqual('1')
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '3' } })
           fireEvent.blur(control)
@@ -186,7 +186,7 @@ describe('Fixed / Fill / Hug control', () => {
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '50%' } })
           fireEvent.blur(control)
@@ -214,7 +214,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -245,7 +245,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -276,7 +276,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -307,7 +307,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -336,7 +336,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -360,7 +360,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -381,7 +381,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -408,7 +408,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -434,7 +434,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -460,7 +460,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -486,7 +486,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -512,7 +512,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -538,7 +538,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -570,7 +570,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
 
       const horizontalLabel = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(horizontalLabel, { x: 5, y: 5 })
       })
 
@@ -579,7 +579,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const verticalLabel = (await editor.renderedDOM.findAllByText(HugContentsLabel))[1]
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(verticalLabel, { x: 5, y: 5 })
       })
 
@@ -777,7 +777,7 @@ describe('Fixed/hug on text elements', () => {
     await editor.dispatch(selectComponents([targetPath], false), true)
 
     const textAutoSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-0`)
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await mouseClickAtPoint(textAutoSizeIcon, { x: 2, y: 2 })
     })
 
@@ -811,7 +811,7 @@ describe('Fixed/hug on text elements', () => {
     await editor.dispatch(selectComponents([targetPath], false), true)
 
     const textFixedSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-1`)
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await mouseClickAtPoint(textFixedSizeIcon, { x: 2, y: 2 })
     })
 
@@ -873,7 +873,7 @@ async function setSelectedElementsToFill(editor: EditorRenderResult, axis: Axis)
   await mouseClickAtPoint(control, { x: 5, y: 5 })
 
   const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-  await expectSingleUndoStep(editor, async () => {
+  await expectSingleUndo2Saves(editor, async () => {
     await mouseClickAtPoint(button, { x: 5, y: 5 })
   })
 }
