@@ -26,6 +26,7 @@ import {
 } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
+import { expectNoAction, expectSingleUndoStep } from '../../../utils/utils.test-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -294,6 +295,7 @@ describe('actions', () => {
       elements: (renderResult: EditorRenderResult) => Array<ElementPaste>
       pasteInto: InsertionPath
       want: string
+      generatesUndoStep?: boolean
     }
     const tests: Array<PasteTest> = [
       {
@@ -629,6 +631,7 @@ describe('actions', () => {
       },
       {
         name: 'an element inside a non-empty conditional branch (does nothing)',
+        generatesUndoStep: false,
         startingCode: `
         <div data-uid='root'>
             {
@@ -944,17 +947,22 @@ describe('actions', () => {
           'await-first-dom-report',
         )
 
-        await act(async () => {
-          await renderResult.dispatch(
-            [
-              pasteJSXElements(
-                test.pasteInto,
-                test.elements(renderResult),
-                renderResult.getEditorState().editor.jsxMetadata,
-              ),
-            ],
-            true,
-          )
+        const undoCheckerFn =
+          test.generatesUndoStep === false ? expectNoAction : expectSingleUndoStep
+
+        await undoCheckerFn(renderResult, async () => {
+          await act(async () => {
+            await renderResult.dispatch(
+              [
+                pasteJSXElements(
+                  test.pasteInto,
+                  test.elements(renderResult),
+                  renderResult.getEditorState().editor.jsxMetadata,
+                ),
+              ],
+              true,
+            )
+          })
         })
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(test.want),
