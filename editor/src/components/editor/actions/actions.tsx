@@ -2346,7 +2346,8 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        const { updatedEditor, newPath, detailsOfUpdate } = wrapElementInsertions(
+        const detailsOfUpdate = null
+        const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
           action.targets,
           parentPath,

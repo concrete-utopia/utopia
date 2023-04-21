@@ -294,7 +294,7 @@ function findIndexPositionInParent(
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
   metadata: ElementInstanceMetadataMap,
-) {
+): IndexPosition | undefined {
   let indexInParent: number | null = null
   if (parentPath != null && isChildInsertionPath(parentPath)) {
     indexInParent = optionalMap(
@@ -319,7 +319,7 @@ function insertElementIntoJSXConditional(
   editor: EditorState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXElement | JSXFragment,
-) {
+): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
@@ -368,7 +368,7 @@ function insertConditionalIntoConditionalClause(
   editor: EditorState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXConditionalExpression,
-) {
+): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
