@@ -1,13 +1,15 @@
 import { createUtopiColor } from '../utopi-color-helpers'
 
 export const base = {
-  blue: createUtopiColor('#007AFF'),
-  purple: createUtopiColor('#574BE2'),
-  red: createUtopiColor('#FD003B'),
-  orange: createUtopiColor('#FA5E00'),
-  neonpink: createUtopiColor('#FF00FF'),
-  neongreen: createUtopiColor('hsl(120, 100%, 37%)'),
-  neonyellow: createUtopiColor('#FCFF42'),
+  blue: createUtopiColor('color(display-p3 0 0.59 1)'),
+  blue30: createUtopiColor('color(display-p3 0 0.59 1 30%)'),
+  purple: createUtopiColor('color(display-p3 0.38 0 1)'),
+  purple70: createUtopiColor('color(display-p3 0.38 0 1 70%)'),
+  red: createUtopiColor('color(display-p3 1 0 0.38)'),
+  orange: createUtopiColor('color(display-p3 0.92 0.64 0)'),
+  neonpink: createUtopiColor('color(display-p3 1 0 1)'),
+  neonpink30: createUtopiColor('color(display-p3 1 0 1 30%)'),
+  neongreen: createUtopiColor('color(display-p3 0 0.93 0.7)'),
   jsYellow: createUtopiColor('#b7b73b'),
   almostBlack: createUtopiColor('hsl(0,0%,10%)'),
   white: createUtopiColor('white'),

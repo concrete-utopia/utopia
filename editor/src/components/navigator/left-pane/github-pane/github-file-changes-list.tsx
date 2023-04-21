@@ -241,7 +241,7 @@ export const GithubFileChangesList: React.FC<{
               title={conflicting ? 'Potential conflicts' : i.filename}
               css={{
                 paddingRight: 6,
-                color: conflicting ? colorTheme.errorForegroundSubdued.value : 'inherit',
+                color: conflicting ? colorTheme.errorForeground.value : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
                 '&:hover': {
                   cursor: !conflicting && clickable ? 'pointer' : undefined,

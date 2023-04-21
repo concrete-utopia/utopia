@@ -266,7 +266,7 @@ const ResizePoint = React.memo(
             borderStyle: 'none',
             borderColor: 'transparent',
             boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
               1 / scale
             }px ${2 / scale}px ${1 / scale}px`,
           }}
@@ -458,7 +458,7 @@ const SizeLabel = React.memo(
               padding: `${PaddingV}px ${PaddingH / scale}px`,
               borderRadius: BorderRadius / scale,
               color: colorTheme.white.value,
-              backgroundColor: colorTheme.secondaryBlue.value,
+              backgroundColor: colorTheme.primary.value,
               fontSize: FontSize / scale,
               height: ExplicitHeightHacked / scale,
             }}

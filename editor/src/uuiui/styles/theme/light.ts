@@ -3,7 +3,6 @@ import { createUtopiColor } from '../utopi-color-helpers'
 import { base } from './base'
 
 const lightBase = {
-  darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
   primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
   primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
@@ -13,12 +12,12 @@ const lightBase = {
   white: base.white,
   black: base.black,
   brandPurple: base.purple,
-  brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#49B6FF'),
   secondaryOrange: createUtopiColor('#EEA544'),
   transparent: base.transparent,
+  error: base.red,
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('#FDFDFD'),
@@ -68,10 +67,10 @@ const lightPrimitives = {
 
 const lightErrorStates = {
   errorForeground: base.red,
-  errorForegroundSubdued: createUtopiColor('rgba(253,26,79,1)'),
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
-  errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
+  // TODO vv only used by button, refactor button and remove
   warningForeground: base.orange,
+  // TODO vv only used by image-thumbnail-control, consider removing
   warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
@@ -83,18 +82,17 @@ const colorsWithOpacity = {
   fg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
-  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(0,0,0,0.21)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
-  canvasLayoutStroke20: createUtopiColor('rgba(255, 0, 255, 0.2)'),
-  brandNeonPink30: createUtopiColor('rgba(255, 0, 255, 0.3)'),
+  brandNeonPink30: base.neonpink30,
   neutralForeground40: createUtopiColor('hsla(0,0%,0%,0.4)'),
   neutralInvertedBackground10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   neutralInvertedBackground20: createUtopiColor('hsla(0,0%,0%,0.2)'),
   neutralInvertedBackground30: createUtopiColor('hsla(0,0%,0%,0.3)'),
   listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
-  brandPurple70: createUtopiColor('rgba(87, 75, 226,0.7)'),
+  brandPurple70: base.purple70,
+  // TODO vv only used by button, refactor & remove
   errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
-  primary30: createUtopiColor('rgba(0, 122, 255, 0.3)'),
+  primary30: base.blue30,
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
 }
 
