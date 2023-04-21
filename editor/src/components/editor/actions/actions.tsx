@@ -4255,6 +4255,7 @@ export const UPDATE_FNS = {
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
+        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
         switch (fileUpdate.type) {
           case 'WORKER_PARSED_UPDATE': {
             code = existing.fileContents.code
@@ -4268,17 +4269,18 @@ export const UPDATE_FNS = {
           case 'WORKER_CODE_AND_PARSED_UPDATE':
             code = fileUpdate.code
             const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-            updatedContents = updateParsedTextFileHighlightBounds(
-              fileUpdate.parsed,
-              highlightBounds,
-            )
+            // Because this will print and reparse, we need to be careful of changes to the parsed
+            // model that have happened since we requested this update
+            updatedContents = updateIsStale
+              ? existing.fileContents.parsed
+              : updateParsedTextFileHighlightBounds(fileUpdate.parsed, highlightBounds)
             break
           default:
             const _exhaustiveCheck: never = fileUpdate
             throw new Error(`Invalid file update: ${fileUpdate}`)
         }
 
-        if (fileUpdate.lastRevisedTime < existing.lastRevisedTime) {
+        if (updateIsStale) {
           // if the received file is older than the existing, we still allow it to update the other side,
           // but we don't bump the revision state or the lastRevisedTime.
           updatedFile = textFile(
