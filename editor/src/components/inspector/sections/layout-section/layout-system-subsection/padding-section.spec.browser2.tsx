@@ -1,6 +1,6 @@
 import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
 import * as EP from '../../../../../core/shared/element-path'
-import { expectSingleUndoStep } from '../../../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves } from '../../../../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import {
   EditorRenderResult,
@@ -59,7 +59,7 @@ describe('padding controls shorthand', () => {
       name: 'without props',
       startSnippet: makeCodeSnippetWithKeyValue({ width: 100, height: 100 }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-V', '20', renderResult.renderedDOM)
         })
       },
@@ -69,7 +69,7 @@ describe('padding controls shorthand', () => {
       name: 'with shorthand',
       startSnippet: makeCodeSnippetWithKeyValue({ width: 120, height: 120, padding: 10 }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-one', '20', renderResult.renderedDOM)
         })
       },
@@ -101,7 +101,7 @@ describe('padding controls shorthand', () => {
         })
       },
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-one', '20', renderResult.renderedDOM)
         })
       },
@@ -131,7 +131,7 @@ describe('padding controls shorthand', () => {
         })
       },
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-one', '20', renderResult.renderedDOM)
         })
       },
@@ -154,7 +154,7 @@ describe('padding controls shorthand', () => {
         })
       },
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-H', '20', renderResult.renderedDOM)
         })
       },
@@ -170,7 +170,7 @@ describe('padding controls shorthand', () => {
         })
       },
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-R', '20', renderResult.renderedDOM)
         })
       },
@@ -188,7 +188,7 @@ describe('padding controls shorthand', () => {
         })
       },
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-R', '20', renderResult.renderedDOM)
         })
       },
@@ -202,7 +202,7 @@ describe('padding controls shorthand', () => {
       name: 'delete value (shorthand, one value)',
       startSnippet: makeCodeSnippetWithKeyValue({ padding: 10 }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-one', '', renderResult.renderedDOM)
         })
       },
@@ -217,7 +217,7 @@ describe('padding controls shorthand', () => {
         paddingBottom: 10,
       }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-one', '', renderResult.renderedDOM)
         })
       },
@@ -227,7 +227,7 @@ describe('padding controls shorthand', () => {
       name: 'delete value (shorthand, two value)',
       startSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px' }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-H', '', renderResult.renderedDOM)
         })
       },
@@ -242,7 +242,7 @@ describe('padding controls shorthand', () => {
         paddingBottom: 20,
       }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-H', '', renderResult.renderedDOM)
         })
       },
@@ -255,7 +255,7 @@ describe('padding controls shorthand', () => {
       name: 'delete value (shorthand, two value, all empty)',
       startSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 10px' }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-H', '', renderResult.renderedDOM)
         })
       },
@@ -265,7 +265,7 @@ describe('padding controls shorthand', () => {
       name: 'delete value (shorthand, four value)',
       startSnippet: makeCodeSnippetWithKeyValue({ padding: '10px 20px 30px 40px' }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-R', '', renderResult.renderedDOM)
         })
       },
@@ -275,7 +275,7 @@ describe('padding controls shorthand', () => {
       name: 'delete value (shorthand, four value, all empty)',
       startSnippet: makeCodeSnippetWithKeyValue({ padding: '0px 20px 0px 0px' }),
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-R', '', renderResult.renderedDOM)
         })
       },
@@ -294,7 +294,7 @@ describe('padding controls shorthand', () => {
         })
       },
       control: async (renderResult: EditorRenderResult) => {
-        await expectSingleUndoStep(renderResult, async () => {
+        await expectSingleUndo2Saves(renderResult, async () => {
           await setControlValue('padding-T', '', renderResult.renderedDOM)
         })
       },

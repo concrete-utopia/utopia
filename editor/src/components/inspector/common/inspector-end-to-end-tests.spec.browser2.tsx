@@ -18,7 +18,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
@@ -115,7 +115,7 @@ async function clickButtonAndSelectTarget(
   buttonTestId: string,
   targetPath: ElementPath[],
 ): Promise<void> {
-  await expectSingleUndoStep(renderResult, async () => {
+  await expectSingleUndo2Saves(renderResult, async () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId(buttonTestId))
       await renderResult.getDispatchFollowUpActionsFinished()

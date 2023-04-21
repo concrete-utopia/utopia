@@ -2,9 +2,8 @@ import { navigatorEntryToKey } from '../../../components/editor/store/editor-sta
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { shiftModifier } from '../../../utils/modifiers'
-import { expectNoAction } from '../../../utils/utils.test-utils'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
@@ -477,7 +476,7 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
       originalElementOrder,
     )
 
-    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
 
     expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       originalElementOrder,
@@ -845,7 +844,7 @@ describe('Smart Convert to Flex Fragment In Existing Flex', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -991,7 +990,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='a'>
@@ -1149,7 +1148,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1308,7 +1307,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1489,7 +1488,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1681,7 +1680,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1939,7 +1938,7 @@ async function convertParentToFlex(editor: EditorRenderResult) {
   const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent'])
   await editor.dispatch([selectComponents([targetPath], false)], true)
 
-  await expectSingleUndoStep(editor, () => clickOnPlusButton(editor))
+  await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
 }
 
 async function clickOnPlusButton(editor: EditorRenderResult) {
