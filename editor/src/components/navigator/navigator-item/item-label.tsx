@@ -27,83 +27,94 @@ interface ItemLabelProps {
 }
 
 export const ItemLabel = React.memo((props: ItemLabelProps) => {
+  const {
+    name: propsName,
+    testId,
+    dispatch,
+    target,
+    isDynamic,
+    suffix,
+    inputVisible,
+    style,
+  } = props
+
   const elementRef = React.useRef<HTMLInputElement | null>(null)
 
-  const [name, setName] = React.useState(props.name)
+  const [name, setName] = React.useState(propsName)
 
   const isConditionalClause = React.useMemo(() => {
-    return props.target.type === 'CONDITIONAL_CLAUSE'
-  }, [props.target])
+    return target.type === 'CONDITIONAL_CLAUSE'
+  }, [target])
 
   const isActiveConditionalClause = useEditorState(
     Substores.metadata,
     (store) => {
-      if (!isConditionalClauseNavigatorEntry(props.target)) {
+      if (!isConditionalClauseNavigatorEntry(target)) {
         return false
       }
-      const parent = findMaybeConditionalExpression(
-        props.target.elementPath,
-        store.editor.jsxMetadata,
-      )
+      const parent = findMaybeConditionalExpression(target.elementPath, store.editor.jsxMetadata)
       if (parent == null) {
         return false
       }
       const activeCase = getConditionalActiveCase(
-        props.target.elementPath,
+        target.elementPath,
         parent,
         store.editor.spyMetadata,
       )
       if (activeCase == null) {
         return false
       }
-      return activeCase === props.target.clause
+      return activeCase === target.clause
     },
     'NavigatorRowLabel isActiveBranchOfOverriddenConditional',
   )
 
   React.useEffect(() => {
-    if (props.inputVisible && elementRef.current != null) {
+    if (inputVisible && elementRef.current != null) {
       elementRef.current.focus()
       elementRef.current.select()
     }
-  }, [props.inputVisible, props.testId])
+  }, [inputVisible, testId])
 
   const value = React.useMemo(() => {
-    return props.suffix == null ? props.name : `${props.name} ${props.suffix}`
-  }, [props.suffix, props.name])
+    return suffix == null ? name : `${name} ${suffix}`
+  }, [suffix, name])
 
-  function cancelRename() {
-    setName(props.name)
-    props.dispatch([EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
-  }
+  const cancelRename = React.useCallback(() => {
+    setName(name)
+    dispatch([EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
+  }, [dispatch, name])
 
-  function triggerRenameComponent() {
-    if (isRegularNavigatorEntry(props.target)) {
+  const triggerRenameComponent = React.useCallback(() => {
+    if (isRegularNavigatorEntry(target)) {
       // if the name would be the same, or if the new name would be empty, just cancel
-      if (props.name === name) {
+      if (propsName === name) {
         cancelRename()
       } else {
         const nameIsBlank = name.trim().length === 0
-        const action = renameComponent(props.target.elementPath, nameIsBlank ? null : name)
-        props.dispatch([action, EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
+        const action = renameComponent(target.elementPath, nameIsBlank ? null : name)
+        dispatch([action, EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
       }
     } else {
       cancelRename()
     }
-  }
+  }, [cancelRename, target, propsName, dispatch, name])
 
-  function onInputLabelKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key == 'Enter') {
-      triggerRenameComponent()
-    }
-    if (event.key == 'Escape') {
-      cancelRename()
-    }
-  }
+  const onInputLabelKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key == 'Enter') {
+        triggerRenameComponent()
+      }
+      if (event.key == 'Escape') {
+        cancelRename()
+      }
+    },
+    [cancelRename, triggerRenameComponent],
+  )
 
-  function onInputLabelBlur() {
+  const onInputLabelBlur = React.useCallback(() => {
     triggerRenameComponent()
-  }
+  }, [triggerRenameComponent])
 
   function onInputLabelChange(event: React.ChangeEvent<HTMLInputElement>) {
     setName(event.target.value)
@@ -115,10 +126,10 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       key='item-label-container'
       className='item-label-container'
       style={{
-        ...props.style,
+        ...style,
         ...flexRowStyle,
         fontSize: 11,
-        fontStyle: props.isDynamic ? 'italic' : 'normal',
+        fontStyle: isDynamic ? 'italic' : 'normal',
       }}
     >
       {isConditionalClause && (
@@ -127,11 +138,11 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
           color={'secondary'}
         />
       )}
-      {props.inputVisible ? (
+      {inputVisible ? (
         <div key='item-rename-label'>
           <StringInput
             key='item-rename-input'
-            testId={props.testId}
+            testId={testId}
             className='rename-input-field'
             ref={elementRef}
             type='text'
@@ -156,16 +167,13 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            fontWeight: props.target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
-            color: props.target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
-            textTransform: props.target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
+            fontWeight: target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
+            color: target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
+            textTransform: target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
           }}
           onDoubleClick={(event) => {
-            if (!props.isDynamic && event.altKey && isRegularNavigatorEntry(props.target)) {
-              props.dispatch(
-                [EditorActions.setNavigatorRenamingTarget(props.target.elementPath)],
-                'leftpane',
-              )
+            if (!isDynamic && event.altKey && isRegularNavigatorEntry(target)) {
+              dispatch([EditorActions.setNavigatorRenamingTarget(target.elementPath)], 'leftpane')
             }
           }}
         >
