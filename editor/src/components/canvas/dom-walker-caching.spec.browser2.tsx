@@ -124,7 +124,6 @@ describe('Dom-walker Caching', () => {
     ])
 
     expect(saveDomReportActions[2].invalidatedPaths).toEqual([
-      'storyboard-entity/scene-1-entity',
       'storyboard-entity',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
@@ -219,7 +218,6 @@ describe('Dom-walker Caching', () => {
     ])
 
     expect(saveDomReportActions[2].invalidatedPaths).toEqual([
-      'storyboard-entity/scene-2-entity',
       'storyboard-entity',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div',
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div',
