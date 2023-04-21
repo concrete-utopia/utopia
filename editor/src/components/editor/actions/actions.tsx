@@ -2441,7 +2441,7 @@ export const UPDATE_FNS = {
                     withTargetAdded = withInsertedElement()
                     break
                   case 'CONDITIONAL_CLAUSE_INSERTION':
-                    withTargetAdded = withTargetAdded = insertChildAndDetails(
+                    withTargetAdded = insertChildAndDetails(
                       transformJSXComponentAtPath(
                         utopiaJSXComponents,
                         getElementPathFromInsertionPath(staticTarget),
