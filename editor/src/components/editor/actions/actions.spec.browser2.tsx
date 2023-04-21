@@ -26,7 +26,7 @@ import {
 } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { JSXConditionalExpression } from '../../../core/shared/element-template'
-import { expectNoAction, expectSingleUndoStep } from '../../../utils/utils.test-utils'
+import { expectNoAction, expectSingleUndo2Saves } from '../../../utils/utils.test-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -948,7 +948,7 @@ describe('actions', () => {
         )
 
         const undoCheckerFn =
-          test.generatesUndoStep === false ? expectNoAction : expectSingleUndoStep
+          test.generatesUndoStep === false ? expectNoAction : expectSingleUndo2Saves
 
         await undoCheckerFn(renderResult, async () => {
           await act(async () => {

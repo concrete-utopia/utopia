@@ -4,7 +4,7 @@ import {
 } from '../../../../core/model/element-template-utils.test-utils'
 import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   slightlyOffsetPointBecauseVeryWeirdIssue,
 } from '../../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
@@ -79,7 +79,7 @@ async function dragFromInsertMenuDivButtonToPoint(
   showDragOutline: 'show-drag-outline' | 'no-drag-outline',
   elementType: string = 'div',
 ) {
-  await expectSingleUndoStep(renderResult, async () => {
+  await expectSingleUndo2Saves(renderResult, async () => {
     await startDraggingFromInsertMenuDivButtonToPoint(
       targetPoint,
       modifiers,

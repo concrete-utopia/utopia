@@ -1,6 +1,6 @@
 import * as EP from '../../core/shared/element-path'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
   setFeatureForBrowserTests,
@@ -19,7 +19,7 @@ describe('set flex direction', () => {
     const editor = await renderTestEditorWithCode(project(), 'await-first-dom-report')
     const div = await selectDiv(editor)
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickOn(editor, 'row')
     })
 
@@ -37,7 +37,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('row')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickOn(editor, 'column')
     })
 
@@ -51,7 +51,7 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await rightClickOn(editor, 'column')
     })
 

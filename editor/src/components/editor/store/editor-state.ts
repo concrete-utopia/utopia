@@ -414,7 +414,7 @@ export type EditorStoreShared = {
   workers: UtopiaTsWorkers
   persistence: PersistenceMachine
   builtInDependencies: BuiltInDependencies
-  alreadySaved: boolean
+  saveCountThisSession: number
 }
 
 export type EditorStoreFull = EditorStoreShared & {
