@@ -106,7 +106,7 @@ function createEditorStore(
       new FakeWatchdogWorker(),
     ),
     persistence: DummyPersistenceMachine,
-    alreadySaved: false,
+    saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 

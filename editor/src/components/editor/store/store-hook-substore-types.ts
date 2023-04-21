@@ -177,5 +177,5 @@ export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'edit
     'workers',
     'persistence',
     'builtInDependencies',
-    'alreadySaved',
+    'saveCountThisSession',
   ]
