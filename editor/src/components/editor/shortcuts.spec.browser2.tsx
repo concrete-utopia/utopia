@@ -1378,7 +1378,7 @@ describe('group selection', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(`sb/aaa`), EP.fromString(`sb/bbb`)])
 
-      await expectSingleUndoStep(editor, async () => pressKey('g', { modifiers: cmdModifier }))
+      await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
 
       // note the added `import * as React`
       expect(getPrintedUiJsCode(editor.getEditorState()))

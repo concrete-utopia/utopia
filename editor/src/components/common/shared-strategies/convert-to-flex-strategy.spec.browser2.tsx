@@ -1,8 +1,8 @@
 import { navigatorEntryToKey } from '../../../components/editor/store/editor-state'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import { shiftModifier } from '../../../utils/modifiers'
 import {
-  expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTests,
@@ -990,7 +990,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectNoAction(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='a'>
@@ -1148,7 +1148,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1307,7 +1307,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1488,7 +1488,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
@@ -1680,7 +1680,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('a', { modifiers: shiftModifier })
     })
 
