@@ -2677,7 +2677,7 @@ export function parseArbitraryNodes(
         sourceFile.fileName,
         sourceFile.text,
         fileSourceNode,
-        parsedElementsWithin,
+        rootLevel ? [] : parsedElementsWithin,
         false,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
