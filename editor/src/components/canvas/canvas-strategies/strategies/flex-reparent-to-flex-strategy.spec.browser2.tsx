@@ -17,6 +17,7 @@ import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-help
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { setFeatureEnabled } from '../../../../utils/feature-switches'
+import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -364,9 +365,6 @@ describe('Flex Reparent To Flex Strategy', () => {
   })
 
   describe('with fragments', () => {
-    before(() => setFeatureEnabled('Fragment support', true))
-    after(() => setFeatureEnabled('Fragment support', false))
-
     it('reparents fragment to other flex parent', async () => {
       const renderResult = await renderTestEditorWithCode(
         TestProjectWithFragment,
@@ -404,17 +402,17 @@ describe('Flex Reparent To Flex Strategy', () => {
 
       const navigatorTargets = renderResult
         .getEditorState()
-        .derived.visibleNavigatorTargets.map(EP.toString)
+        .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
       expect(navigatorTargets).toEqual([
-        'utopia-storyboard-uid/parent2',
-        'utopia-storyboard-uid/parent2/0b5',
-        'utopia-storyboard-uid/parent2/aaa',
-        'utopia-storyboard-uid/parent2/fragment', // <- fragment and its contents are reparented to parent2 from parent1
-        'utopia-storyboard-uid/parent2/fragment/b71',
-        'utopia-storyboard-uid/parent2/fragment/050',
-        'utopia-storyboard-uid/parent1',
-        'utopia-storyboard-uid/parent1/aac',
-        'utopia-storyboard-uid/parent1/aad',
+        'regular-utopia-storyboard-uid/parent2',
+        'regular-utopia-storyboard-uid/parent2/0b5',
+        'regular-utopia-storyboard-uid/parent2/aaa',
+        'regular-utopia-storyboard-uid/parent2/fragment', // <- fragment and its contents are reparented to parent2 from parent1
+        'regular-utopia-storyboard-uid/parent2/fragment/b71',
+        'regular-utopia-storyboard-uid/parent2/fragment/050',
+        'regular-utopia-storyboard-uid/parent1',
+        'regular-utopia-storyboard-uid/parent1/aac',
+        'regular-utopia-storyboard-uid/parent1/aad',
       ])
     })
   })

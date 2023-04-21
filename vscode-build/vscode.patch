@@ -51,6 +51,41 @@ index 2d7da1aecf8..052f52383f0 100644
  				</div>
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
+diff --git a/package.json b/package.json
+index 2bca5115cac..75f06b97e0b 100644
+--- a/package.json
++++ b/package.json
+@@ -44,15 +44,15 @@
+     "valid-layers-check": "node build/lib/layersChecker.js",
+     "update-distro": "node build/npm/update-distro.js",
+     "web": "node resources/web/code-web.js",
+-    "compile-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-web",
+-    "watch-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js watch-web",
++    "compile-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-web",
++    "watch-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js watch-web",
+     "eslint": "node build/eslint",
+     "playwright-install": "node build/azure-pipelines/common/installPlaywright.js",
+-    "compile-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
+-    "compile-extensions-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-extensions-build",
+-    "minify-vscode": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode",
+-    "minify-vscode-reh": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
+-    "minify-vscode-reh-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
++    "compile-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-build",
++    "compile-extensions-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-extensions-build",
++    "minify-vscode": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode",
++    "minify-vscode-reh": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
++    "minify-vscode-reh-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
+     "hygiene": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js hygiene",
+     "core-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js core-ci",
+     "extensions-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci"
+@@ -77,6 +77,7 @@
+     "spdlog": "^0.13.0",
+     "sudo-prompt": "9.2.1",
+     "tas-client-umd": "0.1.4",
++    "utopia-vscode-common": "file:../../utopia-vscode-common",
+     "v8-inspect-profiler": "^0.0.22",
+     "vscode-nsfw": "2.1.8",
+     "vscode-oniguruma": "1.5.1",
 diff --git a/product.json b/product.json
 index 7b60eac641d..b37ebcd9f73 100644
 --- a/product.json
@@ -177,10 +212,10 @@ index 6148eb30092..6948ededa4a 100644
  
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 534fe232636..be23a3bd1e9 100644
+index 534fe232636..bc8685dc831 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -1,536 +1,98 @@
+@@ -1,536 +1,101 @@
 -/*---------------------------------------------------------------------------------------------
 - *  Copyright (c) Microsoft Corporation. All rights reserved.
 - *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -724,6 +759,7 @@ index 534fe232636..be23a3bd1e9 100644
 +  IWorkspaceProvider,
 +} from 'vs/workbench/workbench.web.api'
 +import { URI } from 'vs/base/common/uri'
++import { setupVSCodeEventListenersForProject } from 'utopia-vscode-common'
 +
 +// TODO revisit these dummy parts so that they can return something rather than nothing
 +// import {
@@ -812,6 +848,8 @@ index 534fe232636..be23a3bd1e9 100644
 +		}
 +    config = { ...config, workspaceProvider }
 +  }
++
++  setupVSCodeEventListenersForProject(projectID)
 +
 +  create(document.body, config)
 +})()
@@ -1193,3 +1231,72 @@ index 3b90080dc3d..a2228f49e9e 100644
 +	const urlParams = new URLSearchParams(window.location.search);
 +	return urlParams.get('project_id')!;
  }
+diff --git a/yarn.lock b/yarn.lock
+index 2f4f87570dd..fe2016e07f8 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -5248,6 +5248,11 @@ ignore@^5.1.4:
+   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.8.tgz#f150a8b50a34289b33e22f5889abd4d8016f0e57"
+   integrity sha512-BMpfD7PpiETpBl/A6S498BaIJ6Y/ABT93ETbby2fP00v4EbvPBXWEoaR1UBPKs3iR53pJY7EtZk5KACI57i1Uw==
+ 
++immediate@~3.0.5:
++  version "3.0.6"
++  resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
++  integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
++
+ import-cwd@^2.0.0:
+   version "2.1.0"
+   resolved "https://registry.yarnpkg.com/import-cwd/-/import-cwd-2.1.0.tgz#aa6cf36e722761285cb371ec6519f53e2435b0a9"
+@@ -6138,6 +6143,13 @@ levn@^0.3.0, levn@~0.3.0:
+     prelude-ls "~1.1.2"
+     type-check "~0.3.2"
+ 
++lie@3.1.1:
++  version "3.1.1"
++  resolved "https://registry.yarnpkg.com/lie/-/lie-3.1.1.tgz#9a436b2cc7746ca59de7a41fa469b3efb76bd87e"
++  integrity sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==
++  dependencies:
++    immediate "~3.0.5"
++
+ liftoff@^3.1.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/liftoff/-/liftoff-3.1.0.tgz#c9ba6081f908670607ee79062d700df062c52ed3"
+@@ -6201,6 +6213,13 @@ loader-utils@^2.0.0:
+     emojis-list "^3.0.0"
+     json5 "^2.1.2"
+ 
++localforage@1.9.0:
++  version "1.9.0"
++  resolved "https://registry.yarnpkg.com/localforage/-/localforage-1.9.0.tgz#f3e4d32a8300b362b4634cc4e066d9d00d2f09d1"
++  integrity sha512-rR1oyNrKulpe+VM9cYmcFn6tsHuokyVHFaCM3+osEmxaHTbEk8oQu6eGDfS6DQLWi/N67XRmB8ECG37OES368g==
++  dependencies:
++    lie "3.1.1"
++
+ locate-path@^3.0.0:
+   version "3.0.0"
+   resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-3.0.0.tgz#dbec3b3ab759758071b58fe59fc41871af21400e"
+@@ -8079,6 +8098,11 @@ prepend-http@^2.0.0:
+   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
+   integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
+ 
++prettier@2.0.5:
++  version "2.0.5"
++  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.0.5.tgz#d6d56282455243f2f92cc1716692c08aa31522d4"
++  integrity sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==
++
+ pretty-hrtime@^1.0.0:
+   version "1.0.3"
+   resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
+@@ -10213,6 +10237,12 @@ util@^0.12.4:
+     safe-buffer "^5.1.2"
+     which-typed-array "^1.1.2"
+ 
++"utopia-vscode-common@file:../../utopia-vscode-common":
++  version "0.1.2"
++  dependencies:
++    localforage "1.9.0"
++    prettier "2.0.5"
++
+ uuid@^3.0.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"

@@ -1,0 +1,16 @@
+diff --git a/lib/analyze-scope.js b/lib/analyze-scope.js
+index 9b2a40d..05b470b 100644
+--- a/lib/analyze-scope.js
++++ b/lib/analyze-scope.js
+@@ -327,11 +327,6 @@ module.exports = function(ast, parserOptions) {
+     fallback,
+   };
+ 
+-  if (OriginalReferencer._babelEslintPatched) {
+-    require("./patch-eslint-scope")(parserOptions);
+-    return escope.analyze(ast, options);
+-  }
+-
+   options.childVisitorKeys = childVisitorKeys;
+ 
+   const scopeManager = new escope.ScopeManager(options);

@@ -106,7 +106,7 @@ function createEditorStore(
       new FakeWatchdogWorker(),
     ),
     persistence: DummyPersistenceMachine,
-    alreadySaved: false,
+    saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
@@ -180,6 +180,7 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -237,6 +238,7 @@ describe('interactionStart', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -310,6 +312,7 @@ describe('interactionUpdate', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -382,6 +385,7 @@ describe('interactionUpdate', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -449,6 +453,7 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -523,6 +528,7 @@ describe('interactionHardReset', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
@@ -604,6 +610,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": Array [
           Object {
@@ -679,6 +686,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "duplicatedElementNewUids": Object {},
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
+          "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},

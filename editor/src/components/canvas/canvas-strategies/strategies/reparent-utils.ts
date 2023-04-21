@@ -28,10 +28,7 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { CSSCursor } from '../../canvas-types'
 import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-paths-command'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import {
-  generateUidWithExistingComponents,
-  getUtopiaID,
-} from '../../../../core/model/element-template-utils'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
 import {
   CustomStrategyState,
@@ -42,6 +39,13 @@ import { duplicateElement } from '../../commands/duplicate-element-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  childInsertionPath,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  isChildInsertionPath,
+} from '../../../editor/store/insertion-path'
+import { getUtopiaID } from '../../../../core/shared/uid-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -82,18 +86,18 @@ export function getReparentOutcome(
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: ElementPath | null,
+  targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
-  let newParent: ElementPath
+  let newParent: InsertionPath
   if (targetParent == null) {
     const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
     if (storyboardElementPath == null) {
       console.warn(`Unable to find storyboard path.`)
       return null
     } else {
-      newParent = storyboardElementPath
+      newParent = childInsertionPath(storyboardElementPath)
     }
   } else {
     newParent = targetParent
@@ -102,7 +106,8 @@ export function getReparentOutcome(
   // Early exit if there's no need to make any change.
   if (
     toReparent.type === 'PATH_TO_REPARENT' &&
-    EP.pathsEqual(newParent, EP.parentPath(toReparent.target))
+    isChildInsertionPath(newParent) &&
+    EP.pathsEqual(newParent.intendedParentPath, EP.parentPath(toReparent.target))
   ) {
     return {
       commands: [],
@@ -110,11 +115,15 @@ export function getReparentOutcome(
     }
   }
 
+  const newParentElementPath = getElementPathFromInsertionPath(newParent)
+
   // Lookup the filename that will be added to.
   const newTargetFilePath = forceNotNull(
-    `Unable to determine target path for ${newParent == null ? null : EP.toString(newParent)}`,
+    `Unable to determine target path for ${
+      newParent == null ? null : EP.toString(newParentElementPath)
+    }`,
     withUnderlyingTarget(
-      newParent,
+      newParentElementPath,
       projectContents,
       nodeModules,
       openFile,
@@ -140,10 +149,10 @@ export function getReparentOutcome(
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
       commands.push(reparentElement(whenToRun, toReparent.target, newParent))
-      newPath = EP.appendToPath(newParent, EP.toUid(toReparent.target))
+      newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
-      newPath = EP.appendToPath(newParent, getUtopiaID(toReparent.element))
+      newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
       commands.push(addElement(whenToRun, newParent, toReparent.element))
       break

@@ -32,8 +32,9 @@ const isApplicableSelector = createCachedSelector(
       selectedViews.length > 0 &&
       getFixedFillHugOptionsForElement(metadata, selectedViews[0]).has(mode)
     const isAlreadyApplied =
-      detectFillHugFixedState('horizontal', metadata, selectedViews[0])?.type === mode &&
-      detectFillHugFixedState('vertical', metadata, selectedViews[0])?.type === mode
+      detectFillHugFixedState('horizontal', metadata, selectedViews[0]).fixedHugFill?.type ===
+        mode &&
+      detectFillHugFixedState('vertical', metadata, selectedViews[0]).fixedHugFill?.type === mode
     return isApplicable && !isAlreadyApplied
   },
 )((_, mode) => mode)
@@ -43,7 +44,7 @@ interface ResizeToFitControlProps {}
 export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const isHugApplicable = useEditorState(
@@ -59,18 +60,26 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   )
 
   const onResizeToFit = React.useCallback(() => {
-    const commands = resizeToFitCommands(metadataRef.current, selectedViewsRef.current)
+    const commands = resizeToFitCommands(
+      metadataRef.current,
+      selectedViewsRef.current,
+      allElementPropsRef.current,
+    )
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [dispatch, metadataRef, selectedViewsRef])
+  }, [allElementPropsRef, dispatch, metadataRef, selectedViewsRef])
 
   const onResizeToFill = React.useCallback(() => {
-    const commands = resizeToFillCommands(metadataRef.current, selectedViewsRef.current)
+    const commands = resizeToFillCommands(
+      metadataRef.current,
+      selectedViewsRef.current,
+      allElementPropsRef.current,
+    )
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [dispatch, metadataRef, selectedViewsRef])
+  }, [allElementPropsRef, dispatch, metadataRef, selectedViewsRef])
 
   const onSetToFixedSize = React.useCallback(() => {
     const commands = selectedViewsRef.current.flatMap((e) =>

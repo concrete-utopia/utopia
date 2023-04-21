@@ -3,6 +3,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { zeroCanvasRect } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -14,10 +15,6 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
-import {
-  DragOutlineControl,
-  dragTargetsElementPaths,
-} from '../../controls/select-mode/drag-outline-control'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
 import { StaticReparentTargetOutlineIndicator } from '../../controls/select-mode/static-reparent-target-outline'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
@@ -36,7 +33,7 @@ import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent, placeholderCloneCommands } from './reparent-utils'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function baseReparentAsStaticStrategy(
   reparentTarget: ReparentTarget,
@@ -49,7 +46,7 @@ export function baseReparentAsStaticStrategy(
     customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    const filteredSelectedElements = getDragTargets(selectedElements)
+    const filteredSelectedElements = flattenSelection(selectedElements)
     if (
       filteredSelectedElements.length !== 1 ||
       interactionSession == null ||
@@ -61,12 +58,6 @@ export function baseReparentAsStaticStrategy(
     return {
       ...getIdAndNameOfReparentToStaticStrategy(targetLayout),
       controlsToRender: [
-        controlWithProps({
-          control: DragOutlineControl,
-          props: dragTargetsElementPaths(filteredSelectedElements),
-          key: 'ghost-outline-control',
-          show: 'visible-only-while-active',
-        }),
         controlWithProps({
           control: ParentOutlines,
           props: { targetParent: reparentTarget.newParent },
@@ -138,7 +129,7 @@ function applyStaticReparent(
   reparentResult: ReparentTarget,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const filteredSelectedElements = getDragTargets(selectedElements)
+  const filteredSelectedElements = flattenSelection(selectedElements)
 
   return ifAllowedToReparent(
     canvasState,
@@ -170,7 +161,7 @@ function applyStaticReparent(
             canvasState.nodeModules,
             canvasState.openFile,
             pathToReparent(target),
-            newParent,
+            childInsertionPath(newParent),
             'always',
           )
           let duplicatedElementNewUids: { [elementPath: string]: string } = {}

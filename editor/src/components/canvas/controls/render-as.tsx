@@ -48,6 +48,9 @@ export const RenderAsRow = React.memo(() => {
   const onSelect = React.useCallback(
     (selectOption: SelectOption) => {
       const value: InsertableComponent = selectOption.value
+      if (value.element.type !== 'JSX_ELEMENT') {
+        return
+      }
       onElementTypeChange(value.element.name, value.importsToAdd)
     },
     [onElementTypeChange],
@@ -98,7 +101,7 @@ export const RenderAsRow = React.memo(() => {
       for (const selectOptionGroup of insertableComponents) {
         for (const selectOption of selectOptionGroup.options ?? []) {
           const insertableComponent: InsertableComponent = selectOption.value
-          if (insertableComponent != null) {
+          if (insertableComponent != null && insertableComponent.element.type === 'JSX_ELEMENT') {
             if (jsxElementNameEquals(insertableComponent.element.name, nameToSearchFor)) {
               return selectOption
             }

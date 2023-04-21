@@ -7,7 +7,7 @@ import {
 } from '../../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { isRight, right } from '../../../../../core/shared/either'
+import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
 import {
@@ -28,6 +28,7 @@ import { stylePropPathMappingFn } from '../../../../inspector/common/property-pa
 import {
   AdjustCssLengthProperty,
   adjustCssLengthProperty,
+  CreateIfNotExistant,
 } from '../../../commands/adjust-css-length-command'
 import { CanvasCommand } from '../../../commands/commands'
 import {
@@ -63,18 +64,26 @@ export function getAbsoluteReparentPropertyChanges(
     openFile,
   )
 
-  if (element == null) {
+  const originalParentInstance = MetadataUtils.findElementByElementPath(
+    targetStartingMetadata,
+    EP.parentPath(target),
+  )
+  const newParentInstance = MetadataUtils.findElementByElementPath(
+    targetStartingMetadata,
+    newParent,
+  )
+
+  if (element == null || originalParentInstance == null || newParentInstance == null) {
     return []
   }
 
-  const currentParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
-    EP.parentPath(target),
-    targetStartingMetadata,
-  )
-  const newParentContentBox = MetadataUtils.getParentCoordinateSystemBounds(
-    newParent,
-    newParentStartingMetadata,
-  )
+  const currentParentContentBox =
+    MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
+  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
+
+  if (currentParentContentBox == null || newParentContentBox == null) {
+    return []
+  }
 
   const offsetTL = roundPointToNearestHalf(
     pointDifference(newParentContentBox, currentParentContentBox),
@@ -92,27 +101,28 @@ export function getAbsoluteReparentPropertyChanges(
     ),
   )
 
+  const newParentFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata),
+  )
+  const newParentFlexDirection =
+    MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
+      ?.specialSizeMeasurements.flexDirection ?? null
+
   const createAdjustCssLengthProperty = (
     pin: LayoutPinnedProp,
     newValue: number,
     parentDimension: number | undefined,
-    elementParentFlexDirection: FlexDirection | null,
-  ): AdjustCssLengthProperty | null => {
-    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
-    if (isRight(value) && value.value != null) {
-      // TODO what to do about missing properties?
-      return adjustCssLengthProperty(
-        'always',
-        target,
-        stylePropPathMappingFn(pin, styleStringInArray),
-        newValue,
-        parentDimension,
-        elementParentFlexDirection,
-        'create-if-not-existing',
-      )
-    } else {
-      return null
-    }
+    createIfNonExistant: CreateIfNotExistant,
+  ): AdjustCssLengthProperty => {
+    return adjustCssLengthProperty(
+      'always',
+      target,
+      stylePropPathMappingFn(pin, styleStringInArray),
+      newValue,
+      parentDimension,
+      newParentFlexDirection,
+      createIfNonExistant,
+    )
   }
 
   const createConvertCssPercentToPx = (pin: LayoutPinnedProp): ConvertCssPercentToPx | null => {
@@ -131,21 +141,24 @@ export function getAbsoluteReparentPropertyChanges(
     }
   }
 
-  const newParentFrame = nullIfInfinity(
-    MetadataUtils.getFrameInCanvasCoords(newParent, newParentStartingMetadata),
-  )
-  const newParentFlexDirection =
-    MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
-      ?.specialSizeMeasurements.flexDirection ?? null
+  // We need at least one position prop offset in each dimension
+  const hasPin = (pin: LayoutPinnedProp) => {
+    const rawPin = getLayoutProperty(pin, right(element.props), styleStringInArray)
+    return isRight(rawPin) && rawPin.value != null
+  }
+
+  const needsLeftPin = !hasPin('left') && !hasPin('right')
+  const needsTopPin = !hasPin('top') && !hasPin('bottom')
 
   const topLeftCommands = mapDropNulls(
     (pin) => {
       const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+      const needsPin = (pin === 'left' && needsLeftPin) || (pin === 'top' && needsTopPin)
       return createAdjustCssLengthProperty(
         pin,
         horizontal ? offsetTL.x : offsetTL.y,
         horizontal ? newParentFrame?.width : newParentFrame?.height,
-        newParentFlexDirection,
+        needsPin ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
       )
     },
     ['top', 'left'] as const,
@@ -158,7 +171,7 @@ export function getAbsoluteReparentPropertyChanges(
         pin,
         horizontal ? offsetBR.x : offsetBR.y,
         horizontal ? newParentFrame?.width : newParentFrame?.height,
-        newParentFlexDirection,
+        'do-not-create-if-doesnt-exist',
       )
     },
     ['bottom', 'right'] as const,

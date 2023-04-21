@@ -5,14 +5,12 @@ import {
 } from '../../components/assets'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
-  ElementInstanceMetadata,
   ElementsWithin,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
   isUtopiaJSXComponent,
-  JSXArbitraryBlock,
   JSXElement,
   JSXElementChild,
   JSXTextBlock,
@@ -23,26 +21,28 @@ import {
   Param,
   JSXAttributes,
   JSXAttributesPart,
-  JSXAttribute,
+  JSExpression,
   JSXArrayElement,
   JSXProperty,
   isSpreadAssignment,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   jsxElementName,
   jsxElementNameEquals,
   isJSXElementLike,
-  JSXFragment,
-  jsxFragment,
   isJSXConditionalExpression,
-  childOrBlockIsChild,
   emptyComments,
-  ChildOrAttribute,
+  jsExpressionValue,
+  isIntrinsicElement,
+  jsxFragment,
+  JSXConditionalExpression,
 } from '../shared/element-template'
 import {
   isParseSuccess,
   isTextFile,
   StaticElementPathPart,
   StaticElementPath,
+  ElementPath,
+  Imports,
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -50,15 +50,29 @@ import {
   fixUtopiaElement,
   generateMockNextGeneratedUID,
   generateUID,
-  getUtopiaIDFromJSXElement,
-  setUtopiaIDOnJSXElement,
+  getUtopiaID,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
 import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { forceNotNull } from '../shared/optional-utils'
-import { getConditionalClausePath, ThenOrElse, thenOrElsePathPart } from './conditionals'
+import { forceNotNull, optionalMap } from '../shared/optional-utils'
+import {
+  ConditionalCase,
+  conditionalWhenFalseOptic,
+  conditionalWhenTrueOptic,
+  getConditionalClausePath,
+  maybeBranchConditionalCase,
+} from './conditionals'
+import { modify } from '../shared/optics/optic-utilities'
+import {
+  childInsertionPath,
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  isConditionalClauseInsertionPath,
+} from '../../components/editor/store/insertion-path'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import { isNullJSXAttributeValue } from '../shared/element-template'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -90,6 +104,10 @@ function getAllUniqueUidsInner(
     } else if (isJSXFragment(element)) {
       fastForEach(element.children, extractUid)
       uniqueIDs.add(element.uid)
+    } else if (isJSXConditionalExpression(element)) {
+      uniqueIDs.add(element.uid)
+      extractUid(element.whenTrue)
+      extractUid(element.whenFalse)
     }
   }
 
@@ -142,69 +160,11 @@ export function isSceneElement(
   projectContents: ProjectContentTreeRoot,
 ): boolean {
   const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
   }
-}
-
-// THIS IS SUPER UGLY, DO NOT USE OUTSIDE OF FILE
-function isUtopiaJSXElement(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXElement {
-  return isJSXElement(element as any)
-}
-
-function isUtopiaJSXArbitraryBlock(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXArbitraryBlock {
-  return isJSXArbitraryBlock(element as any)
-}
-
-function isUtopiaJSXTextBlock(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXTextBlock {
-  return isJSXTextBlock(element as any)
-}
-
-function isUtopiaJSXFragment(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is JSXFragment {
-  return isJSXFragment(element as any)
-}
-
-function isElementInstanceMetadata(
-  element: JSXElementChild | ElementInstanceMetadata,
-): element is ElementInstanceMetadata {
-  return (element as any).elementPath != null
-}
-
-export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
-  if (isUtopiaJSXElement(element)) {
-    return setUtopiaIDOnJSXElement(element, uid)
-  } else if (isUtopiaJSXFragment(element)) {
-    return jsxFragment(uid, element.children, element.longForm)
-  } else {
-    throw new Error(`Unable to set utopia id on ${element.type}`)
-  }
-}
-
-export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata): string {
-  if (isUtopiaJSXElement(element)) {
-    return getUtopiaIDFromJSXElement(element)
-  } else if (isUtopiaJSXArbitraryBlock(element)) {
-    return element.uniqueID
-  } else if (isUtopiaJSXTextBlock(element)) {
-    return element.uniqueID
-  } else if (isElementInstanceMetadata(element)) {
-    return EP.toUid(element.elementPath)
-  } else if (isJSXFragment(element)) {
-    return element.uid
-  } else if (isJSXConditionalExpression(element)) {
-    return element.uid
-  }
-  throw new Error(`Cannot recognize element ${JSON.stringify(element)}`)
 }
 
 export function transformJSXComponentAtPath(
@@ -265,7 +225,7 @@ function transformAtPathOptionally(
           }
         }
       }
-    } else if (isJSXArbitraryBlock(element)) {
+    } else if (isJSExpressionOtherJavaScript(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
         const updatedChildren = Object.values(element.elementsWithin).reduce(
@@ -307,12 +267,8 @@ function transformAtPathOptionally(
       }
     } else if (isJSXConditionalExpression(element)) {
       if (getUtopiaID(element) === firstUIDOrIndex) {
-        const updatedWhenTrue = childOrBlockIsChild(element.whenTrue)
-          ? findAndTransformAtPathInner(element.whenTrue, tailPath)
-          : null
-        const updatedWhenFalse = childOrBlockIsChild(element.whenFalse)
-          ? findAndTransformAtPathInner(element.whenFalse, tailPath)
-          : null
+        const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
+        const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
           return {
             ...element,
@@ -327,10 +283,7 @@ function transformAtPathOptionally(
         }
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (
-        childOrBlockIsChild(element.whenTrue) &&
-        getUtopiaID(element.whenTrue) === firstUIDOrIndex
-      ) {
+      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -339,10 +292,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (
-        childOrBlockIsChild(element.whenFalse) &&
-        getUtopiaID(element.whenFalse) === firstUIDOrIndex
-      ) {
+      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -385,14 +335,30 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSXElementLike(element)) {
-      const uid = getUtopiaID(element)
-      if (uid === firstUIDOrIndex) {
-        const tailPath = workingPath.slice(1)
-        if (tailPath.length === 0) {
-          // this is the element we want
-          return element
-        } else {
+    if (isJSExpressionOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
+      const elementWithin = element.elementsWithin[firstUIDOrIndex]
+      const withinResult = findAtPathInner(elementWithin, workingPath)
+      if (withinResult != null) {
+        return withinResult
+      }
+    } else if (isJSXConditionalExpression(element) && getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        return (
+          findAtPathInner(element.whenTrue, tailPath) ??
+          findAtPathInner(element.whenFalse, tailPath)
+        )
+      }
+    } else if (getUtopiaID(element) === firstUIDOrIndex) {
+      const tailPath = workingPath.slice(1)
+      if (tailPath.length === 0) {
+        // this is the element we want
+        return element
+      } else {
+        if (isJSXElementLike(element)) {
           // we will want to delve into the children
           const children = element.children
           for (const child of children) {
@@ -402,36 +368,6 @@ export function findJSXElementChildAtPath(
             }
           }
         }
-      }
-    } else if (isJSXArbitraryBlock(element)) {
-      if (firstUIDOrIndex in element.elementsWithin) {
-        const elementWithin = element.elementsWithin[firstUIDOrIndex]
-        const withinResult = findAtPathInner(elementWithin, workingPath)
-        if (withinResult != null) {
-          return withinResult
-        }
-      }
-    } else if (isJSXConditionalExpression(element)) {
-      const tailPath = workingPath.slice(1)
-      if (tailPath.length === 0) {
-        // this is the element we want
-        return element
-      } else {
-        function elementOrNullFromClause(
-          clause: ChildOrAttribute,
-          branch: ThenOrElse,
-        ): JSXElementChild | null {
-          // if it's an attribute, match its path with the right branch
-          if (!childOrBlockIsChild(clause)) {
-            return tailPath[0] === thenOrElsePathPart(branch) ? element : null
-          }
-          // if it's a child, get its inner element
-          return findAtPathInner(clause, tailPath)
-        }
-        return (
-          elementOrNullFromClause(element.whenTrue, 'then') ??
-          elementOrNullFromClause(element.whenFalse, 'else')
-        )
       }
     }
     return null
@@ -529,19 +465,15 @@ export function removeJSXElementChild(
         children: updatedChildren,
       }
     } else if (isJSXConditionalExpression(parentElement)) {
-      const thenPath = getConditionalClausePath(parentPath, parentElement.whenTrue, 'then')
-      const elsePath = getConditionalClausePath(parentPath, parentElement.whenFalse, 'else')
+      const trueCasePath = getConditionalClausePath(parentPath, parentElement.whenTrue)
+      const falseCasePath = getConditionalClausePath(parentPath, parentElement.whenFalse)
 
-      const nullAttribute: JSXAttribute = {
-        type: 'ATTRIBUTE_VALUE',
-        value: null,
-        comments: emptyComments,
-      }
+      const nullAttribute = jsExpressionValue(null, emptyComments)
 
       return {
         ...parentElement,
-        whenTrue: EP.pathsEqual(thenPath, target) ? nullAttribute : parentElement.whenTrue,
-        whenFalse: EP.pathsEqual(elsePath, target) ? nullAttribute : parentElement.whenFalse,
+        whenTrue: EP.pathsEqual(trueCasePath, target) ? nullAttribute : parentElement.whenTrue,
+        whenFalse: EP.pathsEqual(falseCasePath, target) ? nullAttribute : parentElement.whenFalse,
       }
     } else {
       return parentElement
@@ -560,28 +492,106 @@ export function removeJSXElementChild(
       ).elements
 }
 
+export interface InsertChildAndDetails {
+  components: Array<UtopiaJSXComponent>
+  insertionDetails: string | null
+  importsToAdd: Imports
+}
+
+export function insertChildAndDetails(
+  components: Array<UtopiaJSXComponent>,
+  insertionDetails: string | null = null,
+  importsToAdd: Imports = {},
+): InsertChildAndDetails {
+  return {
+    components: components,
+    insertionDetails: insertionDetails,
+    importsToAdd: importsToAdd,
+  }
+}
+
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: StaticElementPath | null,
+  targetParent: InsertionPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
-): Array<UtopiaJSXComponent> {
+): InsertChildAndDetails {
   const makeE = () => {
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
+
+  function getConditionalCase(
+    conditional: JSXConditionalExpression,
+    parentPath: ElementPath,
+    target: InsertionPath,
+  ) {
+    if (isConditionalClauseInsertionPath(target)) {
+      return target.clause
+    }
+
+    // TODO this should be deleted and an invariant error should be thrown
+    return (
+      maybeBranchConditionalCase(
+        EP.parentPath(parentPath),
+        conditional,
+        target.intendedParentPath,
+      ) ?? 'true-case'
+    )
+  }
+
   const targetParentIncludingStoryboardRoot =
-    targetParent ?? getStoryboardElementPath(projectContents, openFile)
+    targetParent ??
+    optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
+
   if (targetParentIncludingStoryboardRoot == null) {
-    return components
+    return insertChildAndDetails(components)
   } else {
-    return transformJSXComponentAtPath(
+    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
+    let details: string | null = null
+    let importsToAdd: Imports = {}
+    const updatedComponents = transformJSXComponentAtPath(
       components,
-      targetParentIncludingStoryboardRoot,
+      parentPath,
       (parentElement) => {
-        if (isJSXElementLike(parentElement)) {
+        if (isJSXConditionalExpression(parentElement)) {
+          // Determine which clause of the conditional we want to modify.
+          const conditionalCase = getConditionalCase(
+            parentElement,
+            parentPath,
+            targetParentIncludingStoryboardRoot,
+          )
+          const toClauseOptic =
+            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+          // Update the clause if it currently holds a null value.
+          return modify(
+            toClauseOptic,
+            (clauseValue) => {
+              if (isNullJSXAttributeValue(clauseValue)) {
+                return elementToInsert
+              } else if (isJSXFragment(clauseValue)) {
+                return parentElement
+              } else {
+                // for wrapping multiple elements
+                importsToAdd = {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
+                }
+                return jsxFragment(
+                  generateUidWithExistingComponents(projectContents),
+                  [elementToInsert, clauseValue],
+                  false,
+                )
+              }
+            },
+            parentElement,
+          )
+        } else if (isJSXElementLike(parentElement)) {
           let updatedChildren: Array<JSXElementChild>
           if (indexPosition == null) {
             updatedChildren = parentElement.children.concat(elementToInsert)
@@ -602,10 +612,12 @@ export function insertJSXElementChild(
         }
       },
     )
+
+    return insertChildAndDetails(updatedComponents, details, importsToAdd)
   }
 }
 
-export function getZIndexOfElement(
+export function getIndexInParent(
   topLevelElements: Array<TopLevelElement>,
   target: StaticElementPath,
 ): number {
@@ -617,7 +629,7 @@ export function getZIndexOfElement(
   if (parentElement != null) {
     const elementUID = EP.toUid(target)
     return parentElement.children.findIndex((child) => {
-      return isJSXElementLike(child) && getUtopiaID(child) === elementUID
+      return getUtopiaID(child) === elementUID
     })
   } else {
     return -1
@@ -637,7 +649,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.length > 0 &&
     elements.every((element) => {
       switch (element.type) {
-        case 'JSX_ARBITRARY_BLOCK':
+        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
@@ -646,6 +658,18 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
           return allElementsAndChildrenAreText(element.children)
         case 'JSX_TEXT_BLOCK':
           return textBlockIsNonEmpty(element)
+        case 'ATTRIBUTE_VALUE':
+          return typeof element.value === 'string'
+        case 'ATTRIBUTE_NESTED_ARRAY':
+          return element.content.every((contentElement) => {
+            return elementOnlyHasTextChildren(contentElement.value)
+          })
+        case 'ATTRIBUTE_NESTED_OBJECT':
+          return element.content.every((contentElement) => {
+            return elementOnlyHasTextChildren(contentElement.value)
+          })
+        case 'ATTRIBUTE_FUNCTION_CALL':
+          return allElementsAndChildrenAreText(element.parameters)
         default:
           assertNever(element)
       }
@@ -655,7 +679,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe we the current branch only includes text children???
       return false // We can't possibly know at this point
     case 'JSX_ELEMENT':
@@ -667,6 +691,11 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
       return allElementsAndChildrenAreText(element.children)
     case 'JSX_TEXT_BLOCK':
       return textBlockIsNonEmpty(element)
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return false
     default:
       assertNever(element)
   }
@@ -767,7 +796,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
           return styleAttribute.content.some((attributePart) => {
             if (isSpreadAssignment(attributePart)) {
               const spreadPart = attributePart.value
-              if (isJSXAttributeOtherJavaScript(spreadPart)) {
+              if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                 return (
                   spreadPart.definedElsewhere.includes(boundParam.paramName) &&
                   spreadPart.transpiledJavascript.includes(`${boundParam.paramName}.style`)
@@ -810,7 +839,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
                 return styleAttribute.content.some((attributePart) => {
                   if (isSpreadAssignment(attributePart)) {
                     const spreadPart = attributePart.value
-                    if (isJSXAttributeOtherJavaScript(spreadPart)) {
+                    if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                       return (
                         spreadPart.definedElsewhere.includes(propertyToLookFor) &&
                         spreadPart.transpiledJavascript.includes(propertyToLookFor)
@@ -908,7 +937,7 @@ export function elementUsesProperty(
       })
       const fromAttributes = attributesUseProperty(element.props, propsParam, property)
       return fromChildren || fromAttributes
-    case 'JSX_ARBITRARY_BLOCK':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(element.originalJavascript, propsParam, property)
     case 'JSX_TEXT_BLOCK':
       return false
@@ -919,11 +948,23 @@ export function elementUsesProperty(
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
         attributeUsesProperty(element.condition, propsParam, property) ||
-        (childOrBlockIsChild(element.whenTrue) &&
-          elementUsesProperty(element.whenTrue, propsParam, property)) ||
-        (childOrBlockIsChild(element.whenFalse) &&
-          elementUsesProperty(element.whenFalse, propsParam, property))
+        elementUsesProperty(element.whenTrue, propsParam, property) ||
+        elementUsesProperty(element.whenFalse, propsParam, property)
       )
+    case 'ATTRIBUTE_VALUE':
+      return false
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return element.content.some((child) => {
+        return elementUsesProperty(child.value, propsParam, property)
+      })
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return element.content.some((child) => {
+        return elementUsesProperty(child.value, propsParam, property)
+      })
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return element.parameters.some((param) => {
+        return elementUsesProperty(param, propsParam, property)
+      })
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -955,7 +996,7 @@ export function jsxPropertyUsesProperty(
 }
 
 export function attributeUsesProperty(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   propsParam: Param,
   property: string,
 ): boolean {
@@ -995,5 +1036,32 @@ export function attributePartUsesProperty(
     default:
       const _exhaustiveCheck: never = attributesPart
       throw new Error(`Unhandled attribute part: ${JSON.stringify(attributesPart)}`)
+  }
+}
+
+export type ElementSupportsChildren =
+  | 'supportsChildren'
+  | 'hasOnlyTextChildren'
+  | 'doesNotSupportChildren'
+
+export function elementChildSupportsChildrenAlsoText(
+  element: JSXElementChild,
+): ElementSupportsChildren | null {
+  if (isJSXConditionalExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
+  if (elementOnlyHasTextChildren(element)) {
+    // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal.
+    return 'hasOnlyTextChildren'
+  } else {
+    if (isJSXElement(element)) {
+      if (isIntrinsicElement(element.name)) {
+        return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+          ? 'supportsChildren'
+          : 'doesNotSupportChildren'
+      }
+    }
+    // We don't know at this stage.
+    return null
   }
 }

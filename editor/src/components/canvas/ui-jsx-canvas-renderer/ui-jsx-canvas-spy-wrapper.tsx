@@ -8,11 +8,11 @@ import {
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
-  ChildOrAttribute,
-  childOrBlockIsChild,
   JSXElementChild,
+  isJSXArbitraryBlock,
   isJSXConditionalExpression,
   JSXConditionalExpression,
+  ConditionValue,
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
@@ -20,24 +20,46 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
-import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
-import { forEachOf } from '../../../core/shared/optics/optic-utilities'
-import { compose2Optics, Optic } from '../../../core/shared/optics/optics'
-import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { getConditionalClausePath, getThenOrElsePath } from '../../../core/model/conditionals'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
+
+// Should the condition value of conditional expression change (which maybe be done by overriding it),
+// then the values we have accumulated in the spy metadata may need to be cleaned up.
+export function clearOpposingConditionalSpyValues(
+  metadataContext: UiJsxCanvasContextData,
+  conditional: JSXConditionalExpression,
+  conditionValue: boolean,
+  elementPath: ElementPath,
+): void {
+  const opposingElement = conditionValue ? conditional.whenFalse : conditional.whenTrue
+  const pathToOpposing = EP.appendToPath(elementPath, getUtopiaID(opposingElement))
+  const opposingPathString = EP.toString(pathToOpposing)
+  const metadata = metadataContext.current.spyValues.metadata
+  // Search for this and should we find it, only then should we attempt to clear the metadata.
+  // As walking all the keys is somewhat expensive.
+  if (opposingPathString in metadata) {
+    for (const metadataKey of Object.keys(metadata)) {
+      const metadataEntry = metadata[metadataKey]
+      const metadataPath = metadataEntry.elementPath
+      // This is one of the descendants or the value of the opposing clause
+      // of the conditional.
+      if (EP.isDescendantOfOrEqualTo(metadataPath, pathToOpposing)) {
+        delete metadata[metadataKey]
+      }
+    }
+  }
+}
 
 export function addFakeSpyEntry(
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
-  elementOrAttribute: ChildOrAttribute,
+  elementOrAttribute: JSXElementChild,
   filePath: string,
   imports: Imports,
+  conditionValue: ConditionValue,
 ): void {
   let element: Either<string, JSXElementChild>
-  if (childOrBlockIsChild(elementOrAttribute)) {
-    element = right(elementOrAttribute)
-  } else {
+  if (isJSXArbitraryBlock(elementOrAttribute)) {
     const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
     element = left(
       foldEither(
@@ -54,6 +76,8 @@ export function addFakeSpyEntry(
         simpleAttributeValue,
       ),
     )
+  } else {
+    element = right(elementOrAttribute)
   }
   const instanceMetadata: ElementInstanceMetadata = {
     element: element,
@@ -79,43 +103,10 @@ export function addFakeSpyEntry(
       },
       element,
     ),
+    conditionValue: conditionValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
-}
-
-const childOrAttributeToConditionalOptic: Optic<ChildOrAttribute, JSXConditionalExpression> =
-  compose2Optics(fromTypeGuard(childOrBlockIsChild), fromTypeGuard(isJSXConditionalExpression))
-
-export function addConditionalAlternative(
-  metadataContext: UiJsxCanvasContextData,
-  parentPath: ElementPath,
-  filePath: string,
-  imports: Imports,
-  alternativeCase: ChildOrAttribute,
-  thenOrElseCase: 'then' | 'else',
-): void {
-  const elementPath = getConditionalClausePath(parentPath, alternativeCase, thenOrElseCase)
-  addFakeSpyEntry(metadataContext, elementPath, alternativeCase, filePath, imports)
-
-  forEachOf(childOrAttributeToConditionalOptic, alternativeCase, (elementAsConditional) => {
-    addConditionalAlternative(
-      metadataContext,
-      elementPath,
-      filePath,
-      imports,
-      elementAsConditional.whenTrue,
-      'then',
-    )
-    addConditionalAlternative(
-      metadataContext,
-      elementPath,
-      filePath,
-      imports,
-      elementAsConditional.whenFalse,
-      'else',
-    )
-  })
 }
 
 export function buildSpyWrappedElement(
@@ -157,6 +148,7 @@ export function buildSpyWrappedElement(
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
+      conditionValue: 'not-a-conditional',
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

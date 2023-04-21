@@ -187,6 +187,24 @@ export class ContextMenuWrapper<T> extends ReactComponent<
   }
 }
 
+export const InspectorRowHoverCSS = {
+  '--control-styles-interactive-unset-main-color': colorTheme.fg7.value,
+  '--control-styles-interactive-unset-secondary-color': colorTheme.fg7.value,
+  '--control-styles-interactive-unset-track-color': colorTheme.bg5.value,
+  '--control-styles-interactive-unset-rail-color': colorTheme.bg3.value,
+  '&:hover': {
+    '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+    '--control-styles-interactive-unset-secondary-color': getControlStyles('simple').secondaryColor,
+    '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+    '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+  },
+  '&:focus-within': {
+    '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+    '--control-styles-interactive-unset-secondary-color': getControlStyles('simple').secondaryColor,
+    '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+    '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+  },
+}
 export class InspectorContextMenuWrapper<T> extends ReactComponent<
   React.PropsWithChildren<ContextMenuWrapperProps<T>>
 > {
@@ -200,24 +218,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
         css={{
           width: '100%',
           ...(this.props.style as any), // TODO Emotion and React 18 types don't like each other
-          '--control-styles-interactive-unset-main-color': colorTheme.fg7.value,
-          '--control-styles-interactive-unset-secondary-color': colorTheme.fg7.value,
-          '--control-styles-interactive-unset-track-color': colorTheme.bg5.value,
-          '--control-styles-interactive-unset-rail-color': colorTheme.bg3.value,
-          '&:hover': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color':
-              getControlStyles('simple').secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
-          '&:focus-within': {
-            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-            '--control-styles-interactive-unset-secondary-color':
-              getControlStyles('simple').secondaryColor,
-            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-          },
+          ...InspectorRowHoverCSS,
         }}
       >
         <React.Fragment>

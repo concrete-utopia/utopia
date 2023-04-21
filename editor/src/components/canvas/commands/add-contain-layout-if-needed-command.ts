@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { EditorState } from '../../editor/store/editor-state'
@@ -41,7 +41,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
   } else {
     // Apply the update to the properties.
     const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
-      { path: PP.create('style', 'contain'), value: jsxAttributeValue('layout', emptyComments) },
+      { path: PP.create('style', 'contain'), value: jsExpressionValue('layout', emptyComments) },
     ])
 
     return {

@@ -1,0 +1,18 @@
+diff --git a/src/.DS_Store b/src/.DS_Store
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/components/Menu.js b/src/components/Menu.js
+index 2777297..858fa91 100644
+--- a/src/components/Menu.js
++++ b/src/components/Menu.js
+@@ -174,8 +174,8 @@ export function getMenuPlacement({
+         // we want to provide as much of the menu as possible to the user,
+         // so give them whatever is available below rather than the minHeight.
+         if (
+-          (!isFixedPosition && scrollSpaceAbove >= minHeight) ||
+-          (isFixedPosition && viewSpaceAbove >= minHeight)
++          (!isFixedPosition && scrollSpaceAbove >= menuHeight) ||
++          (isFixedPosition && viewSpaceAbove >= menuHeight)
+         ) {
+           constrainedHeight = isFixedPosition
+             ? viewSpaceAbove - marginTop

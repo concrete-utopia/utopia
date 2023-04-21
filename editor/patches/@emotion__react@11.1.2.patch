@@ -1,0 +1,65 @@
+diff --git a/dist/emotion-react.browser.cjs.js b/dist/emotion-react.browser.cjs.js
+index b688583..063ad1a 100644
+--- a/dist/emotion-react.browser.cjs.js
++++ b/dist/emotion-react.browser.cjs.js
+@@ -318,7 +318,7 @@ if (process.env.NODE_ENV !== 'production') {
+   var isJest = typeof jest !== 'undefined';
+ 
+   if (isBrowser && !isJest) {
+-    var globalContext = isBrowser ? window : global;
++    var globalContext = isBrowser ? globalThis : global;
+     var globalKey = "__EMOTION_REACT_" + pkg.version.split('.')[0] + "__";
+ 
+     if (globalContext[globalKey]) {
+diff --git a/dist/emotion-react.browser.esm.js b/dist/emotion-react.browser.esm.js
+index e0382e7..f3b93ff 100644
+--- a/dist/emotion-react.browser.esm.js
++++ b/dist/emotion-react.browser.esm.js
+@@ -315,7 +315,7 @@ if (process.env.NODE_ENV !== 'production') {
+   var isJest = typeof jest !== 'undefined';
+ 
+   if (isBrowser && !isJest) {
+-    var globalContext = isBrowser ? window : global;
++    var globalContext = isBrowser ? globalThis : global;
+     var globalKey = "__EMOTION_REACT_" + pkg.version.split('.')[0] + "__";
+ 
+     if (globalContext[globalKey]) {
+diff --git a/dist/emotion-react.cjs.dev.js b/dist/emotion-react.cjs.dev.js
+index ab7e485..b72e5cb 100644
+--- a/dist/emotion-react.cjs.dev.js
++++ b/dist/emotion-react.cjs.dev.js
+@@ -366,7 +366,7 @@ if (process.env.NODE_ENV !== 'production') {
+   var isJest = typeof jest !== 'undefined';
+ 
+   if (isBrowser && !isJest) {
+-    var globalContext = isBrowser ? window : global;
++    var globalContext = isBrowser ? globalThis : global;
+     var globalKey = "__EMOTION_REACT_" + pkg.version.split('.')[0] + "__";
+ 
+     if (globalContext[globalKey]) {
+diff --git a/dist/emotion-react.esm.js b/dist/emotion-react.esm.js
+index 2fe6811..8d814de 100644
+--- a/dist/emotion-react.esm.js
++++ b/dist/emotion-react.esm.js
+@@ -363,7 +363,7 @@ if (process.env.NODE_ENV !== 'production') {
+   var isJest = typeof jest !== 'undefined';
+ 
+   if (isBrowser && !isJest) {
+-    var globalContext = isBrowser ? window : global;
++    var globalContext = isBrowser ? globalThis : global;
+     var globalKey = "__EMOTION_REACT_" + pkg.version.split('.')[0] + "__";
+ 
+     if (globalContext[globalKey]) {
+diff --git a/src/index.js b/src/index.js
+index 7e472b6..6704bfe 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
+   const isJest = typeof jest !== 'undefined'
+ 
+   if (isBrowser && !isJest) {
+-    const globalContext = isBrowser ? window : global
++    const globalContext = isBrowser ? globalThis : global
+     const globalKey = `__EMOTION_REACT_${pkg.version.split('.')[0]}__`
+     if (globalContext[globalKey]) {
+       console.warn(

@@ -1,12 +1,12 @@
 import {
-  JSXAttributeOtherJavaScript,
+  JSExpressionOtherJavaScript,
   ArbitraryJSBlock,
   JSXArbitraryBlock,
 } from './element-template'
 import { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
-type JavaScriptContainer = JSXAttributeOtherJavaScript | ArbitraryJSBlock | JSXArbitraryBlock
+type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock
 
 export type GetOrUpdateFunctionCache = (
   javascript: JavaScriptContainer,
@@ -51,7 +51,12 @@ function getOrUpdateFunctionCache(
   requireResult: MapLike<any>,
   handleError: (error: Error) => void,
 ): (...args: Array<unknown>) => unknown {
-  const fromCache = functionCache[javascript.uniqueID]
+  const uidPart = javascript.uid
+  const definedElsewherePart = javascript.definedElsewhere.join('_')
+  const elementsWithinPart = Object.keys(javascript.elementsWithin).join('_')
+  const codePart = javascript.javascript
+  const cacheKey = `uid${uidPart}_de${definedElsewherePart}_ew${elementsWithinPart}_code${codePart}`
+  const fromCache = functionCache[cacheKey]
   if (fromCache == null) {
     const newCachedFunction = SafeFunctionCurriedErrorHandler(
       false,
@@ -61,7 +66,7 @@ function getOrUpdateFunctionCache(
       javascript.sourceMap,
       javascript.definedElsewhere,
     )
-    functionCache[javascript.uniqueID] = newCachedFunction
+    functionCache[cacheKey] = newCachedFunction
     return newCachedFunction(handleError)
   } else {
     return fromCache(handleError)

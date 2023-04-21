@@ -18,6 +18,7 @@ import {
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
+import { retargetStrategyToTopMostGroupLikeElement } from './group-like-helpers'
 import { applyReorderCommon } from './reorder-utils'
 
 export function flowReorderStrategy(
@@ -25,11 +26,13 @@ export function flowReorderStrategy(
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): MoveStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  if (selectedElements.length !== 1) {
+  const originalTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const retargetedTargets = retargetStrategyToTopMostGroupLikeElement(canvasState)
+
+  if (retargetedTargets.length !== 1) {
     return null
   }
-  const target = selectedElements[0]
+  const target = retargetedTargets[0]
   const elementMetadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     target,
@@ -55,19 +58,19 @@ export function flowReorderStrategy(
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,
-          props: { targets: selectedElements },
+          props: { targets: originalTargets },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ImmediateParentBounds,
-          props: { targets: selectedElements },
+          props: { targets: originalTargets },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: DragOutlineControl,
-          props: dragTargetsElementPaths(selectedElements),
+          props: dragTargetsElementPaths(originalTargets),
           key: 'flow-reorder-drag-outline',
           show: 'visible-only-while-active',
         }),
@@ -82,6 +85,8 @@ export function flowReorderStrategy(
         return interactionSession == null
           ? emptyStrategyApplicationResult
           : applyReorderCommon(
+              originalTargets,
+              retargetedTargets,
               canvasState,
               interactionSession,
               customStrategyState,

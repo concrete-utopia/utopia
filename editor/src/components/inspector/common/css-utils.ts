@@ -29,15 +29,15 @@ import {
 } from '../../../core/shared/either'
 import {
   emptyComments,
-  isJSXAttributeFunctionCall,
-  isJSXAttributeNotFound,
-  isPartOfJSXAttributeValue,
+  modifiableAttributeIsAttributeFunctionCall,
+  modifiableAttributeIsAttributeNotFound,
+  modifiableAttributeIsPartOfAttributeValue,
   isRegularJSXAttribute,
-  JSXAttribute,
-  jsxAttributeFunctionCall,
+  JSExpression,
+  jsExpressionFunctionCall,
   JSXAttributes,
-  jsxAttributeValue,
-  JSXAttributeValue,
+  jsExpressionValue,
+  JSExpressionValue,
   JSXElement,
 } from '../../../core/shared/element-template'
 import {
@@ -1029,7 +1029,7 @@ export const defaultCSSBorder: Complete<CSSBorder> = {
   color: { ...blackHexCSSColor },
 }
 
-function printBorder(value: CSSBorder): JSXAttributeValue<string> {
+function printBorder(value: CSSBorder): JSExpressionValue<string> {
   const color: string | null = value.color != null ? printColor(value.color) : null
   const width: string | null = (() => {
     if (value.width == null) {
@@ -1042,7 +1042,7 @@ function printBorder(value: CSSBorder): JSXAttributeValue<string> {
   })()
   const style: CSSLineStyleKeywordValue | null = value.style?.value.value ?? null
 
-  return jsxAttributeValue(Utils.stripNulls([width, style, color]).join(' '), emptyComments)
+  return jsExpressionValue(Utils.stripNulls([width, style, color]).join(' '), emptyComments)
 }
 
 export declare type Complete<T> = {
@@ -1070,9 +1070,9 @@ export const defaultBoxShadows: CSSBoxShadows = [{ ...defaultBoxShadow }]
 
 export const disabledFunctionName = UtopiaUtils.disabled.name
 
-export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
+export function printBoxShadow(boxShadows: CSSBoxShadows): JSExpressionValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, boxShadows)
-  return jsxAttributeValue(
+  return jsExpressionValue(
     [...boxShadows]
       .map((boxShadow, i) => {
         const comma = indexOfLastEnabledLayer > i && boxShadow.enabled
@@ -1672,8 +1672,8 @@ function printCSSTransformItem(cssTransform: CSSTransformItem): string {
   }
 }
 
-function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Property.Transform> {
-  return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '), emptyComments)
+function printTransform(cssTransforms: CSSTransforms): JSExpressionValue<Property.Transform> {
+  return jsExpressionValue(cssTransforms.map(printCSSTransformItem).join(' '), emptyComments)
 }
 
 export enum CSSTransformOriginStringValueX {
@@ -1879,8 +1879,8 @@ function printTransformOriginComponent(
   }
 }
 
-function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSXAttributeValue<string> {
-  return jsxAttributeValue(
+function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSExpressionValue<string> {
+  return jsExpressionValue(
     `${printTransformOriginComponent(transformOrigin.x)} ${printTransformOriginComponent(
       transformOrigin.y,
     )}`,
@@ -1898,8 +1898,8 @@ function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
   }
 }
 
-function printOverflow(overflow: CSSOverflow): JSXAttributeValue<string> {
-  return jsxAttributeValue(overflow ? 'visible' : 'hidden', emptyComments)
+function printOverflow(overflow: CSSOverflow): JSExpressionValue<string> {
+  return jsExpressionValue(overflow ? 'visible' : 'hidden', emptyComments)
 }
 
 export interface CSSBorderRadiusIndividual {
@@ -1978,12 +1978,12 @@ export function parseBorderRadius(borderRadius: unknown): Either<string, CSSBord
 
 export function printBorderRadius(
   borderRadius: CSSBorderRadius,
-): JSXAttributeValue<string | number> {
+): JSExpressionValue<string | number> {
   if (isLeft(borderRadius)) {
     return printCSSNumberAsAttributeValue('px')(borderRadius.value)
   } else {
     const { tl, tr, br, bl } = borderRadius.value
-    return jsxAttributeValue(
+    return jsExpressionValue(
       `${printCSSNumber(tl, null)} ${printCSSNumber(tr, null)} ${printCSSNumber(
         br,
         null,
@@ -2226,8 +2226,8 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault
   return left('No background color found')
 }
 
-function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSXAttributeValue<string> {
-  return jsxAttributeValue(
+function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSExpressionValue<string> {
+  return jsExpressionValue(
     printEnabled(printColor(value.value.color), value.value.enabled),
     emptyComments,
   )
@@ -2305,8 +2305,8 @@ export function parseColor(
 
 const parseColorHexHashOptional = (color: unknown) => parseColor(color, 'hex-hash-optional')
 
-export function printColorToJsx(color: CSSColor | undefined): JSXAttributeValue<string> {
-  return jsxAttributeValue(color != null ? printColor(color) : '', emptyComments)
+export function printColorToJsx(color: CSSColor | undefined): JSExpressionValue<string> {
+  return jsExpressionValue(color != null ? printColor(color) : '', emptyComments)
 }
 
 export function cssColor(value: string, defaultColor: CSSColor = { ...defaultCSSColor }): CSSColor {
@@ -2944,7 +2944,7 @@ const emptyHTMLImageElementMetadata: HTMLImageElementMetadata = {
 
 export interface CSSUnknownFunctionParameters<T> {
   type: 'unknown-helper-function-parameters'
-  value: JSXAttributeValue<T>
+  value: JSExpressionValue<T>
 }
 
 export function isCSSUnknownFunctionParameters<T>(
@@ -2960,7 +2960,7 @@ export function isCSSUnknownFunctionParameters<T>(
 export function cssUnknownFunctionParameters<T>(value: T): CSSUnknownFunctionParameters<T> {
   return {
     type: 'unknown-helper-function-parameters',
-    value: jsxAttributeValue(value, emptyComments),
+    value: jsExpressionValue(value, emptyComments),
   }
 }
 
@@ -3366,7 +3366,7 @@ function isLayerEnabled<T extends { enabled: boolean }>(layer: T): boolean {
 
 export function printBackgroundImage(
   cssBackgroundImages: CSSBackgrounds,
-): JSXAttributeValue<string> {
+): JSExpressionValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, cssBackgroundImages)
   const backgroundImageStrings = cssBackgroundImages.map((backgroundImage, i) => {
     const enabled = backgroundImage.enabled
@@ -3409,13 +3409,13 @@ export function printBackgroundImage(
       }
     }
   })
-  return jsxAttributeValue(backgroundImageStrings.join(' '), emptyComments)
+  return jsExpressionValue(backgroundImageStrings.join(' '), emptyComments)
 }
 
-export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
+export function printBackgroundSize(value: CSSBackgroundSize): JSExpressionValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, value)
 
-  return jsxAttributeValue(
+  return jsExpressionValue(
     value
       .map((bgSize, i) => {
         const comma = indexOfLastEnabledLayer > i && bgSize.enabled
@@ -3587,9 +3587,9 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
   return left('No text shadows found')
 }
 
-function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string> {
+function printTextShadow(textShadows: CSSTextShadows): JSExpressionValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, textShadows)
-  return jsxAttributeValue(
+  return jsExpressionValue(
     [...textShadows]
       .map((textShadow, i) => {
         const comma = indexOfLastEnabledLayer > i && textShadow.enabled
@@ -3620,8 +3620,8 @@ function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
   }
 }
 
-function printFontFamily(cssFontFamily: CSSFontFamily): JSXAttributeValue<string> {
-  return jsxAttributeValue(fontFamilyArrayToCSSFontFamilyString(cssFontFamily), emptyComments)
+function printFontFamily(cssFontFamily: CSSFontFamily): JSExpressionValue<string> {
+  return jsExpressionValue(fontFamilyArrayToCSSFontFamilyString(cssFontFamily), emptyComments)
 }
 
 function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
@@ -3638,14 +3638,14 @@ function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
   }
 }
 
-function printFontWeight(cssFontFamily: CSSFontWeight): JSXAttributeValue<Property.FontWeight> {
-  return jsxAttributeValue(cssFontFamily, emptyComments)
+function printFontWeight(cssFontFamily: CSSFontWeight): JSExpressionValue<Property.FontWeight> {
+  return jsExpressionValue(cssFontFamily, emptyComments)
 }
 
 const parseFontStyle = isOneOfTheseParser<CSSFontStyle>(['normal', 'italic'])
 
-function printFontStyle(cssFontStyle: CSSFontStyle): JSXAttributeValue<Property.FontStyle> {
-  return jsxAttributeValue(cssFontStyle, emptyComments)
+function printFontStyle(cssFontStyle: CSSFontStyle): JSExpressionValue<Property.FontStyle> {
+  return jsExpressionValue(cssFontStyle, emptyComments)
 }
 
 const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
@@ -3659,8 +3659,8 @@ const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
 
 export const parseDirection = isOneOfTheseParser<CSSDirection>(['ltr', 'rtl'])
 
-function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.TextAlign> {
-  return jsxAttributeValue(cssTextAlign, emptyComments)
+function printTextAlign(cssTextAlign: CSSTextAlign): JSExpressionValue<Property.TextAlign> {
+  return jsExpressionValue(cssTextAlign, emptyComments)
 }
 
 const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
@@ -3672,8 +3672,8 @@ const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
 
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,
-): JSXAttributeValue<Property.TextDecorationLine> {
-  return jsxAttributeValue(cssTextDecorationLine, emptyComments)
+): JSExpressionValue<Property.TextDecorationLine> {
+  return jsExpressionValue(cssTextDecorationLine, emptyComments)
 }
 
 const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
@@ -3686,8 +3686,8 @@ const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
 
 function printTextDecorationStyle(
   cssTextDecorationStyle: CSSTextDecorationStyle,
-): JSXAttributeValue<Property.TextDecorationStyle> {
-  return jsxAttributeValue(cssTextDecorationStyle, emptyComments)
+): JSExpressionValue<Property.TextDecorationStyle> {
+  return jsExpressionValue(cssTextDecorationStyle, emptyComments)
 }
 
 function parseLetterSpacing(letterSpacing: unknown): Either<string, CSSLetterSpacing> {
@@ -3700,9 +3700,9 @@ function parseLetterSpacing(letterSpacing: unknown): Either<string, CSSLetterSpa
 
 function printLetterSpacing(
   cssLetterSpacing: CSSLetterSpacing,
-): JSXAttributeValue<Property.LetterSpacing<string | number>> {
+): JSExpressionValue<Property.LetterSpacing<string | number>> {
   if (cssLetterSpacing === 'normal') {
-    return jsxAttributeValue(cssLetterSpacing, emptyComments)
+    return jsExpressionValue(cssLetterSpacing, emptyComments)
   } else {
     return printCSSNumberAsAttributeValue(null)(cssLetterSpacing)
   }
@@ -3718,23 +3718,23 @@ function parseLineHeight(lineHeight: unknown): Either<string, CSSLineHeight> {
 
 function printLineHeight(
   cssLineHeight: CSSLineHeight,
-): JSXAttributeValue<Property.LineHeight<string | number>> {
+): JSExpressionValue<Property.LineHeight<string | number>> {
   if (cssLineHeight === 'normal') {
-    return jsxAttributeValue(cssLineHeight, emptyComments)
+    return jsExpressionValue(cssLineHeight, emptyComments)
   } else {
     return printCSSNumberAsAttributeValue(null)(cssLineHeight)
   }
 }
 
 export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribute {
-  if (isJSXAttributeFunctionCall(attribute)) {
+  if (modifiableAttributeIsAttributeFunctionCall(attribute)) {
     const result = jsxFunctionAttributeToRawValue(attribute)
     if (isRight(result) && result.value.functionName === disabledFunctionName) {
       const params = result.value.parameters
       if (params.length === 1) {
         const originalValueSimple = jsxSimpleAttributeToValue(params[0])
         if (isRight(originalValueSimple)) {
-          return jsxAttributeValue(originalValueSimple.value, emptyComments)
+          return jsExpressionValue(originalValueSimple.value, emptyComments)
         } else {
           return params[0]
         }
@@ -3746,11 +3746,11 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   } else {
     const simpleValue = jsxSimpleAttributeToValue(attribute)
     if (isRight(simpleValue)) {
-      return jsxAttributeFunctionCall(disabledFunctionName, [
-        jsxAttributeValue(simpleValue.value, emptyComments),
+      return jsExpressionFunctionCall(disabledFunctionName, [
+        jsExpressionValue(simpleValue.value, emptyComments),
       ])
     } else if (isRegularJSXAttribute(attribute)) {
-      return jsxAttributeFunctionCall(disabledFunctionName, [attribute])
+      return jsExpressionFunctionCall(disabledFunctionName, [attribute])
     } else {
       return attribute
     }
@@ -3763,8 +3763,8 @@ const backgroundImagePathWithoutStyle = PP.create('backgroundImage')
 const updateBackgroundImageLayersWithNewValues = (
   backgroundImageAttribute: ModifiableAttribute,
   newValueForAll: boolean | undefined,
-  attributes: JSXAttribute,
-): Either<string, JSXAttribute> => {
+  attributes: JSExpression,
+): Either<string, JSExpression> => {
   let workingNewValueForAll = newValueForAll
   const simpleBackgroundImage = jsxSimpleAttributeToValue(backgroundImageAttribute)
   if (isRight(simpleBackgroundImage) && typeof simpleBackgroundImage.value === 'string') {
@@ -3790,10 +3790,10 @@ const updateBackgroundImageLayersWithNewValues = (
   return left('backgroundImage could not be parsed as valid backgroundImage string')
 }
 
-export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribute {
-  let workingStyleProp: Either<string, JSXAttribute> = right(
+export function toggleBackgroundLayers(styleAttribute: JSExpression): JSExpression {
+  let workingStyleProp: Either<string, JSExpression> = right(
     styleAttribute,
-  ) as EitherRight<JSXAttribute>
+  ) as EitherRight<JSExpression>
   const backgroundColorResult = getJSXAttributeAtPathInner(
     styleAttribute,
     backgroundColorPathWithoutStyle,
@@ -3805,7 +3805,7 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
   // If backgroundColor is set
   if (
     backgroundColorResult.remainingPath == null &&
-    !isJSXAttributeNotFound(backgroundColorResult.attribute)
+    !modifiableAttributeIsAttributeNotFound(backgroundColorResult.attribute)
   ) {
     const simpleBackgroundColor = jsxSimpleAttributeToValue(backgroundColorResult.attribute)
     if (isRight(simpleBackgroundColor) && typeof simpleBackgroundColor.value === 'string') {
@@ -3825,7 +3825,7 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
           // If backgroundImage is also set…
           if (
             backgroundImageResult.remainingPath == null &&
-            !isJSXAttributeNotFound(backgroundImageResult.attribute)
+            !modifiableAttributeIsAttributeNotFound(backgroundImageResult.attribute)
           ) {
             // …set all of its values to the new value
             workingStyleProp = updateBackgroundImageLayersWithNewValues(
@@ -3843,7 +3843,7 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
     // …but backgroundImage is set…
     if (
       backgroundImageResult.remainingPath == null &&
-      !isJSXAttributeNotFound(backgroundImageResult.attribute)
+      !modifiableAttributeIsAttributeNotFound(backgroundImageResult.attribute)
     ) {
       // …toggle backgroundImage
       workingStyleProp = updateBackgroundImageLayersWithNewValues(
@@ -3864,7 +3864,7 @@ export function toggleBackgroundLayers(styleAttribute: JSXAttribute): JSXAttribu
   return isRight(workingStyleProp) ? workingStyleProp.value : styleAttribute
 }
 
-export function toggleBorder(attribute: ModifiableAttribute): JSXAttributeValue<string> {
+export function toggleBorder(attribute: ModifiableAttribute): JSExpressionValue<string> {
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (isRight(simpleValue) && typeof simpleValue.value === 'string') {
     const parsed = parseBorder(simpleValue.value)
@@ -3875,7 +3875,7 @@ export function toggleBorder(attribute: ModifiableAttribute): JSXAttributeValue<
   return printBorder({ ...defaultCSSBorder })
 }
 
-export function toggleShadow(attribute: ModifiableAttribute): JSXAttributeValue<string> {
+export function toggleShadow(attribute: ModifiableAttribute): JSExpressionValue<string> {
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (isRight(simpleValue) && typeof simpleValue.value === 'string') {
     const parsed = parseBoxShadow(simpleValue.value)
@@ -3896,7 +3896,8 @@ export function toggleStylePropPath(
       const attributeValue = attributeResult.value
       const updatedAttribute = toggleFn(attributeValue)
       const props: Either<string, JSXAttributes> =
-        isJSXAttributeNotFound(updatedAttribute) || isPartOfJSXAttributeValue(updatedAttribute)
+        modifiableAttributeIsAttributeNotFound(updatedAttribute) ||
+        modifiableAttributeIsPartOfAttributeValue(updatedAttribute)
           ? left(`Unable to set value of type ${updatedAttribute.type}`)
           : setJSXValueAtPath(element.props, path, updatedAttribute)
       if (isLeft(props)) {
@@ -3913,7 +3914,7 @@ export function toggleStylePropPath(
 }
 
 export function toggleStylePropPaths(
-  toggleFn: (attribute: JSXAttribute) => JSXAttribute,
+  toggleFn: (attribute: JSExpression) => JSExpression,
 ): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
     const styleProp = getJSXAttributeAtPath(element.props, PP.create('style'))
@@ -3931,18 +3932,18 @@ export function toggleStylePropPaths(
 
 function printCSSNumberAsAttributeValue(
   defaultUnitToSkip: string | null,
-): (value: CSSNumber) => JSXAttributeValue<string | number> {
+): (value: CSSNumber) => JSExpressionValue<string | number> {
   return (value: CSSNumber) =>
-    jsxAttributeValue(printCSSNumber(value, defaultUnitToSkip), emptyComments)
+    jsExpressionValue(printCSSNumber(value, defaultUnitToSkip), emptyComments)
 }
 
 function printCSSNumberOrUndefinedAsAttributeValue(
   defaultUnitToSkip: string | null,
-): (value: CSSNumber | undefined) => JSXAttributeValue<string | number | undefined> {
+): (value: CSSNumber | undefined) => JSExpressionValue<string | number | undefined> {
   return (value: CSSNumber | undefined) => {
     return value != null
       ? printCSSNumberAsAttributeValue(defaultUnitToSkip)(value)
-      : jsxAttributeValue(undefined, emptyComments)
+      : jsExpressionValue(undefined, emptyComments)
   }
 }
 
@@ -3950,8 +3951,8 @@ function parseString(value: unknown): Either<string, string> {
   return typeof value === 'string' ? right(value) : left(`${value} is not a string`)
 }
 
-function printStringAsAttributeValue(value: string): JSXAttributeValue<string> {
-  return jsxAttributeValue(value, emptyComments)
+function printStringAsAttributeValue(value: string): JSExpressionValue<string> {
+  return jsExpressionValue(value, emptyComments)
 }
 
 type CSSMixBlendMode = 'normal' | 'multiply' | 'screen' | 'darken'
@@ -3963,8 +3964,8 @@ const parseMixBlendMode = isOneOfTheseParser<CSSMixBlendMode>([
   'darken',
 ])
 
-function printMixBlendMode(blendMode: CSSMixBlendMode): JSXAttributeValue<string> {
-  return jsxAttributeValue(blendMode, emptyComments)
+function printMixBlendMode(blendMode: CSSMixBlendMode): JSExpressionValue<string> {
+  return jsExpressionValue(blendMode, emptyComments)
 }
 
 type CSSObjectFit = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
@@ -3980,8 +3981,8 @@ const parseCSSObjectFit = isOneOfTheseParser<CSSObjectFit>([
 
 type ImageURL = string
 
-function printCSSObjectFit(value: CSSObjectFit): JSXAttributeValue<string> {
-  return jsxAttributeValue(value, emptyComments)
+function printCSSObjectFit(value: CSSObjectFit): JSExpressionValue<string> {
+  return jsExpressionValue(value, emptyComments)
 }
 
 function parseFramePin(
@@ -4066,7 +4067,7 @@ function isNumberParser(simpleValue: unknown): Either<string, number> {
   }
 }
 
-type DOMEventHandlerMetadata = JSXAttribute
+type DOMEventHandlerMetadata = JSExpression
 
 export function parseDOMEventHandlerMetadata(
   _: unknown,
@@ -4082,7 +4083,7 @@ export function parseDOMEventHandlerMetadata(
   }
 }
 
-export function printDOMEventHandlerMetadata(value: JSXAttribute): JSXAttribute {
+export function printDOMEventHandlerMetadata(value: JSExpression): JSExpression {
   return value
 }
 
@@ -4432,7 +4433,7 @@ type CSSPrinters = {
   [key in keyof ParsedCSSProperties]: Printer<ParsedCSSProperties[key]>
 }
 
-const jsxAttributeValueWithNoComments = (value: unknown) => jsxAttributeValue(value, emptyComments)
+const jsxAttributeValueWithNoComments = (value: unknown) => jsExpressionValue(value, emptyComments)
 
 const cssPrinters: CSSPrinters = {
   backgroundColor: printBackgroundColor,
@@ -4687,7 +4688,7 @@ export interface ParsedElementProperties
 export type ParsedElementPropertiesKeys = keyof ParsedElementProperties
 
 export const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
-  current[item] = jsxAttributeValue(undefined, emptyComments)
+  current[item] = jsExpressionValue(undefined, emptyComments)
   return current
 }, {} as DOMEventAttributeProperties)
 
@@ -4935,7 +4936,7 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
 }
 
 // hmmmm
-type PrintedValue = JSXAttribute
+type PrintedValue = JSExpression
 
 type Printer<V extends ValueOf<ParsedProperties>> = (value: V) => PrintedValue
 

@@ -1,7 +1,13 @@
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import { allElemsEqual, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import {
+  allElemsEqual,
+  mapDropNulls,
+  strictEvery,
+  stripNulls,
+  uniq,
+} from '../../core/shared/array-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -18,8 +24,8 @@ import {
   parseCSSLengthPercent,
   parseCSSNumber,
 } from './common/css-utils'
-import { assertNever } from '../../core/shared/utils'
-import { defaultEither, foldEither, isLeft, right } from '../../core/shared/either'
+import { assertNever, fastForEach } from '../../core/shared/utils'
+import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { CSSProperties } from 'react'
@@ -41,6 +47,13 @@ import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
+import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
+import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
+import { Frame } from 'utopia-api/core'
+import { getPinsToDelete } from './common/layout-property-path-hooks'
+import { ControlStatus } from '../../uuiui-deps'
+import { getFallbackControlStatusForProperty } from './common/control-status'
+import { AllElementProps } from '../editor/store/editor-state'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -212,7 +225,7 @@ export function detectAreElementsFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
 ): boolean {
-  return elementPaths.every((path) =>
+  return strictEvery(elementPaths, (path) =>
     MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
   )
 }
@@ -520,11 +533,11 @@ export type FixedHugFillMode = FixedHugFill['type']
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath | null,
-): FixedHugFill | null {
+  elementPath: ElementPath,
+): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
-    return null
+    return { fixedHugFill: null, controlStatus: 'off' }
   }
 
   const flexGrowLonghand = foldEither(
@@ -547,51 +560,110 @@ export function detectFillHugFixedState(
       getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flex')),
     )
 
-  if (flexGrow != null) {
+  const flexGrowStatus = getFallbackControlStatusForProperty(
+    'flexGrow',
+    element.element.value.props,
+    element.attributeMetadatada,
+  )
+
+  if (flexGrow != null || flexGrowStatus !== 'detected') {
+    // instead of the fallback detected flexgrow the control shows computed frame values
     const flexDirection = optionalMap(
-      (e) => detectFlexDirectionOne(metadata, EP.parentPath(e)),
+      (e) => detectFlexDirectionOne(metadata, EP.parentPath(e)), // TODO fix flex parent, the parent may not be found at parentpath
       elementPath,
     )
 
     const isFlexDirectionHorizontal = flexDirection === 'row' || flexDirection === 'row-reverse'
-    if (axis === 'horizontal' && isFlexDirectionHorizontal) {
-      return { type: 'fill', value: flexGrow }
-    }
-
     const isFlexDirectionVertical = flexDirection === 'column' || flexDirection === 'column-reverse'
-    if (axis === 'vertical' && isFlexDirectionVertical) {
-      return { type: 'fill', value: flexGrow }
+
+    const flexGrowDetectedValue = defaultEither(
+      null,
+      parseCSSNumber(element.computedStyle?.flexGrow, 'Unitless'),
+    )
+
+    const isAxisMatchingFlexDirection =
+      (axis === 'horizontal' && isFlexDirectionHorizontal) ||
+      (axis === 'vertical' && isFlexDirectionVertical)
+
+    if (isAxisMatchingFlexDirection) {
+      if (flexGrow != null) {
+        const valueWithType = { type: 'fill' as const, value: flexGrow }
+        return { fixedHugFill: valueWithType, controlStatus: 'simple' }
+      }
+      if (flexGrowDetectedValue != null) {
+        const valueWithType = { type: 'fill' as const, value: flexGrowDetectedValue }
+        return { fixedHugFill: valueWithType, controlStatus: flexGrowStatus }
+      }
     }
   }
 
   const property = widthHeightFromAxis(axis)
 
-  const prop = defaultEither(
+  const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (prop === MaxContent) {
-    return { type: 'hug' }
+  if (simpleAttribute === MaxContent) {
+    const valueWithType = { type: 'hug' as const }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
-  const parsed = defaultEither(null, parseCSSLengthPercent(prop))
-
+  const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
   if (parsed != null && parsed.unit === '%') {
-    return { type: 'fill', value: parsed }
+    const valueWithType = { type: 'fill' as const, value: parsed }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   if (parsed != null) {
-    return { type: 'fixed', value: parsed }
+    const valueWithType = { type: 'fixed' as const, value: parsed }
+    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    return { type: 'fixed', value: cssNumber(frame[dimension], 'px') }
+    const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
+
+    const controlStatus = getFallbackControlStatusForProperty(
+      property,
+      element.element.value.props,
+      element.attributeMetadatada,
+    )
+
+    return { fixedHugFill: valueWithType, controlStatus: controlStatus }
   }
 
-  return null
+  return { fixedHugFill: null, controlStatus: 'unset' }
+}
+
+export function detectFillHugFixedStateMultiselect(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
+  if (elementPaths.length === 1) {
+    return detectFillHugFixedState(axis, metadata, elementPaths[0])
+  } else {
+    const results = elementPaths.map((path) => detectFillHugFixedState(axis, metadata, path))
+    let controlStatus: ControlStatus = results[0]?.controlStatus ?? 'off'
+    let value: FixedHugFill | null = results[0]?.fixedHugFill
+
+    fastForEach(results, (result) => {
+      if (!isFixedHugFillEqual(result, results[0])) {
+        controlStatus = 'multiselect-mixed-simple-or-unset'
+      }
+    })
+
+    const allControlStatus = uniq(results.map((result) => result.controlStatus))
+    if (allControlStatus.includes('unoverwritable')) {
+      controlStatus = 'multiselect-unoverwritable'
+    } else if (allControlStatus.includes('controlled')) {
+      controlStatus = 'multiselect-controlled'
+    }
+
+    return { fixedHugFill: value, controlStatus: controlStatus }
+  }
 }
 
 export const MaxContent = 'max-content' as const
@@ -623,16 +695,19 @@ export function detectPackedSpacedSetting(
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropHugStrategies('horizontal'),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropHugStrategies('vertical'),
     ) ?? []),
   ]
@@ -642,16 +717,19 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropFillStrategies('horizontal', 'default', false),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      allElementProps,
       setPropFillStrategies('vertical', 'default', false),
     ) ?? []),
   ]
@@ -691,21 +769,44 @@ export function addPositionAbsoluteTopLeft(
   ]
 }
 
+export function setElementTopLeft(
+  instance: ElementInstanceMetadata,
+  { top, left }: { top: number; left: number },
+): Array<CanvasCommand> {
+  return [
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(top, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
+    setCssLengthProperty(
+      'always',
+      instance.elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(left, null) },
+      instance.specialSizeMeasurements.parentFlexDirection,
+    ),
+  ]
+}
+
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
+  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   if (elementPaths.length === 0) {
     return []
   }
 
   const isSetToHug =
-    detectFillHugFixedState('horizontal', metadata, elementPaths[0])?.type === 'hug' &&
-    detectFillHugFixedState('vertical', metadata, elementPaths[0])?.type === 'hug'
+    detectFillHugFixedState('horizontal', metadata, elementPaths[0]).fixedHugFill?.type === 'hug' &&
+    detectFillHugFixedState('vertical', metadata, elementPaths[0]).fixedHugFill?.type === 'hug'
 
   return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
-    : resizeToFitCommands(metadata, elementPaths)
+    : resizeToFitCommands(metadata, elementPaths, allElementProps)
 }
 
 export function getFixedFillHugOptionsForElement(
@@ -746,7 +847,7 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const isHug = detectFillHugFixedState(axis, metadata, parentPath)?.type === 'hug'
+  const isHug = detectFillHugFixedState(axis, metadata, parentPath).fixedHugFill?.type === 'hug'
   if (!isHug) {
     return []
   }
@@ -772,4 +873,71 @@ export function setParentToFixedIfHugCommands(
       parentInstance.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
   ]
+}
+
+export function getFramePointsFromMetadata(elementMetadata: ElementInstanceMetadata): Frame {
+  if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+    const jsxElement = elementMetadata.element.value
+    return LayoutPinnedProps.reduce<Frame>((working, point) => {
+      const value = getLayoutLengthValueOrKeyword(point, right(jsxElement.props), ['style'])
+      if (isLeft(value)) {
+        return working
+      } else {
+        return {
+          ...working,
+          [point]: value.value,
+        }
+      }
+    }, {})
+  } else {
+    return {}
+  }
+}
+
+export function removeExtraPinsWhenSettingSize(
+  axis: Axis,
+  elementMetadata: ElementInstanceMetadata | null,
+): Array<CanvasCommand> {
+  if (elementMetadata == null) {
+    return []
+  }
+  const framePinValues = getFramePointsFromMetadata(elementMetadata)
+  const newFrameProp = axis === 'horizontal' ? 'width' : 'height'
+  const pinsToDelete = getPinsToDelete(newFrameProp, framePinValues, null, null)
+
+  return pinsToDelete.map((frameProp) =>
+    deleteProperties('always', elementMetadata.elementPath, [styleP(frameProp)]),
+  )
+}
+
+export function isFixedHugFillEqual(
+  a: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
+  b: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
+): boolean {
+  if (a.fixedHugFill == null && b.fixedHugFill == null && a.controlStatus === b.controlStatus) {
+    return true
+  }
+
+  if (a.controlStatus !== b.controlStatus) {
+    return false
+  }
+
+  if (a.fixedHugFill == null || b.fixedHugFill == null) {
+    return false
+  }
+
+  switch (a.fixedHugFill.type) {
+    case 'hug':
+      return b.fixedHugFill.type === 'hug'
+    case 'fill':
+    case 'fixed':
+      return (
+        a.fixedHugFill.type === b.fixedHugFill.type &&
+        a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
+        a.fixedHugFill.value.unit === b.fixedHugFill.value.unit
+      )
+    default:
+      const _exhaustiveCheck: never = a.fixedHugFill
+      throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
+  }
 }

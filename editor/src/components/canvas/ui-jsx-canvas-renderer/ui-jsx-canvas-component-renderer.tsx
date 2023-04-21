@@ -1,7 +1,6 @@
 import React from 'react'
 import { MapLike } from 'typescript'
 import { PropertyControls } from 'utopia-api/core'
-import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
   JSXElementChild,
   isUtopiaJSXComponent,
@@ -31,7 +30,7 @@ import {
 import { useContextSelector } from 'use-context-selector'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
-import { getPathsFromString } from '../../../core/shared/uid-utils'
+import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'

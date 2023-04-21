@@ -1,6 +1,6 @@
 import { assertNever } from '../../../../core/shared/utils'
 import { cmdModifier, Modifiers, shiftModifier } from '../../../../utils/modifiers'
-import { expectSingleUndoStep, wait } from '../../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, wait } from '../../../../utils/utils.test-utils'
 import { cssNumber } from '../../../inspector/common/css-utils'
 import { EdgePiece, isHorizontalEdgePiece } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
@@ -868,7 +868,7 @@ async function testPaddingResizeForEdge(
     alt: mode === 'cross-axis' || mode === 'all',
     shift: mode === 'all',
   }
-  await expectSingleUndoStep(editor, async () => {
+  await expectSingleUndo2Saves(editor, async () => {
     await mouseDragFromPointToPoint(paddingControl, paddingControlCenter, endPoint, {
       modifiers,
     })

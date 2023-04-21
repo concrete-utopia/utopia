@@ -74,7 +74,7 @@ export function findFirstParentWithValidElementPath(
     return firstParentFromDom ?? firstParentFromPath
   }
 
-  return EP.navigatorDepth(firstParentFromDom) < EP.navigatorDepth(firstParentFromPath)
+  return EP.fullDepth(firstParentFromDom) < EP.fullDepth(firstParentFromPath)
     ? firstParentFromPath
     : firstParentFromDom
 }
@@ -122,8 +122,7 @@ export function findFirstParentWithValidElementPathInner(
         for (const staticAndDynamic of staticAndDynamicTargetElementPaths) {
           if (EP.isDescendantOfOrEqualTo(staticAndDynamic.staticPath, validPathFromString)) {
             const depthDiff =
-              EP.navigatorDepth(staticAndDynamic.staticPath) -
-              EP.navigatorDepth(validPathFromString)
+              EP.fullDepth(staticAndDynamic.staticPath) - EP.fullDepth(validPathFromString)
             filteredValidPathsMappedToDynamic.push(
               EP.nthParentPath(staticAndDynamic.dynamic, depthDiff),
             )
@@ -149,7 +148,7 @@ export function findFirstParentWithValidElementPathInner(
     let deepestDepth: number = -1
     let deepestResult: ElementPath | null = null
     for (const path of filteredValidPathsMappedToDynamic) {
-      const latestDepth = EP.navigatorDepth(path)
+      const latestDepth = EP.fullDepth(path)
       if (latestDepth > deepestDepth) {
         deepestDepth = latestDepth
         deepestResult = path

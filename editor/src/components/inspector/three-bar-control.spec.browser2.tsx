@@ -1,6 +1,6 @@
 import * as EP from '../../core/shared/element-path'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
@@ -70,7 +70,7 @@ async function doTest(editor: EditorRenderResult, controlId: string): Promise<HT
   const div = editor.renderedDOM.getByTestId(ParentId)
   const control = editor.renderedDOM.getByTestId(controlId)
   const controlBounds = control.getBoundingClientRect()
-  await expectSingleUndoStep(editor, async () => {
+  await expectSingleUndo2Saves(editor, async () => {
     await mouseClickAtPoint(control, { x: controlBounds.top + 10, y: controlBounds.left + 10 })
   })
   return div

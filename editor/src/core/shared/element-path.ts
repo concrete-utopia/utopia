@@ -10,7 +10,6 @@ import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
-import * as EP from '../../core/shared/element-path'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -305,23 +304,8 @@ export function depth(path: ElementPath): number {
   return 1 + path.parts.length
 }
 
-export function navigatorDepth(
-  path: ElementPath,
-  visibleNavigatorTargets: Array<ElementPath> | null = null,
-): number {
-  let result: number = -2
-  for (const pathPart of path.parts) {
-    result += pathPart.length
-    if (visibleNavigatorTargets != null) {
-      const ancestorsNotInNavigator = EP.getAncestors(path).filter(
-        (p) =>
-          p.parts.length > 0 &&
-          !visibleNavigatorTargets.some((navigatorPath) => EP.pathsEqual(p, navigatorPath)),
-      )
-      result -= ancestorsNotInNavigator.length - 1
-    }
-  }
-  return result
+export function fullDepth(path: ElementPath): number {
+  return path.parts.reduce((working, part) => working + part.length, 0)
 }
 
 export function isInsideFocusedComponent(path: ElementPath): boolean {
@@ -587,6 +571,10 @@ export function isRootElementOf(path: ElementPath | null, parent: ElementPath | 
 
 export function isSiblingOf(l: ElementPath | null, r: ElementPath | null): boolean {
   return l != null && r != null && pathsEqual(parentPath(l), parentPath(r))
+}
+
+export function areSiblings(paths: Array<ElementPath>): boolean {
+  return paths.every((p) => isSiblingOf(paths[0], p))
 }
 
 function slicedPathsEqual(l: ElementPathPart, r: ElementPathPart): boolean {

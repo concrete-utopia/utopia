@@ -5,12 +5,17 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { renameComponent } from '../actions'
-import { StringInput, flexRowStyle } from '../../../uuiui'
+import { StringInput, flexRowStyle, colorTheme, Icons } from '../../../uuiui'
+import {
+  isRegularNavigatorEntry,
+  navigatorEntriesEqual,
+  NavigatorEntry,
+} from '../../../components/editor/store/editor-state'
 
 interface ItemLabelProps {
   testId: string
   dispatch: EditorDispatch
-  target: ElementPath
+  target: NavigatorEntry
   isDynamic: boolean
   selected: boolean
   name: string
@@ -21,7 +26,7 @@ interface ItemLabelProps {
 
 interface ItemLabelState {
   name: string
-  target: ElementPath
+  target: NavigatorEntry
 }
 
 export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
@@ -38,7 +43,7 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
     props: ItemLabelProps,
     state: ItemLabelState,
   ): ItemLabelState | null {
-    if (props.target === state.target || EP.pathsEqual(props.target, state.target)) {
+    if (props.target === state.target || navigatorEntriesEqual(props.target, state.target)) {
       return null
     } else {
       return {
@@ -63,13 +68,20 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
   }
 
   renameComponent() {
-    // if the name would be the same, or if the new name would be empty, just cancel
-    if (this.props.name === this.state.name) {
-      this.cancelRename()
+    if (isRegularNavigatorEntry(this.props.target)) {
+      // if the name would be the same, or if the new name would be empty, just cancel
+      if (this.props.name === this.state.name) {
+        this.cancelRename()
+      } else {
+        const nameIsBlank = this.state.name.trim().length === 0
+        const action = renameComponent(
+          this.props.target.elementPath,
+          nameIsBlank ? null : this.state.name,
+        )
+        this.props.dispatch([action, EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
+      }
     } else {
-      const nameIsBlank = this.state.name.trim().length === 0
-      const action = renameComponent(this.props.target, nameIsBlank ? null : this.state.name)
-      this.props.dispatch([action, EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
+      this.cancelRename()
     }
   }
 
@@ -88,11 +100,18 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          fontWeight: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
+          color: this.props.target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
+          textTransform: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
         }}
         onDoubleClick={(event) => {
-          if (!this.props.isDynamic && event.altKey) {
+          if (!this.props.isDynamic && event.altKey && isRegularNavigatorEntry(this.props.target)) {
             this.props.dispatch(
-              [EditorActions.setNavigatorRenamingTarget(this.props.target)],
+              [EditorActions.setNavigatorRenamingTarget(this.props.target.elementPath)],
               'leftpane',
             )
           }

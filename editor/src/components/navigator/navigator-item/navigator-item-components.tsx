@@ -8,7 +8,12 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { when } from '../../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getMetadata } from '../../editor/store/editor-state'
+import {
+  getMetadata,
+  isRegularNavigatorEntry,
+  NavigatorEntry,
+  varSafeNavigatorEntryToKey,
+} from '../../editor/store/editor-state'
 import { SelectionLocked } from '../../canvas/canvas-types'
 
 export const NavigatorHintCircleDiameter = 8
@@ -235,32 +240,42 @@ export const OriginalComponentNameLabel: React.FunctionComponent<
 interface NavigatorItemActionSheetProps {
   selected: boolean
   highlighted: boolean
-  elementPath: ElementPath
+  navigatorEntry: NavigatorEntry
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
+  isSlot: boolean
   dispatch: EditorDispatch
 }
 
 export const NavigatorItemActionSheet: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemActionSheetProps>
 > = React.memo((props) => {
-  const { elementPath, dispatch } = props
+  const { navigatorEntry, dispatch } = props
 
   const toggleHidden = React.useCallback(() => {
-    dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
-  }, [dispatch, elementPath])
+    if (isRegularNavigatorEntry(navigatorEntry)) {
+      dispatch([EditorActions.toggleHidden([navigatorEntry.elementPath])], 'everyone')
+    }
+  }, [dispatch, navigatorEntry])
 
   const toggleSelectable = React.useCallback(
     (newValue: SelectionLocked) => {
-      dispatch([EditorActions.toggleSelectionLock([elementPath], newValue)], 'everyone')
+      if (isRegularNavigatorEntry(navigatorEntry)) {
+        dispatch(
+          [EditorActions.toggleSelectionLock([navigatorEntry.elementPath], newValue)],
+          'everyone',
+        )
+      }
     },
-    [dispatch, elementPath],
+    [dispatch, navigatorEntry],
   )
 
   const isLockedElement = useEditorState(
     Substores.restOfEditor,
     (store) => {
-      return store.editor.lockedElements.simpleLock.some((path) => EP.pathsEqual(elementPath, path))
+      return store.editor.lockedElements.simpleLock.some((path) =>
+        EP.pathsEqual(navigatorEntry.elementPath, path),
+      )
     },
     'NavigatorItemActionSheet isLockedElement',
   )
@@ -268,23 +283,25 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     Substores.restOfEditor,
     (store) => {
       return store.editor.lockedElements.hierarchyLock.some((path) =>
-        EP.pathsEqual(elementPath, path),
+        EP.pathsEqual(navigatorEntry.elementPath, path),
       )
     },
     'NavigatorItemActionSheet isLockedHierarchy',
   )
 
   const jsxMetadataRef = useRefEditorState((store) => getMetadata(store.editor))
-  const isSceneElement = React.useMemo(
-    () => MetadataUtils.isProbablyScene(jsxMetadataRef.current, elementPath),
-    [elementPath, jsxMetadataRef],
-  )
+  const isSceneElement = React.useMemo(() => {
+    return (
+      isRegularNavigatorEntry(navigatorEntry) &&
+      MetadataUtils.isProbablyScene(jsxMetadataRef.current, navigatorEntry.elementPath)
+    )
+  }, [navigatorEntry, jsxMetadataRef])
 
   const isDescendantOfLocked = useEditorState(
     Substores.restOfEditor,
     (store) => {
       return MetadataUtils.isDescendantOfHierarchyLockedElement(
-        elementPath,
+        navigatorEntry.elementPath,
         store.editor.lockedElements,
       )
     },
@@ -298,14 +315,15 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
       <SelectionLockedIndicator
-        key={`selection-locked-indicator-${EP.toVarSafeComponentId(elementPath)}`}
+        key={`selection-locked-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
         shouldShow={
           !isSceneElement &&
           (props.highlighted ||
             props.selected ||
             isLockedElement ||
             isLockedHierarchy ||
-            isDescendantOfLocked)
+            isDescendantOfLocked) &&
+          !props.isSlot
         }
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}
@@ -313,8 +331,10 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
         onClick={toggleSelectable}
       />
       <VisibilityIndicator
-        key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}
-        shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
+        key={`visibility-indicator-${varSafeNavigatorEntryToKey(navigatorEntry)}`}
+        shouldShow={
+          !props.isSlot && (props.highlighted || props.selected || !props.isVisibleOnCanvas)
+        }
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}
         onClick={toggleHidden}

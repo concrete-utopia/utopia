@@ -4,7 +4,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   emptyComments,
-  jsxAttributeValue,
+  jsExpressionValue,
 } from '../../../core/shared/element-template'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -33,7 +33,7 @@ export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
   const propsToUpdate: Array<ValueAtPath> = [
     {
       path: stylePropPathMappingFn('position', styleStringInArray),
-      value: jsxAttributeValue('absolute', emptyComments),
+      value: jsExpressionValue('absolute', emptyComments),
     },
   ]
 

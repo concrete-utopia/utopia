@@ -143,7 +143,7 @@ export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
 }
 
 export function nullIfInfinity<C extends CoordinateMarker>(
-  r: MaybeInfinityRectangle<C> | null,
+  r: MaybeInfinityRectangle<C> | null | undefined,
 ): Rectangle<C> | null {
   return r == null || isInfinityRectangle(r) ? null : r
 }
@@ -730,6 +730,19 @@ export function rectSizeToVector<C extends CoordinateMarker>(sizeOfVector: Size)
   } as Point<C>
 }
 
+const roundToNearestWhole = (x: number) => roundTo(x, 0)
+
+export function roundRectangleToNearestWhole<C extends CoordinateMarker>(
+  rectangle: Rectangle<C>,
+): Rectangle<C> {
+  return {
+    x: roundToNearestWhole(rectangle.x),
+    y: roundToNearestWhole(rectangle.y),
+    width: roundToNearestWhole(rectangle.width),
+    height: roundToNearestWhole(rectangle.height),
+  } as Rectangle<C>
+}
+
 export function transformFrameUsingBoundingBox<C extends CoordinateMarker>(
   newBoundingBox: Rectangle<C>,
   currentBoundingBox: Rectangle<C>,
@@ -929,9 +942,11 @@ export function forceNotNaN(n: number, errorMessage?: string): number {
   }
 }
 
-export function nanToZero(n: number): number {
+export const nanToZero = (n: number) => defaultIfNaN(n, 0)
+
+export function defaultIfNaN(n: number, defaultValue: number): number {
   if (isNaN(n)) {
-    return 0
+    return defaultValue
   } else {
     return n
   }

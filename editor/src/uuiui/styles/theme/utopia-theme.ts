@@ -29,6 +29,7 @@ export const UtopiaTheme = {
     rowHorizontalPadding: 8,
     rowButtonSpacing: 4,
     rowHeight: {
+      smallest: 21,
       smaller: 29,
       normal: 34,
       large: 42,
@@ -160,6 +161,12 @@ const textNoticeStyles = {
   disconnected: { background: backgroundURLs.noise, color: 'white' },
 }
 
+const fontStyles = {
+  monospaced: {
+    fontFamily: 'Consolas, Menlo, monospace',
+  },
+}
+
 const shadowStyles = {
   small: {
     boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
@@ -214,4 +221,5 @@ export const UtopiaStyles = {
   flexCenter,
   scene,
   canvas,
+  fontStyles,
 } as const

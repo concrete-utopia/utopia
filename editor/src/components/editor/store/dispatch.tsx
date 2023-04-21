@@ -170,10 +170,10 @@ function processAction(
   let newStateHistory: StateHistory
   switch (action.action) {
     case 'UNDO':
-      newStateHistory = History.undo(working.history)
+      newStateHistory = History.undo(working.unpatchedEditor.id, working.history, 'no-side-effects')
       break
     case 'REDO':
-      newStateHistory = History.redo(working.history)
+      newStateHistory = History.redo(working.unpatchedEditor.id, working.history, 'no-side-effects')
       break
     case 'NEW':
     case 'LOAD':
@@ -193,7 +193,7 @@ function processAction(
     userState: working.userState,
     workers: working.workers,
     persistence: working.persistence,
-    alreadySaved: working.alreadySaved,
+    saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
   }
 }
@@ -374,11 +374,9 @@ function maybeRequestModelUpdateOnEditor(
 }
 
 let accumulatedProjectChanges: ProjectChanges = emptyProjectChanges
-let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function resetDispatchGlobals(): void {
   accumulatedProjectChanges = emptyProjectChanges
-  applyProjectChangesCoordinator = Promise.resolve()
 }
 
 export function editorDispatch(
@@ -497,30 +495,51 @@ export function editorDispatch(
   //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
   //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
 
-  let newHistory: StateHistory
-  if (transientOrNoChange) {
-    newHistory = result.history
-  } else if (allMergeWithPrevUndo) {
-    newHistory = History.replaceLast(result.history, editorFilteredForFiles, frozenDerivedState)
-  } else {
-    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
-  }
-
-  const alreadySaved = result.alreadySaved
-
-  const isLoaded = editorFilteredForFiles.isLoaded
-  const shouldSave =
-    isLoaded &&
-    !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
-    isBrowserEnvironment
-
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
       ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
       : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
 
   const frozenEditorState = editorWithModelChecked.editorState
+
+  const saveCountThisSession = result.saveCountThisSession
+
+  const isLoaded = editorFilteredForFiles.isLoaded
+  const canSave = isLoaded && !isLoadAction && isBrowserEnvironment
+  const shouldSaveIfNotForced =
+    editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
+    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0))
+  const shouldSave = canSave && (forceSave || shouldSaveIfNotForced)
+
+  // Include asset renames with the history.
+  let assetRenames: Array<History.AssetRename> = []
+  for (const action of dispatchedActions) {
+    if (action.action === 'UPDATE_FILE_PATH') {
+      assetRenames.push({
+        filenameChangedFrom: action.oldPath,
+        filenameChangedTo: action.newPath,
+      })
+    }
+  }
+
+  let newHistory: StateHistory
+  if (transientOrNoChange || !shouldSave) {
+    newHistory = result.history
+  } else if (allMergeWithPrevUndo) {
+    newHistory = History.replaceLast(
+      result.history,
+      editorFilteredForFiles,
+      frozenDerivedState,
+      assetRenames,
+    )
+  } else {
+    newHistory = History.add(
+      result.history,
+      editorFilteredForFiles,
+      frozenDerivedState,
+      assetRenames,
+    )
+  }
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
@@ -537,7 +556,7 @@ export function editorDispatch(
       result.entireUpdateFinished,
       editorWithModelChecked.modelUpdateFinished,
     ]),
-    alreadySaved: alreadySaved || shouldSave,
+    saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
   }
 
@@ -570,8 +589,11 @@ export function editorDispatch(
     )
   }
 
-  const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
-  applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+  if (!isLoadAction) {
+    // If the action was a load action then we don't want to send across any changes
+    const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
+    applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+  }
 
   const shouldUpdatePreview =
     anySendPreviewModel ||
@@ -590,6 +612,15 @@ export function editorDispatch(
   )
 
   return finalStore
+}
+
+function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {
+  return (
+    // FIXME We should be ripping out the parsed models before comparing the project contents here
+    oldState.projectContents !== newState.projectContents ||
+    oldState.githubSettings !== newState.githubSettings ||
+    oldState.branchContents !== newState.branchContents
+  )
 }
 
 let cullElementPathCacheTimeoutId: number | undefined = undefined
@@ -639,14 +670,9 @@ function applyProjectChanges(
   )
 
   if (frozenEditorState.vscodeReady) {
-    // Chain off of the previous one to ensure the ordering is maintained.
-    applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-      const changesToSend = accumulatedProjectChanges
-      accumulatedProjectChanges = emptyProjectChanges
-      return sendVSCodeChanges(changesToSend).catch((error) => {
-        console.error('Error sending updates to VS Code', error)
-      })
-    })
+    const changesToSend = accumulatedProjectChanges
+    accumulatedProjectChanges = emptyProjectChanges
+    sendVSCodeChanges(changesToSend)
   }
 
   const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
@@ -793,7 +819,7 @@ function editorDispatchInner(
       persistence: storedState.persistence,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
-      alreadySaved: storedState.alreadySaved,
+      saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
     }
   } else {

@@ -28,7 +28,7 @@ import {
   ElementInstanceMetadata,
   isJSXElement,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXElement,
   UtopiaJSXComponent,
   ElementInstanceMetadataMap,
@@ -85,7 +85,7 @@ export const PinLayoutHelpers = {
           return setJSXValueAtPath(
             workingProps,
             stylePropPathMappingFn(frameProp, propertyTarget),
-            jsxAttributeValue(frame[frameProp], emptyComments),
+            jsExpressionValue(frame[frameProp], emptyComments),
           )
         }
       },
@@ -122,7 +122,7 @@ export const FlexLayoutHelpers = {
           let propsToSet: Array<ValueAtPath> = []
           function addPropToSet(path: PropertyPath, value: string | number | undefined): void {
             if (value != null) {
-              propsToSet.push({ path: path, value: jsxAttributeValue(value, emptyComments) })
+              propsToSet.push({ path: path, value: jsExpressionValue(value, emptyComments) })
             }
           }
           if (flexBasis != null) {

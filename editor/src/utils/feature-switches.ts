@@ -13,8 +13,6 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Nine block control'
   | 'Project Thumbnail Generation'
-  | 'Fragment support'
-  | 'Conditional support'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -28,8 +26,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Nine block control',
   'Project Thumbnail Generation',
-  'Fragment support',
-  'Conditional support',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -43,8 +39,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Nine block control': true,
   'Project Thumbnail Generation': false,
-  'Fragment support': false,
-  'Conditional support': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

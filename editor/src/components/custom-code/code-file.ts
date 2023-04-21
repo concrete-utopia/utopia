@@ -22,7 +22,7 @@ import {
   EvaluationCache,
   getCurriedEditorRequireFn,
 } from '../../core/es-modules/package-manager/package-manager'
-import { fastForEach } from '../../core/shared/utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot, treeToContents } from '../assets'
@@ -32,11 +32,15 @@ import {
   getJSXAttribute,
   ImportInfo,
   isIntrinsicElement,
-  isJSXAttributeOtherJavaScript,
-  isUtopiaJSXComponent,
+  modifiableAttributeIsAttributeOtherJavaScript,
+  JSXConditionalExpressionWithoutUID,
   JSXElement,
   JSXElementWithoutUID,
+  JSXFragmentWithoutUID,
   UtopiaJSXComponent,
+  clearJSXElementWithoutUIDUniqueIDs,
+  clearJSXFragmentWithoutUIDUniqueIDs,
+  clearJSXConditionalExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
@@ -94,15 +98,35 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
+export type ComponentElementToInsert =
+  | JSXElementWithoutUID
+  | JSXConditionalExpressionWithoutUID
+  | JSXFragmentWithoutUID
+
+export function clearComponentElementToInsertUniqueIDs(
+  toInsert: ComponentElementToInsert,
+): ComponentElementToInsert {
+  switch (toInsert.type) {
+    case 'JSX_ELEMENT':
+      return clearJSXElementWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return clearJSXConditionalExpressionWithoutUIDUniqueIDs(toInsert)
+    case 'JSX_FRAGMENT':
+      return clearJSXFragmentWithoutUIDUniqueIDs(toInsert)
+    default:
+      assertNever(toInsert)
+  }
+}
+
 export interface ComponentInfo {
   insertMenuLabel: string
-  elementToInsert: JSXElementWithoutUID
+  elementToInsert: ComponentElementToInsert
   importsToAdd: Imports
 }
 
 export function componentInfo(
   insertMenuLabel: string,
-  elementToInsert: JSXElementWithoutUID,
+  elementToInsert: ComponentElementToInsert,
   importsToAdd: Imports,
 ): ComponentInfo {
   return {
@@ -404,7 +428,7 @@ export function normalisePathToUnderlyingTarget(
   elementPath: ElementPath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
-  if (isTextFile(currentFile)) {
+  if (currentFile != null && isTextFile(currentFile)) {
     if (isParseSuccess(currentFile.fileContents.parsed)) {
       const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
       const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
@@ -497,7 +521,7 @@ function lookupElementImport(
     ) {
       // Navigate around the scene with the special case handling.
       const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
-      if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
+      if (componentAttr != null && modifiableAttributeIsAttributeOtherJavaScript(componentAttr)) {
         return lookupElementImport(
           componentAttr.javascript,
           currentFilePath,

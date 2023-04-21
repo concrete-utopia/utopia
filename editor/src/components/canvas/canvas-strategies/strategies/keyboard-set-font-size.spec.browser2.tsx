@@ -1,5 +1,10 @@
+import * as EP from '../../../../core/shared/element-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { shiftCmdModifier } from '../../../../utils/modifiers'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTests,
+} from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -7,6 +12,12 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 
 describe('adjust font size with the keyboard', () => {
   describe('no font size specified', () => {
@@ -151,6 +162,46 @@ describe('adjust font size with the keyboard', () => {
       expect(div.style.fontSize).toEqual('1.9em')
     })
   })
+
+  describe('retargets to group children', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      it('with no font size set', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroup(type),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+
+        await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.fontSize).toEqual('17px')
+        expect(bbb.style.fontSize).toEqual('17px')
+      })
+
+      it('with font size already set', async () => {
+        const editor = await renderTestEditorWithCode(
+          projectWithGroupWithFontSize(type),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+
+        await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 2 })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
+
+        expect(aaa.style.fontSize).toEqual('29px')
+        expect(bbb.style.fontSize).toEqual('29px')
+      })
+    })
+  })
 })
 
 async function doSelect(editor: EditorRenderResult, type: 'single' | 'double' = 'single') {
@@ -180,11 +231,11 @@ async function doTestWithDelta(
   editor: EditorRenderResult,
   delta: { decreaseBy: number; increaseBy: number },
 ) {
-  for (let i = 0; i < delta.increaseBy; i++) {
+  for await (const _ of Array(delta.increaseBy)) {
     await pressKey('.', { modifiers: shiftCmdModifier })
   }
 
-  for (let i = 0; i < delta.decreaseBy; i++) {
+  for await (const _ of Array(delta.decreaseBy)) {
     await pressKey(',', { modifiers: shiftCmdModifier })
   }
 
@@ -216,12 +267,12 @@ export var storyboard = (
 `
 
 const projectWithHierarchy = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       style={{
         width: 700,
         height: 759,
@@ -259,8 +310,8 @@ export var storyboard = (
         }}
         data-uid='f30'
       />
-    </Scene>
-    <Scene
+    </div>
+    <div
       style={{
         width: 744,
         height: 1133,
@@ -272,7 +323,7 @@ export var storyboard = (
       data-uid='2c5'
     >
       <App style={{}} data-uid='a28' />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
@@ -298,6 +349,86 @@ export var storyboard = (
     >
       hello
     </div>
+  </Storyboard>
+)
+`
+
+const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    ${getOpeningGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+      ${getClosingGroupLikeTag(type)}
+  </Storyboard>
+)
+`
+
+const projectWithGroupWithFontSize = (type: ContentAffectingType) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+  ${getOpeningGroupLikeTag(type)}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 73,
+          height: 109,
+          left: 8,
+          top: 210,
+          position: 'absolute',
+          fontSize: 31
+        }}
+        data-uid='aaa'
+        data-testid='aaa'
+      >
+        whaddup
+      </div>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 207,
+          height: 202,
+          left: 8,
+          top: 8,
+          position: 'absolute',
+          fontSize: 31
+        }}
+        data-uid='aab'
+        data-testid='bbb'
+      >
+        whaddup
+      </div>
+      ${getClosingGroupLikeTag(type)}
   </Storyboard>
 )
 `

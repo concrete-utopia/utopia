@@ -3,8 +3,6 @@ import { setFeatureForBrowserTests } from '../../../utils/utils.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 
 describe('Canvas Renderer Warnings', () => {
-  setFeatureForBrowserTests('Fragment support', true)
-
   it('renders a Fragment without a react props error', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

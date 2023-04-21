@@ -15,6 +15,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {},
         "name": "App",
@@ -68,6 +69,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": Object {
                   "backgroundColor": "#aaaaaa33",
                   "position": "absolute",
@@ -75,6 +77,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -100,6 +103,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -125,6 +129,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -150,6 +155,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -175,6 +181,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -200,6 +207,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -225,6 +233,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -263,6 +272,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": Object {
                   "height": "120px",
                   "position": "absolute",
@@ -283,6 +293,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -299,6 +310,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -315,6 +327,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -331,10 +344,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "https://dl8.webmfiles.org/big-buck-bunny_trailer.webm",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -373,6 +388,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": Object {
                   "height": "64px",
                   "position": "absolute",
@@ -393,10 +409,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -414,6 +432,114 @@ Array [
     ],
     "source": Object {
       "type": "HTML_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "condition": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "uid": "",
+            "value": true,
+          },
+          "originalConditionString": "true",
+          "type": "JSX_CONDITIONAL_EXPRESSION",
+          "whenFalse": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "uid": "",
+            "value": null,
+          },
+          "whenTrue": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "uid": "",
+            "value": null,
+          },
+        },
+        "importsToAdd": Object {},
+        "name": "Conditional",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "CONDITIONALS_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "longForm": true,
+          "type": "JSX_FRAGMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Fragment",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "FRAGMENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [
+            Object {
+              "text": "Sample text",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
+          ],
+          "name": Object {
+            "baseVariable": "span",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {},
+        "name": "Sample text",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "SAMPLES_GROUP",
     },
   },
   Object {
@@ -442,6 +568,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {},
         "name": "App",
@@ -495,6 +622,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": Object {
                   "backgroundColor": "#aaaaaa33",
                   "position": "absolute",
@@ -502,6 +630,7 @@ Array [
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -527,6 +656,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -552,6 +682,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -577,6 +708,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -602,6 +734,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -627,6 +760,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -652,6 +786,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -690,6 +825,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": Object {
                   "height": "120px",
                   "position": "absolute",
@@ -710,6 +846,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -726,6 +863,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -742,6 +880,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -758,10 +897,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "https://dl8.webmfiles.org/big-buck-bunny_trailer.webm",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -800,6 +941,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": Object {
                   "height": "64px",
                   "position": "absolute",
@@ -820,10 +962,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -848,6 +992,114 @@ Array [
       Object {
         "defaultSize": null,
         "element": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "condition": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "uid": "",
+            "value": true,
+          },
+          "originalConditionString": "true",
+          "type": "JSX_CONDITIONAL_EXPRESSION",
+          "whenFalse": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "uid": "",
+            "value": null,
+          },
+          "whenTrue": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "uid": "",
+            "value": null,
+          },
+        },
+        "importsToAdd": Object {},
+        "name": "Conditional",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "CONDITIONALS_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "longForm": true,
+          "type": "JSX_FRAGMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Fragment",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "FRAGMENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [
+            Object {
+              "text": "Sample text",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
+          ],
+          "name": Object {
+            "baseVariable": "span",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {},
+        "name": "Sample text",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "SAMPLES_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
           "children": Array [],
           "name": Object {
             "baseVariable": "DatePicker",
@@ -856,6 +1108,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -904,6 +1157,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -920,6 +1174,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "default",
               },
             },
@@ -936,6 +1191,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "default",
               },
             },
@@ -952,6 +1208,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -968,6 +1225,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -984,6 +1242,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1000,6 +1259,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1016,10 +1276,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "button",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1055,6 +1317,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1103,6 +1366,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "top",
               },
             },
@@ -1119,6 +1383,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1135,10 +1400,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "center",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1187,6 +1454,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 1,
               },
             },
@@ -1203,6 +1471,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1219,6 +1488,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1235,6 +1505,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1251,6 +1522,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1267,6 +1539,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1283,6 +1556,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1299,6 +1573,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1315,6 +1590,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1331,6 +1607,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1347,10 +1624,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1399,6 +1678,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "center",
               },
             },
@@ -1415,6 +1695,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "vertical",
               },
             },
@@ -1431,10 +1712,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "middle",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1483,6 +1766,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1499,6 +1783,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1515,6 +1800,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 24,
               },
             },
@@ -1531,6 +1817,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "inline",
               },
             },
@@ -1547,6 +1834,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1563,6 +1851,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": true,
               },
             },
@@ -1579,6 +1868,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0.1,
               },
             },
@@ -1595,6 +1885,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": 0,
               },
             },
@@ -1611,10 +1902,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": "light",
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1665,6 +1958,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1681,10 +1975,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1735,10 +2031,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1776,6 +2074,7 @@ Array [
             },
           },
           "props": Array [],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -1826,6 +2125,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1842,6 +2142,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1858,6 +2159,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1874,6 +2176,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1890,6 +2193,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1906,6 +2210,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1922,6 +2227,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1938,6 +2244,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1954,6 +2261,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
@@ -1970,10 +2278,12 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
+                "uid": "",
                 "value": false,
               },
             },
           ],
+          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {

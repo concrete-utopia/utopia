@@ -760,6 +760,7 @@ function collectAndCreateMetadataForElement(
       attributeMetadata,
       null,
       null,
+      'not-a-conditional',
     )
   })
 
@@ -913,12 +914,12 @@ function getSpecialMeasurements(
     left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
   }
 
-  const offsetParent = element.offsetParent as HTMLElement | null
+  const offsetParent = getClosestOffsetParent(element) as HTMLElement | null
   const elementOrContainingParent =
     providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
 
   const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
-  const globalContentBox = canvasRectangle({
+  const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
     width: globalFrame.width - border.left - border.right,
@@ -991,7 +992,7 @@ function getSpecialMeasurements(
     alignItems,
     element.localName,
     childrenCount,
-    globalContentBox,
+    globalContentBoxForChildren,
     elementStyle.float,
     hasPositionOffset,
     parentTextDirection,
@@ -1085,6 +1086,7 @@ function walkCanvasRootFragment(
       emptyAttributeMetadatada,
       null,
       null, // this comes from the Spy Wrapper
+      'not-a-conditional',
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata
@@ -1362,4 +1364,16 @@ function walkElements(
   } else {
     return { childPaths: [], rootMetadata: {}, cachedPaths: [] }
   }
+}
+
+function getClosestOffsetParent(element: HTMLElement): Element | null {
+  let currentElement: HTMLElement | null = element
+
+  while (currentElement != null) {
+    if (currentElement.offsetParent != null) {
+      return currentElement.offsetParent
+    }
+    currentElement = currentElement.parentElement
+  }
+  return null
 }

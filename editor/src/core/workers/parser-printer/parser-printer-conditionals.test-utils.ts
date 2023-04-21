@@ -5,7 +5,7 @@ import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return <div data-uid={'div'}>
-    {1 === 2 ? <div data-uid={'hello'}>Hello</div> : <div data-uid={'world'}>World</div>}
+    {1 === 2 /* @utopia/uid=conditional */ ? <div data-uid={'hello'}>Hello</div> : <div data-uid={'world'}>World</div>}
   </div>
 }
 export var ${BakedInStoryboardVariableName} = (
@@ -25,11 +25,14 @@ import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return <div data-uid={'div'}>
-    {[0, 1].length > 1 ? (
-      [0, 1].length === 0 ? (
-        <div data-uid='middle'/>
-      ) : null
-    ) : null}
+    {
+      // @utopia/uid=conditional1
+      [0, 1].length > 1 ? (
+        // @utopia/uid=conditional2
+        [0, 1].length === 0 ? (
+          <div data-uid='middle'/>
+        ) : null
+      ) : null}
   </div>
 }
 export var ${BakedInStoryboardVariableName} = (

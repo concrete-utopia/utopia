@@ -6,7 +6,7 @@ import {
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 import { CSSNumber } from '../common/css-utils'
-import { Axis, widthHeightFromAxis } from '../inspector-common'
+import { Axis, removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
 import { InspectorStrategy } from './inspector-strategy'
 
 export const fixedSizeBasicStrategy = (
@@ -20,18 +20,21 @@ export const fixedSizeBasicStrategy = (
       return null
     }
 
-    return elementPaths.map((path) => {
+    return elementPaths.flatMap((path) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
       const parentFlexDirection =
-        MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
-          .parentFlexDirection ?? null
+        elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
-      return setCssLengthProperty(
-        whenToRun,
-        path,
-        PP.create('style', widthHeightFromAxis(axis)),
-        setExplicitCssValue(value),
-        parentFlexDirection,
-      )
+      return [
+        ...removeExtraPinsWhenSettingSize(axis, elementMetadata),
+        setCssLengthProperty(
+          whenToRun,
+          path,
+          PP.create('style', widthHeightFromAxis(axis)),
+          setExplicitCssValue(value),
+          parentFlexDirection,
+        ),
+      ]
     })
   },
 })

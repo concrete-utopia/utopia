@@ -1,11 +1,11 @@
 import { ElementPath, ElementPathPart } from './project-file-types'
 import * as EP from './element-path'
 import { fastForEach } from './utils'
-import { ElementInstanceMetadataMap, isJSXElement } from './element-template'
+import { ElementInstanceMetadataMap, isJSXElement, isUtopiaElement } from './element-template'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { foldEither } from './either'
-import { getUtopiaID } from '../model/element-template-utils'
 import { move } from './array-utils'
+import { getUtopiaID } from './uid-utils'
 
 export interface ElementPathTree {
   path: ElementPath
@@ -74,7 +74,7 @@ export function reorderTree(
       (elementChild) => {
         switch (elementChild.type) {
           case 'JSX_ELEMENT': {
-            const allChildrenAreElements = elementChild.children.every(isJSXElement)
+            const allChildrenAreElements = elementChild.children.every(isUtopiaElement)
             if (allChildrenAreElements) {
               const updatedChildren = elementChild.children.reduce(
                 (workingTreeChildren, child, childIndex) => {

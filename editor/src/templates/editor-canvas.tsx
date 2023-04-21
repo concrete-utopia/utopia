@@ -201,19 +201,13 @@ function handleCanvasEvent(
       optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
       if (model.editorState.canvas.interactionSession == null) {
-        optionalDragStateAction = [
-          CanvasActions.createInteractionSession(
-            createInteractionViaMouse(
-              event.canvasPositionRounded,
-              event.modifiers,
-              {
-                type: 'RESIZE_HANDLE',
-                edgePosition: { x: 1, y: 1 },
-              },
-              'zero-drag-not-permitted',
-            ),
-          ),
-        ]
+        // This code path should absolutely not be live, because there should always be an
+        // existing interaction session whilst in insert mode. However, since the path is
+        // technically possible, we throw an error here so that we can quickly discover
+        // if we've accidentally re-enabled it
+        throw new Error(
+          `It shouldn't be possible to be in insert mode without an active interactionSession`,
+        )
       } else if (
         model.editorState.canvas.interactionSession.interactionData.type === 'DRAG' ||
         model.editorState.canvas.interactionSession.interactionData.type === 'HOVER'
@@ -1601,6 +1595,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor.projectContents,
+            editor.nodeModules.files,
             editor.canvas.openFile?.filename ?? null,
             result.utopiaData,
             result.files,

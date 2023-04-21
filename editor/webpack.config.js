@@ -63,12 +63,6 @@ const config = {
     preview: hot
       ? ['react-hot-loader/patch', './src/templates/preview/preview.tsx']
       : './src/templates/preview/preview.tsx',
-    vsCodeEditorOuterIframe: hot
-      ? [
-          'react-hot-loader/patch',
-          './src/templates/vscode-editor-outer-iframe/vscode-editor-outer-iframe.tsx',
-        ]
-      : './src/templates/vscode-editor-outer-iframe/vscode-editor-outer-iframe.tsx',
   },
 
   output: {
@@ -118,20 +112,11 @@ const config = {
       templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
-      chunks: ['vsCodeEditorOuterIframe'],
-      inject: 'head', // Add the script tags to the end of the <head>
-      scriptLoading: 'defer',
-      template: './src/templates/vscode-editor-outer-iframe/index.html',
-      filename: 'vscode-editor-outer-iframe/index.html',
-      minify: false,
-      templateParameters: htmlTemplateParameters,
-    }),
-    new HtmlWebpackPlugin({
       chunks: [],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/vscode-editor-inner-iframe/index.html',
-      filename: 'vscode-editor-inner-iframe/index.html',
+      template: './src/templates/vscode-editor-iframe/index.html',
+      filename: 'vscode-editor-iframe/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,
     }),
@@ -256,7 +241,15 @@ const config = {
       { test: /graceful-fs/, use: 'null-loader' },
       // Match typescript
       {
-        exclude: /node_modules(?!\/utopia-api)/,
+        include: (filePath) => {
+          if (filePath.includes('node_modules')) {
+            // We need to use the ts-loader to load the utopia-api module,
+            // but nothing else from node_modules
+            return filePath.includes('/utopia-api/')
+          } else {
+            return true
+          }
+        },
         test: /\.tsx?$/,
         use: [
           {

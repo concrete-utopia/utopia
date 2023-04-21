@@ -117,6 +117,7 @@ function callPropertyControlsHook(
       null,
       null,
       importInfos[0],
+      'not-a-conditional',
     ),
   }
   let allElementProps: AllElementProps = {
@@ -136,6 +137,7 @@ function callPropertyControlsHook(
       null,
       null,
       importInfos[1],
+      'not-a-conditional',
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -154,6 +156,7 @@ function callPropertyControlsHook(
       null,
       null,
       importInfos[2],
+      'not-a-conditional',
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }
@@ -200,7 +203,7 @@ function callPropertyControlsHook(
     userState: null as any,
     workers: null as any,
     persistence: null as any,
-    alreadySaved: null as any,
+    saveCountThisSession: 0,
     builtInDependencies: [],
     storeName: 'editor-store',
   }

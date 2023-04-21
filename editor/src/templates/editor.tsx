@@ -290,7 +290,7 @@ export class Editor {
         onCreatedOrLoadedProject,
       ),
       builtInDependencies: builtInDependencies,
-      alreadySaved: false,
+      saveCountThisSession: 0,
     }
 
     const store = createStoresAndState(patchedStoreFromFullStore(this.storedState, 'editor-store'))
@@ -357,7 +357,7 @@ export class Editor {
         this.storedState.userState = userState
 
         // Ensure we have the correct theme set in VS Code
-        void sendSetVSCodeTheme(getCurrentTheme(userState))
+        sendSetVSCodeTheme(getCurrentTheme(userState))
 
         void updateUserDetailsWhenAuthenticated(
           this.boundDispatch,

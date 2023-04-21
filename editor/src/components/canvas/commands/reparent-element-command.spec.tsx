@@ -2,6 +2,7 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import { childInsertionPath } from '../../editor/store/insertion-path'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reparentElement, runReparentElement } from './reparent-element-command'
@@ -27,7 +28,7 @@ describe('runReparentElement', () => {
     ])
     const originalEditorState = renderResult.getEditorState().editor
 
-    const reparentCommand = reparentElement('always', targetPath, newParentPath)
+    const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 
@@ -77,7 +78,7 @@ describe('runReparentElement', () => {
     ])
     const originalEditorState = renderResult.getEditorState().editor
 
-    const reparentCommand = reparentElement('always', targetPath, newParentPath)
+    const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 

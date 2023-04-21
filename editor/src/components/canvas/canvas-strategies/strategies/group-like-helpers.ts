@@ -1,21 +1,32 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../../core/shared/either'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import { findUtopiaCommentFlag } from '../../../../core/shared/comment-flags'
+import { foldEither, isLeft, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, isJSXFragment } from '../../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXConditionalExpression,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
+import { is } from '../../../../core/shared/equality-utils'
+import { memoize } from '../../../../core/shared/memoize'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
 import { AllElementProps } from '../../../editor/store/editor-state'
 import {
   getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function retargetStrategyToChildrenOfContentAffectingElements(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  const targetsWithoutDescedants = getDragTargets(targets)
+  const targetsWithoutDescedants = flattenSelection(targets)
 
   return replaceContentAffectingPathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
@@ -24,12 +35,32 @@ export function retargetStrategyToChildrenOfContentAffectingElements(
   )
 }
 
-export function replaceContentAffectingPathsWithTheirChildrenRecursive(
+export function retargetStrategyToTopMostGroupLikeElement(
+  canvasState: InteractionCanvasState,
+): Array<ElementPath> {
+  const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+  const targetsWithoutDescedants = flattenSelection(targets)
+
+  return optionallyReplacePathWithGroupLikeParentRecursive(
+    canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    targetsWithoutDescedants,
+  )
+}
+
+export const replaceContentAffectingPathsWithTheirChildrenRecursive = memoize(
+  replaceContentAffectingPathsWithTheirChildrenRecursiveInner,
+  { maxSize: 1, equals: is },
+)
+
+function replaceContentAffectingPathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
-  return paths.flatMap((path) => {
+  let pathsWereReplaced = false
+
+  const updatedPaths = paths.flatMap((path) => {
     const elementIsContentAffecting = treatElementAsContentAffecting(
       metadata,
       allElementProps,
@@ -42,6 +73,9 @@ export function replaceContentAffectingPathsWithTheirChildrenRecursive(
         // with no children, actually let's just return the original element
         return path
       }
+
+      pathsWereReplaced = true
+      // Balazs: I think this is breaking the Memo!!!!!! this should be calling replaceContentAffectingPathsWithTheirChildrenRecursiveInner
       return replaceContentAffectingPathsWithTheirChildrenRecursive(
         metadata,
         allElementProps,
@@ -51,9 +85,77 @@ export function replaceContentAffectingPathsWithTheirChildrenRecursive(
 
     return path
   })
+
+  return pathsWereReplaced ? updatedPaths : paths
 }
 
-type ContentAffectingType = 'fragment' | 'simple-div'
+export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(
+  replaceNonDOMElementPathsWithTheirChildrenRecursiveInner,
+  { maxSize: 1, equals: is },
+)
+
+function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  paths: Array<ElementPath>,
+): Array<ElementPath> {
+  let pathsWereReplaced = false
+
+  const updatedPaths = paths.flatMap((path) => {
+    const elementIsNonDOMElement = isElementNonDOMElement(metadata, allElementProps, path)
+
+    if (elementIsNonDOMElement) {
+      const children = MetadataUtils.getChildrenPathsUnordered(metadata, path) // I think it's fine to get the unordered children here?
+      if (children.length === 0) {
+        // with no children, actually let's just return the original element
+        return path
+      }
+
+      pathsWereReplaced = true
+      return replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
+        metadata,
+        allElementProps,
+        children,
+      )
+    }
+
+    return path
+  })
+
+  return pathsWereReplaced ? updatedPaths : paths
+}
+
+export function optionallyReplacePathWithGroupLikeParentRecursive(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  siblingPaths: Array<ElementPath>,
+): Array<ElementPath> {
+  if (siblingPaths.length === 0) {
+    return siblingPaths
+  }
+
+  if (!EP.areSiblings(siblingPaths)) {
+    return siblingPaths
+  }
+
+  if (!siblingPaths.every((t) => treatElementAsContentAffecting(metadata, allElementProps, t))) {
+    return siblingPaths
+  }
+
+  const parent = EP.parentPath(siblingPaths[0])
+  if (!treatElementAsContentAffecting(metadata, allElementProps, parent)) {
+    return siblingPaths
+  }
+
+  return optionallyReplacePathWithGroupLikeParentRecursive(metadata, allElementProps, [parent])
+}
+
+export const AllContentAffectingNonDomElementTypes = ['fragment', 'conditional'] as const
+export const AllContentAffectingTypes = [
+  ...AllContentAffectingNonDomElementTypes,
+  'sizeless-div',
+] as const
+export type ContentAffectingType = typeof AllContentAffectingTypes[number] // <- this gives us the union type of the Array's entries
 
 export function getElementContentAffectingType(
   metadata: ElementInstanceMetadataMap,
@@ -64,15 +166,12 @@ export function getElementContentAffectingType(
 
   const elementProps = allElementProps[EP.toString(path)]
 
-  if (
-    elementMetadata?.element != null &&
-    foldEither(
-      () => false,
-      (e) => isJSXFragment(e),
-      elementMetadata.element,
-    )
-  ) {
+  if (MetadataUtils.isFragmentFromMetadata(elementMetadata)) {
     return 'fragment'
+  }
+
+  if (MetadataUtils.isConditionalFromMetadata(elementMetadata)) {
+    return 'conditional'
   }
 
   if (MetadataUtils.isFlexLayoutedContainer(elementMetadata)) {
@@ -95,17 +194,55 @@ export function getElementContentAffectingType(
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
   if (hasNoWidthAndHeightProps) {
-    return 'simple-div'
+    return 'sizeless-div'
   }
 
   return null
 }
 
-// TODO make it internal
 export function treatElementAsContentAffecting(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
 ): boolean {
   return getElementContentAffectingType(metadata, allElementProps, path) != null
+}
+
+export const GroupFlagKey = 'data-group'
+
+export function isElementMarkedAsGroup(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): boolean {
+  const instance = MetadataUtils.findElementByElementPath(metadata, path)
+  if (instance == null || isLeft(instance.element)) {
+    return false
+  }
+
+  if (isJSXConditionalExpression(instance.element.value)) {
+    return findUtopiaCommentFlag(instance.element.value.comments, 'group')?.value === true
+  }
+
+  if (isJSXElement(instance.element.value)) {
+    return foldEither(
+      () => false,
+      (v) => v === true,
+      getSimpleAttributeAtPath(right(instance.element.value.props), PP.create(GroupFlagKey)),
+    )
+  }
+
+  return false
+}
+
+export function isElementNonDOMElement(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): boolean {
+  const contentAffectingType = getElementContentAffectingType(
+    metadata,
+    allElementProps,
+    elementPath,
+  )
+  return AllContentAffectingNonDomElementTypes.some((type) => contentAffectingType === type)
 }

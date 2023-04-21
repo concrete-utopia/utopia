@@ -17,10 +17,10 @@
     "vscode": "^1.61.2"
   },
   "scripts": {
-    "build": "yarn webpack-cli --config extension-browser.webpack.config",
-    "production": "yarn webpack-cli --config extension-browser.webpack.config --mode production",
-    "watch": "yarn webpack-cli --config extension-browser.webpack.config --mode production --watch --info-verbosity verbose",
-    "watch-dev": "yarn webpack-cli --config extension-browser.webpack.config --watch --info-verbosity verbose",
+    "build": "NODE_OPTIONS=$NODE_OPENSSL_OPTION yarn webpack-cli --config extension-browser.webpack.config",
+    "production": "NODE_OPTIONS=$NODE_OPENSSL_OPTION yarn webpack-cli --config extension-browser.webpack.config --mode production",
+    "watch": "NODE_OPTIONS=$NODE_OPENSSL_OPTION yarn webpack-cli --config extension-browser.webpack.config --mode production --watch --info-verbosity verbose",
+    "watch-dev": "NODE_OPTIONS=$NODE_OPENSSL_OPTION yarn webpack-cli --config extension-browser.webpack.config --watch --info-verbosity verbose",
     "download-api": "mkdir -p src/vscode-types && cd src/vscode-types && npx vscode-dts dev 1.61.2",
     "postdownload-api": "mkdir -p src/vscode-types && cd src/vscode-types && npx vscode-dts 1.61.2",
     "preinstall": "npx only-allow pnpm",

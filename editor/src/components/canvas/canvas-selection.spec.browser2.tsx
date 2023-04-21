@@ -148,8 +148,6 @@ const blueDivElementPath = EP.elementPath([
   ['other-app-root', 'div-blue'],
 ])
 
-const scene1ElementPath = EP.elementPath([['storyboard', 'scene-1']])
-
 const otherAppRootElementPath = EP.elementPath([
   ['storyboard', 'scene-1', 'app'],
   ['other-app-root'],
@@ -174,9 +172,9 @@ const overlappingElementTestCases: Array<
   ['absolute', zeroElementTopShifts, null, 'div-red', true, 5, 5, [redDivElementPath]],
   ['absolute', zeroElementTopShifts, null, 'div-green', true, 5, 5, [greenDivElementPath]],
   ['absolute', zeroElementTopShifts, null, 'div-blue', true, 5, 5, [blueDivElementPath]],
-  ['absolute', zeroElementTopShifts, null, 'div-red', false, 5, 5, [scene1ElementPath]],
-  ['absolute', zeroElementTopShifts, null, 'div-green', false, 5, 5, [scene1ElementPath]],
-  ['absolute', zeroElementTopShifts, null, 'div-blue', false, 5, 5, [scene1ElementPath]],
+  ['absolute', zeroElementTopShifts, null, 'div-red', false, 5, 5, [redDivElementPath]],
+  ['absolute', zeroElementTopShifts, null, 'div-green', false, 5, 5, [greenDivElementPath]],
+  ['absolute', zeroElementTopShifts, null, 'div-blue', false, 5, 5, [blueDivElementPath]],
   [
     'absolute',
     zeroElementTopShifts,
@@ -210,9 +208,9 @@ const overlappingElementTestCases: Array<
   ['relative', relativeElementTopShifts, null, 'div-red', true, 5, 5, [redDivElementPath]],
   ['relative', relativeElementTopShifts, null, 'div-green', true, 5, 5, [greenDivElementPath]],
   ['relative', relativeElementTopShifts, null, 'div-blue', true, 5, 5, [blueDivElementPath]],
-  ['relative', relativeElementTopShifts, null, 'div-red', false, 5, 5, [scene1ElementPath]],
-  ['relative', relativeElementTopShifts, null, 'div-green', false, 5, 5, [scene1ElementPath]],
-  ['relative', relativeElementTopShifts, null, 'div-blue', false, 5, 5, [scene1ElementPath]],
+  ['relative', relativeElementTopShifts, null, 'div-red', false, 5, 5, [redDivElementPath]],
+  ['relative', relativeElementTopShifts, null, 'div-green', false, 5, 5, [greenDivElementPath]],
+  ['relative', relativeElementTopShifts, null, 'div-blue', false, 5, 5, [blueDivElementPath]],
   [
     'relative',
     relativeElementTopShifts,
@@ -246,9 +244,9 @@ const overlappingElementTestCases: Array<
   [null, zeroElementTopShifts, null, 'div-red', true, 5, 5, [redDivElementPath]],
   [null, zeroElementTopShifts, null, 'div-green', true, 5, 5, [greenDivElementPath]],
   [null, zeroElementTopShifts, null, 'div-blue', true, 5, 5, [blueDivElementPath]],
-  [null, zeroElementTopShifts, null, 'div-red', false, 5, 5, [scene1ElementPath]],
-  [null, zeroElementTopShifts, null, 'div-green', false, 5, 5, [scene1ElementPath]],
-  [null, zeroElementTopShifts, null, 'div-blue', false, 5, 5, [scene1ElementPath]],
+  [null, zeroElementTopShifts, null, 'div-red', false, 5, 5, [redDivElementPath]],
+  [null, zeroElementTopShifts, null, 'div-green', false, 5, 5, [greenDivElementPath]],
+  [null, zeroElementTopShifts, null, 'div-blue', false, 5, 5, [blueDivElementPath]],
   [null, zeroElementTopShifts, otherAppRootElementPath, 'div-red', true, 5, 5, [redDivElementPath]],
   [
     null,

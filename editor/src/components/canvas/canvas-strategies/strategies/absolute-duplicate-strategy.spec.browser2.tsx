@@ -2,28 +2,38 @@ import {
   EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
+  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestScenePath,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import {
-  FOR_TESTS_setNextGeneratedUid,
-  FOR_TESTS_setNextGeneratedUids,
-} from '../../../../core/model/element-template-utils.test-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import {
+  expectElementWithTestIdNotToBeRendered,
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
+import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
+import { NO_OP } from '../../../../core/shared/utils'
+import { AllContentAffectingTypes } from './group-like-helpers'
+import {
+  getClosingGroupLikeTag,
+  getOpeningGroupLikeTag,
+  GroupLikeElementUid,
+} from './group-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
   targetTestId: string,
   dragDelta: WindowPoint,
   modifiers: Modifiers,
+  midDragCallback: () => void = NO_OP,
 ): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -35,6 +45,7 @@ async function dragElement(
   await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
     modifiers: modifiers,
+    midDragCallback: async () => midDragCallback(),
   })
 }
 
@@ -53,9 +64,17 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+
+    const target = EP.appendNewElementPath(TestScenePath, ['container', 'aaa', 'bbb'])
+
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
-    await dragElement(renderResult, 'bbb', dragDelta, altModifier)
+    await dragElement(renderResult, 'bbb', dragDelta, altModifier, () => {
+      expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+      expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -114,12 +133,15 @@ describe('Absolute Duplicate Strategy', () => {
       `),
     )
   })
-  describe('with fragments', () => {
-    setFeatureForBrowserTests('Fragment support', true)
-    it('duplicates the selected absolute element when pressing alt, even if it is a fragment', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        formatTestProjectCode(
-          projectWithFragment(`<React.Fragment data-uid='fragment'>
+
+  describe('with content-affecting elements', () => {
+    AllContentAffectingTypes.forEach((type) => {
+      // TODO: reenable this after we know why does it destroy the test runner
+      it(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            projectWithFragment(
+              `${getOpeningGroupLikeTag(type, { stripTestId: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -135,158 +157,84 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-      </React.Fragment>`),
-        ),
-        'await-first-dom-report',
-      )
+        ${getClosingGroupLikeTag(type)}`,
+            ),
+          ),
+          'await-first-dom-report',
+        )
 
-      FOR_TESTS_setNextGeneratedUid('fragment2')
-      const dragDelta = windowPoint({ x: 40, y: -25 })
+        const dragDelta = windowPoint({ x: 40, y: -25 })
 
-      const targetElement = renderResult.renderedDOM.getByTestId('child')
-      const targetElementBounds = targetElement.getBoundingClientRect()
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+        const targetElement = renderResult.renderedDOM.getByTestId('child')
+        const targetElementBounds = targetElement.getBoundingClientRect()
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-      const endPoint = offsetPoint(startPoint, dragDelta)
+        const startPoint = windowPoint({
+          x: targetElementBounds.x + 5,
+          y: targetElementBounds.y + 5,
+        })
+        const endPoint = offsetPoint(startPoint, dragDelta)
+        const target = EP.fromString(`sb/${GroupLikeElementUid}`)
 
-      await selectComponentsForTest(renderResult, [EP.fromString('sb/fragment')])
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
 
-      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
-        modifiers: altModifier,
+        await selectComponentsForTest(renderResult, [target])
+
+        await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
+          modifiers: altModifier,
+          midDragCallback: async () => {
+            expectElementWithTestIdNotToBeRendered(
+              renderResult,
+              ImmediateParentOutlinesTestId([target]),
+            )
+            expectElementWithTestIdNotToBeRendered(
+              renderResult,
+              ImmediateParentBoundsTestId([target]),
+            )
+          },
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            projectWithFragment(`
+              ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
+        <div
+          style={{
+            backgroundColor: '#d089cc',
+            width: 150,
+            height: 186,
+            contain: 'layout',
+            left: 7,
+            top: 186,
+            position: 'absolute',
+          }}
+          data-testid='child'
+        >
+          second
+        </div>
+        ${getClosingGroupLikeTag(type)}
+        ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
+        <div
+          style={{
+            backgroundColor: '#d089cc',
+            width: 150,
+            height: 186,
+            contain: 'layout',
+            left: 47,
+            top: 161,
+            position: 'absolute',
+          }}
+          data-testid='child'
+        >
+          second
+        </div>
+        ${getClosingGroupLikeTag(type)}`),
+          ),
+        )
       })
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        formatTestProjectCode(
-          projectWithFragment(`
-      <React.Fragment>
-      <div
-        style={{
-          backgroundColor: '#d089cc',
-          width: 150,
-          height: 186,
-          contain: 'layout',
-          left: 7,
-          top: 186,
-          position: 'absolute',
-        }}
-        data-uid='aaa'
-        data-testid='child'
-      >
-        second
-      </div>
-      </React.Fragment>
-      <React.Fragment>
-      <div
-        style={{
-          backgroundColor: '#d089cc',
-          width: 150,
-          height: 186,
-          contain: 'layout',
-          left: 47,
-          top: 161,
-          position: 'absolute',
-        }}
-        data-uid='chi'
-        data-testid='child'
-      >
-        second
-      </div>
-      </React.Fragment>`),
-        ),
-      )
-    })
-    it('also works with nasty nested fragments', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        formatTestProjectCode(
-          projectWithFragment(`
-          <React.Fragment data-uid='fragment'>
-            <React.Fragment data-uid='inner-fragment'>
-              <div
-                style={{
-                  backgroundColor: '#d089cc',
-                  width: 150,
-                  height: 186,
-                  contain: 'layout',
-                  left: 7,
-                  top: 186,
-                  position: 'absolute',
-                }}
-                data-uid='chi'
-                data-testid='child'
-              >
-                second
-              </div>
-            </React.Fragment>
-          </React.Fragment>
-          `),
-        ),
-        'await-first-dom-report',
-      )
-
-      FOR_TESTS_setNextGeneratedUid('fragment2')
-      const dragDelta = windowPoint({ x: 40, y: -25 })
-
-      const targetElement = renderResult.renderedDOM.getByTestId('child')
-      const targetElementBounds = targetElement.getBoundingClientRect()
-      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-      const endPoint = offsetPoint(startPoint, dragDelta)
-
-      await selectComponentsForTest(renderResult, [EP.fromString('sb/fragment')])
-
-      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
-        modifiers: altModifier,
-      })
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        formatTestProjectCode(
-          projectWithFragment(`
-      <React.Fragment>
-        <React.Fragment>
-          <div
-            style={{
-              backgroundColor: '#d089cc',
-              width: 150,
-              height: 186,
-              contain: 'layout',
-              left: 7,
-              top: 186,
-              position: 'absolute',
-            }}
-            data-uid='aaa'
-            data-testid='child'
-          >
-            second
-          </div>
-        </React.Fragment>
-      </React.Fragment>
-      <React.Fragment>
-        <React.Fragment>
-          <div
-            style={{
-              backgroundColor: '#d089cc',
-              width: 150,
-              height: 186,
-              contain: 'layout',
-              left: 47,
-              top: 161,
-              position: 'absolute',
-            }}
-            data-uid='chi'
-            data-testid='child'
-          >
-            second
-          </div>
-        </React.Fragment>
-      </React.Fragment>`),
-        ),
-      )
     })
   })
 })
@@ -295,7 +243,7 @@ const projectWithFragment = (innards: string) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='sb'>
+  <Storyboard>
     ${innards}
   </Storyboard>
 )

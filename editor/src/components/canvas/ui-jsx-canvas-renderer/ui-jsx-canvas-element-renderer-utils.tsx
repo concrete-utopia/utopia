@@ -1,6 +1,5 @@
 import React from 'react'
 import { MapLike } from 'typescript'
-import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
@@ -13,7 +12,7 @@ import {
   JSXElementChild,
   isJSXElement,
   JSXElement,
-  jsxAttributeValue,
+  jsExpressionValue,
   ElementsWithin,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
@@ -22,7 +21,7 @@ import {
   jsxTextBlock,
   isJSXFragment,
   JSXElementLike,
-  childOrBlockIsChild,
+  isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -47,11 +46,11 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import {
-  addConditionalAlternative,
   addFakeSpyEntry,
   buildSpyWrappedElement,
+  clearOpposingConditionalSpyValues,
 } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { createIndexedUid, getUtopiaID } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
@@ -92,7 +91,7 @@ export function createLookupRender(
     const withGeneratedUID = setJSXValueAtPath(
       element.props,
       PP.create('data-uid'),
-      jsxAttributeValue(generatedUID, emptyComments),
+      jsExpressionValue(generatedUID, emptyComments),
     )
 
     // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
@@ -262,7 +261,7 @@ export function renderCoreElement(
         editedText,
       )
     }
-    case 'JSX_ARBITRARY_BLOCK': {
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const innerRender = createLookupRender(
         elementPath,
         rootScope,
@@ -352,17 +351,20 @@ export function renderCoreElement(
       const actualElement = conditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
-        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports)
+        clearOpposingConditionalSpyValues(metadataContext, element, conditionValue, elementPath)
+
+        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
       }
 
-      let result: any
-      if (childOrBlockIsChild(actualElement)) {
+      if (isJSXArbitraryBlock(actualElement)) {
+        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
+      } else {
         const childPath = optionalMap(
           (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
           elementPath,
         )
 
-        result = renderCoreElement(
+        return renderCoreElement(
           actualElement,
           childPath,
           rootScope,
@@ -386,35 +388,13 @@ export function renderCoreElement(
           highlightBounds,
           editedText,
         )
-      } else {
-        result = jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
-        if (elementPath != null) {
-          addConditionalAlternative(
-            metadataContext,
-            elementPath,
-            filePath,
-            imports,
-            actualElement,
-            conditionValue ? 'then' : 'else',
-          )
-        }
       }
-
-      // Include the alternative case.
-      if (elementPath != null) {
-        const alternativeCase = conditionValue ? element.whenFalse : element.whenTrue
-        addConditionalAlternative(
-          metadataContext,
-          elementPath,
-          filePath,
-          imports,
-          alternativeCase,
-          conditionValue ? 'else' : 'then',
-        )
-      }
-
-      return result
     }
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -434,13 +414,22 @@ function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): strin
           combinedText += '\n'
         }
         break
-      case 'JSX_ARBITRARY_BLOCK':
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         if (c.transpiledJavascript === `return ${c.javascript}`) {
           combinedText += `{${c.originalJavascript}}`
         }
         break
       case 'JSX_FRAGMENT':
       case 'JSX_CONDITIONAL_EXPRESSION':
+        break
+      case 'ATTRIBUTE_VALUE':
+        if (typeof c.value === 'string') {
+          combinedText += c.value
+        }
+        break
+      case 'ATTRIBUTE_NESTED_ARRAY':
+      case 'ATTRIBUTE_NESTED_OBJECT':
+      case 'ATTRIBUTE_FUNCTION_CALL':
         break
       default:
         assertNever(c)
@@ -467,10 +456,10 @@ function trimWhitespaces(
     .join(' ')
 
   // when the text has a leading whitespace and there is an arbitrary block before that, we need to keep the whitespace
-  const keepSpaceBefore = text[0] === ' ' && elementBefore?.type === 'JSX_ARBITRARY_BLOCK'
+  const keepSpaceBefore = text[0] === ' ' && elementBefore?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
   // when the text has an trailing whitespace and there is an arbitrary block after that, we need to keep the whitespace
   const keepSpaceAfter =
-    text[text.length - 1] === ' ' && elementAfter?.type === 'JSX_ARBITRARY_BLOCK'
+    text[text.length - 1] === ' ' && elementAfter?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 
   if (keepSpaceBefore && keepSpaceAfter) {
     return ' ' + trimmedText + ' '
@@ -510,15 +499,6 @@ function renderJSXElement(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
 ): React.ReactElement {
-  let elementProps = { key: key, ...passthroughProps }
-  if (isHidden(hiddenInstances, elementPath)) {
-    elementProps = hideElement(elementProps)
-  }
-  if (elementIsDisplayNone(displayNoneInstances, elementPath)) {
-    elementProps = displayNoneElement(elementProps)
-  }
-  elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
-
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
     return renderCoreElement(
@@ -578,6 +558,18 @@ function renderJSXElement(
 
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
+
+  let elementProps = { key: key, ...passthroughProps }
+  if (!elementIsFragment) {
+    if (isHidden(hiddenInstances, elementPath)) {
+      elementProps = hideElement(elementProps)
+    }
+    if (elementIsDisplayNone(displayNoneInstances, elementPath)) {
+      elementProps = displayNoneElement(elementProps)
+    }
+    elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
+  }
+
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
@@ -715,7 +707,17 @@ function runJSXArbitraryBlock(
   block: JSXArbitraryBlock,
   currentScope: MapLike<any>,
 ): any {
-  return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+  switch (block.type) {
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return jsxAttributeToValue(filePath, block, requireResult, block)
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+    default:
+      assertNever(block)
+  }
 }
 
 function getElementFromScope(jsxElementToLookup: JSXElementLike, scope: MapLike<any> | null): any {

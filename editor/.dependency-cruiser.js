@@ -153,8 +153,7 @@ module.exports = {
       severity: 'error',
       from: {},
       to: {
-        path:
-          '\\.(spec|test|spec.browser|spec.browser2)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
+        path: '\\.(spec|test|spec.browser|spec.browser2)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
       },
     },
     {
@@ -237,6 +236,23 @@ module.exports = {
       },
       to: {
         path: ['typescript'],
+        reachable: true,
+      },
+    },
+    {
+      name: 'not-from-workers-to-specific-files',
+      comment: 'Stop the workers from reaching down to certain files.',
+      severity: 'error',
+      from: {
+        path: '\\.(worker)\\.(ts|tsx)$',
+      },
+      to: {
+        path: [
+          '^src/components/editor/store/store-deep-equality-instances.ts',
+          '^src/sample-projects/sample-project-utils.ts',
+          '^src/utils/deep-equality-instances.ts',
+          '^src/utils/deep-equality.ts',
+        ],
         reachable: true,
       },
     },

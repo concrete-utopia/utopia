@@ -8,7 +8,7 @@ import {
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
-import { emptyComments, jsxAttributeValue } from '../shared/element-template'
+import { emptyComments, jsExpressionValue } from '../shared/element-template'
 
 jest.mock('../../components/canvas/controls/outline-utils', () => ({
   isZeroSizedElement: () => false, // in test environment elements have no size
@@ -45,7 +45,7 @@ describe('React Render Count Tests -', () => {
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create('style', 'opacity'),
-          jsxAttributeValue(0.3, emptyComments),
+          jsExpressionValue(0.3, emptyComments),
         ),
       ],
       true,
@@ -64,7 +64,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`455`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`453`)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -101,7 +101,7 @@ describe('React Render Count Tests -', () => {
         setProp_UNSAFE(
           EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create('style', 'opacity'),
-          jsxAttributeValue(0.3, emptyComments),
+          jsExpressionValue(0.3, emptyComments),
         ),
       ],
       true,
@@ -124,7 +124,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`466`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`464`)
   })
 
   it('Changing the selected view with a simple project', async () => {
@@ -178,7 +178,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`583`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`577`)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -242,6 +242,6 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`655`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`649`)
   })
 })

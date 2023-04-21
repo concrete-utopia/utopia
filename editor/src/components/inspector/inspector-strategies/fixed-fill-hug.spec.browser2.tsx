@@ -1,8 +1,11 @@
 import { act, fireEvent } from '@testing-library/react'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
@@ -11,9 +14,13 @@ import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-h
 import {
   EditorRenderResult,
   formatTestProjectCode,
+  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
+import { selectComponents } from '../../editor/actions/meta-actions'
 import { FlexDirection } from '../common/css-utils'
 import {
   FillContainerLabel,
@@ -23,6 +30,7 @@ import {
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
 import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
+import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 
 describe('Fixed / Fill / Hug control', () => {
   setFeatureForBrowserTests('Nine block control', true)
@@ -40,7 +48,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -92,7 +100,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -114,7 +122,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -136,7 +144,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -157,7 +165,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(child.style.flexGrow).toEqual('1')
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '3' } })
           fireEvent.blur(control)
@@ -178,7 +186,7 @@ describe('Fixed / Fill / Hug control', () => {
       const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '50%' } })
           fireEvent.blur(control)
@@ -206,7 +214,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -237,7 +245,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -268,7 +276,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -299,7 +307,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -328,7 +336,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[1]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -352,7 +360,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -373,7 +381,7 @@ describe('Fixed / Fill / Hug control', () => {
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-      await expectSingleUndoStep(editor, async () => {
+      await expectSingleUndo2Saves(editor, async () => {
         await mouseClickAtPoint(button, { x: 5, y: 5 })
       })
 
@@ -400,7 +408,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -426,7 +434,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -452,7 +460,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -478,7 +486,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -504,7 +512,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -530,7 +538,7 @@ describe('Fixed / Fill / Hug control', () => {
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
         const button = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
-        await expectSingleUndoStep(editor, async () => {
+        await expectSingleUndo2Saves(editor, async () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
@@ -540,10 +548,56 @@ describe('Fixed / Fill / Hug control', () => {
         expect(child.style.height).toEqual(MaxContent)
       })
     })
+    it('setting hug contents on an absolute element removes extra pins', async () => {
+      const testCode = `
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, bottom: 50, right: 60}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello content</div>
+      </div>
+`
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+      await editor.dispatch(selectComponents([targetPath], false), true)
+
+      const fixedControls = await editor.renderedDOM.findAllByText(FixedLabel)
+      const horizontalControl = fixedControls[0]
+      await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
+
+      const horizontalLabel = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(horizontalLabel, { x: 5, y: 5 })
+      })
+
+      const verticalControl = fixedControls[1]
+      await mouseClickAtPoint(verticalControl, { x: 5, y: 5 })
+
+      const verticalLabel = (await editor.renderedDOM.findAllByText(HugContentsLabel))[1]
+
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(verticalLabel, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div
+            style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+            data-uid='bbb'
+            data-testid='bbb'
+          >hello content</div>
+        </div>
+        `),
+      )
+    })
   })
 
-  // the expect is in `expectOptionsToBePresent`
-  // eslint-disable-next-line jest/expect-expect
+  /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectOptionsToBePresent"] }] */
   it('when toggling between element, options in the dropdown are updated', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithElementsToToggleBetween,
@@ -671,6 +725,108 @@ describe('Fixed / Fill / Hug control', () => {
       })
     })
   })
+
+  describe('fixed size', () => {
+    it('global frames are correct for groups of groups', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithNestedGroups,
+        'await-first-dom-report',
+      )
+
+      const superGroupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup'))
+      expect(superGroupGlobalFrame.width).toBe(326)
+      expect(superGroupGlobalFrame.height).toBe(407)
+
+      {
+        const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+        expect((widthControl as HTMLInputElement).value).toEqual('326')
+        const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+        expect((heightControl as HTMLInputElement).value).toEqual('407')
+      }
+
+      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup/group'))
+      expect(groupGlobalFrame.width).toBe(326)
+      expect(groupGlobalFrame.height).toBe(407)
+
+      {
+        const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+        expect((widthControl as HTMLInputElement).value).toEqual('326')
+        const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+        expect((heightControl as HTMLInputElement).value).toEqual('407')
+      }
+    })
+  })
+})
+
+describe('Fixed/hug on text elements', () => {
+  it('Sets text element fixed to hug inside the font section', async () => {
+    const testCode = `
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25}}
+        data-uid='bbb'
+        data-testid='bbb'
+      >hello text element!</div>
+    </div>
+`
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await editor.dispatch(selectComponents([targetPath], false), true)
+
+    const textAutoSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-0`)
+    await expectSingleUndo2Saves(editor, async () => {
+      await mouseClickAtPoint(textAutoSizeIcon, { x: 2, y: 2 })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+      `),
+    )
+  })
+  it('Sets text element hug to fixed inside the font section', async () => {
+    const testCode = `
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div
+        style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content', lineHeight: '18px' }}
+        data-uid='bbb'
+        data-testid='bbb'
+      >hello text element!</div>
+    </div>
+`
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await editor.dispatch(selectComponents([targetPath], false), true)
+
+    const textFixedSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-1`)
+    await expectSingleUndo2Saves(editor, async () => {
+      await mouseClickAtPoint(textFixedSizeIcon, { x: 2, y: 2 })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 120, height: 18, lineHeight: '18px'}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+      `),
+    )
+  })
 })
 
 async function expectOptionsToBePresent(
@@ -717,18 +873,18 @@ async function setSelectedElementsToFill(editor: EditorRenderResult, axis: Axis)
   await mouseClickAtPoint(control, { x: 5, y: 5 })
 
   const button = (await editor.renderedDOM.findAllByText(FillContainerLabel))[0]
-  await expectSingleUndoStep(editor, async () => {
+  await expectSingleUndo2Saves(editor, async () => {
     await mouseClickAtPoint(button, { x: 5, y: 5 })
   })
 }
 
 const projectWithWidth = (flexDirection: FlexDirection) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -752,19 +908,19 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 
 `
 
 const projectWithHeight = (flexDirection: FlexDirection) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -788,18 +944,18 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
 
 const projectWithChildSetToHorizontalFill = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -820,18 +976,18 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
 
 const projectWithChildSetToVerticalFill = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -853,18 +1009,18 @@ export var storyboard = (
           contain: 'layout',
         }}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
 
 const projectWithChildSetToFixed = (flexDirection: FlexDirection) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='33d'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         width: 700,
@@ -888,7 +1044,7 @@ export var storyboard = (
         }}
         data-uid='744'
       />
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
@@ -896,12 +1052,12 @@ export var storyboard = (
 const projectWithChildSetToHugContents = (
   flexDirection: FlexDirection,
 ) => `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         height: 751,
@@ -945,7 +1101,7 @@ export var storyboard = (
           data-uid='741'
         />
       </div>
-    </Scene>
+    </div>
   </Storyboard>
 )
 `
@@ -1004,7 +1160,7 @@ export var storyboard = (
 `
 
 const projectWithChildInFlowLayout = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='0cd'>
@@ -1052,14 +1208,61 @@ export var storyboard = (
   </Storyboard>
 )
 `
+const projectWithNestedGroups = `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='supergroup'>
+      <div data-uid='group'>
+        <div
+          style={{
+            backgroundColor: '#00acff',
+            position: 'absolute',
+            left: -783,
+            top: 335,
+            width: 100,
+            height: 407,
+          }}
+          data-uid='aab'
+          data-label='eee'
+        />
+        <div
+          style={{
+            backgroundColor: '#ff0001',
+            position: 'absolute',
+            left: -557,
+            top: 335,
+            width: 100,
+            height: 407,
+          }}
+          data-uid='aaa'
+          data-label='eee'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          position: 'absolute',
+          left: -670,
+          top: 335,
+          width: 100,
+          height: 407,
+        }}
+        data-uid='aac'
+        data-label='eee'
+      />
+    </div>
+  </Storyboard>
+)
+`
 
 const absoluteProjectWithInjectedStyle = (stylePropsAsString: string) =>
   formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         position: 'absolute',
@@ -1074,17 +1277,17 @@ export var storyboard = (
         data-testid='child'
         style={{${stylePropsAsString}}}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )`)
 
 const flexProjectWithInjectedStyle = (stylePropsAsString: string) =>
   formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard>
-    <Scene
+    <div
       data-testid='parent'
       style={{
         position: 'absolute',
@@ -1100,7 +1303,7 @@ export var storyboard = (
         data-testid='child'
         style={{${stylePropsAsString}}}
       />
-    </Scene>
+    </div>
   </Storyboard>
 )`)
 
@@ -1225,3 +1428,18 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+async function getGlobalFrame(editor: EditorRenderResult, path: ElementPath) {
+  await selectComponentsForTest(editor, [path])
+  const instance = MetadataUtils.findElementByElementPath(
+    editor.getEditorState().editor.jsxMetadata,
+    path,
+  )
+  if (instance?.globalFrame == null) {
+    throw new Error('`instance?.globalFrame` is null')
+  }
+  if (isInfinityRectangle(instance.globalFrame)) {
+    throw new Error('`instance?.globalFrame` is infinity rect')
+  }
+  return instance.globalFrame
+}

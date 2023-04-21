@@ -169,4 +169,13 @@ export type NavigatorSubstate = {
 }
 
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
-  ['storeName', 'strategyState', 'history', 'workers', 'persistence', 'alreadySaved']
+  [
+    'storeName',
+    'strategyState',
+    'history',
+    'userState',
+    'workers',
+    'persistence',
+    'builtInDependencies',
+    'saveCountThisSession',
+  ]

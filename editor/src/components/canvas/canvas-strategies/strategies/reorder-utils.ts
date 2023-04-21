@@ -37,6 +37,8 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
 }
 
 export function applyReorderCommon(
+  originalTargets: Array<ElementPath>,
+  targets: Array<ElementPath>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,
@@ -48,10 +50,10 @@ export function applyReorderCommon(
   }
 
   if (interactionSession.interactionData.drag != null) {
-    const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+    const selectedElements = targets
     const target = selectedElements[0]
 
-    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target).map(
+    const siblings = MetadataUtils.getSiblingsOrdered(canvasState.startingMetadata, target).map(
       (element) => element.elementPath,
     )
 

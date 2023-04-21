@@ -3,7 +3,6 @@ import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { directory } from '../../../core/model/project-file-utils'
 import {
   BakedInStoryboardUID,
@@ -19,7 +18,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { setFeatureEnabled } from '../../../utils/feature-switches'
-import { expectSingleUndoStep, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import {
@@ -42,10 +41,16 @@ import {
 } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
-  ConditionalsControlSectionCloseTestId,
+  ConditionalOverrideControlToggleTestId,
+  ConditionalOverrideControlTestIdPrefix,
+} from '../controls/conditional-override-control'
+import { getOptionControlTestId } from '../controls/option-chain-control'
+import {
+  ConditionalsControlBranchFalseTestId,
+  ConditionalsControlBranchTrueTestId,
+  ConditionalsControlSectionExpressionTestId,
   ConditionalsControlSectionOpenTestId,
-  ConditionalsControlToggleFalseTestId,
-  ConditionalsControlToggleTrueTestId,
+  ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
 async function getControl(
   controlTestId: string,
@@ -53,6 +58,15 @@ async function getControl(
 ): Promise<HTMLInputElement> {
   return (await renderedDOM.findByTestId(controlTestId)) as HTMLInputElement
 }
+
+const ConditionalOverrideControlTrueTestId = getOptionControlTestId(
+  ConditionalOverrideControlTestIdPrefix,
+  'true',
+)
+const ConditionalOverrideControlFalseTestId = getOptionControlTestId(
+  ConditionalOverrideControlTestIdPrefix,
+  'false',
+)
 
 async function getControlValue(controlTestId: string, renderedDOM: RenderResult): Promise<string> {
   const control = await getControl(controlTestId, renderedDOM)
@@ -101,7 +115,7 @@ async function clickButtonAndSelectTarget(
   buttonTestId: string,
   targetPath: ElementPath[],
 ): Promise<void> {
-  await expectSingleUndoStep(renderResult, async () => {
+  await expectSingleUndo2Saves(renderResult, async () => {
     await act(async () => {
       fireEvent.click(screen.getByTestId(buttonTestId))
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -269,6 +283,110 @@ describe('inspector tests with real metadata', () => {
       `"detected"`,
     )
   })
+  it('TLWH layout controls in multiselect', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              left: 55,
+              top: 98,
+              width: 266,
+              height: 124,
+            }}
+            data-uid={'bbb'}
+          ></div>
+          <div
+          style={{
+            position: 'absolute',
+            backgroundColor: '#DDDDDD',
+            left: 100,
+            top: 100,
+            width: 150,
+            height: 160,
+          }}
+          data-uid={'ccc'}
+        ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetPath1 = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath2 = EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetPath1, targetPath2], false)], false)
+      await dispatchDone
+    })
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath1)]
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-height',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-top-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-left-number-input',
+    )) as HTMLInputElement
+    const bottomControl = (await renderResult.renderedDOM.findByTestId(
+      'position-bottom-number-input',
+    )) as HTMLInputElement
+    const rightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-right-number-input',
+    )) as HTMLInputElement
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"266"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"124px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"124"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"55"`)
+    matchInlineSnapshotBrowser(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-mixed-simple-or-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(bottomControl.value, `"178"`)
+    matchInlineSnapshotBrowser(
+      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-identical-unset"`,
+    )
+
+    matchInlineSnapshotBrowser(rightControl.value, `"79"`)
+    matchInlineSnapshotBrowser(
+      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"multiselect-identical-unset"`,
+    )
+  })
   it('TLBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -321,19 +439,17 @@ describe('inspector tests with real metadata', () => {
       'position-right-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"335px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"detected"`,
-    // )
+    matchInlineSnapshotBrowser(widthControl.value, `"335"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected"`,
+    )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"102px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"detected"`,
-    // )
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected"`,
+    )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
@@ -672,19 +788,17 @@ describe('inspector tests with real metadata', () => {
       'position-maxWidth-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"0px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"simple-unknown-css"`,
-    // )
+    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple-unknown-css"`,
+    )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"0px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"simple-unknown-css"`,
-    // )
+    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple-unknown-css"`,
+    )
 
     matchInlineSnapshotBrowser(topControl.value, `"0"`)
     matchInlineSnapshotBrowser(
@@ -986,19 +1100,17 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"150px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"simple-unknown-css"`,
-    // )
+    matchInlineSnapshotBrowser(widthControl.value, `"150"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple-unknown-css"`,
+    )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"88px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"simple-unknown-css"`,
-    // )
+    matchInlineSnapshotBrowser(heightControl.value, `"88"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple-unknown-css"`,
+    )
 
     matchInlineSnapshotBrowser(topControl.value, `"220"`)
     matchInlineSnapshotBrowser(
@@ -1087,19 +1199,17 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"150px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"controlled"`,
-    // )
+    matchInlineSnapshotBrowser(widthControl.value, `"150"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"controlled"`,
+    )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"130px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"controlled"`,
-    // )
+    matchInlineSnapshotBrowser(heightControl.value, `"130"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"controlled"`,
+    )
 
     matchInlineSnapshotBrowser(topControl.value, `"33"`)
     matchInlineSnapshotBrowser(
@@ -1324,20 +1434,18 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
-    matchInlineSnapshotBrowser(earlyWidthControl.value, `"203px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"detected-fromcss"`,
-    // )
+    matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(
+      earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
-    matchInlineSnapshotBrowser(earlyHeightControl.value, `"102px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"detected-fromcss"`,
-    // )
+    matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
+      earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
 
     matchInlineSnapshotBrowser(earlyPaddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
@@ -1384,17 +1492,17 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
-    matchInlineSnapshotBrowser(laterWidthControl.value, `"203px"`)
+    matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
+      `"detected-fromcss"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
-    matchInlineSnapshotBrowser(laterHeightControl.value, `"102px"`)
+    matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
+      `"detected-fromcss"`,
     )
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
@@ -1475,19 +1583,17 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"0px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"simple-unknown-css"`,
-    // )
+    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"0px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"simple-unknown-css"`,
-    // )
+    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
@@ -1585,20 +1691,18 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
-    matchInlineSnapshotBrowser(widthControl.value, `"250px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"detected-fromcss"`,
-    // )
+    matchInlineSnapshotBrowser(widthControl.value, `"250"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
-    matchInlineSnapshotBrowser(heightControl.value, `"250px"`)
-    // TODO restore this when fixing controlstatus
-    // matchInlineSnapshotBrowser(
-    //   heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    //   `"detected-fromcss"`,
-    // )
+    matchInlineSnapshotBrowser(heightControl.value, `"250"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
     matchInlineSnapshotBrowser(paddingControl.value, `"14"`)
@@ -2011,6 +2115,54 @@ describe('inspector tests with real metadata', () => {
     //   `"simple"`,
     // )
   })
+  it('Flex longhand in style props using a simple expression', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', display: 'flex', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              backgroundColor: '#DDDDDD',
+              flexGrow: 0.5+0.5,
+              height: 30+100,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-height',
+    )) as HTMLInputElement
+
+    matchInlineSnapshotBrowser(widthControl.value, `"1"`)
+    matchInlineSnapshotBrowser(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"controlled"`,
+    )
+
+    matchInlineSnapshotBrowser(heightControl.value, `"130"`)
+    matchInlineSnapshotBrowser(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"controlled"`,
+    )
+  })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {
       '/package.json': textFile(
@@ -2160,8 +2312,6 @@ describe('inspector tests with real metadata', () => {
           await renderResult.dispatch([selectComponents([targetPath], false)], false)
         })
 
-        // await wait(300000)
-
         const control = await getControl(t.controlTestID, renderResult.renderedDOM)
 
         // Check the controls show when hovering
@@ -2186,21 +2336,289 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('conditionals', () => {
-    before(() => setFeatureEnabled('Conditional support', true))
-    after(() => setFeatureEnabled('Conditional support', false))
-    it('toggles conditional branch', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'conditional',
-      ])
+    it('overrides conditional branch', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
-        {[].length === 0 ? (
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      const bbbPath = EP.appendToPath(targetPath, 'bbb')
+      const cccPath = EP.appendToPath(targetPath, 'ccc')
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      // check the status of the override buttons
+      {
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because the condition is true and there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "simple" because there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
+        )
+      }
+
+      // override to false
+      {
+        await clickButtonAndSelectTarget(
+          renderResult,
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+          [targetPath],
+        )
+
+        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
+        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/uid=conditional
+                // @utopia/conditional=false
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `false` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('false')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+
+        // 'ccc' should be present in the metadata and 'bbb' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(cccPath),
+        )
+      }
+
+      // override to true
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlTrueTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/uid=conditional
+                // @utopia/conditional=true
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
+        )
+      }
+
+      // disable override
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlToggleTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>
+              {
+                // @utopia/uid=conditional
+                [].length === 0 ? (
+                  <div data-uid='bbb' data-testid='bbb'>foo</div>
+                ) : (
+                  <div data-uid='ccc' data-testid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because the condition is true and there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "simple" because there is no override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'simple',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
+        )
+      }
+
+      // override to the current condition value
+      {
+        await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlToggleTestId, [
+          targetPath,
+        ])
+
+        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+                  <div data-uid='aaa'>
+                    {
+                      // @utopia/uid=conditional
+                      // @utopia/conditional=true
+                      [].length === 0 ? (
+                        <div data-uid='bbb' data-testid='bbb'>foo</div>
+                      ) : (
+                        <div data-uid='ccc' data-testid='ccc'>bar</div>
+                      )
+                    }
+                  </div>
+                `),
+        )
+
+        const trueButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'true'),
+        )
+        const falseButton = await renderResult.renderedDOM.findByTestId(
+          getOptionControlTestId(ConditionalOverrideControlTestIdPrefix, 'false'),
+        )
+
+        // the `true` button should be checked because that is the override
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual('true')
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-ischecked')?.value).toEqual(
+          'false',
+        )
+
+        // the button status is "overridden"
+        expect(trueButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+        expect(falseButton.attributes.getNamedItemNS(null, 'data-controlstatus')?.value).toEqual(
+          'overridden',
+        )
+
+        // 'bbb' should be present in the metadata and 'ccc' should not.
+        expect(renderResult.getEditorState().editor.jsxMetadata).toHaveProperty(
+          EP.toString(bbbPath),
+        )
+        expect(renderResult.getEditorState().editor.jsxMetadata).not.toHaveProperty(
+          EP.toString(cccPath),
+        )
+      }
+    })
+    it('switches conditional branches', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
         ) : (
           <div data-uid='ccc' data-testid='ccc'>bar</div>
@@ -2219,115 +2637,32 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      // open the section in the inspector
+      // switch branches
       {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionOpenTestId, [
+        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSwitchBranchesTestId, [
           targetPath,
         ])
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
-              {
-                // @utopia/conditional=true
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
-      // toggle to false
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
-          targetPath,
-        ])
-
-        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/conditional=false
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
-      // toggle to true
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleTrueTestId, [
-          targetPath,
-        ])
-
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                // @utopia/conditional=true
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
-            </div>
-          `),
-        )
-      }
-
-      // close the inspector section
-      {
-        await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionCloseTestId, [
-          targetPath,
-        ])
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {
-                [].length === 0 ? (
-                  <div data-uid='bbb' data-testid='bbb'>foo</div>
-                ) : (
-                  <div data-uid='ccc' data-testid='ccc'>bar</div>
-                )
-              }
+            {
+              // @utopia/uid=conditional
+              [].length === 0 ? (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            ) : (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            )}
             </div>
           `),
         )
       }
     })
     it('rearranges comments so that the conditional flag is at the top', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'conditional',
-      ])
       const startSnippet = `
         <div data-uid='aaa'>
         {
+          // @utopia/uid=conditional
           // hello
           [].length === 0 /*inside*/ ? (
           <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2335,7 +2670,7 @@ describe('inspector tests with real metadata', () => {
           <div data-uid='ccc' data-testid='ccc'>bar</div>
         )
           /* this is a test */
-          // @utopia/conditional=false
+          // @utopia/conditional=true
           // and another comment
         }
         </div>
@@ -2350,7 +2685,7 @@ describe('inspector tests with real metadata', () => {
         await renderResult.dispatch([selectComponents([targetPath], false)], false)
       })
 
-      await clickButtonAndSelectTarget(renderResult, ConditionalsControlToggleFalseTestId, [
+      await clickButtonAndSelectTarget(renderResult, ConditionalOverrideControlFalseTestId, [
         targetPath,
       ])
 
@@ -2361,6 +2696,7 @@ describe('inspector tests with real metadata', () => {
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional
                 // hello
                 // @utopia/conditional=false
                 [].length === 0 /*inside*/ ? (
@@ -2374,30 +2710,20 @@ describe('inspector tests with real metadata', () => {
          `),
       )
     })
-    it('toggles multiple conditional branches', async () => {
-      FOR_TESTS_setNextGeneratedUids([
-        'skip1',
-        'skip2',
-        'skip3',
-        'skip4',
-        'skip5',
-        'skip6',
-        'skip7',
-        'skip8',
-        'skip9',
-        'conditional1',
-        'skip10',
-        'skip11',
-        'conditional2',
-      ])
+    // Conditional section should not be closeable, so no UI currently to override multiple conditionals at the same time
+    xit('toggles multiple conditional branches', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
-          {true ? (
+          {
+            // @utopia/uid=conditional1
+            true ? (
             <div data-uid='bbb' data-testid='bbb'>foo</div>
           ) : (
             <div data-uid='ccc' data-testid='ccc'>bar</div>
           )}
-          {true ? (
+          {
+            // @utopia/uid=conditional2
+            true ? (
             <div data-uid='ddd' data-testid='ddd'>baz</div>
           ) : (
             <div data-uid='eee' data-testid='eee'>qux</div>
@@ -2432,6 +2758,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional1
                 // @utopia/conditional=true
                 true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2439,7 +2766,9 @@ describe('inspector tests with real metadata', () => {
                   <div data-uid='ccc' data-testid='ccc'>bar</div>
                 )
               }
-              {true ? (
+              {
+                // @utopia/uid=conditional2
+                true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
               ) : (
                 <div data-uid='eee' data-testid='eee'>qux</div>
@@ -2459,7 +2788,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          ConditionalsControlToggleFalseTestId,
+          ConditionalOverrideControlFalseTestId,
           bothConditionals,
         )
 
@@ -2472,6 +2801,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
             {
+              // @utopia/uid=conditional1
               // @utopia/conditional=false
               true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2480,6 +2810,7 @@ describe('inspector tests with real metadata', () => {
                 )
               }
               {
+                // @utopia/uid=conditional2
                 // @utopia/conditional=false
                 true ? (
                   <div data-uid='ddd' data-testid='ddd'>baz</div>
@@ -2495,7 +2826,7 @@ describe('inspector tests with real metadata', () => {
       {
         await clickButtonAndSelectTarget(
           renderResult,
-          ConditionalsControlToggleTrueTestId,
+          ConditionalOverrideControlTrueTestId,
           bothConditionals,
         )
 
@@ -2508,6 +2839,7 @@ describe('inspector tests with real metadata', () => {
           makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
               {
+                // @utopia/uid=conditional1
                 // @utopia/conditional=true
                 true ? (
                   <div data-uid='bbb' data-testid='bbb'>foo</div>
@@ -2516,6 +2848,7 @@ describe('inspector tests with real metadata', () => {
                 )
               }
               {
+                // @utopia/uid=conditional2
                 // @utopia/conditional=true
                 true ? (
                 <div data-uid='ddd' data-testid='ddd'>baz</div>
@@ -2526,36 +2859,109 @@ describe('inspector tests with real metadata', () => {
           `),
         )
       }
+    })
+    it('displays the condition', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb'>foo</div>
+        ) : (
+          <div data-uid='ccc' data-testid='ccc'>bar</div>
+        )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
 
-      // close the inspector section
-      {
-        await clickButtonAndSelectTarget(
-          renderResult,
-          ConditionalsControlSectionCloseTestId,
-          bothConditionals,
-        )
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
 
-        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {true ? (
-                <div data-uid='bbb' data-testid='bbb'>foo</div>
-              ) : (
-                <div data-uid='ccc' data-testid='ccc'>bar</div>
-              )}
-              {true ? (
-                <div data-uid='ddd' data-testid='ddd'>baz</div>
-              ) : (
-                <div data-uid='eee' data-testid='eee'>qux</div>
-              )}
-            </div>
-          `),
-        )
-      }
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      const expressionElement = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlSectionExpressionTestId,
+      )
+      expect((expressionElement as HTMLInputElement).value).toEqual('[].length === 0')
+    })
+    it('allows changing the expression', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await setControlValue(
+        ConditionalsControlSectionExpressionTestId,
+        '40 + 2 < 42',
+        renderResult.renderedDOM,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId('ccc')).not.toBeNull()
+
+      const expressionElement = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlSectionExpressionTestId,
+      )
+      expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
+    })
+    it('shows the branches in the inspector', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+          <div data-uid='bbb' data-testid='bbb' style={{ position: 'absolute', width: 22, height: 22 }}><div>Another div</div></div>
+        ) : (
+          <h1 data-uid='ccc' data-testid='ccc'>hello there</h1>
+        )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      const branchElementTrue = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlBranchTrueTestId,
+      )
+      const branchElementFalse = renderResult.renderedDOM.getByTestId(
+        ConditionalsControlBranchFalseTestId,
+      )
+
+      expect(branchElementTrue.innerText).toEqual('div')
+      expect(branchElementFalse.innerText).toEqual('h1')
     })
   })
 })

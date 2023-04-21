@@ -27,13 +27,12 @@ import {
   getDefinedElsewhereFromAttributes,
   jsxElement,
   jsxAttributesFromMap,
-  jsxAttributeValue,
+  jsExpressionValue,
   getJSXElementNameAsString,
   JSXElement,
   walkElements,
   emptyComments,
 } from '../core/shared/element-template'
-import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import {
@@ -74,6 +73,7 @@ import { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { fireEvent } from '@testing-library/react'
 import { FeatureName, isFeatureEnabled, setFeatureEnabled } from './feature-switches'
+import { getUtopiaID } from '../core/shared/uid-utils'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -237,7 +237,7 @@ export function createFakeMetadataForComponents(
             component.name ?? 'default',
             componentUID,
             jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue(componentUID, emptyComments),
+              'data-uid': jsExpressionValue(componentUID, emptyComments),
             }),
             [],
           ),
@@ -342,6 +342,7 @@ function createFakeMetadataForJSXElement(
       attributeMetadatada: emptyAttributeMetadatada,
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
+      conditionValue: 'not-a-conditional',
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -376,6 +377,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
     importInfo: null,
+    conditionValue: 'not-a-conditional',
   }
 }
 
@@ -423,29 +425,46 @@ export function slightlyOffsetPointBecauseVeryWeirdIssue(point: { x: number; y: 
   return { x: point.x - 0.001, y: point.y - 0.001 }
 }
 
-async function expectNUndoSteps(
+async function expectNUndoStepsNSaves(
   editor: EditorRenderResult,
-  steps: number,
+  undoSteps: number,
+  saves: number,
   action: () => Promise<void>,
 ): Promise<void> {
+  const saveCountBefore = editor.getEditorState().saveCountThisSession
   const historySizeBefore = editor.getEditorState().history.previous.length
+
   await action()
+
   const historySizeAfter = editor.getEditorState().history.previous.length
-  expect(historySizeAfter - historySizeBefore).toEqual(steps)
+  const saveCountAfter = editor.getEditorState().saveCountThisSession
+
+  expect(historySizeAfter - historySizeBefore).toEqual(undoSteps)
+  expect(saveCountAfter - saveCountBefore).toEqual(saves)
 }
 
 export async function expectNoAction(
   editor: EditorRenderResult,
   action: () => Promise<void>,
 ): Promise<void> {
-  return expectNUndoSteps(editor, 0, action)
+  return expectNUndoStepsNSaves(editor, 0, 0, action)
 }
 
-export async function expectSingleUndoStep(
+// FIXME We should really only be expecting a single save, but we currently save
+// on changes to the parsed model as well as the printed code
+export async function expectSingleUndo2Saves(
   editor: EditorRenderResult,
   action: () => Promise<void>,
 ): Promise<void> {
-  return expectNUndoSteps(editor, 1, action)
+  return expectNUndoStepsNSaves(editor, 1, 2, action)
+}
+
+export async function expectSingleUndoNSaves(
+  editor: EditorRenderResult,
+  saves: number,
+  action: () => Promise<void>,
+): Promise<void> {
+  return expectNUndoStepsNSaves(editor, 1, saves, action)
 }
 
 export async function selectComponentsForTest(
@@ -490,3 +509,17 @@ export function setFeatureForUnitTests(featureName: FeatureName, newValue: boole
     setFeatureEnabled(featureName, originalFSValue)
   })
 }
+
+function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTMLElement[] {
+  return editor.renderedDOM.queryAllByTestId(testId)
+}
+
+export const expectElementWithTestIdToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(1)
+
+export const expectElementWithTestIdNotToBeRendered = (
+  editor: EditorRenderResult,
+  testId: string,
+): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)

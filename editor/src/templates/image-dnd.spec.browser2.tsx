@@ -27,10 +27,6 @@ import {
   makeImageFile,
 } from '../components/canvas/image-insert.test-utils'
 
-const MOCK_UIDS = Array(10)
-  .fill(0)
-  .map((_, i) => `${i}`)
-
 const contents = {
   'package.json': {
     content: {
@@ -257,8 +253,6 @@ describe('image drag and drop', () => {
 
   describe('filebrowser and canvas combined interactions', () => {
     it('dragging from the filebrowser to the canvas inserts the image', async () => {
-      FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
       await editor.dispatch(
         [setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Project)],
@@ -298,6 +292,8 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
       await editor.getDispatchFollowUpActionsFinished()
 
+      FOR_TESTS_setNextGeneratedUids(['dragged-image'])
+
       await dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
       await editor.getDispatchFollowUpActionsFinished()
@@ -336,7 +332,7 @@ describe('image drag and drop', () => {
               top: -159,
               left: -708,
             }}
-            data-uid='3'
+            data-uid='dragged-image'
           />
         </Storyboard>
       )
@@ -475,8 +471,6 @@ describe('image drag and drop', () => {
   })
 
   it('dragging from "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -504,6 +498,8 @@ describe('image drag and drop', () => {
 
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
     expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+
+    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -542,7 +538,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='3'
+        data-uid='dragged-image'
       />
     </Scene>
   </Storyboard>
@@ -551,8 +547,6 @@ export var storyboard = (
   })
 
   it('dragging from "finder" works, with image multiplier', async () => {
-    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -580,6 +574,8 @@ export var storyboard = (
 
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
     expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
+
+    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -618,7 +614,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='3'
+        data-uid='dragged-image'
       />
     </Scene>
   </Storyboard>
@@ -627,8 +623,6 @@ export var storyboard = (
   })
 
   it('dragging existing filename from "finder" autoincrements filename', async () => {
-    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
     const editor = await renderTestEditorWithProjectContent(
       contents,
       'await-first-dom-report',
@@ -654,6 +648,8 @@ export var storyboard = (
     }
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+
+    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -690,7 +686,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='3'
+        data-uid='dragged-image'
       />
     </Scene>
   </Storyboard>
@@ -699,8 +695,6 @@ export var storyboard = (
   })
 
   it('dragging existing filename from "finder" autoincrements filename, respecting the image multiplier', async () => {
-    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
     const editor = await renderTestEditorWithProjectContent(
       contents,
       'await-first-dom-report',
@@ -720,6 +714,8 @@ export var storyboard = (
     }
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
+
+    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -756,7 +752,7 @@ export var storyboard = (
           top: 379.75,
           left: 90.75,
         }}
-        data-uid='3'
+        data-uid='dragged-image'
       />
     </Scene>
   </Storyboard>
@@ -765,8 +761,6 @@ export var storyboard = (
   })
 
   it('dragging multiple images from "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
     const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -791,6 +785,7 @@ export var storyboard = (
     }
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    FOR_TESTS_setNextGeneratedUids(['dragged-image1', 'dragged-image2', 'dragged-image3'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -826,7 +821,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='3'
+        data-uid='dragged-image1'
       />
       <img
         data-aspect-ratio-locked
@@ -838,7 +833,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='4'
+        data-uid='dragged-image2'
       />
       <img
         data-aspect-ratio-locked
@@ -850,7 +845,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='5'
+        data-uid='dragged-image3'
       />
     </Scene>
   </Storyboard>
@@ -859,8 +854,6 @@ export var storyboard = (
   })
 
   it('dragging multiple images with the same name from "finder" works', async () => {
-    FOR_TESTS_setNextGeneratedUids(MOCK_UIDS)
-
     const editor = await renderTestEditorWithProjectContent(
       contents,
       'await-first-dom-report',
@@ -890,6 +883,7 @@ export var storyboard = (
     }
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
+    FOR_TESTS_setNextGeneratedUids(['dragged-image1', 'dragged-image2', 'dragged-image3'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -926,7 +920,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='3'
+        data-uid='dragged-image1'
       />
       <img
         data-aspect-ratio-locked
@@ -938,7 +932,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='4'
+        data-uid='dragged-image2'
       />
       <img
         data-aspect-ratio-locked
@@ -950,7 +944,7 @@ export var storyboard = (
           top: 379.5,
           left: 350,
         }}
-        data-uid='5'
+        data-uid='dragged-image3'
       />
     </Scene>
   </Storyboard>

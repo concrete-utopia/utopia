@@ -140,7 +140,7 @@ export function runSimpleLocalEditorAction(
     case 'TOGGLE_COLLAPSE':
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
     case 'ADD_TOAST':
-      return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+      return UPDATE_FNS.ADD_TOAST(action, state)
     case 'SET_REFRESHING_DEPENDENCIES':
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
@@ -202,7 +202,7 @@ export function runSimpleLocalEditorAction(
     case 'SEND_PREVIEW_MODEL':
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
-      return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState, dispatch)
+      return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
     case 'SET_FOCUS':
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'RESIZE_LEFTPANE':
@@ -265,8 +265,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
-    case 'UNWRAP_GROUP_OR_VIEW':
-      return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, derivedState, dispatch)
+    case 'UNWRAP_ELEMENT':
+      return UPDATE_FNS.UNWRAP_ELEMENT(action, state, dispatch, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
@@ -378,6 +378,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
       return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
+    case 'UPDATE_CONIDTIONAL_EXPRESSION':
+      return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
+    case 'SWITCH_CONDITIONAL_BRANCHES':
+      return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     default:
       return state
   }

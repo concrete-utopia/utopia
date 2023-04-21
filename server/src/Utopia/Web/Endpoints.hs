@@ -39,8 +39,8 @@ import           Servant                         hiding
                                                   serveDirectoryWith, uriPath)
 import           Servant.Conduit                 ()
 import           Servant.RawM.Server
-import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
+import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5.Attributes     as HA
 import           Text.HTML.TagSoup
 import           Text.URI                        hiding (unRText, uriPath)
@@ -48,8 +48,8 @@ import           Text.URI.Lens
 import           Utopia.ClientModel
 import           Utopia.Web.Assets
 import           Utopia.Web.Database             (projectContentTreeFromDecodedProject)
-import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
+import           Utopia.Web.Database.Types
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github.Types
 import           Utopia.Web.Packager.NPM

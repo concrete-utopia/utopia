@@ -22,7 +22,8 @@ import {
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
-import { wait } from '../../../../core/model/performance-scripts'
+import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
+import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
@@ -315,7 +316,7 @@ async function dragElement(
     modifiers: modifiers,
     midDragCallback: async () => {
       expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(EP.toString),
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
       ).toEqual(expectedNavigatorTargetsDuringMove)
     },
   })
@@ -347,12 +348,12 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     // drag element 'CCC' up a little to replace it with it's direct sibling
     const dragDelta = windowPoint({ x: 0, y: -45 })
     await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -411,11 +412,11 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
       // drag element 'B' over 'A' will skip reorder
       const dragDelta = windowPoint(rectangleDifference(elementBFrame, elementAFrame))
       await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
       ])
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -452,15 +453,15 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     // drag element 'fff' up above 'ddd'
     const dragDelta = windowPoint({ x: 0, y: -25 })
     await dragElement(renderResult, 'fff', dragDelta, emptyModifiers, [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/fff',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/fff',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/eee',
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -548,12 +549,12 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
     // drag element 'CCC' right will replace with sibling 'BBB'
     const dragDelta = windowPoint({ x: 45, y: 0 })
     await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
-      'utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/bbb',
     ])
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -605,12 +606,13 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
       // drag element 'CCC' up a little to replace it with it's direct sibling
       const dragDelta = windowPoint({ x: 0, y: -45 })
       await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, [
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:container/ccc',
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ccc', // <- ccc moves to above the fragment
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/fragment',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/fragment/bbb',
       ])
 
       await renderResult.getDispatchFollowUpActionsFinished()

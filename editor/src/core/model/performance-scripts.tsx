@@ -44,17 +44,25 @@ import { CanvasControlsContainerID } from '../../components/canvas/controls/new-
 import { forceNotNull } from '../shared/optional-utils'
 import { ElementPathArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { NavigatorContainerId } from '../../components/navigator/navigator'
-import { emptyComments, jsxAttributeValue } from '../shared/element-template'
+import { emptyComments, jsExpressionValue } from '../shared/element-template'
 import { last } from '../shared/array-utils'
 import { load } from '../../components/editor/actions/actions'
 import { ProjectContentTreeRoot } from '../../components/assets'
-import { PersistentModel } from '../../components/editor/store/editor-state'
+import {
+  EditorStorePatched,
+  PersistentModel,
+  regularNavigatorEntryOptic,
+} from '../../components/editor/store/editor-state'
 import { CURRENT_PROJECT_VERSION } from '../../components/editor/actions/migrations/migrations'
 import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { LargeProjectContents } from '../../test-cases/large-project'
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
+import { compose5Optics, Optic } from '../shared/optics/optics'
+import { ElementPath } from '../shared/project-file-types'
+import { fromField, traverseArray } from '../shared/optics/optic-creators'
+import { toArrayOf } from '../shared/optics/optic-utilities'
 
 let NumberOfIterations = 5
 if (window != null) {
@@ -176,6 +184,14 @@ async function loadProject(
   return editorReady
 }
 
+const storeToAllRegularPaths: Optic<EditorStorePatched, ElementPath> = compose5Optics(
+  fromField('derived'),
+  fromField('navigatorTargets'),
+  traverseArray(),
+  regularNavigatorEntryOptic,
+  fromField('elementPath'),
+)
+
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
   const builtInDependencies = useEditorState(
@@ -183,7 +199,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
     (store) => store.builtInDependencies,
     'useTriggerScrollPerformanceTest builtInDependencies',
   )
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
     if (!editorReady) {
@@ -231,7 +247,7 @@ export function useTriggerResizePerformanceTest(): () => void {
     'useTriggerResizePerformanceTest builtInDependencies',
   )
   const allPaths = useRefEditorState(
-    React.useCallback((store) => store.derived.navigatorTargets, []),
+    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
   )
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
@@ -302,7 +318,7 @@ export function useTriggerResizePerformanceTest(): () => void {
 }
 
 function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): () => void {
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
   const getHighlightableViews = useGetSelectableViewsForSelectMode()
   const calculateHighlightedViews = useCalculateHighlightedViews(true, getHighlightableViews)
   const dispatch = useDispatch() as DebugDispatch
@@ -371,7 +387,7 @@ export const useTriggerAllElementsHighlightPerformanceTest = () =>
 
 export function useTriggerSelectionPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
-  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
+  const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const builtInDependencies = useEditorState(
     Substores.restOfStore,
@@ -498,7 +514,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
 ): () => void {
   const dispatch = useDispatch() as DebugDispatch
   const allPaths = useRefEditorState(
-    React.useCallback((store) => store.derived.navigatorTargets, []),
+    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
   const builtInDependencies = useEditorState(
@@ -608,7 +624,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
           setProp_UNSAFE(
             childTargetPath!,
             PP.create('style'),
-            jsxAttributeValue(childStyleValue, emptyComments),
+            jsExpressionValue(childStyleValue, emptyComments),
           ),
         ],
         'everyone',
@@ -684,7 +700,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
   const projectContents = LargeProjectContents
   const dispatch = useDispatch() as DebugDispatch
   const allPaths = useRefEditorState(
-    React.useCallback((store) => store.derived.navigatorTargets, []),
+    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
   )
   const metadata = useRefEditorState(React.useCallback((store) => store.editor.jsxMetadata, []))
   const builtInDependencies = useEditorState(
@@ -795,7 +811,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
           setProp_UNSAFE(
             childTargetPath!,
             PP.create('style'),
-            jsxAttributeValue(childStyleValue, emptyComments),
+            jsExpressionValue(childStyleValue, emptyComments),
           ),
         ],
         'everyone',

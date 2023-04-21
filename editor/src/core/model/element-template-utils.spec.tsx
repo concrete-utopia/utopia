@@ -1,7 +1,9 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementAtPathHasMatchingUID*", "expectElementFoundNull"] }] */
+
 import {
-  jsxAttributeValue,
+  jsExpressionValue,
   isJSXAttributeValue,
-  jsxAttributeFunctionCall,
+  jsExpressionFunctionCall,
   UtopiaJSXComponent,
   JSXElement,
   jsxElement,
@@ -11,12 +13,13 @@ import {
   getJSXAttribute,
   isJSXElement,
   emptyComments,
+  isJSXConditionalExpression,
 } from '../shared/element-template'
 import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
-  getUtopiaID,
+  findJSXElementChildAtPath,
   guaranteeUniqueUids,
   rearrangeJsxChildren,
   removeJSXElementChild,
@@ -37,9 +40,16 @@ import {
   modifyParseSuccessWithSimple,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
-import { ProjectContentFile } from '../../components/assets'
-import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
-import { dynamicPathToStaticPath, fromString, fromStringStatic } from '../shared/element-path'
+import { ElementPath, ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import {
+  dynamicPathToStaticPath,
+  fromString,
+  fromStringStatic,
+  toUid,
+} from '../shared/element-path'
+import { getComponentsFromTopLevelElements } from './project-file-utils'
+import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
+import { getUtopiaID } from '../shared/uid-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -47,13 +57,13 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
         [],
       ),
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
         [],
       ),
     ]
@@ -61,10 +71,10 @@ describe('guaranteeUniqueUids', () => {
 
     const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child1UID).not.toEqual(jsxAttributeValue('aaa', emptyComments))
+    expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
   })
 
   it('if an element has an existing value, it will be replaced', () => {
@@ -72,13 +82,13 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
         [],
       ),
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
         [],
       ),
     ]
@@ -89,15 +99,15 @@ describe('guaranteeUniqueUids', () => {
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
-    expect(child1UID).not.toEqual(jsxAttributeValue('aab', emptyComments))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
+    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments, 'aab'))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
     const exampleElement = jsxElement(
       'View',
       '',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('someFunction', []) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionFunctionCall('someFunction', []) }),
       [],
     )
     const fixedElements = guaranteeUniqueUids([exampleElement], [])
@@ -121,7 +131,7 @@ describe('getUtopiaID', () => {
     const element = jsxElement(
       'View',
       'hello',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('hello', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('hello', emptyComments) }),
       [],
     )
     const id = getUtopiaID(element as JSXElement)
@@ -142,8 +152,8 @@ describe('removeJSXElementChild', () => {
         'View',
         'aaa',
         jsxAttributesFromMap({
-          'data-uid': jsxAttributeValue('aaa', emptyComments),
-          prop1: jsxAttributeValue(5, emptyComments),
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+          prop1: jsExpressionValue(5, emptyComments),
         }),
         [],
       ),
@@ -162,29 +172,29 @@ describe('removeJSXElementChild', () => {
         'View',
         'aab',
         jsxAttributesFromMap({
-          'data-uid': jsxAttributeValue('aab', emptyComments),
-          prop2: jsxAttributeValue(15, emptyComments),
+          'data-uid': jsExpressionValue('aab', emptyComments),
+          prop2: jsExpressionValue(15, emptyComments),
         }),
         [
           jsxElement(
             'View',
             'aac',
-            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aac', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aac', emptyComments) }),
             [],
           ),
           jsxElement(
             'View',
             'aad',
             jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue('aad', emptyComments),
-              prop3: jsxAttributeValue(100, emptyComments),
+              'data-uid': jsExpressionValue('aad', emptyComments),
+              prop3: jsExpressionValue(100, emptyComments),
             }),
             [],
           ),
           jsxElement(
             'View',
             'aae',
-            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aae', emptyComments) }),
+            jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aae', emptyComments) }),
             [],
           ),
         ],
@@ -739,3 +749,274 @@ describe('rearrangeJsxChildren', () => {
 function printCode(projectFile: ParseSuccess): string {
   return testPrintCodeFromParseSuccess('storyboard.js', projectFile)
 }
+
+describe('findJSXElementChildAtPath', () => {
+  function findElement(file: ParseSuccess, pathString: string) {
+    const path = fromStringStatic(pathString)
+    const foundElement = findJSXElementChildAtPath(
+      getComponentsFromTopLevelElements(file.topLevelElements),
+      path,
+    )
+    return foundElement
+  }
+
+  function expectElementAtPathHasMatchingUID(file: ParseSuccess, pathString: string) {
+    const foundElement = findElement(file, pathString)
+    expect(foundElement).not.toBeNull()
+    expect(getUtopiaID(foundElement!)).toEqual(toUid(fromStringStatic(pathString)))
+  }
+
+  function expectElementAtPathHasMatchingUIDForPaths(file: ParseSuccess, paths: Array<string>) {
+    paths.forEach((path) => expectElementAtPathHasMatchingUID(file, path))
+  }
+
+  function expectElementFoundNull(file: ParseSuccess, paths: Array<string>) {
+    paths.forEach((path) => expect(findElement(file, path)).toBeNull())
+  }
+
+  it('simple project with divs', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            <div data-uid='child-c'>
+              <div data-uid='grandchild-c' />
+            </div>
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+    ])
+    expectElementFoundNull(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/not-existing-child',
+    ])
+  })
+
+  it('simple project with divs with a conditional expression as sibling', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            {true ? 
+              (
+                <div data-uid='ternary-true-root'>
+                  <div data-uid='ternary-true-child' />
+                </div> 
+              ) : (
+                <div data-uid='ternary-false-root'>
+                  <div data-uid='ternary-false-child' />
+                </div> 
+              )
+            }
+            <div data-uid='child-d' />
+            <div data-uid='child-c'>
+              <div data-uid='grandchild-c' />
+            </div>
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+    ])
+
+    expectElementFoundNull(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/not-existing-child',
+    ])
+  })
+
+  it('project with arbitrary js block', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {[1, 2, 3].map(id => {
+              return (
+                <div data-uid='mapped-root'>
+                  <div data-uid='mapped-child' />
+                </div> 
+              )
+            })}
+            {[1, 2, 3].map(id => {
+              return (
+                <div data-uid='other-mapped-element' />
+              )
+            })}
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root/mapped-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/other-mapped-element',
+    ])
+  })
+
+  it('project with arbitrary js block that has a conditional expression inside', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {[1, 2, 3].map(id => {
+              return (
+                <div data-uid='mapped-root'>
+                  <div data-uid='mapped-child' />
+                </div> 
+              )
+            })}
+            {[1, 2, 3].map(id => {
+              return (
+                true ? 
+                  (
+                    <div data-uid='ternary-true-root'>
+                      <div data-uid='ternary-true-child' />
+                    </div> 
+                  ) : (
+                    <div data-uid='ternary-false-root'>
+                      <div data-uid='ternary-false-child' />
+                    </div> 
+                  )
+              )
+            })}
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/mapped-root/mapped-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-true-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-true-root/ternary-true-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/ternary-false-root/ternary-false-child',
+    ])
+  })
+
+  it('conditional expressions', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {
+              // @utopia/uid=conditional-1
+              true ? 
+              (
+                <div data-uid='ternary-true-root'>
+                  <div data-uid='ternary-true-child' />
+                </div> 
+              ) : (
+                <div data-uid='ternary-false-root'>
+                  <div data-uid='ternary-false-child' />
+                </div> 
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-true-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-true-root/ternary-true-child',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
+    ])
+  })
+
+  it('conditional expressions with branches that are JSXAttribute', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {
+              // @utopia/uid=conditional-1
+              true ? 
+              (
+                "hello"
+              ) : (
+                "world"
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/831',
+    ])
+  })
+
+  it('conditional expressions with branches that are mixed JSXAttribute and JSXElementChild', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {
+              // @utopia/uid=conditional-1
+              true ? 
+              (
+                "hello"
+              ) : (
+                <div data-uid='ternary-false-root'>
+                  <div data-uid='ternary-false-child' />
+                </div> 
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
+    ])
+  })
+})

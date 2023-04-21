@@ -1,3 +1,4 @@
+import { clearExpressionUniqueIDs } from '../../core/shared/element-template'
 import { syntaxParsers } from './css-parser-map'
 import { printPaddingAsAttributeValue } from './css-parser-padding'
 
@@ -213,7 +214,7 @@ describe('print padding', () => {
         unit: 'px' as const,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -221,6 +222,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "4px 24px 12px 8px",
       }
     `)
@@ -244,7 +246,7 @@ describe('print padding', () => {
         unit: null,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -252,6 +254,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "4px 24px 12px 8px",
       }
     `)
@@ -275,7 +278,7 @@ describe('print padding', () => {
         unit: 'px' as const,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -283,6 +286,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "4px 24px",
       }
     `)
@@ -306,7 +310,7 @@ describe('print padding', () => {
         unit: '%' as const,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -314,6 +318,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "4% 24%",
       }
     `)
@@ -337,7 +342,7 @@ describe('print padding', () => {
         unit: null,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -345,6 +350,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "4px 8px 12px 8px",
       }
     `)
@@ -368,7 +374,7 @@ describe('print padding', () => {
         unit: null,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -376,6 +382,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": 6,
       }
     `)
@@ -399,7 +406,7 @@ describe('print padding', () => {
         unit: '%' as const,
       },
     }
-    const printResult = printPaddingAsAttributeValue(cssPadding)
+    const printResult = clearExpressionUniqueIDs(printPaddingAsAttributeValue(cssPadding))
     expect(printResult).toMatchInlineSnapshot(`
       Object {
         "comments": Object {
@@ -407,6 +414,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
+        "uid": "",
         "value": "6%",
       }
     `)

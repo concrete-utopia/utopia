@@ -1,29 +1,18 @@
 import { PropertyControls } from 'utopia-api/core'
 import { URL_HASH } from '../../common/env-vars'
-import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
 import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
-import { mapArrayToDictionary } from '../../core/shared/array-utils'
-import {
-  eitherToMaybe,
-  flatMapEither,
-  foldEither,
-  forEachRight,
-  right,
-} from '../../core/shared/either'
 import {
   emptyComments,
-  isIntrinsicElementFromString,
+  jsExpressionValue,
   JSXAttributes,
-  jsxAttributesEntry,
   jsxAttributesFromMap,
-  jsxAttributeValue,
-  jsxElementName,
+  jsxConditionalExpressionWithoutUID,
   jsxElementWithoutUID,
-  JSXElementWithoutUID,
-  parsedComments,
+  jsxFragmentWithoutUID,
+  jsxTextBlock,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
@@ -34,15 +23,7 @@ import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
-import { mapToArray, mapValues } from '../../core/shared/object-utils'
-import {
-  importDetailsFromImportOption,
-  Imports,
-  isParsedTextFile,
-  isParseSuccess,
-  isTextFile,
-  ProjectFile,
-} from '../../core/shared/project-file-types'
+import { Imports, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { fastForEach } from '../../core/shared/utils'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
@@ -51,6 +32,8 @@ import {
   PropertyControlsInfo,
   ComponentDescriptor,
   ComponentDescriptorsForFile,
+  ComponentElementToInsert,
+  clearComponentElementToInsertUniqueIDs,
 } from '../custom-code/code-file'
 import { defaultViewElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
@@ -60,7 +43,7 @@ export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
 
 export interface InsertableComponent {
   importsToAdd: Imports
-  element: JSXElementWithoutUID
+  element: ComponentElementToInsert
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
@@ -68,7 +51,7 @@ export interface InsertableComponent {
 
 export function insertableComponent(
   importsToAdd: Imports,
-  element: JSXElementWithoutUID,
+  element: ComponentElementToInsert,
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
@@ -82,6 +65,23 @@ export function insertableComponent(
   }
 }
 
+export function clearInsertableComponentUniqueIDs(
+  insertableComponentToFix: InsertableComponent,
+): InsertableComponent {
+  const updatedElement =
+    typeof insertableComponentToFix.element === 'string'
+      ? insertableComponentToFix.element
+      : clearComponentElementToInsertUniqueIDs(insertableComponentToFix.element)
+  return {
+    ...insertableComponentToFix,
+    element: updatedElement,
+  }
+}
+
+export interface InsertableComponentGroupSamples {
+  type: 'SAMPLES_GROUP'
+}
+
 export interface InsertableComponentGroupHTML {
   type: 'HTML_GROUP'
 }
@@ -89,6 +89,26 @@ export interface InsertableComponentGroupHTML {
 export function insertableComponentGroupHTML(): InsertableComponentGroupHTML {
   return {
     type: 'HTML_GROUP',
+  }
+}
+
+export interface InsertableComponentGroupConditionals {
+  type: 'CONDITIONALS_GROUP'
+}
+
+export function insertableComponentGroupConditionals(): InsertableComponentGroupConditionals {
+  return {
+    type: 'CONDITIONALS_GROUP',
+  }
+}
+
+export interface InsertableComponentGroupFragment {
+  type: 'FRAGMENT_GROUP'
+}
+
+export function insertableComponentGroupFragment(): InsertableComponentGroupFragment {
+  return {
+    type: 'FRAGMENT_GROUP',
   }
 }
 
@@ -127,6 +147,9 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupHTML
   | InsertableComponentGroupProjectComponent
   | InsertableComponentGroupProjectDependency
+  | InsertableComponentGroupConditionals
+  | InsertableComponentGroupFragment
+  | InsertableComponentGroupSamples
 
 export interface InsertableComponentGroup {
   source: InsertableComponentGroupType
@@ -143,14 +166,31 @@ export function insertableComponentGroup(
   }
 }
 
+export function clearInsertableComponentGroupUniqueIDs(
+  insertableGroup: InsertableComponentGroup,
+): InsertableComponentGroup {
+  return {
+    source: insertableGroup.source,
+    insertableComponents: insertableGroup.insertableComponents.map(
+      clearInsertableComponentUniqueIDs,
+    ),
+  }
+}
+
 export function getInsertableGroupLabel(insertableType: InsertableComponentGroupType): string {
   switch (insertableType.type) {
+    case 'SAMPLES_GROUP':
+      return 'Sample elements'
     case 'HTML_GROUP':
       return 'HTML Elements'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyName
     case 'PROJECT_COMPONENT_GROUP':
       return insertableType.path
+    case 'CONDITIONALS_GROUP':
+      return 'Conditionals'
+    case 'FRAGMENT_GROUP':
+      return 'Fragment'
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
@@ -161,12 +201,14 @@ export function getInsertableGroupPackageStatus(
   insertableType: InsertableComponentGroupType,
 ): PackageStatus {
   switch (insertableType.type) {
+    case 'SAMPLES_GROUP':
     case 'HTML_GROUP':
+    case 'PROJECT_COMPONENT_GROUP':
+    case 'CONDITIONALS_GROUP':
+    case 'FRAGMENT_GROUP':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
-    case 'PROJECT_COMPONENT_GROUP':
-      return 'loaded'
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
@@ -299,6 +341,57 @@ const basicHTMLElementsDescriptors = {
     },
     defaultImageAttributes,
   ),
+}
+
+const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
+  conditional: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Conditional',
+        elementToInsert: jsxConditionalExpressionWithoutUID(
+          jsExpressionValue(true, emptyComments),
+          'true',
+          jsExpressionValue(null, emptyComments),
+          jsExpressionValue(null, emptyComments),
+          emptyComments,
+        ),
+        importsToAdd: {},
+      },
+    ],
+  },
+}
+
+const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
+  fragment: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Fragment',
+        elementToInsert: jsxFragmentWithoutUID([], true),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
+        },
+      },
+    ],
+  },
+}
+
+const samplesDescriptors: ComponentDescriptorsForFile = {
+  sampleText: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Sample text',
+        elementToInsert: jsxElementWithoutUID('span', [], [jsxTextBlock('Sample text')]),
+        importsToAdd: {},
+      },
+    ],
+  },
 }
 
 export function stylePropOptionsForPropertyControls(
@@ -474,6 +567,19 @@ export function getComponentGroups(
 
   // Add HTML entries.
   addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
+
+  // Add conditionals group.
+  addDependencyDescriptor(
+    null,
+    insertableComponentGroupConditionals(),
+    conditionalElementsDescriptors,
+  )
+
+  // Add fragment group.
+  addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
+
+  // Add samples group
+  addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {

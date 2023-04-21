@@ -4,7 +4,7 @@ import create, { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustan
 import { subscribeWithSelector } from 'zustand/middleware'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
-import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { NavigatorStateKeepDeepEquality } from './store-deep-equality-instances'
 import { DerivedState, EditorStorePatched } from './editor-state'
 import {
   logAfterStoreUpdate,

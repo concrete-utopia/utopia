@@ -6,12 +6,20 @@ import {
 } from '../../ui-jsx.test-utils'
 import {
   CanvasStrategy,
+  ControlDelay,
   strategyApplicationResult,
 } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 import { applicableStrategy, ApplicableStrategy } from '../../canvas-strategies/canvas-strategies'
 import { cmdModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
-import { mouseDownAtPoint, mouseMoveToPoint, pressKey } from '../../event-helpers.test-utils'
+import {
+  mouseDownAtPoint,
+  mouseEnterAtPoint,
+  mouseMoveToPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
+import { getDrawToInsertStrategyName } from '../../canvas-strategies/strategies/draw-to-insert-metastrategy'
+import { wait } from '../../../../utils/utils.test-utils'
 
 const BestStrategy: CanvasStrategy = {
   id: 'BEST_STRATEGY',
@@ -60,6 +68,27 @@ async function renderBasicModel(): Promise<EditorRenderResult> {
     `),
     'await-first-dom-report',
     allStrategies,
+  )
+  await renderResult.getDispatchFollowUpActionsFinished()
+
+  return renderResult
+}
+
+async function renderFlexModel(): Promise<EditorRenderResult> {
+  const renderResult = await renderTestEditorWithCode(
+    makeTestProjectCodeWithSnippet(`
+      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <div
+          style={{ backgroundColor: 'yellow', position: 'absolute', left: 40, top: 50, width: 200, height: 100 }}
+          data-testid='absolute-target'
+        />
+        <div
+          style={{ backgroundColor: 'blue', position: 'absolute', left: 40, top: 150, width: 200, height: 100, display: 'flex' }}
+          data-testid='flex-target'
+        />
+      </div>
+    `),
+    'await-first-dom-report',
   )
   await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -199,5 +228,61 @@ describe('The strategy picker', () => {
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
     await pressKey('a', { modifiers: emptyModifiers })
     expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(AverageStrategy.id)
+  })
+  it('Shows the correct strategy when using a delayed value', async () => {
+    const renderResult = await renderFlexModel()
+
+    const absoluteTarget = await renderResult.renderedDOM.findByTestId('absolute-target')
+    const absoluteTargetElementRect = absoluteTarget.getBoundingClientRect()
+
+    const absolutePoint = {
+      x: absoluteTargetElementRect.x + absoluteTargetElementRect.width / 2,
+      y: absoluteTargetElementRect.y + absoluteTargetElementRect.height / 2,
+    }
+
+    const flexTarget = await renderResult.renderedDOM.findByTestId('flex-target')
+    const flexTargetElementRect = flexTarget.getBoundingClientRect()
+
+    const flexPoint = {
+      x: flexTargetElementRect.x + flexTargetElementRect.width / 2,
+      y: flexTargetElementRect.y + flexTargetElementRect.height / 2,
+    }
+
+    const canvasControls = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    // Position the mouse over an absolute positioned element
+    await mouseMoveToPoint(canvasControls, absolutePoint)
+    await mouseEnterAtPoint(canvasControls, absolutePoint)
+
+    // Enter insertion mode, so that the initially prefered insert strategy is absolute insertion
+    await pressKey('d')
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check we are in insertion mode and have the expected preferred strategy
+    const expectedStartingStrategy = getDrawToInsertStrategyName('REPARENT_AS_ABSOLUTE', 'flow')
+    expect(renderResult.getEditorState().editor.mode.type).toEqual('insert')
+    expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+      expectedStartingStrategy,
+    )
+
+    // Quickly move the mouse over the flex element
+    await mouseMoveToPoint(canvasControls, flexPoint)
+    await mouseEnterAtPoint(canvasControls, flexPoint)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the preferred strategy has been updated
+    const expectedEndingStrategy = getDrawToInsertStrategyName('REPARENT_AS_STATIC', 'flex')
+    expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
+      expectedEndingStrategy,
+    )
+
+    // Wait until the strategy picker shows up
+    await wait(ControlDelay + 1)
+
+    // Check that the strategy picker shows the correct strategy
+    const strategyPickerActiveRow = await renderResult.renderedDOM.findByTestId(
+      'strategy-picker-active-row',
+    )
+    expect(strategyPickerActiveRow.textContent).toEqual(expectedEndingStrategy)
   })
 })

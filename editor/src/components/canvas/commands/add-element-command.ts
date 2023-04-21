@@ -1,32 +1,46 @@
 import {
+  getElementPathFromInsertionPath,
+  InsertionPath,
+  insertionPathToString,
+} from '../../editor/store/insertion-path'
+import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
-  removeElementAtPath,
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import * as EP from '../../../core/shared/element-path'
 import { JSXElementChild } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
+import { IndexPosition } from '../../../utils/utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
-  parentPath: ElementPath
+  parentPath: InsertionPath
   element: JSXElementChild
+  indexPosition?: IndexPosition
+  importsToAdd?: Imports
 }
 
 export function addElement(
   whenToRun: WhenToRun,
-  parentPath: ElementPath,
+  parentPath: InsertionPath,
   element: JSXElementChild,
+  options: Partial<{
+    indexPosition: IndexPosition
+    importsToAdd: Imports
+  }> = {},
 ): AddElement {
   return {
     whenToRun: whenToRun,
     type: 'ADD_ELEMENT',
     parentPath: parentPath,
     element: element,
+    indexPosition: options.indexPosition,
+    importsToAdd: options.importsToAdd,
   }
 }
 
@@ -36,7 +50,7 @@ export const runAddElement: CommandFunction<AddElement> = (
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
-    command.parentPath,
+    getElementPathFromInsertionPath(command.parentPath),
     editorState,
     (
       parentSuccess,
@@ -46,28 +60,40 @@ export const runAddElement: CommandFunction<AddElement> = (
     ) => {
       const componentsNewParent = getUtopiaJSXComponentsFromSuccess(parentSuccess)
 
-      const withElementInserted = insertElementAtPath(
+      const insertionResult = insertElementAtPath(
         editorState.projectContents,
         underlyingFilePathNewParent,
         command.parentPath,
         command.element,
         componentsNewParent,
-        null,
+        command.indexPosition ?? null,
       )
+      const withElementInserted = insertionResult.components
 
       const editorStatePatchNewParentFile = getPatchForComponentChange(
         parentSuccess.topLevelElements,
         withElementInserted,
-        parentSuccess.imports,
+        mergeImports(
+          underlyingFilePathNewParent,
+          parentSuccess.imports,
+          mergeImports(
+            underlyingFilePathNewParent,
+            insertionResult.importsToAdd,
+            command.importsToAdd ?? {},
+          ),
+        ),
         underlyingFilePathNewParent,
       )
 
-      editorStatePatches = [editorStatePatchNewParentFile]
+      editorStatePatches = [
+        editorStatePatchNewParentFile,
+        includeToastPatch(insertionResult.insertionDetails, editorState),
+      ]
     },
   )
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Add Element to ${EP.toString(command.parentPath)}`,
+    commandDescription: `Add Element to ${insertionPathToString(command.parentPath)}`,
   }
 }

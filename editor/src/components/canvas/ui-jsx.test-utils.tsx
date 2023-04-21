@@ -329,7 +329,7 @@ export async function renderTestEditorWithModel(
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
-    alreadySaved: false,
+    saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
   }
 
@@ -438,7 +438,7 @@ export function getPrintedUiJsCode(
   filePath: string = StoryboardFilePath,
 ): string {
   const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
-  if (isTextFile(file)) {
+  if (file != null && isTextFile(file)) {
     return file.fileContents.code
   } else {
     throw new Error('File is not a text file.')
@@ -447,7 +447,7 @@ export function getPrintedUiJsCode(
 
 export function getPrintedUiJsCodeWithoutUIDs(store: EditorStorePatched): string {
   const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,
       printCodeOptions(false, true, false, true),
@@ -502,6 +502,42 @@ ${componentInnards}
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   return makeTestProjectCodeWithComponentInnards(`
+  return (
+${snippet}
+  )
+`)
+}
+
+export function makeTestProjectCodeWithComponentInnardsWithoutUIDs(
+  componentInnards: string,
+): string {
+  const code = `
+  import * as React from 'react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+${componentInnards}
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+        >
+          <App
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`
+  return formatTestProjectCode(code)
+}
+
+export function makeTestProjectCodeWithSnippetWithoutUIDs(snippet: string): string {
+  return makeTestProjectCodeWithComponentInnardsWithoutUIDs(`
   return (
 ${snippet}
   )

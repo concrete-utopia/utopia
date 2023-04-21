@@ -45,7 +45,7 @@ import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
 import { setBorderRadiusStrategy } from './strategies/set-border-radius-strategy'
-import { getDragTargets } from './strategies/shared-move-strategies-helpers'
+import { flattenSelection } from './strategies/shared-move-strategies-helpers'
 import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
@@ -53,6 +53,8 @@ import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-st
 import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
+import { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -119,7 +121,7 @@ const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStr
     interactionSession: InteractionSession | null,
     customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
-    const selectedElements = getDragTargets(
+    const selectedElements = flattenSelection(
       getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
     )
 
@@ -397,52 +399,49 @@ export function useDelayedEditorState<T>(
    * but when a drag threshold passes before the timer ends it shows up without delay
    */
 
+  const actualValue = React.useRef<T | null>(null)
   const [delayedValue, setDelayedValue] = React.useState<T | null>(null)
   const [timer, setTimer] = React.useState<number | null>(null)
 
-  const immediateCallback = React.useCallback(
-    (currentValue: T | null) => {
-      setDelayedValue(currentValue)
-      if (timer != null) {
-        window.clearTimeout(timer)
-        setTimer(null)
-      }
-    },
-    [timer, setTimer, setDelayedValue],
-  )
+  const setDelayedValueToActualValue = React.useCallback(() => {
+    setDelayedValue(actualValue.current)
+    if (timer != null) {
+      window.clearTimeout(timer)
+      setTimer(null)
+    }
+  }, [timer, setTimer, setDelayedValue])
 
-  const maybeDelayedCallback = React.useCallback(
-    (currentValue: T | null) => {
-      if (currentValue != null && delayedValue == null) {
+  const callback = React.useCallback(
+    ({ value: currentValue, immediate }: { value: T | null; immediate: boolean }) => {
+      actualValue.current = currentValue
+
+      const shouldDelay = !immediate && currentValue != null && delayedValue == null
+      if (shouldDelay) {
         if (timer == null) {
           setTimer(
             window.setTimeout(() => {
-              setDelayedValue(currentValue)
+              setDelayedValueToActualValue()
               setTimer(null)
             }, ControlDelay),
           )
         }
       } else {
-        immediateCallback(currentValue)
+        setDelayedValueToActualValue()
       }
     },
-    [immediateCallback, delayedValue, timer, setTimer, setDelayedValue],
+    [setDelayedValueToActualValue, delayedValue, timer, setTimer],
   )
 
-  useSelectorWithCallback(Substores.fullStore, selector, maybeDelayedCallback, selectorName)
   useSelectorWithCallback(
     Substores.fullStore,
     (store) => {
-      if (
+      const immediate =
         store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
         store.editor.canvas.interactionSession?.interactionData.hasMouseMoved
-      ) {
-        return selector(store)
-      } else {
-        return null
-      }
+
+      return { value: selector(store), immediate: immediate }
     },
-    immediateCallback,
+    callback,
     selectorName,
   )
 
@@ -482,6 +481,19 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
     case 'BASIC_RESIZE':
+      return true
+    default:
+      return false
+  }
+}
+
+export function isKeyboardAbsoluteStrategy(currentStrategy: string | null): boolean {
+  if (currentStrategy == null) {
+    return false
+  }
+  switch (currentStrategy) {
+    case 'KEYBOARD_ABSOLUTE_RESIZE':
+    case 'KEYBOARD_ABSOLUTE_MOVE':
       return true
     default:
       return false
@@ -559,4 +571,21 @@ export function onlyFitWhenDraggingThisControl(
   } else {
     return 0
   }
+}
+
+export function getWrapperWithGeneratedUid(
+  customStrategyState: CustomStrategyState,
+  canvasState: InteractionCanvasState,
+  subjects: Array<InsertionSubject>,
+): { wrapper: InsertionSubjectWrapper; uid: string } | null {
+  const insertionSubjectWrapper = subjects.at(0)?.insertionSubjectWrapper ?? null
+  if (insertionSubjectWrapper == null) {
+    return null
+  }
+
+  const uid =
+    customStrategyState.strategyGeneratedUidsCache[subjects[0].uid] ??
+    generateUidWithExistingComponents(canvasState.projectContents)
+
+  return { wrapper: insertionSubjectWrapper, uid: uid }
 }

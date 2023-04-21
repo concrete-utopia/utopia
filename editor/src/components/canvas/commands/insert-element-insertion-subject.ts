@@ -1,3 +1,4 @@
+import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -11,6 +12,7 @@ import {
   forUnderlyingTargetFromEditorState,
   insertElementAtPath,
 } from '../../editor/store/editor-state'
+import { childInsertionPath } from '../../editor/store/insertion-path'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
@@ -57,25 +59,30 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         return
       }
 
-      const withElementInserted = insertElementAtPath(
+      const insertionResult = insertElementAtPath(
         editor.projectContents,
         underlyingFilePath,
-        targetParent,
+        childInsertionPath(targetParent),
         subject.element,
         utopiaComponents,
         null,
       )
 
-      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
+      const updatedImports = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        mergeImports(underlyingFilePath, insertionResult.importsToAdd, subject.importsToAdd),
+      )
 
       editorStatePatches.push(
         getPatchForComponentChange(
           success.topLevelElements,
-          withElementInserted,
+          insertionResult.components,
           updatedImports,
           underlyingFilePath,
         ),
       )
+      editorStatePatches.push(includeToastPatch(insertionResult.insertionDetails, editor))
       selectedViews.push(EP.appendToPath(targetParent, subject.element.uid))
     },
   )

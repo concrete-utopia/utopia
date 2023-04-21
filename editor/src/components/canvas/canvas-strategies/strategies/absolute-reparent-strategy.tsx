@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -29,7 +30,7 @@ import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/rep
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
-import { getDragTargets } from './shared-move-strategies-helpers'
+import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
@@ -49,7 +50,7 @@ export function baseAbsoluteReparentStrategy(
     }
 
     const dragInteractionData = interactionSession.interactionData // Why TypeScript?!
-    const filteredSelectedElements = getDragTargets(selectedElements)
+    const filteredSelectedElements = flattenSelection(selectedElements)
     const isApplicable = replaceContentAffectingPathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
@@ -120,7 +121,7 @@ export function baseAbsoluteReparentStrategy(
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  newParent,
+                  childInsertionPath(newParent),
                   'always',
                 )
 

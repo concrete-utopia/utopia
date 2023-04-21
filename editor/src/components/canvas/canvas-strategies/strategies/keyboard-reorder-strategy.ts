@@ -1,7 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import { KeyCharacter } from '../../../../utils/keyboard'
+import { shallowEqual } from '../../../../core/shared/equality-utils'
+import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -34,7 +35,7 @@ export function keyboardReorderStrategy(
     return null
   }
   const target = selectedElements[0]
-  const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target).map(
+  const siblings = MetadataUtils.getSiblingsOrdered(canvasState.startingMetadata, target).map(
     (element) => element.elementPath,
   )
   const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -108,10 +109,11 @@ function fitness(interactionSession: InteractionSession | null): number {
   }
 
   const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-  const matches = accumulatedPresses.some((accumulatedPress) =>
-    Array.from(accumulatedPress.keysPressed).some(
-      (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
-    ),
+  const matches = accumulatedPresses.some(
+    (accumulatedPress) =>
+      Array.from(accumulatedPress.keysPressed).some(
+        (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
+      ) && Modifier.equal(accumulatedPress.modifiers, emptyModifiers),
   )
 
   return matches ? 1 : 0

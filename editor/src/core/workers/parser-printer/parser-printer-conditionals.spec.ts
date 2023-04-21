@@ -10,16 +10,7 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-temp
 import { printCode, printCodeOptions } from './parser-printer'
 
 describe('JSX parser', () => {
-  setFeatureForUnitTests('Conditional support', true)
   it('ensure that conditionals get the same UID each time', () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'mock1',
-      'mock2',
-      'conditional',
-      'mock1',
-      'mock2',
-      'conditional',
-    ])
     const code = applyPrettier(SimpleConditionalsExample, false).formatted
     const firstParseResult = testParseCode(code)
     if (isParseSuccess(firstParseResult)) {
@@ -56,16 +47,6 @@ describe('JSX parser', () => {
     }
   })
   it('handles nested ternaries', () => {
-    FOR_TESTS_setNextGeneratedUids([
-      'mock1',
-      'conditional2',
-      'mock2',
-      'conditional1',
-      'mock1',
-      'conditional2',
-      'mock2',
-      'conditional1',
-    ])
     const code = applyPrettier(NestedTernariesExample, false).formatted
     const firstParseResult = testParseCode(code)
     if (isParseSuccess(firstParseResult)) {
@@ -103,7 +84,6 @@ describe('JSX parser', () => {
 
 describe('JSX printer', () => {
   it('handles nested ternaries', () => {
-    FOR_TESTS_setNextGeneratedUids(['mock1', 'conditional2', 'mock2', 'conditional1'])
     const code = applyPrettier(NestedTernariesExample, false).formatted
     const parseResult = testParseCode(code)
     if (isParseSuccess(parseResult)) {
@@ -139,11 +119,15 @@ describe('JSX printer', () => {
         export var App = (props) => {
           return (
             <div data-uid='div'>
-              {[0, 1].length > 1 ? (
-                [0, 1].length === 0 ? (
-                  <div data-uid='middle' />
+              {
+                // @utopia/uid=conditional1
+                [0, 1].length > 1 ? (
+                  // @utopia/uid=conditional2
+                  [0, 1].length === 0 ? (
+                    <div data-uid='middle' />
+                  ) : null
                 ) : null
-              ) : null}
+              }
             </div>
           )
         }

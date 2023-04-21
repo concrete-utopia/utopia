@@ -1,7 +1,4 @@
-import {
-  ElementSupportsChildren,
-  MetadataUtils,
-} from '../../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
 import { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../../core/shared/project-file-types'
@@ -15,8 +12,9 @@ import {
   flowParentAbsoluteOrStatic,
   getReparentTargetUnified,
 } from './reparent-strategy-parent-lookup'
-import { getDragTargets } from '../shared-move-strategies-helpers'
+import { flattenSelection } from '../shared-move-strategies-helpers'
 import { Direction } from '../../../../inspector/common/css-utils'
+import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
 
 export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
@@ -38,7 +36,6 @@ export function reparentStrategyForPaste(
 
   const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, parent)
   const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
-
   if (reparentAsStatic) {
     return {
       strategy: 'REPARENT_AS_STATIC',
@@ -67,6 +64,7 @@ export function findReparentStrategies(
     cmdPressed,
     canvasState,
     metadata,
+    canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,
     elementSupportsChildren,
@@ -156,7 +154,7 @@ export function reparentSubjectsForInteractionTarget(
       return newReparentSubjects(interactionTarget.subjects[0].defaultSize)
     case 'TARGET_PATHS':
       return existingReparentSubjects(
-        getDragTargets(getTargetPathsFromInteractionTarget(interactionTarget)),
+        flattenSelection(getTargetPathsFromInteractionTarget(interactionTarget)),
       )
     default:
       const _exhaustiveCheck: never = interactionTarget

@@ -1,5 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -36,14 +37,28 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 
+export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
+  `${targets.map(EP.toString).sort()}-absolute-resize-control`
+
 interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
 }
 
 export const SizeLabelTestId = 'SizeLabelTestId'
+export const SmallElementSize = 20
+
+function shouldUseSmallElementResizeControl(size: number, scale: number): boolean {
+  return size <= SmallElementSize / scale
+}
 
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets }: AbsoluteResizeControlProps) => {
+    const scale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'AbsoluteResizeControl scale',
+    )
+
     const controlRef = useBoundingBox(targets, (ref, boundingBox) => {
       if (isZeroSizedElement(boundingBox)) {
         ref.current.style.display = 'none'
@@ -57,19 +72,51 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     })
 
     const leftRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.width, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const width = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = `${-lineSize / 2}px`
+      const offsetTop = `0px`
+
+      ref.current.style.width = `${width}px`
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.height = boundingBox.height + 'px'
     })
     const topRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.height, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const height = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = `0px`
+      const offsetTop = `${-lineSize / 2}px`
+
       ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = height + 'px'
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
     })
     const rightRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.width, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const width = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = isSmallElement ? `0px` : `${-lineSize / 2}px`
+      const offsetTop = `0px`
+
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.left = boundingBox.width + 'px'
+      ref.current.style.width = width + 'px'
       ref.current.style.height = boundingBox.height + 'px'
     })
 
     const bottomRef = useBoundingBox(targets, (ref, boundingBox) => {
+      const isSmallElement = shouldUseSmallElementResizeControl(boundingBox.height, scale)
+      const lineSize = ResizeMouseAreaSize / scale
+      const height = isSmallElement ? lineSize / 2 : lineSize
+      const offsetLeft = `0px`
+      const offsetTop = isSmallElement ? `0px` : `${-lineSize / 2}px`
+
+      ref.current.style.transform = `translate(${offsetLeft}, ${offsetTop})`
       ref.current.style.top = boundingBox.height + 'px'
       ref.current.style.width = boundingBox.width + 'px'
+      ref.current.style.height = height + 'px'
     })
 
     const topLeftRef = useBoundingBox(targets, NO_OP)
@@ -93,6 +140,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     return (
       <CanvasOffsetWrapper>
         <div
+          data-testid={AbsoluteResizeControlTestId(targets)}
           ref={controlRef}
           style={{
             position: 'absolute',
@@ -182,12 +230,19 @@ const ResizePoint = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const onEdgeDblClick = React.useCallback(() => {
       dispatch([
-        applyCommandsAction(resizeToFitCommands(metadataRef.current, selectedElementsRef.current)),
+        applyCommandsAction(
+          resizeToFitCommands(
+            metadataRef.current,
+            selectedElementsRef.current,
+            allElementPropsRef.current,
+          ),
+        ),
       ])
-    }, [dispatch, metadataRef, selectedElementsRef])
+    }, [allElementPropsRef, dispatch, metadataRef, selectedElementsRef])
 
     return (
       <div
@@ -255,6 +310,8 @@ const ResizeEdge = React.memo(
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const onEdgeMouseDown = React.useCallback(
@@ -277,27 +334,20 @@ const ResizeEdge = React.memo(
         dispatch,
         metadataRef.current,
         selectedElementsRef.current,
+        allElementPropsRef.current,
         setPropHugStrategies(invert(props.direction)),
       )
-    }, [dispatch, metadataRef, props.direction, selectedElementsRef])
+    }, [allElementPropsRef, dispatch, metadataRef, props.direction, selectedElementsRef])
 
-    const lineSize = ResizeMouseAreaSize / scale
-    const width = props.direction === 'horizontal' ? undefined : lineSize
-    const height = props.direction === 'vertical' ? undefined : lineSize
-    const offsetLeft = props.direction === 'horizontal' ? `0px` : `${-lineSize / 2}px`
-    const offsetTop = props.direction === 'vertical' ? `0px` : `${-lineSize / 2}px`
     return (
       <div
         onDoubleClick={onEdgeDblClick}
         ref={ref}
         style={{
           position: 'absolute',
-          width: width,
-          height: height,
           backgroundColor: 'transparent',
           cursor: props.cursor,
           pointerEvents: 'initial',
-          transform: `translate(${offsetLeft}, ${offsetTop})`,
         }}
         onMouseDown={onEdgeMouseDown}
         onMouseMove={onMouseMove}
@@ -336,9 +386,11 @@ function sizeLabelContents(
     }
 
     const horizontal =
-      detectFillHugFixedState('horizontal', metadata, selectedElements[0])?.type ?? 'fixed'
+      detectFillHugFixedState('horizontal', metadata, selectedElements[0]).fixedHugFill?.type ??
+      'fixed'
     const vertical =
-      detectFillHugFixedState('vertical', metadata, selectedElements[0])?.type ?? 'fixed'
+      detectFillHugFixedState('vertical', metadata, selectedElements[0]).fixedHugFill?.type ??
+      'fixed'
     return {
       h: sizeLabel(horizontal, globalFrame.width),
       v: sizeLabel(vertical, globalFrame.height),

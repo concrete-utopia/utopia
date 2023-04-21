@@ -17,30 +17,31 @@ import {
   isPropertyAssignment,
   JSXArrayElement,
   jsxArrayValue,
-  JSXAttribute,
-  jsxAttributeNestedArray,
-  jsxAttributeNestedObject,
-  JSXAttributeNestedObject,
+  JSExpression,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
+  JSExpressionNestedObject,
   JSXAttributeNotFound,
   jsxAttributeNotFound,
   JSXAttributes,
-  jsxAttributeValue,
+  jsExpressionValue,
   JSXProperty,
   jsxPropertyAssignment,
   partOfJsxAttributeValue,
   PartOfJSXAttributeValue,
-  isPartOfJSXAttributeValue,
-  isJSXAttributeNotFound,
+  modifiableAttributeIsPartOfAttributeValue,
+  modifiableAttributeIsAttributeNotFound,
   getJSXAttribute,
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   isJSXAttributeValue,
   simplifyAttributesIfPossible,
   ElementsWithin,
-  isJSXAttributeOtherJavaScript,
+  modifiableAttributeIsAttributeOtherJavaScript,
   emptyComments,
   jsxAttributeNestedArraySimple,
   JSXAttributesPart,
+  clearExpressionUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
@@ -52,18 +53,18 @@ import { getAllObjectPaths } from './object-utils'
 export type AnyMap = { [key: string]: any }
 
 export function nestedObjectValueForKey(
-  nestedObject: JSXAttributeNestedObject,
+  nestedObject: JSExpressionNestedObject,
   key: string,
-): JSXAttribute | JSXAttributeNotFound {
+): JSExpression | JSXAttributeNotFound {
   const value = nestedObject.content.find((prop) => isPropertyAssignment(prop) && prop.key === key)
   return value == null ? jsxAttributeNotFound() : value.value
 }
 
 export function dropKeyFromNestedObject(
-  nestedObject: JSXAttributeNestedObject,
+  nestedObject: JSExpressionNestedObject,
   key: string,
-): JSXAttributeNestedObject {
-  return jsxAttributeNestedObject(
+): JSExpressionNestedObject {
+  return jsExpressionNestedObject(
     nestedObject.content.filter((prop) => {
       if (isPropertyAssignment(prop)) {
         return prop.key !== key
@@ -179,7 +180,7 @@ export function jsxAttributeToValue(
   filePath: string,
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
-  attribute: JSXAttribute,
+  attribute: JSExpression,
 ): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -258,7 +259,20 @@ export function jsxAttributesToProps(
 
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
 
-export type ModifiableAttribute = JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound
+export type ModifiableAttribute = JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound
+
+export function clearModifiableAttributeUniqueIDs(
+  modifiableAttribute: ModifiableAttribute,
+): ModifiableAttribute {
+  switch (modifiableAttribute.type) {
+    case 'PART_OF_ATTRIBUTE_VALUE':
+      return modifiableAttribute
+    case 'ATTRIBUTE_NOT_FOUND':
+      return modifiableAttribute
+    default:
+      return clearExpressionUniqueIDs(modifiableAttribute)
+  }
+}
 
 export type GetJSXAttributeResult = {
   attribute: ModifiableAttribute
@@ -304,9 +318,9 @@ export function getModifiableJSXAttributeAtPathFromAttribute(
   attribute: ModifiableAttribute,
   path: PropertyPath,
 ): GetModifiableAttributeResult {
-  if (isJSXAttributeNotFound(attribute)) {
+  if (modifiableAttributeIsAttributeNotFound(attribute)) {
     return right(jsxAttributeNotFound())
-  } else if (isPartOfJSXAttributeValue(attribute)) {
+  } else if (modifiableAttributeIsPartOfAttributeValue(attribute)) {
     const pathElems = PP.getElements(path)
     if (ObjectPath.has(attribute.value, pathElems)) {
       const extractedValue = ObjectPath.get(attribute.value, pathElems)
@@ -357,7 +371,7 @@ export function getJSXAttributeAtPath(
 }
 
 export function getJSXAttributeAtPathInner(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   tail: PropertyPath,
 ): GetJSXAttributeResult {
   switch (attribute.type) {
@@ -419,15 +433,15 @@ export function getJSXAttributeAtPathInner(
   }
 }
 
-export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSXAttribute {
+export function deeplyCreatedValue(path: PropertyPath, value: JSExpression): JSExpression {
   const elements = PP.getElements(path)
-  return elements.reduceRight((acc: JSXAttribute, propName) => {
+  return elements.reduceRight((acc: JSExpression, propName) => {
     if (typeof propName === 'number') {
-      let newArray: Array<JSXAttribute> = []
+      let newArray: Array<JSExpression> = []
       newArray[propName] = acc
       return jsxAttributeNestedArraySimple(newArray)
     } else {
-      return jsxAttributeNestedObject(
+      return jsExpressionNestedObject(
         [jsxPropertyAssignment(propName, acc, emptyComments, emptyComments)],
         emptyComments,
       )
@@ -447,10 +461,10 @@ function isArrayIndex(maybeIndex: string | number): maybeIndex is number {
   }
 }
 export function setJSXValueInAttributeAtPath(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   path: PropertyPath,
-  newAttrib: JSXAttribute,
-): Either<string, JSXAttribute> {
+  newAttrib: JSExpression,
+): Either<string, JSExpression> {
   switch (PP.depth(path)) {
     case 0:
       return left('Attempted to manipulate attribute with an empty path.')
@@ -500,14 +514,14 @@ export function setJSXValueInAttributeAtPath(
               }
             }
 
-            return right(jsxAttributeNestedArray(newArray, emptyComments))
+            return right(jsExpressionNestedArray(newArray, emptyComments))
           } else {
             // Convert the array to an object, which seems a little dubious.
             const newProps = attribute.content.map((attr, index) =>
               jsxPropertyAssignment(`${index}`, attr.value, emptyComments, emptyComments),
             )
             return setJSXValueInAttributeAtPath(
-              jsxAttributeNestedObject(newProps, emptyComments),
+              jsExpressionNestedObject(newProps, emptyComments),
               path,
               newAttrib,
             )
@@ -532,10 +546,10 @@ export function setJSXValueInAttributeAtPath(
               }
             })
             if (updatedExistingProperty) {
-              return right(jsxAttributeNestedObject(updatedContent, emptyComments))
+              return right(jsExpressionNestedObject(updatedContent, emptyComments))
             } else {
               return right(
-                jsxAttributeNestedObject(
+                jsExpressionNestedObject(
                   attribute.content.concat(
                     jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments),
                   ),
@@ -546,14 +560,14 @@ export function setJSXValueInAttributeAtPath(
           } else {
             const newProps = dropKeyFromNestedObject(attribute, key).content
             const existingAttribute = nestedObjectValueForKey(attribute, key)
-            const updatedNestedAttribute: Either<string, JSXAttribute> =
+            const updatedNestedAttribute: Either<string, JSExpression> =
               existingAttribute.type === 'ATTRIBUTE_NOT_FOUND'
                 ? right(deeplyCreatedValue(tailPath, newAttrib))
                 : setJSXValueInAttributeAtPath(existingAttribute, tailPath, newAttrib)
 
             return mapEither(
               (updated) =>
-                jsxAttributeNestedObject(
+                jsExpressionNestedObject(
                   newProps.concat(
                     jsxPropertyAssignment(key, updated, emptyComments, emptyComments),
                   ),
@@ -570,20 +584,20 @@ export function setJSXValueInAttributeAtPath(
             // we are good, the current value is an object, we can insert into it
             if (Array.isArray(currentValue)) {
               // let's turn the found value into an ATTRIBUTE_NESTED_ARRAY
-              const arrayifiedObject = jsxAttributeNestedArray(
+              const arrayifiedObject = jsExpressionNestedArray(
                 currentValue.map((value) =>
-                  jsxArrayValue(jsxAttributeValue(value, emptyComments), emptyComments),
+                  jsxArrayValue(jsExpressionValue(value, emptyComments), emptyComments),
                 ),
                 emptyComments,
               )
               return setJSXValueInAttributeAtPath(arrayifiedObject, path, newAttrib)
             } else {
               // let's turn the found object into a ATTRIBUTE_NESTED_OBJECT
-              const nestedOject = jsxAttributeNestedObject(
+              const nestedOject = jsExpressionNestedObject(
                 Object.keys(currentValue).map((k) =>
                   jsxPropertyAssignment(
                     k,
-                    jsxAttributeValue(currentValue[k], emptyComments),
+                    jsExpressionValue(currentValue[k], emptyComments),
                     emptyComments,
                     emptyComments,
                   ),
@@ -604,7 +618,7 @@ export function setJSXValueInAttributeAtPath(
 export function setJSXValueAtPath(
   attributes: JSXAttributes,
   path: PropertyPath,
-  value: JSXAttribute,
+  value: JSExpression,
 ): Either<string, JSXAttributes> {
   const attributeKey = PP.firstPart(path)
   const attributeKeyAsString = typeof attributeKey === 'string' ? attributeKey : `${attributeKey}`
@@ -640,9 +654,9 @@ export function setJSXValueAtPath(
 
 export interface ValueAtPath {
   path: PropertyPath
-  value: JSXAttribute
+  value: JSExpression
 }
-export function valueAtPath(path: PropertyPath, value: JSXAttribute): ValueAtPath {
+export function valueAtPath(path: PropertyPath, value: JSExpression): ValueAtPath {
   return {
     path,
     value,
@@ -721,9 +735,9 @@ export function unsetJSXValuesAtPaths(
 }
 
 function unsetJSXValueInAttributeAtPath(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   path: PropertyPath,
-): Either<string, JSXAttribute> {
+): Either<string, JSExpression> {
   switch (PP.depth(path)) {
     case 0:
       // As this is invalid throw an exception.
@@ -744,7 +758,7 @@ function unsetJSXValueInAttributeAtPath(
             if (lastPartOfPath) {
               let newArray: Array<JSXArrayElement> = [...attribute.content]
               newArray.splice(attributeKey, 1)
-              return right(jsxAttributeNestedArray(newArray, emptyComments))
+              return right(jsExpressionNestedArray(newArray, emptyComments))
             } else {
               const existingAttribute = attribute.content[attributeKey]
               if (existingAttribute == null) {
@@ -758,7 +772,7 @@ function unsetJSXValueInAttributeAtPath(
                 return mapEither((updated) => {
                   let newArray: Array<JSXArrayElement> = [...attribute.content]
                   newArray[attributeKey] = jsxArrayValue(updated, emptyComments)
-                  return jsxAttributeNestedArray(newArray, emptyComments)
+                  return jsExpressionNestedArray(newArray, emptyComments)
                 }, updatedNestedAttribute)
               }
             }
@@ -791,14 +805,14 @@ function unsetJSXValueInAttributeAtPath(
                   emptyComments,
                   emptyComments,
                 )
-                return jsxAttributeNestedObject(newProps, emptyComments)
+                return jsExpressionNestedObject(newProps, emptyComments)
               }, updatedAttribute)
             }
           }
         case 'ATTRIBUTE_VALUE':
           const updatedValue = unsetValueAtPath(attribute.value, path)
           return mapEither((updated) => {
-            return jsxAttributeValue(updated, emptyComments)
+            return jsExpressionValue(updated, emptyComments)
           }, updatedValue)
         default:
           const _exhaustiveCheck: never = attribute
@@ -826,7 +840,7 @@ export function unsetJSXValueAtPath(
         return right(attributes)
       } else {
         const tailPath = PP.tail(path)
-        const updatedAttribute: Either<string, JSXAttribute> = unsetJSXValueInAttributeAtPath(
+        const updatedAttribute: Either<string, JSExpression> = unsetJSXValueInAttributeAtPath(
           existingAttribute,
           tailPath,
         )
@@ -838,9 +852,9 @@ export function unsetJSXValueAtPath(
 }
 
 function walkAttribute(
-  attribute: JSXAttribute,
+  attribute: JSExpression,
   path: PropertyPath | null,
-  walk: (a: JSXAttribute, path: PropertyPath | null) => void,
+  walk: (a: JSExpression, path: PropertyPath | null) => void,
 ): void {
   walk(attribute, path)
   switch (attribute.type) {
@@ -889,7 +903,7 @@ function walkAttribute(
 export function getAccumulatedElementsWithin(attributes: JSXAttributes): ElementsWithin {
   let elementsWithinAccumulator: ElementsWithin = {}
   walkAttributes(attributes, (attribute, path) => {
-    if (isJSXAttributeOtherJavaScript(attribute)) {
+    if (modifiableAttributeIsAttributeOtherJavaScript(attribute)) {
       Object.assign(elementsWithinAccumulator, attribute.elementsWithin)
     }
   })
@@ -899,7 +913,7 @@ export function getAccumulatedElementsWithin(attributes: JSXAttributes): Element
 
 function walkAttributes(
   attributes: JSXAttributes,
-  walk: (attribute: JSXAttribute, path: PropertyPath | null) => void,
+  walk: (attribute: JSExpression, path: PropertyPath | null) => void,
 ): void {
   fastForEach(attributes, (attr) => {
     switch (attr.type) {

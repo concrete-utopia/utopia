@@ -13,7 +13,11 @@ import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDragFromPointWithDelta,
+  pressKey,
+} from '../../event-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -34,6 +38,7 @@ async function dragElement(
   await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
+    midDragCallback: () => pressKey('2', { modifiers: modifiers }), // Switch to flow reparenting strategy
   })
 }
 

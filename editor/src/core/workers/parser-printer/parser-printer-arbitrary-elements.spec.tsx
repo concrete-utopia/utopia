@@ -2,12 +2,12 @@ import * as PP from '../../shared/property-path'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
-  isJSXArbitraryBlock,
+  isJSExpressionOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
   jsxArbitraryBlock,
-  jsxAttributeOtherJavaScript,
-  jsxAttributeValue,
+  jsExpressionOtherJavaScript,
+  jsExpressionValue,
   jsxElement,
   utopiaJSXComponent,
   defaultPropsParam,
@@ -85,7 +85,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           if (isJSXElement(view)) {
             expect(getJSXAttribute(view.props, 'data-uid')).not.toBeNull()
             const firstChild = view.children[0]
-            if (isJSXArbitraryBlock(firstChild)) {
+            if (isJSExpressionOtherJavaScript(firstChild)) {
               const elementWithin =
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
               expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
@@ -177,12 +177,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         const view = firstComponent.rootElement
         if (isJSXElement(view)) {
           const firstChild = view.children[0]
-          if (isJSXArbitraryBlock(firstChild)) {
+          if (isJSExpressionOtherJavaScript(firstChild)) {
             const elementWithin = firstChild.elementsWithin['bbb']
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
               PP.create('style'),
-              jsxAttributeValue({ left: 20, top: 300 }, emptyComments),
+              jsExpressionValue({ left: 20, top: 300 }, emptyComments),
             )
             forEachRight(newAttributes, (updated) => {
               elementWithin.props = updated
@@ -216,7 +216,7 @@ export var whatever = props => (
       jsxElement(
         'div',
         'abc',
-        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('abc', emptyComments) }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('abc', emptyComments) }),
         [],
       ),
       null,
@@ -240,7 +240,7 @@ export var whatever = props => (
         aab: jsxElement(
           'MyComp',
           'aab',
-          jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+          jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments) }),
           [],
         ),
       },
@@ -248,7 +248,7 @@ export var whatever = props => (
     const view = jsxElement(
       'View',
       'aaa',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+      jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments) }),
       [codeBlock],
     )
     const whatever = utopiaJSXComponent(
@@ -292,7 +292,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -316,8 +316,8 @@ export var whatever = (props) => {
               'View',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
-                thing: jsxAttributeOtherJavaScript(
+                'data-uid': jsExpressionValue('aab', emptyComments),
+                thing: jsExpressionOtherJavaScript(
                   'n',
                   'return n;',
                   ['n'],
@@ -393,7 +393,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -417,8 +417,8 @@ export var whatever = (props) => {
               'View',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
-                thing: jsxAttributeOtherJavaScript(
+                'data-uid': jsExpressionValue('aab', emptyComments),
+                thing: jsExpressionOtherJavaScript(
                   'n',
                   'return n;',
                   ['n'],
@@ -507,7 +507,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -525,8 +525,8 @@ export var whatever = (props) => {
               'View',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
-                thing: jsxAttributeOtherJavaScript(
+                'data-uid': jsExpressionValue('aab', emptyComments),
+                thing: jsExpressionOtherJavaScript(
                   'n',
                   'return n;',
                   ['n'],
@@ -598,7 +598,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -621,14 +621,14 @@ export var whatever = (props) => {
               'div',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
+                'data-uid': jsExpressionValue('aab', emptyComments),
               }),
               [
                 jsxElement(
                   'div',
                   'aac',
                   jsxAttributesFromMap({
-                    'data-uid': jsxAttributeValue('aac', emptyComments),
+                    'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
                     jsxArbitraryBlock(
@@ -703,7 +703,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -721,8 +721,8 @@ export var whatever = (props) => {
               'View',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
-                thing: jsxAttributeOtherJavaScript(
+                'data-uid': jsExpressionValue('aab', emptyComments),
+                thing: jsExpressionOtherJavaScript(
                   'n',
                   'return n;',
                   ['n'],
@@ -794,7 +794,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -817,14 +817,14 @@ export var whatever = (props) => {
               'div',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
+                'data-uid': jsExpressionValue('aab', emptyComments),
               }),
               [
                 jsxElement(
                   'div',
                   'aac',
                   jsxAttributesFromMap({
-                    'data-uid': jsxAttributeValue('aac', emptyComments),
+                    'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
                     jsxArbitraryBlock(
@@ -899,7 +899,7 @@ export var whatever = (props) => {
       'View',
       'aaa',
       jsxAttributesFromMap({
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
         jsxArbitraryBlock(
@@ -917,8 +917,8 @@ export var whatever = (props) => {
               'View',
               'aab',
               jsxAttributesFromMap({
-                'data-uid': jsxAttributeValue('aab', emptyComments),
-                thing: jsxAttributeOtherJavaScript(
+                'data-uid': jsExpressionValue('aab', emptyComments),
+                thing: jsExpressionOtherJavaScript(
                   'n',
                   'return n;',
                   ['n'],

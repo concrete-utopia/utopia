@@ -412,7 +412,7 @@ export function aperture<T>(n: number, array: Array<T>): Array<Array<T>> {
   }
 }
 
-export function cartesianProduct<T, U>(one: T[], other: U[]): [T, U][] {
+export function cartesianProduct<T, U>(one: ReadonlyArray<T>, other: ReadonlyArray<U>): [T, U][] {
   return one.flatMap((x) => other.map((y): [T, U] => [x, y]))
 }
 
@@ -425,4 +425,11 @@ export function allElemsEqual<T>(
   }
 
   return ts.slice(1).every((obj) => areEqual(ts[0], obj))
+}
+
+export function strictEvery<T>(
+  ts: T[],
+  predicate: (t: T, index: number, array: T[]) => boolean,
+): boolean {
+  return ts.length > 0 && ts.every(predicate)
 }

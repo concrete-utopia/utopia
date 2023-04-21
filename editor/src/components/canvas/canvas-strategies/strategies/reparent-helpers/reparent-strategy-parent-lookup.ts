@@ -1,7 +1,5 @@
-import {
-  ElementSupportsChildren,
-  MetadataUtils,
-} from '../../../../../core/model/element-metadata-utils'
+import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { isLeft } from '../../../../../core/shared/either'
@@ -9,7 +7,6 @@ import * as EP from '../../../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXFragment,
 } from '../../../../../core/shared/element-template'
 import {
   CanvasPoint,
@@ -22,7 +19,7 @@ import {
   sizeFitsInTarget,
   zeroRectIfNullOrInfinity,
 } from '../../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
+import { ElementPath, NodeModules } from '../../../../../core/shared/project-file-types'
 import { AllElementProps } from '../../../../editor/store/editor-state'
 import { Direction } from '../../../../inspector/common/css-utils'
 import { getAllTargetsAtPointAABB } from '../../../dom-lookup'
@@ -48,6 +45,7 @@ export function getReparentTargetUnified(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
+  nodeModules: NodeModules,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
@@ -60,6 +58,7 @@ export function getReparentTargetUnified(
     cmdPressed,
     canvasState,
     metadata,
+    nodeModules,
     allElementProps,
     allowSmallerParent,
     elementSupportsChildren,
@@ -101,6 +100,7 @@ function findValidTargetsUnderPoint(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
+  nodeModules: NodeModules,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
@@ -134,14 +134,6 @@ function findValidTargetsUnderPoint(
   ]
 
   const possibleTargetParentsUnderPoint = allElementsUnderPoint.filter((target) => {
-    // TODO: later we should allow reparenting into fragments
-    if (
-      MetadataUtils.isElementPathFragmentFromMetadata(metadata, target) ||
-      MetadataUtils.isElementPathConditionalFromMetadata(metadata, target)
-    ) {
-      return false
-    }
-
     if (treatElementAsContentAffecting(metadata, allElementProps, target)) {
       // we disallow reparenting into sizeless ContentAffecting (group-like) elements
       return false
@@ -156,7 +148,13 @@ function findValidTargetsUnderPoint(
 
     if (
       !elementSupportsChildren.includes(
-        MetadataUtils.targetSupportsChildrenAlsoText(projectContents, metadata, target),
+        MetadataUtils.targetSupportsChildrenAlsoText(
+          projectContents,
+          metadata,
+          nodeModules,
+          openFile,
+          target,
+        ),
       )
     ) {
       // simply skip elements that do not support children
@@ -466,20 +464,7 @@ export function flowParentAbsoluteOrStatic(
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
-  const flattenFragmentChildren = (c: ElementInstanceMetadata): ElementInstanceMetadata[] => {
-    if (isLeft(c.element)) {
-      return [c]
-    }
-    if (!isJSXFragment(c.element.value)) {
-      return [c]
-    }
-    return MetadataUtils.getChildrenUnordered(metadata, c.elementPath).flatMap(
-      flattenFragmentChildren,
-    )
-  }
   const children = MetadataUtils.getChildrenUnordered(metadata, parent)
-    // filter out fragment blocks and merge their children with the parent children
-    .flatMap(flattenFragmentChildren)
 
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {
@@ -487,12 +472,8 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
-  if (parentMetadata == null) {
-    throw new Error('flowParentAbsoluteOrStatic: parentMetadata was null')
-  }
-
   const parentIsContainingBlock =
-    parentMetadata.specialSizeMeasurements.providesBoundsForAbsoluteChildren
+    parentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ?? false
   if (!parentIsContainingBlock) {
     return 'REPARENT_AS_STATIC'
   }
@@ -511,7 +492,7 @@ export function flowParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
-  const parentFrame = parentMetadata.globalFrame
+  const parentFrame = parentMetadata?.globalFrame ?? null
   const parentWidth =
     parentFrame == null ? 0 : isInfinityRectangle(parentFrame) ? Infinity : parentFrame.width
   const parentHeight =
