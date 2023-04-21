@@ -44,6 +44,7 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { emptyImports } from '../../../../core/workers/common/project-file-utils'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
@@ -116,6 +117,7 @@ export function convertFragmentToGroup(
         jsxAttributesFromMap({ 'data-uid': jsExpressionValue(uid, emptyComments) }),
         children,
       ),
+      emptyImports(),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
   ]
@@ -189,6 +191,7 @@ export function convertFragmentToFrame(
         }),
         children,
       ),
+      emptyImports(),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
@@ -213,6 +216,7 @@ export function convertGroupToFragment(
       'always',
       childInsertionPath(parentPath),
       jsxFragment(uid, children, true),
+      emptyImports(),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
   ]
@@ -340,6 +344,7 @@ export function convertFrameToFragmentCommands(
       'always',
       childInsertionPath(parentPath),
       jsxFragment(uid, children, true),
+      emptyImports(),
       absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
     ),
     ...offsetChildrenByVectorCommands(childInstances, parentOffset),

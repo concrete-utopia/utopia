@@ -43,6 +43,7 @@ import { deleteView } from './action-creators'
 import { UPDATE_FNS } from './actions'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { addElement } from '../../canvas/commands/add-element-command'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -226,7 +227,7 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, indexPosition),
+              addElement('always', staticTarget, elementToInsert, importsToAdd, indexPosition),
             ]),
             newPath: newPath,
           }
@@ -235,6 +236,7 @@ export function wrapElementInsertions(
             editor,
             staticTarget,
             elementToInsert,
+            importsToAdd,
           )
           return { updatedEditor: withTargetAdded, newPath: newPath }
         default:
@@ -247,7 +249,7 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, indexPosition),
+              addElement('always', staticTarget, elementToInsert, importsToAdd, indexPosition),
             ]),
             newPath: newPath,
           }
@@ -256,6 +258,7 @@ export function wrapElementInsertions(
             editor,
             staticTarget,
             elementToInsert,
+            importsToAdd,
           )
           return { updatedEditor: withTargetAdded, newPath: newPath }
         default:
@@ -268,7 +271,7 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, indexPosition),
+              addElement('always', staticTarget, elementToInsert, importsToAdd, indexPosition),
             ]),
             newPath: newPath,
           }
@@ -277,6 +280,7 @@ export function wrapElementInsertions(
             editor,
             staticTarget,
             elementToInsert,
+            importsToAdd,
           )
           return { updatedEditor: withTargetAdded, newPath: newPath }
         default:
@@ -319,13 +323,14 @@ function insertElementIntoJSXConditional(
   editor: EditorState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXElement | JSXFragment,
+  importsToAdd: Imports,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
-    (success) => {
+    (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const updatedComponents = transformJSXComponentAtPath(
         components,
@@ -360,6 +365,7 @@ function insertElementIntoJSXConditional(
       return {
         ...success,
         topLevelElements: updatedTopLevelElements,
+        imports: mergeImports(underlyingFilePath, success.imports, importsToAdd),
       }
     },
   )
@@ -368,13 +374,14 @@ function insertConditionalIntoConditionalClause(
   editor: EditorState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXConditionalExpression,
+  importsToAdd: Imports,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
-    (success) => {
+    (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const updatedComponents = transformJSXComponentAtPath(
         components,
@@ -403,6 +410,7 @@ function insertConditionalIntoConditionalClause(
       return {
         ...success,
         topLevelElements: updatedTopLevelElements,
+        imports: mergeImports(underlyingFilePath, success.imports, importsToAdd),
       }
     },
   )
