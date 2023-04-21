@@ -44,7 +44,6 @@ import { deleteElement } from '../../commands/delete-element-command'
 import { absolute } from '../../../../utils/utils'
 import { addElement } from '../../commands/add-element-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { emptyImports } from '../../../../core/workers/common/project-file-utils'
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,

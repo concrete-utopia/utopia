@@ -437,7 +437,6 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const showInsertionControls = floatingMenuState.insertMenuMode === 'insert'
-  const showWrapControls = floatingMenuState.insertMenuMode === 'wrap'
 
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
@@ -466,7 +465,6 @@ export var FloatingMenu = React.memo(() => {
     shouldWrapContentsByDefault.current,
   )
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
-  const [preserveVisualPositionForWrap, setPreserveVisualPositionForWrap] = React.useState(false)
 
   const onChangeConditionalOrFragment = React.useCallback(
     (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
@@ -732,25 +730,6 @@ export var FloatingMenu = React.memo(() => {
             </FlexRow>
           </FlexColumn>
         ) : null}
-        {when(
-          showWrapControls,
-          <FlexRow
-            css={{
-              height: UtopiaTheme.layout.rowHeight.normal,
-              paddingLeft: 8,
-              paddingRight: 8,
-              borderTop: `1px solid ${colorTheme.border1.value}`,
-            }}
-          >
-            <CheckboxRow
-              id='preserve-visual-position-checkbox'
-              checked={preserveVisualPositionForWrap}
-              onChange={setPreserveVisualPositionForWrap}
-            >
-              Try to preserve visual position
-            </CheckboxRow>
-          </FlexRow>,
-        )}
       </FlexColumn>
     </div>
   )

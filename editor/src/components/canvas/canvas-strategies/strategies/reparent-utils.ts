@@ -154,7 +154,7 @@ export function getReparentOutcome(
     case 'ELEMENT_TO_REPARENT':
       newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
-      commands.push(addElement(whenToRun, newParent, toReparent.element, emptyImports()))
+      commands.push(addElement(whenToRun, newParent, toReparent.element))
       break
     default:
       const _exhaustiveCheck: never = toReparent
