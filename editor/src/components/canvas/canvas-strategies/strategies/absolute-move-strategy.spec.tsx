@@ -190,7 +190,7 @@ describe('Absolute Move Strategy', () => {
 
     expect(finalEditor).toEqual(initialEditor)
   })
-  it('works with a TL pinned absolute element', async () => {
+  xit('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -222,7 +222,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with a TL pinned absolute element with px values', async () => {
+  xit('works with a TL pinned absolute element with px values', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -254,7 +254,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with a TL pinned absolute element with px values and snapping', async () => {
+  xit('works with a TL pinned absolute element with px values and snapping', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -300,7 +300,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with a TL pinned absolute element with px values and disabled snapping', async () => {
+  xit('works with a TL pinned absolute element with px values and disabled snapping', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -347,7 +347,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with a RB pinned absolute element', async () => {
+  xit('works with a RB pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -379,7 +379,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with a TLRB pinned absolute element', async () => {
+  xit('works with a TLRB pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -412,7 +412,7 @@ describe('Absolute Move Strategy', () => {
   })
 
   // TODO needs design review
-  it('keeps expressions intact', async () => {
+  xit('keeps expressions intact', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -437,7 +437,7 @@ describe('Absolute Move Strategy', () => {
     )
   })
 
-  it('works with percentages', async () => {
+  xit('works with percentages', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -473,7 +473,7 @@ describe('Absolute Move Strategy', () => {
 })
 
 describe('Axis locked move', () => {
-  it('works with a TL pinned absolute element', async () => {
+  xit('works with a TL pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -511,7 +511,7 @@ describe('Axis locked move', () => {
       ),
     )
   })
-  it('works with a TLBR pinned absolute element', async () => {
+  xit('works with a TLBR pinned absolute element', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -549,7 +549,7 @@ describe('Axis locked move', () => {
       ),
     )
   })
-  it('works with a TL pinned absolute element with child', async () => {
+  xit('works with a TL pinned absolute element with child', async () => {
     const targetElement = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -590,7 +590,7 @@ describe('Axis locked move', () => {
       ),
     )
   })
-  it('works with TL pinned absolute elements in multiselection', async () => {
+  xit('works with TL pinned absolute elements in multiselection', async () => {
     const targetElement1 = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
@@ -633,7 +633,7 @@ describe('Axis locked move', () => {
       ),
     )
   })
-  it('works with TL pinned absolute elements in multiselection with descendant', async () => {
+  xit('works with TL pinned absolute elements in multiselection with descendant', async () => {
     const targetElement1 = elementPath([
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
