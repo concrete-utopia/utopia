@@ -147,6 +147,10 @@ export const NavigatorComponent = React.memo(() => {
     }
   }, [selectionIndex, itemListRef])
 
+  React.useEffect(() => {
+    itemListRef.current?.resetAfterIndex(0, false)
+  }, [visibleNavigatorTargets, itemListRef])
+
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
       dispatch([setFocus('navigator')])
