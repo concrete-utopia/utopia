@@ -19,13 +19,14 @@ import {
   isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
-  insertJSXElementChild,
+  insertJSXElementChild_DEPRECATED,
   removeJSXElementChild,
   transformJSXComponentAtPath,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
   InsertChildAndDetails,
   insertChildAndDetails,
+  insertJSXElementChild,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -183,7 +184,10 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  ConditionalCase,
+  getConditionalClausePathFromMetadata,
+} from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
@@ -1931,7 +1935,7 @@ export function addSceneToJSXComponents(
     const storyboardComponentElementPath = EP.elementPath([
       staticElementPath([storyboardComponentUID]),
     ])
-    return insertJSXElementChild(
+    return insertJSXElementChild_DEPRECATED(
       projectContents,
       openFile,
       childInsertionPath(storyboardComponentElementPath),
@@ -1957,6 +1961,16 @@ export function removeElementAtPath(
 }
 
 export function insertElementAtPath(
+  targetParent: InsertionPath,
+  elementToInsert: JSXElementChild,
+  components: Array<UtopiaJSXComponent>,
+  indexPosition: IndexPosition | null,
+): InsertChildAndDetails {
+  return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
+}
+
+/** @deprecated reason: use insertElementAtPath instead! **/
+export function insertElementAtPath_DEPRECATED(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   targetParent: InsertionPath | null,
@@ -1964,7 +1978,7 @@ export function insertElementAtPath(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  return insertJSXElementChild(
+  return insertJSXElementChild_DEPRECATED(
     projectContents,
     openFile,
     targetParent,
@@ -2227,12 +2241,36 @@ export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNaviga
 
 export function reparentTargetFromNavigatorEntry(
   navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
+  projectContents: ProjectContentTreeRoot,
+  metadata: ElementInstanceMetadataMap,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
 ): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
       return childInsertionPath(navigatorEntry.elementPath)
     case 'CONDITIONAL_CLAUSE':
-      return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+      const clausePath = getConditionalClausePathFromMetadata(
+        navigatorEntry.elementPath,
+        metadata,
+        navigatorEntry.clause,
+      )
+
+      if (clausePath == null) {
+        return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+      }
+
+      const supportsChildren = MetadataUtils.targetSupportsChildren(
+        projectContents,
+        metadata,
+        nodeModules,
+        openFile,
+        clausePath,
+      )
+
+      return supportsChildren
+        ? childInsertionPath(clausePath)
+        : conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)
   }

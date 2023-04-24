@@ -75,7 +75,12 @@ describe('runReorderElement', () => {
 
       const parent = EP.parentPath(target)
 
-      const reorderCommand = reorderElement('always', target, absolute(newIdx))
+      const reorderCommand = reorderElement(
+        'always',
+        target,
+        absolute(newIdx),
+        'use-deprecated-insertJSXElementChild',
+      )
 
       const result = runReorderElement(originalEditorState, reorderCommand)
 

@@ -237,7 +237,12 @@ function applyStaticReparent(
 
               interactionFinishCommands = [
                 ...commandsBeforeReorder,
-                reorderElement('always', newPath, absolute(newIndex)),
+                reorderElement(
+                  'always',
+                  newPath,
+                  absolute(newIndex),
+                  'use-deprecated-insertJSXElementChild',
+                ),
                 ...commandsAfterReorder,
               ]
             } else {

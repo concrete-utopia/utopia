@@ -10,7 +10,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
 } from '../../editor/store/editor-state'
 import { childInsertionPath } from '../../editor/store/insertion-path'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
@@ -59,7 +59,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         return
       }
 
-      const insertionResult = insertElementAtPath(
+      const insertionResult = insertElementAtPath_DEPRECATED(
         editor.projectContents,
         underlyingFilePath,
         childInsertionPath(targetParent),
