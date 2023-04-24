@@ -335,9 +335,9 @@ export var ${BakedInStoryboardVariableName} = (
         {
           // @utopia/uid=conditional1
           [].length === 0 ? (
-            <div data-uid='then-div' data-testid='then-div'>foo</div>
+            <div data-uid='then-div' data-testid='then-div'></div>
           ) : (
-            <div data-uid='else-div' data-testid='else-div'>bar</div>
+            <div data-uid='else-div' data-testid='else-div'></div>
           )
         }
         <div
@@ -1183,8 +1183,71 @@ describe('conditionals in the navigator', () => {
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
   })
-  xit('dragging into child of an active clause, works as it would without the conditional', () => {
-    // TODO: Fill this out.
+  it('dragging into child of an active clause, works as it would without the conditional', async () => {
+    const projectCode = getProjectCodeNotEmpty()
+
+    const pathToDrag = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/sibling-div`,
+    )
+    const dropTargetID = `navigator-item-${varSafeNavigatorEntryToKey(
+      regularNavigatorEntry(
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/then-div`,
+        ),
+      ),
+    )}`
+    const renderResult = await renderTestEditorWithCode(projectCode, 'await-first-dom-report')
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(selectComponents([pathToDrag], false), false)
+      await dispatchDone
+    })
+
+    // Getting info relating to what element will be dragged.
+    const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(pathToDrag))}`,
+    )
+    const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
+    const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)
+
+    // Getting info relating to where the element will be dragged to.
+    const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(dropTargetID)
+
+    const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
+    const navigatorEntryToTargetCenter = getDomRectCenter(navigatorEntryToTargetRect)
+
+    const dragDelta = {
+      x: navigatorEntryToTargetCenter.x - navigatorEntryToDragCenter.x,
+      y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
+    }
+
+    await act(async () =>
+      dragElement(
+        renderResult,
+        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(pathToDrag))}`,
+        dropTargetID,
+        windowPoint(navigatorEntryToDragCenter),
+        windowPoint(dragDelta),
+        'apply-hover-events',
+      ),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(
+      navigatorStructure(
+        renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
+      ),
+    ).toEqual(`  regular-utopia-storyboard-uid/scene-aaa
+    regular-utopia-storyboard-uid/scene-aaa/containing-div
+      regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
+          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/then-div
+            regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/then-div/sibling-div
+        conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div`)
   })
   it('can select and delete an inactive clause', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')

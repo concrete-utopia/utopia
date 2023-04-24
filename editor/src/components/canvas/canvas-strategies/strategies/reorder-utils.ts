@@ -94,7 +94,12 @@ export function applyReorderCommon(
     } else {
       return strategyApplicationResult(
         [
-          reorderElement('always', target, absolute(newResultOrLastIndex)),
+          reorderElement(
+            'always',
+            target,
+            absolute(newResultOrLastIndex),
+            'use-deprecated-insertJSXElementChild',
+          ),
           setElementsToRerenderCommand(siblings),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand(CSSCursor.Move),

@@ -12,7 +12,7 @@ import { getUtopiaID } from '../shared/uid-utils'
 import { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
-import { isRight } from '../shared/either'
+import { isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 
 export type ConditionalCase = 'true-case' | 'false-case'
@@ -166,6 +166,22 @@ export function maybeBranchConditionalCase(
   } else {
     return null
   }
+}
+
+export function getConditionalClausePathFromMetadata(
+  conditionalPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  clause: ConditionalCase,
+): ElementPath | null {
+  const conditionalElement = findMaybeConditionalExpression(conditionalPath, metadata)
+  if (conditionalElement == null) {
+    return null
+  }
+
+  return getConditionalClausePath(
+    conditionalPath,
+    clause === 'true-case' ? conditionalElement.whenTrue : conditionalElement.whenFalse,
+  )
 }
 
 export function getConditionalActiveCase(
