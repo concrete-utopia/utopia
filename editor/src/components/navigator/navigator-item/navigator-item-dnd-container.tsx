@@ -411,7 +411,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       }),
       item: props,
       beginDrag: beginDrag,
-      canDrag: (monitor) => {
+      canDrag: () => {
         const editorState = editorStateRef.current
         const regularCanReparent =
           isRegularNavigatorEntry(props.navigatorEntry) &&
@@ -519,7 +519,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props],
   )
 
-  const [{ isOver: isOverParentOutline }, reparentDropRef] = useDrop<
+  const [, reparentDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
     unknown,
     DropCollectedProps
@@ -600,7 +600,10 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   const parentOutline = React.useMemo((): ParentOutline => {
     if (dropTargetHintType !== 'reparent') {
-      return 'none'
+      return moveToEntry != null &&
+        EP.pathsEqual(EP.parentPath(moveToEntry.elementPath), props.navigatorEntry.elementPath)
+        ? 'solid'
+        : 'none'
     }
 
     if (isConditionalRoot(moveToEntry, metadata)) {
@@ -635,12 +638,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       return 'solid'
     }
 
-    if (isOverParentOutline) {
-      return 'solid'
-    }
-
     return 'none'
-  }, [dropTargetHintType, moveToEntry, metadata, props.navigatorEntry, isOverParentOutline])
+  }, [dropTargetHintType, moveToEntry, metadata, props.navigatorEntry])
 
   const isFirstSibling = React.useMemo(() => {
     if (!isRegularNavigatorEntry(props.navigatorEntry)) {
