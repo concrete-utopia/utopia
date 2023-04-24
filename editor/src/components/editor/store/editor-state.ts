@@ -1967,21 +1967,12 @@ export function removeElementAtPath(
 }
 
 export function insertElementAtPath(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  targetParent: InsertionPath | null,
+  targetParent: InsertionPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  return insertJSXElementChild(
-    projectContents,
-    openFile,
-    targetParent,
-    elementToInsert,
-    components,
-    indexPosition,
-  )
+  return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
 }
 
 export function insertElementAtPath_DEPRECATED(
