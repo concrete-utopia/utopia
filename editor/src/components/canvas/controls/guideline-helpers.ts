@@ -92,43 +92,6 @@ function getFirstNonContentAffectingParent(
   return getFirstNonContentAffectingParent(componentMetadata, allElementProps, parentPath)
 }
 
-export function collectSelfAndChildrenGuidelines(
-  componentMetadata: ElementInstanceMetadataMap,
-  targets: Array<ElementPath>,
-  insertingElementId: string,
-): Array<GuidelineWithRelevantPoints> {
-  const allPaths = MetadataUtils.getAllPaths(componentMetadata)
-  const result: Array<GuidelineWithRelevantPoints> = []
-  Utils.fastForEach(targets, (target) => {
-    const pinnedAndNotAbsolutePositioned = MetadataUtils.isPinnedAndNotAbsolutePositioned(
-      componentMetadata,
-      target,
-    )
-    if (!pinnedAndNotAbsolutePositioned) {
-      if (EP.toUid(target) !== insertingElementId) {
-        const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
-        if (frame != null && isFiniteRectangle(frame)) {
-          result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
-        }
-      }
-
-      Utils.fastForEach(allPaths, (maybeTarget) => {
-        if (EP.isChildOf(maybeTarget, target) && EP.toUid(maybeTarget) !== insertingElementId) {
-          const isFragment = MetadataUtils.isElementPathFragmentFromMetadata(
-            componentMetadata,
-            maybeTarget,
-          )
-          const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
-          if (frame != null && isFiniteRectangle(frame) && !isFragment) {
-            result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
-          }
-        }
-      })
-    }
-  })
-  return result
-}
-
 export function getSnappedGuidelines(
   guidelines: Array<GuidelineWithRelevantPoints>,
   constrainedDragAxis: ConstrainedDragAxis | null,
@@ -142,23 +105,6 @@ export function getSnappedGuidelines(
     horizontalPoints,
     verticalPoints,
     Utils.rectangleToPoints(draggedFrame),
-    guidelines,
-    constrainedDragAxis,
-    SnappingThreshold,
-    scale,
-  )
-}
-
-export function getSnappedGuidelinesForPoint(
-  guidelines: Array<GuidelineWithRelevantPoints>,
-  constrainedDragAxis: ConstrainedDragAxis | null,
-  point: CanvasPoint,
-  scale: number,
-): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
-  return Guidelines.getClosestGuidelinesAndOffsets(
-    [point.x],
-    [point.y],
-    [point],
     guidelines,
     constrainedDragAxis,
     SnappingThreshold,
@@ -297,13 +243,4 @@ export function filterGuidelinesStaticAxis<T>(
       (resizingFromPosition.y === 0.5 && fn(guideline).type === 'YAxisGuideline')
     )
   })
-}
-
-export function applySnappingToPoint(
-  point: CanvasPoint,
-  guidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>,
-): CanvasPoint {
-  return oneGuidelinePerDimension(guidelines).reduce((p, guidelineResult) => {
-    return Utils.offsetPoint(p, guidelineResult.snappingVector)
-  }, point)
 }
