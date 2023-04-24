@@ -45,14 +45,14 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   color: props.primary ? 'white' : 'inherit',
   //TODO Nested ternaries
   background: props.primary
-    ? UtopiaStyles.backgrounds.blue
+    ? colorTheme.primary.value
     : props.spotlight
     ? colorTheme.buttonBackground.value
     : undefined,
   '&:hover': {
     background:
       props.primary && props.highlight
-        ? UtopiaStyles.backgrounds.lightblue
+        ? colorTheme.primary.value
         : props.highlight
         ? colorTheme.buttonHoverBackground.value
         : 'transparent',

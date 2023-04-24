@@ -150,7 +150,7 @@ const defaultUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: UtopiaStyles.backgrounds.blue, color: colorTheme.white.value },
+  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
   iconColor: 'on-highlight-main',
 })
 
@@ -160,7 +160,7 @@ const dynamicUnselected = (colorTheme: any): ComputedLook => ({
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
-  style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
+  style: { background: colorTheme.primary.value, color: colorTheme.white.value },
   iconColor: 'on-highlight-main',
 })
 
