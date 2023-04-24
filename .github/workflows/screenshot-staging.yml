@@ -3,7 +3,6 @@ on:
   repository_dispatch:
     types: [trigger-staging-screenshot]
   workflow_dispatch:
-  pull_request:
 
 jobs:
   take-screenshot:
