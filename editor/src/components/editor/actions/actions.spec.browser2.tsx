@@ -1128,7 +1128,7 @@ describe('actions', () => {
     })
   })
   describe('WRAP_IN_ELEMENT', () => {
-    it(`Wraps in 2 elements`, async () => {
+    it(`Wraps 2 elements`, async () => {
       const testUID = 'bbb'
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -1161,7 +1161,7 @@ describe('actions', () => {
         ),
       )
     })
-    it(`Wraps in 2 elements inside a flex layout`, async () => {
+    it(`Wraps 2 elements inside a flex layout`, async () => {
       const testUID = 'zzz'
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -1200,7 +1200,7 @@ describe('actions', () => {
         ),
       )
     })
-    it(`Wrap in 2 elements with a fragment`, async () => {
+    it(`Wraps 2 elements with a fragment`, async () => {
       const testUID = 'zzz'
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
