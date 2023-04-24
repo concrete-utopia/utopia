@@ -1305,7 +1305,7 @@ function createArbitraryJSBlock(
     transpiledJavascript,
     definedWithin,
     definedElsewhere,
-    sourceMap,
+    null,
     elementsWithin,
     '',
   )
