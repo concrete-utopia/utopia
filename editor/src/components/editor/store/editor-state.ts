@@ -1969,6 +1969,7 @@ export function insertElementAtPath(
   return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
 }
 
+/** @deprecated reason: use insertElementAtPath instead! **/
 export function insertElementAtPath_DEPRECATED(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,

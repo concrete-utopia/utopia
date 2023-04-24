@@ -555,6 +555,7 @@ export function insertJSXElementChild(
   return insertChildAndDetails(updatedComponents, null) // TODO is this wrapper type needed?
 }
 
+/** @deprecated reason: use insertJSXElementChild instead! **/
 export function insertJSXElementChild_DEPRECATED(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
