@@ -413,6 +413,7 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
+  insertElementAtPath_DEPRECATED,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1827,7 +1828,13 @@ export const UPDATE_FNS = {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(dropTarget.target)
+              const newParent = reparentTargetFromNavigatorEntry(
+                dropTarget.target,
+                editor.projectContents,
+                editor.jsxMetadata,
+                editor.nodeModules.files,
+                editor.canvas.openFile?.filename,
+              )
               return reparentToIndexPosition(newParent, absolute(0))
             }
             case 'SYNTHETIC': {
@@ -2269,7 +2276,7 @@ export const UPDATE_FNS = {
           return success
         }
 
-        const withInsertedElement = insertElementAtPath(
+        const withInsertedElement = insertElementAtPath_DEPRECATED(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
           childInsertionPath(targetParent),
@@ -4901,7 +4908,7 @@ export const UPDATE_FNS = {
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
@@ -4923,7 +4930,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.comments,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
@@ -4942,7 +4949,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.longForm,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
