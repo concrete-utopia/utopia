@@ -1,27 +1,21 @@
-import createCachedSelector from 're-reselect'
 import React, { CSSProperties } from 'react'
 import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   NavigatorEntry,
+  varSafeNavigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
 import {
   findMaybeConditionalExpression,
   getConditionalActiveCase,
   getConditionalFlag,
-  matchesOverriddenConditionalBranch,
-  maybeConditionalExpression,
 } from '../../../core/model/conditionals'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { colorTheme, flexRowStyle, Icons, StringInput } from '../../../uuiui'
+import { colorTheme, flexRowStyle, StringInput } from '../../../uuiui'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { renameComponent } from '../actions'
+import { NavigatorItemTestId } from './navigator-item'
 
 interface ItemLabelProps {
   testId: string
@@ -203,6 +197,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       ) : (
         <div
           key='item-label'
+          data-testid={`${NavigatorItemTestId(varSafeNavigatorEntryToKey(target))}-label`}
           style={{
             backgroundColor: 'transparent',
             paddingTop: 3,
