@@ -11,6 +11,7 @@ export const base = {
   jsYellow: createUtopiColor('#b7b73b'),
   almostBlack: createUtopiColor('hsl(0,0%,10%)'),
   white: createUtopiColor('white'),
+  offWhite: createUtopiColor('#eee'),
   black: createUtopiColor('black'),
   darkgray: createUtopiColor('hsl(0, 0%, 50%)'),
   darkorange: createUtopiColor('#D05300'),

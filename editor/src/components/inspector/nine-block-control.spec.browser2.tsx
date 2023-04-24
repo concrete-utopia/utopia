@@ -1,6 +1,6 @@
 import * as EP from '../../core/shared/element-path'
 import {
-  expectSingleUndoStep,
+  expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
   setFeatureForBrowserTests,
@@ -72,7 +72,7 @@ async function doTest(
     NineBlockTestId(justifyContent, alignItems),
   )
 
-  await expectSingleUndoStep(editor, async () => {
+  await expectSingleUndo2Saves(editor, async () => {
     await mouseClickAtPoint(nineBlockControlSegment, { x: 2, y: 2 })
   })
 
