@@ -681,7 +681,7 @@ describe('Absolute Move Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      projectDoesNotHonourPositionProperties,
+      formatTestProjectCode(projectDoesNotHonourPositionProperties),
     )
   })
   it('moves absolute positioned element', async () => {
