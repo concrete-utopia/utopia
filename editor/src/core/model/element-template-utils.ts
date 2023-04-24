@@ -522,10 +522,6 @@ export function insertJSXElementChild(
     throw new Error('Should not attempt to create empty elements.')
   }
 
-  if (targetParent == null) {
-    throw new Error('Cannot provide null target parent for insertJSXElementChild!')
-  }
-
   const parentPath: StaticElementPath = targetParent.intendedParentPath
   const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
     if (isChildInsertionPath(targetParent)) {
