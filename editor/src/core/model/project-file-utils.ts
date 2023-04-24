@@ -437,17 +437,9 @@ export function canUpdateRevisionsState(
     case RevisionsState.BothMatch:
       return true
     case RevisionsState.ParsedAhead:
-      return (
-        updated === RevisionsState.ParsedAhead ||
-        updated === RevisionsState.ParsedAheadNeedsReparsing ||
-        updated === RevisionsState.BothMatch
-      )
+      return updated === RevisionsState.ParsedAhead || updated === RevisionsState.BothMatch
     case RevisionsState.CodeAhead:
       return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
-    case RevisionsState.ParsedAheadNeedsReparsing:
-      return (
-        updated === RevisionsState.ParsedAheadNeedsReparsing || updated === RevisionsState.BothMatch
-      )
     default:
       const _exhaustiveCheck: never = existing
       throw new Error(`Invalid revisions state ${existing}`)
@@ -482,20 +474,6 @@ export function updateFileIfPossible(
       existing.fileContents.revisionsState,
     )
   ) {
-    // we should not overwrite RevisionsState.ParsedAheadNeedsReparsing with RevisionsState.ParsedAhead, because we don't want to lose that
-    // the file needs reparsing
-    if (
-      existing.fileContents.revisionsState === RevisionsState.ParsedAheadNeedsReparsing &&
-      updated.fileContents.revisionsState === RevisionsState.ParsedAhead
-    ) {
-      return {
-        ...updated,
-        fileContents: {
-          ...updated.fileContents,
-          revisionsState: RevisionsState.ParsedAheadNeedsReparsing,
-        },
-      }
-    }
     return updated
   }
 

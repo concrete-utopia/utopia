@@ -130,7 +130,6 @@ import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
 import { addCommentsToNode, getLeadingComments } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
-import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
 import { BakedInStoryboardVariableName } from '../../model/scene-utils'
@@ -1933,94 +1932,6 @@ function withJSXElementAttributes(
   }
 
   TS.transform(sourceFile, [transformer])
-}
-
-type HighlightBoundsWithoutUid = Omit<HighlightBounds, 'uid'>
-const InvalidBoundsMarker = 'INVALID'
-export function boundsAreValid(uid: string): boolean {
-  return !uid.startsWith(InvalidBoundsMarker)
-}
-
-export function getHighlightBoundsWithUID(
-  filename: string,
-  sourceText: string,
-): Array<HighlightBounds> {
-  const sourceFile = TS.createSourceFile(
-    filename,
-    sourceText,
-    TS.ScriptTarget.Latest,
-    false,
-    TS.ScriptKind.TSX,
-  )
-
-  let result: Array<HighlightBounds> = []
-
-  if (sourceFile != null) {
-    withJSXElementAttributes(
-      sourceFile,
-      (boundingElement: TS.Node, attributes: TS.JsxAttributes) => {
-        const highlightBoundsForUid = (uid: string) => {
-          const startPosition = TS.getLineAndCharacterOfPosition(
-            sourceFile,
-            boundingElement.getStart(sourceFile, false),
-          )
-          const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, boundingElement.getEnd())
-          return {
-            startCol: startPosition.character,
-            startLine: startPosition.line,
-            endCol: endPosition.character,
-            endLine: endPosition.line,
-            uid: uid,
-          }
-        }
-        const newBounds = withUID(
-          undefined,
-          attributes,
-          highlightBoundsForUid(`${InvalidBoundsMarker}-${UUID()}`),
-          highlightBoundsForUid,
-        )
-        result.push(newBounds)
-      },
-    )
-  }
-
-  return result
-}
-
-export function getHighlightBoundsWithoutUID(
-  filename: string,
-  sourceText: string,
-): Array<HighlightBoundsWithoutUid> {
-  const sourceFile = TS.createSourceFile(
-    filename,
-    sourceText,
-    TS.ScriptTarget.Latest,
-    false,
-    TS.ScriptKind.TSX,
-  )
-
-  let result: Array<HighlightBoundsWithoutUid> = []
-
-  if (sourceFile != null) {
-    withJSXElementAttributes(
-      sourceFile,
-      (boundingElement: TS.Node, attributes: TS.JsxAttributes) => {
-        const startPosition = TS.getLineAndCharacterOfPosition(
-          sourceFile,
-          boundingElement.getStart(sourceFile, false),
-        )
-        const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, boundingElement.getEnd())
-        result.push({
-          startCol: startPosition.character,
-          startLine: startPosition.line,
-          endCol: endPosition.character,
-          endLine: endPosition.line,
-        })
-      },
-    )
-  }
-
-  return result
 }
 
 // In practical usage currently these highlight bounds should only include entries
