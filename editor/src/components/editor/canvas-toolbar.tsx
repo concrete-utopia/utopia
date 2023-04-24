@@ -21,7 +21,7 @@ import {
   setPanelVisibility,
   setRightMenuTab,
   switchEditorMode,
-  wrapInView,
+  wrapInElement,
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
@@ -36,6 +36,8 @@ import { useDispatch } from './store/dispatch-context'
 import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
+import { defaultTransparentViewElement } from './defaults'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
@@ -44,6 +46,7 @@ export const CanvasToolbar = React.memo(() => {
   const theme = useColorTheme()
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
@@ -87,8 +90,15 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch])
 
   const wrapInDivCallback = React.useCallback(() => {
-    dispatch([wrapInView(selectedViewsRef.current, 'default-empty-div')])
-  }, [dispatch, selectedViewsRef])
+    dispatch([
+      wrapInElement(selectedViewsRef.current, {
+        element: defaultTransparentViewElement(
+          generateUidWithExistingComponents(projectContentsRef.current),
+        ),
+        importsToAdd: {},
+      }),
+    ])
+  }, [dispatch, selectedViewsRef, projectContentsRef])
 
   const clickSelectModeButton = React.useCallback(() => {
     dispatch([switchEditorMode(EditorModes.selectMode())])
