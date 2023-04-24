@@ -10,21 +10,21 @@ export interface ReorderElement extends BaseCommand {
   type: 'REORDER_ELEMENT'
   target: ElementPath
   indexPosition: IndexPosition
-  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild
 }
 
 export function reorderElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): ReorderElement {
   return {
     type: 'REORDER_ELEMENT',
     whenToRun: whenToRun,
     target: target,
     indexPosition: indexPosition,
-    useNewInsertJSXElementChild_KILLME: useNewInsertJSXElementChild_KILLME,
+    useNewInsertJSXElementChild: useNewInsertJSXElementChild,
   }
 }
 
@@ -44,7 +44,7 @@ export const runReorderElement: CommandFunction<ReorderElement> = (
         components,
         command.target,
         command.indexPosition,
-        command.useNewInsertJSXElementChild_KILLME,
+        command.useNewInsertJSXElementChild,
       )
       return getPatchForComponentChange(
         success.topLevelElements,

@@ -2877,7 +2877,7 @@ export function reorderComponent(
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2896,7 +2896,7 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents = useNewInsertJSXElementChild_KILLME
+    workingComponents = useNewInsertJSXElementChild
       ? insertElementAtPath(
           childInsertionPath(parentPath),
           jsxElement,

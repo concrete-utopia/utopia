@@ -843,7 +843,7 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
-  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -870,7 +870,7 @@ export function editorMoveMultiSelectedTemplates(
         'on-complete',
         newPath,
         indexPosition,
-        useNewInsertJSXElementChild_KILLME,
+        useNewInsertJSXElementChild,
       )
 
       const withCommandsApplied = foldAndApplyCommandsSimple(working, [
