@@ -1972,8 +1972,10 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
           case 'ATTRIBUTE_NESTED_ARRAY':
           case 'ATTRIBUTE_NESTED_OBJECT':
           case 'ATTRIBUTE_FUNCTION_CALL':
-          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
             // Don't Walk any further down these.
+            break
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            walkElementsWithin(element.elementsWithin)
             break
           default:
             assertNever(element)
