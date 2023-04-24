@@ -108,7 +108,7 @@ import {
 import {
   DerivedState,
   EditorState,
-  insertElementAtPath,
+  insertElementAtPath_DEPRECATED,
   OriginalCanvasAndLocalFrame,
   removeElementAtPath,
   TransientCanvasState,
@@ -127,6 +127,7 @@ import {
   ElementProps,
   NavigatorEntry,
   isSyntheticNavigatorEntry,
+  insertElementAtPath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -509,7 +510,7 @@ export function updateFramesOfScenesAndComponents(
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
-                  workingEditorState.spyMetadata,
+                  'use-deprecated-insertJSXElementChild',
                 )
                 return {
                   ...success,
@@ -2159,7 +2160,7 @@ function editorReparentNoStyleChange(
                 utopiaComponentsIncludingScenes,
               )
 
-              const withInserted = insertElementAtPath(
+              const withInserted = insertElementAtPath_DEPRECATED(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
                 childInsertionPath(underlyingNewParentPath),
@@ -2291,7 +2292,7 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertResult = insertElementAtPath(
+                  const insertResult = insertElementAtPath_DEPRECATED(
                     workingEditorState.projectContents,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     childInsertionPath(underlyingNewParentPath),
@@ -2815,7 +2816,7 @@ export function duplicate(
               }
             }
 
-            const insertResult = insertElementAtPath(
+            const insertResult = insertElementAtPath_DEPRECATED(
               workingEditorState.projectContents,
               workingEditorState.canvas.openFile?.filename ?? null,
               optionalMap(childInsertionPath, newParentPath),
@@ -2866,13 +2867,17 @@ export function duplicate(
   }
 }
 
+export type UseNewInsertJsxElementChild =
+  | 'use-new-insertJSXElementChild'
+  | 'use-deprecated-insertJSXElementChild'
+
 export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  spyMetadata: ElementInstanceMetadataMap,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2891,14 +2896,22 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents = insertElementAtPath(
-      projectContents,
-      openFile,
-      childInsertionPath(parentPath),
-      jsxElement,
-      workingComponents,
-      adjustedIndexPosition,
-    ).components
+    workingComponents =
+      useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
+        ? insertElementAtPath(
+            childInsertionPath(parentPath),
+            jsxElement,
+            workingComponents,
+            adjustedIndexPosition,
+          ).components
+        : insertElementAtPath_DEPRECATED(
+            projectContents,
+            openFile,
+            childInsertionPath(parentPath),
+            jsxElement,
+            workingComponents,
+            adjustedIndexPosition,
+          ).components
   }
 
   return workingComponents

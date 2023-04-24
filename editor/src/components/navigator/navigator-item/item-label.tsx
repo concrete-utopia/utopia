@@ -3,16 +3,19 @@ import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   NavigatorEntry,
+  varSafeNavigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
-import { colorTheme, flexRowStyle, Icons, StringInput } from '../../../uuiui'
-import { EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/action-creators'
-import { renameComponent } from '../actions'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
   findMaybeConditionalExpression,
   getConditionalActiveCase,
+  getConditionalFlag,
 } from '../../../core/model/conditionals'
+import { colorTheme, flexRowStyle, StringInput } from '../../../uuiui'
+import { EditorDispatch } from '../../editor/action-types'
+import * as EditorActions from '../../editor/actions/action-creators'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { renameComponent } from '../actions'
+import { NavigatorItemTestId } from './navigator-item'
 
 interface ItemLabelProps {
   testId: string
@@ -43,7 +46,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
   const [name, setName] = React.useState(propsName)
 
   const isConditionalClause = React.useMemo(() => {
-    return target.type === 'CONDITIONAL_CLAUSE'
+    return isConditionalClauseNavigatorEntry(target)
   }, [target])
 
   const isActiveConditionalClause = useEditorState(
@@ -66,7 +69,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       }
       return activeCase === target.clause
     },
-    'NavigatorRowLabel isActiveBranchOfOverriddenConditional',
+    'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
   )
 
   React.useEffect(() => {
@@ -120,6 +123,33 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     setName(event.target.value)
   }
 
+  const isActiveBranchOfOverriddenConditional = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (!isConditionalClauseNavigatorEntry(target)) {
+        return false
+      }
+
+      const conditional = findMaybeConditionalExpression(
+        target.elementPath,
+        store.editor.jsxMetadata,
+      )
+      if (conditional == null) {
+        return false
+      }
+
+      switch (getConditionalFlag(conditional)) {
+        case true:
+          return target.clause === 'true-case'
+        case false:
+          return target.clause === 'false-case'
+        default:
+          return false
+      }
+    },
+    'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
+  )
+
   return (
     <div
       ref={elementRef}
@@ -133,10 +163,22 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       }}
     >
       {isConditionalClause && (
-        <Icons.Checkmark
-          style={{ opacity: isActiveConditionalClause ? 1 : 0 }}
-          color={'secondary'}
-        />
+        <div
+          style={{
+            width: 16,
+            height: 16,
+            display: 'flex',
+            fontWeight: 'bold',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: isActiveConditionalClause ? 1 : 0,
+            color: isActiveBranchOfOverriddenConditional
+              ? colorTheme.brandNeonPink.value
+              : colorTheme.fg7.value,
+          }}
+        >
+          ✓
+        </div>
       )}
       {inputVisible ? (
         <div key='item-rename-label'>
@@ -155,6 +197,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       ) : (
         <div
           key='item-label'
+          data-testid={`${NavigatorItemTestId(varSafeNavigatorEntryToKey(target))}-label`}
           style={{
             backgroundColor: 'transparent',
             paddingTop: 3,
@@ -167,9 +210,13 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            fontWeight: target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
-            color: target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
-            textTransform: target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
+            fontWeight: isConditionalClause ? 600 : undefined,
+            color: isActiveBranchOfOverriddenConditional
+              ? colorTheme.brandNeonPink.value
+              : isConditionalClause
+              ? colorTheme.fg7.value
+              : undefined,
+            textTransform: isConditionalClause ? 'uppercase' : undefined,
           }}
           onDoubleClick={(event) => {
             if (!isDynamic && event.altKey && isRegularNavigatorEntry(target)) {

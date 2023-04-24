@@ -167,6 +167,7 @@ import {
   produceCanvasTransientState,
   SkipFrameChange,
   updateFramesOfScenesAndComponents,
+  UseNewInsertJsxElementChild,
 } from '../../canvas/canvas-utils'
 import { ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
@@ -413,6 +414,7 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
+  insertElementAtPath_DEPRECATED,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -841,6 +843,7 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -863,7 +866,12 @@ export function editorMoveMultiSelectedTemplates(
       return working
     } else {
       const { commands: reparentCommands, newPath } = outcomeResult
-      const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
+      const reorderCommand = reorderElement(
+        'on-complete',
+        newPath,
+        indexPosition,
+        useNewInsertJSXElementChild,
+      )
 
       const withCommandsApplied = foldAndApplyCommandsSimple(working, [
         ...reparentCommands,
@@ -1784,6 +1792,7 @@ export const UPDATE_FNS = {
         indexPosition,
         newParentPath,
         editor,
+        'use-new-insertJSXElementChild',
       )
 
       return {
@@ -1827,7 +1836,13 @@ export const UPDATE_FNS = {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(dropTarget.target)
+              const newParent = reparentTargetFromNavigatorEntry(
+                dropTarget.target,
+                editor.projectContents,
+                editor.jsxMetadata,
+                editor.nodeModules.files,
+                editor.canvas.openFile?.filename,
+              )
               return reparentToIndexPosition(newParent, absolute(0))
             }
             case 'SYNTHETIC': {
@@ -2269,7 +2284,7 @@ export const UPDATE_FNS = {
           return success
         }
 
-        const withInsertedElement = insertElementAtPath(
+        const withInsertedElement = insertElementAtPath_DEPRECATED(
           editor.projectContents,
           editor.canvas.openFile?.filename ?? null,
           childInsertionPath(targetParent),
@@ -2380,6 +2395,7 @@ export const UPDATE_FNS = {
           indexPosition,
           childInsertionPath(newPath),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
+          'use-deprecated-insertJSXElementChild',
         )
 
         return {
@@ -2471,6 +2487,7 @@ export const UPDATE_FNS = {
             indexPosition,
             parentPath,
             editor,
+            'use-deprecated-insertJSXElementChild',
           )
           const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
@@ -4901,7 +4918,7 @@ export const UPDATE_FNS = {
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
@@ -4923,7 +4940,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.comments,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),
@@ -4942,7 +4959,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.longForm,
             )
 
-            withInsertedElement = insertElementAtPath(
+            withInsertedElement = insertElementAtPath_DEPRECATED(
               editor.projectContents,
               openFilename,
               childInsertionPath(action.targetParent),

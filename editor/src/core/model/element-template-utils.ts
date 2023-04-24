@@ -3,7 +3,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils, { addToArrayAtIndexPosition, IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -64,15 +64,17 @@ import {
   getConditionalClausePath,
   maybeBranchConditionalCase,
 } from './conditionals'
-import { modify } from '../shared/optics/optic-utilities'
+import { modify, set } from '../shared/optics/optic-utilities'
 import {
   childInsertionPath,
   getElementPathFromInsertionPath,
   InsertionPath,
+  isChildInsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
+import { insert } from '../shared/array-utils'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -511,6 +513,50 @@ export function insertChildAndDetails(
 }
 
 export function insertJSXElementChild(
+  targetParent: InsertionPath,
+  elementToInsert: JSXElementChild,
+  components: Array<UtopiaJSXComponent>,
+  indexPosition: IndexPosition | null,
+): InsertChildAndDetails {
+  const parentPath: StaticElementPath = targetParent.intendedParentPath
+  const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
+    if (isChildInsertionPath(targetParent)) {
+      if (!isJSXElementLike(parentElement)) {
+        throw new Error("Target parent for array insertion doesn't support children")
+      }
+      let updatedChildren: Array<JSXElementChild>
+      if (indexPosition == null) {
+        updatedChildren = parentElement.children.concat(elementToInsert)
+      } else {
+        updatedChildren = addToArrayAtIndexPosition(
+          elementToInsert,
+          parentElement.children,
+          indexPosition,
+        )
+      }
+      return {
+        ...parentElement,
+        children: updatedChildren,
+      }
+    } else if (isConditionalClauseInsertionPath(targetParent)) {
+      if (!isJSXConditionalExpression(parentElement)) {
+        throw new Error('Target parent for conditional insertion is not conditional expression')
+      }
+      // Determine which clause of the conditional we want to modify.
+      const conditionalCase = targetParent.clause
+      const toClauseOptic =
+        conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+
+      return set(toClauseOptic, elementToInsert, parentElement)
+    } else {
+      assertNever(targetParent)
+    }
+  })
+  return insertChildAndDetails(updatedComponents, null) // TODO is this wrapper type needed?
+}
+
+/** @deprecated reason: use insertJSXElementChild instead! **/
+export function insertJSXElementChild_DEPRECATED(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   targetParent: InsertionPath | null,
@@ -522,7 +568,6 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
-
   function getConditionalCase(
     conditional: JSXConditionalExpression,
     parentPath: ElementPath,
