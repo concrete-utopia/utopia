@@ -17,7 +17,7 @@ import {
   createTestProjectWithCode,
   getParseSuccessForStoryboardCode,
 } from '../../sample-projects/sample-project-utils.test-utils'
-import Utils, { before } from '../../utils/utils'
+import Utils, { after, before } from '../../utils/utils'
 import * as EP from '../shared/element-path'
 import {
   dynamicPathToStaticPath,
@@ -34,6 +34,7 @@ import {
   getJSXAttribute,
   isJSXAttributeValue,
   isJSXElement,
+  isJSXElementLike,
   jsExpressionFunctionCall,
   jsExpressionValue,
   jsxAttributesFromMap,
@@ -42,6 +43,7 @@ import {
 } from '../shared/element-template'
 import { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
 import { getUtopiaID } from '../shared/uid-utils'
+import { MetadataUtils } from './element-metadata-utils'
 import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
@@ -1052,6 +1054,23 @@ describe('insertJSXElementChild', () => {
     paths.forEach((path) => expectElementAtPathHasMatchingUID(components, path))
   }
 
+  function expectIndexInParent(
+    components: Array<UtopiaJSXComponent>,
+    pathString: string,
+    expectedIndex: number,
+  ) {
+    const path = EP.fromString(pathString)
+    const parentPathString = EP.toString(EP.parentPath(path))
+    const foundParent = findElement(components, parentPathString)
+    if (foundParent == null || !isJSXElementLike(foundParent)) {
+      throw new Error(`parent found at ${parentPathString} is not JsxElementLike`)
+    }
+    const childUid = EP.toUid(path)
+    const foundChildIndex = foundParent.children.findIndex((child) => child.uid === childUid)
+
+    expect(foundChildIndex).toBe(expectedIndex)
+  }
+
   function createTestComponentsForSnippet(snippet: string) {
     const projectContents = createTestProjectWithCode(
       makeTestProjectCodeWithSnippet(snippet),
@@ -1126,6 +1145,12 @@ describe('insertJSXElementChild', () => {
       before(0),
     )
 
+    expectIndexInParent(
+      withInsertedElement.components,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello',
+      0,
+    )
+
     expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
@@ -1134,6 +1159,49 @@ describe('insertJSXElementChild', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello', // <- the inserted element!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
+  it('inserts simple element as last with index position pointing to larger index than possible', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c-1' />
+          <div data-uid='grandchild-c-2' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChild(
+      childInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+      ),
+      jsxElement('div', 'hello', [], []),
+      components,
+      after(15), // this means it should come after element index 15, but the array is only 2 long. the resulting index will be 2 (zero based)
+    )
+
+    expectIndexInParent(
+      withInsertedElement.components,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello',
+      2,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello', // <- the inserted element!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
   })

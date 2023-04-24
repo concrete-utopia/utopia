@@ -3,7 +3,7 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { IndexPosition } from '../../utils/utils'
+import Utils, { addToArrayAtIndexPosition, IndexPosition } from '../../utils/utils'
 import {
   ElementsWithin,
   isJSExpressionOtherJavaScript,
@@ -74,6 +74,7 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
+import { insert } from '../shared/array-utils'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -517,11 +518,6 @@ export function insertJSXElementChild(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  const makeE = () => {
-    // TODO delete me
-    throw new Error('Should not attempt to create empty elements.')
-  }
-
   const parentPath: StaticElementPath = targetParent.intendedParentPath
   const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
     if (isChildInsertionPath(targetParent)) {
@@ -532,11 +528,10 @@ export function insertJSXElementChild(
       if (indexPosition == null) {
         updatedChildren = parentElement.children.concat(elementToInsert)
       } else {
-        updatedChildren = Utils.addToArrayWithFill(
+        updatedChildren = addToArrayAtIndexPosition(
           elementToInsert,
           parentElement.children,
           indexPosition,
-          makeE,
         )
       }
       return {
