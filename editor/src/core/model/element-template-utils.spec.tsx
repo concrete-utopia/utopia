@@ -21,6 +21,7 @@ import {
   componentUsesProperty,
   findJSXElementChildAtPath,
   guaranteeUniqueUids,
+  insertJSXElementChild,
   rearrangeJsxChildren,
   removeJSXElementChild,
 } from './element-template-utils'
@@ -41,6 +42,7 @@ import {
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { ElementPath, ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import * as EP from '../shared/element-path'
 import {
   dynamicPathToStaticPath,
   fromString,
@@ -50,6 +52,8 @@ import {
 import { getComponentsFromTopLevelElements } from './project-file-utils'
 import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
 import { getUtopiaID } from '../shared/uid-utils'
+import { getContentsTreeFileFromString } from '../../components/assets'
+import { childInsertionPath } from '../../components/editor/store/insertion-path'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -1017,6 +1021,80 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
+    ])
+  })
+})
+
+describe('insertJSXElementChild', () => {
+  function findElement(components: Array<UtopiaJSXComponent>, pathString: string) {
+    const path = fromStringStatic(pathString)
+    const foundElement = findJSXElementChildAtPath(
+      getComponentsFromTopLevelElements(components),
+      path,
+    )
+    return foundElement
+  }
+
+  function expectElementAtPathHasMatchingUID(
+    components: Array<UtopiaJSXComponent>,
+    pathString: string,
+  ) {
+    const foundElement = findElement(components, pathString)
+    expect(foundElement).not.toBeNull()
+    expect(getUtopiaID(foundElement!)).toEqual(toUid(fromStringStatic(pathString)))
+  }
+
+  function expectElementAtPathHasMatchingUIDForPaths(
+    components: Array<UtopiaJSXComponent>,
+    paths: Array<string>,
+  ) {
+    paths.forEach((path) => expectElementAtPathHasMatchingUID(components, path))
+  }
+
+  it('inserts simple element as child', () => {
+    const projectContents = createTestProjectWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+          <div data-uid='child-c'>
+            <div data-uid='grandchild-c' />
+          </div>
+          <div data-uid='child-d' />
+        </div>
+      </div>
+      `),
+    ).projectContents
+
+    const file = getContentsTreeFileFromString(projectContents, StoryboardFilePath)
+
+    if (file?.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
+      throw new Error('failed parsing the test project file')
+    }
+
+    const components = getComponentsFromTopLevelElements(file.lastParseSuccess.topLevelElements)
+
+    const withInsertedElement = insertJSXElementChild(
+      projectContents,
+      StoryboardFilePath,
+      childInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a'),
+      ),
+      jsxElement('div', 'hello', [], []),
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a/hello', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
   })
 })
