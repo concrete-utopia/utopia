@@ -35,36 +35,6 @@ interface ItemLabelProps {
   style?: CSSProperties
 }
 
-export const isActiveBranchOfOverriddenConditionalSelector = createCachedSelector(
-  (store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) =>
-    MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, parentPath),
-  (_store: MetadataSubstate, elementPath: ElementPath, _parentPath: ElementPath) => elementPath,
-  (_store: MetadataSubstate, _elementPath: ElementPath, parentPath: ElementPath) => parentPath,
-  (parent: ElementInstanceMetadata | null, elementPath: ElementPath, parentPath: ElementPath) => {
-    const conditionalParent = maybeConditionalExpression(parent)
-    if (conditionalParent == null) {
-      return false
-    }
-    const parentOverride = getConditionalFlag(conditionalParent)
-    if (parentOverride == null) {
-      return false
-    }
-
-    return (
-      matchesOverriddenConditionalBranch(elementPath, parentPath, {
-        clause: conditionalParent.whenTrue,
-        wantOverride: true,
-        parentOverride: parentOverride,
-      }) ||
-      matchesOverriddenConditionalBranch(elementPath, parentPath, {
-        clause: conditionalParent.whenFalse,
-        wantOverride: false,
-        parentOverride: parentOverride,
-      })
-    )
-  },
-)((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
-
 export const ItemLabel = React.memo((props: ItemLabelProps) => {
   const {
     name: propsName,
