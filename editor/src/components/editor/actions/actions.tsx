@@ -4251,23 +4251,13 @@ export const UPDATE_FNS = {
     for (const fileUpdate of action.updates) {
       const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
+        anyParsedUpdates = true
         let updatedFile: TextFile
         let updatedContents: ParsedTextFile
         let code: string
+        const updateIsStale = fileUpdate.lastRevisedTime < existing.lastRevisedTime
         switch (fileUpdate.type) {
-          case 'WORKER_CODE_UPDATE': {
-            // we use the new highlightBounds coming from the action
-            code = fileUpdate.code
-            updatedContents = updateParsedTextFileHighlightBounds(
-              existing.fileContents.parsed,
-              fileUpdate.highlightBounds,
-            )
-            break
-          }
           case 'WORKER_PARSED_UPDATE': {
-            anyParsedUpdates = true
-
-            // we use the new highlightBounds coming from the action
             code = existing.fileContents.code
             const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
             updatedContents = updateParsedTextFileHighlightBounds(
@@ -4276,19 +4266,21 @@ export const UPDATE_FNS = {
             )
             break
           }
-          case 'WORKER_CODE_AND_PARSED_UPDATE': // this is a merger of the two above cases
+          case 'WORKER_CODE_AND_PARSED_UPDATE':
             code = fileUpdate.code
-            updatedContents = updateParsedTextFileHighlightBounds(
-              fileUpdate.parsed,
-              fileUpdate.highlightBounds,
-            )
+            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
+            // Because this will print and reparse, we need to be careful of changes to the parsed
+            // model that have happened since we requested this update
+            updatedContents = updateIsStale
+              ? existing.fileContents.parsed
+              : updateParsedTextFileHighlightBounds(fileUpdate.parsed, highlightBounds)
             break
           default:
             const _exhaustiveCheck: never = fileUpdate
             throw new Error(`Invalid file update: ${fileUpdate}`)
         }
 
-        if (fileUpdate.lastRevisedTime < existing.lastRevisedTime) {
+        if (updateIsStale) {
           // if the received file is older than the existing, we still allow it to update the other side,
           // but we don't bump the revision state or the lastRevisedTime.
           updatedFile = textFile(
@@ -4736,9 +4728,6 @@ export const UPDATE_FNS = {
         }
       },
       editor,
-      RevisionsState.ParsedAheadNeedsReparsing,
-      // reparse needed because the new condition might be
-      // referencing variables from the outer scope
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
@@ -4999,7 +4988,6 @@ export const UPDATE_FNS = {
         }
       },
       editorStore.unpatchedEditor,
-      RevisionsState.ParsedAheadNeedsReparsing,
     )
     const withCollapsedElements = collapseTextElements(action.target, withUpdatedText)
 

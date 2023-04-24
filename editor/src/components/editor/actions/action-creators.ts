@@ -174,7 +174,6 @@ import type {
   SetFocusedElement,
   AddImports,
   ScrollToElement,
-  WorkerCodeUpdate,
   WorkerParsedUpdate,
   SetScrollAnimation,
   UpdateConfigFromVSCode,
@@ -1090,21 +1089,6 @@ export function removeFileConflict(path: string): RemoveFileConflict {
   }
 }
 
-export function workerCodeUpdate(
-  filePath: string,
-  code: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): WorkerCodeUpdate {
-  return {
-    type: 'WORKER_CODE_UPDATE',
-    filePath: filePath,
-    code: code,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
@@ -1136,7 +1120,7 @@ export function workerParsedUpdate(
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',

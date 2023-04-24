@@ -46,15 +46,7 @@ import {
   exportVariable,
   parseSuccess,
 } from '../../shared/project-file-types'
-import {
-  lintAndParse,
-  parseCode,
-  printCode,
-  printCodeOptions,
-  getHighlightBoundsWithoutUID,
-  getHighlightBoundsWithUID,
-  boundsAreValid,
-} from './parser-printer'
+import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
 import {
@@ -4813,47 +4805,6 @@ export var App = props => {
   })
 })
 
-describe('getHighlightBounds', () => {
-  it('gets some bounds', () => {
-    const bounds = getHighlightBoundsWithoutUID(
-      'test.ts',
-      `import * as React from "react";
-    import {
-      Ellipse,
-      UtopiaUtils,
-      Image,
-      Rectangle,
-      Text,
-      View,
-      Scene
-    } from "utopia-api";
-    
-    console.log('hello!') // line 18 char 9
-    
-    export var App = props => {
-      const a = 20;
-      const b = 40; // line 22 char 9
-    
-      return (
-        <View
-          style={{ backgroundColor: "lightgrey", position: "absolute" }}
-          layout={{
-            height: props.layout.height,
-            left: props.layout.left,
-            width: props.layout.width,
-            top: props.layout.top,
-          }}
-          data-uid="aaa"
-          arbitrary={console.log('hi')} // line 34, char 26
-        >
-        </View>
-      )
-    })`,
-    )
-    expect(bounds).toMatchSnapshot()
-  })
-})
-
 describe('lintAndParse', () => {
   it('returns a syntax error from eslint when something is broken', () => {
     const result = lintAndParse(
@@ -4961,62 +4912,5 @@ export var App = (props) => {
     expect(
       transpileJavascriptFromCode('test.js', file, code, sourceMap, [], false),
     ).toMatchSnapshot()
-  })
-})
-
-describe('Getting highlight bounds', () => {
-  it('should return the same number of bounds with and without UIDs', () => {
-    const filename = 'app.js'
-    const sourceText = `
-    import * as React from 'react'
-    import Utopia, {
-      Scene,
-      Storyboard,
-    } from 'utopia-api'
-
-    const Thing = (props) => {
-      return <div data-uid='root' style={props.style}>
-        {parseInt('2') === 2 ? (
-          props.inner
-        ) : <div data-uid='message'>Message.</div>}
-      </div>
-    }
-
-    export var storyboard = (
-      <Storyboard data-uid='sb'>
-        <Scene
-          data-uid='scene'
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: 400,
-            height: 400,
-          }}
-        >
-          <Thing
-            data-uid='thing'
-            style={{
-              position: 'absolute',
-              left: 100,
-              top: 100,
-              width: 200,
-              height: 200,
-            }}
-            inner={<div>Inner Thing</div>}
-          />
-        </Scene>
-      </Storyboard>
-    )
-    `
-
-    const boundsWithUIDs = getHighlightBoundsWithUID(filename, sourceText)
-    const boundsWithoutUIDs = getHighlightBoundsWithoutUID(filename, sourceText)
-
-    expect(boundsWithUIDs.length).toEqual(boundsWithoutUIDs.length)
-
-    // One of the JSX elements has no UID, so we expect the bounds for that to be invalid
-    const invalidBounds = boundsWithUIDs.find((bounds) => !boundsAreValid(bounds.uid))
-    expect(invalidBounds).not.toBeUndefined()
   })
 })

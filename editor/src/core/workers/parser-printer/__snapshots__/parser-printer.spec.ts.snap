@@ -1316,17 +1316,6 @@ export var App = (props) => <View data-uid='bbb'>
 }
 `;
 
-exports[`getHighlightBounds gets some bounds 1`] = `
-Array [
-  Object {
-    "endCol": 15,
-    "endLine": 29,
-    "startCol": 8,
-    "startLine": 18,
-  },
-]
-`;
-
 exports[`lintAndParse returns a syntax error from eslint when something is broken 1`] = `
 Object {
   "diagnostics": null,

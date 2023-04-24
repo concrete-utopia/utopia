@@ -12,29 +12,6 @@ import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 
 export type FileContent = string | TextFile
 
-export interface PrintCode {
-  type: 'printcode'
-  filename: string
-  parseSuccess: ParseSuccess
-  stripUIDs: boolean
-  lastRevisedTime: number
-}
-
-export function createPrintCode(
-  filename: string,
-  parseSuccess: ParseSuccess,
-  stripUIDs: boolean,
-  lastRevisedTime: number,
-): PrintCode {
-  return {
-    type: 'printcode',
-    filename: filename,
-    parseSuccess: parseSuccess,
-    stripUIDs: stripUIDs,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
 export interface ParseFile {
   type: 'parsefile'
   filename: string
@@ -85,30 +62,7 @@ export interface ParsePrintBase {
   messageID: number
 }
 
-export type ParseOrPrint = PrintCode | ParseFile | PrintAndReparseFile
-
-export interface PrintCodeResult {
-  type: 'printcoderesult'
-  filename: string
-  printResult: string
-  highlightBounds: HighlightBoundsForUids
-  lastRevisedTime: number
-}
-
-export function createPrintCodeResult(
-  filename: string,
-  printResult: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): PrintCodeResult {
-  return {
-    type: 'printcoderesult',
-    filename: filename,
-    printResult: printResult,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
+export type ParseOrPrint = ParseFile | PrintAndReparseFile
 
 export interface ParseFileResult {
   type: 'parsefileresult'
@@ -156,7 +110,7 @@ export function createPrintAndReparseResult(
   }
 }
 
-export type ParseOrPrintResult = PrintCodeResult | ParseFileResult | PrintAndReparseResult
+export type ParseOrPrintResult = ParseFileResult | PrintAndReparseResult
 
 export interface ParsePrintFilesResult extends ParsePrintBase {
   type: 'parseprintfilesresult'

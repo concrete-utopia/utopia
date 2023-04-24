@@ -165,6 +165,7 @@ export interface EditorRenderResult {
   getRecordedActions: () => ReadonlyArray<EditorAction>
 }
 
+// FIXME This should be calling formatTestProjectCode
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
