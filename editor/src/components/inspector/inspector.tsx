@@ -248,12 +248,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const onlyConditionalsSelected = useEditorState(
     Substores.metadata,
     (store) =>
+      store.editor.selectedViews.length > 0 &&
       store.editor.selectedViews.every((path) =>
         MetadataUtils.isConditionalFromMetadata(
           MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
         ),
       ),
-    'Inspector isConditionalSelected',
+    'Inspector onlyConditionalsSelected',
   )
 
   React.useEffect(() => {
