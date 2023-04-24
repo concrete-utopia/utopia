@@ -64,7 +64,7 @@ import {
   getConditionalClausePath,
   maybeBranchConditionalCase,
 } from './conditionals'
-import { modify } from '../shared/optics/optic-utilities'
+import { modify, set } from '../shared/optics/optic-utilities'
 import {
   childInsertionPath,
   getElementPathFromInsertionPath,
@@ -546,14 +546,8 @@ export function insertJSXElementChild(
       const conditionalCase = targetParent.clause
       const toClauseOptic =
         conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
-      // Update the clause if it currently holds a null value.
-      return modify(
-        toClauseOptic,
-        () => {
-          return elementToInsert
-        },
-        parentElement,
-      )
+
+      return set(toClauseOptic, elementToInsert, parentElement)
     } else {
       assertNever(targetParent)
     }
