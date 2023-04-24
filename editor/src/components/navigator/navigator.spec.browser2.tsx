@@ -1,21 +1,19 @@
 import {
   EditorRenderResult,
+  getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
-import { act, fireEvent } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import { offsetPoint, windowPoint, WindowPoint } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
-import { selectComponents } from '../editor/actions/action-creators'
+import { selectComponents, setNavigatorRenamingTarget } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-  wait,
-} from '../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -1272,6 +1270,52 @@ describe('Navigator', () => {
         'regular-sb/nonoffsetparent/offsetchild', // <- offsetchild is moved to under nonoffsetparent from offsetparent
         'regular-sb/nonoffsetparent/nonoffsetchild',
       ])
+    })
+  })
+
+  describe('rename', () => {
+    it('can rename entries', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root'>
+          <div data-uid='aaa'>hello</div>
+          <div data-uid='bbb'>there</div>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const target = EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/aaa`)
+      await act(async () => {
+        await renderResult.dispatch([setNavigatorRenamingTarget(target)], true)
+      })
+
+      const input: HTMLInputElement = await screen.findByTestId('navigator-item-label-hello')
+      await act(async () => {
+        document.execCommand('insertText', false, 'aloha')
+        fireEvent.blur(input)
+      })
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/bbb',
+      ])
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div data-uid='aaa' data-label='aloha'>hello</div>
+            <div data-uid='bbb'>there</div>
+          </div>
+        `),
+      )
     })
   })
 })

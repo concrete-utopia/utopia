@@ -484,7 +484,7 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
     <UIRow
       rowHeight={'normal'}
       css={{
-        background: props.selected ? UtopiaStyles.backgrounds.blue : undefined,
+        background: props.selected ? colorTheme.primary.value : undefined,
         color: props.selected ? colorTheme.white.value : undefined,
         opacity: props.disabled ? 0.3 : 1,
         gap: 8,

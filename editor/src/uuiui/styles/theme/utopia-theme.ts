@@ -98,20 +98,6 @@ const scene = {
   },
 }
 
-const backgroundURLs = {
-  primary: 'url(/editor/fills/light-primaryblue-p3.png)',
-  blue: 'url(/editor/fills/light-primaryblue-p3.png)',
-  lightblue: 'url(/editor/fills/light-lightblue-p3.png)',
-  paleblue: 'url(/editor/fills/light-paleblue-p3.png)',
-  purple: 'url(/editor/fills/dark-purple-p3.png)',
-  green: 'url(/editor/fills/dark-green-p3.png)',
-  lightgreen: 'url(/editor/fills/light-neongreen-p3.png)',
-  citronyellow: 'url(/editor/fills/light-citronyellow-p3.png)',
-  red: 'url(/editor/fills/dark-red-p3.png)',
-  almostBlack: 'url(/editor/fills/dark-almostblack-p3.png)',
-  noise: 'url(/editor/fills/noise.gif)',
-}
-
 // see type AlertLevel in editor-state.ts
 
 const noticeStyles: { [styleName: string]: React.CSSProperties } = {
@@ -152,7 +138,7 @@ const textNoticeStyles = {
   notice: { color: base.darkgray.cssValue },
   warning: { color: base.red.cssValue },
   error: { color: base.red.cssValue },
-  disconnected: { background: backgroundURLs.noise, color: 'white' },
+  disconnected: { background: base.black.value, color: 'white' },
 }
 
 const fontStyles = {
@@ -202,7 +188,6 @@ const stripedBackground = (
 
 export const UtopiaStyles = {
   backgrounds: {
-    ...backgroundURLs,
     checkerboardBackground,
     stripedBackground,
   },
