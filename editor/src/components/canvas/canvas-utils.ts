@@ -2896,21 +2896,22 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents = useNewInsertJSXElementChild
-      ? insertElementAtPath(
-          childInsertionPath(parentPath),
-          jsxElement,
-          workingComponents,
-          adjustedIndexPosition,
-        ).components
-      : insertElementAtPath_DEPRECATED(
-          projectContents,
-          openFile,
-          childInsertionPath(parentPath),
-          jsxElement,
-          workingComponents,
-          adjustedIndexPosition,
-        ).components
+    workingComponents =
+      useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
+        ? insertElementAtPath(
+            childInsertionPath(parentPath),
+            jsxElement,
+            workingComponents,
+            adjustedIndexPosition,
+          ).components
+        : insertElementAtPath_DEPRECATED(
+            projectContents,
+            openFile,
+            childInsertionPath(parentPath),
+            jsxElement,
+            workingComponents,
+            adjustedIndexPosition,
+          ).components
   }
 
   return workingComponents
