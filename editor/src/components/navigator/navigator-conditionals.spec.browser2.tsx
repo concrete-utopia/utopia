@@ -4,10 +4,12 @@ import {
   EditorRenderResult,
   TestSceneUID,
   getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { forElementOptic } from '../../core/model/common-optics'
 import {
+  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   jsxConditionalExpressionOptic,
@@ -26,7 +28,11 @@ import { getUtopiaID } from '../../core/shared/uid-utils'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { getTargetParentForPaste } from '../../utils/clipboard'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
-import { elementPaste, pasteJSXElements } from '../editor/actions/action-creators'
+import {
+  elementPaste,
+  pasteJSXElements,
+  setConditionalOverriddenCondition,
+} from '../editor/actions/action-creators'
 import { selectComponents } from '../editor/actions/meta-actions'
 import {
   DerivedState,
@@ -39,8 +45,8 @@ import {
 } from '../editor/store/editor-state'
 import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { navigatorDepth } from './navigator-utils'
 import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
+import { navigatorDepth } from './navigator-utils'
 
 function dragElement(
   renderResult: EditorRenderResult,
@@ -1512,6 +1518,51 @@ describe('conditionals in the navigator', () => {
         beforePasteEditorState,
         renderResult.getEditorState().editor,
       )
+    })
+  })
+  describe('overrides', () => {
+    it('shows an accent color for overridden labels', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? <div data-uid='bbb' /> : <div data-uid='ccc' />
+          }
+          </div>
+          `),
+        'await-first-dom-report',
+      )
+
+      async function getLabelColor(condCase: ConditionalCase) {
+        return (
+          await screen.findByTestId(
+            `NavigatorItemTestId-conditional_clause_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional_${condCase}-label`,
+          )
+        ).style.color
+      }
+
+      const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/conditional')
+      const defaultLabelColor = await getLabelColor('true-case')
+
+      // with no overrides, both labels are the same
+      {
+        expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
+      }
+
+      // override a branch, its color changes
+      {
+        await renderResult.dispatch([setConditionalOverriddenCondition(target, false)], true)
+        expect(await getLabelColor('false-case')).not.toEqual(defaultLabelColor)
+        expect(await getLabelColor('true-case')).toEqual(defaultLabelColor)
+      }
+
+      // try the other way around
+      {
+        await renderResult.dispatch([setConditionalOverriddenCondition(target, true)], true)
+        expect(await getLabelColor('true-case')).not.toEqual(defaultLabelColor)
+        expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
+      }
     })
   })
 })
