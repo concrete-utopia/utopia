@@ -62,8 +62,6 @@ import {
   PropertyPath,
   HighlightBoundsWithFileForUids,
   parseSuccess,
-  ParsedAheadRevisionsState,
-  RevisionsStateType,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
@@ -1760,13 +1758,11 @@ export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyOpenJsxElementOrConditionalAtPath(
     path,
     (element) => (isJSXElement(element) ? transform(element) : element),
     model,
-    revisionsState,
   )
 }
 
@@ -1776,7 +1772,6 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     element: JSXElement | JSXConditionalExpression,
   ) => JSXElement | JSXConditionalExpression,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     path,
@@ -1784,7 +1779,6 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     model,
     transform,
     defaultModifyParseSuccess,
-    revisionsState,
   )
 }
 
@@ -3292,7 +3286,6 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3303,16 +3296,12 @@ export function modifyParseSuccessAtPath(
       if (updatedParseSuccess === parsedFileContents) {
         return editor
       } else {
-        const updatedRevisionState = getNextRevisionsState(
-          projectFile.fileContents.revisionsState,
-          revisionsState,
-        )
         const updatedFile = saveTextFileContents(
           projectFile,
           textFileContents(
             projectFile.fileContents.code,
             updatedParseSuccess,
-            updatedRevisionState,
+            RevisionsState.ParsedAhead,
           ),
           false,
         )
@@ -3342,7 +3331,6 @@ export function modifyUnderlyingTarget(
     underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElementChild,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
@@ -3388,12 +3376,7 @@ export function modifyUnderlyingTarget(
     }
   }
 
-  return modifyParseSuccessAtPath(
-    targetSuccess.filePath,
-    editor,
-    innerModifyParseSuccess,
-    revisionsState,
-  )
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
 export function modifyUnderlyingForOpenFile(
@@ -3427,7 +3410,6 @@ export function modifyUnderlyingTargetElement(
     underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
@@ -3488,25 +3470,7 @@ export function modifyUnderlyingTargetElement(
     }
   }
 
-  return modifyParseSuccessAtPath(
-    targetSuccess.filePath,
-    editor,
-    innerModifyParseSuccess,
-    revisionsState,
-  )
-}
-
-function getNextRevisionsState(
-  prevRevisionState: RevisionsStateType,
-  nextRevisionState: ParsedAheadRevisionsState,
-): ParsedAheadRevisionsState {
-  if (
-    prevRevisionState === RevisionsState.ParsedAheadNeedsReparsing &&
-    nextRevisionState === RevisionsState.ParsedAhead
-  ) {
-    return RevisionsState.ParsedAheadNeedsReparsing
-  }
-  return nextRevisionState
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
 export function modifyUnderlyingElementForOpenFile(

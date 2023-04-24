@@ -259,10 +259,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
-    case 'WRAP_IN_VIEW':
-      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch, builtInDependencies)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch, builtInDependencies)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENT':

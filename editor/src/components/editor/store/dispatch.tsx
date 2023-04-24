@@ -8,7 +8,6 @@ import {
 import {
   createParseFile,
   createPrintAndReparseFile,
-  createPrintCode,
   getParseResult,
   ParseOrPrint,
   UtopiaTsWorkers,
@@ -16,7 +15,6 @@ import {
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
-import Utils from '../../../utils/utils'
 import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
@@ -246,7 +244,6 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
-        codeNeedsParsing(file.fileContents.revisionsState) &&
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
@@ -265,15 +262,6 @@ function maybeRequestModelUpdate(
         filesToUpdate.push(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
-      } else if (
-        codeNeedsPrinting(file.fileContents.revisionsState) &&
-        isParseSuccess(file.fileContents.parsed)
-      ) {
-        filesToUpdate.push(
-          createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
-        )
-        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
-        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
@@ -299,13 +287,6 @@ function maybeRequestModelUpdate(
               return EditorActions.workerParsedUpdate(
                 fileResult.filename,
                 fileResult.parseResult,
-                fileResult.lastRevisedTime,
-              )
-            case 'printcoderesult':
-              return EditorActions.workerCodeUpdate(
-                fileResult.filename,
-                fileResult.printResult,
-                fileResult.highlightBounds,
                 fileResult.lastRevisedTime,
               )
             case 'printandreparseresult':

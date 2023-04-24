@@ -165,7 +165,6 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
@@ -174,7 +173,6 @@ import type {
   SetFocusedElement,
   AddImports,
   ScrollToElement,
-  WorkerCodeUpdate,
   WorkerParsedUpdate,
   SetScrollAnimation,
   UpdateConfigFromVSCode,
@@ -741,16 +739,6 @@ export function resetPins(target: ElementPath): ResetPins {
   }
 }
 
-export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets, 'default-empty-div')
-  // FIXME: Make Groups Great Again.
-  //return {
-  //  action: 'WRAP_IN_VIEW',
-  //  targets: targets,
-  //  layoutSystem: LayoutSystem.Group,
-  //}
-}
-
 export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
     action: 'UNWRAP_ELEMENT',
@@ -762,21 +750,6 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
   return {
     action: 'OPEN_FLOATING_INSERT_MENU',
     mode: mode,
-  }
-}
-
-export function wrapInView(
-  targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
-  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
-  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
-): WrapInView {
-  return {
-    action: 'WRAP_IN_VIEW',
-    targets: targets,
-    layoutSystem: layoutSystem,
-    newParentMainAxis: newParentMainAxis,
-    whatToWrapWith: whatToWrapWith,
   }
 }
 
@@ -1090,21 +1063,6 @@ export function removeFileConflict(path: string): RemoveFileConflict {
   }
 }
 
-export function workerCodeUpdate(
-  filePath: string,
-  code: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): WorkerCodeUpdate {
-  return {
-    type: 'WORKER_CODE_UPDATE',
-    filePath: filePath,
-    code: code,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
@@ -1136,7 +1094,7 @@ export function workerParsedUpdate(
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',
