@@ -2677,6 +2677,10 @@ export function parseArbitraryNodes(
         sourceFile.fileName,
         sourceFile.text,
         fileSourceNode,
+        // Separately some logic was fixed which caused these elements within to maintain their assigned UIDs.
+        // As that logic would then find the elements within, the generated code changed to using `utopiaCanvasJSXLookup`,
+        // which resulted in the `data-uid` and `data-path` being created as if they were generated elements.
+        // In those cases that is incorrect as they are just regularly used elements which were in a class component (for example).
         rootLevel ? [] : parsedElementsWithin,
         false,
       )
