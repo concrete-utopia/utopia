@@ -172,7 +172,7 @@ export function getConditionalClausePathFromMetadata(
   conditionalPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
   clause: ConditionalCase,
-) {
+): ElementPath | null {
   const conditionalElement = findMaybeConditionalExpression(conditionalPath, metadata)
   if (conditionalElement == null) {
     return null
