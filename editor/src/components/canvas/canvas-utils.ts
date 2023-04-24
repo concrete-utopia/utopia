@@ -2893,8 +2893,6 @@ export function reorderComponent(
 
     workingComponents = useNewInsertJSXElementChild_KILLME
       ? insertElementAtPath(
-          projectContents,
-          openFile,
           childInsertionPath(parentPath),
           jsxElement,
           workingComponents,

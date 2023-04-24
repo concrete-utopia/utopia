@@ -512,9 +512,7 @@ export function insertChildAndDetails(
 }
 
 export function insertJSXElementChild(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  targetParent: InsertionPath | null,
+  targetParent: InsertionPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -524,83 +522,52 @@ export function insertJSXElementChild(
     throw new Error('Should not attempt to create empty elements.')
   }
 
-  function getConditionalCase(
-    conditional: JSXConditionalExpression,
-    parentPath: ElementPath,
-    target: InsertionPath,
-  ): ConditionalCase {
-    if (isConditionalClauseInsertionPath(target)) {
-      return target.clause
+  if (targetParent == null) {
+    throw new Error('Cannot provide null target parent for insertJSXElementChild!')
+  }
+
+  const parentPath: StaticElementPath = targetParent.intendedParentPath
+  const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
+    if (isChildInsertionPath(targetParent)) {
+      if (!isJSXElementLike(parentElement)) {
+        throw new Error("Target parent for array insertion doesn't support children")
+      }
+      let updatedChildren: Array<JSXElementChild>
+      if (indexPosition == null) {
+        updatedChildren = parentElement.children.concat(elementToInsert)
+      } else {
+        updatedChildren = Utils.addToArrayWithFill(
+          elementToInsert,
+          parentElement.children,
+          indexPosition,
+          makeE,
+        )
+      }
+      return {
+        ...parentElement,
+        children: updatedChildren,
+      }
+    } else if (isConditionalClauseInsertionPath(targetParent)) {
+      if (!isJSXConditionalExpression(parentElement)) {
+        throw new Error('Target parent for conditional insertion is not conditional expression')
+      }
+      // Determine which clause of the conditional we want to modify.
+      const conditionalCase = targetParent.clause
+      const toClauseOptic =
+        conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+      // Update the clause if it currently holds a null value.
+      return modify(
+        toClauseOptic,
+        () => {
+          return elementToInsert
+        },
+        parentElement,
+      )
+    } else {
+      assertNever(targetParent)
     }
-    throw new Error('trying to get at conditional case with a non-conditional insertion path')
-  }
-
-  const storyboardPath = getStoryboardElementPath(projectContents, openFile)
-
-  // TODO the caller could should provde the storyboard root path if they want to insert to the storyboard root
-  const targetParentIncludingStoryboardRoot: InsertionPath | null =
-    targetParent ??
-    // TODO this is the ugliest code I wrote today
-    (storyboardPath == null ? null : childInsertionPath(storyboardPath))
-
-  if (targetParentIncludingStoryboardRoot == null) {
-    return insertChildAndDetails(components)
-  } else {
-    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
-    let details: string | null = null
-    const updatedComponents = transformJSXComponentAtPath(
-      components,
-      parentPath,
-      (parentElement) => {
-        if (targetParent == null) {
-          return parentElement
-        }
-        if (isChildInsertionPath(targetParent)) {
-          if (!isJSXElementLike(parentElement)) {
-            throw new Error('Target parent for array insertion doesnt have children')
-          }
-          let updatedChildren: Array<JSXElementChild>
-          if (indexPosition == null) {
-            updatedChildren = parentElement.children.concat(elementToInsert)
-          } else {
-            updatedChildren = Utils.addToArrayWithFill(
-              elementToInsert,
-              parentElement.children,
-              indexPosition,
-              makeE,
-            )
-          }
-          return {
-            ...parentElement,
-            children: updatedChildren,
-          }
-        } else if (isConditionalClauseInsertionPath(targetParent)) {
-          if (!isJSXConditionalExpression(parentElement)) {
-            throw new Error('Target parent for array insertion doesnt have children')
-          }
-          // Determine which clause of the conditional we want to modify.
-          const conditionalCase = getConditionalCase(
-            parentElement,
-            parentPath,
-            targetParentIncludingStoryboardRoot,
-          )
-          const toClauseOptic =
-            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
-          // Update the clause if it currently holds a null value.
-          return modify(
-            toClauseOptic,
-            () => {
-              return elementToInsert
-            },
-            parentElement,
-          )
-        } else {
-          return parentElement
-        }
-      },
-    )
-    return insertChildAndDetails(updatedComponents, details)
-  }
+  })
+  return insertChildAndDetails(updatedComponents, null) // TODO is this wrapper type needed?
 }
 
 export function insertJSXElementChild_DEPRECATED(
