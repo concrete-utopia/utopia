@@ -119,7 +119,7 @@ const defaultTestCode = `
   </div>
 `
 
-const TestProjectWithFragment = formatTestProjectCode(`
+const TestProjectWithFragment = `
 import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -215,7 +215,7 @@ export var storyboard = (
     </div>
   </Storyboard>
 )
-`)
+`
 
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `

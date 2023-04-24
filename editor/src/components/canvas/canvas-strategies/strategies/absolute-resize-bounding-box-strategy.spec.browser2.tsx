@@ -1,5 +1,6 @@
 import {
   EditorRenderResult,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -657,7 +658,7 @@ describe('Absolute Resize Strategy', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      projectDoesNotHonourSizeProperties,
+      formatTestProjectCode(projectDoesNotHonourSizeProperties),
     )
   })
   it('resizes absolute positioned element from bottom right edge', async () => {
