@@ -510,6 +510,7 @@ export function updateFramesOfScenesAndComponents(
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
+                  'use-deprecated-insertJSXElementChild',
                 )
                 return {
                   ...success,
@@ -2866,13 +2867,17 @@ export function duplicate(
   }
 }
 
+export type UseNewInsertJsxElementChild =
+  | 'use-new-insertJSXElementChild'
+  | 'use-deprecated-insertJSXElementChild'
+
 export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild_KILLME?: boolean,
+  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 

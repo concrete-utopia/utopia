@@ -3,21 +3,21 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import * as EP from '../../../core/shared/element-path'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { reorderComponent } from '../canvas-utils'
+import { UseNewInsertJsxElementChild, reorderComponent } from '../canvas-utils'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface ReorderElement extends BaseCommand {
   type: 'REORDER_ELEMENT'
   target: ElementPath
   indexPosition: IndexPosition
-  useNewInsertJSXElementChild_KILLME?: boolean
+  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild
 }
 
 export function reorderElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild_KILLME?: boolean,
+  useNewInsertJSXElementChild_KILLME: UseNewInsertJsxElementChild,
 ): ReorderElement {
   return {
     type: 'REORDER_ELEMENT',
