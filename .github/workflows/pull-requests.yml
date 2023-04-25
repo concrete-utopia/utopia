@@ -318,7 +318,6 @@ jobs:
 
   system-test:
     name: Run System Tests
-    if: ${{ false }} # Disabling this as it is never completing now
     runs-on: ubuntu-latest
     needs: [deploy-staging]
     env:
