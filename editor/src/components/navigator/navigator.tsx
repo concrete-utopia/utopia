@@ -147,6 +147,17 @@ export const NavigatorComponent = React.memo(() => {
     }
   }, [selectionIndex, itemListRef])
 
+  React.useEffect(() => {
+    /**
+     * VariableSizeList caches the item sizes returned by itemSize={getItemSize}
+     * When a reorder happens, the items are offset, and the cached sizes are not applied to the right items anymore
+     * resetAfterIndex(0, false) clears the cached size of all items, and false means it does not force a re-render
+     *
+     * as a first approximation, this useEffect runs on any change to visibleNavigatorTargets
+     */
+    itemListRef.current?.resetAfterIndex(0, false)
+  }, [visibleNavigatorTargets, itemListRef])
+
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
       dispatch([setFocus('navigator')])
