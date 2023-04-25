@@ -604,15 +604,24 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {
-    if (dropTargetHintType !== 'reparent') {
-      return moveToEntry != null &&
-        EP.pathsEqual(EP.parentPath(moveToEntry.elementPath), props.navigatorEntry.elementPath)
-        ? 'solid'
-        : 'none'
+    if (moveToEntry == null) {
+      return 'none'
+    }
+    if (isConditionalRoot(moveToEntry, metadata) || props.navigatorEntry.type !== 'REGULAR') {
+      return 'none'
     }
 
-    if (isConditionalRoot(moveToEntry, metadata)) {
-      return 'none'
+    if (dropTargetHintType !== 'reparent') {
+      const wouldBeParentPath = EP.parentPath(moveToEntry.elementPath)
+      if (
+        MetadataUtils.isConditionalFromMetadata(
+          MetadataUtils.findElementByElementPath(metadata, wouldBeParentPath),
+        )
+      ) {
+        return 'none'
+      }
+
+      return EP.pathsEqual(wouldBeParentPath, props.navigatorEntry.elementPath) ? 'solid' : 'none'
     }
 
     const parentPath = EP.parentPath(props.navigatorEntry.elementPath)
