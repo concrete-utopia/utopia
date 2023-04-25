@@ -47,7 +47,7 @@ function addCodeFileToProjectContents(
   contents: string,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ProjectContentTreeRoot {
-  const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
+  const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE, 'trim-bounds')
   const file = textFile(
     textFileContents(contents, parseResult, RevisionsState.BothMatch),
     null,

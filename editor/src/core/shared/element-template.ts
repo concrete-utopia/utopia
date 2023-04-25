@@ -440,9 +440,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
         }
       }
       if (isSimpleArray) {
-        return jsExpressionValue(simpleArray, attribute.comments)
+        return jsExpressionValue(simpleArray, attribute.comments, attribute.uid)
       } else {
-        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments)
+        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments, attribute.uid)
       }
     case 'ATTRIBUTE_NESTED_OBJECT':
       let simpleObject: MapLike<unknown> = {}
@@ -487,9 +487,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
         }
       }
       if (isSimpleObject) {
-        return jsExpressionValue(simpleObject, attribute.comments)
+        return jsExpressionValue(simpleObject, attribute.comments, attribute.uid)
       } else {
-        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments)
+        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments, attribute.uid)
       }
     default:
       const _exhaustiveCheck: never = attribute
@@ -581,11 +581,13 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
         attribute.parameters.map(clearAttributeSourceMaps),
+        attribute.uid,
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return jsExpressionNestedObject(
@@ -606,6 +608,7 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -667,9 +670,7 @@ export function modifiableAttributeIsAttributeNotFound(
   return unknownObjectProperty(attribute, 'type') === 'ATTRIBUTE_NOT_FOUND'
 }
 
-export function isRegularJSXAttribute(
-  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSExpression {
+export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute is JSExpression {
   return (
     attribute != null &&
     !modifiableAttributeIsPartOfAttributeValue(attribute) &&
@@ -1084,6 +1085,7 @@ export function jsxArbitraryBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  uid: string = UUID(),
 ): JSXArbitraryBlock {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -1092,7 +1094,7 @@ export function jsxArbitraryBlock(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uid: UUID(),
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }
@@ -1103,11 +1105,11 @@ export interface JSXTextBlock {
   uid: string
 }
 
-export function jsxTextBlock(text: string): JSXTextBlock {
+export function jsxTextBlock(text: string, uid: string = UUID()): JSXTextBlock {
   return {
     type: 'JSX_TEXT_BLOCK',
     text: text,
-    uid: UUID(),
+    uid: uid,
   }
 }
 
@@ -1449,6 +1451,7 @@ export function arbitraryJSBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  uid: string = UUID(),
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -1457,7 +1460,7 @@ export function arbitraryJSBlock(
     definedWithin: definedWithin,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uid: UUID(),
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }

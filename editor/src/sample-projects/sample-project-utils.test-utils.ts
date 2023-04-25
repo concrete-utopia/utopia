@@ -48,7 +48,13 @@ export function parseProjectContents(
     if (tree.type === 'PROJECT_CONTENT_FILE') {
       const file = tree.content
       if (file.type === 'TEXT_FILE') {
-        const parsed = lintAndParse(tree.fullPath, file.fileContents.code, null, emptySet())
+        const parsed = lintAndParse(
+          tree.fullPath,
+          file.fileContents.code,
+          null,
+          emptySet(),
+          'trim-bounds',
+        )
         const updatedFile = textFile(
           textFileContents(file.fileContents.code, parsed, RevisionsState.BothMatch),
           null,
@@ -66,7 +72,7 @@ export function parseProjectContents(
 }
 
 export function getParseSuccessForStoryboardCode(appUiJsFile: string): ParseSuccess {
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null, emptySet())
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null, emptySet(), 'trim-bounds')
 
   if (isParseFailure(parsedFile)) {
     const failure =
@@ -106,6 +112,7 @@ export function createModifiedProject(modifiedFiles: { [filename: string]: strin
       modifiedFiles[modifiedFilename],
       null,
       emptySet(),
+      'trim-bounds',
     ) as ParsedTextFile
     if (!isParseSuccess(parsedFile)) {
       const failedParse = parsedFile as ParseFailure
