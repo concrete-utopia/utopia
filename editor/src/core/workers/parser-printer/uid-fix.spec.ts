@@ -26,13 +26,14 @@ describe('fixParseSuccessUIDs', () => {
       baseFileContents,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
+        4e0
+      434
+        112
       storyboard
         scene
           component"
@@ -40,21 +41,28 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level element change', () => {
-    const newFile = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, null, emptySet())
+    const newFile = lintAndParse(
+      'test.js',
+      baseFileWithTwoTopLevelComponents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
     const newFileFixed = lintAndParse(
       'test.js',
       baseFileWithTwoTopLevelComponentsUpdated,
       asParseSuccessOrNull(newFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      f0f
-        95f
-      344
-        3da
+        4e0
+      e86
+        c60
+      434
+        112
       storyboard
         scene
           component"
@@ -67,20 +75,22 @@ describe('fixParseSuccessUIDs', () => {
       baseFileWithTopLevelFragmentComponent,
       null,
       emptySet(),
+      'trim-bounds',
     )
     const fileWithFragmentUpdated = lintAndParse(
       'test.js',
       fileWithTopLevelFragmentComponentUpdateContents,
       asParseSuccessOrNull(fileWithFragment),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
+        4e0
       a61
-        344
-        3da
+        434
+        112
       storyboard
         scene
           component"
@@ -93,13 +103,14 @@ describe('fixParseSuccessUIDs', () => {
       fileWithSingleUpdateContents,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
+        4e0
+      434
+        112
       storyboard
         scene
           component"
@@ -112,13 +123,14 @@ describe('fixParseSuccessUIDs', () => {
       fileWithOneInsertedView,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        95f
-        3da
+        4e0
+      434
+        c60
+        112
       storyboard
         scene
           component"
@@ -131,14 +143,15 @@ describe('fixParseSuccessUIDs', () => {
       fileWithTwoDuplicatedViews,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
-        f22
-        931
+        4e0
+      434
+        112
+        dda
+        03b
       storyboard
         scene
           component"
@@ -146,21 +159,28 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('insertion at the beginning', () => {
-    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null, emptySet())
+    const threeViews = lintAndParse(
+      'test.js',
+      fileWithTwoDuplicatedViews,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
     const fourViews = lintAndParse(
       'test.js',
       fileWithTwoDuplicatesAndInsertion,
       asParseSuccessOrNull(threeViews),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        686
-        3da
-        f22
-        931
+        4e0
+      434
+        a6c
+        112
+        dda
+        03b
       storyboard
         scene
           component"
@@ -168,62 +188,78 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('multiple uid changes but the number of elements stays the same', () => {
-    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null, emptySet())
+    const threeViews = lintAndParse(
+      'test.js',
+      fileWithTwoDuplicatedViews,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
     const updatedThreeViews = lintAndParse(
       'test.js',
       fileWithTwoDuplicatedViewsWithChanges,
       asParseSuccessOrNull(threeViews),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(updatedThreeViews)).toEqual(getUidTree(threeViews))
   })
 
   it('can handle text children fine', () => {
-    const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet())
+    const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet(), 'trim-bounds')
     const end = lintAndParse(
       'test.js',
       fileWithTwoTextElementsWithChanges,
       asParseSuccessOrNull(start),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('can handle changes to a parent and child', () => {
-    const start = lintAndParse('test.js', baseFileContents, null, emptySet())
+    const start = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
     const end = lintAndParse(
       'test.js',
       fileWithChildAndParentUpdated,
       asParseSuccessOrNull(start),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('re-ordered elements should re-order the uid tree', () => {
-    const beforeReOrder = lintAndParse('test.js', fileWithOneInsertedView, null, emptySet())
+    const beforeReOrder = lintAndParse(
+      'test.js',
+      fileWithOneInsertedView,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
     const afterReOrder = lintAndParse(
       'test.js',
       fileWithOneInsertedViewReOrdered,
       asParseSuccessOrNull(beforeReOrder),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        95f
-        3da
+        4e0
+      434
+        c60
+        112
       storyboard
         scene
           component"
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
-        95f
+        4e0
+      434
+        112
+        c60
       storyboard
         scene
           component"
@@ -231,42 +267,51 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('uids should match including root element when root element changes', () => {
-    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet())
+    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
     const secondResult = lintAndParse(
       'test.js',
       baseFileContentsWithDifferentBackground,
       asParseSuccessOrNull(firstResult),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles elements within arbitrary blocks', () => {
-    const firstResult = lintAndParse('test.js', fileWithArbitraryBlockInside, null, emptySet())
+    const firstResult = lintAndParse(
+      'test.js',
+      fileWithArbitraryBlockInside,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
     const secondResult = lintAndParse(
       'test.js',
       fileWithSlightlyDifferentArbitraryBlockInside,
       asParseSuccessOrNull(firstResult),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles newly inserted duplicate elements without duplicating uids', () => {
-    const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet())
+    const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet(), 'trim-bounds')
     const secondResult = lintAndParse(
       'test.js',
       fileWithBasicDivDuplicated,
       asParseSuccessOrNull(firstResult),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
+        4e0
+      434
         593
           c85
-            random-uuid
+            f9b
       storyboard
         scene
           component"
@@ -762,7 +807,7 @@ function createFileText(codeSnippet: string): string {
   `
 }
 
-const baseFile = lintAndParse('test.js', baseFileContents, null, emptySet())
+const baseFile = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
 
 function getUidTree(parsedFile: ParsedTextFile): string {
   if (!isParseSuccess(parsedFile)) {

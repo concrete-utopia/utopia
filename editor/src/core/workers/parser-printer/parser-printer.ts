@@ -98,9 +98,10 @@ import {
   exportIdentifier,
   ExportDetail,
   isImportSideEffects,
+  isParseSuccess,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
-import { fastForEach, NO_OP } from '../../shared/utils'
+import { assertNever, fastForEach, NO_OP } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
 import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
@@ -135,6 +136,9 @@ import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { v4 as UUID } from 'uuid'
+import { fromField } from '../../../core/shared/optics/optic-creators'
+import { Optic } from '../../../core/shared/optics/optics'
+import { modify } from '../../../core/shared/optics/optic-utilities'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1930,11 +1934,90 @@ function withJSXElementAttributes(
   TS.transform(sourceFile, [transformer])
 }
 
+// In practical usage currently these highlight bounds should only include entries
+// that are selectable, potentially in the future this will extend beyond that but for
+// the moment it doesn't make sense to include highlight bounds for a value deep within
+// some properties for example.
+export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
+  const highlightBoundsOptic: Optic<ParseSuccess, HighlightBoundsForUids> =
+    fromField('highlightBounds')
+  return modify(
+    highlightBoundsOptic,
+    (highlightBounds) => {
+      let updatedHighlightBounds: HighlightBoundsForUids = {}
+
+      function includeElement(element: JSXElementChild): void {
+        if (element.uid in highlightBounds) {
+          updatedHighlightBounds[element.uid] = highlightBounds[element.uid]
+        }
+      }
+
+      function walkJSXElementChild(element: JSXElementChild): void {
+        includeElement(element)
+        switch (element.type) {
+          case 'JSX_ELEMENT':
+          case 'JSX_FRAGMENT':
+            // Don't include the properties of elements, but concievably we would want
+            // to include things like render props which include an element.
+            for (const child of element.children) {
+              walkJSXElementChild(child)
+            }
+            break
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            walkJSXElementChild(element.whenTrue)
+            walkJSXElementChild(element.whenFalse)
+            break
+          case 'JSX_TEXT_BLOCK':
+          case 'ATTRIBUTE_VALUE':
+          case 'ATTRIBUTE_NESTED_ARRAY':
+          case 'ATTRIBUTE_NESTED_OBJECT':
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            // Don't Walk any further down these.
+            break
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            walkElementsWithin(element.elementsWithin)
+            break
+          default:
+            assertNever(element)
+        }
+      }
+
+      function walkElementsWithin(elementsWithin: ElementsWithin): void {
+        for (const elementWithin of Object.values(elementsWithin)) {
+          walkJSXElementChild(elementWithin)
+        }
+      }
+
+      for (const topLevelElement of success.topLevelElements) {
+        switch (topLevelElement.type) {
+          case 'UTOPIA_JSX_COMPONENT':
+            walkJSXElementChild(topLevelElement.rootElement)
+            if (topLevelElement.arbitraryJSBlock != null) {
+              walkElementsWithin(topLevelElement.arbitraryJSBlock.elementsWithin)
+            }
+            break
+          case 'ARBITRARY_JS_BLOCK':
+            walkElementsWithin(topLevelElement.elementsWithin)
+            break
+          case 'IMPORT_STATEMENT':
+          case 'UNPARSED_CODE':
+            break
+          default:
+            assertNever(topLevelElement)
+        }
+      }
+      return updatedHighlightBounds
+    },
+    success,
+  )
+}
+
 export function lintAndParse(
   filename: string,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
+  shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
@@ -1945,7 +2028,11 @@ export function lintAndParse(
       oldParseResultForUIDComparison,
       alreadyExistingUIDs_MUTABLE,
     )
-    return result
+    if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
+      return trimHighlightBounds(result)
+    } else {
+      return result
+    }
   } else {
     return parseFailure(null, null, null, lintResult)
   }

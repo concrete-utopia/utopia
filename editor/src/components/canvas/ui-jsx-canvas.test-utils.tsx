@@ -5,7 +5,7 @@ applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
-import { Either, isRight, left, right } from '../../core/shared/either'
+import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
   clearJSXElementChildUniqueIDs,
@@ -25,7 +25,10 @@ import {
   isParseSuccess,
 } from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
-import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
+import {
+  simplifyJSXElementChildAttributes,
+  testParseCode,
+} from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { Utils } from '../../uuiui-deps'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { ConsoleLog, deriveState, EditorState } from '../editor/store/editor-state'
@@ -108,7 +111,11 @@ function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstan
 }
 
 function stripUnwantedDataFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
-  return stripUidsFromMetadata(metadata)
+  const strippedMetadata = stripUidsFromMetadata(metadata)
+  return {
+    ...strippedMetadata,
+    element: mapEither(simplifyJSXElementChildAttributes, strippedMetadata.element),
+  }
 }
 
 interface RuntimeErrorInfo {

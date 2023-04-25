@@ -200,7 +200,7 @@ export function parseUID(
   }, uidValue)
 }
 
-export function getUtopiaIDFromJSXElement(element: JSXElementLike): string {
+export function getUtopiaIDFromJSXElement(element: JSXElementChild): string {
   return element.uid
 }
 
