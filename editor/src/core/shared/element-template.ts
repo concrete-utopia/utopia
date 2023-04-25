@@ -670,9 +670,7 @@ export function modifiableAttributeIsAttributeNotFound(
   return unknownObjectProperty(attribute, 'type') === 'ATTRIBUTE_NOT_FOUND'
 }
 
-export function isRegularJSXAttribute(
-  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSExpression {
+export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute is JSExpression {
   return (
     attribute != null &&
     !modifiableAttributeIsPartOfAttributeValue(attribute) &&

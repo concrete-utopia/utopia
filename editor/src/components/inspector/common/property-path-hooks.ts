@@ -70,6 +70,8 @@ import {
   StyleAttributeMetadata,
   StyleAttributeMetadataEntry,
   JSExpression,
+  isRegularJSXAttribute,
+  clearExpressionUniqueIDs,
 } from '../../../core/shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -103,6 +105,9 @@ import fastDeepEquals from 'fast-deep-equal'
 import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
 import { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { compose2Optics, Optic } from '../../../core/shared/optics/optics'
+import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { modify } from '../../../core/shared/optics/optic-utilities'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -743,6 +748,11 @@ function useGetSpiedProps<P extends ParsedPropertiesKeys>(
   )
 }
 
+const getModifiableAttributeResultToExpressionOptic: Optic<
+  GetModifiableAttributeResult,
+  JSExpression
+> = compose2Optics(eitherRight(), fromTypeGuard(isRegularJSXAttribute))
+
 export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
@@ -754,9 +764,17 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
           return contextData.editedMultiSelectedProps.map((props) => {
-            return getModifiableJSXAttributeAtPath(
+            const result = getModifiableJSXAttributeAtPath(
               props,
               pathMappingFn(propKey, contextData.targetPath),
+            )
+            // This wipes the uid from any `JSExpression` values we may have retrieved,
+            // as that can cause the deep equality check to fail for different elements
+            // with the same value for a given property.
+            return modify(
+              getModifiableAttributeResultToExpressionOptic,
+              clearExpressionUniqueIDs,
+              result,
             )
           })
         }
