@@ -78,31 +78,6 @@ export function getClauseOptic(
   }
 }
 
-export function getConditionalCase(
-  elementPath: ElementPath,
-  parent: JSXConditionalExpression,
-  spyParentMetadata: ElementInstanceMetadata,
-  parentPath: ElementPath,
-): ConditionalCase | 'not-a-conditional' {
-  if (spyParentMetadata.conditionValue === 'not-a-conditional') {
-    return 'not-a-conditional'
-  }
-  const parentOverride = getConditionalFlag(parent)
-  if (parentOverride == null) {
-    return spyParentMetadata.conditionValue ? 'true-case' : 'false-case'
-  }
-  if (
-    matchesOverriddenConditionalBranch(elementPath, parentPath, {
-      clause: parent.whenTrue,
-      wantOverride: true,
-      parentOverride: parentOverride,
-    })
-  ) {
-    return 'true-case'
-  }
-  return 'false-case'
-}
-
 export function getConditionalFlag(element: JSXConditionalExpression): boolean | null {
   const flag = findUtopiaCommentFlag(element.comments, 'conditional')
   if (!isUtopiaCommentFlagConditional(flag)) {
@@ -168,7 +143,7 @@ export function maybeBranchConditionalCase(
   }
 }
 
-export function getConditionalCaseFromMetadata(
+export function getConditionalCaseCorrespondingToBranchPath(
   branchPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): ConditionalCase | null {

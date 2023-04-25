@@ -514,7 +514,7 @@ import {
 import {
   findMaybeConditionalExpression,
   getClauseOptic,
-  getConditionalCaseFromMetadata,
+  getConditionalCaseCorrespondingToBranchPath,
   maybeBranchConditionalCase,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
@@ -4856,7 +4856,7 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
-      const conditionalClause = getConditionalCaseFromMetadata(
+      const conditionalClause = getConditionalCaseCorrespondingToBranchPath(
         action.targetParent,
         editor.jsxMetadata,
       )
