@@ -4876,7 +4876,7 @@ export const UPDATE_FNS = {
         : null
 
       if (insertionPath == null) {
-        return includeToast(detailsOfUpdate, editor)
+        return includeToast('Selected element does not support children', editor)
       }
 
       function addNewSelectedView(parentPath: ElementPath, newUID: string) {
