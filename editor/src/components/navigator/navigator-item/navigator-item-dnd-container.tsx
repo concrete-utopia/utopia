@@ -192,8 +192,10 @@ function onDrop(
       )
       break
     case 'reparent':
+      const target =
+        moveToEntry.type === 'SYNTHETIC' ? propsOfDropTargetItem.navigatorEntry : moveToEntry
       propsOfDraggedItem.editorDispatch(
-        [reparentComponents(draggedElements, moveToEntry), clearHintAction],
+        [reparentComponents(draggedElements, target), clearHintAction],
         'everyone',
       )
       break
