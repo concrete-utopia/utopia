@@ -218,3 +218,26 @@ export function getConditionalActiveCase(
   }
   return spy.conditionValue ? 'true-case' : 'false-case'
 }
+
+export function isActiveBranchOfOverriddenConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  const conditional = maybeConditionalExpression(metadata)
+  if (conditional == null) {
+    return false
+  }
+
+  switch (getConditionalFlag(conditional)) {
+    case true:
+      return clause === 'true-case'
+    case false:
+      return clause === 'false-case'
+    default:
+      return false
+  }
+}
+
+export function conditionalClauseAsBoolean(clause: ConditionalCase): boolean {
+  return clause === 'true-case'
+}

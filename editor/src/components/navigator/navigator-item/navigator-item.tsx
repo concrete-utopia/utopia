@@ -4,8 +4,10 @@ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
 import {
+  conditionalClauseAsBoolean,
   getConditionalClausePath,
   getConditionalFlag,
+  isActiveBranchOfOverriddenConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -90,25 +92,34 @@ function selectItem(
   event: React.MouseEvent<HTMLDivElement>,
   elementMetadata: ElementInstanceMetadata | null,
 ) {
-  const elementPath =
-    isConditionalClauseNavigatorEntry(navigatorEntry) && elementMetadata != null
-      ? getConditionalClausePathForNavigatorEntry(navigatorEntry, elementMetadata)
-      : navigatorEntry.elementPath
+  const elementPath = navigatorEntry.elementPath
+  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+    // Toggle the override
+    const isOverridden = isActiveBranchOfOverriddenConditional(
+      navigatorEntry.clause,
+      elementMetadata,
+    )
+    const newOverride = isOverridden ? null : conditionalClauseAsBoolean(navigatorEntry.clause)
+    dispatch(
+      [EditorActions.setConditionalOverriddenCondition(elementPath, newOverride)],
+      'everyone',
+    )
+  } else {
+    if (elementPath == null) {
+      return
+    }
 
-  if (elementPath == null) {
-    return
-  }
-
-  if (!selected) {
-    if (event.metaKey && !event.shiftKey) {
-      // adds to selection
-      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
-    } else if (event.shiftKey) {
-      // selects range of items
-      const targets = getSelectedViewsInRange(index)
-      dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
-    } else {
-      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
+    if (!selected) {
+      if (event.metaKey && !event.shiftKey) {
+        // adds to selection
+        dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
+      } else if (event.shiftKey) {
+        // selects range of items
+        const targets = getSelectedViewsInRange(index)
+        dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
+      } else {
+        dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
+      }
     }
   }
 }
