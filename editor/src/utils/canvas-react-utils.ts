@@ -26,9 +26,11 @@ export function applyUIDMonkeyPatch(): void {
   }
 }
 
-function getDisplayName(type: any): string {
+export function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
-  if (typeof type === 'function') {
+  if (type == null) {
+    return 'Unknown'
+  } else if (typeof type === 'function') {
     return type.displayName ?? type.name ?? 'Unknown'
   } else if (typeof type === 'symbol') {
     return type.toString()
