@@ -5,5 +5,4 @@ on:
 jobs:
   call-the-other-one:
     name: Call the other test workflow
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/test-common-workflow.yml
