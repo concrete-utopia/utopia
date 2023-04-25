@@ -94,6 +94,7 @@ describe('Updating a transitive dependency', () => {
       updatedIndirectFileContent,
       null,
       emptySet(),
+      'trim-bounds',
     ) as ParsedTextFile
 
     const updatedIndirectFile = textFile(

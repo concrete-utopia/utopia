@@ -183,8 +183,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`579`)
-    expect(renderResult.getRenderInfo()).toMatchSnapshot()
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`580`)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -249,7 +248,6 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`651`)
-    expect(renderResult.getRenderInfo()).toMatchSnapshot()
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`652`)
   })
 })

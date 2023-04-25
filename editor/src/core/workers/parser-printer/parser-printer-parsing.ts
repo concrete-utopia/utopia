@@ -4,6 +4,7 @@ import {
   addUniquely,
   dropLast,
   flatMapArray,
+  mapDropNulls,
   stripNulls,
   traverseArray,
 } from '../../shared/array-utils'
@@ -27,7 +28,6 @@ import {
   ArbitraryJSBlock,
   arbitraryJSBlock,
   isJSExpressionOtherJavaScript,
-  isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
   JSXArbitraryBlock,
@@ -78,6 +78,7 @@ import {
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionFunctionCall,
+  JSXTextBlock,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -100,13 +101,17 @@ import {
   insertDataUIDsIntoCode,
 } from './parser-printer-transpiling'
 import * as PP from '../../shared/property-path'
-import { prependToSourceString, ElementsWithinInPosition } from './parser-printer-utils'
+import {
+  prependToSourceString,
+  ElementsWithinInPosition,
+  getBoundsOfNodes,
+} from './parser-printer-utils'
 import Hash from 'object-hash'
 import { getComments, getLeadingComments, getTrailingComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import { isEmptyString } from '../../shared/string-utils'
-import { mergeComments } from '../../shared/comment-flags'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import { emptySet } from '../../../core/shared/set-utils'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -209,7 +214,7 @@ function parseArrayLiteralExpression(
       if (isLeft(subExpression)) {
         return subExpression
       } else {
-        highlightBounds = subExpression.value.highlightBounds
+        highlightBounds = mergeHighlightBounds(highlightBounds, subExpression.value.highlightBounds)
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
         arrayContents.push(jsxArraySpread(subExpression.value.value, elementComments))
@@ -230,7 +235,7 @@ function parseArrayLiteralExpression(
       if (isLeft(subExpression)) {
         return subExpression
       } else {
-        highlightBounds = subExpression.value.highlightBounds
+        highlightBounds = mergeHighlightBounds(highlightBounds, subExpression.value.highlightBounds)
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
         const subExpressionValue: JSExpression = subExpression.value.value
@@ -238,14 +243,20 @@ function parseArrayLiteralExpression(
       }
     }
   }
-  return right(
-    withParserMetadata(
-      createExpressionNestedArray(sourceFile, arrayContents, emptyComments, alreadyExistingUIDs),
-      highlightBounds,
+
+  const expressionResult = addBoundsIntoWithParser(
+    highlightBounds,
+    createExpressionNestedArray(
+      sourceFile,
+      literal,
+      arrayContents,
+      emptyComments,
+      alreadyExistingUIDs,
       propsUsed,
       definedElsewhere,
     ),
   )
+  return right(expressionResult)
 }
 
 function parseObjectLiteralExpression(
@@ -317,7 +328,10 @@ function parseObjectLiteralExpression(
           const subExpressionValue: JSExpression = subExpression.value.value
           const keyComments = getComments(sourceText, literalProp.name)
           contents.push(jsxPropertyAssignment(key, subExpressionValue, propComments, keyComments))
-          highlightBounds = subExpression.value.highlightBounds
+          highlightBounds = mergeHighlightBounds(
+            highlightBounds,
+            subExpression.value.highlightBounds,
+          )
           propsUsed.push(...subExpression.value.propsUsed)
           definedElsewhere.push(...subExpression.value.definedElsewhere)
         }
@@ -340,7 +354,7 @@ function parseObjectLiteralExpression(
       } else {
         const subExpressionValue = subExpression.value.value
         contents.push(jsxSpreadAssignment(subExpressionValue, propComments))
-        highlightBounds = subExpression.value.highlightBounds
+        highlightBounds = mergeHighlightBounds(highlightBounds, subExpression.value.highlightBounds)
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
       }
@@ -350,14 +364,19 @@ function parseObjectLiteralExpression(
     firstProp = false
   }
 
-  return right(
-    withParserMetadata(
-      createExpressionNestedObject(sourceFile, contents, emptyComments, alreadyExistingUIDs),
-      highlightBounds,
+  const expressionResult = addBoundsIntoWithParser(
+    highlightBounds,
+    createExpressionNestedObject(
+      sourceFile,
+      literal,
+      contents,
+      emptyComments,
+      alreadyExistingUIDs,
       propsUsed,
       definedElsewhere,
     ),
   )
+  return right(expressionResult)
 }
 
 interface PropertyAccessDescriptor {
@@ -501,7 +520,7 @@ function createExpressionAndText<E extends TS.Node>(
   }
 }
 
-function parseOtherJavaScript<E extends TS.Node, T>(
+function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
@@ -646,7 +665,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
                   ? firstChild.startColumn - startColumnShift
                   : firstChild.startColumn,
             })
-            highlightBounds = success.highlightBounds
+            highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
 
             fastForEach(success.definedElsewhere, (val) =>
               pushToDefinedElsewhereIfNotThere(currentScope, val),
@@ -947,10 +966,18 @@ function parseOtherJavaScript<E extends TS.Node, T>(
       return !definedWithin.includes(e)
     })
 
-    return mapEither(
-      (created) => withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere),
-      create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin),
-    )
+    return mapEither((created) => {
+      // Add in the bounds for the entire value.
+      highlightBounds = addToHighlightBounds(
+        highlightBounds,
+        buildHighlightBounds(
+          sourceFile,
+          mapDropNulls((e) => e.expression, expressionsAndTexts),
+          created.uid,
+        ),
+      )
+      return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
+    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin))
   }
 }
 
@@ -1010,13 +1037,14 @@ export function parseAttributeOtherJavaScript(
         }
         return createExpressionOtherJavaScript(
           sourceFile,
+          expression,
           code,
           prependedWithReturn.code,
           innerDefinedElsewhere,
           prependedWithReturn.sourceMap,
           inPositionToElementsWithin(parsedElementsWithin),
           alreadyExistingUIDs,
-        )
+        ).value
       }, transpileEither)
     },
   )
@@ -1065,13 +1093,15 @@ function parseJSXArbitraryBlock(
     (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
       if (code === '') {
         return right(
-          jsxArbitraryBlock(
+          createJSXArbitraryBlock(
+            sourceFile,
             expressionFullText,
             expressionFullText,
             'return undefined',
             definedElsewhere,
             null,
             inPositionToElementsWithin(parsedElementsWithin),
+            alreadyExistingUIDs,
           ),
         )
       } else {
@@ -1107,13 +1137,15 @@ function parseJSXArbitraryBlock(
             if (Object.keys(parsedElementsWithin).length > 0) {
               innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
             }
-            return jsxArbitraryBlock(
+            return createJSXArbitraryBlock(
+              sourceFile,
               expressionFullText,
               dataUIDFixResult.code,
               returnPrepended.code,
               innerDefinedElsewhere,
               returnPrepended.sourceMap,
               inPositionToElementsWithin(parsedElementsWithin),
+              alreadyExistingUIDs,
             )
           }, transpileEither)
         }, dataUIDFixed)
@@ -1136,7 +1168,7 @@ function generateUIDAndAddToExistingUIDs(
   return uid
 }
 
-function createExpressionValue(
+function createRawExpressionValue(
   sourceFile: TS.SourceFile,
   value: any,
   comments: ParsedComments,
@@ -1146,15 +1178,32 @@ function createExpressionValue(
   return jsExpressionValue(value, comments, uid)
 }
 
+function createExpressionValue(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  value: any,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+): WithParserMetadata<JSExpressionValue<any>> {
+  const expression = createRawExpressionValue(sourceFile, value, comments, alreadyExistingUIDs)
+  return withParserMetadata(
+    expression,
+    buildHighlightBoundsForUids(sourceFile, node, expression.uid),
+    [],
+    [],
+  )
+}
+
 function createExpressionOtherJavaScript(
   sourceFile: TS.SourceFile,
+  node: TS.Node,
   javascript: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   alreadyExistingUIDs: Set<string>,
-): JSExpressionOtherJavaScript {
+): WithParserMetadata<JSExpressionOtherJavaScript> {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
   const value = jsExpressionOtherJavaScript(
     javascript,
@@ -1165,7 +1214,136 @@ function createExpressionOtherJavaScript(
     '',
   )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return jsExpressionOtherJavaScript(
+  const expression = jsExpressionOtherJavaScript(
+    javascript,
+    transpiledJavascript,
+    definedElsewhere,
+    sourceMap,
+    elementsWithin,
+    uid,
+  )
+  return withParserMetadata(
+    expression,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    [],
+    definedElsewhere,
+  )
+}
+
+function createExpressionNestedArray(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  arrayContents: Array<JSXArrayElement>,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+  propsUsed: Array<string>,
+  definedElsewhere: Array<string>,
+): WithParserMetadata<JSExpressionNestedArray> {
+  const value = jsExpressionNestedArray(arrayContents, comments, '')
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const expression = jsExpressionNestedArray(arrayContents, comments, uid)
+  return withParserMetadata(
+    expression,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    propsUsed,
+    definedElsewhere,
+  )
+}
+
+function createExpressionNestedObject(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  objectContents: Array<JSXProperty>,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+  propsUsed: Array<string>,
+  definedElsewhere: Array<string>,
+): WithParserMetadata<JSExpressionNestedObject> {
+  const value = jsExpressionNestedObject(objectContents, comments, '')
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const expression = jsExpressionNestedObject(objectContents, comments, uid)
+  return withParserMetadata(
+    expression,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    propsUsed,
+    definedElsewhere,
+  )
+}
+
+function createExpressionFunctionCall(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  functionName: string,
+  parameters: Array<JSExpression>,
+  alreadyExistingUIDs: Set<string>,
+  propsUsed: Array<string>,
+  definedElsewhere: Array<string>,
+): WithParserMetadata<JSExpressionFunctionCall> {
+  const value = jsExpressionFunctionCall(functionName, parameters, '')
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  const expression = jsExpressionFunctionCall(functionName, parameters, uid)
+  return withParserMetadata(
+    expression,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    propsUsed,
+    definedElsewhere,
+  )
+}
+
+function createArbitraryJSBlock(
+  sourceFile: TS.SourceFile,
+  javascript: string,
+  transpiledJavascript: string,
+  definedWithin: Array<string>,
+  definedElsewhere: Array<string>,
+  sourceMap: RawSourceMap | null,
+  elementsWithin: ElementsWithin,
+  alreadyExistingUIDs: Set<string>,
+): ArbitraryJSBlock {
+  const value = arbitraryJSBlock(
+    javascript,
+    transpiledJavascript,
+    definedWithin,
+    definedElsewhere,
+    null,
+    elementsWithin,
+    '',
+  )
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  return arbitraryJSBlock(
+    javascript,
+    transpiledJavascript,
+    definedWithin,
+    definedElsewhere,
+    sourceMap,
+    elementsWithin,
+    uid,
+  )
+}
+
+function createJSXArbitraryBlock(
+  sourceFile: TS.SourceFile,
+  originalJavascript: string,
+  javascript: string,
+  transpiledJavascript: string,
+  definedElsewhere: Array<string>,
+  sourceMap: RawSourceMap | null,
+  elementsWithin: ElementsWithin,
+  alreadyExistingUIDs: Set<string>,
+): JSXArbitraryBlock {
+  // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
+  const value = jsxArbitraryBlock(
+    originalJavascript,
+    javascript,
+    transpiledJavascript,
+    definedElsewhere,
+    null,
+    elementsWithin,
+    '',
+  )
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+  return jsxArbitraryBlock(
+    originalJavascript,
     javascript,
     transpiledJavascript,
     definedElsewhere,
@@ -1175,37 +1353,15 @@ function createExpressionOtherJavaScript(
   )
 }
 
-function createExpressionNestedArray(
+function createJSXTextBlock(
   sourceFile: TS.SourceFile,
-  arrayContents: Array<JSXArrayElement>,
-  comments: ParsedComments,
+  node: TS.Node,
+  text: string,
   alreadyExistingUIDs: Set<string>,
-): JSExpressionNestedArray {
-  const value = jsExpressionNestedArray(arrayContents, comments, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return jsExpressionNestedArray(arrayContents, comments, uid)
-}
-
-function createExpressionNestedObject(
-  sourceFile: TS.SourceFile,
-  objectContents: Array<JSXProperty>,
-  comments: ParsedComments,
-  alreadyExistingUIDs: Set<string>,
-): JSExpressionNestedObject {
-  const value = jsExpressionNestedObject(objectContents, comments, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return jsExpressionNestedObject(objectContents, comments, uid)
-}
-
-function createExpressionFunctionCall(
-  sourceFile: TS.SourceFile,
-  functionName: string,
-  parameters: Array<JSExpression>,
-  alreadyExistingUIDs: Set<string>,
-): JSExpressionFunctionCall {
-  const value = jsExpressionFunctionCall(functionName, parameters, '')
-  const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
-  return jsExpressionFunctionCall(functionName, parameters, uid)
+): WithParserMetadata<JSXTextBlock> {
+  const uid = generateUIDAndAddToExistingUIDs(sourceFile, text, alreadyExistingUIDs)
+  const block = jsxTextBlock(text, uid)
+  return withParserMetadata(block, buildHighlightBoundsForUids(sourceFile, node, uid), [], [])
 }
 
 export function parseAttributeExpression(
@@ -1270,24 +1426,27 @@ export function parseAttributeExpression(
             return left(`Error parsing function expression: ${parsedArgument.value}`)
           } else {
             parsedArgumentAttributes.push(parsedArgument.value.value)
-            highlightBounds = parsedArgument.value.highlightBounds
+            highlightBounds = mergeHighlightBounds(
+              highlightBounds,
+              parsedArgument.value.highlightBounds,
+            )
             propsUsed.push(...parsedArgument.value.propsUsed)
             definedElsewhere.push(...parsedArgument.value.definedElsewhere)
           }
         }
-        return right(
-          withParserMetadata(
-            createExpressionFunctionCall(
-              sourceFile,
-              identifier.getText(sourceFile),
-              parsedArgumentAttributes,
-              alreadyExistingUIDs,
-            ),
-            highlightBounds,
-            propsUsed,
-            definedElsewhere,
-          ),
+        const fnCall = createExpressionFunctionCall(
+          sourceFile,
+          identifier,
+          identifier.getText(sourceFile),
+          parsedArgumentAttributes,
+          alreadyExistingUIDs,
+          propsUsed,
+          definedElsewhere,
         )
+        highlightBounds = mergeHighlightBounds(highlightBounds, fnCall.highlightBounds)
+        propsUsed.push(...fnCall.propsUsed)
+        definedElsewhere.push(...fnCall.definedElsewhere)
+        return right(withParserMetadata(fnCall.value, highlightBounds, propsUsed, definedElsewhere))
       }
     }
     return parseAttributeOtherJavaScript(
@@ -1321,25 +1480,16 @@ export function parseAttributeExpression(
     expression.originalKeywordKind === TS.SyntaxKind.UndefinedKeyword
   ) {
     return right(
-      withParserMetadata(
-        createExpressionValue(sourceFile, undefined, comments, alreadyExistingUIDs),
-        existingHighlightBounds,
-        [],
-        [],
-      ),
+      createExpressionValue(sourceFile, expression, undefined, comments, alreadyExistingUIDs),
     )
   } else if (TS.isNumericLiteral(expression)) {
     return right(
-      withParserMetadata(
-        createExpressionValue(
-          sourceFile,
-          Number.parseFloat(expression.getText(sourceFile)),
-          comments,
-          alreadyExistingUIDs,
-        ),
-        existingHighlightBounds,
-        [],
-        [],
+      createExpressionValue(
+        sourceFile,
+        expression,
+        Number.parseFloat(expression.getText(sourceFile)),
+        comments,
+        alreadyExistingUIDs,
       ),
     )
   } else if (TS.isObjectLiteralExpression(expression)) {
@@ -1361,16 +1511,12 @@ export function parseAttributeExpression(
       const operand = expression.operand
       if (TS.isNumericLiteral(operand)) {
         return right(
-          withParserMetadata(
-            createExpressionValue(
-              sourceFile,
-              Number.parseFloat(operand.getText(sourceFile)) * -1,
-              comments,
-              alreadyExistingUIDs,
-            ),
-            existingHighlightBounds,
-            [],
-            [],
+          createExpressionValue(
+            sourceFile,
+            operand,
+            Number.parseFloat(operand.getText(sourceFile)) * -1,
+            comments,
+            alreadyExistingUIDs,
           ),
         )
       }
@@ -1388,41 +1534,21 @@ export function parseAttributeExpression(
     )
   } else if (TS.isStringLiteral(expression)) {
     return right(
-      withParserMetadata(
-        createExpressionValue(sourceFile, expression.text, comments, alreadyExistingUIDs),
-        existingHighlightBounds,
-        [],
-        [],
-      ),
+      createExpressionValue(sourceFile, expression, expression.text, comments, alreadyExistingUIDs),
     )
   } else {
     switch (expression.kind) {
       case TS.SyntaxKind.TrueKeyword:
         return right(
-          withParserMetadata(
-            createExpressionValue(sourceFile, true, comments, alreadyExistingUIDs),
-            existingHighlightBounds,
-            [],
-            [],
-          ),
+          createExpressionValue(sourceFile, expression, true, comments, alreadyExistingUIDs),
         )
       case TS.SyntaxKind.FalseKeyword:
         return right(
-          withParserMetadata(
-            createExpressionValue(sourceFile, false, comments, alreadyExistingUIDs),
-            existingHighlightBounds,
-            [],
-            [],
-          ),
+          createExpressionValue(sourceFile, expression, false, comments, alreadyExistingUIDs),
         )
       case TS.SyntaxKind.NullKeyword:
         return right(
-          withParserMetadata(
-            createExpressionValue(sourceFile, null, comments, alreadyExistingUIDs),
-            existingHighlightBounds,
-            [],
-            [],
-          ),
+          createExpressionValue(sourceFile, expression, null, comments, alreadyExistingUIDs),
         )
       default:
         return parseAttributeOtherJavaScript(
@@ -1454,11 +1580,12 @@ function getAttributeExpression(
   if (TS.isStringLiteral(initializer)) {
     const comments = getComments(sourceText, initializer)
     return right(
-      withParserMetadata(
-        createExpressionValue(sourceFile, initializer.text, comments, alreadyExistingUIDs),
-        existingHighlightBounds,
-        [],
-        [],
+      createExpressionValue(
+        sourceFile,
+        initializer,
+        initializer.text,
+        comments,
+        alreadyExistingUIDs,
       ),
     )
   } else if (TS.isJsxExpression(initializer)) {
@@ -1473,19 +1600,15 @@ function getAttributeExpression(
     // Handle the expression itself.
     if (initializer.expression == null) {
       return right(
-        withParserMetadata(
-          createExpressionOtherJavaScript(
-            sourceFile,
-            'null',
-            'null',
-            [],
-            null,
-            {},
-            alreadyExistingUIDs,
-          ),
-          existingHighlightBounds,
+        createExpressionOtherJavaScript(
+          sourceFile,
+          initializer,
+          'null',
+          'null',
           [],
-          [],
+          null,
+          {},
+          alreadyExistingUIDs,
         ),
       )
     } else {
@@ -1549,25 +1672,29 @@ function parseElementProps(
       if (isLeft(attributeResult)) {
         return attributeResult
       } else {
-        result.push(
-          jsxAttributesSpread(
-            simplifyAttributeIfPossible(attributeResult.value.value),
-            propComments,
-          ),
+        result.push(jsxAttributesSpread(attributeResult.value.value, propComments))
+        highlightBounds = mergeHighlightBounds(
+          highlightBounds,
+          attributeResult.value.highlightBounds,
         )
-        highlightBounds = attributeResult.value.highlightBounds
         propsUsed.push(...attributeResult.value.propsUsed)
         definedElsewhere.push(...attributeResult.value.definedElsewhere)
       }
     } else if (TS.isJsxAttribute(prop)) {
       if (prop.initializer == null) {
-        result.push(
-          jsxAttributesEntry(
-            prop.name.getText(sourceFile),
-            createExpressionValue(sourceFile, true, emptyComments, alreadyExistingUIDs),
-            propComments,
-          ),
+        const expression = createExpressionValue(
+          sourceFile,
+          prop.name,
+          true,
+          emptyComments,
+          alreadyExistingUIDs,
         )
+        result.push(
+          jsxAttributesEntry(prop.name.getText(sourceFile), expression.value, propComments),
+        )
+        highlightBounds = mergeHighlightBounds(highlightBounds, expression.highlightBounds)
+        propsUsed.push(...expression.propsUsed)
+        definedElsewhere.push(...expression.definedElsewhere)
       } else {
         const attributeResult = getAttributeExpression(
           sourceFile,
@@ -1586,11 +1713,14 @@ function parseElementProps(
           result.push(
             jsxAttributesEntry(
               prop.name.getText(sourceFile),
-              simplifyAttributeIfPossible(attributeResult.value.value),
+              attributeResult.value.value,
               propComments,
             ),
           )
-          highlightBounds = attributeResult.value.highlightBounds
+          highlightBounds = mergeHighlightBounds(
+            highlightBounds,
+            attributeResult.value.highlightBounds,
+          )
           propsUsed.push(...attributeResult.value.propsUsed)
           definedElsewhere.push(...attributeResult.value.definedElsewhere)
         }
@@ -1762,20 +1892,68 @@ function parseJSXElementName(
 
 function buildHighlightBounds(
   sourceFile: TS.SourceFile,
-  boundingElement: TS.Node,
+  boundingElements: TS.Node | Array<TS.Node>,
   uid: string,
-): HighlightBounds {
-  const startPosition = TS.getLineAndCharacterOfPosition(
-    sourceFile,
-    boundingElement.getStart(sourceFile, false),
-  )
-  const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, boundingElement.getEnd())
+): HighlightBounds | null {
+  const bounds = getBoundsOfNodes(sourceFile, boundingElements)
+  if (bounds == null) {
+    return null
+  } else {
+    return {
+      startCol: bounds.start.character,
+      startLine: bounds.start.line,
+      endCol: bounds.end.character,
+      endLine: bounds.end.line,
+      uid: uid,
+    }
+  }
+}
+
+function buildHighlightBoundsForUids(
+  sourceFile: TS.SourceFile,
+  boundingElements: TS.Node | Array<TS.Node>,
+  uid: string,
+): HighlightBoundsForUids {
+  const highlightBounds = buildHighlightBounds(sourceFile, boundingElements, uid)
+  if (highlightBounds == null) {
+    return {}
+  } else {
+    return {
+      [uid]: highlightBounds,
+    }
+  }
+}
+
+function mergeHighlightBounds(
+  first: HighlightBoundsForUids,
+  second: HighlightBoundsForUids,
+): Readonly<HighlightBoundsForUids> {
   return {
-    startCol: startPosition.character,
-    startLine: startPosition.line,
-    endCol: endPosition.character,
-    endLine: endPosition.line,
-    uid: uid,
+    ...first,
+    ...second,
+  }
+}
+
+function addBoundsIntoWithParser<T>(
+  bounds: HighlightBoundsForUids,
+  withParser: WithParserMetadata<T>,
+): WithParserMetadata<T> {
+  return {
+    ...withParser,
+    highlightBounds: mergeHighlightBounds(bounds, withParser.highlightBounds),
+  }
+}
+
+function addToHighlightBounds(
+  existing: Readonly<HighlightBoundsForUids>,
+  toAdd: HighlightBounds | null,
+): Readonly<HighlightBoundsForUids> {
+  if (toAdd == null) {
+    return existing
+  } else {
+    let result: HighlightBoundsForUids = { ...existing }
+    result[toAdd.uid] = toAdd
+    return result
   }
 }
 
@@ -1812,19 +1990,21 @@ function forciblyUpdateDataUID(
   alreadyExistingUIDs: Set<string>,
 ): UpdateUIDResult {
   const uid = getUIDBasedOnElement(sourceFile, elementName, props, alreadyExistingUIDs)
-  const updatedProps = setJSXAttributesAttribute(
-    props,
-    'data-uid',
-    createExpressionValue(sourceFile, uid, emptyComments, alreadyExistingUIDs),
+  const uidExpression = createRawExpressionValue(
+    sourceFile,
+    uid,
+    emptyComments,
+    alreadyExistingUIDs,
   )
+  const updatedProps = setJSXAttributesAttribute(props, 'data-uid', uidExpression)
   return {
     uid: uid,
     attributes: withParserMetadata(
       updatedProps,
-      {
-        ...existingHighlightBounds,
-        [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
-      },
+      mergeHighlightBounds(
+        existingHighlightBounds,
+        buildHighlightBoundsForUids(sourceFile, originatingElement, uid),
+      ),
       [],
       [],
     ),
@@ -1869,10 +2049,10 @@ function makeNewUIDFromOriginatingElement(
           uid: uid,
           attributes: withParserMetadata(
             props,
-            {
-              ...existingHighlightBounds,
-              [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
-            },
+            mergeHighlightBounds(
+              existingHighlightBounds,
+              buildHighlightBoundsForUids(sourceFile, originatingElement, uid),
+            ),
             [],
             [],
           ),
@@ -1934,7 +2114,7 @@ export function parseOutJSXElements(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): ParseElementsResult {
-  let highlightBounds = existingHighlightBounds
+  let highlightBounds: HighlightBoundsForUids = existingHighlightBounds
   let propsUsed: Array<string> = []
   let definedElsewhere: Array<string> = []
   function innerParse(nodes: Array<TS.Node>): Either<string, Array<SuccessfullyParsedElement>> {
@@ -1967,10 +2147,7 @@ export function parseOutJSXElements(
       ): Either<string, SuccessfullyParsedElement> {
         const possibleConditional = produceConditionalFromExpression(expression, comments)
         return mapEither((success) => {
-          highlightBounds = {
-            ...highlightBounds,
-            ...success.highlightBounds,
-          }
+          highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
           propsUsed.push(...success.propsUsed)
           definedElsewhere.push(...success.definedElsewhere)
 
@@ -2052,11 +2229,7 @@ export function parseOutJSXElements(
           }
           case TS.SyntaxKind.JsxText: {
             const possibleText = produceTextFromJsxText(elem)
-            if (isLeft(possibleText)) {
-              return possibleText
-            } else {
-              addParsedElement(possibleText.value)
-            }
+            addParsedElement(possibleText)
             break
           }
           default:
@@ -2066,15 +2239,30 @@ export function parseOutJSXElements(
       }
 
       if (fragmentDepth === 0) {
-        return right(clearUnnecessarySpacingElements(parsedNodes))
+        let highlightBoundsToRemove: Set<string> = emptySet()
+        for (const parsedNode of parsedNodes) {
+          highlightBoundsToRemove.add(parsedNode.value.uid)
+        }
+        const withoutUnnecessarySpacingElements = clearUnnecessarySpacingElements(parsedNodes)
+        for (const parsedNode of withoutUnnecessarySpacingElements) {
+          highlightBoundsToRemove.delete(parsedNode.value.uid)
+        }
+        highlightBoundsToRemove.forEach((toRemove) => {
+          delete highlightBounds[toRemove]
+        })
+        return right(withoutUnnecessarySpacingElements)
       } else {
         return left('Not enough closed fragments.')
       }
     }, validNodes)
   }
 
-  function produceTextFromJsxText(tsText: TS.JsxText): Either<string, SuccessfullyParsedElement> {
-    return right(successfullyParsedElement(sourceFile, tsText, jsxTextBlock(tsText.text)))
+  function produceTextFromJsxText(tsText: TS.JsxText): SuccessfullyParsedElement {
+    const block = createJSXTextBlock(sourceFile, tsText, tsText.text, alreadyExistingUIDs)
+    highlightBounds = mergeHighlightBounds(highlightBounds, block.highlightBounds)
+    propsUsed.push(...block.propsUsed)
+    definedElsewhere.push(...block.definedElsewhere)
+    return successfullyParsedElement(sourceFile, tsText, block.value)
   }
 
   function produceArbitraryBlockFromJsxExpression(
@@ -2094,13 +2282,27 @@ export function parseOutJSXElements(
     return bimapEither(
       (failure) => failure,
       (success) => {
-        highlightBounds = success.highlightBounds
+        highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
         propsUsed.push(...success.propsUsed)
         definedElsewhere.push(...success.definedElsewhere)
         return successfullyParsedElement(sourceFile, tsExpression, success.value)
       },
       result,
     )
+  }
+
+  function getChildrenWithoutWhitespaceOnlyText(
+    children: Array<JSXElementChild>,
+  ): Array<JSXElementChild> {
+    let result: Array<JSXElementChild> = []
+    for (const childElem of children) {
+      if (isJSXTextBlock(childElem) && isEmptyString(childElem.text)) {
+        delete highlightBounds[childElem.uid]
+      } else {
+        result.push(childElem)
+      }
+    }
+    return result
   }
 
   function produceElementOrFragmentFromTSElement(
@@ -2128,9 +2330,7 @@ export function parseOutJSXElements(
         // empty element fix: if the element contains only fragments or conditionals, remove any empty text blocks
         // that may have been introduced in between due to the code formatting
         if (isRight(children)) {
-          const nonEmptyTextBlockChildren = children.value.filter(
-            (c) => !(isJSXTextBlock(c) && c.text.trim().length === 0),
-          )
+          const nonEmptyTextBlockChildren = getChildrenWithoutWhitespaceOnlyText(children.value)
           const shouldRemoveEmptyTextBlocks =
             nonEmptyTextBlockChildren.length > 0 &&
             nonEmptyTextBlockChildren.every(
@@ -2182,7 +2382,7 @@ export function parseOutJSXElements(
       )
       // Construct the element.
       return flatMapEither((attrs) => {
-        highlightBounds = attrs.highlightBounds
+        highlightBounds = mergeHighlightBounds(highlightBounds, attrs.highlightBounds)
         propsUsed.push(...attrs.propsUsed)
         definedElsewhere.push(...attrs.definedElsewhere)
         const isFragment = TS.isJsxFragment(tsElement)
@@ -2193,20 +2393,22 @@ export function parseOutJSXElements(
               elementName != null &&
               isJsxNameKnown(elementName, topLevelNames, imports))
           ) {
-            const childrenMinusWhitespaceOnlyTexts = childElems.filter(
-              (c) => !(isJSXTextBlock(c) && isEmptyString(c.text)),
-            )
+            const childrenMinusWhitespaceOnlyTexts: Array<JSXElementChild> =
+              getChildrenWithoutWhitespaceOnlyText(childElems)
+
             const parsedElement = createJSXElementOrFragmentAllocatingUID(
               sourceFile,
               tsElement,
               elementName,
               attrs.value,
               childrenMinusWhitespaceOnlyTexts,
-              highlightBounds,
+              {},
               alreadyExistingUIDs,
               imports,
             )
-            highlightBounds = parsedElement.highlightBounds
+            highlightBounds = mergeHighlightBounds(highlightBounds, parsedElement.highlightBounds)
+            propsUsed.push(...parsedElement.propsUsed)
+            definedElsewhere.push(...parsedElement.definedElsewhere)
             return right(parsedElement.value)
           } else {
             return left(`Unknown JSX element name: ${JSON.stringify(elementName)}`)
@@ -2235,6 +2437,12 @@ export function parseOutJSXElements(
         alreadyExistingUIDs,
         [],
       )
+    }
+
+    function elementOrWithParserMetadataIsParserMetadata<T>(
+      value: SuccessfullyParsedElement | WithParserMetadata<T>,
+    ): value is WithParserMetadata<T> {
+      return (value as any as WithParserMetadata<T>).highlightBounds !== undefined
     }
 
     function parseClause(
@@ -2288,11 +2496,35 @@ export function parseOutJSXElements(
           whenFalse.value,
           comments,
         )
+        const conditionalHighlightBounds: HighlightBoundsForUids = {
+          ...buildHighlightBoundsForUids(sourceFile, expression, uid),
+          ...condition.highlightBounds,
+          ...(elementOrWithParserMetadataIsParserMetadata(whenTrue)
+            ? whenTrue.highlightBounds
+            : {}),
+          ...(elementOrWithParserMetadataIsParserMetadata(whenFalse)
+            ? whenFalse.highlightBounds
+            : {}),
+        }
+        const conditionalPropsUsed = [
+          ...condition.propsUsed,
+          ...(elementOrWithParserMetadataIsParserMetadata(whenTrue) ? whenTrue.propsUsed : []),
+          ...(elementOrWithParserMetadataIsParserMetadata(whenFalse) ? whenFalse.propsUsed : []),
+        ]
+        const conditionalDefinedElsewhere = [
+          ...condition.definedElsewhere,
+          ...(elementOrWithParserMetadataIsParserMetadata(whenTrue)
+            ? whenTrue.definedElsewhere
+            : []),
+          ...(elementOrWithParserMetadataIsParserMetadata(whenFalse)
+            ? whenFalse.definedElsewhere
+            : []),
+        ]
         return withParserMetadata(
           successfullyParsedElement(sourceFile, expression, conditionalExpression),
-          attributes.highlightBounds,
-          propsUsed,
-          definedElsewhere,
+          conditionalHighlightBounds,
+          conditionalPropsUsed,
+          conditionalDefinedElsewhere,
         )
       },
       parseAttribute(expression.condition),
@@ -2445,7 +2677,11 @@ export function parseArbitraryNodes(
         sourceFile.fileName,
         sourceFile.text,
         fileSourceNode,
-        parsedElementsWithin,
+        // Separately some logic was fixed which caused these elements within to maintain their assigned UIDs.
+        // As that logic would then find the elements within, the generated code changed to using `utopiaCanvasJSXLookup`,
+        // which resulted in the `data-uid` and `data-path` being created as if they were generated elements.
+        // In those cases that is incorrect as they are just regularly used elements which were in a class component (for example).
+        rootLevel ? [] : parsedElementsWithin,
         false,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
@@ -2458,13 +2694,15 @@ export function parseArbitraryNodes(
       return applicative2Either(
         (transpileResult, dataUIDFixResult) => {
           const transpiled = `${transpileResult.code}\n${definedWithCode}`
-          return arbitraryJSBlock(
+          return createArbitraryJSBlock(
+            sourceFile,
             code,
             transpiled,
             definedWithin,
             [...definedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME],
             transpileResult.sourceMap,
             inPositionToElementsWithin(parsedElementsWithin),
+            alreadyExistingUIDs,
           )
         },
         transpileEither,
@@ -2560,19 +2798,21 @@ export function parseOutFunctionContents(
         if (isLeft(parseResult)) {
           return parseResult
         } else {
-          highlightBounds = parseResult.value.highlightBounds
+          highlightBounds = mergeHighlightBounds(highlightBounds, parseResult.value.highlightBounds)
           jsBlock = parseResult.value.value
           propsUsed = parseResult.value.propsUsed
           definedElsewhere = parseResult.value.definedElsewhere
         }
       } else {
-        jsBlock = arbitraryJSBlock(
+        jsBlock = createArbitraryJSBlock(
+          sourceFile,
           returnStatementPrefixCode,
           returnStatementPrefixCode,
           [],
           [],
           null,
           {},
+          alreadyExistingUIDs,
         )
       }
 
@@ -2593,9 +2833,10 @@ export function parseOutFunctionContents(
         alreadyExistingUIDs,
       )
       return mapEither((parsed) => {
+        highlightBounds = mergeHighlightBounds(highlightBounds, parsed.highlightBounds)
         return withParserMetadata(
           functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
-          parsed.highlightBounds,
+          highlightBounds,
           propsUsed.concat(parsed.propsUsed),
           definedElsewhere.concat(parsed.definedElsewhere),
         )
