@@ -9,11 +9,7 @@ on:
         description: 'Branch or SHA to tag (defaults to master)'
         required: false
   workflow_call:
-    inputs:
-      tag-name:
-        required: false
-      commit-ref:
-        required: false
+
 jobs:
   release:
     name: Create Release
