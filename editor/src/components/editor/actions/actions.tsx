@@ -509,10 +509,12 @@ import {
   isConditionalClauseInsertionPath,
   isChildInsertionPath,
   childInsertionPath,
+  conditionalClauseInsertionPath,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
   getClauseOptic,
+  getConditionalCaseFromMetadata,
   maybeBranchConditionalCase,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
@@ -4854,6 +4856,24 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
+      const conditionalClause = getConditionalCaseFromMetadata(
+        action.targetParent,
+        editor.jsxMetadata,
+      )
+
+      const insertionPath: InsertionPath =
+        conditionalClause != null
+          ? conditionalClauseInsertionPath(EP.parentPath(action.targetParent), conditionalClause)
+          : childInsertionPath(action.targetParent)
+
+      function addNewSelectedView(parentPath: ElementPath, newUID: string) {
+        const isParentConditionalClause = conditionalClause != null
+        const newPath = isParentConditionalClause
+          ? EP.appendToPath(EP.parentPath(parentPath), newUID)
+          : EP.appendToPath(action.targetParent, newUID)
+        newSelectedViews.push(newPath)
+      }
+
       const withNewElement = modifyUnderlyingTargetElement(
         action.targetParent,
         openFilename,
@@ -4918,18 +4938,15 @@ export const UPDATE_FNS = {
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
-            withInsertedElement = insertElementAtPath_DEPRECATED(
-              editor.projectContents,
-              openFilename,
-              childInsertionPath(action.targetParent),
+            withInsertedElement = insertElementAtPath(
+              insertionPath,
               element,
               withMaybeUpdatedParent,
               action.indexPosition,
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            const newPath = EP.appendToPath(action.targetParent, newUID)
-            newSelectedViews.push(newPath)
+            addNewSelectedView(action.targetParent, newUID)
           } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
             const element = jsxConditionalExpression(
               newUID,
@@ -4940,10 +4957,8 @@ export const UPDATE_FNS = {
               action.toInsert.element.comments,
             )
 
-            withInsertedElement = insertElementAtPath_DEPRECATED(
-              editor.projectContents,
-              openFilename,
-              childInsertionPath(action.targetParent),
+            withInsertedElement = insertElementAtPath(
+              insertionPath,
               element,
               utopiaComponents,
               action.indexPosition,
@@ -4969,8 +4984,7 @@ export const UPDATE_FNS = {
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            const newPath = EP.appendToPath(action.targetParent, newUID)
-            newSelectedViews.push(newPath)
+            addNewSelectedView(action.targetParent, newUID)
           } else {
             assertNever(action.toInsert.element)
           }

@@ -168,6 +168,18 @@ export function maybeBranchConditionalCase(
   }
 }
 
+export function getConditionalCaseFromMetadata(
+  branchPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ConditionalCase | null {
+  const conditionalElement = findMaybeConditionalExpression(EP.parentPath(branchPath), metadata)
+  if (conditionalElement == null) {
+    return null
+  }
+
+  return maybeBranchConditionalCase(EP.parentPath(branchPath), conditionalElement, branchPath)
+}
+
 export function getConditionalClausePathFromMetadata(
   conditionalPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
