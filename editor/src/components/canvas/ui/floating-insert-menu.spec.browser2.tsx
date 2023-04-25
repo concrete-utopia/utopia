@@ -2,7 +2,7 @@ import { act, fireEvent, queryByAttribute } from '@testing-library/react'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
-import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
@@ -13,6 +13,7 @@ import {
   TestSceneUID,
 } from '../ui-jsx.test-utils'
 import { FloatingMenuTestId } from './floating-insert-menu'
+import { expectNoAction } from '../../../utils/utils.test-utils'
 
 describe('Floating insert menu', () => {
   it('can insert a conditional via the floating insert menu', async () => {
@@ -211,7 +212,7 @@ describe('Floating insert menu', () => {
       FOR_TESTS_setNextGeneratedUid('newly-added-img')
 
       await clickEmptySlot(editor)
-      await insertViaAddElementPopup(editor, 'img')
+      await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/newly-added-img',
@@ -257,7 +258,7 @@ describe('Floating insert menu', () => {
       FOR_TESTS_setNextGeneratedUid('newly-added-img')
 
       await clickEmptySlot(editor)
-      await insertViaAddElementPopup(editor, 'img')
+      await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/newly-added-img',
@@ -282,6 +283,97 @@ describe('Floating insert menu', () => {
           />
         )
       }
+      </div>
+      `),
+      )
+    })
+
+    it('add element to element in conditional slot - does not support children', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {true ? /* @utopia/uid=conditional */ (
+          <img
+            style={{
+              width: '64px',
+              height: '64px',
+              position: 'absolute',
+            }}
+            src='/editor/icons/favicons/favicon-128.png?hash=3334bc1ac8ae28310d92d7ad97c4b466428cd1e7'
+            data-uid='9ee'
+            data-label='img'
+          />
+        ) : null}
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const initialCode = getPrintedUiJsCode(editor.getEditorState())
+
+      const slot = editor.renderedDOM.getByText('img')
+      await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialCode)
+    })
+
+    it('add element to element in conditional slot - does supports children', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {true ? /* @utopia/uid=conditional */ (
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 77,
+              top: 235,
+              width: 96,
+              height: 115,
+            }}
+            data-uid='52b'
+          />
+        ) : null}
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const slot = editor.renderedDOM.getByText('div')
+      await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+
+      await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+      {true ? (
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 77,
+            top: 235,
+            width: 96,
+            height: 115,
+          }}
+          data-uid='52b'
+        >
+          <img
+            style={{
+              width: '64px',
+              height: '64px',
+              position: 'absolute',
+            }}
+            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            data-uid='newly-added-img'
+          />
+        </div>
+      ) : null}
       </div>
       `),
       )
