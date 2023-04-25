@@ -4,6 +4,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
@@ -153,6 +154,37 @@ export function getConditionalCaseCorrespondingToBranchPath(
   }
 
   return maybeBranchConditionalCase(EP.parentPath(branchPath), conditionalElement, branchPath)
+}
+
+export function getConditionalBranch(
+  conditional: JSXConditionalExpression,
+  clause: ConditionalCase,
+): JSXElementChild {
+  return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+}
+
+export function isNonEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(elementPath)
+  const conditionalParent = findMaybeConditionalExpression(parentPath, jsxMetadata)
+  if (conditionalParent == null) {
+    return false
+  }
+  const clause = maybeBranchConditionalCase(parentPath, conditionalParent, elementPath)
+  if (clause == null) {
+    return false
+  }
+  const branch = getConditionalBranch(conditionalParent, clause)
+  return !isNullJSXAttributeValue(branch)
+}
+
+export function isEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  return !isNonEmptyConditionalBranch(elementPath, jsxMetadata)
 }
 
 export function getConditionalClausePathFromMetadata(

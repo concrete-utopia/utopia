@@ -515,6 +515,7 @@ import {
   findMaybeConditionalExpression,
   getClauseOptic,
   getConditionalCaseCorrespondingToBranchPath,
+  isEmptyConditionalBranch,
   maybeBranchConditionalCase,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
@@ -4861,10 +4862,22 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
       )
 
-      const insertionPath: InsertionPath =
-        conditionalClause != null
-          ? conditionalClauseInsertionPath(EP.parentPath(action.targetParent), conditionalClause)
-          : childInsertionPath(action.targetParent)
+      const insertionPath: InsertionPath | null = MetadataUtils.targetSupportsChildren(
+        editor.projectContents,
+        editor.jsxMetadata,
+        editor.nodeModules.files,
+        editor.canvas.openFile?.filename,
+        action.targetParent,
+      )
+        ? childInsertionPath(action.targetParent)
+        : conditionalClause != null &&
+          isEmptyConditionalBranch(action.targetParent, editor.jsxMetadata)
+        ? conditionalClauseInsertionPath(EP.parentPath(action.targetParent), conditionalClause)
+        : null
+
+      if (insertionPath == null) {
+        return includeToast(detailsOfUpdate, editor)
+      }
 
       function addNewSelectedView(parentPath: ElementPath, newUID: string) {
         const isParentConditionalClause = conditionalClause != null
