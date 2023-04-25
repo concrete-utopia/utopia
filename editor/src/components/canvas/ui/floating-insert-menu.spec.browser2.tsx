@@ -3,7 +3,7 @@ import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-templ
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
-import { pressKey } from '../event-helpers.test-utils'
+import { mouseClickAtPoint, pressKey } from '../event-helpers.test-utils'
 import {
   EditorRenderResult,
   getPrintedUiJsCode,
@@ -193,7 +193,106 @@ describe('Floating insert menu', () => {
   </div>`),
     )
   })
+
+  describe('add element to conditional', () => {
+    it('add element to true branch of a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : "Hello there"
+        }
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+
+      await clickEmptySlot(editor)
+      await insertViaAddElementPopup(editor, 'img')
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/newly-added-img',
+      ])
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+            <img
+              style={{
+                width: '64px',
+                height: '64px',
+                position: 'absolute',
+              }}
+              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+              data-uid='newly-added-img'
+            />
+          ) : (
+            'Hello there'
+          )
+        }
+        </div>
+      `),
+      )
+    })
+
+    it('add element to false branch of a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? "Hello there" : null
+        }
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+
+      await clickEmptySlot(editor)
+      await insertViaAddElementPopup(editor, 'img')
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/newly-added-img',
+      ])
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+      {
+        // @utopia/uid=conditional
+        [].length === 0 ? (
+          'Hello there'
+        ) : (
+          <img
+            style={{
+              width: '64px',
+              height: '64px',
+              position: 'absolute',
+            }}
+            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            data-uid='newly-added-img'
+          />
+        )
+      }
+      </div>
+      `),
+      )
+    })
+  })
 })
+
+async function clickEmptySlot(editor: EditorRenderResult) {
+  const slot = editor.renderedDOM.getByText('Empty')
+  await mouseClickAtPoint(slot, { x: 5, y: 5 })
+}
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('a')
