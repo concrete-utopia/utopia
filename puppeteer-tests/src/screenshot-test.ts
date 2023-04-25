@@ -3,7 +3,7 @@ require('dotenv').config({ path: 'src/.env' })
 import { v4 as UUID } from 'uuid'
 import { initialiseTests, setupBrowser, uploadPNGtoAWS } from './utils'
 
-const PROJECT_ID = process.env.PROJECT_ID ?? ''
+const PROJECT_ID = process.env.PROJECT_ID ?? '258a98d6'
 const BASE_EDITOR_URL = process.env.BASE_EDITOR_URL ?? `https://utopia.pizza`
 const EDITOR_URL = process.env.EDITOR_URL ?? `${BASE_EDITOR_URL}/project/${PROJECT_ID}`
 
