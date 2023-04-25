@@ -3,6 +3,7 @@ import { act } from 'react-dom/test-utils'
 import {
   EditorRenderResult,
   TestSceneUID,
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -126,7 +127,7 @@ function dragElement(
 }
 
 function getProjectCode(): string {
-  return `import * as React from 'react'
+  return formatTestProjectCode(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 export var ${BakedInStoryboardVariableName} = (
@@ -198,7 +199,7 @@ export var ${BakedInStoryboardVariableName} = (
     </Scene>
   </Storyboard>
 )
-`
+`)
 }
 
 function getProjectCodeTree(): string {
@@ -306,7 +307,7 @@ export var ${BakedInStoryboardVariableName} = (
 }
 
 function getProjectCodeNotEmpty(): string {
-  return `import * as React from 'react'
+  return formatTestProjectCode(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 export var ${BakedInStoryboardVariableName} = (
@@ -356,7 +357,7 @@ export var ${BakedInStoryboardVariableName} = (
     </Scene>
   </Storyboard>
 )
-`
+`)
 }
 
 function getProjectCodeEmptySingleConditional(): string {
