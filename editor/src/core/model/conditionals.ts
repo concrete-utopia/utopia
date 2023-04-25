@@ -4,6 +4,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
+  isNullJSXAttributeValue,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
@@ -78,31 +79,6 @@ export function getClauseOptic(
   }
 }
 
-export function getConditionalCase(
-  elementPath: ElementPath,
-  parent: JSXConditionalExpression,
-  spyParentMetadata: ElementInstanceMetadata,
-  parentPath: ElementPath,
-): ConditionalCase | 'not-a-conditional' {
-  if (spyParentMetadata.conditionValue === 'not-a-conditional') {
-    return 'not-a-conditional'
-  }
-  const parentOverride = getConditionalFlag(parent)
-  if (parentOverride == null) {
-    return spyParentMetadata.conditionValue ? 'true-case' : 'false-case'
-  }
-  if (
-    matchesOverriddenConditionalBranch(elementPath, parentPath, {
-      clause: parent.whenTrue,
-      wantOverride: true,
-      parentOverride: parentOverride,
-    })
-  ) {
-    return 'true-case'
-  }
-  return 'false-case'
-}
-
 export function getConditionalFlag(element: JSXConditionalExpression): boolean | null {
   const flag = findUtopiaCommentFlag(element.comments, 'conditional')
   if (!isUtopiaCommentFlagConditional(flag)) {
@@ -166,6 +142,49 @@ export function maybeBranchConditionalCase(
   } else {
     return null
   }
+}
+
+export function getConditionalCaseCorrespondingToBranchPath(
+  branchPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ConditionalCase | null {
+  const conditionalElement = findMaybeConditionalExpression(EP.parentPath(branchPath), metadata)
+  if (conditionalElement == null) {
+    return null
+  }
+
+  return maybeBranchConditionalCase(EP.parentPath(branchPath), conditionalElement, branchPath)
+}
+
+export function getConditionalBranch(
+  conditional: JSXConditionalExpression,
+  clause: ConditionalCase,
+): JSXElementChild {
+  return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+}
+
+export function isNonEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(elementPath)
+  const conditionalParent = findMaybeConditionalExpression(parentPath, jsxMetadata)
+  if (conditionalParent == null) {
+    return false
+  }
+  const clause = maybeBranchConditionalCase(parentPath, conditionalParent, elementPath)
+  if (clause == null) {
+    return false
+  }
+  const branch = getConditionalBranch(conditionalParent, clause)
+  return !isNullJSXAttributeValue(branch)
+}
+
+export function isEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  return !isNonEmptyConditionalBranch(elementPath, jsxMetadata)
 }
 
 export function getConditionalClausePathFromMetadata(
