@@ -36,4 +36,4 @@ jobs:
     name: Trigger Tag and Release Workflow
     runs-on: ubuntu-latest
     needs: [system-test]
-      uses: ./.github/workflows/tag-release.yml
+    uses: ./.github/workflows/tag-release.yml
