@@ -1,5 +1,9 @@
 import { cmdModifier } from '../../utils/modifiers'
-import { expectSingleUndoStep, setFeatureForBrowserTests, wait } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import {
@@ -23,7 +27,7 @@ describe('Resize to fit control', () => {
       'await-first-dom-report',
     )
     const view = await selectView(editor, 'middle')
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickResizeTo(editor, ResizeToFitControlTestId)
     })
 
@@ -41,7 +45,7 @@ describe('Resize to fit control', () => {
     const control = editor.renderedDOM.getByTestId(ResizeToFitControlTestId)
     expect(control.style.opacity).toEqual('0.5')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickResizeTo(editor, ResizeToFixedControlTestId)
     })
 
@@ -65,7 +69,7 @@ describe('Resize to fit control', () => {
       'await-first-dom-report',
     )
     const view = await selectView(editor, 'middle')
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickResizeTo(editor, ResizeToFillControlTestId)
     })
 
@@ -83,7 +87,7 @@ describe('Resize to fit control', () => {
     const control = editor.renderedDOM.getByTestId(ResizeToFillControlTestId)
     expect(control.style.opacity).toEqual('0.5')
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickResizeTo(editor, ResizeToFixedControlTestId)
     })
 
@@ -107,7 +111,7 @@ describe('Resize to fit control', () => {
       'await-first-dom-report',
     )
     const view = await selectView(editor, 'middle')
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } })
     })
 
@@ -127,7 +131,7 @@ describe('Resize to fit control', () => {
     const editor = await renderTestEditorWithCode(projectOneAxisOnHug, 'await-first-dom-report')
     const view = await selectView(editor, ViewTestId)
 
-    await expectSingleUndoStep(editor, async () => {
+    await expectSingleUndo2Saves(editor, async () => {
       await clickResizeTo(editor, ResizeToFitControlTestId)
     })
 

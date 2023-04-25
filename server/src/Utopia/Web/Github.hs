@@ -30,8 +30,8 @@ import           Data.Data
 import           Data.Foldable
 import           Data.Generics.Product
 import           Data.Generics.Sum
-import qualified Data.HashMap.Strict             as M
 import qualified Data.Hashable                   as H
+import qualified Data.HashMap.Strict             as M
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Text.Encoding.Base64

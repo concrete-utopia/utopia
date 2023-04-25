@@ -268,6 +268,7 @@ export const NineBlockControl = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const flexDirectionRef = useRefEditorState(flexDirectionSelector)
 
   const setAlignItemsJustifyContent = React.useCallback(
@@ -279,10 +280,11 @@ export const NineBlockControl = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        allElementPropsRef.current,
         strategies,
       )
     },
-    [dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =

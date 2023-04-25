@@ -25,6 +25,8 @@ import {
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { defaultTransparentViewElement } from './editor/defaults'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -277,7 +279,17 @@ export const group: ContextMenuItem<CanvasData> = {
   shortcut: '⌘G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.wrapInGroup(data.selectedViews)], 'everyone')
+    requireDispatch(dispatch)(
+      [
+        EditorActions.wrapInElement(data.selectedViews, {
+          element: defaultTransparentViewElement(
+            generateUidWithExistingComponents(data.projectContents),
+          ),
+          importsToAdd: {},
+        }),
+      ],
+      'everyone',
+    )
   },
 }
 
@@ -287,10 +299,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)(
-        [EditorActions.unwrapGroupOrView(data.selectedViews[0])],
-        'everyone',
-      )
+      requireDispatch(dispatch)([EditorActions.unwrapElement(data.selectedViews[0])], 'everyone')
     }
   },
 }
@@ -313,7 +322,14 @@ export const wrapInView: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [EditorActions.wrapInView(data.selectedViews, 'default-empty-div')],
+      [
+        EditorActions.wrapInElement(data.selectedViews, {
+          element: defaultTransparentViewElement(
+            generateUidWithExistingComponents(data.projectContents),
+          ),
+          importsToAdd: {},
+        }),
+      ],
       'everyone',
     )
   },

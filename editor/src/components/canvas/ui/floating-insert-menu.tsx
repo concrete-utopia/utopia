@@ -26,6 +26,7 @@ import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-depende
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
+  insertableComponent,
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
@@ -34,7 +35,6 @@ import {
   closeFloatingInsertMenu,
   insertInsertable,
   updateJSXElementName,
-  wrapInView,
   wrapInElement,
 } from '../../editor/actions/action-creators'
 import {
@@ -44,7 +44,6 @@ import {
 import {
   emptyComments,
   jsExpressionValue,
-  jsxConditionalExpression,
   JSXConditionalExpressionWithoutUID,
   jsxElement,
   JSXElementName,
@@ -59,7 +58,7 @@ import {
 import { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { when } from '../../../utils/react-conditionals'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -67,6 +66,9 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import { emptyElementPath } from '../../../core/shared/element-path'
+
+export const FloatingMenuTestId = 'floating-menu-test-id'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -93,14 +95,16 @@ function convertInsertableComponentsToFlatList(
     return {
       label: getInsertableGroupLabel(componentGroup.source),
       options: componentGroup.insertableComponents.map(
-        (insertableComponent, index): InsertMenuItem => {
+        (componentToBeInserted, index): InsertMenuItem => {
           const source = index === 0 ? componentGroup.source : null
           return {
-            label: insertableComponent.name,
+            label: componentToBeInserted.name,
             source: optionalMap(getInsertableGroupLabel, source),
             value: {
-              ...insertableComponent,
-              key: `${getInsertableGroupLabel(componentGroup.source)}-${insertableComponent.name}`,
+              ...componentToBeInserted,
+              key: `${getInsertableGroupLabel(componentGroup.source)}-${
+                componentToBeInserted.name
+              }`,
               source: source,
             },
           }
@@ -153,26 +157,6 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
 
   return insertableComponents
-}
-
-function getIsFlexBasedOnName_KILLME_EXPERIMENTAL(name: JSXElementName): boolean {
-  return (
-    name.propertyPath.propertyElements.length === 0 &&
-    (name.baseVariable === 'FlexRow' || name.baseVariable === 'FlexCol')
-  )
-}
-
-function getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
-  name: JSXElementName,
-): 'horizontal' | 'vertical' | null {
-  if (name.propertyPath.propertyElements.length === 0) {
-    if (name.baseVariable === 'FlexRow') {
-      return 'horizontal'
-    } else if (name.baseVariable === 'FlexCol') {
-      return 'vertical'
-    }
-  }
-  return null
 }
 
 function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
@@ -453,7 +437,6 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const showInsertionControls = floatingMenuState.insertMenuMode === 'insert'
-  const showWrapControls = floatingMenuState.insertMenuMode === 'wrap'
 
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
@@ -482,7 +465,6 @@ export var FloatingMenu = React.memo(() => {
     shouldWrapContentsByDefault.current,
   )
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
-  const [preserveVisualPositionForWrap, setPreserveVisualPositionForWrap] = React.useState(false)
 
   const onChangeConditionalOrFragment = React.useCallback(
     (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
@@ -501,6 +483,29 @@ export var FloatingMenu = React.memo(() => {
           ]
           break
         case 'insert':
+          const targetParent = safeIndex(selectedViews, 0) ?? emptyElementPath
+
+          const importsToAdd: Imports =
+            element.type === 'JSX_FRAGMENT'
+              ? {
+                  react: {
+                    importedAs: 'React',
+                    importedFromWithin: [],
+                    importedWithName: null,
+                  },
+                }
+              : {}
+
+          actionsToDispatch = [
+            insertInsertable(
+              targetParent,
+              insertableComponent(importsToAdd, element, '', [], null),
+              fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+              wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
+              floatingMenuState.indexPosition,
+            ),
+          ]
+          break
         case 'convert':
         case 'closed':
           break
@@ -509,7 +514,13 @@ export var FloatingMenu = React.memo(() => {
       }
       return actionsToDispatch
     },
-    [floatingMenuState, selectedViewsref, projectContentsRef],
+    [
+      selectedViewsref,
+      floatingMenuState,
+      projectContentsRef,
+      fixedSizeForInsertion,
+      wrapContentForInsertion,
+    ],
   )
 
   const onChangeElement = React.useCallback(
@@ -534,28 +545,11 @@ export var FloatingMenu = React.memo(() => {
             pickedInsertableComponent.element.children,
           )
 
-          const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
-            newElement.name,
-          )
-          const flexDirection_KILLME = getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
-            newElement.name,
-          )
-
           actionsToDispatch = [
-            preserveVisualPositionForWrap
-              ? wrapInView(
-                  selectedViews,
-                  {
-                    element: newElement,
-                    importsToAdd: pickedInsertableComponent.importsToAdd,
-                  },
-                  isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
-                  flexDirection_KILLME,
-                )
-              : wrapInElement(selectedViews, {
-                  element: newElement,
-                  importsToAdd: pickedInsertableComponent.importsToAdd,
-                }),
+            wrapInElement(selectedViews, {
+              element: newElement,
+              importsToAdd: pickedInsertableComponent.importsToAdd,
+            }),
           ]
           break
         case 'insert':
@@ -608,7 +602,6 @@ export var FloatingMenu = React.memo(() => {
       fixedSizeForInsertion,
       addContentForInsertion,
       wrapContentForInsertion,
-      preserveVisualPositionForWrap,
     ],
   )
 
@@ -656,6 +649,7 @@ export var FloatingMenu = React.memo(() => {
         position: 'relative',
         fontSize: 11,
       }}
+      data-testid={FloatingMenuTestId}
     >
       <FlexColumn
         style={{
@@ -736,25 +730,6 @@ export var FloatingMenu = React.memo(() => {
             </FlexRow>
           </FlexColumn>
         ) : null}
-        {when(
-          showWrapControls,
-          <FlexRow
-            css={{
-              height: UtopiaTheme.layout.rowHeight.normal,
-              paddingLeft: 8,
-              paddingRight: 8,
-              borderTop: `1px solid ${colorTheme.border1.value}`,
-            }}
-          >
-            <CheckboxRow
-              id='preserve-visual-position-checkbox'
-              checked={preserveVisualPositionForWrap}
-              onChange={setPreserveVisualPositionForWrap}
-            >
-              Try to preserve visual position
-            </CheckboxRow>
-          </FlexRow>,
-        )}
       </FlexColumn>
     </div>
   )

@@ -19,13 +19,14 @@ import {
   isJSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import {
-  insertJSXElementChild,
+  insertJSXElementChild_DEPRECATED,
   removeJSXElementChild,
   transformJSXComponentAtPath,
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
   InsertChildAndDetails,
   insertChildAndDetails,
+  insertJSXElementChild,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -61,8 +62,6 @@ import {
   PropertyPath,
   HighlightBoundsWithFileForUids,
   parseSuccess,
-  ParsedAheadRevisionsState,
-  RevisionsStateType,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
@@ -185,12 +184,16 @@ import {
 import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  ConditionalCase,
+  getConditionalClausePathFromMetadata,
+} from '../../../core/model/conditionals'
 import { Optic } from '../../../core/shared/optics/optics'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { childInsertionPath, conditionalClauseInsertionPath, InsertionPath } from './insertion-path'
 
 const ObjectPathImmutable: any = OPI
 
@@ -415,7 +418,7 @@ export type EditorStoreShared = {
   workers: UtopiaTsWorkers
   persistence: PersistenceMachine
   builtInDependencies: BuiltInDependencies
-  alreadySaved: boolean
+  saveCountThisSession: number
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -1755,13 +1758,11 @@ export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyOpenJsxElementOrConditionalAtPath(
     path,
     (element) => (isJSXElement(element) ? transform(element) : element),
     model,
-    revisionsState,
   )
 }
 
@@ -1771,7 +1772,6 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     element: JSXElement | JSXConditionalExpression,
   ) => JSXElement | JSXConditionalExpression,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     path,
@@ -1796,7 +1796,6 @@ export function modifyOpenJsxChildAtPath(
     model,
     (element) => transform(element),
     defaultModifyParseSuccess,
-    revisionsState,
   )
 }
 
@@ -1953,10 +1952,10 @@ export function addSceneToJSXComponents(
     const storyboardComponentElementPath = EP.elementPath([
       staticElementPath([storyboardComponentUID]),
     ])
-    return insertJSXElementChild(
+    return insertJSXElementChild_DEPRECATED(
       projectContents,
       openFile,
-      storyboardComponentElementPath,
+      childInsertionPath(storyboardComponentElementPath),
       newSceneElement,
       components,
       null,
@@ -1979,21 +1978,27 @@ export function removeElementAtPath(
 }
 
 export function insertElementAtPath(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  targetParent: ReparentTargetParent<ElementPath> | null,
+  targetParent: InsertionPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  const staticTarget =
-    targetParent == null
-      ? null
-      : dynamicReparentTargetParentToStaticReparentTargetParent(targetParent)
-  return insertJSXElementChild(
+  return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
+}
+
+/** @deprecated reason: use insertElementAtPath instead! **/
+export function insertElementAtPath_DEPRECATED(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
+  targetParent: InsertionPath | null,
+  elementToInsert: JSXElementChild,
+  components: Array<UtopiaJSXComponent>,
+  indexPosition: IndexPosition | null,
+): InsertChildAndDetails {
+  return insertJSXElementChild_DEPRECATED(
     projectContents,
     openFile,
-    staticTarget,
+    targetParent,
     elementToInsert,
     components,
     indexPosition,
@@ -2122,61 +2127,10 @@ export function regularNavigatorEntriesEqual(
 ): boolean {
   return EP.pathsEqual(first.elementPath, second.elementPath)
 }
-
-export interface ConditionalClause<P extends ElementPath> {
-  elementPath: P
-  clause: ConditionalCase
-}
-
-export function conditionalClause<P extends ElementPath>(
-  elementPath: P,
-  clause: ConditionalCase,
-): ConditionalClause<P> {
-  return {
-    elementPath: elementPath,
-    clause: clause,
-  }
-}
-
-export type ReparentTargetParent<P extends ElementPath> = P | ConditionalClause<P>
-
-export function reparentTargetParentIsConditionalClause<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is ConditionalClause<P> {
-  return 'elementPath' in reparentTargetParent && 'clause' in reparentTargetParent
-}
-
-export function reparentTargetParentIsElementPath<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): reparentTargetParent is P {
-  return !reparentTargetParentIsConditionalClause(reparentTargetParent)
-}
-
-export function getElementPathFromReparentTargetParent<P extends ElementPath>(
-  reparentTargetParent: ReparentTargetParent<P>,
-): P {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return reparentTargetParent.elementPath
-  } else {
-    return reparentTargetParent
-  }
-}
-
-export function dynamicReparentTargetParentToStaticReparentTargetParent(
-  reparentTargetParent: ReparentTargetParent<ElementPath>,
-): ReparentTargetParent<StaticElementPath> {
-  if (reparentTargetParentIsConditionalClause(reparentTargetParent)) {
-    return conditionalClause(
-      EP.dynamicPathToStaticPath(reparentTargetParent.elementPath),
-      reparentTargetParent.clause,
-    )
-  } else {
-    return EP.dynamicPathToStaticPath(reparentTargetParent)
-  }
-}
-
-export interface ConditionalClauseNavigatorEntry extends ConditionalClause<ElementPath> {
+export interface ConditionalClauseNavigatorEntry {
   type: 'CONDITIONAL_CLAUSE'
+  elementPath: ElementPath
+  clause: ConditionalCase
 }
 
 export function conditionalClauseNavigatorEntry(
@@ -2304,12 +2258,36 @@ export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNaviga
 
 export function reparentTargetFromNavigatorEntry(
   navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-): ReparentTargetParent<ElementPath> {
+  projectContents: ProjectContentTreeRoot,
+  metadata: ElementInstanceMetadataMap,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+): InsertionPath {
   switch (navigatorEntry.type) {
     case 'REGULAR':
-      return navigatorEntry.elementPath
+      return childInsertionPath(navigatorEntry.elementPath)
     case 'CONDITIONAL_CLAUSE':
-      return navigatorEntry
+      const clausePath = getConditionalClausePathFromMetadata(
+        navigatorEntry.elementPath,
+        metadata,
+        navigatorEntry.clause,
+      )
+
+      if (clausePath == null) {
+        return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+      }
+
+      const supportsChildren = MetadataUtils.targetSupportsChildren(
+        projectContents,
+        metadata,
+        nodeModules,
+        openFile,
+        clausePath,
+      )
+
+      return supportsChildren
+        ? childInsertionPath(clausePath)
+        : conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
     default:
       assertNever(navigatorEntry)
   }
@@ -3326,7 +3304,6 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3337,16 +3314,12 @@ export function modifyParseSuccessAtPath(
       if (updatedParseSuccess === parsedFileContents) {
         return editor
       } else {
-        const updatedRevisionState = getNextRevisionsState(
-          projectFile.fileContents.revisionsState,
-          revisionsState,
-        )
         const updatedFile = saveTextFileContents(
           projectFile,
           textFileContents(
             projectFile.fileContents.code,
             updatedParseSuccess,
-            updatedRevisionState,
+            RevisionsState.ParsedAhead,
           ),
           false,
         )
@@ -3376,7 +3349,6 @@ export function modifyUnderlyingTarget(
     underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElementChild,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
@@ -3422,12 +3394,7 @@ export function modifyUnderlyingTarget(
     }
   }
 
-  return modifyParseSuccessAtPath(
-    targetSuccess.filePath,
-    editor,
-    innerModifyParseSuccess,
-    revisionsState,
-  )
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
 export function modifyUnderlyingForOpenFile(
@@ -3461,7 +3428,6 @@ export function modifyUnderlyingTargetElement(
     underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingJsxElementChild(
     target,
@@ -3545,25 +3511,7 @@ function modifyUnderlyingJsxElementChild(
     }
   }
 
-  return modifyParseSuccessAtPath(
-    targetSuccess.filePath,
-    editor,
-    innerModifyParseSuccess,
-    revisionsState,
-  )
-}
-
-function getNextRevisionsState(
-  prevRevisionState: RevisionsStateType,
-  nextRevisionState: ParsedAheadRevisionsState,
-): ParsedAheadRevisionsState {
-  if (
-    prevRevisionState === RevisionsState.ParsedAheadNeedsReparsing &&
-    nextRevisionState === RevisionsState.ParsedAhead
-  ) {
-    return RevisionsState.ParsedAheadNeedsReparsing
-  }
-  return nextRevisionState
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
 }
 
 export function modifyUnderlyingElementForOpenFile(

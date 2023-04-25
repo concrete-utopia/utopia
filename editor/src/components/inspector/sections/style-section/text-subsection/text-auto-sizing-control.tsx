@@ -93,6 +93,7 @@ export const TextAutoSizingControl = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const controlStatusAndValueType = useAutoSizingTypeAndStatus()
   const controlStyles = React.useMemo(
@@ -110,6 +111,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
               'horizontal',
@@ -120,6 +122,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
               'vertical',
@@ -132,18 +135,27 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropHugStrategies('horizontal'),
           ) ?? []
         const heightCommands =
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            allElementPropsRef.current,
             setPropHugStrategies('vertical'),
           ) ?? []
         dispatch([applyCommandsAction([...widthCommands, ...heightCommands])])
       }
     },
-    [dispatch, metadataRef, selectedViewsRef, widthComputedValue, heightComputedValue],
+    [
+      metadataRef,
+      selectedViewsRef,
+      allElementPropsRef,
+      widthComputedValue,
+      heightComputedValue,
+      dispatch,
+    ],
   )
 
   return (

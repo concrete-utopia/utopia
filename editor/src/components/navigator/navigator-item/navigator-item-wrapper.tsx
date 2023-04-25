@@ -111,9 +111,9 @@ export function getNavigatorEntryLabel(
     case 'CONDITIONAL_CLAUSE':
       switch (navigatorEntry.clause) {
         case 'true-case':
-          return 'true'
+          return 'TRUE'
         case 'false-case':
-          return 'false'
+          return 'FALSE'
         default:
           throw assertNever(navigatorEntry.clause)
       }
@@ -256,7 +256,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
           maybeConditionalExpression(parentElement) != null
         ) {
           possiblyAppropriateDropTargetHint = {
-            type: 'reparent',
+            type: store.editor.navigator.dropTargetHint.type ?? 'reparent',
             displayAtEntry: null,
             moveToEntry: null,
           }

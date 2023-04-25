@@ -18,7 +18,10 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { RightMenuTab } from '../../../editor/store/editor-state'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
@@ -27,10 +30,15 @@ import {
   CanvasRectangle,
   isInfinityRectangle,
   offsetPoint,
+  windowPoint,
 } from '../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  setFeatureForBrowserTests,
+  wait,
+} from '../../../../utils/utils.test-utils'
 import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
@@ -58,7 +66,7 @@ function ensureInInsertMode(renderResult: EditorRenderResult): void {
 
 async function enterInsertModeFromInsertMenu(
   renderResult: EditorRenderResult,
-  elementType: 'div' | 'img' = 'div',
+  elementType: string = 'div',
 ) {
   const insertButton = renderResult.renderedDOM.getByTestId(`insert-item-${elementType}`)
   const insertButtonBounds = insertButton.getBoundingClientRect()
@@ -159,6 +167,8 @@ function isIndicatorBetweenSiblingsBBBCCC(
     )
   }
 }
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runInsertTest", "runClickToInsertTest", "drawToInsertTestMaybeAddsFlexGrow", "testDragToInsertImageAspectRatio" ] }] */
 
 describe('Inserting into absolute', () => {
   const inputCode = makeTestProjectCodeWithSnippet(`
@@ -313,6 +323,198 @@ describe('Inserting into absolute', () => {
         width: xDelta,
         height: xDelta,
       })
+    })
+
+    it('Should insert a conditional', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+      await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
+
+      FOR_TESTS_setNextGeneratedUids([
+        'skip1',
+        'skip2',
+        'skip3',
+        'skip4',
+        'skip5',
+        'skip6',
+        'skip7',
+        'false-branch',
+      ])
+
+      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const dragDelta = windowPoint({ x: 50, y: 40 })
+
+      const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: targetElementBounds.x + 5,
+        y: targetElementBounds.y + 5,
+      })
+      const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: startPoint.x + dragDelta.x,
+        y: startPoint.y + dragDelta.y,
+      })
+
+      // Move before starting dragging
+      await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+      // Highlight should show the candidate parent
+      expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+      // Drag from inside bbb to inside ccc
+      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // Check that the inserted element is a child of bbb
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='aaa'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+              position: 'relative',
+            }}
+          >
+            <div
+              data-uid='bbb'
+              data-testid='bbb'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 380,
+                height: 180,
+                backgroundColor: '#d3d3d3',
+              }}
+            >
+            {true ? (
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: 50,
+                  height: 40,
+                }}
+                data-uid='ddd'
+              />
+            ) : (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: 100,
+                  height: 100,
+                }}
+                data-uid='false-branch'
+              >
+                False branch
+              </div>
+            )}
+            </div>
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 200,
+                width: 380,
+                height: 190,
+                backgroundColor: '#FF0000',
+              }}
+            />
+          </div>
+        `),
+      )
+    })
+
+    it('Should insert a fragment', async () => {
+      const renderResult = await setupInsertTest(inputCode)
+      await enterInsertModeFromInsertMenu(renderResult, 'Fragment')
+
+      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElementBounds = targetElement.getBoundingClientRect()
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const dragDelta = windowPoint({ x: 50, y: 40 })
+
+      const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: targetElementBounds.x + 5,
+        y: targetElementBounds.y + 5,
+      })
+      const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+        x: startPoint.x + dragDelta.x,
+        y: startPoint.y + dragDelta.y,
+      })
+
+      // Move before starting dragging
+      await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+      // Highlight should show the candidate parent
+      expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
+
+      // Drag from inside bbb to inside ccc
+      await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      // Check that the inserted element is a child of bbb
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            data-uid='aaa'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+              position: 'relative',
+            }}
+          >
+            <div
+              data-uid='bbb'
+              data-testid='bbb'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 380,
+                height: 180,
+                backgroundColor: '#d3d3d3',
+              }}
+            >
+            <React.Fragment>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 5,
+                  top: 5,
+                  width: 50,
+                  height: 40,
+                }}
+                data-uid='ddd'
+              />
+            </React.Fragment>
+            </div>
+            <div
+              data-uid='ccc'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 200,
+                width: 380,
+                height: 190,
+                backgroundColor: '#FF0000',
+              }}
+            />
+          </div>
+        `),
+      )
     })
   })
 
@@ -1375,6 +1577,116 @@ describe('Inserting into flex row', () => {
             }}
             data-uid='ddd'
           />
+          <div
+            data-uid='bbb'
+            data-testid='bbb'
+            style={{
+              position: 'relative',
+              width: 180,
+              height: 180,
+              backgroundColor: '#d3d3d3',
+            }}
+          /> 
+          <div
+            data-uid='ccc'
+            style={{
+              width: 100,
+              height: 190,
+              backgroundColor: '#FF0000',
+            }}
+          />
+        </div>
+      `),
+    )
+  })
+
+  it('Inserting a wrapped element into the 0th position in flex', async () => {
+    const renderResult = await setupInsertTest(inputCode)
+    await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
+
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'skip7',
+      'false-branch',
+    ])
+    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
+    const endPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+      x: targetElementBounds.x + 25,
+      y: targetElementBounds.y + 305,
+    })
+
+    // Move before starting dragging
+    await mouseMoveToPoint(canvasControlsLayer, startPoint)
+
+    // Highlight should show the candidate parent
+    expect(renderResult.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['aaa'])
+    // Shows flex indicator line at index position target
+    expect(
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines.length,
+    ).toEqual(1)
+    const indicatorBeforeSibling = isIndicatorBeforeSiblingBBB(
+      renderResult.getEditorState().editor.jsxMetadata,
+      renderResult.getEditorState().editor.canvas.controls.flexReparentTargetLines[0],
+    )
+    expect(indicatorBeforeSibling).toEqual(true)
+
+    await expectSingleUndo2Saves(renderResult, () =>
+      // Drag horizontally close to the zero position
+      mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Check that the inserted element is a sibling of bbb, position is before bbb
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: '#FFFFFF',
+            position: 'relative',
+            display: 'flex',
+            gap: 10,
+          }}
+        >
+          {true ? (
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 20,
+                height: 300,
+                contain: 'layout',
+              }}
+              data-uid='ddd'
+            />
+          ) : (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 300,
+              }}
+              data-uid='false-branch'
+            >
+              False branch
+            </div>
+          )}
           <div
             data-uid='bbb'
             data-testid='bbb'

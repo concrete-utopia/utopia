@@ -149,7 +149,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapGroupOrView,
+  UnwrapElement,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -165,7 +165,6 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
@@ -174,7 +173,6 @@ import type {
   SetFocusedElement,
   AddImports,
   ScrollToElement,
-  WorkerCodeUpdate,
   WorkerParsedUpdate,
   SetScrollAnimation,
   UpdateConfigFromVSCode,
@@ -233,7 +231,7 @@ import type {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
 } from '../action-types'
-import { EditorModes, insertionSubject, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -253,7 +251,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
 } from '../store/editor-state'
-import { ReparentTargetParent } from '../store/reparent-target'
+import { InsertionPath } from '../store/insertion-path'
 
 export function clearSelection(): EditorAction {
   return {
@@ -454,7 +452,7 @@ export function elementPaste(
 }
 
 export function pasteJSXElements(
-  pasteInto: ReparentTargetParent<ElementPath>,
+  pasteInto: InsertionPath,
   elements: Array<ElementPaste>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
@@ -516,11 +514,20 @@ export function enableInsertModeForJSXElement(
   size: Size | null,
   options?: {
     textEdit?: boolean
+    wrapInContainer?: InsertionSubjectWrapper
   },
 ): SwitchEditorMode {
   return switchEditorMode(
     EditorModes.insertMode([
-      insertionSubject(uid, element, size, importsToAdd, null, options?.textEdit ?? false),
+      insertionSubject(
+        uid,
+        element,
+        size,
+        importsToAdd,
+        null,
+        options?.textEdit ?? false,
+        options?.wrapInContainer ?? null,
+      ),
     ]),
   )
 }
@@ -680,7 +687,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: ReparentTargetParent<ElementPath> | null,
+  parentPath: InsertionPath | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {
@@ -732,22 +739,10 @@ export function resetPins(target: ElementPath): ResetPins {
   }
 }
 
-export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets, 'default-empty-div')
-  // FIXME: Make Groups Great Again.
-  //return {
-  //  action: 'WRAP_IN_VIEW',
-  //  targets: targets,
-  //  layoutSystem: LayoutSystem.Group,
-  //}
-}
-
-export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
+export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
-    // TODO make it only run when the target is a group
-    action: 'UNWRAP_GROUP_OR_VIEW',
+    action: 'UNWRAP_ELEMENT',
     target: target,
-    onlyForGroups: false,
   }
 }
 
@@ -755,21 +750,6 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
   return {
     action: 'OPEN_FLOATING_INSERT_MENU',
     mode: mode,
-  }
-}
-
-export function wrapInView(
-  targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
-  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
-  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
-): WrapInView {
-  return {
-    action: 'WRAP_IN_VIEW',
-    targets: targets,
-    layoutSystem: layoutSystem,
-    newParentMainAxis: newParentMainAxis,
-    whatToWrapWith: whatToWrapWith,
   }
 }
 
@@ -1083,21 +1063,6 @@ export function removeFileConflict(path: string): RemoveFileConflict {
   }
 }
 
-export function workerCodeUpdate(
-  filePath: string,
-  code: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): WorkerCodeUpdate {
-  return {
-    type: 'WORKER_CODE_UPDATE',
-    filePath: filePath,
-    code: code,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
@@ -1129,7 +1094,7 @@ export function workerParsedUpdate(
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',

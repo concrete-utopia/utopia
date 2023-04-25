@@ -614,6 +614,15 @@ function addToArrayWithFill<T>(
   return insert(index, element, midResult)
 }
 
+export function addToArrayAtIndexPosition<T>(
+  element: T,
+  array: Array<T>,
+  atPosition: IndexPosition,
+): Array<T> {
+  const index = indexToInsertAt(array, atPosition)
+  return insert(index, element, array)
+}
+
 function assert(errorMessage: string, predicate: boolean | (() => boolean)): void {
   if (typeof predicate === 'function' && predicate()) {
     return

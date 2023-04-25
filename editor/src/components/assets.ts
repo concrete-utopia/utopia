@@ -331,7 +331,7 @@ export function walkContentsTree(
   })
 }
 
-interface PathAndFileEntry {
+export interface PathAndFileEntry {
   fullPath: string
   file: ProjectFile
 }

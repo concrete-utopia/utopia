@@ -17,9 +17,12 @@ import React from 'react'
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
 const realCreateElement = React.createElement
 let renderCount = 0
+const renderInfo: { current: Array<string> } = { current: [] }
 const monkeyCreateElement = (...params: any[]) => {
   renderCount++
-  return (realCreateElement as any)(...params)
+  const el = (realCreateElement as any)(...params)
+  renderInfo.current.push(getNamedPath(el))
+  return el
 }
 ;(React as any).createElement = monkeyCreateElement
 
@@ -34,6 +37,7 @@ import * as Prettier from 'prettier/standalone'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import {
+  codeFile,
   ElementPath,
   foldParsedTextFile,
   isParseFailure,
@@ -55,6 +59,7 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
+import { getNamedPath } from '../../utils/react-helpers'
 import {
   DispatchPriority,
   EditorAction,
@@ -82,7 +87,13 @@ import { CanvasContextMenuPortalTargetID, NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
-import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import {
+  contentsToTree,
+  contentsTreeOptic,
+  getContentsTreeFileFromString,
+  PathAndFileEntry,
+  ProjectContentTreeRoot,
+} from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import {
@@ -117,6 +128,9 @@ import {
 } from './canvas-strategies/canvas-strategies'
 import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
 import { isTransientAction } from '../editor/actions/action-utils'
+import { modify } from '../../core/shared/optics/optic-utilities'
+import { compose2Optics, Optic } from '../../core/shared/optics/optics'
+import { fromField } from '../../core/shared/optics/optic-creators'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -161,8 +175,34 @@ export interface EditorRenderResult {
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
+  clearRenderInfo: () => void
+  getRenderInfo: () => Array<string>
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
+}
+
+function formatAllCodeInModel(model: PersistentModel): PersistentModel {
+  // Call formatTestProjectCode on every code file to ensure that simply re-printing and
+  // re-parsing the file will have no effect
+  const combinedOptic: Optic<PersistentModel, PathAndFileEntry> = compose2Optics(
+    fromField('projectContents'),
+    contentsTreeOptic,
+  )
+  return modify(
+    combinedOptic,
+    (pathAndFile: PathAndFileEntry) => {
+      const { fullPath, file } = pathAndFile
+      if (isTextFile(file) && (fullPath.endsWith('.js') || fullPath.endsWith('.jsx'))) {
+        return {
+          fullPath: pathAndFile.fullPath,
+          file: codeFile(formatTestProjectCode(file.fileContents.code), null),
+        }
+      } else {
+        return pathAndFile
+      }
+    },
+    model,
+  )
 }
 
 export async function renderTestEditorWithCode(
@@ -193,12 +233,13 @@ export async function renderTestEditorWithProjectContent(
 }
 
 export async function renderTestEditorWithModel(
-  model: PersistentModel,
+  rawModel: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   loginState: LoginState = notLoggedIn,
 ): Promise<EditorRenderResult> {
+  const model = formatAllCodeInModel(rawModel)
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
 
@@ -329,7 +370,7 @@ export async function renderTestEditorWithModel(
     },
     workers: workers,
     persistence: DummyPersistenceMachine,
-    alreadySaved: false,
+    saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
   }
 
@@ -426,6 +467,8 @@ label {
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
+    clearRenderInfo: () => (renderInfo.current = []),
+    getRenderInfo: () => renderInfo.current,
     clearRecordedActions: () => {
       recordedActions = []
     },

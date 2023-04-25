@@ -9,6 +9,8 @@ import type { Size } from '../../core/shared/math-utils'
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
+export type InsertionSubjectWrapper = 'conditional' | 'fragment'
+
 export interface InsertionSubject {
   uid: string
   element: JSXElement
@@ -16,6 +18,7 @@ export interface InsertionSubject {
   importsToAdd: Imports
   parent: InsertionParent
   textEdit: boolean
+  insertionSubjectWrapper: InsertionSubjectWrapper | null
 }
 
 export function insertionSubject(
@@ -25,6 +28,7 @@ export function insertionSubject(
   importsToAdd: Imports,
   parent: InsertionParent,
   textEdit: boolean,
+  wrapInConditional: InsertionSubjectWrapper | null,
 ): InsertionSubject {
   return {
     uid: uid,
@@ -33,6 +37,7 @@ export function insertionSubject(
     importsToAdd: importsToAdd,
     parent: parent,
     textEdit: textEdit,
+    insertionSubjectWrapper: wrapInConditional,
   }
 }
 

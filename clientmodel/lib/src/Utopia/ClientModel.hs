@@ -21,10 +21,6 @@ import           Test.QuickCheck.Arbitrary.Generic
 import           Test.QuickCheck.Instances.Text
 import           Test.QuickCheck.Instances.UnorderedContainers
 
--- Slightly nonsense Arbitrary instance, but one that suffices for our needs.
-instance Arbitrary Value where
-  arbitrary = fmap (toJSON :: Text -> Value) arbitrary
-
 textToJSON :: Text -> Value
 textToJSON = toJSON
 
@@ -71,7 +67,7 @@ instance Arbitrary RevisionsState where
 
 data ParseFailure = ParseFailure
                   { diagnostics   :: Maybe [Value]
-                  , parsedJSON    :: Maybe Value
+                  , parsedJSON    :: Value
                   , errorMessage  :: Maybe Text
                   , errorMessages :: [Value]
                   }
@@ -92,7 +88,7 @@ data ParseSuccess = ParseSuccess
                   , topLevelElements               :: [Value]
                   , highlightBounds                :: Value
                   , jsxFactoryFunction             :: Maybe Text
-                  , combinedTopLevelArbitraryBlock :: Maybe Value
+                  , combinedTopLevelArbitraryBlock :: Value
                   , exportsDetail                  :: Value
                   }
                   deriving (Eq, Show, Generic, Data, Typeable)
@@ -371,7 +367,7 @@ data PersistentModel = PersistentModel
                             , projectDescription  :: Text
                             , projectContents     :: ProjectContentTreeRoot
                             , exportsInfo         :: [Value]
-                            , lastUsedFont        :: Maybe Value
+                            , lastUsedFont        :: Value
                             , hiddenInstances     :: [ElementPath]
                             , codeEditorErrors    :: Value
                             , fileBrowser         :: Value

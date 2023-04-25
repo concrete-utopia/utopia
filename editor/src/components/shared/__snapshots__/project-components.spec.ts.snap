@@ -490,10 +490,16 @@ Array [
         "defaultSize": null,
         "element": Object {
           "children": Array [],
-          "longForm": false,
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
-        "importsToAdd": Object {},
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -502,6 +508,38 @@ Array [
     ],
     "source": Object {
       "type": "FRAGMENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [
+            Object {
+              "text": "Sample text",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
+          ],
+          "name": Object {
+            "baseVariable": "span",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {},
+        "name": "Sample text",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "SAMPLES_GROUP",
     },
   },
   Object {
@@ -1005,10 +1043,16 @@ Array [
         "defaultSize": null,
         "element": Object {
           "children": Array [],
-          "longForm": false,
+          "longForm": true,
           "type": "JSX_FRAGMENT",
         },
-        "importsToAdd": Object {},
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -1017,6 +1061,38 @@ Array [
     ],
     "source": Object {
       "type": "FRAGMENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [
+            Object {
+              "text": "Sample text",
+              "type": "JSX_TEXT_BLOCK",
+              "uid": "",
+            },
+          ],
+          "name": Object {
+            "baseVariable": "span",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {},
+        "name": "Sample text",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "SAMPLES_GROUP",
     },
   },
   Object {

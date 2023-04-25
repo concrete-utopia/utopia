@@ -1,31 +1,10 @@
+import { ParseSuccess } from '../../shared/project-file-types'
+import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import {
-  ParseSuccess,
-  ParsedTextFile,
-  HighlightBoundsForUids,
-} from '../../shared/project-file-types'
-import {
-  printCodeOptions,
-  printCode,
-  lintAndParse,
-  getHighlightBoundsWithUID,
-  getHighlightBoundsWithoutUID,
-  boundsAreValid,
-} from './parser-printer'
-import { fastForEach } from '../../shared/utils'
-import { emptySet } from '../../shared/set-utils'
-import {
-  PrintCode,
-  PrintCodeResult,
-  ParseFile,
   ParseFileResult,
-  ParseOrPrint,
-  ParseOrPrintResult,
-  ParsePrintFailedMessage,
-  ParsePrintFilesResult,
   createParseFileResult,
   createParsePrintFailedMessage,
   createParsePrintFilesResult,
-  createPrintCodeResult,
   ParsePrintFilesRequest,
   ParsePrintResultMessage,
   PrintAndReparseResult,
@@ -49,13 +28,6 @@ export function handleMessage(
                 file.previousParsed,
                 file.lastRevisedTime,
                 alreadyExistingUIDs_MUTABLE,
-              )
-            case 'printcode':
-              return getPrintCodeResult(
-                file.filename,
-                file.parseSuccess,
-                file.stripUIDs,
-                file.lastRevisedTime,
               )
             case 'printandreparsefile':
               return getPrintAndReparseCodeResult(
@@ -92,49 +64,9 @@ function getParseFileResult(
     content,
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
+    'trim-bounds',
   )
   return createParseFileResult(filename, parseResult, lastRevisedTime)
-}
-
-function getPrintCodeResult(
-  filename: string,
-  parseSuccess: ParseSuccess,
-  stripUIDs: boolean,
-  lastRevisedTime: number,
-): PrintCodeResult {
-  const withUIDs = printCode(
-    filename,
-    printCodeOptions(false, true, true, false),
-    parseSuccess.imports,
-    parseSuccess.topLevelElements,
-    parseSuccess.jsxFactoryFunction,
-    parseSuccess.exportsDetail,
-  )
-  const highlightBoundsWithUID = getHighlightBoundsWithUID('with-uids', withUIDs)
-
-  const withoutUIDs = printCode(
-    filename,
-    printCodeOptions(false, true, true, stripUIDs),
-    parseSuccess.imports,
-    parseSuccess.topLevelElements,
-    parseSuccess.jsxFactoryFunction,
-    parseSuccess.exportsDetail,
-  )
-  const highlightBoundsWithoutUID = getHighlightBoundsWithoutUID('without-uids', withoutUIDs)
-
-  let newHighlightBounds: HighlightBoundsForUids = {}
-  if (highlightBoundsWithUID.length === highlightBoundsWithoutUID.length) {
-    fastForEach(highlightBoundsWithUID, (withUID, index) => {
-      if (boundsAreValid(withUID.uid)) {
-        const withoutUID = highlightBoundsWithoutUID[index]
-        newHighlightBounds[withUID.uid] = {
-          ...withoutUID,
-          uid: withUID.uid,
-        }
-      }
-    })
-  }
-  return createPrintCodeResult(filename, withoutUIDs, newHighlightBounds, lastRevisedTime)
 }
 
 function getPrintAndReparseCodeResult(
@@ -144,10 +76,17 @@ function getPrintAndReparseCodeResult(
   lastRevisedTime: number,
   alreadyExistingUIDs: Set<string>,
 ): PrintAndReparseResult {
-  const printResult = getPrintCodeResult(filename, parseSuccess, stripUIDs, lastRevisedTime)
+  const printedCode = printCode(
+    filename,
+    printCodeOptions(false, true, true, stripUIDs),
+    parseSuccess.imports,
+    parseSuccess.topLevelElements,
+    parseSuccess.jsxFactoryFunction,
+    parseSuccess.exportsDetail,
+  )
   const parseResult = getParseFileResult(
     filename,
-    printResult.printResult,
+    printedCode,
     parseSuccess,
     lastRevisedTime,
     alreadyExistingUIDs,
@@ -156,7 +95,7 @@ function getPrintAndReparseCodeResult(
     filename,
     parseResult.parseResult,
     lastRevisedTime,
-    printResult.highlightBounds,
-    printResult.printResult,
+    {},
+    printedCode,
   )
 }
