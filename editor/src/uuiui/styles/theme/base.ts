@@ -7,6 +7,7 @@ export const base = {
   purple70: createUtopiColor('color(display-p3 0.38 0 1 70%)'),
   red: createUtopiColor('color(display-p3 1 0 0.38)'),
   orange: createUtopiColor('color(display-p3 0.92 0.64 0)'),
+  orange20: createUtopiColor('color(display-p3 0.92 0.64 0.2)'),
   neonpink: createUtopiColor('color(display-p3 1 0 1)'),
   neonpink30: createUtopiColor('color(display-p3 1 0 1 30%)'),
   neongreen: createUtopiColor('color(display-p3 0 0.93 0.7)'),

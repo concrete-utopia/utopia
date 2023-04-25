@@ -77,17 +77,14 @@ const lightErrorStates = {
 
 // TEMP colors with preset opacity pulled from within the app
 const colorsWithOpacity = {
-  bg0Opacity90: createUtopiColor('hsla(0,0%,100%,0.9)'),
-  bg0Opacity10: createUtopiColor('hsla(0,0%,100%,0.1)'),
   fg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
-  brandNeonPink30: base.neonpink30,
-  neutralForeground40: createUtopiColor('hsla(0,0%,0%,0.4)'),
   neutralInvertedBackground10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   neutralInvertedBackground20: createUtopiColor('hsla(0,0%,0%,0.2)'),
   neutralInvertedBackground30: createUtopiColor('hsla(0,0%,0%,0.3)'),
+  // the following is used with an animation to zero opacity but same colour value
   listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
   brandPurple70: base.purple70,
   // TODO vv only used by button, refactor & remove
@@ -140,13 +137,8 @@ export const light = {
   canvasSelectionInstanceOutline: base.purple,
   canvasSelectionSceneOutline: base.purple,
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
-  canvasSelectionAlternateOutlineYogaParent: base.neonpink,
-  canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
   canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
   canvasSelectionNotFocusable: base.darkgray,
-  canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
-  canvasDragOutlineBlock: lightBase.primary,
-  canvasDragOutlineInline: base.red,
 
   canvasSelectionFocusable: base.purple,
   canvasSelectionIsolatedComponent: base.purple,
@@ -154,17 +146,11 @@ export const light = {
   canvasSelectionNotFocusableChild: base.darkorange,
   canvasSelectionFocusableChild: base.purple,
 
-  canvasLayoutForeground: base.neonpink,
-  canvasLayoutFillSolid: base.neonpink,
-  canvasLayoutFillTranslucent: createUtopiColor('rgba(255,230,255,0.9)'),
   canvasLayoutStroke: base.neonpink,
 
   paddingForeground: base.neongreen,
-  paddingFillSolid: base.neongreen,
   paddingFillTranslucent: createUtopiColor('rgba(230,248,230,0.7)'),
-  paddingStroke: base.neongreen,
 
-  selectionOutlines: createUtopiColor('rgba(255,128,255,1)'),
   canvasElementBackground: createUtopiColor('rgba(230,242,255,1)'),
   canvasComponentButtonFocusable: createUtopiColor('rgba(238,237,252,1)'),
   canvasComponentButtonFocused: createUtopiColor('rgba(255,239,230,1)'),
@@ -176,18 +162,15 @@ export const light = {
   // interface elements: buttons, segment controls, checkboxes etc
 
   inlineButtonColor: lightBase.primary,
-  inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: lightBase.bg2,
   buttonHoverBackground: lightBase.bg3,
   buttonShadow: lightBase.fg9,
   buttonShadowActive: lightBase.fg8,
 
   // application utilities:
-  resizingDisplayBackground: lightBase.fg3,
-  resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)'),
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
-  navigatorComponentSelected: createUtopiColor('rgba(250, 94, 0, 0.2)'),
+  navigatorComponentSelected: base.orange20,
   navigatorComponentIconBorder: base.orange,
 
   contextMenuBackground: lightPrimitives.secondaryBackground,
@@ -212,7 +195,7 @@ export const light = {
   githubMUDDeleted: createUtopiColor('#f22'),
   githubMUDDefault: createUtopiColor('#ccc'),
 
-  // Code editor
+  // Code editor loading screen
   codeEditorShimmerPrimary: createUtopiColor('#f6f6f6'),
   codeEditorShimmerSecondary: createUtopiColor('#f0f0f0'),
   codeEditorTabRowBg: createUtopiColor('#f3f3f3'),

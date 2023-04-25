@@ -339,15 +339,9 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
           paddingLeft: 8 + 10 * (target.path.length - 1),
           paddingRight: 12,
           borderRadius: UtopiaTheme.inputBorderRadius,
-
           fontWeight: isSelected ? 600 : 400,
-          fontStyle: target.selectorLength > 0 ? undefined : 'italic',
           backgroundImage: isSelected ? colorTheme.primary.value : undefined,
-          color: isSelected
-            ? colorTheme.white.value
-            : target.selectorLength > 0
-            ? colorTheme.neutralForeground.value
-            : colorTheme.neutralForeground40.value,
+          color: isSelected ? colorTheme.white.value : colorTheme.neutralForeground.value,
         }}
         onDoubleClick={startRename}
         onMouseDown={onSelectByMouseCallback}
