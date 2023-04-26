@@ -1846,7 +1846,8 @@ export function createNotImported(path: string, variableName: string): ImportInf
   return sameFileOrigin(path, variableName)
 }
 
-export type ConditionValue = boolean | 'not-a-conditional'
+export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
+export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
@@ -1861,7 +1862,6 @@ export interface ElementInstanceMetadata {
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
-  defaultConditionValue: ConditionValue
 }
 
 export function elementInstanceMetadata(
@@ -1877,7 +1877,6 @@ export function elementInstanceMetadata(
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
-  defaultConditionValue: ConditionValue,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -1892,7 +1891,6 @@ export function elementInstanceMetadata(
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
-    defaultConditionValue: defaultConditionValue,
   }
 }
 

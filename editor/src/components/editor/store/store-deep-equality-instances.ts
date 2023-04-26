@@ -174,6 +174,7 @@ import {
   isJSXConditionalExpression,
   JSXConditionalExpression,
   jsxConditionalExpression,
+  ActiveAndDefaultConditionValues,
 } from '../../../core/shared/element-template'
 import {
   CanvasRectangle,
@@ -1573,15 +1574,27 @@ export const StyleAttributeMetadataKeepDeepEquality: KeepDeepEqualityCall<StyleA
 export const ElementInstanceMetadataPropsKeepDeepEquality: KeepDeepEqualityCall<any> =
   createCallWithShallowEquals()
 
+const ActiveAndDefaultConditionValuesKeepDeepEquality: KeepDeepEqualityCall<ActiveAndDefaultConditionValues> =
+  combine2EqualityCalls(
+    (value) => value.active,
+    BooleanKeepDeepEquality,
+    (value) => value.default,
+    BooleanKeepDeepEquality,
+    (activeBranch: boolean, defaultBranch: boolean) => ({
+      active: activeBranch,
+      default: defaultBranch,
+    }),
+  )
+
 const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = unionDeepEquality(
   createCallWithTripleEquals<ConditionValue>(),
-  BooleanKeepDeepEquality,
+  ActiveAndDefaultConditionValuesKeepDeepEquality,
   (p): p is 'not-a-conditional' => p === 'not-a-conditional',
-  (p): p is boolean => typeof p === 'boolean',
+  (p): p is ActiveAndDefaultConditionValues => p !== 'not-a-conditional',
 )
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine13EqualityCalls(
+  combine12EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1605,8 +1618,6 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     (metadata) => metadata.importInfo,
     nullableDeepEquality(ImportInfoKeepDeepEquality),
     (metadata) => metadata.conditionValue,
-    ConditionValueKeepDeepEquality,
-    (metadata) => metadata.defaultConditionValue,
     ConditionValueKeepDeepEquality,
     elementInstanceMetadata,
   )

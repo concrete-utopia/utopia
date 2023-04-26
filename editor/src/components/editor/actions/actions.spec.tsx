@@ -870,7 +870,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     label: null,
     importInfo: null,
     conditionValue: 'not-a-conditional',
-    defaultConditionValue: 'not-a-conditional',
   }
 
   const childElementProps: ElementProps = {
@@ -895,7 +894,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     label: null,
     importInfo: null,
     conditionValue: 'not-a-conditional',
-    defaultConditionValue: 'not-a-conditional',
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {
@@ -1553,7 +1551,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       null,
       'not-a-conditional',
-      'not-a-conditional',
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1588,7 +1585,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
       emptyAttributeMetadatada,
       null,
       null,
-      'not-a-conditional',
       'not-a-conditional',
     )
     const fakeMetadata: ElementInstanceMetadataMap = {

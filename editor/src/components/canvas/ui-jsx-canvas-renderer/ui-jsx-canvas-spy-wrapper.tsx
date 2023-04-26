@@ -57,7 +57,6 @@ export function addFakeSpyEntry(
   filePath: string,
   imports: Imports,
   conditionValue: ConditionValue,
-  defaultConditionValue: ConditionValue,
 ): void {
   let element: Either<string, JSXElementChild>
   if (isJSXArbitraryBlock(elementOrAttribute)) {
@@ -105,7 +104,6 @@ export function addFakeSpyEntry(
       element,
     ),
     conditionValue: conditionValue,
-    defaultConditionValue: defaultConditionValue,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -151,7 +149,6 @@ export function buildSpyWrappedElement(
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
       conditionValue: 'not-a-conditional',
-      defaultConditionValue: 'not-a-conditional',
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

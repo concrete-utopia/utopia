@@ -513,7 +513,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     label: 'label',
     importInfo: createImportedFrom('old', 'old', 'old'),
     conditionValue: 'not-a-conditional',
-    defaultConditionValue: 'not-a-conditional',
   }
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -622,7 +621,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     label: 'new-label',
     importInfo: createImportedFrom('old', 'old', 'old'),
     conditionValue: 'not-a-conditional',
-    defaultConditionValue: 'not-a-conditional',
   }
 
   it('same reference returns the same reference', () => {
@@ -757,7 +755,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
-      defaultConditionValue: 'not-a-conditional',
     },
   }
   const newSameValue: ElementInstanceMetadataMap = {
@@ -868,7 +865,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
-      defaultConditionValue: 'not-a-conditional',
     },
   }
   const newDifferentValue: ElementInstanceMetadataMap = {
@@ -979,7 +975,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'new-label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
-      defaultConditionValue: 'not-a-conditional',
     },
   }
 

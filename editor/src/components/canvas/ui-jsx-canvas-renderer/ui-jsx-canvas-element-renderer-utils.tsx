@@ -352,21 +352,21 @@ export function renderCoreElement(
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       const defaultConditionValue: boolean = !!defaultConditionValueAsAny
-      const conditionValue = override ?? defaultConditionValue
-      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+      const activeConditionValue = override ?? defaultConditionValue
+      const actualElement = activeConditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
-        clearOpposingConditionalSpyValues(metadataContext, element, conditionValue, elementPath)
-
-        addFakeSpyEntry(
+        clearOpposingConditionalSpyValues(
           metadataContext,
-          elementPath,
           element,
-          filePath,
-          imports,
-          conditionValue,
-          defaultConditionValue,
+          activeConditionValue,
+          elementPath,
         )
+
+        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, {
+          active: activeConditionValue,
+          default: defaultConditionValue,
+        })
       }
 
       if (isJSXArbitraryBlock(actualElement)) {

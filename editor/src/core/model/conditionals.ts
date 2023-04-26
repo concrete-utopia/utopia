@@ -216,7 +216,7 @@ export function getConditionalActiveCase(
   if (spy.conditionValue === 'not-a-conditional') {
     return null
   }
-  return spy.conditionValue ? 'true-case' : 'false-case'
+  return spy.conditionValue.active ? 'true-case' : 'false-case'
 }
 
 export function isActiveBranchOfOverriddenConditional(
@@ -233,11 +233,11 @@ export function isDefaultBranchOfConditional(
   clause: ConditionalCase,
   metadata: ElementInstanceMetadata | null,
 ): boolean {
-  const conditionValue = metadata?.defaultConditionValue
+  const conditionValue = metadata?.conditionValue
   if (conditionValue == null || conditionValue === 'not-a-conditional') {
     return false
   } else {
-    return booleanAsConditionalClause(conditionValue) === clause
+    return booleanAsConditionalClause(conditionValue.default) === clause
   }
 }
 
@@ -275,7 +275,7 @@ export function isChildOfActiveBranchOfConditional(
   if (conditionValue == null || conditionValue === 'not-a-conditional') {
     return false
   } else {
-    return booleanAsConditionalClause(conditionValue) === clause
+    return booleanAsConditionalClause(conditionValue.active) === clause
   }
 }
 
@@ -286,11 +286,11 @@ export function isChildOfDefaultBranchOfConditional(
 ): boolean {
   const parentPath = EP.parentPath(path)
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
-  const conditionValue = parentMetadata?.defaultConditionValue
+  const conditionValue = parentMetadata?.conditionValue
 
   if (conditionValue == null || conditionValue === 'not-a-conditional') {
     return false
   } else {
-    return booleanAsConditionalClause(conditionValue) === clause
+    return booleanAsConditionalClause(conditionValue.default) === clause
   }
 }

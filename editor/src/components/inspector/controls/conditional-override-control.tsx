@@ -40,7 +40,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
     if (controlStatus === 'overridden') {
       setConditionOverride(null)
     } else if (conditionValue !== 'not-a-conditional') {
-      setConditionOverride(conditionValue)
+      setConditionOverride(conditionValue.active)
     }
   }, [controlStatus, setConditionOverride, conditionValue])
 
