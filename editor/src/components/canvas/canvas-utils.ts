@@ -108,7 +108,6 @@ import {
 import {
   DerivedState,
   EditorState,
-  insertElementAtPath_DEPRECATED,
   OriginalCanvasAndLocalFrame,
   removeElementAtPath,
   TransientCanvasState,
@@ -2157,9 +2156,7 @@ function editorReparentNoStyleChange(
                 utopiaComponentsIncludingScenes,
               )
 
-              const withInserted = insertElementAtPath_DEPRECATED(
-                editor.projectContents,
-                editor.canvas.openFile?.filename ?? null,
+              const withInserted = insertElementAtPath(
                 childInsertionPath(underlyingNewParentPath),
                 updatedUnderlyingElement,
                 updatedUtopiaComponents,
@@ -2289,9 +2286,7 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertResult = insertElementAtPath_DEPRECATED(
-                    workingEditorState.projectContents,
-                    workingEditorState.canvas.openFile?.filename ?? null,
+                  const insertResult = insertElementAtPath(
                     childInsertionPath(underlyingNewParentPath),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
@@ -2813,10 +2808,11 @@ export function duplicate(
               }
             }
 
-            const insertResult = insertElementAtPath_DEPRECATED(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              optionalMap(childInsertionPath, newParentPath),
+            if (newParentPath == null) {
+              return success
+            }
+            const insertResult = insertElementAtPath(
+              childInsertionPath(newParentPath),
               newElement,
               utopiaComponents,
               position(),
