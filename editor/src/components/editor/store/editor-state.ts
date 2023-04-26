@@ -1780,7 +1780,6 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     (element) =>
       isJSXElement(element) || isJSXConditionalExpression(element) ? transform(element) : element,
     defaultModifyParseSuccess,
-    revisionsState,
   )
 }
 
@@ -1788,7 +1787,6 @@ export function modifyOpenJsxChildAtPath(
   path: ElementPath,
   transform: (element: JSXElementChild) => JSXElementChild,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingJsxElementChild(
     path,
@@ -3440,7 +3438,6 @@ export function modifyUnderlyingTargetElement(
       return element
     },
     modifyParseSuccess,
-    revisionsState,
   )
 }
 
@@ -3458,7 +3455,6 @@ function modifyUnderlyingJsxElementChild(
     underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
