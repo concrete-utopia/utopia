@@ -532,10 +532,13 @@ export const NavigatorItem: React.FunctionComponent<
     }
   }, [isElementVisible, isHiddenConditionalBranch, isSlot])
 
+  const cursorStyle = isConditionalClauseNavigatorEntry(navigatorEntry) ? { cursor: 'pointer' } : {}
+
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
     height: getItemHeight(navigatorEntry),
     ...resultingStyle.style,
+    ...cursorStyle,
   })
 
   const showExpandableIndicator = React.useMemo(() => {
