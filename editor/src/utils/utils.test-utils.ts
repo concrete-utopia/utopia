@@ -343,6 +343,7 @@ function createFakeMetadataForJSXElement(
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
       conditionValue: 'not-a-conditional',
+      defaultConditionValue: 'not-a-conditional',
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -378,6 +379,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     label: null,
     importInfo: null,
     conditionValue: 'not-a-conditional',
+    defaultConditionValue: 'not-a-conditional',
   }
 }
 

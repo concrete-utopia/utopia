@@ -761,6 +761,7 @@ function collectAndCreateMetadataForElement(
       null,
       null,
       'not-a-conditional',
+      'not-a-conditional',
     )
   })
 
@@ -1086,6 +1087,7 @@ function walkCanvasRootFragment(
       emptyAttributeMetadatada,
       null,
       null, // this comes from the Spy Wrapper
+      'not-a-conditional',
       'not-a-conditional',
     )
 

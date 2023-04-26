@@ -11,6 +11,8 @@ import {
   getConditionalFlag,
   isActiveBranchOfOverriddenConditional,
   isChildOfActiveBranchOfConditional,
+  isChildOfDefaultBranchOfConditional,
+  isDefaultBranchOfConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -457,7 +459,10 @@ export const NavigatorItem: React.FunctionComponent<
         navigatorEntry.elementPath,
       )
       if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-        if (isActiveBranchOfOverriddenConditional(navigatorEntry.clause, elementMetadata)) {
+        if (
+          isActiveBranchOfOverriddenConditional(navigatorEntry.clause, elementMetadata) ||
+          isDefaultBranchOfConditional(navigatorEntry.clause, elementMetadata)
+        ) {
           return 'clear-override'
         } else {
           return navigatorEntry.clause
@@ -465,7 +470,10 @@ export const NavigatorItem: React.FunctionComponent<
       } else {
         const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
         if (conditionalCase != null) {
-          if (isChildOfActiveBranchOfConditional(path, conditionalCase, metadata)) {
+          if (
+            isChildOfActiveBranchOfConditional(path, conditionalCase, metadata) ||
+            isChildOfDefaultBranchOfConditional(path, conditionalCase, metadata)
+          ) {
             return 'clear-override'
           } else {
             return conditionalCase
