@@ -5,13 +5,11 @@ import createCachedSelector from 're-reselect'
 import React from 'react'
 import {
   ConditionalCase,
-  conditionalClauseAsBoolean,
   getConditionalCaseCorrespondingToBranchPath,
   getConditionalClausePath,
   getConditionalFlag,
-  isActiveBranchOfOverriddenConditional,
-  isChildOfActiveBranchOfConditional,
-  isChildOfDefaultBranchOfConditional,
+  isActiveBranchOfConditional,
+  isActiveOrDefaultBranchOfConditional,
   isDefaultBranchOfConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
@@ -459,10 +457,7 @@ export const NavigatorItem: React.FunctionComponent<
         navigatorEntry.elementPath,
       )
       if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-        if (
-          isActiveBranchOfOverriddenConditional(navigatorEntry.clause, elementMetadata) ||
-          isDefaultBranchOfConditional(navigatorEntry.clause, elementMetadata)
-        ) {
+        if (isActiveOrDefaultBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
           return 'clear-override'
         } else {
           return navigatorEntry.clause
@@ -470,11 +465,12 @@ export const NavigatorItem: React.FunctionComponent<
       } else {
         const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
         if (conditionalCase != null) {
-          if (
-            isChildOfActiveBranchOfConditional(path, conditionalCase, metadata) ||
-            isChildOfDefaultBranchOfConditional(path, conditionalCase, metadata)
-          ) {
+          const parentPath = EP.parentPath(path)
+          const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
+          if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
             return 'clear-override'
+          } else if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
+            return 'no-update'
           } else {
             return conditionalCase
           }
