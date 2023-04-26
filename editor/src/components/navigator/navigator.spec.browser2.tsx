@@ -91,7 +91,7 @@ async function dragElement(
       }),
     )
 
-    await wait(1)
+    await wait(1) // FIXME: this might be necessary for react-dnd internal delays
     await midDragCallback()
 
     fireEvent(
