@@ -615,9 +615,7 @@ describe('conditionals', () => {
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
-              {'hello'}
-            </div>
+            <div data-uid='aaa'>hello</div>
          `),
       )
     })
@@ -659,6 +657,32 @@ describe('conditionals', () => {
               )
             }
           </div>
+         `),
+      )
+    })
+    it('can unwrap a conditional with expression', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          true ? 5 + 5 + 15: 'bello'
+        }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa'>{5 + 5 + 15}</div>
          `),
       )
     })

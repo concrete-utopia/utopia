@@ -1,4 +1,9 @@
-import { findMaybeConditionalExpression, getClauseOptic } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  getConditionalActiveCase,
+  getConditionalBranch,
+} from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
@@ -16,11 +21,13 @@ import {
   JSXElementChild,
   JSXFragment,
   emptyComments,
-  isJSExpressionValue,
+  isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
+  isJSXElementLike,
   jsExpressionValue,
   jsxFragment,
+  jsxTextBlock,
 } from '../../../core/shared/element-template'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
@@ -122,11 +129,12 @@ export function unwrapTextContainingConditional(
     elementMetadata != null &&
     MetadataUtils.isConditionalFromMetadata(elementMetadata)
   ) {
-    const currentValue = elementMetadata.conditionValue
-    if (currentValue === true) {
-      elementToInsert = conditional.whenTrue
-    } else if (currentValue === false) {
-      elementToInsert = conditional.whenFalse
+    const activeCase = getConditionalActiveCase(target, conditional, editor.spyMetadata)
+    if (activeCase != null) {
+      elementToInsert = getConditionalBranch(conditional, activeCase)
+      if (isJSXAttributeValue(elementToInsert) && typeof elementToInsert.value === 'string') {
+        elementToInsert = jsxTextBlock(elementToInsert.value)
+      }
     }
   }
 
@@ -175,9 +183,9 @@ export function isTextContainingConditional(
   if (conditional != null && element != null && MetadataUtils.isConditionalFromMetadata(element)) {
     const currentValue = element.conditionValue
     if (currentValue === true) {
-      return isJSExpressionValue(conditional.whenTrue)
+      return !isJSXElementLike(conditional.whenTrue)
     } else if (currentValue === false) {
-      return isJSExpressionValue(conditional.whenFalse)
+      return !isJSXElementLike(conditional.whenFalse)
     }
   }
   return false
