@@ -48,15 +48,20 @@ import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/i
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
 import { navigatorDepth } from './navigator-utils'
+import { NO_OP } from '../../core/shared/utils'
+import { wait } from '../../utils/utils.test-utils'
 
-function dragElement(
+const ASYNC_NOOP = async () => NO_OP()
+
+async function dragElement(
   renderResult: EditorRenderResult,
   dragTargetID: string,
   dropTargetID: string,
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
   hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
-): void {
+  midDragCallback = ASYNC_NOOP,
+): Promise<void> {
   const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
   const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
 
@@ -112,6 +117,9 @@ function dragElement(
         buttons: 1,
       }),
     )
+
+    await wait(1)
+    await midDragCallback()
 
     fireEvent(
       dropTarget,
@@ -582,6 +590,17 @@ describe('conditionals in the navigator', () => {
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
+        async () => {
+          // parent highlight is not shown around conditional
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-${varSafeNavigatorEntryToKey(
+              regularNavigatorEntry(elementPathToTarget),
+            )}`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            '1px solid transparent',
+          )
+        },
       ),
     )
 
@@ -763,6 +782,15 @@ describe('conditionals in the navigator', () => {
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
+        async () => {
+          // drop target line is shown before the conditional
+          const dropLine = renderResult.renderedDOM.getByTestId(
+            TopDropTargetLineTestId(
+              varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
+            ),
+          )
+          expect(dropLine.style.opacity).toEqual('1')
+        },
       ),
     )
 
@@ -851,6 +879,18 @@ describe('conditionals in the navigator', () => {
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
+        async () => {
+          // drop target lines are not shown
+          const topDropTargetLine = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-before-conditional_clause_utopia_storyboard_uid/scene_aaa/containing_div/conditional1/conditional2_false-case`,
+          )
+          expect(topDropTargetLine.style.opacity).toEqual('0')
+
+          const bottomDropTargetLine = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-conditional_clause_utopia_storyboard_uid/scene_aaa/containing_div/conditional1/conditional2_false-case`,
+          )
+          expect(bottomDropTargetLine.style.opacity).toEqual('0')
+        },
       ),
     )
 
@@ -945,7 +985,7 @@ describe('conditionals in the navigator', () => {
       await dispatchDone
     })
 
-    act(() =>
+    await act(() =>
       dragElement(
         renderResult,
         `navigator-item-regular_utopia_storyboard_uid/scene_aaa/containing_div/sibling_div`,
