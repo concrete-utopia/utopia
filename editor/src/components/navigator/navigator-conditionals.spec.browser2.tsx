@@ -60,77 +60,86 @@ async function dragElement(
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
   hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
-  midDragCallback = ASYNC_NOOP,
+  midDragCallback: () => Promise<void> = ASYNC_NOOP,
 ): Promise<void> {
   const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
   const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
 
   const endPoint = offsetPoint(startPoint, dragDelta)
 
-  fireEvent(
-    dragTarget,
-    new MouseEvent('dragstart', {
-      bubbles: true,
-      cancelable: true,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        clientX: startPoint.x,
+        clientY: startPoint.y,
+        buttons: 1,
+      }),
+    )
+  })
 
-  fireEvent(
-    dragTarget,
-    new MouseEvent('drag', {
-      bubbles: true,
-      cancelable: true,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      movementX: dragDelta.x,
-      movementY: dragDelta.y,
-      buttons: 1,
-    }),
-  )
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('drag', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
 
   if (hoverEvents === 'apply-hover-events') {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragenter', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragenter', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
 
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragover', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
 
-    await wait(1) // FIXME: this might be necessary for react-dnd internal delays
     await midDragCallback()
 
-    fireEvent(
-      dropTarget,
-      new MouseEvent('drop', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          buttons: 1,
+        }),
+      )
+    })
   }
 }
 

@@ -40,70 +40,79 @@ async function dragElement(
 
   const endPoint = offsetPoint(startPoint, dragDelta)
 
-  fireEvent(
-    dragTarget,
-    new MouseEvent('dragstart', {
-      bubbles: true,
-      cancelable: true,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        clientX: startPoint.x,
+        clientY: startPoint.y,
+        buttons: 1,
+      }),
+    )
+  })
 
-  fireEvent(
-    dragTarget,
-    new MouseEvent('drag', {
-      bubbles: true,
-      cancelable: true,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      movementX: dragDelta.x,
-      movementY: dragDelta.y,
-      buttons: 1,
-    }),
-  )
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('drag', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
 
   if (hoverEvents === 'apply-hover-events') {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragenter', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragenter', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
 
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragover', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
 
-    await wait(1) // FIXME: this might be necessary for react-dnd internal delays
     await midDragCallback()
 
-    fireEvent(
-      dropTarget,
-      new MouseEvent('drop', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          buttons: 1,
+        }),
+      )
+    })
   }
 }
 
@@ -849,19 +858,20 @@ describe('Navigator', () => {
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
         await dispatchDone
       })
-
       await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
           windowPoint(dragMeElementCenter),
-          windowPoint({ x: -25, y: 0 }),
+          windowPoint({ x: -25, y: -25 }),
           'apply-hover-events',
           async () => {
+            await wait(2)
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
               'reparent',
             )
+
             // highlight is shown on grandparent
             const parentEntry = renderResult.renderedDOM.getByTestId(
               `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
