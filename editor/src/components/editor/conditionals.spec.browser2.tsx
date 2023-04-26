@@ -686,6 +686,46 @@ describe('conditionals', () => {
          `),
       )
     })
+    it('can unwrap a nested conditional clause', async () => {
+      const startSnippet = `
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (
+              // @utopia/uid=conditional-inner
+              (true ? <div data-uid='bbb'>hello</div> : null)
+            ) : (
+              'bello'
+            )
+          }
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, [
+        'aaa',
+        'conditional',
+        'conditional-inner',
+      ])
+
+      await act(async () => {
+        await renderResult.dispatch([unwrapElement(targetPath)], true)
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? <div data-uid='bbb'>hello</div> : 'bello'
+          }
+          </div>
+         `),
+      )
+    })
   })
   describe('paste', () => {
     it('can paste a single element into a conditional', async () => {
