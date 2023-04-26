@@ -53,6 +53,7 @@ import {
   ConditionalCase,
   findMaybeConditionalExpression,
   getConditionalBranch,
+  getConditionalCaseCorrespondingToBranchPath,
   isNonEmptyConditionalBranch,
   maybeBranchConditionalCase,
 } from '../../../core/model/conditionals'
@@ -137,7 +138,7 @@ function canDrop(
     isInsideConditional(draggedOnto.navigatorEntry, editorState.jsxMetadata)
   ) {
     // do nothing when trying to drop in between entries inside a conditional
-    return true
+    return false
   } else {
     const childrenSupportedIfRequired =
       !isReparentTarget ||
@@ -204,6 +205,7 @@ function onHoverDropTargetLine(
   propsOfDropTargetItem: NavigatorItemDragAndDropWrapperProps,
   monitor: DropTargetMonitor | null,
   position: 'before' | 'after',
+  metadata: ElementInstanceMetadataMap,
 ): void {
   if (
     monitor == null ||
@@ -213,7 +215,8 @@ function onHoverDropTargetLine(
     EP.pathsEqual(
       propsOfDraggedItem.navigatorEntry.elementPath,
       propsOfDropTargetItem.navigatorEntry.elementPath,
-    )
+    ) ||
+    isHintDisallowed(propsOfDraggedItem.navigatorEntry, metadata)
   ) {
     return propsOfDraggedItem.editorDispatch(
       [showNavigatorDropTargetHint(null, null, null)],
@@ -386,6 +389,18 @@ function isInsideConditional(
   )
 }
 
+function isHintDisallowed(
+  moveToEntry: NavigatorEntry | null,
+  metadata: ElementInstanceMetadataMap,
+) {
+  return (
+    moveToEntry == null ||
+    isConditionalClauseNavigatorEntry(moveToEntry) || // don't show top / bottom hints on TRUE/FALSE entries
+    isInsideConditional(moveToEntry, metadata) || // don't show top / bottom hints on elements that are the root of a conditional branch
+    isSyntheticNavigatorEntry(moveToEntry) // don't show top / bottom hints on empty slots
+  )
+}
+
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
 
@@ -463,7 +478,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverDropTargetLine(item, props, monitor, 'after')
+        onHoverDropTargetLine(item, props, monitor, 'after', metadata)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
@@ -490,7 +505,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         canDrop: monitor.canDrop(),
       }),
       hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
-        onHoverDropTargetLine(item, props, monitor, 'before')
+        onHoverDropTargetLine(item, props, monitor, 'before', metadata)
       },
       drop: (item: NavigatorItemDragAndDropWrapperProps) => {
         if (moveToEntry != null) {
@@ -538,19 +553,16 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     preview(getEmptyImage(), { captureDraggingState: true })
   })
 
-  const shouldShowTopHint =
-    moveToEntry != null &&
-    (isInsideConditional(moveToEntry, metadata) || isConditionalClauseNavigatorEntry(moveToEntry))
-      ? false
-      : isOverTopHint
+  const shouldShowTopHint = isOverTopHint && !isHintDisallowed(moveToEntry, metadata)
 
-  const isBottomHintInsideConditional =
-    moveToEntry != null &&
-    (isConditionalRoot(moveToEntry, metadata) ||
-      isConditionalClauseNavigatorEntry(moveToEntry) ||
-      isInsideConditional(moveToEntry, metadata))
+  const isConditionalEntry = MetadataUtils.isConditionalFromMetadata(
+    MetadataUtils.findElementByElementPath(metadata, props.navigatorEntry.elementPath),
+  )
 
-  const shouldShowBottomHint = isBottomHintInsideConditional ? false : isOverBottomHint
+  const shouldShowBottomHint =
+    isOverBottomHint &&
+    !isHintDisallowed(moveToEntry, metadata) &&
+    (isConditionalEntry ? props.collapsed : true)
 
   const appropriateDropTargetHintDepth = useEditorState(
     Substores.metadata,
@@ -588,6 +600,17 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     if (moveToEntry == null) {
       return 'none'
     }
+
+    const equalEntries = navigatorEntriesEqual(props.navigatorEntry, moveToEntry)
+
+    if (
+      props.navigatorEntry.type === 'SYNTHETIC' &&
+      equalEntries &&
+      isNullJSXAttributeValue(props.navigatorEntry.childOrAttribute)
+    ) {
+      return 'child'
+    }
+
     if (isConditionalRoot(moveToEntry, metadata) || props.navigatorEntry.type !== 'REGULAR') {
       return 'none'
     }
@@ -602,11 +625,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         return 'none'
       }
 
-      return EP.pathsEqual(wouldBeParentPath, props.navigatorEntry.elementPath) ? 'solid' : 'none'
+      return EP.pathsEqual(wouldBeParentPath, props.navigatorEntry.elementPath) &&
+        moveToEntry.type === 'REGULAR'
+        ? 'solid'
+        : 'none'
     }
 
     const parentPath = EP.parentPath(props.navigatorEntry.elementPath)
-    const equalEntries = navigatorEntriesEqual(props.navigatorEntry, moveToEntry)
     const parentConditional = findMaybeConditionalExpression(parentPath, metadata)
 
     if (moveToEntry != null && isConditionalClauseNavigatorEntry(moveToEntry)) {
@@ -645,10 +670,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   }, [dropTargetHintType, moveToEntry, metadata, props.navigatorEntry])
 
   const isFirstSibling = React.useMemo(() => {
-    if (!isRegularNavigatorEntry(props.navigatorEntry)) {
-      return false
-    }
-
     // FIXME: Performance: This is retrieving everything ordered and then getting just the siblings,
     // for every single navigator item.
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, props.navigatorEntry.elementPath)
@@ -660,7 +681,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return EP.pathsEqual(firstSibling.elementPath, props.navigatorEntry.elementPath)
   }, [metadata, props.navigatorEntry])
 
-  const shouldDropLinesInterceptMouseEvents = dropTargetHintType != null
+  const shouldDropLinesInterceptMouseEvents = true
 
   return (
     <div
