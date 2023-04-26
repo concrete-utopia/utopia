@@ -3,48 +3,54 @@ import {
   ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
+import {
+  InsertionPath,
+  isChildInsertionPath,
+  isConditionalClauseInsertionPath,
+} from '../../components/editor/store/insertion-path'
 import Utils, { addToArrayAtIndexPosition, IndexPosition } from '../../utils/utils'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
+import * as EP from '../shared/element-path'
 import {
   ElementsWithin,
+  emptyComments,
+  getJSXAttribute,
+  isIntrinsicElement,
   isJSExpressionOtherJavaScript,
   isJSXAttributeValue,
+  isJSXConditionalExpression,
   isJSXElement,
-  isJSXTextBlock,
-  isUtopiaJSXComponent,
-  JSXElement,
-  JSXElementChild,
-  JSXTextBlock,
-  TopLevelElement,
-  UtopiaJSXComponent,
+  isJSXElementLike,
   isJSXFragment,
-  getJSXAttribute,
-  Param,
+  isJSXTextBlock,
+  isSpreadAssignment,
+  isUtopiaJSXComponent,
+  JSExpression,
+  jsExpressionValue,
+  JSXArrayElement,
   JSXAttributes,
   JSXAttributesPart,
-  JSExpression,
-  JSXArrayElement,
-  JSXProperty,
-  isSpreadAssignment,
-  modifiableAttributeIsAttributeOtherJavaScript,
+  JSXElement,
+  JSXElementChild,
   jsxElementName,
   jsxElementNameEquals,
-  isJSXElementLike,
-  isJSXConditionalExpression,
-  emptyComments,
-  jsExpressionValue,
-  isIntrinsicElement,
-  jsxFragment,
-  JSXConditionalExpression,
+  JSXProperty,
+  JSXTextBlock,
+  modifiableAttributeIsAttributeOtherJavaScript,
+  Param,
+  TopLevelElement,
+  UtopiaJSXComponent,
 } from '../shared/element-template'
+import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
+import { set } from '../shared/optics/optic-utilities'
+import { forceNotNull } from '../shared/optional-utils'
 import {
+  Imports,
   isParseSuccess,
   isTextFile,
-  StaticElementPathPart,
   StaticElementPath,
-  ElementPath,
-  Imports,
+  StaticElementPathPart,
 } from '../shared/project-file-types'
-import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import {
   fixUtopiaElement,
@@ -53,28 +59,12 @@ import {
   getUtopiaID,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
-import { getStoryboardElementPath } from './scene-utils'
-import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import {
-  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
-  maybeBranchConditionalCase,
 } from './conditionals'
-import { modify, set } from '../shared/optics/optic-utilities'
-import {
-  childInsertionPath,
-  getElementPathFromInsertionPath,
-  InsertionPath,
-  isChildInsertionPath,
-  isConditionalClauseInsertionPath,
-} from '../../components/editor/store/insertion-path'
-import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
-import { isNullJSXAttributeValue } from '../shared/element-template'
-import { insert } from '../shared/array-utils'
+import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -553,113 +543,6 @@ export function insertJSXElementChild(
     }
   })
   return insertChildAndDetails(updatedComponents, null) // TODO is this wrapper type needed?
-}
-
-/** @deprecated reason: use insertJSXElementChild instead! **/
-export function insertJSXElementChild_DEPRECATED(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  targetParent: InsertionPath | null,
-  elementToInsert: JSXElementChild,
-  components: Array<UtopiaJSXComponent>,
-  indexPosition: IndexPosition | null,
-): InsertChildAndDetails {
-  const makeE = () => {
-    // TODO delete me
-    throw new Error('Should not attempt to create empty elements.')
-  }
-  function getConditionalCase(
-    conditional: JSXConditionalExpression,
-    parentPath: ElementPath,
-    target: InsertionPath,
-  ) {
-    if (isConditionalClauseInsertionPath(target)) {
-      return target.clause
-    }
-
-    // TODO this should be deleted and an invariant error should be thrown
-    return (
-      maybeBranchConditionalCase(
-        EP.parentPath(parentPath),
-        conditional,
-        target.intendedParentPath,
-      ) ?? 'true-case'
-    )
-  }
-
-  const targetParentIncludingStoryboardRoot =
-    targetParent ??
-    optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
-
-  if (targetParentIncludingStoryboardRoot == null) {
-    return insertChildAndDetails(components)
-  } else {
-    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
-    let details: string | null = null
-    let importsToAdd: Imports = {}
-    const updatedComponents = transformJSXComponentAtPath(
-      components,
-      parentPath,
-      (parentElement) => {
-        if (isJSXConditionalExpression(parentElement)) {
-          // Determine which clause of the conditional we want to modify.
-          const conditionalCase = getConditionalCase(
-            parentElement,
-            parentPath,
-            targetParentIncludingStoryboardRoot,
-          )
-          const toClauseOptic =
-            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
-          // Update the clause if it currently holds a null value.
-          return modify(
-            toClauseOptic,
-            (clauseValue) => {
-              if (isNullJSXAttributeValue(clauseValue)) {
-                return elementToInsert
-              } else if (isJSXFragment(clauseValue)) {
-                return parentElement
-              } else {
-                // for wrapping multiple elements
-                importsToAdd = {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
-                    importedWithName: null,
-                  },
-                }
-                return jsxFragment(
-                  generateUidWithExistingComponents(projectContents),
-                  [elementToInsert, clauseValue],
-                  false,
-                )
-              }
-            },
-            parentElement,
-          )
-        } else if (isJSXElementLike(parentElement)) {
-          let updatedChildren: Array<JSXElementChild>
-          if (indexPosition == null) {
-            updatedChildren = parentElement.children.concat(elementToInsert)
-          } else {
-            updatedChildren = Utils.addToArrayWithFill(
-              elementToInsert,
-              parentElement.children,
-              indexPosition,
-              makeE,
-            )
-          }
-          return {
-            ...parentElement,
-            children: updatedChildren,
-          }
-        } else {
-          return parentElement
-        }
-      },
-    )
-
-    return insertChildAndDetails(updatedComponents, details, importsToAdd)
-  }
 }
 
 export function getIndexInParent(

@@ -7,7 +7,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath_DEPRECATED,
+  insertElementAtPath,
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { JSXElementChild } from '../../../core/shared/element-template'
@@ -60,9 +60,7 @@ export const runAddElement: CommandFunction<AddElement> = (
     ) => {
       const componentsNewParent = getUtopiaJSXComponentsFromSuccess(parentSuccess)
 
-      const insertionResult = insertElementAtPath_DEPRECATED(
-        editorState.projectContents,
-        underlyingFilePathNewParent,
+      const insertionResult = insertElementAtPath(
         command.parentPath,
         command.element,
         componentsNewParent,

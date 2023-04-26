@@ -12,7 +12,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath_DEPRECATED,
+  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
@@ -58,9 +58,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const insertionResult = insertElementAtPath_DEPRECATED(
-              editorState.projectContents,
-              underlyingFilePathTarget,
+            const insertionResult = insertElementAtPath(
               command.newParent,
               underlyingElementTarget,
               withElementRemoved,
@@ -86,9 +84,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
-            const insertionResult = insertElementAtPath_DEPRECATED(
-              editorState.projectContents,
-              underlyingFilePathNewParent,
+            const insertionResult = insertElementAtPath(
               command.newParent,
               underlyingElementTarget,
               componentsNewParent,

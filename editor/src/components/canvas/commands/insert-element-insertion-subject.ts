@@ -10,7 +10,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath_DEPRECATED,
+  insertElementAtPath,
 } from '../../editor/store/editor-state'
 import { childInsertionPath } from '../../editor/store/insertion-path'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
@@ -59,9 +59,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         return
       }
 
-      const insertionResult = insertElementAtPath_DEPRECATED(
-        editor.projectContents,
-        underlyingFilePath,
+      const insertionResult = insertElementAtPath(
         childInsertionPath(targetParent),
         subject.element,
         utopiaComponents,

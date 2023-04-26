@@ -414,7 +414,6 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
-  insertElementAtPath_DEPRECATED,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -2286,9 +2285,7 @@ export const UPDATE_FNS = {
           return success
         }
 
-        const withInsertedElement = insertElementAtPath_DEPRECATED(
-          editor.projectContents,
-          editor.canvas.openFile?.filename ?? null,
+        const withInsertedElement = insertElementAtPath(
           childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
@@ -4986,9 +4983,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.longForm,
             )
 
-            withInsertedElement = insertElementAtPath_DEPRECATED(
-              editor.projectContents,
-              openFilename,
+            withInsertedElement = insertElementAtPath(
               childInsertionPath(action.targetParent),
               element,
               utopiaComponents,
