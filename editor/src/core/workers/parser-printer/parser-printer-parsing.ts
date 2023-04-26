@@ -2142,10 +2142,15 @@ export function parseOutJSXElements(
       }
 
       function handleConditionalExpression(
+        fullElement: TS.JsxExpression,
         expression: TS.ConditionalExpression,
         comments: ParsedComments,
       ): Either<string, SuccessfullyParsedElement> {
-        const possibleConditional = produceConditionalFromExpression(expression, comments)
+        const possibleConditional = produceConditionalFromExpression(
+          fullElement,
+          expression,
+          comments,
+        )
         return mapEither((success) => {
           highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
           propsUsed.push(...success.propsUsed)
@@ -2195,6 +2200,7 @@ export function parseOutJSXElements(
           }
           case TS.SyntaxKind.ConditionalExpression: {
             const possibleCondition = handleConditionalExpression(
+              null as any,
               elem,
               getConditionalExpressionComments(elem),
             )
@@ -2211,6 +2217,7 @@ export function parseOutJSXElements(
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
               parseResult = handleConditionalExpression(
+                elem,
                 elem.expression,
                 getConditionalElementComments(elem),
               )
@@ -2419,6 +2426,7 @@ export function parseOutJSXElements(
   }
 
   function produceConditionalFromExpression(
+    fullElement: TS.JsxExpression,
     expression: TS.ConditionalExpression,
     comments: ParsedComments,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
@@ -2470,6 +2478,24 @@ export function parseOutJSXElements(
       ? expression.whenFalse.expression
       : expression.whenFalse
     const whenFalseBlock = parseClause(innerWhenFalse)
+
+    const trueBlockString =
+      whenTrueBlock.type === 'RIGHT' &&
+      whenTrueBlock.value.value.type === 'ATTRIBUTE_VALUE' &&
+      typeof whenTrueBlock.value.value.value === 'string'
+
+    const falseBlockString =
+      whenFalseBlock.type === 'RIGHT' &&
+      whenFalseBlock.value.value.type === 'ATTRIBUTE_VALUE' &&
+      typeof whenFalseBlock.value.value.value === 'string'
+
+    if (trueBlockString && falseBlockString) {
+      // actually, do not parse this as a ternary, rather as an ordinary expression!
+      return mapEither(
+        (e) => withParserMetadata(e, {}, [], []),
+        produceArbitraryBlockFromJsxExpression(fullElement),
+      )
+    }
 
     return applicative3Either<
       string,
