@@ -294,8 +294,6 @@ const DesignPanelRootInner = React.memo(() => {
               flexGrow: 1,
               overflow: 'hidden',
               position: 'relative',
-              // the following line prevents a user-set font from applying to the navigator and floating menus
-              fontFamily: 'utopian-inter',
             }}
           >
             {isCanvasVisible && navigatorVisible ? (
@@ -416,8 +414,6 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
           flexGrow: 0,
           flexShrink: 0,
           paddingBottom: 100,
-          // the following line prevents a user-set font from applying to the inspector
-          fontFamily: 'utopian-inter',
         }}
       >
         {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
