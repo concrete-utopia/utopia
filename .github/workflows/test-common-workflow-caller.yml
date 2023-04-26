@@ -1,0 +1,9 @@
+name: Test Common Workflow Caller
+on:
+  pull_request:
+
+jobs:
+  call-the-other-one:
+    name: Call the other test workflow
+    uses: ./.github/workflows/test-common-workflow.yml
+    secrets: inherit
