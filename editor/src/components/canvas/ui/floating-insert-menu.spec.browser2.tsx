@@ -201,6 +201,7 @@ describe('Floating insert menu', () => {
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
         {
+          // @utopia/uid=conditional
           [].length === 0 ? null : "Hello there"
         }
         </div>
@@ -212,6 +213,10 @@ describe('Floating insert menu', () => {
 
       const slot = editor.renderedDOM.getByText('Conditional')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
+      ])
 
       await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
 
@@ -314,7 +319,8 @@ describe('Floating insert menu', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-        {true ? /* @utopia/uid=conditional */ (
+        {/* @utopia/uid=conditional */
+          true ?  (
           <img
             style={{
               width: '64px',
@@ -322,7 +328,7 @@ describe('Floating insert menu', () => {
               position: 'absolute',
             }}
             src='/editor/icons/favicons/favicon-128.png?hash=3334bc1ac8ae28310d92d7ad97c4b466428cd1e7'
-            data-uid='9ee'
+            data-uid='img'
             data-label='img'
           />
         ) : null}
@@ -335,6 +341,10 @@ describe('Floating insert menu', () => {
 
       const slot = editor.renderedDOM.getByText('img')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/img',
+      ])
 
       await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
 
