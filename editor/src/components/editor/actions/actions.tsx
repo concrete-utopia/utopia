@@ -413,7 +413,6 @@ import {
   regularNavigatorEntryOptic,
   ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
-  insertElementAtPath_DEPRECATED,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -2256,7 +2255,6 @@ export const UPDATE_FNS = {
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: ElementPath[] = []
-    let detailsOfUpdate: string | null = null
     const withNewElement = modifyUnderlyingTargetElement(
       action.parent,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
@@ -2278,15 +2276,12 @@ export const UPDATE_FNS = {
           return success
         }
 
-        const withInsertedElement = insertElementAtPath_DEPRECATED(
-          editor.projectContents,
-          editor.canvas.openFile?.filename ?? null,
+        const withInsertedElement = insertElementAtPath(
           childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
           null,
         )
-        detailsOfUpdate = withInsertedElement.insertionDetails
 
         const uid = getUtopiaID(action.jsxElement)
         const newPath = EP.appendToPath(targetParent, uid)
@@ -4976,9 +4971,7 @@ export const UPDATE_FNS = {
               action.toInsert.element.longForm,
             )
 
-            withInsertedElement = insertElementAtPath_DEPRECATED(
-              editor.projectContents,
-              openFilename,
+            withInsertedElement = insertElementAtPath(
               childInsertionPath(action.targetParent),
               element,
               utopiaComponents,
