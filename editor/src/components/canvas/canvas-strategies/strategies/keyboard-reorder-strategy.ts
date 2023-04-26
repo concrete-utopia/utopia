@@ -87,12 +87,7 @@ export function keyboardReorderStrategy(
         } else {
           return strategyApplicationResult(
             [
-              reorderElement(
-                'always',
-                target,
-                absolute(newIndex),
-                'use-deprecated-insertJSXElementChild',
-              ),
+              reorderElement('always', target, absolute(newIndex)),
               setElementsToRerenderCommand(siblings),
               updateHighlightedViews('mid-interaction', []),
             ],

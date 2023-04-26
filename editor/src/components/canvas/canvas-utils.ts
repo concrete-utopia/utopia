@@ -505,12 +505,9 @@ export function updateFramesOfScenesAndComponents(
                 return success
               } else {
                 const updatedComponents = reorderComponent(
-                  workingEditorState.projectContents,
-                  workingEditorState.canvas.openFile?.filename ?? null,
                   components,
                   underlyingTarget,
                   absolute(frameAndTarget.newIndex),
-                  'use-deprecated-insertJSXElementChild',
                 )
                 return {
                   ...success,
@@ -2867,17 +2864,14 @@ export function duplicate(
   }
 }
 
-export type UseNewInsertJsxElementChild =
-  | 'use-new-insertJSXElementChild'
-  | 'use-deprecated-insertJSXElementChild'
+// export type UseNewInsertJsxElementChild =
+//   | 'use-new-insertJSXElementChild'
+//   | 'use-deprecated-insertJSXElementChild'
 
 export function reorderComponent(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: ElementPath,
   indexPosition: IndexPosition,
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
@@ -2896,22 +2890,12 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents =
-      useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
-        ? insertElementAtPath(
-            childInsertionPath(parentPath),
-            jsxElement,
-            workingComponents,
-            adjustedIndexPosition,
-          ).components
-        : insertElementAtPath_DEPRECATED(
-            projectContents,
-            openFile,
-            childInsertionPath(parentPath),
-            jsxElement,
-            workingComponents,
-            adjustedIndexPosition,
-          ).components
+    workingComponents = insertElementAtPath(
+      childInsertionPath(parentPath),
+      jsxElement,
+      workingComponents,
+      adjustedIndexPosition,
+    ).components
   }
 
   return workingComponents
