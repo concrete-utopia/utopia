@@ -9,6 +9,7 @@ on:
         description: 'Branch or SHA to tag (defaults to master)'
         required: false
   workflow_call:
+    secrets: inherit
 
 jobs:
   release:
