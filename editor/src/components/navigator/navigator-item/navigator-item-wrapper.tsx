@@ -27,8 +27,11 @@ import {
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import {
+  FakeNavigatorItemContainer,
+  FakeNavigatorItemContainerProps,
   NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
+  NavigatorItemDragAndDropWrapperPropsBase,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
@@ -279,10 +282,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       'NavigatorItemWrapper',
     )
 
-  const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
+  const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     index: props.index,
     editorDispatch: dispatch,
-    navigatorEntry: props.navigatorEntry,
     entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
@@ -299,6 +301,18 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
 
-  return <NavigatorItemContainer {...navigatorItemProps} />
+  if (props.navigatorEntry.type === 'REGULAR') {
+    const entryProps: NavigatorItemDragAndDropWrapperProps = {
+      ...navigatorItemProps,
+      navigatorEntry: props.navigatorEntry,
+    }
+    return <NavigatorItemContainer {...entryProps} />
+  }
+
+  const entryProps: FakeNavigatorItemContainerProps = {
+    ...navigatorItemProps,
+    navigatorEntry: props.navigatorEntry,
+  }
+  return <FakeNavigatorItemContainer {...entryProps} />
 })
 NavigatorItemWrapper.displayName = 'NavigatorItemWrapper'

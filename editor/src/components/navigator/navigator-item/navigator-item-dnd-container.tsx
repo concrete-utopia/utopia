@@ -27,7 +27,9 @@ import {
   isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
   NavigatorEntry,
+  RegularNavigatorEntry,
   regularNavigatorEntry,
+  SyntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import {
@@ -74,9 +76,8 @@ export interface DragSelection {
   index: number
 }
 
-export interface NavigatorItemDragAndDropWrapperProps {
+export interface NavigatorItemDragAndDropWrapperPropsBase {
   index: number
-  navigatorEntry: NavigatorEntry
   entryDepth: number
   appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
@@ -92,6 +93,15 @@ export interface NavigatorItemDragAndDropWrapperProps {
   renamingTarget: ElementPath | null
   windowStyle: React.CSSProperties
   visibleNavigatorTargets: Array<NavigatorEntry>
+}
+
+export interface NavigatorItemDragAndDropWrapperProps
+  extends NavigatorItemDragAndDropWrapperPropsBase {
+  navigatorEntry: RegularNavigatorEntry
+}
+
+export interface FakeNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
+  navigatorEntry: ConditionalClauseNavigatorEntry | SyntheticNavigatorEntry
 }
 
 function notDescendant(
@@ -416,9 +426,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
             editorState.jsxMetadata,
             props.navigatorEntry.elementPath,
           )
-        const syntheticCanReparent =
-          isSyntheticNavigatorEntry(props.navigatorEntry) &&
-          !isJSXArbitraryBlock(props.navigatorEntry.childOrAttribute)
+        const syntheticCanReparent = isSyntheticNavigatorEntry(props.navigatorEntry)
         return regularCanReparent || syntheticCanReparent
       },
     }),
@@ -712,5 +720,25 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         margin={margin}
       />
     </div>
+  )
+})
+
+export const FakeNavigatorItemContainer = React.memo((props: FakeNavigatorItemContainerProps) => {
+  return (
+    <NavigatorItem
+      navigatorEntry={props.navigatorEntry}
+      index={props.index}
+      getSelectedViewsInRange={props.getSelectedViewsInRange}
+      noOfChildren={props.noOfChildren}
+      label={props.label}
+      dispatch={props.editorDispatch}
+      isHighlighted={props.highlighted}
+      isElementVisible={props.isElementVisible}
+      renamingTarget={props.renamingTarget}
+      collapsed={props.collapsed}
+      selected={props.selected}
+      parentOutline={'none'}
+      visibleNavigatorTargets={props.visibleNavigatorTargets}
+    />
   )
 })
