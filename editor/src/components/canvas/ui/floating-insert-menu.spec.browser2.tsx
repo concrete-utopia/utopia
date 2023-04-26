@@ -196,6 +196,33 @@ describe('Floating insert menu', () => {
   })
 
   describe('add element to conditional', () => {
+    it(`can't add element to the root of a conditional`, async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? null : "Hello there"
+        }
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const initialCode = getPrintedUiJsCode(editor.getEditorState())
+
+      const slot = editor.renderedDOM.getByText('Conditional')
+      await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
+      ])
+
+      await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialCode)
+      expectChildrenNotSupportedToastToBePresent(editor)
+    })
     it('add element to true branch of a conditional', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
@@ -292,7 +319,8 @@ describe('Floating insert menu', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-        {true ? /* @utopia/uid=conditional */ (
+        {/* @utopia/uid=conditional */
+          true ?  (
           <img
             style={{
               width: '64px',
@@ -300,7 +328,7 @@ describe('Floating insert menu', () => {
               position: 'absolute',
             }}
             src='/editor/icons/favicons/favicon-128.png?hash=3334bc1ac8ae28310d92d7ad97c4b466428cd1e7'
-            data-uid='9ee'
+            data-uid='img'
             data-label='img'
           />
         ) : null}
@@ -314,9 +342,14 @@ describe('Floating insert menu', () => {
       const slot = editor.renderedDOM.getByText('img')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/img',
+      ])
+
       await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialCode)
+      expectChildrenNotSupportedToastToBePresent(editor)
     })
 
     it('add element to element in conditional slot - does supports children', async () => {
@@ -397,4 +430,13 @@ async function insertViaAddElementPopup(editor: EditorRenderResult, query: strin
     fireEvent.blur(searchBox)
     fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
   })
+}
+
+function expectChildrenNotSupportedToastToBePresent(editor: EditorRenderResult) {
+  expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+  expect(editor.getEditorState().editor.toasts[0].level).toEqual('INFO')
+  expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+    'Selected element does not support children',
+  )
+  expect(editor.getEditorState().editor.toasts[0].persistent).toEqual(false)
 }
