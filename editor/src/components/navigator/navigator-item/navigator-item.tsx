@@ -465,7 +465,9 @@ export const NavigatorItem: React.FunctionComponent<
       } else {
         const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
         if (conditionalCase != null) {
-          if (!isChildOfActiveBranchOfConditional(path, conditionalCase, metadata)) {
+          if (isChildOfActiveBranchOfConditional(path, conditionalCase, metadata)) {
+            return 'clear-override'
+          } else {
             return conditionalCase
           }
         }
