@@ -611,10 +611,13 @@ function collectMetadataForElement(
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
+  textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+
+  const textContentsMaybe = element.textContent
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(
     element,
@@ -628,6 +631,7 @@ function collectMetadataForElement(
     globalFrame: globalFrame,
     localFrame: localFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
+    textContentsMaybe: textContentsMaybe,
   }
 }
 
@@ -727,7 +731,7 @@ function collectAndCreateMetadataForElement(
   selectedViews: ElementPath[],
   invalidatedPaths: Set<string>,
 ) {
-  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
+  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject, textContentsMaybe } =
     collectMetadataForElement(
       element,
       parentPoint,
@@ -761,6 +765,7 @@ function collectAndCreateMetadataForElement(
       null,
       null,
       'not-a-conditional',
+      textContentsMaybe,
     )
   })
 
