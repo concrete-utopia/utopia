@@ -588,8 +588,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
         ),
         want: `
         <div data-uid='root'>
@@ -622,8 +623,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'false-case',
         ),
         want: `
         <div data-uid='root'>

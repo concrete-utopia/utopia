@@ -7,11 +7,11 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath_DEPRECATED,
+  insertElementAtPath,
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { JSXElementChild } from '../../../core/shared/element-template'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import { Imports } from '../../../core/shared/project-file-types'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { IndexPosition } from '../../../utils/utils'
@@ -60,9 +60,7 @@ export const runAddElement: CommandFunction<AddElement> = (
     ) => {
       const componentsNewParent = getUtopiaJSXComponentsFromSuccess(parentSuccess)
 
-      const insertionResult = insertElementAtPath_DEPRECATED(
-        editorState.projectContents,
-        underlyingFilePathNewParent,
+      const insertionResult = insertElementAtPath(
         command.parentPath,
         command.element,
         componentsNewParent,
