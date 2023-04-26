@@ -216,7 +216,7 @@ function onHoverDropTargetLine(
       propsOfDraggedItem.navigatorEntry.elementPath,
       propsOfDropTargetItem.navigatorEntry.elementPath,
     ) ||
-    isHintDisallowed(propsOfDraggedItem.navigatorEntry, metadata)
+    isHintDisallowed(propsOfDropTargetItem.navigatorEntry, metadata)
   ) {
     return propsOfDraggedItem.editorDispatch(
       [showNavigatorDropTargetHint(null, null, null)],
@@ -390,14 +390,14 @@ function isInsideConditional(
 }
 
 function isHintDisallowed(
-  moveToEntry: NavigatorEntry | null,
+  navigatorEntry: NavigatorEntry | null,
   metadata: ElementInstanceMetadataMap,
 ) {
   return (
-    moveToEntry == null ||
-    isConditionalClauseNavigatorEntry(moveToEntry) || // don't show top / bottom hints on TRUE/FALSE entries
-    isInsideConditional(moveToEntry, metadata) || // don't show top / bottom hints on elements that are the root of a conditional branch
-    isSyntheticNavigatorEntry(moveToEntry) // don't show top / bottom hints on empty slots
+    navigatorEntry == null ||
+    isConditionalClauseNavigatorEntry(navigatorEntry) || // don't show top / bottom hints on TRUE/FALSE entries
+    isSyntheticNavigatorEntry(navigatorEntry) || // don't show top / bottom hints on empty slots
+    isInsideConditional(navigatorEntry, metadata) // don't show top / bottom hints on elements that are the root of a conditional branch
   )
 }
 
@@ -611,10 +611,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       return 'child'
     }
 
-    if (isConditionalRoot(moveToEntry, metadata) || props.navigatorEntry.type !== 'REGULAR') {
-      return 'none'
-    }
-
     if (dropTargetHintType !== 'reparent') {
       const wouldBeParentPath = EP.parentPath(moveToEntry.elementPath)
       if (
@@ -648,6 +644,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           return 'child'
         }
       }
+
       return 'none'
     } else if (parentConditional != null && equalEntries) {
       // it's a conditional branch item
