@@ -36,3 +36,4 @@ jobs:
     name: Trigger Tag and Release Workflow
     needs: [system-test]
     uses: ./.github/workflows/tag-release.yml
+    secrets: inherit
