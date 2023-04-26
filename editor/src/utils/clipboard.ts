@@ -42,14 +42,10 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   childInsertionPath,
-  conditionalClauseInsertionPath,
+  getDefaultInsertionPathForElementPath,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
-import {
-  getConditionalCaseCorrespondingToBranchPath,
-  isEmptyConditionalBranch,
-  maybeBranchConditionalCase,
-} from '../core/model/conditionals'
+import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -315,21 +311,13 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        const conditionalClause = getConditionalCaseCorrespondingToBranchPath(targetPath, metadata)
-
-        const insertionPath: InsertionPath | null = MetadataUtils.targetSupportsChildren(
+        return getDefaultInsertionPathForElementPath(
+          targetPath,
           projectContents,
-          metadata,
           nodeModules,
           openFile,
-          targetPath,
+          metadata,
         )
-          ? childInsertionPath(targetPath)
-          : conditionalClause != null && isEmptyConditionalBranch(targetPath, metadata)
-          ? conditionalClauseInsertionPath(EP.parentPath(targetPath), conditionalClause)
-          : null
-
-        return insertionPath
       }
     }
   }
