@@ -1675,13 +1675,7 @@ describe('Inserting into flex row', () => {
             />
           ) : (
             <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: 100,
-                height: 300,
-              }}
+              style={{ width: 100, height: 300 }}
               data-uid='false-branch'
             >
               False branch

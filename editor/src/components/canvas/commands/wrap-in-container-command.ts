@@ -1,5 +1,6 @@
 import {
   emptyComments,
+  isJSXAttributesEntry,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpression,
@@ -24,10 +25,12 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { ProjectContentTreeRoot } from '../../assets'
-import { JSXAttributesPart, JSXAttributesEntry } from '../../../core/shared/element-template'
+import { JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
 import { childInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
+import { CSSProperties } from 'react'
+import { Property } from 'csstype'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -160,66 +163,61 @@ const getInsertionSubjectWrapper = (
 const defaultFalseBranchSideLength = 100
 const defaultFalseBranchText = 'False branch'
 
+function getAttributesEntryProp<T>(e: JSXAttributesEntry, key: string): T | null {
+  if (e.value.type !== 'ATTRIBUTE_VALUE') {
+    return null
+  }
+  return e.value.value[key]
+}
+
+function getStyleAttributesEntry(element: JSXElementChild): JSXAttributesEntry {
+  const emptyStyle: JSXAttributesEntry = {
+    type: 'JSX_ATTRIBUTES_ENTRY',
+    key: 'style',
+    value: jsExpressionValue({}, emptyComments),
+    comments: emptyComments,
+  }
+
+  if (element.type !== 'JSX_ELEMENT') {
+    return emptyStyle
+  }
+  const found = element.props.find((p) => isJSXAttributesEntry(p) && p.key === 'style')
+  if (found == null || found.type !== 'JSX_ATTRIBUTES_ENTRY') {
+    return emptyStyle
+  }
+  return found
+}
+
 function getInsertionSubjectWrapperConditionalFalseBranch(
   projectContents: ProjectContentTreeRoot,
   trueBranch: JSXElementChild,
 ): JSXElementChild {
-  function isStyleProp(p: JSXAttributesPart): boolean {
-    return p.type === 'JSX_ATTRIBUTES_ENTRY' && p.key === 'style'
-  }
-
-  function getStyle(element: JSXElementChild): JSXAttributesEntry {
-    const emptyStyle: JSXAttributesEntry = {
-      type: 'JSX_ATTRIBUTES_ENTRY',
-      key: 'style',
-      value: jsExpressionValue({}, emptyComments),
-      comments: emptyComments,
-    }
-
-    if (element.type !== 'JSX_ELEMENT') {
-      return emptyStyle
-    }
-    const found = element.props.find(isStyleProp)
-    if (found == null || found.type !== 'JSX_ATTRIBUTES_ENTRY') {
-      return emptyStyle
-    }
-    return found
-  }
-
-  function getNumberProp(e: JSXAttributesEntry, key: string): number | null {
-    if (e.value.type !== 'ATTRIBUTE_VALUE') {
-      return null
-    }
-    const value = e.value.value[key]
-    if (typeof value !== 'number') {
-      return null
-    }
-    return value
-  }
-
   const uid = generateUidWithExistingComponents(projectContents)
-  const trueBranchStyle = getStyle(trueBranch)
+  const trueBranchStyle = getStyleAttributesEntry(trueBranch)
+
+  let style: CSSProperties = {}
+  const position = getAttributesEntryProp<Property.Position>(trueBranchStyle, 'position')
+  if (position != null) {
+    style.position = position
+    if (style.position != null) {
+      style.left = getAttributesEntryProp<number>(trueBranchStyle, 'left') ?? 0
+      style.top = getAttributesEntryProp<number>(trueBranchStyle, 'top') ?? 0
+    }
+  }
+  style.width = Math.max(
+    getAttributesEntryProp<number>(trueBranchStyle, 'width') ?? 0,
+    defaultFalseBranchSideLength,
+  )
+  style.height = Math.max(
+    getAttributesEntryProp<number>(trueBranchStyle, 'height') ?? 0,
+    defaultFalseBranchSideLength,
+  )
 
   return jsxElement(
     'div',
     uid,
     jsxAttributesFromMap({
-      style: jsExpressionValue(
-        {
-          position: 'absolute',
-          left: getNumberProp(trueBranchStyle, 'left') ?? 0,
-          top: getNumberProp(trueBranchStyle, 'top') ?? 0,
-          width: Math.max(
-            getNumberProp(trueBranchStyle, 'width') ?? 0,
-            defaultFalseBranchSideLength,
-          ),
-          height: Math.max(
-            getNumberProp(trueBranchStyle, 'height') ?? 0,
-            defaultFalseBranchSideLength,
-          ),
-        },
-        emptyComments,
-      ),
+      style: jsExpressionValue(style, emptyComments),
       'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [jsxTextBlock(defaultFalseBranchText)],

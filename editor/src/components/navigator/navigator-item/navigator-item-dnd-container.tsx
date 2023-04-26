@@ -52,6 +52,8 @@ import {
 import {
   ConditionalCase,
   findMaybeConditionalExpression,
+  getConditionalBranch,
+  isNonEmptyConditionalBranch,
   maybeBranchConditionalCase,
 } from '../../../core/model/conditionals'
 import { isRight } from '../../../core/shared/either'
@@ -98,23 +100,6 @@ function notDescendant(
   draggedItem: ElementPath,
 ): boolean {
   return !EP.isDescendantOfOrEqualTo(draggedOnto.navigatorEntry.elementPath, draggedItem)
-}
-
-function isNonEmptyConditionalBranch(
-  elementPath: ElementPath,
-  jsxMetadata: ElementInstanceMetadataMap,
-): boolean {
-  const parentPath = EP.parentPath(elementPath)
-  const conditionalParent = findMaybeConditionalExpression(parentPath, jsxMetadata)
-  if (conditionalParent == null) {
-    return false
-  }
-  const clause = maybeBranchConditionalCase(parentPath, conditionalParent, elementPath)
-  if (clause == null) {
-    return false
-  }
-  const branch = getConditionalBranch(conditionalParent, clause)
-  return !isNullJSXAttributeValue(branch)
 }
 
 function canDrop(
@@ -399,10 +384,6 @@ function isInsideConditional(
     entry != null &&
     findMaybeConditionalExpression(EP.parentPath(entry.elementPath), jsxMetadata) != null
   )
-}
-
-function getConditionalBranch(conditional: JSXConditionalExpression, clause: ConditionalCase) {
-  return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 }
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {

@@ -17,9 +17,12 @@ import React from 'react'
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
 const realCreateElement = React.createElement
 let renderCount = 0
+const renderInfo: { current: Array<string> } = { current: [] }
 const monkeyCreateElement = (...params: any[]) => {
   renderCount++
-  return (realCreateElement as any)(...params)
+  const el = (realCreateElement as any)(...params)
+  renderInfo.current.push(getNamedPath(el))
+  return el
 }
 ;(React as any).createElement = monkeyCreateElement
 
@@ -56,6 +59,7 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
+import { getNamedPath } from '../../utils/react-helpers'
 import {
   DispatchPriority,
   EditorAction,
@@ -171,6 +175,8 @@ export interface EditorRenderResult {
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
+  clearRenderInfo: () => void
+  getRenderInfo: () => Array<string>
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
 }
@@ -461,6 +467,8 @@ label {
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
+    clearRenderInfo: () => (renderInfo.current = []),
+    getRenderInfo: () => renderInfo.current,
     clearRecordedActions: () => {
       recordedActions = []
     },
