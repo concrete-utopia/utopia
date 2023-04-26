@@ -26,11 +26,7 @@ import {
   InsertionPath,
 } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
-import {
-  JSXConditionalExpression,
-  jsxFragment,
-  jsxFragmentWithoutUID,
-} from '../../../core/shared/element-template'
+import { JSXConditionalExpression, jsxFragment } from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
 import { expectNoAction, expectSingleUndo2Saves } from '../../../utils/utils.test-utils'
 
@@ -588,8 +584,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
         ),
         want: `
         <div data-uid='root'>
@@ -622,8 +619,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'false-case',
         ),
         want: `
         <div data-uid='root'>

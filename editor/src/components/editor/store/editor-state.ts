@@ -1907,12 +1907,11 @@ export function addSceneToJSXComponents(
     const storyboardComponentElementPath = EP.elementPath([
       staticElementPath([storyboardComponentUID]),
     ])
-    return insertJSXElementChild(
-      insertionPathFromMetadata(storyboardComponentElementPath, jsxMetadata),
-      newSceneElement,
-      components,
-      null,
-    )
+    const insertionPath = insertionPathFromMetadata(storyboardComponentElementPath, jsxMetadata)
+    if (insertionPath == null) {
+      throw new Error('Invalid insertion path')
+    }
+    return insertJSXElementChild(insertionPath, newSceneElement, components, null)
   } else {
     return insertChildAndDetails(components)
   }

@@ -44,6 +44,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
+  insertionPathFromMetadata,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 
@@ -117,7 +118,11 @@ export function getActionsForClipboardItems(
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(childInsertionPath(target), elements, metadata)]
+      const insertionPath = insertionPathFromMetadata(target, metadata)
+      if (insertionPath == null) {
+        return []
+      }
+      return [EditorActions.pasteJSXElements(insertionPath, elements, metadata)]
     }, clipboardData)
 
     // Handle adding files into the project like pasted images.

@@ -2,7 +2,9 @@ import type { ElementPath, StaticElementPath } from '../../../core/shared/projec
 import * as EP from '../../../core/shared/element-path'
 import {
   ConditionalCase,
+  findMaybeConditionalExpression,
   getConditionalCaseCorrespondingToBranchPath,
+  isEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
@@ -12,7 +14,7 @@ import {
   ElementInstanceMetadataMap,
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
-import { isRight } from '../../../core/shared/either'
+import { isLeft, isRight } from '../../../core/shared/either'
 import { elementChildSupportsChildrenAlsoText } from '../../../core/model/element-template-utils'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
@@ -142,23 +144,28 @@ export function commonInsertionPathFromArray(
 export function insertionPathFromMetadata(
   path: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
-): InsertionPath {
+): InsertionPath | null {
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-  if (element != null) {
-    const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
-    if (parentMetadata != null && isRight(parentMetadata.element) && isRight(element.element)) {
-      const parent = parentMetadata.element.value
-      if (isJSXConditionalExpression(parent)) {
-        const clause = getConditionalCaseCorrespondingToBranchPath(path, jsxMetadata)
-        if (
-          clause != null &&
-          elementChildSupportsChildrenAlsoText(element.element.value) === 'supportsChildren'
-        ) {
-          return conditionalClauseInsertionPath(path, clause)
-        }
-      }
-    }
+  if (element == null || isLeft(element.element)) {
+    return null
   }
 
-  return childInsertionPath(path)
+  const supportsChildren =
+    elementChildSupportsChildrenAlsoText(element.element.value) !== 'doesNotSupportChildren'
+
+  if (supportsChildren) {
+    return childInsertionPath(path)
+  }
+
+  const parentPath = EP.parentPath(path)
+  const conditionalParent = findMaybeConditionalExpression(parentPath, jsxMetadata)
+  if (conditionalParent != null && isEmptyConditionalBranch(path, jsxMetadata)) {
+    const clause = getConditionalCaseCorrespondingToBranchPath(path, jsxMetadata)
+    if (clause == null) {
+      return null
+    }
+    return conditionalClauseInsertionPath(parentPath, clause)
+  }
+
+  return null
 }

@@ -2811,8 +2811,15 @@ export function duplicate(
               }
             }
 
+            const insertionPath = insertionPathFromMetadata(
+              newParentPath ?? newPath,
+              editor.jsxMetadata,
+            )
+            if (insertionPath == null) {
+              return success
+            }
             const insertResult = insertElementAtPath(
-              insertionPathFromMetadata(newParentPath ?? newPath, editor.jsxMetadata),
+              insertionPath,
               newElement,
               utopiaComponents,
               position(),
