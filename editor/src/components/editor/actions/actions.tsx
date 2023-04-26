@@ -2861,7 +2861,8 @@ export const UPDATE_FNS = {
       }
 
       const existingIDs = getAllUniqueUids(editor.projectContents)
-      return elements.reduce((workingEditorState, currentValue, index) => {
+      let newPaths: Array<ElementPath> = []
+      const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
@@ -2877,6 +2878,7 @@ export const UPDATE_FNS = {
           return workingEditorState
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
+          newPaths.push(newPath)
 
           const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
@@ -2938,6 +2940,16 @@ export const UPDATE_FNS = {
           return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
+
+      // Update the selected views to what has just been created.
+      if (newPaths.length > 0) {
+        return {
+          ...updatedEditorState,
+          selectedViews: newPaths,
+        }
+      } else {
+        return updatedEditorState
+      }
     } else {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
