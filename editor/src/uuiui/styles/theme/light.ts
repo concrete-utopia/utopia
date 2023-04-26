@@ -20,8 +20,8 @@ const lightBase = {
   error: base.red,
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
-  bg1: createUtopiColor('#FDFDFD'),
-  bg2: createUtopiColor('hsl(0,0%,96%)'),
+  bg1: createUtopiColor('lch(99.5 0.01 0)'),
+  bg2: createUtopiColor('lch(97.0 0.01 0)'),
   bg3: createUtopiColor('hsl(0,0%,94%)'),
   bg4: createUtopiColor('hsl(0,0%,92%)'),
   bg5: createUtopiColor('hsl(0,0%,90%)'),
@@ -44,8 +44,8 @@ const lightBase = {
 const lightPrimitives = {
   // backgrounds
   emphasizedBackground: lightBase.bg0,
-  emphasizedBackgroundPop: createUtopiColor('rgba(252,252,252,1)'),
-  emphasizedBackgroundReduced: createUtopiColor('rgba(255,255,255,1)'),
+  emphasizedBackgroundPop: lightBase.bg1,
+  emphasizedBackgroundReduced: base.white,
   neutralBackground: lightBase.bg1,
   secondaryBackground: lightBase.bg2,
   subtleBackground: lightBase.bg3,
