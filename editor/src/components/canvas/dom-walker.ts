@@ -1092,6 +1092,7 @@ function walkCanvasRootFragment(
       null,
       null, // this comes from the Spy Wrapper
       'not-a-conditional',
+      null,
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata
