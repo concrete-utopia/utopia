@@ -4,10 +4,13 @@ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
 import {
+  ConditionalCase,
   conditionalClauseAsBoolean,
+  getConditionalCaseCorrespondingToBranchPath,
   getConditionalClausePath,
   getConditionalFlag,
   isActiveBranchOfOverriddenConditional,
+  isChildOfActiveBranchOfConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -21,7 +24,7 @@ import { FlexRow, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
-import { EditorDispatch } from '../../editor/action-types'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import {
@@ -83,6 +86,45 @@ export interface NavigatorItemInnerProps {
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
+function getSelectionActions(
+  getSelectedViewsInRange: (i: number) => Array<ElementPath>,
+  index: number,
+  elementPath: ElementPath,
+  selected: boolean,
+  event: React.MouseEvent<HTMLDivElement>,
+): Array<EditorAction> {
+  if (!selected) {
+    if (event.metaKey && !event.shiftKey) {
+      // adds to selection
+      return MetaActions.selectComponents([elementPath], true)
+    } else if (event.shiftKey) {
+      // selects range of items
+      const targets = getSelectedViewsInRange(index)
+      return MetaActions.selectComponents(targets, false)
+    } else {
+      return MetaActions.selectComponents([elementPath], false)
+    }
+  } else {
+    return []
+  }
+}
+
+function getConditionalOverrideActions(
+  targetPath: ElementPath,
+  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
+): Array<EditorAction> {
+  switch (conditionalOverrideUpdate) {
+    case 'no-update':
+      return []
+    case 'clear-override':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, null)]
+    case 'true-case':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, true)]
+    case 'false-case':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, false)]
+  }
+}
+
 function selectItem(
   dispatch: EditorDispatch,
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
@@ -90,38 +132,18 @@ function selectItem(
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
-  elementMetadata: ElementInstanceMetadata | null,
+  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
 ) {
   const elementPath = navigatorEntry.elementPath
-  if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-    // Toggle the override
-    const isOverridden = isActiveBranchOfOverriddenConditional(
-      navigatorEntry.clause,
-      elementMetadata,
-    )
-    const newOverride = isOverridden ? null : conditionalClauseAsBoolean(navigatorEntry.clause)
-    dispatch(
-      [EditorActions.setConditionalOverriddenCondition(elementPath, newOverride)],
-      'everyone',
-    )
-  } else {
-    if (elementPath == null) {
-      return
-    }
+  const selectionActions = isConditionalClauseNavigatorEntry(navigatorEntry)
+    ? []
+    : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
-    if (!selected) {
-      if (event.metaKey && !event.shiftKey) {
-        // adds to selection
-        dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
-      } else if (event.shiftKey) {
-        // selects range of items
-        const targets = getSelectedViewsInRange(index)
-        dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
-      } else {
-        dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
-      }
-    }
-  }
+  const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
+    ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
+    : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
+
+  dispatch([...conditionalOverrideActions, ...selectionActions], 'leftpane')
 }
 
 const highlightItem = (
@@ -425,11 +447,33 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditional',
   )
 
-  const elementMetadata = useEditorState(
+  const conditionalOverrideUpdate = useEditorState(
     Substores.metadata,
-    (store) =>
-      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, navigatorEntry.elementPath),
-    'NavigatorItem elementMetadata',
+    (store) => {
+      const path = navigatorEntry.elementPath
+      const metadata = store.editor.jsxMetadata
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        navigatorEntry.elementPath,
+      )
+      if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+        if (isActiveBranchOfOverriddenConditional(navigatorEntry.clause, elementMetadata)) {
+          return 'clear-override'
+        } else {
+          return navigatorEntry.clause
+        }
+      } else {
+        const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
+        if (conditionalCase != null) {
+          if (!isChildOfActiveBranchOfConditional(path, conditionalCase, metadata)) {
+            return conditionalCase
+          }
+        }
+
+        return 'no-update'
+      }
+    },
+    'NavigatorItem conditionalOverrideUpdate',
   )
 
   const isInsideComponent =
@@ -489,9 +533,9 @@ export const NavigatorItem: React.FunctionComponent<
         index,
         selected,
         event,
-        elementMetadata,
+        conditionalOverrideUpdate,
       ),
-    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, elementMetadata],
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, conditionalOverrideUpdate],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),

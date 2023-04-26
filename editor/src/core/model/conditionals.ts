@@ -226,8 +226,13 @@ export function isActiveBranchOfOverriddenConditional(
   const conditional = maybeConditionalExpression(metadata)
   if (conditional == null) {
     return false
-  }
+  } else return isActiveBranchOfOverriddenConditionalFromConditional(clause, conditional)
+}
 
+function isActiveBranchOfOverriddenConditionalFromConditional(
+  clause: ConditionalCase,
+  conditional: JSXConditionalExpression,
+): boolean {
   switch (getConditionalFlag(conditional)) {
     case true:
       return clause === 'true-case'
@@ -240,4 +245,24 @@ export function isActiveBranchOfOverriddenConditional(
 
 export function conditionalClauseAsBoolean(clause: ConditionalCase): boolean {
   return clause === 'true-case'
+}
+
+function booleanAsConditionalClause(bool: boolean): ConditionalCase {
+  return bool ? 'true-case' : 'false-case'
+}
+
+export function isChildOfActiveBranchOfConditional(
+  path: ElementPath,
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(path)
+  const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
+  const conditionValue = parentMetadata?.conditionValue
+
+  if (conditionValue == null || conditionValue === 'not-a-conditional') {
+    return false
+  } else {
+    return booleanAsConditionalClause(conditionValue) === clause
+  }
 }
