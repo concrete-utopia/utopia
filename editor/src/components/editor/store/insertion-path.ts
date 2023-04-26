@@ -1,7 +1,9 @@
 import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
-import { ConditionalCase } from '../../../core/model/conditionals'
-import { getUtopiaID } from '../../../core/shared/uid-utils'
+import {
+  ConditionalCase,
+  getConditionalCaseCorrespondingToBranchPath,
+} from '../../../core/model/conditionals'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -11,6 +13,7 @@ import {
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { isRight } from '../../../core/shared/either'
+import { elementChildSupportsChildrenAlsoText } from '../../../core/model/element-template-utils'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -134,4 +137,28 @@ export function commonInsertionPathFromArray(
       return commonInsertionPath(metadata, working, target)
     }
   }, workingArray[0])
+}
+
+export function insertionPathFromMetadata(
+  path: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): InsertionPath {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (element != null) {
+    const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
+    if (parentMetadata != null && isRight(parentMetadata.element) && isRight(element.element)) {
+      const parent = parentMetadata.element.value
+      if (isJSXConditionalExpression(parent)) {
+        const clause = getConditionalCaseCorrespondingToBranchPath(path, jsxMetadata)
+        if (
+          clause != null &&
+          elementChildSupportsChildrenAlsoText(element.element.value) === 'supportsChildren'
+        ) {
+          return conditionalClauseInsertionPath(path, clause)
+        }
+      }
+    }
+  }
+
+  return childInsertionPath(path)
 }
