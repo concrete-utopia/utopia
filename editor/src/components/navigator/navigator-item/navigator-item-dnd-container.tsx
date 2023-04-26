@@ -137,7 +137,7 @@ function canDrop(
     (dropTarget === 'bottom' || dropTarget === 'top') &&
     isInsideConditional(draggedOnto.navigatorEntry, editorState.jsxMetadata)
   ) {
-    // do nothing when trying to drop in between entries inside a conditional
+    // do nothing when trying to drop next to an element in a branch of a conditional
     return false
   } else {
     const childrenSupportedIfRequired =
