@@ -1,7 +1,6 @@
 name: Test Common Workflow
 on:
   workflow_call:
-    secrets: inherit
 
 jobs:
   log-the-input:
