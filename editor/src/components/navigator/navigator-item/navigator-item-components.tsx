@@ -36,7 +36,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
           position: 'relative',
           opacity: props.shouldBeShown ? 1 : 0,
           zIndex: 1,
-          pointerEvents: props.shouldBeShown && props.shouldAcceptMouseEvents ? 'inherit' : 'none',
+          pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
         }}
       >
         <div
@@ -93,7 +93,7 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
           opacity: props.shouldBeShown ? 1 : 0,
           position: 'relative',
           zIndex: 1,
-          pointerEvents: props.shouldBeShown && props.shouldAcceptMouseEvents ? 'inherit' : 'none',
+          pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
         }}
       >
         <div

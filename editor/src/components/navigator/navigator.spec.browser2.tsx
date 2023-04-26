@@ -13,24 +13,28 @@ import { selectComponents, setNavigatorRenamingTarget } from '../editor/actions/
 import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   navigatorEntryToKey,
   regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
+import { NO_OP } from '../../core/shared/utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
 
-function dragElement(
+const ASYNC_NOOP = async () => NO_OP()
+
+async function dragElement(
   renderResult: EditorRenderResult,
   dragTargetID: string,
   dropTargetID: string,
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
   hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
-): void {
+  midDragCallback: () => Promise<void> = ASYNC_NOOP,
+): Promise<void> {
   const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
   const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
 
@@ -86,6 +90,9 @@ function dragElement(
         buttons: 1,
       }),
     )
+
+    await wait(1)
+    await midDragCallback()
 
     fireEvent(
       dropTarget,
@@ -540,7 +547,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -548,6 +555,24 @@ describe('Navigator', () => {
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+              'before',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
         ),
       )
 
@@ -600,7 +625,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -608,6 +633,24 @@ describe('Navigator', () => {
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+              'after',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
         ),
       )
 
@@ -660,7 +703,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -668,6 +711,24 @@ describe('Navigator', () => {
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+              'after',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
         ),
       )
 
@@ -720,7 +781,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -728,6 +789,29 @@ describe('Navigator', () => {
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+              'reparent',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target lines are not shown
+            const dropTargetBefore = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTargetBefore.style.opacity).toEqual('0')
+
+            const dropTargetAfter = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+            )
+            expect(dropTargetAfter.style.opacity).toEqual('0')
+          },
         ),
       )
 
@@ -766,16 +850,34 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() => {
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
           windowPoint(dragMeElementCenter),
-          windowPoint({ x: -65, y: 0 }),
+          windowPoint({ x: -25, y: 0 }),
           'apply-hover-events',
-        )
-      })
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+              'reparent',
+            )
+            // highlight is shown on grandparent
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            // drop target line is shown in original location
+            const dropTarget = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
+            )
+            expect(dropTarget.style.opacity).toEqual('1')
+          },
+        ),
+      )
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -783,13 +885,13 @@ describe('Navigator', () => {
         renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/dragme', // <- moved to under the grandparent
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
         'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag',
         'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
-        'regular-utopia-storyboard-uid/dragme', // <- moved to under the grandparent
       ])
     })
 
@@ -826,7 +928,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -834,6 +936,23 @@ describe('Navigator', () => {
           windowPoint(dragMeElementCenter),
           dragDelta,
           'apply-hover-events',
+          async () => {
+            expect(renderResult.getEditorState().editor.navigator.dropTargetHint.type).toEqual(
+              'reparent',
+            )
+            // parent highlight is shown
+            const parentEntry = renderResult.renderedDOM.getByTestId(
+              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+            )
+            expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+            )
+
+            const dropTargetAfter = renderResult.renderedDOM.getByTestId(
+              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
+            )
+            expect(dropTargetAfter.style.opacity).toEqual('0')
+          },
         ),
       )
 
@@ -886,7 +1005,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
@@ -953,7 +1072,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -1009,7 +1128,7 @@ describe('Navigator', () => {
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_sb/parent1`,
@@ -1062,7 +1181,7 @@ describe('Navigator', () => {
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_sb/parent1`,
@@ -1115,7 +1234,7 @@ describe('Navigator', () => {
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_sb/parent1`,
@@ -1194,7 +1313,7 @@ describe('Navigator', () => {
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
@@ -1247,7 +1366,7 @@ describe('Navigator', () => {
 
       await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
 
-      act(() =>
+      await act(async () =>
         dragElement(
           renderResult,
           `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
