@@ -467,10 +467,10 @@ export const NavigatorItem: React.FunctionComponent<
         if (conditionalCase != null) {
           const parentPath = EP.parentPath(path)
           const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
-          if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
-            return 'clear-override'
-          } else if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
+          if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
             return 'no-update'
+          } else if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
+            return 'clear-override'
           } else {
             return conditionalCase
           }
