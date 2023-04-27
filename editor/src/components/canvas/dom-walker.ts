@@ -322,18 +322,12 @@ interface RunDomWalkerParams {
 
 function runSelectiveDomWalker(
   elementsToFocusOn: Array<ElementPath>,
-  globalProps: Omit<DomWalkerInternalGlobalProps, 'validPaths'>,
+  globalProps: DomWalkerInternalGlobalProps,
 ): { metadata: ElementInstanceMetadataMap; cachedPaths: ElementPath[] } {
   let workingMetadata: ElementInstanceMetadataMap = {}
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
-    const validPathsArr = optionalMap(
-      (paths) => paths.split(' '),
-      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
-    )
-    const validPaths = new Set(validPathsArr)
-
     const parentPoint = canvasPoint({ x: 0, y: 0 })
 
     elementsToFocusOn.forEach((path) => {
@@ -357,8 +351,8 @@ function runSelectiveDomWalker(
               element.childNodes.forEach(collectForElement)
             } else {
               const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-                const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-                return validPaths.has(staticPath)
+                const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+                return globalProps.validPaths.some((vp) => EP.pathsEqual(vp, staticPath))
               })
 
               const { collectedMetadata } = collectAndCreateMetadataForElement(
@@ -455,7 +449,19 @@ export function runDomWalker({
       return getCanvasRectangleFromElement(canvasRootContainer, scale)
     })
 
-    const globalProps: Omit<DomWalkerInternalGlobalProps, 'validPaths'> = {
+    const validPaths: Array<ElementPath> | null = optionalMap(
+      (paths) => paths.split(' ').map(EP.fromString),
+      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
+    )
+
+    if (validPaths == null) {
+      throw new Error(
+        'Utopia Internal Error: Running DOM-walker without canvasRootPath or validRootPaths',
+      )
+    }
+
+    const globalProps: DomWalkerInternalGlobalProps = {
+      validPaths: validPaths,
       rootMetadataInStateRef: rootMetadataInStateRef,
       invalidatedPaths: domWalkerMutableState.invalidatedPaths,
       invalidatedPathsForStylesheetCache: domWalkerMutableState.invalidatedPathsForStylesheetCache,
@@ -700,7 +706,7 @@ function collectAndCreateMetadataForElement(
   parentPoint: CanvasPoint,
   closestOffsetParentPath: ElementPath,
   pathsForElement: ElementPath[],
-  globalProps: Omit<DomWalkerInternalGlobalProps, 'validPaths'>,
+  globalProps: DomWalkerInternalGlobalProps,
 ) {
   const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
     collectMetadataForElement(
@@ -991,7 +997,7 @@ function globalFrameForElement(
 
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
-  globalProps: Omit<DomWalkerInternalGlobalProps, 'validPaths'>,
+  globalProps: DomWalkerInternalGlobalProps,
 ): {
   metadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
@@ -1000,15 +1006,9 @@ function walkCanvasRootFragment(
     EP.fromString,
     canvasRoot.getAttribute('data-utopia-root-element-path'),
   )
-  const validPaths: Array<ElementPath> | null = optionalMap(
-    (paths) => paths.split(' ').map(EP.fromString),
-    canvasRoot.getAttribute('data-utopia-valid-paths'),
-  )
 
-  if (canvasRootPath == null || validPaths == null) {
-    throw new Error(
-      'Utopia Internal Error: Running DOM-walker without canvasRootPath or validRootPaths',
-    )
+  if (canvasRootPath == null) {
+    throw new Error('Utopia Internal Error: Running DOM-walker without canvasRootPath')
   }
 
   globalProps.invalidatedPaths.delete(EP.toString(canvasRootPath)) // global mutation!
@@ -1026,15 +1026,7 @@ function walkCanvasRootFragment(
       cachedPaths: [canvasRootPath],
     }
   } else {
-    const globalPropsWithValidPaths: DomWalkerInternalGlobalProps = {
-      ...globalProps,
-      validPaths: validPaths,
-    }
-    const { rootMetadata, cachedPaths } = walkSceneInner(
-      canvasRoot,
-      canvasRootPath,
-      globalPropsWithValidPaths,
-    )
+    const { rootMetadata, cachedPaths } = walkSceneInner(canvasRoot, canvasRootPath, globalProps)
     // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
     // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
     // to provide a home for the the (really existing) childMetadata
