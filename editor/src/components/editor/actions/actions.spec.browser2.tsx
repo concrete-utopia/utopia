@@ -1102,7 +1102,7 @@ describe('actions', () => {
 		`,
       },
       {
-        name: 'paste absolute element into a size-less div',
+        name: 'paste absolute element into a sizeless div',
         startingCode: `
       <div data-uid='root'>
         <div data-uid='sizeless'>
