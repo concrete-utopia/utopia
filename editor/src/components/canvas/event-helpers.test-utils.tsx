@@ -400,7 +400,7 @@ export async function mouseClickAtPoint(
   })
 }
 
-export function dispatchMouseEventAtPoint(
+export function dispatchMouseClickEventAtPoint(
   point: Point,
   options: {
     modifiers?: Modifiers
