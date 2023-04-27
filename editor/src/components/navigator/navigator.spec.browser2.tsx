@@ -11,7 +11,10 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents, setNavigatorRenamingTarget } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
-import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import {
+  dispatchMouseClickEventAtPoint,
+  mouseClickAtPoint,
+} from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
@@ -20,6 +23,7 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import { NO_OP } from '../../core/shared/utils'
+import { DragItemTestId } from './navigator-item/navigator-item-dnd-container'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -479,21 +483,23 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
+      const clickMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
-      const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
+      const clickMeElement = renderResult.renderedDOM.getByTestId(
+        DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(clickMePath))),
       )
 
-      const dragMeElementRect = dragMeElement.getBoundingClientRect()
+      const clickMeElementRect = clickMeElement.getBoundingClientRect()
 
-      await mouseClickAtPoint(dragMeElement, {
-        x: dragMeElementRect.x + dragMeElementRect.width / 2,
-        y: dragMeElementRect.y + 1,
-      })
+      dispatchMouseClickEventAtPoint(
+        windowPoint({
+          x: clickMeElementRect.x + clickMeElementRect.width / 2,
+          y: clickMeElementRect.y + 1,
+        }),
+      )
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
+      expect(selectedViewPaths).toEqual([EP.toString(clickMePath)])
     })
 
     it('by clicking the bottom of the item', async () => {
@@ -502,21 +508,22 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
+      const clickMePath = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/sceneroot/dragme`)
 
-      const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        NavigatorItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMePath))),
+      const clickMeElement = await renderResult.renderedDOM.findByTestId(
+        DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(clickMePath))),
       )
 
-      const dragMeElementRect = dragMeElement.getBoundingClientRect()
-
-      await mouseClickAtPoint(dragMeElement, {
-        x: dragMeElementRect.x + dragMeElementRect.width / 2,
-        y: dragMeElementRect.y + dragMeElementRect.height - 1,
-      })
+      const clickMeElementRect = clickMeElement.getBoundingClientRect()
+      dispatchMouseClickEventAtPoint(
+        windowPoint({
+          x: clickMeElementRect.x + clickMeElementRect.width / 2,
+          y: clickMeElementRect.y + clickMeElementRect.height - 1,
+        }),
+      )
 
       const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-      expect(selectedViewPaths).toEqual([EP.toString(dragMePath)])
+      expect(selectedViewPaths).toEqual([EP.toString(clickMePath)])
     })
   })
 
