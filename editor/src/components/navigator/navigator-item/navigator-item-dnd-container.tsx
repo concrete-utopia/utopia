@@ -678,7 +678,8 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return EP.pathsEqual(firstSibling.elementPath, props.navigatorEntry.elementPath)
   }, [metadata, props.navigatorEntry])
 
-  const shouldDropLinesInterceptMouseEvents = true
+  // Drop target lines should only intercept mouse events if a drag session is in progress
+  const shouldDropLinesInterceptMouseEvents = dropTargetHintType != null
 
   return (
     <div

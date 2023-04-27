@@ -29,7 +29,10 @@ import {
   SingleAxisAutolayoutContainerDirections,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
-import { treatElementAsContentAffecting } from '../group-like-helpers'
+import {
+  getElementContentAffectingType,
+  treatElementAsContentAffecting,
+} from '../group-like-helpers'
 import { ReparentStrategy, ReparentSubjects, ReparentTarget } from './reparent-strategy-helpers'
 import { drawTargetRectanglesForChildrenOfElement } from './reparent-strategy-sibling-position-helpers'
 
@@ -68,6 +71,7 @@ export function getReparentTargetUnified(
   const targetParentWithPaddedInsertionZone: ReparentTarget | null =
     findParentByPaddedInsertionZone(
       metadata,
+      allElementProps,
       validTargetParentsUnderPoint,
       reparentSubjects,
       canvasScale,
@@ -88,6 +92,7 @@ export function getReparentTargetUnified(
   const targetParentUnderPoint: ReparentTarget = findParentUnderPointByArea(
     targetParentPath,
     metadata,
+    allElementProps,
     canvasScale,
     pointOnCanvas,
   )
@@ -272,6 +277,7 @@ function isTargetParentOutsideOfContainingComponentUnderMouse(
 
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   validTargetparentsUnderPoint: ElementPath[],
   reparentSubjects: ReparentSubjects,
   canvasScale: number,
@@ -296,7 +302,11 @@ function findParentByPaddedInsertionZone(
     if (autolayoutDirection === 'non-single-axis-autolayout') {
       return null
     }
-    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(metadata, element)
+    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+      metadata,
+      allElementProps,
+      element,
+    )
     if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       return null
     }
@@ -353,12 +363,14 @@ function findParentByPaddedInsertionZone(
 function findParentUnderPointByArea(
   targetParentPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   canvasScale: number,
   pointOnCanvas: CanvasPoint,
 ): ReparentTarget {
   const autolayoutDirection = singleAxisAutoLayoutContainerDirections(targetParentPath, metadata)
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,
+    allElementProps,
     targetParentPath,
   )
   const compatibleWith1DReorder = isSingleAxisAutoLayoutCompatibleWithReorder(
@@ -447,6 +459,7 @@ function findIndexForSingleAxisAutolayoutParent(
 
 function autoLayoutParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   parent: ElementPath,
 ): ReparentStrategy {
   const newParentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
@@ -456,11 +469,12 @@ function autoLayoutParentAbsoluteOrStatic(
     return 'REPARENT_AS_STATIC'
   }
 
-  return flowParentAbsoluteOrStatic(metadata, parent)
+  return flowParentAbsoluteOrStatic(metadata, allElementProps, parent)
 }
 
 export function flowParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   parent: ElementPath,
 ): ReparentStrategy {
   const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parent)
@@ -469,6 +483,12 @@ export function flowParentAbsoluteOrStatic(
   const storyboardRoot = EP.isStoryboardPath(parent)
   if (storyboardRoot) {
     // always reparent as absolute to the Storyboard
+    return 'REPARENT_AS_ABSOLUTE'
+  }
+
+  const isSizelessDiv =
+    getElementContentAffectingType(metadata, allElementProps, parent) === 'sizeless-div'
+  if (isSizelessDiv) {
     return 'REPARENT_AS_ABSOLUTE'
   }
 
