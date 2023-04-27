@@ -11,7 +11,10 @@ import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../core/
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { selectComponents, setNavigatorRenamingTarget } from '../editor/actions/action-creators'
 import * as EP from '../../core/shared/element-path'
-import { dispatchMouseEventAtPoint, mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
+import {
+  dispatchMouseClickEventAtPoint,
+  mouseClickAtPoint,
+} from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
@@ -21,7 +24,6 @@ import {
 } from '../editor/store/editor-state'
 import { NO_OP } from '../../core/shared/utils'
 import { DragItemTestId } from './navigator-item/navigator-item-dnd-container'
-import { NavigatorContainerId } from './navigator'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -489,7 +491,7 @@ describe('Navigator', () => {
 
       const clickMeElementRect = clickMeElement.getBoundingClientRect()
 
-      dispatchMouseEventAtPoint(
+      dispatchMouseClickEventAtPoint(
         windowPoint({
           x: clickMeElementRect.x + clickMeElementRect.width / 2,
           y: clickMeElementRect.y + 1,
@@ -513,7 +515,7 @@ describe('Navigator', () => {
       )
 
       const clickMeElementRect = clickMeElement.getBoundingClientRect()
-      dispatchMouseEventAtPoint(
+      dispatchMouseClickEventAtPoint(
         windowPoint({
           x: clickMeElementRect.x + clickMeElementRect.width / 2,
           y: clickMeElementRect.y + clickMeElementRect.height - 1,
