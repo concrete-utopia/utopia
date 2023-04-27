@@ -42,7 +42,7 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   childInsertionPath,
-  conditionalClauseInsertionPath,
+  getDefaultInsertionPathForElementPath,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
@@ -104,10 +104,8 @@ export function getActionsForClipboardItems(
       componentMetadata,
       pasteTargetsToIgnore,
     )
-    const target =
-      possibleTarget == null
-        ? getStoryboardElementPath(projectContents, openFile)
-        : MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, possibleTarget)
+    const storyboard = getStoryboardElementPath(projectContents, openFile)
+    const target = possibleTarget ?? (storyboard != null ? childInsertionPath(storyboard) : null)
     if (target == null) {
       console.warn(`Unable to find the storyboard path.`)
       return []
@@ -117,14 +115,16 @@ export function getActionsForClipboardItems(
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(childInsertionPath(target), elements, metadata)]
+      return [EditorActions.pasteJSXElements(target, elements, metadata)]
     }, clipboardData)
 
     // Handle adding files into the project like pasted images.
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const parentFrame =
-        target != null ? MetadataUtils.getFrameInCanvasCoords(target, componentMetadata) : null
+        target != null
+          ? MetadataUtils.getFrameInCanvasCoords(target.intendedParentPath, componentMetadata)
+          : null
       const parentCenter =
         parentFrame == null || isInfinityRectangle(parentFrame)
           ? (Utils.point(100, 100) as CanvasPoint) // We should instead paste the top left at 0,0
@@ -142,7 +142,7 @@ export function getActionsForClipboardItems(
         pastedImages,
         parentCenter,
         canvasScale,
-        childInsertionPath(target),
+        target,
       )
     }
     return [...utopiaActions, ...insertImageActions]
@@ -311,12 +311,13 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        const clause =
-          conditionalCase === 'true-case' ? parentElement.whenTrue : parentElement.whenFalse
-        if (!isNullJSXAttributeValue(clause)) {
-          return null
-        }
-        return conditionalClauseInsertionPath(parentPath, conditionalCase)
+        return getDefaultInsertionPathForElementPath(
+          targetPath,
+          projectContents,
+          nodeModules,
+          openFile,
+          metadata,
+        )
       }
     }
   }
