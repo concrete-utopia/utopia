@@ -558,8 +558,15 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
   }, [metadata, props.elementPath])
 
-  const shouldTopDropLineInterceptMouseEvents = true
-  const shouldBottomDropLineInterceptMouseEvents = isCollapsedCondtionalEntry
+  // Drop target lines should only intercept mouse events if a drag session is in progress
+  const isDragSessionInProgress = dropTargetHintType != null
+  const shouldTopDropLineInterceptMouseEvents = isDragSessionInProgress
+
+  // in addition, if this entry is a conditional, the bottom drop target line should only be active when
+  // the it's toggled closed (since otherwise the drop line would show up between the entry and the TRUE
+  // entry underneath)
+  const shouldBottomDropLineInterceptMouseEvents =
+    isDragSessionInProgress && isCollapsedCondtionalEntry
 
   const navigatorEntry = React.useMemo(
     () => regularNavigatorEntry(props.elementPath),

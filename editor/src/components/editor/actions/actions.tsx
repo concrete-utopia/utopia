@@ -2877,6 +2877,7 @@ export const UPDATE_FNS = {
 
           const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
+            workingEditorState.allElementProps,
             resolvedTarget,
           )
 

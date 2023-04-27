@@ -400,6 +400,75 @@ export async function mouseClickAtPoint(
   })
 }
 
+export function dispatchMouseClickEventAtPoint(
+  point: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+): void {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+  const { buttons, ...mouseUpOptions } = eventOptions ?? {}
+
+  const eventSourceElement = document.elementFromPoint(point.x, point.y)
+  if (eventSourceElement == null) {
+    throw new Error('No DOM element found at point')
+  }
+
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mousedown', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mouseup', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...mouseUpOptions,
+    }),
+  )
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mouseclick', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('click', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+}
+
 export async function mouseDoubleClickAtPoint(
   eventSourceElement: HTMLElement,
   point: Point,
