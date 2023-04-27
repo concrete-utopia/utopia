@@ -501,7 +501,6 @@ import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import { reparentElement } from '../../../components/canvas/commands/reparent-element-command'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
@@ -510,6 +509,7 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
+  getDefaultInsertionPathForElementPath,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -864,6 +864,7 @@ export function editorMoveMultiSelectedTemplates(
       pathToReparent(target),
       newParent,
       'on-complete', // TODO make sure this is the right pick here
+      useNewInsertJSXElementChild,
     )
     if (outcomeResult == null) {
       return working
@@ -2871,6 +2872,7 @@ export const UPDATE_FNS = {
           elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
           action.pasteInto,
           'always', // TODO Before merge make sure this is the right pick here
+          'use-new-insertJSXElementChild',
         )
 
         if (outcomeResult == null) {
@@ -2887,39 +2889,6 @@ export const UPDATE_FNS = {
             action.targetOriginalContextMetadata,
             currentValue.originalElementPath,
           )
-
-          function maybePasteIntoConditionalBranch(
-            branchPath: ElementPath,
-          ): JSXElementChild | null {
-            const conditionalPath = EP.parentPath(branchPath)
-            const conditional = maybeConditionalExpression(
-              MetadataUtils.findElementByElementPath(editor.jsxMetadata, conditionalPath),
-            )
-            if (conditional == null) {
-              return null
-            }
-            const conditionalCase = maybeBranchConditionalCase(
-              conditionalPath,
-              conditional,
-              branchPath,
-            )
-            if (conditionalCase == null) {
-              return null
-            }
-            const branch =
-              conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
-            return branch
-          }
-
-          const pasteIntoConditionalBranch = maybePasteIntoConditionalBranch(resolvedTarget)
-
-          if (
-            pasteIntoConditionalBranch != null &&
-            !isNullJSXAttributeValue(pasteIntoConditionalBranch)
-          ) {
-            // do not allow pasting into non-empty conditional branches
-            return workingEditorState
-          }
 
           const propertyChangeCommands = getReparentPropertyChanges(
             reparentStrategy.strategy,
@@ -4856,30 +4825,21 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
-      const conditionalClause = getConditionalCaseCorrespondingToBranchPath(
+      const insertionPath = getDefaultInsertionPathForElementPath(
         action.targetParent,
-        editor.jsxMetadata,
-      )
-
-      const insertionPath: InsertionPath | null = MetadataUtils.targetSupportsChildren(
         editor.projectContents,
-        editor.jsxMetadata,
         editor.nodeModules.files,
         editor.canvas.openFile?.filename,
-        action.targetParent,
+        editor.jsxMetadata,
       )
-        ? childInsertionPath(action.targetParent)
-        : conditionalClause != null &&
-          isEmptyConditionalBranch(action.targetParent, editor.jsxMetadata)
-        ? conditionalClauseInsertionPath(EP.parentPath(action.targetParent), conditionalClause)
-        : null
 
       if (insertionPath == null) {
         return includeToast('Selected element does not support children', editor)
       }
 
       function addNewSelectedView(parentPath: ElementPath, newUID: string) {
-        const isParentConditionalClause = conditionalClause != null
+        const isParentConditionalClause =
+          insertionPath != null && isConditionalClauseInsertionPath(insertionPath) != null
         const newPath = isParentConditionalClause
           ? EP.appendToPath(EP.parentPath(parentPath), newUID)
           : EP.appendToPath(action.targetParent, newUID)

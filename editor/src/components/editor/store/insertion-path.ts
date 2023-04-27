@@ -1,6 +1,14 @@
-import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  NodeModules,
+  StaticElementPath,
+} from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
-import { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  ConditionalCase,
+  getConditionalCaseCorrespondingToBranchPath,
+  isEmptyConditionalBranch,
+} from '../../../core/model/conditionals'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
@@ -11,6 +19,7 @@ import {
   isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import { isRight } from '../../../core/shared/either'
+import { ProjectContentTreeRoot } from '../../assets'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -134,4 +143,26 @@ export function commonInsertionPathFromArray(
       return commonInsertionPath(metadata, working, target)
     }
   }, workingArray[0])
+}
+
+export function getDefaultInsertionPathForElementPath(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  metadata: ElementInstanceMetadataMap,
+): InsertionPath | null {
+  const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+
+  return MetadataUtils.targetSupportsChildren(
+    projectContents,
+    metadata,
+    nodeModules,
+    openFile,
+    target,
+  )
+    ? childInsertionPath(target)
+    : conditionalClause != null && isEmptyConditionalBranch(target, metadata)
+    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause)
+    : null
 }

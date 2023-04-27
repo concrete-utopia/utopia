@@ -1,4 +1,9 @@
-import { findMaybeConditionalExpression, getClauseOptic } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  getConditionalActiveCase,
+  getConditionalBranch,
+} from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
@@ -16,11 +21,13 @@ import {
   JSXElementChild,
   JSXFragment,
   emptyComments,
-  isJSExpressionValue,
+  isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
+  isJSXElementLike,
   jsExpressionValue,
   jsxFragment,
+  jsxTextBlock,
 } from '../../../core/shared/element-template'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
@@ -82,6 +89,17 @@ export function unwrapConditionalClause(
                     newSelection.push(EP.appendToPath(parentPath.intendedParentPath, newUID))
                     return jsxFragment(newUID, clauseElement.children, false)
                   }
+                } else if (isJSXConditionalExpression(clauseElement)) {
+                  const activeCase = getConditionalActiveCase(
+                    target,
+                    clauseElement,
+                    editor.spyMetadata,
+                  )
+                  if (activeCase != null) {
+                    return activeCase === 'true-case'
+                      ? clauseElement.whenTrue
+                      : clauseElement.whenFalse
+                  }
                 }
                 return clauseElement
               },
@@ -123,11 +141,12 @@ export function unwrapTextContainingConditional(
     MetadataUtils.isConditionalFromMetadata(elementMetadata) &&
     elementMetadata.conditionValue !== 'not-a-conditional'
   ) {
-    const currentValue = elementMetadata.conditionValue.active
-    if (currentValue === true) {
-      elementToInsert = conditional.whenTrue
-    } else if (currentValue === false) {
-      elementToInsert = conditional.whenFalse
+    const activeCase = getConditionalActiveCase(target, conditional, editor.spyMetadata)
+    if (activeCase != null) {
+      elementToInsert = getConditionalBranch(conditional, activeCase)
+      if (isJSXAttributeValue(elementToInsert) && typeof elementToInsert.value === 'string') {
+        elementToInsert = jsxTextBlock(elementToInsert.value)
+      }
     }
   }
 
@@ -181,9 +200,9 @@ export function isTextContainingConditional(
   ) {
     const currentValue = element.conditionValue.active
     if (currentValue === true) {
-      return isJSExpressionValue(conditional.whenTrue)
+      return !isJSXElementLike(conditional.whenTrue)
     } else if (currentValue === false) {
-      return isJSExpressionValue(conditional.whenFalse)
+      return !isJSXElementLike(conditional.whenFalse)
     }
   }
   return false
@@ -234,7 +253,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }
@@ -256,7 +281,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }
@@ -278,7 +309,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }

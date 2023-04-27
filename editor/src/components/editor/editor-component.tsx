@@ -317,6 +317,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           width: '100vw',
           overscrollBehaviorX: 'contain',
           color: colorTheme.fg1.value,
+          // the following line prevents user css overriding the editor font
+          fontFamily: 'utopian-inter',
         }}
         onDragEnter={startDragInsertion}
       >
