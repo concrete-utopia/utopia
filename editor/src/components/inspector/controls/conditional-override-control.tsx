@@ -44,6 +44,8 @@ export const ConditionalOverrideControl: React.FunctionComponent<
     }
   }, [controlStatus, setConditionOverride, conditionValue])
 
+  const optionValue = conditionValue === 'not-a-conditional' ? true : conditionValue.active
+
   return (
     <UIGridRow padded={true} variant='<--------1fr-------->|145px||22px|'>
       Result
@@ -52,7 +54,7 @@ export const ConditionalOverrideControl: React.FunctionComponent<
         testId={ConditionalOverrideControlTestIdPrefix}
         key={'conditional-override-control'}
         onSubmitValue={props.setConditionOverride}
-        value={conditionValue}
+        value={optionValue}
         options={OverrideControlOptions}
         controlStatus={controlStatus}
         controlStyles={controlStyles}
