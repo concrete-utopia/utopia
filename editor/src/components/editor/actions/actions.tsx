@@ -443,7 +443,7 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -2952,7 +2952,9 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        setClipboardData(createClipboardDataFromSelection(editorForAction, builtInDependencies))
+        Clipboard.setClipboardData(
+          createClipboardDataFromSelection(editorForAction, builtInDependencies),
+        )
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,

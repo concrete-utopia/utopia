@@ -64,6 +64,7 @@ function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteRe
 // This is required so we can mock the function in a test. Don't hate me, I already hate myself
 export const Clipboard = {
   parseClipboardData,
+  setClipboardData,
 }
 
 export function setClipboardData(

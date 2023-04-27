@@ -39,8 +39,13 @@ import {
   selectComponentsForTest,
   wait,
 } from '../../../utils/utils.test-utils'
-import { pressKey } from '../../canvas/event-helpers.test-utils'
+import { firePasteEvent, pressKey } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
+import Sinon from 'sinon'
+import { defer } from '../../../utils/utils'
+import { Clipboard } from '../../../utils/clipboard'
+import { encodeUtopiaDataToHtml, extractUtopiaDataFromHtml } from '../../../utils/clipboard-utils'
+import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1168,6 +1173,105 @@ describe('actions', () => {
         })
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(test.want),
+        )
+      })
+    })
+
+    describe('end-to-end copy paste', () => {
+      const mockClipBoard: { data: any } = { data: null }
+      var pasteDone: ReturnType<typeof defer> = defer()
+      var sandbox = Sinon.createSandbox()
+
+      beforeEach(() => {
+        pasteDone = defer()
+
+        const parseClipboardDataStub = sandbox.stub(Clipboard, 'parseClipboardData')
+        parseClipboardDataStub.callsFake(async (c) => {
+          pasteDone.resolve()
+          return {
+            files: [],
+            utopiaData: extractUtopiaDataFromHtml(mockClipBoard.data),
+          }
+        })
+
+        const setClipboardDataStub = sandbox.stub(Clipboard, 'setClipboardData')
+        setClipboardDataStub.callsFake(async (c) => {
+          mockClipBoard.data = encodeUtopiaDataToHtml(c!.data)
+        })
+      })
+
+      afterEach(() => {
+        sandbox.restore()
+        mockClipBoard.data = null
+      })
+
+      it('can copy-paste end-to-end', async () => {
+        const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div data-uid='bbb'>
+            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+            <div data-uid='ddd' style={{width: 60, height: 60}} />
+          </div>
+        </div>
+      `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb')])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        await selectComponentsForTest(renderResult, [makeTargetPath('aaa')])
+
+        const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
+
+        firePasteEvent(canvasRoot, mockClipBoard.data)
+
+        // Wait for the next frame
+        await pasteDone
+        await renderResult.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
+            data-uid='aaa'
+            style={{ contain: 'layout', width: 300, height: 300 }}
+          >
+            <div data-uid='bbb'>
+              <div
+                data-uid='ccc'
+                style={{
+                  position: 'absolute',
+                  left: 20,
+                  top: 50,
+                  bottom: 150,
+                  width: 100,
+                }}
+              />
+              <div
+                data-uid='ddd'
+                style={{ width: 60, height: 60 }}
+              />
+            </div>
+            <div data-uid='parent'>
+              <div
+                data-uid='child1'
+                style={{
+                  position: 'absolute',
+                  left: 20,
+                  top: 50,
+                  bottom: 150,
+                  width: 100,
+                }}
+              />
+              <div
+                data-uid='child2'
+                style={{ width: 60, height: 60 }}
+              />
+            </div>
+          </div>
+  `),
         )
       })
     })

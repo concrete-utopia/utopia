@@ -62,7 +62,7 @@ function extractUtopiaDataFromClipboardData(data: DataTransfer): Array<CopyData>
   }
 }
 
-function extractUtopiaDataFromHtml(htmlString: string): Array<CopyData> {
+export function extractUtopiaDataFromHtml(htmlString: string): Array<CopyData> {
   const comments: string[] = []
   // parse them html
   const htmlElement = document.createElement('html')
