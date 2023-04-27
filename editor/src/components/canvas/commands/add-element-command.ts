@@ -7,6 +7,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
+  insertElementAtPath,
   insertElementAtPath_DEPRECATED,
 } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
@@ -16,6 +17,7 @@ import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } f
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { IndexPosition } from '../../../utils/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { UseNewInsertJsxElementChild } from '../canvas-utils'
 
 export interface AddElement extends BaseCommand {
   type: 'ADD_ELEMENT'
@@ -23,6 +25,7 @@ export interface AddElement extends BaseCommand {
   element: JSXElementChild
   indexPosition?: IndexPosition
   importsToAdd?: Imports
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild
 }
 
 export function addElement(
@@ -33,6 +36,7 @@ export function addElement(
     indexPosition: IndexPosition
     importsToAdd: Imports
   }> = {},
+  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): AddElement {
   return {
     whenToRun: whenToRun,
@@ -41,6 +45,7 @@ export function addElement(
     element: element,
     indexPosition: options.indexPosition,
     importsToAdd: options.importsToAdd,
+    useNewInsertJSXElementChild: useNewInsertJSXElementChild,
   }
 }
 
@@ -60,14 +65,22 @@ export const runAddElement: CommandFunction<AddElement> = (
     ) => {
       const componentsNewParent = getUtopiaJSXComponentsFromSuccess(parentSuccess)
 
-      const insertionResult = insertElementAtPath_DEPRECATED(
-        editorState.projectContents,
-        underlyingFilePathNewParent,
-        command.parentPath,
-        command.element,
-        componentsNewParent,
-        command.indexPosition ?? null,
-      )
+      const insertionResult =
+        command.useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
+          ? insertElementAtPath(
+              command.parentPath,
+              command.element,
+              componentsNewParent,
+              command.indexPosition ?? null,
+            )
+          : insertElementAtPath_DEPRECATED(
+              editorState.projectContents,
+              underlyingFilePathNewParent,
+              command.parentPath,
+              command.element,
+              componentsNewParent,
+              command.indexPosition ?? null,
+            )
       const withElementInserted = insertionResult.components
 
       const editorStatePatchNewParentFile = getPatchForComponentChange(

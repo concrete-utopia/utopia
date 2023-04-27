@@ -89,6 +89,17 @@ export function unwrapConditionalClause(
                     newSelection.push(EP.appendToPath(parentPath.intendedParentPath, newUID))
                     return jsxFragment(newUID, clauseElement.children, false)
                   }
+                } else if (isJSXConditionalExpression(clauseElement)) {
+                  const activeCase = getConditionalActiveCase(
+                    target,
+                    clauseElement,
+                    editor.spyMetadata,
+                  )
+                  if (activeCase != null) {
+                    return activeCase === 'true-case'
+                      ? clauseElement.whenTrue
+                      : clauseElement.whenFalse
+                  }
                 }
                 return clauseElement
               },
@@ -236,7 +247,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }
@@ -258,7 +275,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }
@@ -280,7 +303,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }

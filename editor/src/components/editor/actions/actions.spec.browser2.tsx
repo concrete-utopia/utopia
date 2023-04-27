@@ -28,11 +28,19 @@ import {
 import { getElementFromRenderResult } from './actions.test-utils'
 import {
   JSXConditionalExpression,
+  JSXElementChild,
   jsxFragment,
   jsxFragmentWithoutUID,
 } from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
-import { expectNoAction, expectSingleUndo2Saves } from '../../../utils/utils.test-utils'
+import {
+  expectNoAction,
+  expectSingleUndo2Saves,
+  selectComponentsForTest,
+  wait,
+} from '../../../utils/utils.test-utils'
+import { pressKey } from '../../canvas/event-helpers.test-utils'
+import { cmdModifier } from '../../../utils/modifiers'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -588,8 +596,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'true-case',
         ),
         want: `
         <div data-uid='root'>
@@ -622,8 +631,9 @@ describe('actions', () => {
             },
           ]
         },
-        pasteInto: childInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional', 'a25']),
+        pasteInto: conditionalClauseInsertionPath(
+          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+          'false-case',
         ),
         want: `
         <div data-uid='root'>
@@ -635,42 +645,43 @@ describe('actions', () => {
     	</div>
 		`,
       },
-      {
-        name: 'an element inside a non-empty conditional branch (does nothing)',
-        generatesUndoStep: false,
-        startingCode: `
-        <div data-uid='root'>
-            {
-                // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-            }
-            <div data-uid='ccc'>baz</div>
-        </div>
-		`,
-        elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
-          return [
-            {
-              element: getElementFromRenderResult(renderResult, path),
-              originalElementPath: path,
-              importsToAdd: {},
-            },
-          ]
-        },
-        pasteInto: conditionalClauseInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-          'true-case',
-        ),
-        want: `
-        <div data-uid='root'>
-            {
-                // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-            }
-            <div data-uid='ccc'>baz</div>
-        </div>
-		`,
-      },
+      // commented out because the non-empty test is outside of the action now
+      //   {
+      //     name: 'an element inside a non-empty conditional branch (does nothing)',
+      //     generatesUndoStep: false,
+      //     startingCode: `
+      //     <div data-uid='root'>
+      //         {
+      //             // @utopia/uid=conditional
+      //             true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+      //         }
+      //         <div data-uid='ccc'>baz</div>
+      //     </div>
+      // `,
+      //     elements: (renderResult) => {
+      //       const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+      //       return [
+      //         {
+      //           element: getElementFromRenderResult(renderResult, path),
+      //           originalElementPath: path,
+      //           importsToAdd: {},
+      //         },
+      //       ]
+      //     },
+      //     pasteInto: conditionalClauseInsertionPath(
+      //       EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+      //       'true-case',
+      //     ),
+      //     want: `
+      //     <div data-uid='root'>
+      //         {
+      //             // @utopia/uid=conditional
+      //             true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+      //         }
+      //         <div data-uid='ccc'>baz</div>
+      //     </div>
+      // `,
+      //   },
       {
         name: 'multiple elements into an empty conditional branch (true)',
         startingCode: `
@@ -943,6 +954,151 @@ describe('actions', () => {
       }
       <div data-uid='aab' style={{ display: 'block' }}>foo</div>
     </div>
+		`,
+      },
+      {
+        name: 'a flex container',
+        startingCode: `
+        <React.Fragment data-uid='fragment'>
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 230,
+          top: 207,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 52.5,
+          padding: '27px 69px',
+        }}
+        data-uid='flex-container'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 90,
+            height: 71,
+            contain: 'layout',
+          }}
+          data-uid='717'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 48,
+            height: 79,
+            contain: 'layout',
+          }}
+          data-uid='ca7'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 60,
+            height: 101,
+            contain: 'layout',
+          }}
+          data-uid='ffb'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#b2a0cf',
+          position: 'absolute',
+          left: 346,
+          top: 408,
+          width: 162,
+          height: 67,
+        }}
+        data-uid='element-to-paste'
+      />
+      </React.Fragment>
+		`,
+        elements: (renderResult) => {
+          const path = EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:fragment/element-to-paste`,
+          )
+          return [
+            {
+              element: getElementFromRenderResult(renderResult, path),
+              originalElementPath: path,
+              importsToAdd: {},
+            },
+          ]
+        },
+        pasteInto: childInsertionPath(
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:fragment/flex-container`,
+          ),
+        ),
+        want: `
+        <React.Fragment>
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 230,
+          top: 207,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 52.5,
+          padding: '27px 69px',
+        }}
+        data-uid='flex-container'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 90,
+            height: 71,
+            contain: 'layout',
+          }}
+          data-uid='717'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 48,
+            height: 79,
+            contain: 'layout',
+          }}
+          data-uid='ca7'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 60,
+            height: 101,
+            contain: 'layout',
+          }}
+          data-uid='ffb'
+        />
+        <div
+          style={{
+            backgroundColor: '#b2a0cf',
+            width: 162,
+            height: 67,
+            contain: 'layout',
+          }}
+          data-uid='ele'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#b2a0cf',
+          position: 'absolute',
+          left: 346,
+          top: 408,
+          width: 162,
+          height: 67,
+        }}
+        data-uid='element-to-paste'
+      />
+      </React.Fragment>
 		`,
       },
     ]

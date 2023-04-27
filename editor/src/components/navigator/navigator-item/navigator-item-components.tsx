@@ -34,42 +34,48 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
         ref={ref}
         style={{
           position: 'relative',
+          opacity: props.shouldBeShown ? 1 : 0,
           zIndex: 1,
           pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
         }}
       >
         <div
           style={{
-            opacity: props.shouldBeShown ? 1 : 0,
-            marginLeft: props.margin,
             position: 'absolute',
             top: -6,
             width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
             height: 16,
           }}
         >
           <div
             style={{
-              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-              height: 2,
-              flexGrow: 1,
+              marginLeft: props.margin,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
             }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              backgroundColor: colorTheme.bg0.value,
-              width: NavigatorHintCircleDiameter,
-              height: NavigatorHintCircleDiameter,
-              contain: 'layout',
-              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-              borderRadius: '50%',
-            }}
-          />
+          >
+            <div
+              style={{
+                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                height: 2,
+                flexGrow: 1,
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                backgroundColor: colorTheme.bg0.value,
+                width: NavigatorHintCircleDiameter,
+                height: NavigatorHintCircleDiameter,
+                contain: 'layout',
+                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                borderRadius: '50%',
+              }}
+            />
+          </div>
         </div>
       </div>
     )
@@ -84,6 +90,7 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
         data-testid={props.testId}
         ref={ref}
         style={{
+          opacity: props.shouldBeShown ? 1 : 0,
           position: 'relative',
           zIndex: 1,
           pointerEvents: props.shouldAcceptMouseEvents ? 'inherit' : 'none',
@@ -91,36 +98,41 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
       >
         <div
           style={{
-            opacity: props.shouldBeShown ? 1 : 0,
-            marginLeft: props.margin,
             position: 'absolute',
             bottom: -8,
             width: '100%',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
             height: 16,
           }}
         >
           <div
             style={{
-              backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-              height: 2,
-              flexGrow: 1,
+              marginLeft: props.margin,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
             }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              backgroundColor: colorTheme.bg0.value,
-              width: NavigatorHintCircleDiameter,
-              height: NavigatorHintCircleDiameter,
-              contain: 'layout',
-              border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-              borderRadius: '50%',
-            }}
-          />
+          >
+            <div
+              style={{
+                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                height: 2,
+                flexGrow: 1,
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                backgroundColor: colorTheme.bg0.value,
+                width: NavigatorHintCircleDiameter,
+                height: NavigatorHintCircleDiameter,
+                contain: 'layout',
+                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                borderRadius: '50%',
+              }}
+            />
+          </div>
         </div>
       </div>
     )
