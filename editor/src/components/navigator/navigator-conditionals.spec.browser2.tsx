@@ -46,7 +46,10 @@ import {
 } from '../editor/store/editor-state'
 import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
+import {
+  DragItemTestId,
+  TopDropTargetLineTestId,
+} from './navigator-item/navigator-item-dnd-container'
 import { navigatorDepth } from './navigator-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { wait } from '../../utils/utils.test-utils'
@@ -661,7 +664,7 @@ describe('conditionals in the navigator', () => {
 
     // Getting info relating to what element will be dragged.
     const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+      DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))),
     )
     const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
     const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)
@@ -849,7 +852,7 @@ describe('conditionals in the navigator', () => {
 
     // Getting info relating to what element will be dragged.
     const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+      DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))),
     )
     const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
     const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)

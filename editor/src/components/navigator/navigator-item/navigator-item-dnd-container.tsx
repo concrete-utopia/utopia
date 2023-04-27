@@ -19,6 +19,7 @@ import {
   NavigatorHintTop,
 } from './navigator-item-components'
 import {
+  conditionalClauseNavigatorEntry,
   ConditionalClauseNavigatorEntry,
   DropTargetHint,
   DropTargetType,
@@ -53,6 +54,7 @@ import {
   getConditionalBranch,
   isEmptyConditionalBranch,
   isNonEmptyConditionalBranch,
+  maybeBranchConditionalCase,
 } from '../../../core/model/conditionals'
 
 export const TopDropTargetLineTestId = (safeComponentId: string): string =>
@@ -165,10 +167,7 @@ function onDrop(
       break
     case 'reparent':
       propsOfDraggedItem.editorDispatch(
-        [
-          reparentComponents(draggedElements, regularNavigatorEntry(moveToEntry.elementPath)),
-          clearHintAction,
-        ],
+        [reparentComponents(draggedElements, moveToEntry), clearHintAction],
         'everyone',
       )
       break
@@ -641,8 +640,31 @@ export const SyntheticNavigatorItemContainer = React.memo(
         hover: (item: NavigatorItemDragAndDropWrapperProps, monitor) => {
           onHoverParentOutline(item, props, monitor)
         },
-        drop: (item: NavigatorItemDragAndDropWrapperProps) => {
-          onDrop(item, props, navigatorEntry, 'reparent')
+        drop: (item: NavigatorItemDragAndDropWrapperProps): boolean => {
+          const metadata = editorStateRef.current.jsxMetadata
+          if (isEmptyConditionalBranch(props.elementPath, metadata)) {
+            const parentPath = EP.parentPath(props.elementPath)
+            const conditionalParent = findMaybeConditionalExpression(parentPath, metadata)
+            if (conditionalParent == null) {
+              return false
+            }
+            const clause = maybeBranchConditionalCase(
+              parentPath,
+              conditionalParent,
+              props.elementPath,
+            )
+            if (clause == null) {
+              return false
+            }
+            onDrop(
+              item,
+              props,
+              conditionalClauseNavigatorEntry(props.elementPath, clause),
+              'reparent',
+            )
+          }
+          onDrop(item, props, regularNavigatorEntry(props.elementPath), 'reparent')
+          return true
         },
         canDrop: () => {
           const metadata = editorStateRef.current.jsxMetadata
