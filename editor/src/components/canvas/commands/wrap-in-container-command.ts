@@ -13,7 +13,7 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath_DEPRECATED,
+  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
@@ -84,9 +84,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
-      const insertionResult = insertElementAtPath_DEPRECATED(
-        editor.projectContents,
-        underlyingFilePath,
+      const insertionResult = insertElementAtPath(
         childInsertionPath(targetParent),
         wrapper,
         withElementRemoved,
