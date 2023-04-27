@@ -637,42 +637,43 @@ describe('actions', () => {
     	</div>
 		`,
       },
-      {
-        name: 'an element inside a non-empty conditional branch (does nothing)',
-        generatesUndoStep: false,
-        startingCode: `
-        <div data-uid='root'>
-            {
-                // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-            }
-            <div data-uid='ccc'>baz</div>
-        </div>
-		`,
-        elements: (renderResult) => {
-          const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
-          return [
-            {
-              element: getElementFromRenderResult(renderResult, path),
-              originalElementPath: path,
-              importsToAdd: {},
-            },
-          ]
-        },
-        pasteInto: conditionalClauseInsertionPath(
-          EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-          'true-case',
-        ),
-        want: `
-        <div data-uid='root'>
-            {
-                // @utopia/uid=conditional
-                true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-            }
-            <div data-uid='ccc'>baz</div>
-        </div>
-		`,
-      },
+      // commented out because the non-empty test is outside of the action now
+      //   {
+      //     name: 'an element inside a non-empty conditional branch (does nothing)',
+      //     generatesUndoStep: false,
+      //     startingCode: `
+      //     <div data-uid='root'>
+      //         {
+      //             // @utopia/uid=conditional
+      //             true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+      //         }
+      //         <div data-uid='ccc'>baz</div>
+      //     </div>
+      // `,
+      //     elements: (renderResult) => {
+      //       const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
+      //       return [
+      //         {
+      //           element: getElementFromRenderResult(renderResult, path),
+      //           originalElementPath: path,
+      //           importsToAdd: {},
+      //         },
+      //       ]
+      //     },
+      //     pasteInto: conditionalClauseInsertionPath(
+      //       EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
+      //       'true-case',
+      //     ),
+      //     want: `
+      //     <div data-uid='root'>
+      //         {
+      //             // @utopia/uid=conditional
+      //             true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
+      //         }
+      //         <div data-uid='ccc'>baz</div>
+      //     </div>
+      // `,
+      //   },
       {
         name: 'multiple elements into an empty conditional branch (true)',
         startingCode: `

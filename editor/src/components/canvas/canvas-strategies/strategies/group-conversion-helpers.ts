@@ -119,6 +119,7 @@ export function convertFragmentToGroup(
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
       },
+      'use-deprecated-insertJSXElementChild',
     ),
   ]
 }
@@ -194,6 +195,7 @@ export function convertFragmentToFrame(
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
       },
+      'use-deprecated-insertJSXElementChild',
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
   ]
@@ -213,16 +215,22 @@ export function convertGroupToFragment(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
-      importsToAdd: {
-        react: {
-          importedAs: 'React',
-          importedFromWithin: [],
-          importedWithName: null,
+    addElement(
+      'always',
+      childInsertionPath(parentPath),
+      jsxFragment(uid, children, true),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
         },
       },
-    }),
+      'use-deprecated-insertJSXElementChild',
+    ),
   ]
 }
 
@@ -344,16 +352,22 @@ export function convertFrameToFragmentCommands(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
-      importsToAdd: {
-        react: {
-          importedAs: 'React',
-          importedFromWithin: [],
-          importedWithName: null,
+    addElement(
+      'always',
+      childInsertionPath(parentPath),
+      jsxFragment(uid, children, true),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, elementPath)),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
         },
       },
-    }),
+      'use-deprecated-insertJSXElementChild',
+    ),
     ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }
