@@ -1,4 +1,4 @@
-import { ParseSuccess } from '../../shared/project-file-types'
+import { isParseSuccess, ParseSuccess } from '../../shared/project-file-types'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import {
   ParseFileResult,
@@ -95,7 +95,6 @@ function getPrintAndReparseCodeResult(
     filename,
     parseResult.parseResult,
     lastRevisedTime,
-    {},
     printedCode,
   )
 }
