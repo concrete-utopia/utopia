@@ -1007,7 +1007,6 @@ export interface InsertInsertable {
   targetParent: ElementPath
   toInsert: InsertableComponent
   styleProps: StylePropOption
-  wrapContent: WrapContentOption
   indexPosition: IndexPosition | null
 }
 

@@ -249,11 +249,13 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         return {
           // ...styles,
           position: 'relative',
-          maxHeight: 150,
-          padding: 4,
+          maxHeight: 210,
           paddingLeft: 8,
           paddingRight: 8,
-          overflowY: 'scroll',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
         }
       },
       input: (styles): CSSObject => {
@@ -296,7 +298,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       group: (): CSSObject => {
         return {
           // ...styles,
-          paddingTop: 6,
+          // paddingTop: 6,
         }
       },
       groupHeading: (styles): CSSObject => {
@@ -461,9 +463,7 @@ export var FloatingMenu = React.memo(() => {
   })
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
-  const [wrapContentForInsertion, setWrapContentForInsertion] = React.useState(
-    shouldWrapContentsByDefault.current,
-  )
+
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
   const onChangeConditionalOrFragment = React.useCallback(
@@ -501,7 +501,6 @@ export var FloatingMenu = React.memo(() => {
               targetParent,
               insertableComponent(importsToAdd, element, '', [], null),
               fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-              wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
               floatingMenuState.indexPosition,
             ),
           ]
@@ -514,13 +513,7 @@ export var FloatingMenu = React.memo(() => {
       }
       return actionsToDispatch
     },
-    [
-      selectedViewsref,
-      floatingMenuState,
-      projectContentsRef,
-      fixedSizeForInsertion,
-      wrapContentForInsertion,
-    ],
+    [selectedViewsref, floatingMenuState, projectContentsRef, fixedSizeForInsertion],
   )
 
   const onChangeElement = React.useCallback(
@@ -573,7 +566,6 @@ export var FloatingMenu = React.memo(() => {
                 targetParent,
                 elementToInsert,
                 fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-                wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
                 floatingMenuState.indexPosition,
               ),
             ]
@@ -601,7 +593,6 @@ export var FloatingMenu = React.memo(() => {
       selectedViewsref,
       fixedSizeForInsertion,
       addContentForInsertion,
-      wrapContentForInsertion,
     ],
   )
 
@@ -689,47 +680,44 @@ export var FloatingMenu = React.memo(() => {
           components={{ Option: CustomOption }}
         />
         {showInsertionControls ? (
-          <FlexColumn>
-            <FlexRow
-              css={{
-                height: UtopiaTheme.layout.rowHeight.smaller,
-                paddingLeft: 8,
-                paddingRight: 8,
-                borderTop: `1px solid ${colorTheme.border1.value}`,
-              }}
+          // <FlexColumn
+          //   style={{
+          //     position: 'absolute',
+          //     bottom: 0,
+          //     width: '100%',
+          //     background: colorTheme.bg0.value,
+          //     borderRadius: 6,
+          //   }}
+          // >
+          <FlexRow
+            css={{
+              height: UtopiaTheme.layout.rowHeight.smaller,
+              paddingLeft: 8,
+              paddingRight: 8,
+              position: 'absolute',
+              bottom: 0,
+              width: '100%',
+              background: colorTheme.bg0.value,
+              borderRadius: 6,
+            }}
+          >
+            <CheckboxRow
+              id='add-content-label'
+              checked={addContentForInsertion}
+              onChange={setAddContentForInsertion}
             >
-              <CheckboxRow
-                id='wrap-parents-content-label'
-                checked={wrapContentForInsertion}
-                onChange={setWrapContentForInsertion}
-              >
-                Wrap content
-              </CheckboxRow>
-            </FlexRow>
-            <FlexRow
-              css={{
-                height: UtopiaTheme.layout.rowHeight.smaller,
-                paddingLeft: 8,
-                paddingRight: 8,
-              }}
+              Add content
+            </CheckboxRow>
+            <CheckboxRow
+              id='fixed-dimensions-label'
+              checked={fixedSizeForInsertion}
+              onChange={setFixedSizeForInsertion}
             >
-              <CheckboxRow
-                id='add-content-label'
-                checked={addContentForInsertion}
-                onChange={setAddContentForInsertion}
-              >
-                Add content
-              </CheckboxRow>
-              <CheckboxRow
-                id='fixed-dimensions-label'
-                checked={fixedSizeForInsertion}
-                onChange={setFixedSizeForInsertion}
-              >
-                Fixed dimensions
-              </CheckboxRow>
-            </FlexRow>
-          </FlexColumn>
-        ) : null}
+              Fixed dimensions
+            </CheckboxRow>
+          </FlexRow>
+        ) : // </FlexColumn>
+        null}
       </FlexColumn>
     </div>
   )

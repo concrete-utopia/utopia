@@ -1595,7 +1595,6 @@ export function insertInsertable(
   targetParent: ElementPath,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
-  wrapContent: WrapContentOption,
   indexPosition: IndexPosition | null,
 ): InsertInsertable {
   return {
@@ -1603,7 +1602,6 @@ export function insertInsertable(
     targetParent: targetParent,
     toInsert: toInsert,
     styleProps: styleProps,
-    wrapContent: wrapContent,
     indexPosition: indexPosition,
   }
 }
