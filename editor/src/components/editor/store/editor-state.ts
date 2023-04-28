@@ -27,6 +27,7 @@ import {
   InsertChildAndDetails,
   insertChildAndDetails,
   insertJSXElementChild,
+  getIndexInParent,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -1967,6 +1968,14 @@ export function insertElementAtPath(
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
   return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
+}
+
+export function insertElementWrapWithSibling(
+  targetSibling: InsertionPath,
+  elementToInsert: JSXElementChild,
+  components: Array<UtopiaJSXComponent>,
+) {
+  // TODO: get
 }
 
 /** @deprecated reason: use insertElementAtPath instead! **/
