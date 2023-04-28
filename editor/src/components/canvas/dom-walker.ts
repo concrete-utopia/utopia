@@ -320,6 +320,18 @@ interface RunDomWalkerParams {
   rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap }
 }
 
+interface DomWalkerInternalGlobalProps {
+  validPaths: Array<ElementPath>
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>
+  invalidatedPaths: Set<string>
+  invalidatedPathsForStylesheetCache: Set<string>
+  selectedViews: Array<ElementPath>
+  forceInvalidated: boolean
+  scale: number
+  containerRectLazy: () => CanvasRectangle
+  additionalElementsToUpdate: Array<ElementPath>
+}
+
 function runSelectiveDomWalker(
   elementsToFocusOn: Array<ElementPath>,
   globalProps: DomWalkerInternalGlobalProps,
@@ -1103,18 +1115,6 @@ function walkScene(
     }
   }
   return { metadata: {}, cachedPaths: [] } // verify
-}
-
-interface DomWalkerInternalGlobalProps {
-  validPaths: Array<ElementPath>
-  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>
-  invalidatedPaths: Set<string>
-  invalidatedPathsForStylesheetCache: Set<string>
-  selectedViews: Array<ElementPath>
-  forceInvalidated: boolean
-  scale: number
-  containerRectLazy: () => CanvasRectangle
-  additionalElementsToUpdate: Array<ElementPath>
 }
 
 function walkSceneInner(
