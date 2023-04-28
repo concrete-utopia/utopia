@@ -15,6 +15,7 @@ import {
 import { flattenSelection } from '../shared-move-strategies-helpers'
 import { Direction } from '../../../../inspector/common/css-utils'
 import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
+import { AllElementProps } from '../../../../editor/store/editor-state'
 
 export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
 
@@ -26,6 +27,7 @@ export type FindReparentStrategyResult = {
 
 export function reparentStrategyForPaste(
   targetMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   parent: ElementPath,
 ): {
   strategy: ReparentStrategy
@@ -34,7 +36,7 @@ export function reparentStrategyForPaste(
   const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
   const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
 
-  const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, parent)
+  const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, allElementProps, parent)
   const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
   if (reparentAsStatic) {
     return {

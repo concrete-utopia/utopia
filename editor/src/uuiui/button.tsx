@@ -102,7 +102,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
   // slightly subdued colors in default state
   backgroundColor: props.primary
     ? props.danger
-      ? colorTheme.errorForegroundSubdued.value
+      ? colorTheme.errorForeground.value
       : colorTheme.primarySubdued.value
     : colorTheme.emphasizedBackgroundPop.value,
 

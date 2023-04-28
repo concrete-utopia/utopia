@@ -42,7 +42,7 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   childInsertionPath,
-  conditionalClauseInsertionPath,
+  getDefaultInsertionPathForElementPath,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
@@ -313,13 +313,13 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        const clause =
-          conditionalCase === 'true-case' ? parentElement.whenTrue : parentElement.whenFalse
-        if (isNullJSXAttributeValue(clause)) {
-          return conditionalClauseInsertionPath(parentPath, conditionalCase)
-        } else {
-          return childInsertionPath(targetPath)
-        }
+        return getDefaultInsertionPathForElementPath(
+          targetPath,
+          projectContents,
+          nodeModules,
+          openFile,
+          metadata,
+        )
       }
     }
   }
