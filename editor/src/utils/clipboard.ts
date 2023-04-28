@@ -27,7 +27,6 @@ import {
   extractUtopiaDataFromClipboardData,
   PasteResult,
 } from './clipboard-utils'
-import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint, isInfinityRectangle } from '../core/shared/math-utils'
