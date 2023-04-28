@@ -256,6 +256,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
+          paddingBottom: UtopiaTheme.layout.rowHeight.large,
         }
       },
       input: (styles): CSSObject => {
@@ -680,15 +681,6 @@ export var FloatingMenu = React.memo(() => {
           components={{ Option: CustomOption }}
         />
         {showInsertionControls ? (
-          // <FlexColumn
-          //   style={{
-          //     position: 'absolute',
-          //     bottom: 0,
-          //     width: '100%',
-          //     background: colorTheme.bg0.value,
-          //     borderRadius: 6,
-          //   }}
-          // >
           <FlexRow
             css={{
               height: UtopiaTheme.layout.rowHeight.smaller,
@@ -698,7 +690,8 @@ export var FloatingMenu = React.memo(() => {
               bottom: 0,
               width: '100%',
               background: colorTheme.bg0.value,
-              borderRadius: 6,
+              borderRadius: '0 0 6px 6px',
+              borderTop: '1px solid var(--utopitheme-border1)',
             }}
           >
             <CheckboxRow
@@ -716,8 +709,7 @@ export var FloatingMenu = React.memo(() => {
               Fixed dimensions
             </CheckboxRow>
           </FlexRow>
-        ) : // </FlexColumn>
-        null}
+        ) : null}
       </FlexColumn>
     </div>
   )
