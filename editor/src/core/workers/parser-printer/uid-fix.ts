@@ -576,107 +576,99 @@ export function fixExpressionUIDs(
   newExpression: JSExpression,
   fixUIDsState: FixUIDsState,
 ): JSExpression {
-  switch (newExpression.type) {
-    case 'ATTRIBUTE_VALUE': {
-      if (oldExpression == null) {
-        return newExpression
-      } else {
+  if (oldExpression == null) {
+    return newExpression
+  } else {
+    switch (newExpression.type) {
+      case 'ATTRIBUTE_VALUE': {
         return updateUID(expressionValueUIDOptic, oldExpression.uid, fixUIDsState, newExpression)
       }
-    }
-    case 'ATTRIBUTE_NESTED_ARRAY': {
-      if (oldExpression == null) {
-        return newExpression
-      } else if (oldExpression.type === newExpression.type) {
-        const fixedContents = fixJSXArrayElements(
-          oldExpression.content,
-          newExpression.content,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_NESTED_ARRAY': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedContents = fixJSXArrayElements(
+            oldExpression.content,
+            newExpression.content,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionNestedArrayUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          content: fixedContents,
-        })
-      } else {
-        return updateUID(
-          expressionNestedArrayUIDOptic,
-          oldExpression.uid,
-          fixUIDsState,
-          newExpression,
-        )
+          return updateUID(expressionNestedArrayUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            content: fixedContents,
+          })
+        } else {
+          return updateUID(
+            expressionNestedArrayUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-    }
-    case 'ATTRIBUTE_NESTED_OBJECT': {
-      if (oldExpression == null) {
-        return newExpression
-      } else if (oldExpression.type === newExpression.type) {
-        const fixedContents = fixJSXPropertyArray(
-          oldExpression.content,
-          newExpression.content,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_NESTED_OBJECT': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedContents = fixJSXPropertyArray(
+            oldExpression.content,
+            newExpression.content,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionNestedObjectUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          content: fixedContents,
-        })
-      } else {
-        return updateUID(
-          expressionNestedObjectUIDOptic,
-          oldExpression.uid,
-          fixUIDsState,
-          newExpression,
-        )
+          return updateUID(expressionNestedObjectUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            content: fixedContents,
+          })
+        } else {
+          return updateUID(
+            expressionNestedObjectUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-    }
-    case 'ATTRIBUTE_FUNCTION_CALL': {
-      if (oldExpression == null) {
-        return newExpression
-      } else if (oldExpression.type === newExpression.type) {
-        const fixedParameters = fixExpressionArray(
-          oldExpression.parameters,
-          newExpression.parameters,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_FUNCTION_CALL': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedParameters = fixExpressionArray(
+            oldExpression.parameters,
+            newExpression.parameters,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionFunctionCallUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          parameters: fixedParameters,
-        })
-      } else {
-        return updateUID(
-          expressionFunctionCallUIDOptic,
-          oldExpression.uid,
-          fixUIDsState,
-          newExpression,
-        )
+          return updateUID(expressionFunctionCallUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            parameters: fixedParameters,
+          })
+        } else {
+          return updateUID(
+            expressionFunctionCallUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-    }
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      if (oldExpression == null) {
-        return newExpression
-      } else if (oldExpression.type === newExpression.type) {
-        const fixedElementsWithin = fixElementsWithin(
-          oldExpression.elementsWithin,
-          newExpression.elementsWithin,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedElementsWithin = fixElementsWithin(
+            oldExpression.elementsWithin,
+            newExpression.elementsWithin,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionOtherJavaScriptUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          elementsWithin: fixedElementsWithin,
-        })
-      } else {
-        return updateUID(
-          expressionOtherJavaScriptUIDOptic,
-          oldExpression.uid,
-          fixUIDsState,
-          newExpression,
-        )
+          return updateUID(expressionOtherJavaScriptUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            elementsWithin: fixedElementsWithin,
+          })
+        } else {
+          return updateUID(
+            expressionOtherJavaScriptUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
+      default:
+        assertNever(newExpression)
     }
-    default:
-      assertNever(newExpression)
   }
 }
