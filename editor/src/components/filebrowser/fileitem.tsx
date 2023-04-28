@@ -707,7 +707,7 @@ class FileBrowserItemInner extends React.PureComponent<
       } else if (this.state.isHovered) {
         return colorTheme.secondaryBackground.value
       } else if (this.isCurrentDropTarget()) {
-        return colorTheme.brandNeonYellow.value
+        return colorTheme.primary.value
       } else {
         return 'transparent'
       }
