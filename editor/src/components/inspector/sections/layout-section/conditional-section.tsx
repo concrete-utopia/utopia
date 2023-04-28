@@ -304,6 +304,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
     setConditionExpression(e.target.value)
+    setConditionOverride(null)
   }
 
   function onExpressionKeyUp(e: React.KeyboardEvent) {

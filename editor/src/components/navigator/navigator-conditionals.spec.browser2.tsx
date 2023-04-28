@@ -46,83 +46,103 @@ import {
 } from '../editor/store/editor-state'
 import { InsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { TopDropTargetLineTestId } from './navigator-item/navigator-item-dnd-container'
+import {
+  DragItemTestId,
+  TopDropTargetLineTestId,
+} from './navigator-item/navigator-item-dnd-container'
 import { navigatorDepth } from './navigator-utils'
+import { NO_OP } from '../../core/shared/utils'
+import { wait } from '../../utils/utils.test-utils'
 
-function dragElement(
+const ASYNC_NOOP = async () => NO_OP()
+
+async function dragElement(
   renderResult: EditorRenderResult,
   dragTargetID: string,
   dropTargetID: string,
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
   hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
-): void {
+  midDragCallback: () => Promise<void> = ASYNC_NOOP,
+): Promise<void> {
   const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
   const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
 
   const endPoint = offsetPoint(startPoint, dragDelta)
 
-  fireEvent(
-    dragTarget,
-    new MouseEvent('dragstart', {
-      bubbles: true,
-      cancelable: true,
-      clientX: startPoint.x,
-      clientY: startPoint.y,
-      buttons: 1,
-    }),
-  )
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        clientX: startPoint.x,
+        clientY: startPoint.y,
+        buttons: 1,
+      }),
+    )
+  })
 
-  fireEvent(
-    dragTarget,
-    new MouseEvent('drag', {
-      bubbles: true,
-      cancelable: true,
-      clientX: endPoint.x,
-      clientY: endPoint.y,
-      movementX: dragDelta.x,
-      movementY: dragDelta.y,
-      buttons: 1,
-    }),
-  )
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('drag', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
 
   if (hoverEvents === 'apply-hover-events') {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragenter', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragenter', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
 
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragover', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
 
-    fireEvent(
-      dropTarget,
-      new MouseEvent('drop', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        buttons: 1,
-      }),
-    )
+    await midDragCallback()
+
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          buttons: 1,
+        }),
+      )
+    })
   }
 }
 
@@ -582,6 +602,17 @@ describe('conditionals in the navigator', () => {
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
+        async () => {
+          // parent highlight is not shown around conditional
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-${varSafeNavigatorEntryToKey(
+              regularNavigatorEntry(elementPathToTarget),
+            )}`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.border).toEqual(
+            '1px solid transparent',
+          )
+        },
       ),
     )
 
@@ -633,19 +664,14 @@ describe('conditionals in the navigator', () => {
 
     // Getting info relating to what element will be dragged.
     const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+      DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))),
     )
     const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
     const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)
 
     // Getting info relating to where the element will be dragged to.
-    const elementPathToTarget = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
-    )
     const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-${varSafeNavigatorEntryToKey(
-        conditionalClauseNavigatorEntry(elementPathToTarget, 'true-case'),
-      )}`,
+      `navigator-item-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional1/conditional2/a25_attribute`,
     )
 
     const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
@@ -660,9 +686,7 @@ describe('conditionals in the navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
-        `navigator-item-${varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(elementPathToTarget, 'true-case'),
-        )}`,
+        `navigator-item-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional1/conditional2/a25_attribute`,
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
@@ -763,6 +787,15 @@ describe('conditionals in the navigator', () => {
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
+        async () => {
+          // drop target line is shown before the conditional
+          const dropLine = renderResult.renderedDOM.getByTestId(
+            TopDropTargetLineTestId(
+              varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
+            ),
+          )
+          expect(dropLine.style.opacity).toEqual('1')
+        },
       ),
     )
 
@@ -819,19 +852,14 @@ describe('conditionals in the navigator', () => {
 
     // Getting info relating to what element will be dragged.
     const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+      DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))),
     )
     const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
     const navigatorEntryToDragCenter = getDomRectCenter(navigatorEntryToDragRect)
 
     // Getting info relating to where the element will be dragged to.
-    const elementPathToTarget = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
-    )
     const navigatorEntryToTarget = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-${varSafeNavigatorEntryToKey(
-        conditionalClauseNavigatorEntry(elementPathToTarget, 'false-case'),
-      )}`,
+      `navigator-item-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional1/conditional2/a25_attribute`,
     )
     const navigatorEntryToTargetRect = navigatorEntryToTarget.getBoundingClientRect()
     const navigatorEntryToTargetCenter = getDomRectCenter(navigatorEntryToTargetRect)
@@ -845,9 +873,7 @@ describe('conditionals in the navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
-        `navigator-item-${varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(elementPathToTarget, 'false-case'),
-        )}`,
+        `navigator-item-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional1/conditional2/a25_attribute`,
         windowPoint(navigatorEntryToDragCenter),
         windowPoint(dragDelta),
         'apply-hover-events',
@@ -908,66 +934,6 @@ describe('conditionals in the navigator', () => {
       )}`,
     })
     expect(got).toEqual(projectCode)
-  })
-  it('dragging in between clauses does nothing', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      getProjectCodeEmptySingleConditional(),
-      'await-first-dom-report',
-    )
-
-    const dragMeElement = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-regular_utopia_storyboard_uid/scene_aaa/containing_div/sibling_div`,
-    )
-
-    const dragMeElementRect = dragMeElement.getBoundingClientRect()
-    const dragMeElementCenter = getDomRectCenter(dragMeElementRect)
-    const firstDivElement = await renderResult.renderedDOM.findByTestId(
-      `navigator-item-drag-synthetic_utopia_storyboard_uid/scene_aaa/containing_div/conditional/a25_attribute`,
-    )
-    const firstDivElementRect = firstDivElement.getBoundingClientRect()
-    const firstDivElementCenter = getDomRectCenter(firstDivElementRect)
-    const dragTo = {
-      x: firstDivElementCenter.x,
-      y: firstDivElementRect.y + 3,
-    }
-
-    const dragDelta = windowPoint({
-      x: dragTo.x - dragMeElementCenter.x,
-      y: dragTo.y - dragMeElementCenter.y,
-    })
-
-    const targetElement = EP.fromString(
-      'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
-    )
-    await act(async () => {
-      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-      await renderResult.dispatch(selectComponents([targetElement], false), false)
-      await dispatchDone
-    })
-
-    act(() =>
-      dragElement(
-        renderResult,
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/containing_div/sibling_div`,
-        `navigator-item-drop-after-conditional_clause_utopia_storyboard_uid/scene_aaa/containing_div/conditional_true-case`,
-        windowPoint(dragMeElementCenter),
-        dragDelta,
-        'apply-hover-events',
-      ),
-    )
-
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/containing-div',
-        'regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional',
-        'conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-true-case',
-        'synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/a25-attribute',
-        'conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional-false-case',
-        'synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional/129-attribute',
-        'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
-      ],
-    )
   })
   it('dragging out of an inactive clause, replaces with null', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')

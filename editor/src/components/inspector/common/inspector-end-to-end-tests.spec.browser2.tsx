@@ -2929,6 +2929,53 @@ describe('inspector tests with real metadata', () => {
       )
       expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
     })
+    it('changing the expression disables override', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=true
+          [].length > 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await setControlValue(
+        ConditionalsControlSectionExpressionTestId,
+        '40 + 2 < 42',
+        renderResult.renderedDOM,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+              40 + 2 < 42 ? (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            ) : (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            )}
+        </div>
+        `),
+      )
+    })
     it('shows the branches in the inspector', async () => {
       const startSnippet = `
       <div data-uid='aaa'>

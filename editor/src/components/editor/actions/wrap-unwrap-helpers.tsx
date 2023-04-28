@@ -37,13 +37,13 @@ import { EditorDispatch } from '../action-types'
 import {
   EditorState,
   insertElementAtPath,
-  insertElementAtPath_DEPRECATED,
   modifyUnderlyingTargetElement,
 } from '../store/editor-state'
 import {
   ConditionalClauseInsertionPath,
   InsertionPath,
   childInsertionPath,
+  getDefaultInsertionPathForElementPath,
   getElementPathFromInsertionPath,
   isChildInsertionPath,
 } from '../store/insertion-path'
@@ -89,6 +89,17 @@ export function unwrapConditionalClause(
                     newSelection.push(EP.appendToPath(parentPath.intendedParentPath, newUID))
                     return jsxFragment(newUID, clauseElement.children, false)
                   }
+                } else if (isJSXConditionalExpression(clauseElement)) {
+                  const activeCase = getConditionalActiveCase(
+                    target,
+                    clauseElement,
+                    editor.spyMetadata,
+                  )
+                  if (activeCase != null) {
+                    return activeCase === 'true-case'
+                      ? clauseElement.whenTrue
+                      : clauseElement.whenFalse
+                  }
                 }
                 return clauseElement
               },
@@ -119,25 +130,19 @@ export function unwrapTextContainingConditional(
   target: ElementPath,
   dispatch: EditorDispatch,
 ): EditorState {
-  const targetParent = EP.parentPath(target)
-
   const conditional = findMaybeConditionalExpression(target, editor.jsxMetadata)
-  const elementMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-  let elementToInsert: JSXElementChild | null = null
-  if (
-    conditional != null &&
-    elementMetadata != null &&
-    MetadataUtils.isConditionalFromMetadata(elementMetadata)
-  ) {
-    const activeCase = getConditionalActiveCase(target, conditional, editor.spyMetadata)
-    if (activeCase != null) {
-      elementToInsert = getConditionalBranch(conditional, activeCase)
-      if (isJSXAttributeValue(elementToInsert) && typeof elementToInsert.value === 'string') {
-        elementToInsert = jsxTextBlock(elementToInsert.value)
-      }
-    }
+  if (conditional == null) {
+    return editor
   }
+  const activeCase = getConditionalActiveCase(target, conditional, editor.spyMetadata)
+  if (activeCase == null) {
+    return editor
+  }
+  const branch = getConditionalBranch(conditional, activeCase)
+  const isTextBranch = isJSXAttributeValue(branch) && typeof branch.value === 'string'
+  const elementToInsert = isTextBranch ? jsxTextBlock(branch.value) : branch
 
+  const targetParent = EP.parentPath(target)
   const originalIndexPosition = MetadataUtils.getIndexInParent(editor.jsxMetadata, target)
 
   const withParentUpdated = modifyUnderlyingTargetElement(
@@ -146,28 +151,35 @@ export function unwrapTextContainingConditional(
     editor,
     (element) => element,
     (success) => {
-      if (elementToInsert != null) {
-        const components = getUtopiaJSXComponentsFromSuccess(success)
-        const updatedComponents = insertElementAtPath_DEPRECATED(
-          editor.projectContents,
-          editor.canvas.openFile?.filename ?? null,
-          childInsertionPath(targetParent),
-          elementToInsert,
-          components,
-          absolute(originalIndexPosition),
-        )
+      const components = getUtopiaJSXComponentsFromSuccess(success)
 
-        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
-          success.topLevelElements,
-          updatedComponents.components,
-        )
-
-        return {
-          ...success,
-          topLevelElements: updatedTopLevelElements,
-        }
+      const insertionPath = getDefaultInsertionPathForElementPath(
+        targetParent,
+        editor.projectContents,
+        editor.nodeModules.files,
+        editor.canvas.openFile?.filename,
+        editor.jsxMetadata,
+      )
+      if (insertionPath == null) {
+        throw new Error('Invalid unwrap insertion path')
       }
-      return success
+
+      const updatedComponents = insertElementAtPath(
+        insertionPath,
+        elementToInsert,
+        components,
+        absolute(originalIndexPosition),
+      )
+
+      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+        success.topLevelElements,
+        updatedComponents.components,
+      )
+
+      return {
+        ...success,
+        topLevelElements: updatedTopLevelElements,
+      }
     },
   )
 
@@ -236,7 +248,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }
@@ -258,7 +276,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }
@@ -280,7 +304,13 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+              addElement(
+                'always',
+                staticTarget,
+                elementToInsert,
+                { importsToAdd, indexPosition },
+                'use-deprecated-insertJSXElementChild',
+              ),
             ]),
             newPath: newPath,
           }

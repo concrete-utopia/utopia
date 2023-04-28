@@ -3,7 +3,6 @@ import { base } from './base'
 import { light } from './light'
 
 const darkBase = {
-  darkPrimary: createUtopiColor('rgba(0,61,128,1)'),
   primary: base.blue,
   primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
   primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
@@ -13,12 +12,12 @@ const darkBase = {
   white: base.white,
   black: base.black,
   brandPurple: base.purple,
-  brandNeonYellow: base.neonyellow,
   brandNeonPink: base.neonpink,
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
   transparent: base.transparent,
+  error: base.red,
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
@@ -68,33 +67,28 @@ const darkPrimitives = {
 
 const darkErrorStates = {
   errorForeground: base.red,
-  errorForegroundSubdued: createUtopiColor('rgba(253,26,79,1)'),
+  // TODO vv only used by button, refactor button and remove
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
-  errorBgSolid: createUtopiColor('rgba(254,77,118,1)'),
   warningForeground: base.orange,
+  // TODO vv only used by image-thumbnail-control, consider removing
   warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
 }
 
 // TEMP colors with preset opacity pulled from within the app
 const colorsWithOpacity = {
-  bg0Opacity90: createUtopiColor('rgba(45,45,45,0.9)'),
-  bg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg0Opacity10: createUtopiColor('hsla(0,100%,100%,0.1)'),
   fg6Opacity50: createUtopiColor('rgba(111, 119, 139, 0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(255,255,255,0.20)'),
-  canvasControlsSizeBoxShadowColor21: createUtopiColor('rgba(255,255,255,0.21)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(255,255,255,0.5)'),
-  canvasLayoutStroke20: createUtopiColor('rgba(255, 0, 255, 0.2)'),
-  brandNeonPink30: createUtopiColor('rgba(255, 0, 255, 0.3)'),
-  neutralForeground40: createUtopiColor('rgba(217, 220, 227, 0.4)'),
   neutralInvertedBackground10: createUtopiColor('rgba(217, 220, 227, 0.1)'),
   neutralInvertedBackground20: createUtopiColor('rgba(217, 220, 227, 0.2)'),
   neutralInvertedBackground30: createUtopiColor('rgba(217, 220, 227, 0.3)'),
   listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
-  brandPurple70: createUtopiColor('rgba(87, 75, 226,0.7)'),
+  brandPurple70: base.purple70,
+  // TODO vv only used by button, refactor & remove
   errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
-  primary30: createUtopiColor('rgba(0, 122, 255, 0.3)'),
+  primary30: base.blue30,
   subduedBorder80: createUtopiColor('rgba(24, 28, 32, 0.8)'),
 }
 
@@ -129,7 +123,9 @@ export const dark: typeof light = {
   canvasControlReorderSliderBoxShadowSecondary: createUtopiColor('rgba(166,166,166,0.82)'),
   canvasControlsCoordinateSystemMarks: base.neonpink,
   canvasControlsImmediateParentMarks: createUtopiColor('rgba(0,0,0,0.25)'),
+  // TODO vv refactor - only used by self-layout-subsection indirection
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
+  // TODO vv refactor - following four *only* used by inline button
   canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleHoverBackground: createUtopiColor('rgba(242,248,255,1)'),
   canvasControlsInlineToggleHoverText: createUtopiColor('rgba(26,135,255,1)'),
@@ -142,13 +138,8 @@ export const dark: typeof light = {
   canvasSelectionInstanceOutline: base.purple,
   canvasSelectionSceneOutline: base.purple,
   canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
-  canvasSelectionAlternateOutlineYogaParent: base.neonpink,
-  canvasSelectionAlternateOutlineYogaChild: createUtopiColor('rgba(255,51,255,1)'),
   canvasSelectionSecondaryOutline: createUtopiColor('rgba(217, 220, 227, 0.5)'), // fg1
   canvasSelectionNotFocusable: base.darkgray,
-  canvasDraggingPlaceholderYoga: createUtopiColor('rgba(255,0,255,0.3)'),
-  canvasDragOutlineBlock: darkBase.primary,
-  canvasDragOutlineInline: base.red,
 
   canvasSelectionFocusable: base.purple,
   canvasSelectionIsolatedComponent: base.purple,
@@ -156,17 +147,11 @@ export const dark: typeof light = {
   canvasSelectionNotFocusableChild: base.darkorange,
   canvasSelectionFocusableChild: base.purple,
 
-  canvasLayoutForeground: base.neonpink,
-  canvasLayoutFillSolid: base.neonpink,
-  canvasLayoutFillTranslucent: createUtopiColor('rgba(255,230,255,0.9)'),
   canvasLayoutStroke: base.neonpink,
 
   paddingForeground: base.neongreen,
-  paddingFillSolid: base.neongreen,
   paddingFillTranslucent: createUtopiColor('rgba(230,248,230,0.9)'),
-  paddingStroke: base.neongreen,
 
-  selectionOutlines: createUtopiColor('rgba(255,128,255,1)'),
   canvasElementBackground: createUtopiColor('rgba(230,242,255,1)'),
   canvasComponentButtonFocusable: createUtopiColor('rgba(238,237,252,1)'),
   canvasComponentButtonFocused: createUtopiColor('rgba(255,239,230,1)'),
@@ -178,18 +163,15 @@ export const dark: typeof light = {
   // interface elements: buttons, segment controls, checkboxes etc
 
   inlineButtonColor: darkBase.primary,
-  inlineButtonColorDisabled: createUtopiColor('rgba(128,189,255,1)'),
   buttonBackground: darkBase.bg2,
   buttonHoverBackground: darkBase.bg3,
   buttonShadow: darkBase.fg9,
   buttonShadowActive: darkBase.fg8,
 
   // application utilities:
-  resizingDisplayBackground: darkBase.fg3,
-  resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)'),
   navigatorResizeHintBorder: darkBase.primary,
   navigatorComponentName: darkBase.primary,
-  navigatorComponentSelected: createUtopiColor('rgba(250, 94, 0, 0.2)'),
+  navigatorComponentSelected: base.orange20,
   navigatorComponentIconBorder: base.orange,
 
   contextMenuBackground: darkPrimitives.secondaryBackground,
@@ -214,7 +196,7 @@ export const dark: typeof light = {
   githubMUDDeleted: createUtopiColor('#f22'),
   githubMUDDefault: createUtopiColor('#ccc'),
 
-  // Code editor
+  // Code editor loading screen
   codeEditorShimmerPrimary: darkBase.bg4,
   codeEditorShimmerSecondary: darkBase.bg5,
   codeEditorTabRowBg: darkBase.bg2,
@@ -226,5 +208,5 @@ export const dark: typeof light = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControls: createUtopiColor('#FFA500'),
+  gapControls: base.neongreen,
 }
