@@ -187,6 +187,7 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import { childInsertionPath } from '../editor/store/insertion-path'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2815,15 +2816,19 @@ export function duplicate(
                   assertNever(anchor)
               }
             }
+            const insertResult =
+              getConditionalCaseCorrespondingToBranchPath(path, editor.jsxMetadata) != null
+                ? null
+                : insertElementAtPath(
+                    childInsertionPath(EP.parentPath(newPath)),
+                    newElement,
+                    utopiaComponents,
+                    position(),
+                  )
 
-            const insertResult = insertElementAtPath_DEPRECATED(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              optionalMap(childInsertionPath, newParentPath),
-              newElement,
-              utopiaComponents,
-              position(),
-            )
+            if (insertResult == null) {
+              throw new Error('Not implemented')
+            }
             utopiaComponents = insertResult.components
             detailsOfUpdate = insertResult.insertionDetails
 
