@@ -46,6 +46,7 @@ import {
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
+import { optionalMap } from '../core/shared/optional-utils'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -104,12 +105,15 @@ export function getActionsForClipboardItems(
       componentMetadata,
       pasteTargetsToIgnore,
     )
-    const storyboard = getStoryboardElementPath(projectContents, openFile)
-    const target = possibleTarget ?? (storyboard != null ? childInsertionPath(storyboard) : null)
+    const target: InsertionPath | null =
+      possibleTarget == null
+        ? optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
+        : possibleTarget
     if (target == null) {
       console.warn(`Unable to find the storyboard path.`)
       return []
     }
+    const targetPath = MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, target)
 
     // Create the actions for inserting JSX elements into the hierarchy.
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
@@ -122,9 +126,7 @@ export function getActionsForClipboardItems(
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const parentFrame =
-        target != null
-          ? MetadataUtils.getFrameInCanvasCoords(target.intendedParentPath, componentMetadata)
-          : null
+        target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
       const parentCenter =
         parentFrame == null || isInfinityRectangle(parentFrame)
           ? (Utils.point(100, 100) as CanvasPoint) // We should instead paste the top left at 0,0
