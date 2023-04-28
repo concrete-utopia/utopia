@@ -172,6 +172,7 @@ export const CanvasToolbar = React.memo(() => {
         position: 'absolute',
         top: 12,
         left: 12,
+        gap: 6,
         alignItems: 'stretch',
         width: 64,
         borderRadius: 4,
@@ -183,10 +184,9 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4, marginBottom: 4 }}></FlexRow>
         {/* ------------------------------------ */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4, marginBottom: 6 }}>
+        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Select' placement='bottom'>
             <InsertModeButton
               iconType='pointer'
@@ -228,7 +228,7 @@ export const CanvasToolbar = React.memo(() => {
       </FlexColumn>
 
       {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4, marginBottom: 6 }}>
+      <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Insert div' placement='bottom'>
@@ -270,7 +270,7 @@ export const CanvasToolbar = React.memo(() => {
         </FlexRow>
       </FlexColumn>
       {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4, marginBottom: 6 }}>
+      <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Convert</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Converts an element or component into another' placement='bottom'>
@@ -285,7 +285,7 @@ export const CanvasToolbar = React.memo(() => {
       </FlexColumn>
 
       {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4, marginBottom: 6 }}>
+      <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Organise</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Wrap selection in div' placement='bottom'>
@@ -302,7 +302,7 @@ export const CanvasToolbar = React.memo(() => {
         </FlexRow>
       </FlexColumn>
       {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4, marginBottom: 6 }}>
+      <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Editor</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
           <Tooltip title='Toggle Live Mode' placement='bottom'>
