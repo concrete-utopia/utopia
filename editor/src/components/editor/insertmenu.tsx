@@ -427,26 +427,23 @@ export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<Insert
   React.memo((props) => {
     const colorTheme = useColorTheme()
     return (
-      <div style={{ paddingBottom: 12 }}>
-        <UIRow rowHeight={'normal'}>
-          <InspectorSubsectionHeader>
-            <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
-              {props.label}
-            </div>
-            {props.subLabel == null ? null : (
-              <div style={{ color: colorTheme.subduedForeground.value, paddingLeft: 10 }}>
-                {props.subLabel}
-              </div>
-            )}
-          </InspectorSubsectionHeader>
-          <div style={{ flexGrow: 1, textAlign: 'right' }}>
-            <NpmDependencyVersionAndStatusIndicator
-              status={props.dependencyStatus}
-              version={props.dependencyVersion}
-            />
-          </div>
-        </UIRow>
-        <div style={{ padding: 8, color: colorTheme.subduedForeground.value }}>
+      <div style={{ paddingBottom: 24 }}>
+        <div style={{ height: 22, fontSize: 10, color: 'black', fontWeight: 500 }}>
+          <span>{props.label}</span>
+          <span>{props.subLabel == null ? null : props.subLabel}</span>
+          <NpmDependencyVersionAndStatusIndicator
+            status={props.dependencyStatus}
+            version={props.dependencyVersion}
+          />
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 4,
+          }}
+        >
           {props.children}
         </div>
       </div>
@@ -481,23 +478,30 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
     props.warningMessage == null ? regularIcon : <WarningIcon tooltipText={props.warningMessage} />
 
   return (
-    <UIRow
-      rowHeight={'normal'}
+    <div
       css={{
+        height: 22,
+        display: 'flex',
+        alignItems: 'center',
         background: props.selected ? colorTheme.primary.value : undefined,
         color: props.selected ? colorTheme.white.value : undefined,
         opacity: props.disabled ? 0.3 : 1,
-        gap: 8,
+        borderRadius: 5,
+        gap: 4,
+        cursor: 'pointer',
+        paddingLeft: 4,
+        paddingRight: 4,
+        margin: 0,
         '&:hover': {
-          border: `1px solid ${colorTheme.primary.value}`,
+          backgroundColor: props.selected ? colorTheme.primary.value : colorTheme.bg3.value,
         },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
       onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
       data-testid={`insert-item-${props.label}`}
     >
-      {resultingIcon}
+      <span style={{ transform: 'scale(.8)' }}>{resultingIcon}</span>
       <span>{props.label}</span>
-    </UIRow>
+    </div>
   )
 }
