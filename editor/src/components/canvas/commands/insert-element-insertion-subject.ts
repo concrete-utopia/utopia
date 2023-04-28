@@ -10,9 +10,9 @@ import {
   EditorState,
   EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath_DEPRECATED,
+  insertElementAtPath,
 } from '../../editor/store/editor-state'
-import { childInsertionPath } from '../../editor/store/insertion-path'
+import { getDefaultInsertionPathForElementPath } from '../../editor/store/insertion-path'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
@@ -59,10 +59,19 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         return
       }
 
-      const insertionResult = insertElementAtPath_DEPRECATED(
+      const insertionPath = getDefaultInsertionPathForElementPath(
+        targetParent,
         editor.projectContents,
-        underlyingFilePath,
-        childInsertionPath(targetParent),
+        editor.nodeModules.files,
+        editor.canvas.openFile?.filename,
+        editor.jsxMetadata,
+      )
+      if (insertionPath == null) {
+        return // maybe this should throw instead?
+      }
+
+      const insertionResult = insertElementAtPath(
+        insertionPath,
         subject.element,
         utopiaComponents,
         null,
