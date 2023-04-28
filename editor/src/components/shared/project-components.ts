@@ -92,23 +92,13 @@ export function insertableComponentGroupHTML(): InsertableComponentGroupHTML {
   }
 }
 
-export interface InsertableComponentGroupConditionals {
-  type: 'CONDITIONALS_GROUP'
+export interface InsertableComponentGroupCodeConstructs {
+  type: 'CODE_CONSTRUCTS_GROUP'
 }
 
-export function insertableComponentGroupConditionals(): InsertableComponentGroupConditionals {
+export function insertableComponentGroupCodeConstructs(): InsertableComponentGroupCodeConstructs {
   return {
-    type: 'CONDITIONALS_GROUP',
-  }
-}
-
-export interface InsertableComponentGroupFragment {
-  type: 'FRAGMENT_GROUP'
-}
-
-export function insertableComponentGroupFragment(): InsertableComponentGroupFragment {
-  return {
-    type: 'FRAGMENT_GROUP',
+    type: 'CODE_CONSTRUCTS_GROUP',
   }
 }
 
@@ -147,8 +137,7 @@ export type InsertableComponentGroupType =
   | InsertableComponentGroupHTML
   | InsertableComponentGroupProjectComponent
   | InsertableComponentGroupProjectDependency
-  | InsertableComponentGroupConditionals
-  | InsertableComponentGroupFragment
+  | InsertableComponentGroupCodeConstructs
   | InsertableComponentGroupSamples
 
 export interface InsertableComponentGroup {
@@ -187,10 +176,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return insertableType.dependencyName
     case 'PROJECT_COMPONENT_GROUP':
       return insertableType.path
-    case 'CONDITIONALS_GROUP':
-      return 'Conditionals'
-    case 'FRAGMENT_GROUP':
-      return 'Fragment'
+    case 'CODE_CONSTRUCTS_GROUP':
+      return 'Code'
     default:
       const _exhaustiveCheck: never = insertableType
       throw new Error(`Unhandled insertable type ${JSON.stringify(insertableType)}`)
@@ -204,8 +191,7 @@ export function getInsertableGroupPackageStatus(
     case 'SAMPLES_GROUP':
     case 'HTML_GROUP':
     case 'PROJECT_COMPONENT_GROUP':
-    case 'CONDITIONALS_GROUP':
-    case 'FRAGMENT_GROUP':
+    case 'CODE_CONSTRUCTS_GROUP':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
@@ -292,12 +278,24 @@ const basicHTMLElementsDescriptors = {
       style: defaultViewElementStyle(),
     }),
   ),
+  img: makeHTMLDescriptor(
+    'img',
+    {
+      src: {
+        control: 'string-input',
+      },
+      style: {
+        control: 'style-controls',
+      },
+    },
+    defaultImageAttributes,
+  ),
   span: makeHTMLDescriptor('span', {}),
+  button: makeHTMLDescriptor('button', {}),
+  input: makeHTMLDescriptor('input', {}),
   h1: makeHTMLDescriptor('h1', {}),
   h2: makeHTMLDescriptor('h2', {}),
   p: makeHTMLDescriptor('p', {}),
-  button: makeHTMLDescriptor('button', {}),
-  input: makeHTMLDescriptor('input', {}),
   video: makeHTMLDescriptor(
     'video',
     {
@@ -329,21 +327,9 @@ const basicHTMLElementsDescriptors = {
       simpleAttribute('src', 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm'),
     ],
   ),
-  img: makeHTMLDescriptor(
-    'img',
-    {
-      src: {
-        control: 'string-input',
-      },
-      style: {
-        control: 'style-controls',
-      },
-    },
-    defaultImageAttributes,
-  ),
 }
 
-const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
+const codeConstructsElementsDescriptors: ComponentDescriptorsForFile = {
   conditional: {
     properties: {},
     variants: [
@@ -360,9 +346,6 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
       },
     ],
   },
-}
-
-const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
     variants: [
@@ -571,12 +554,9 @@ export function getComponentGroups(
   // Add conditionals group.
   addDependencyDescriptor(
     null,
-    insertableComponentGroupConditionals(),
-    conditionalElementsDescriptors,
+    insertableComponentGroupCodeConstructs(),
+    codeConstructsElementsDescriptors,
   )
-
-  // Add fragment group.
-  addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
 
   // Add samples group
   addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
