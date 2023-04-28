@@ -43,7 +43,7 @@ import { firePasteEvent, pressKey } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import Sinon from 'sinon'
 import { defer } from '../../../utils/utils'
-import { Clipboard } from '../../../utils/clipboard'
+import { Clipboard, ClipboardDataPayload } from '../../../utils/clipboard'
 import { encodeUtopiaDataToHtml, extractUtopiaDataFromHtml } from '../../../utils/clipboard-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 
@@ -1178,7 +1178,7 @@ describe('actions', () => {
     })
 
     describe('end-to-end copy paste', () => {
-      const mockClipBoard: { data: any } = { data: null }
+      const mockClipBoard: { data: ClipboardDataPayload | null } = { data: null }
       var pasteDone: ReturnType<typeof defer> = defer()
       var sandbox = Sinon.createSandbox()
 
@@ -1187,16 +1187,19 @@ describe('actions', () => {
 
         const parseClipboardDataStub = sandbox.stub(Clipboard, 'parseClipboardData')
         parseClipboardDataStub.callsFake(async (c) => {
+          if (mockClipBoard.data == null) {
+            throw new Error('Mock clipboard is empty')
+          }
           pasteDone.resolve()
           return {
             files: [],
-            utopiaData: extractUtopiaDataFromHtml(mockClipBoard.data),
+            utopiaData: extractUtopiaDataFromHtml(mockClipBoard.data.html),
           }
         })
 
         const setClipboardDataStub = sandbox.stub(Clipboard, 'setClipboardData')
         setClipboardDataStub.callsFake(async (c) => {
-          mockClipBoard.data = encodeUtopiaDataToHtml(c!.data)
+          mockClipBoard.data = c
         })
       })
 
@@ -1227,7 +1230,7 @@ describe('actions', () => {
 
         FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
 
-        firePasteEvent(canvasRoot, mockClipBoard.data)
+        firePasteEvent(canvasRoot)
 
         // Wait for the next frame
         await pasteDone

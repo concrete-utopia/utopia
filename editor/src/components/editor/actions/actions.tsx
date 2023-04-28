@@ -527,6 +527,7 @@ import {
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
 import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2952,9 +2953,13 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        Clipboard.setClipboardData(
-          createClipboardDataFromSelection(editorForAction, builtInDependencies),
-        )
+        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
+        if (copyData != null) {
+          Clipboard.setClipboardData({
+            plainText: copyData.plaintext,
+            html: encodeUtopiaDataToHtml(copyData.data),
+          })
+        }
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,

@@ -799,7 +799,7 @@ export async function switchDragAndDropElementTargets(
 
 // https://github.com/testing-library/react-testing-library/issues/339 as above makeDragEvent,
 // though it uses a different property name the issue is still the same
-export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Array<File>) {
+export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Array<File>): void {
   const pasteEvent = createEvent.paste(eventSourceElement)
   Object.defineProperty(pasteEvent, 'clipboardData', {
     value: {
@@ -818,11 +818,11 @@ export function firePasteImageEvent(eventSourceElement: HTMLElement, images: Arr
   })
 }
 
-export function firePasteEvent(eventSourceElement: HTMLElement, data: any) {
+export function firePasteEvent(eventSourceElement: HTMLElement): void {
   const pasteEvent = createEvent.paste(eventSourceElement)
   Object.defineProperty(pasteEvent, 'clipboardData', {
     value: {
-      getData: () => data,
+      getData: () => null,
     },
   })
 
