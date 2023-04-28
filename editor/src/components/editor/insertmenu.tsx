@@ -428,7 +428,7 @@ export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<Insert
     const colorTheme = useColorTheme()
     return (
       <div style={{ paddingBottom: 24 }}>
-        <div style={{ height: 22, fontSize: 10, color: 'black', fontWeight: 500 }}>
+        <div style={{ height: 22, fontSize: 10, color: colorTheme.fg0.value, fontWeight: 500 }}>
           <span>{props.label}</span>
           <span>{props.subLabel == null ? null : props.subLabel}</span>
           <NpmDependencyVersionAndStatusIndicator
