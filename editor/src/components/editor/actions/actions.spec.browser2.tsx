@@ -45,10 +45,6 @@ import {
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
-import Sinon from 'sinon'
-import { defer } from '../../../utils/utils'
-import { Clipboard, ClipboardDataPayload } from '../../../utils/clipboard'
-import { encodeUtopiaDataToHtml, extractUtopiaDataFromHtml } from '../../../utils/clipboard-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 
 async function deleteFromScene(
@@ -1183,8 +1179,12 @@ describe('actions', () => {
 
     describe('end-to-end copy paste', () => {
       const clipboardMock = new MockClipboardHandlers()
-      before(() => {
+      beforeEach(() => {
         clipboardMock.setup()
+      })
+
+      afterEach(() => {
+        clipboardMock.teardown()
       })
 
       it('can copy-paste end-to-end', async () => {
