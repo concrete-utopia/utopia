@@ -1322,6 +1322,200 @@ describe('actions', () => {
       `),
       )
     })
+    describe('conditionals', () => {
+      it(`Unwraps a conditional`, async () => {
+        const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          {
+            // @utopia/uid=conditional
+            true ? <div data-uid='bbb'>foo</div> : <div>bar</div>
+          }
+        </div>
+      `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              <div data-uid='bbb'>foo</div>
+            </div>
+          `),
+        )
+      })
+      it(`Unwraps a conditional (false)`, async () => {
+        const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          {
+            // @utopia/uid=conditional
+            false ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+          }
+        </div>
+      `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              <div data-uid='ccc'>bar</div>
+            </div>
+          `),
+        )
+      })
+      it(`Unwraps a conditional (override)`, async () => {
+        const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          {
+            // @utopia/uid=conditional
+            // @utopia/conditional=false
+            true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+          }
+        </div>
+      `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              <div data-uid='ccc'>bar</div>
+            </div>
+          `),
+        )
+      })
+      it(`Unwraps a conditional with inline content`, async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            {
+              // @utopia/uid=conditional
+              true ? 'hello' : 'goodbye'
+            }
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              hello
+            </div>
+          `),
+        )
+      })
+      it(`Unwraps a conditional containing a conditional`, async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            {
+              // @utopia/uid=conditional
+              true ? true ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div> : <div>baz</div>
+            }
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              {
+                true ? (
+                  <div data-uid='bbb'>foo</div>
+                ): (
+                  <div data-uid='ccc'>bar</div>
+                )
+              }
+            </div>
+          `),
+        )
+      })
+      it(`Unwraps a conditional inside a conditional`, async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            {
+              // @utopia/uid=conditional
+              true
+              ? true /* @utopia/uid=conditional2 */ ? <div data-uid='bbb'>foo</div> : <div data-uid='ccc'>bar</div>
+              : <div data-uid='ddd'>baz</div>
+            }
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          true,
+        )
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  <div data-uid='bbb'>foo</div>
+                ): (
+                  <div data-uid='ddd'>baz</div>
+                )
+              }
+            </div>
+          `),
+        )
+      })
+      it(`Unwraps a conditional inside a conditional with literal content`, async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            {
+              // @utopia/uid=conditional
+              true
+              ? true /* @utopia/uid=conditional2 */ ? 'foo' : 'bar'
+              : <div data-uid='ddd'>baz</div>
+            }
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          true,
+        )
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  'foo'
+                ): (
+                  <div data-uid='ddd'>baz</div>
+                )
+              }
+            </div>
+          `),
+        )
+      })
+    })
   })
   describe('WRAP_IN_ELEMENT', () => {
     it(`Wraps 2 elements`, async () => {
