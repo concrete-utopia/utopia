@@ -1078,7 +1078,10 @@ function walkScene(
         childPaths: rootElements,
         rootMetadata,
         cachedPaths,
-      } = walkSceneInner(scene, instancePath, globalProps)
+      } = walkSceneInner(scene, instancePath, {
+        ...globalProps,
+        forceInvalidated: invalidatedScene,
+      })
 
       const { collectedMetadata: sceneMetadata, cachedPaths: sceneCachedPaths } = collectMetadata(
         scene,
