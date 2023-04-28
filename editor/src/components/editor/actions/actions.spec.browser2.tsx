@@ -39,7 +39,11 @@ import {
   selectComponentsForTest,
   wait,
 } from '../../../utils/utils.test-utils'
-import { firePasteEvent, pressKey } from '../../canvas/event-helpers.test-utils'
+import {
+  firePasteEvent,
+  MockClipboardHandlers,
+  pressKey,
+} from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import Sinon from 'sinon'
 import { defer } from '../../../utils/utils'
@@ -1178,34 +1182,9 @@ describe('actions', () => {
     })
 
     describe('end-to-end copy paste', () => {
-      const mockClipBoard: { data: ClipboardDataPayload | null } = { data: null }
-      var pasteDone: ReturnType<typeof defer> = defer()
-      var sandbox = Sinon.createSandbox()
-
-      beforeEach(() => {
-        pasteDone = defer()
-
-        const parseClipboardDataStub = sandbox.stub(Clipboard, 'parseClipboardData')
-        parseClipboardDataStub.callsFake(async (c) => {
-          if (mockClipBoard.data == null) {
-            throw new Error('Mock clipboard is empty')
-          }
-          pasteDone.resolve()
-          return {
-            files: [],
-            utopiaData: extractUtopiaDataFromHtml(mockClipBoard.data.html),
-          }
-        })
-
-        const setClipboardDataStub = sandbox.stub(Clipboard, 'setClipboardData')
-        setClipboardDataStub.callsFake(async (c) => {
-          mockClipBoard.data = c
-        })
-      })
-
-      afterEach(() => {
-        sandbox.restore()
-        mockClipBoard.data = null
+      const clipboardMock = new MockClipboardHandlers()
+      before(() => {
+        clipboardMock.setup()
       })
 
       it('can copy-paste end-to-end', async () => {
@@ -1233,7 +1212,7 @@ describe('actions', () => {
         firePasteEvent(canvasRoot)
 
         // Wait for the next frame
-        await pasteDone
+        await clipboardMock.pasteDone
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

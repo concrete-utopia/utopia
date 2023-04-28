@@ -3,6 +3,10 @@ import { emptyModifiers, Modifiers } from '../../utils/modifiers'
 import { resetMouseStatus } from '../mouse-move'
 import keycode from 'keycode'
 import { NO_OP } from '../../core/shared/utils'
+import { defer } from '../../utils/utils'
+import { extractUtopiaDataFromHtml } from '../../utils/clipboard-utils'
+import Sinon from 'sinon'
+import { ClipboardDataPayload, Clipboard } from '../../utils/clipboard'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -795,6 +799,40 @@ export async function switchDragAndDropElementTargets(
   await act(async () => {
     fireEvent(targetElement, makeDragEvent('dragover', targetElement, endPoint, fileList))
   })
+}
+
+export class MockClipboardHandlers {
+  mockClipBoard: { data: ClipboardDataPayload | null } = { data: null }
+  pasteDone: ReturnType<typeof defer> = defer()
+  sandbox = Sinon.createSandbox()
+
+  setup() {
+    beforeEach(() => {
+      this.pasteDone = defer()
+
+      const parseClipboardDataStub = this.sandbox.stub(Clipboard, 'parseClipboardData')
+      parseClipboardDataStub.callsFake(async (c) => {
+        if (this.mockClipBoard.data == null) {
+          throw new Error('Mock clipboard is empty')
+        }
+        this.pasteDone.resolve()
+        return {
+          files: [],
+          utopiaData: extractUtopiaDataFromHtml(this.mockClipBoard.data.html),
+        }
+      })
+
+      const setClipboardDataStub = this.sandbox.stub(Clipboard, 'setClipboardData')
+      setClipboardDataStub.callsFake(async (c) => {
+        this.mockClipBoard.data = c
+      })
+    })
+
+    afterEach(() => {
+      this.sandbox.restore()
+      this.mockClipBoard.data = null
+    })
+  }
 }
 
 // https://github.com/testing-library/react-testing-library/issues/339 as above makeDragEvent,
