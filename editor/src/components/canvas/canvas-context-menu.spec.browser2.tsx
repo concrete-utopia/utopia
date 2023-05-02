@@ -24,6 +24,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from './ui-jsx.test-utils'
+import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
 
 async function openContextMenuAndClickOnItem(
   renderResult: EditorRenderResult,
@@ -38,6 +39,8 @@ async function openContextMenuAndClickOnItem(
   await mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
   await renderResult.getDispatchFollowUpActionsFinished()
 }
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectNoAction"] }] */
 
 describe('canvas context menu', () => {
   it('clicking on paste layout menu item pastes layout properties', async () => {
@@ -135,6 +138,25 @@ describe('canvas context menu', () => {
         </div>`,
       ),
     )
+  })
+
+  it('clicking bring to front on element that is already on top', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+    <div data-uid='container'>
+      <span data-uid='first'>First</span>
+      <span data-uid='second'>Second</span>
+    </div>
+    `),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
+    )
+
+    await selectComponentsForTest(editor, [targetPath])
+    await expectNoAction(editor, () => openContextMenuAndClickOnItem(editor, 'Bring Forward'))
   })
   describe('wrap in from contextmenu', () => {
     it('wrap in div works inside a conditional on an expression', async () => {
