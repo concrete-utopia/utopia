@@ -1,5 +1,9 @@
 import * as json5 from 'json5'
-import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  findElementAtPath,
+  findJSXElementAtPath,
+  MetadataUtils,
+} from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -17,6 +21,7 @@ import {
   isJSXConditionalExpression,
   JSXConditionalExpression,
   isJSXArbitraryBlock,
+  jsxFragment,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild_DEPRECATED,
@@ -83,7 +88,7 @@ import {
 } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import Utils, { IndexPosition } from '../../../utils/utils'
+import Utils, { absolute, IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
@@ -1970,12 +1975,47 @@ export function insertElementAtPath(
   return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
 }
 
-export function insertElementWrapWithSibling(
-  targetSibling: InsertionPath,
+export function insertElementWrapInFragmentWithSiblings(
+  targetSibling: ElementPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
-) {
-  // TODO: get
+  wrapperId: string,
+): InsertChildAndDetails {
+  const sibling = findElementAtPath(targetSibling, components)
+  if (sibling == null) {
+    return insertChildAndDetails(components, null, {})
+  }
+
+  const withSiblingRemoved = removeElementAtPath(targetSibling, components)
+  const fragmentWithChildren = jsxFragment(wrapperId, [sibling, elementToInsert], true)
+
+  const parentPath = EP.parentPath(targetSibling)
+
+  const insertionPathForFragment = () => {
+    const maybeConditionalParent = findElementAtPath(parentPath, components)
+    if (maybeConditionalParent?.type === 'JSX_CONDITIONAL_EXPRESSION') {
+      const conditionalCase: ConditionalCase =
+        maybeConditionalParent.whenTrue.uid === EP.toUid(targetSibling) ? 'true-case' : 'false-case'
+      return conditionalClauseInsertionPath(parentPath, conditionalCase)
+    }
+    return childInsertionPath(parentPath)
+  }
+
+  const withGroupInserted = insertJSXElementChild(
+    insertionPathForFragment(),
+    fragmentWithChildren,
+    withSiblingRemoved,
+    absolute(0),
+  )
+
+  return insertChildAndDetails(withGroupInserted.components, withGroupInserted.insertionDetails, {
+    ...withGroupInserted.importsToAdd,
+    react: {
+      importedAs: 'React',
+      importedFromWithin: [],
+      importedWithName: null,
+    },
+  })
 }
 
 /** @deprecated reason: use insertElementAtPath instead! **/
