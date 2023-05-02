@@ -249,11 +249,14 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         return {
           // ...styles,
           position: 'relative',
-          maxHeight: 150,
-          padding: 4,
+          maxHeight: 210,
           paddingLeft: 8,
           paddingRight: 8,
-          overflowY: 'scroll',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          paddingBottom: UtopiaTheme.layout.rowHeight.large,
         }
       },
       input: (styles): CSSObject => {
@@ -296,7 +299,6 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       group: (): CSSObject => {
         return {
           // ...styles,
-          paddingTop: 6,
         }
       },
       groupHeading: (styles): CSSObject => {
