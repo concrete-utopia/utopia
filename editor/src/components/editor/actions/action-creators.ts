@@ -1269,7 +1269,7 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
 
 export function updateJSXElementName(
   target: ElementPath,
-  elementName: JSXElementName,
+  elementName: JSXElementName | 'JSX_FRAGMENT',
   importsToAdd: Imports,
 ): UpdateJSXElementName {
   return {

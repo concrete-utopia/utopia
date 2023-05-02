@@ -516,7 +516,7 @@ export var FloatingMenu = React.memo(() => {
             actionsToDispatch = targetsForUpdates.flatMap((path) => {
               return updateJSXElementName(
                 path,
-                jsxElementName('React', ['fragment']),
+                element.type,
                 pickedInsertableComponent.importsToAdd,
               )
             })

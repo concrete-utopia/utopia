@@ -786,7 +786,7 @@ export interface InsertImageIntoUI {
 export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
   target: ElementPath
-  elementName: JSXElementName
+  elementName: JSXElementName | 'JSX_FRAGMENT'
   importsToAdd: Imports
 }
 
