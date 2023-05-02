@@ -120,7 +120,7 @@ export function commonInsertionPath(
     // if the closest shared ancestor is a conditional, return the active branch
     return conditionalClauseInsertionPath(
       closestSharedAncestor,
-      closestSharedAncestorElement.conditionValue === true ? 'true-case' : 'false-case',
+      closestSharedAncestorElement.conditionValue.active === true ? 'true-case' : 'false-case',
       insertBehavior,
     )
   }
