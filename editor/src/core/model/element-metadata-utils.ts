@@ -27,6 +27,7 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  isLeft,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -373,12 +374,31 @@ export const MetadataUtils = {
     const isTextElement = foldEither(
       (elementString) => TextElements.includes(elementString),
       (elementInstance) =>
-        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable), // TODO this should include a check to make sure the element is a leaf
       element.element,
     )
     {
       return isTextElement
     }
+  },
+  isGeneratedTextFromMetadata(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      return false
+    }
+    if (isLeft(element.element)) {
+      return false
+    }
+    if (!isJSXElementLike(element.element.value)) {
+      return false
+    }
+    const jsxElement = element.element.value
+    // to mark something as text-like, we need to make sure it's a leaf in the metadata graph
+    const childrenElementsFromMetadata = MetadataUtils.getChildrenUnordered(metadata, target)
+    if (childrenElementsFromMetadata.length !== 0) {
+      return false
+    }
+    return !jsxElement.children.every((c) => isJSXElementLike(c) || isJSXTextBlock(c))
   },
   getYogaSizeProps(
     target: ElementPath,

@@ -683,16 +683,5 @@ function elementContainsExpressions(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const element = MetadataUtils.findElementByElementPath(metadata, path)
-  if (element == null) {
-    return false
-  }
-  if (element.element.type === 'LEFT') {
-    return false
-  }
-  if (!isJSXElementLike(element.element.value)) {
-    return false
-  }
-  const jsxElement = element.element.value
-  return !jsxElement.children.every((c) => isJSXElementLike(c) || isJSXTextBlock(c))
+  return MetadataUtils.isGeneratedTextFromMetadata(path, metadata)
 }
