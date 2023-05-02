@@ -282,9 +282,8 @@ describe('Floating insert menu', () => {
         'await-first-dom-report',
       )
 
+      await clickEmptySlot(editor) // This click will add an override
       FOR_TESTS_setNextGeneratedUid('newly-added-img')
-
-      await clickEmptySlot(editor)
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -296,6 +295,7 @@ describe('Floating insert menu', () => {
       <div data-uid='container'>
       {
         // @utopia/uid=conditional
+        // @utopia/conditional=false
         [].length === 0 ? (
           'Hello there'
         ) : (

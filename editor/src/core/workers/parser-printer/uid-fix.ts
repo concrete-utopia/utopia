@@ -1,11 +1,14 @@
-import type {
+import {
   ArbitraryJSBlock,
   ElementsWithin,
+  emptyComments,
+  isJSXElement,
   JSExpression,
   JSExpressionFunctionCall,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionOtherJavaScript,
+  jsExpressionValue,
   JSExpressionValue,
   JSXArrayElement,
   JSXAttributes,
@@ -16,6 +19,7 @@ import type {
   JSXFragment,
   JSXProperty,
   JSXTextBlock,
+  setJSXAttributesAttribute,
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
@@ -29,6 +33,10 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
+import { emptySet } from '../../../core/shared/set-utils'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
+
+const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
 const jsxElementUIDOptic: Optic<JSXElement, string> = fromField('uid')
 
@@ -49,9 +57,11 @@ const expressionFunctionCallUIDOptic: Optic<JSExpressionFunctionCall, string> = 
 const expressionOtherJavaScriptUIDOptic: Optic<JSExpressionOtherJavaScript, string> =
   fromField('uid')
 
+const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
+
 interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
-  mappings: Array<{ oldUID: string; newUID: string }>
+  mappings: Array<{ originalUID: string; newUID: string }>
 }
 
 export function fixParseSuccessUIDs(
@@ -91,11 +101,11 @@ export function fixParseSuccessUIDs(
   const fixedHighlightBounds: HighlightBoundsForUids = {
     ...newParsed.highlightBounds,
   }
-  for (const { oldUID, newUID } of fixUIDsState.mappings) {
+  for (const { originalUID, newUID } of fixUIDsState.mappings) {
     // Protect against highlight bounds not being defined for this case.
-    if (oldUID in fixedHighlightBounds) {
-      const bounds = fixedHighlightBounds[oldUID]
-      delete fixedHighlightBounds[oldUID]
+    if (originalUID in fixedHighlightBounds) {
+      const bounds = fixedHighlightBounds[originalUID]
+      delete fixedHighlightBounds[originalUID]
       fixedHighlightBounds[newUID] = bounds
     }
   }
@@ -121,18 +131,17 @@ function updateUID<T>(
     // Old one is the same as the new one, so everything is great.
     uidToUse = newUID
   } else if (fixUIDsState.mutableAllNewUIDs.has(oldUID)) {
-    // The old uid is already present somewhere, so using it will introduce a duplicate.
-    uidToUse = newUID
-  } else {
-    // The uids have changed:
-    // - Remove the new one from the set, as now it will be unused.
+    // The UID has changed, but the UID is already used elsewhere in the new structure:
+    // - Generate a new consistent UID.
     // - Add the old one to the set, as it will become used.
-    // - Return the old one.
-    // One assumption here is that there is no duplicate uids in the new elements.
-    fixUIDsState.mutableAllNewUIDs.delete(newUID)
-    fixUIDsState.mutableAllNewUIDs.add(oldUID)
-    fixUIDsState.mappings.push({ oldUID: oldUID, newUID: newUID })
+    // - Add a mapping for this change.
+    uidToUse = generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
+    fixUIDsState.mutableAllNewUIDs.add(uidToUse)
+    fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
+  } else {
+    // The UID has changed, add a mapping so the highlight bounds can be updated.
     uidToUse = oldUID
+    fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   }
 
   if (newUID === uidToUse) {
@@ -148,15 +157,46 @@ function updateUID<T>(
 // Like for example handling something being inserted in the middle and shifting the uids appropriately.
 // Then improving this function will make all of the cases where it is used better.
 function fixArrayElements<T>(
-  fixElement: (oldElement: T, newElement: T) => T,
-  oldExpression: Array<T>,
+  uidOptic: Optic<T, string> | null,
+  fixElement: (oldElement: T | null | undefined, newElement: T) => T,
+  oldExpression: Array<T> | null | undefined,
   newExpression: Array<T>,
+  fixUIDsState: FixUIDsState,
 ): Array<T> {
+  // Should an optic be available for looking up UIDs for these entries, then check for entries at a
+  // different index in the array with the same UID.
+  // If this is the case it's likely to be indicative of a new entry being inserted into the array,
+  // which has shifted the positions.
+  let oldElementIndexesUsed: Set<number> = emptySet()
+  let workingArray: Array<T> = []
+  if (uidOptic != null) {
+    newExpression.forEach((newElement, newElementIndex) => {
+      const uidOfNewElement = unsafeGet(uidOptic, newElement)
+      let possibleOldElement: T | undefined = undefined
+      if (oldExpression != null) {
+        oldExpression.forEach((oldElement, oldElementIndex) => {
+          if (unsafeGet(uidOptic, oldElement) === uidOfNewElement) {
+            possibleOldElement = oldElement
+            oldElementIndexesUsed.add(oldElementIndex)
+          }
+        })
+        if (possibleOldElement != null) {
+          workingArray[newElementIndex] = fixElement(possibleOldElement, newElement)
+        }
+      }
+    })
+  }
+
   return newExpression.map((newElement, newElementIndex) => {
-    if (newElementIndex < oldExpression.length) {
-      const oldElement = oldExpression[newElementIndex]
+    if (newElementIndex in workingArray) {
+      // Look for those shifted values.
+      return workingArray[newElementIndex]
+    } else if (!oldElementIndexesUsed.has(newElementIndex)) {
+      // If this entry hasn't been allocated to another index.
+      const oldElement = oldExpression?.[newElementIndex]
       return fixElement(oldElement, newElement)
     } else {
+      // Fallback case.
       return newElement
     }
   })
@@ -168,28 +208,30 @@ export function fixTopLevelElementsUIDs(
   fixUIDsState: FixUIDsState,
 ): Array<TopLevelElement> {
   return fixArrayElements(
+    null,
     (oldElement, newElement) => {
       return fixTopLevelElementUIDs(oldElement, newElement, fixUIDsState)
     },
     oldElements,
     newElements,
+    fixUIDsState,
   )
 }
 
 export function fixTopLevelElementUIDs(
-  oldElement: TopLevelElement,
+  oldElement: TopLevelElement | null | undefined,
   newElement: TopLevelElement,
   fixUIDsState: FixUIDsState,
 ): TopLevelElement {
   switch (newElement.type) {
     case 'UTOPIA_JSX_COMPONENT': {
-      if (oldElement.type === newElement.type) {
+      if (oldElement == null || oldElement.type === newElement.type) {
         return fixUtopiaJSXComponentUIDs(oldElement, newElement, fixUIDsState)
       }
       break
     }
     case 'ARBITRARY_JS_BLOCK': {
-      if (oldElement.type === newElement.type) {
+      if (oldElement == null || oldElement.type === newElement.type) {
         return fixArbitraryJSBlockUIDs(oldElement, newElement, fixUIDsState)
       }
       break
@@ -208,20 +250,20 @@ export function fixTopLevelElementUIDs(
 }
 
 export function fixUtopiaJSXComponentUIDs(
-  oldElement: UtopiaJSXComponent,
+  oldElement: UtopiaJSXComponent | null | undefined,
   newElement: UtopiaJSXComponent,
   fixUIDsState: FixUIDsState,
 ): UtopiaJSXComponent {
   const fixedArbitraryJSBlock =
-    oldElement.arbitraryJSBlock == null || newElement.arbitraryJSBlock == null
+    newElement.arbitraryJSBlock == null
       ? newElement.arbitraryJSBlock
       : fixArbitraryJSBlockUIDs(
-          oldElement.arbitraryJSBlock,
+          oldElement?.arbitraryJSBlock,
           newElement.arbitraryJSBlock,
           fixUIDsState,
         )
   const fixedRootElement = fixJSXElementChildUIDs(
-    oldElement.rootElement,
+    oldElement?.rootElement,
     newElement.rootElement,
     fixUIDsState,
   )
@@ -233,12 +275,12 @@ export function fixUtopiaJSXComponentUIDs(
 }
 
 export function fixArbitraryJSBlockUIDs(
-  oldElement: ArbitraryJSBlock,
+  oldElement: ArbitraryJSBlock | null | undefined,
   newElement: ArbitraryJSBlock,
   fixUIDsState: FixUIDsState,
 ): ArbitraryJSBlock {
   const fixedElementsWithin = fixElementsWithin(
-    oldElement.elementsWithin,
+    oldElement?.elementsWithin ?? {},
     newElement.elementsWithin,
     fixUIDsState,
   )
@@ -249,13 +291,13 @@ export function fixArbitraryJSBlockUIDs(
 }
 
 export function fixJSXArrayElement(
-  oldElement: JSXArrayElement,
+  oldElement: JSXArrayElement | null | undefined,
   newElement: JSXArrayElement,
   fixUIDsState: FixUIDsState,
 ): JSXArrayElement {
   return {
     ...newElement,
-    value: fixExpressionUIDs(oldElement.value, newElement.value, fixUIDsState),
+    value: fixExpressionUIDs(oldElement?.value, newElement.value, fixUIDsState),
   }
 }
 
@@ -265,22 +307,24 @@ export function fixJSXArrayElements(
   fixUIDsState: FixUIDsState,
 ): Array<JSXArrayElement> {
   return fixArrayElements(
+    null,
     (oldElement, newElement) => {
       return fixJSXArrayElement(oldElement, newElement, fixUIDsState)
     },
     oldExpression,
     newExpression,
+    fixUIDsState,
   )
 }
 
 export function fixJSXProperty(
-  oldExpression: JSXProperty,
+  oldExpression: JSXProperty | null | undefined,
   newExpression: JSXProperty,
   fixUIDsState: FixUIDsState,
 ): JSXProperty {
   return {
     ...newExpression,
-    value: fixExpressionUIDs(oldExpression.value, newExpression.value, fixUIDsState),
+    value: fixExpressionUIDs(oldExpression?.value, newExpression.value, fixUIDsState),
   }
 }
 
@@ -290,11 +334,13 @@ export function fixJSXPropertyArray(
   fixUIDsState: FixUIDsState,
 ): Array<JSXProperty> {
   return fixArrayElements(
+    null,
     (oldElement, newElement) => {
       return fixJSXProperty(oldElement, newElement, fixUIDsState)
     },
     oldExpression,
     newExpression,
+    fixUIDsState,
   )
 }
 
@@ -304,23 +350,29 @@ export function fixExpressionArray(
   fixUIDsState: FixUIDsState,
 ): Array<JSExpression> {
   return fixArrayElements(
+    jsExpressionUIDOptic,
     (oldElement, newElement) => {
       return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
     },
     oldExpression,
     newExpression,
+    fixUIDsState,
   )
 }
 
 export function fixJSXAttributesPart(
-  oldExpression: JSXAttributesPart,
+  oldExpression: JSXAttributesPart | null | undefined,
   newExpression: JSXAttributesPart,
   fixUIDsState: FixUIDsState,
 ): JSXAttributesPart {
   switch (newExpression.type) {
     case 'JSX_ATTRIBUTES_ENTRY': {
-      if (oldExpression.type === newExpression.type) {
-        const fixedValue = fixExpressionUIDs(oldExpression.value, newExpression.value, fixUIDsState)
+      if (oldExpression == null || oldExpression.type === newExpression.type) {
+        const fixedValue = fixExpressionUIDs(
+          oldExpression?.value,
+          newExpression.value,
+          fixUIDsState,
+        )
         return {
           ...newExpression,
           value: fixedValue,
@@ -329,9 +381,9 @@ export function fixJSXAttributesPart(
       break
     }
     case 'JSX_ATTRIBUTES_SPREAD': {
-      if (oldExpression.type === newExpression.type) {
+      if (oldExpression == null || oldExpression.type === newExpression.type) {
         const fixedSpreadValue = fixExpressionUIDs(
-          oldExpression.spreadValue,
+          oldExpression?.spreadValue,
           newExpression.spreadValue,
           fixUIDsState,
         )
@@ -350,16 +402,18 @@ export function fixJSXAttributesPart(
 }
 
 export function fixJSXAttributesUIDs(
-  oldExpression: JSXAttributes,
+  oldExpression: JSXAttributes | null | undefined,
   newExpression: JSXAttributes,
   fixUIDsState: FixUIDsState,
 ): JSXAttributes {
   return fixArrayElements(
+    null,
     (oldPart, newPart) => {
       return fixJSXAttributesPart(oldPart, newPart, fixUIDsState)
     },
     oldExpression,
     newExpression,
+    fixUIDsState,
   )
 }
 
@@ -369,11 +423,13 @@ export function fixJSXElementChildArray(
   fixUIDsState: FixUIDsState,
 ): Array<JSXElementChild> {
   return fixArrayElements(
+    jsxElementChildUIDOptic,
     (oldElement, newElement) => {
       return fixJSXElementChildUIDs(oldElement, newElement, fixUIDsState)
     },
     oldElements,
     newElements,
+    fixUIDsState,
   )
 }
 
@@ -385,32 +441,27 @@ export function fixElementsWithin(
   let result: ElementsWithin = {}
   for (const newWithinKey of Object.keys(newExpression)) {
     const newElement = newExpression[newWithinKey]
-    if (newWithinKey in oldExpression) {
-      const oldElement = newExpression[newWithinKey]
-      const fixedElement = fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
-      result[fixedElement.uid] = fixedElement
-    } else {
-      result[newWithinKey] = newElement
-    }
+    const oldElement = oldExpression[newWithinKey]
+    const fixedElement = fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
+    result[fixedElement.uid] = fixedElement
   }
 
   return result
 }
 
 export function fixJSXElementChildUIDs(
-  oldElement: JSXElementChild,
+  oldElement: JSXElementChild | null | undefined,
   newElement: JSXElementChild,
   fixUIDsState: FixUIDsState,
 ): JSXElementChild {
   switch (newElement.type) {
     case 'JSX_ELEMENT': {
-      if (oldElement.type === newElement.type) {
-        return fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
-      }
-      break
+      return fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
     }
     case 'JSX_FRAGMENT': {
-      if (oldElement.type === newElement.type) {
+      if (oldElement == null) {
+        return newElement
+      } else if (oldElement == null || oldElement.type === newElement.type) {
         const updatedChildren = fixJSXElementChildArray(
           oldElement.children,
           newElement.children,
@@ -420,17 +471,21 @@ export function fixJSXElementChildUIDs(
           ...newElement,
           children: updatedChildren,
         })
+      } else {
+        return updateUID(jsxFragmentUIDOptic, oldElement.uid, fixUIDsState, newElement)
       }
-      break
     }
     case 'JSX_TEXT_BLOCK': {
-      if (oldElement.type === newElement.type) {
+      if (oldElement == null) {
+        return newElement
+      } else {
         return updateUID(jsxTextBlockUIDOptic, oldElement.uid, fixUIDsState, newElement)
       }
-      break
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      if (oldElement.type === newElement.type) {
+      if (oldElement == null) {
+        return newElement
+      } else if (oldElement.type === newElement.type) {
         const updatedCondition = fixExpressionUIDs(
           oldElement.condition,
           newElement.condition,
@@ -452,119 +507,168 @@ export function fixJSXElementChildUIDs(
           whenTrue: updatedWhenTrue,
           whenFalse: updatedWhenFalse,
         })
+      } else {
+        return updateUID(jsxConditionalExpressionUIDOptic, oldElement.uid, fixUIDsState, newElement)
       }
-      break
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      if (oldElement.type === newElement.type) {
+      if (oldElement == null || oldElement.type === newElement.type) {
         return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
+      } else {
+        return updateUID(jsExpressionUIDOptic, oldElement.uid, fixUIDsState, newElement)
       }
-      break
     }
     default:
       assertNever(newElement)
   }
-
-  return newElement
 }
 
 export function fixJSXElementUIDs(
-  oldElement: JSXElement,
+  oldElement: JSXElementChild | null | undefined,
   newElement: JSXElement,
   fixUIDsState: FixUIDsState,
 ): JSXElement {
-  const fixedProps = fixJSXAttributesUIDs(oldElement.props, newElement.props, fixUIDsState)
-  const fixedChildren = fixJSXElementChildArray(
-    oldElement.children,
-    newElement.children,
-    fixUIDsState,
-  )
-  return updateUID(jsxElementUIDOptic, oldElement.uid, fixUIDsState, {
-    ...newElement,
-    props: fixedProps,
-    children: fixedChildren,
-  })
+  if (oldElement == null) {
+    // No previous entry, so just return the new value.
+    return newElement
+  } else {
+    // Update the UID upfront.
+    const elementWithUpdatedUID = updateUID(
+      jsxElementUIDOptic,
+      oldElement.uid,
+      fixUIDsState,
+      newElement,
+    )
+
+    // Set the `data-uid` attribute.
+    const attributesWithUpdatedUID: JSXAttributes = setJSXAttributesAttribute(
+      elementWithUpdatedUID.props,
+      'data-uid',
+      jsExpressionValue(elementWithUpdatedUID.uid, emptyComments),
+    )
+
+    // If this is a `JSXElement`, then work through the common fields.
+    let fixedProps: JSXAttributes = attributesWithUpdatedUID
+    let fixedChildren: Array<JSXElementChild> = elementWithUpdatedUID.children
+    if (isJSXElement(oldElement)) {
+      fixedProps = fixJSXAttributesUIDs(oldElement.props, attributesWithUpdatedUID, fixUIDsState)
+      fixedChildren = fixJSXElementChildArray(
+        oldElement.children,
+        elementWithUpdatedUID.children,
+        fixUIDsState,
+      )
+    }
+
+    return {
+      ...elementWithUpdatedUID,
+      props: fixedProps,
+      children: fixedChildren,
+    }
+  }
 }
 
 export function fixExpressionUIDs(
-  oldExpression: JSExpression,
+  oldExpression: JSExpression | null | undefined,
   newExpression: JSExpression,
   fixUIDsState: FixUIDsState,
 ): JSExpression {
-  switch (newExpression.type) {
-    case 'ATTRIBUTE_VALUE': {
-      if (oldExpression.type === newExpression.type) {
+  if (oldExpression == null) {
+    return newExpression
+  } else {
+    switch (newExpression.type) {
+      case 'ATTRIBUTE_VALUE': {
         return updateUID(expressionValueUIDOptic, oldExpression.uid, fixUIDsState, newExpression)
       }
-      break
-    }
-    case 'ATTRIBUTE_NESTED_ARRAY': {
-      if (oldExpression.type === newExpression.type) {
-        const fixedContents = fixJSXArrayElements(
-          oldExpression.content,
-          newExpression.content,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_NESTED_ARRAY': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedContents = fixJSXArrayElements(
+            oldExpression.content,
+            newExpression.content,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionNestedArrayUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          content: fixedContents,
-        })
+          return updateUID(expressionNestedArrayUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            content: fixedContents,
+          })
+        } else {
+          return updateUID(
+            expressionNestedArrayUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-      break
-    }
-    case 'ATTRIBUTE_NESTED_OBJECT': {
-      if (oldExpression.type === newExpression.type) {
-        const fixedContents = fixJSXPropertyArray(
-          oldExpression.content,
-          newExpression.content,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_NESTED_OBJECT': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedContents = fixJSXPropertyArray(
+            oldExpression.content,
+            newExpression.content,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionNestedObjectUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          content: fixedContents,
-        })
+          return updateUID(expressionNestedObjectUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            content: fixedContents,
+          })
+        } else {
+          return updateUID(
+            expressionNestedObjectUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-      break
-    }
-    case 'ATTRIBUTE_FUNCTION_CALL': {
-      if (oldExpression.type === newExpression.type) {
-        const fixedParameters = fixExpressionArray(
-          oldExpression.parameters,
-          newExpression.parameters,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_FUNCTION_CALL': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedParameters = fixExpressionArray(
+            oldExpression.parameters,
+            newExpression.parameters,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionFunctionCallUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          parameters: fixedParameters,
-        })
+          return updateUID(expressionFunctionCallUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            parameters: fixedParameters,
+          })
+        } else {
+          return updateUID(
+            expressionFunctionCallUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-      break
-    }
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      if (oldExpression.type === newExpression.type) {
-        const fixedElementsWithin = fixElementsWithin(
-          oldExpression.elementsWithin,
-          newExpression.elementsWithin,
-          fixUIDsState,
-        )
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+        if (oldExpression.type === newExpression.type) {
+          const fixedElementsWithin = fixElementsWithin(
+            oldExpression.elementsWithin,
+            newExpression.elementsWithin,
+            fixUIDsState,
+          )
 
-        return updateUID(expressionOtherJavaScriptUIDOptic, oldExpression.uid, fixUIDsState, {
-          ...newExpression,
-          elementsWithin: fixedElementsWithin,
-        })
+          return updateUID(expressionOtherJavaScriptUIDOptic, oldExpression.uid, fixUIDsState, {
+            ...newExpression,
+            elementsWithin: fixedElementsWithin,
+          })
+        } else {
+          return updateUID(
+            expressionOtherJavaScriptUIDOptic,
+            oldExpression.uid,
+            fixUIDsState,
+            newExpression,
+          )
+        }
       }
-      break
+      default:
+        assertNever(newExpression)
     }
-    default:
-      assertNever(newExpression)
   }
-
-  return newExpression
 }
