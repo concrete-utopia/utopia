@@ -50,6 +50,7 @@ import {
 } from '../../core/model/element-template-utils'
 import {
   fixUtopiaElement,
+  generateConsistentUID,
   generateUID,
   getUtopiaID,
   setUtopiaID,
@@ -128,6 +129,7 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
+  insertElementWrapInFragmentWithSibling,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -188,6 +190,7 @@ import { treatElementAsContentAffecting } from './canvas-strategies/strategies/g
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import { childInsertionPath } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
+import Hash from 'object-hash'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2816,15 +2819,29 @@ export function duplicate(
                   assertNever(anchor)
               }
             }
-            const insertResult =
-              getConditionalCaseCorrespondingToBranchPath(path, editor.jsxMetadata) != null
-                ? null
-                : insertElementAtPath(
-                    childInsertionPath(EP.parentPath(newPath)),
-                    newElement,
-                    utopiaComponents,
-                    position(),
-                  )
+            const insertResult = (() => {
+              const conditionalCase = getConditionalCaseCorrespondingToBranchPath(
+                path,
+                editor.jsxMetadata,
+              )
+              if (conditionalCase != null) {
+                const hash = Hash(path)
+                const uidForWrapper = generateConsistentUID(new Set(existingIDs), hash)
+                return insertElementWrapInFragmentWithSibling(
+                  path,
+                  newElement!, // `newElement` is actually already null checked here, but TS cannot determine that yet, see https://github.com/microsoft/TypeScript/issues/9998
+                  utopiaComponents,
+                  uidForWrapper,
+                )
+              }
+
+              return insertElementAtPath(
+                childInsertionPath(EP.parentPath(newPath)),
+                newElement!, // `newElement` is actually already null checked here, but TS cannot determine that yet, see https://github.com/microsoft/TypeScript/issues/9998
+                utopiaComponents,
+                position(),
+              )
+            })()
 
             if (insertResult == null) {
               throw new Error('Not implemented')

@@ -1975,7 +1975,7 @@ export function insertElementAtPath(
   return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
 }
 
-export function insertElementWrapInFragmentWithSiblings(
+export function insertElementWrapInFragmentWithSibling(
   targetSibling: ElementPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
