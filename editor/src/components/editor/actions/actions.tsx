@@ -443,7 +443,7 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -527,6 +527,7 @@ import {
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
 import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2857,7 +2858,8 @@ export const UPDATE_FNS = {
       }
 
       const existingIDs = getAllUniqueUids(editor.projectContents)
-      return elements.reduce((workingEditorState, currentValue, index) => {
+      let newPaths: Array<ElementPath> = []
+      const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
@@ -2874,6 +2876,7 @@ export const UPDATE_FNS = {
           return workingEditorState
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
+          newPaths.push(newPath)
 
           const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
@@ -2903,6 +2906,16 @@ export const UPDATE_FNS = {
           return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
+
+      // Update the selected views to what has just been created.
+      if (newPaths.length > 0) {
+        return {
+          ...updatedEditorState,
+          selectedViews: newPaths,
+        }
+      } else {
+        return updatedEditorState
+      }
     } else {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
@@ -2952,7 +2965,13 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        setClipboardData(createClipboardDataFromSelection(editorForAction, builtInDependencies))
+        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
+        if (copyData != null) {
+          Clipboard.setClipboardData({
+            plainText: copyData.plaintext,
+            html: encodeUtopiaDataToHtml(copyData.data),
+          })
+        }
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,

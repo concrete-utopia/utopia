@@ -178,7 +178,7 @@ const TitleBar = React.memo(() => {
             )}
             {when(
               hasMergeConflicts,
-              <RoundButton color={colorTheme.errorBgSolid.value} onClick={showMergeConflict}>
+              <RoundButton color={colorTheme.error.value} onClick={showMergeConflict}>
                 {
                   <Icons.WarningTriangle
                     style={{ width: 19, height: 19 }}

@@ -158,7 +158,7 @@ const shadowStyles = {
 
 const popup: React.CSSProperties = {
   background: colorTheme.neutralBackground.value,
-  boxShadow: `inset 0px 0px 0px .5px ${colorTheme.border3.value} , 0px 2px 4px 0px ${colorTheme.fg6Opacity50.value}`,
+  boxShadow: `0px 0px 0px .5px ${colorTheme.border3.value} , 0px 5px 8px 0px hsl(0deg 0% 86.92% / 50%)`,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,

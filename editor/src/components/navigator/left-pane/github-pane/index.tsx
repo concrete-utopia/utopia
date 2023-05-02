@@ -328,7 +328,7 @@ const BranchBlock = () => {
                     : 'pointer',
                   opacity: isListingBranches && !loadingThisBranch ? 0.5 : 1,
                   '&:hover': {
-                    background: colorTheme.primarySubdued.value,
+                    background: colorTheme.primary.value,
                     color: colorTheme.white.value,
                     svg: { stroke: colorTheme.white.value },
                   },

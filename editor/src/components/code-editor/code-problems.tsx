@@ -101,7 +101,7 @@ function getTabStyleForErrors(
   errorMessages: Array<ErrorMessage>,
   colorTheme: any,
 ): { backgroundColor: string } {
-  const errorStyle = { backgroundColor: colorTheme.errorBgSolid.value }
+  const errorStyle = { backgroundColor: colorTheme.error.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
   const defaultStyle = { backgroundColor: colorTheme.subtleBackground.value }
 
@@ -120,7 +120,7 @@ function getTabStyleForLogs(
   canvasConsoleLogs: Array<ConsoleLog>,
   colorTheme: any,
 ): { backgroundColor: string } {
-  const errorStyle = { backgroundColor: colorTheme.errorBgSolid.value }
+  const errorStyle = { backgroundColor: colorTheme.error.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
   const defaultStyle = { backgroundColor: 'grey' }
 
