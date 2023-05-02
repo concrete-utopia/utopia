@@ -23,7 +23,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-type SlotBehavior = 'replace' | 'wrap-into-fragment'
+type ConditionalClauseInsertBehavior = 'replace' | 'wrap-into-fragment'
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
@@ -44,20 +44,20 @@ export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   intendedParentPath: StaticElementPath
   clause: ConditionalCase
-  slotBehavior: SlotBehavior
+  insertBehavior: ConditionalClauseInsertBehavior
 }
 
 // Insert element into the intended parent's true or false branch expression
 export function conditionalClauseInsertionPath(
   elementPath: ElementPath,
   clause: ConditionalCase,
-  slotBehavior: SlotBehavior,
+  insertBehavior: ConditionalClauseInsertBehavior,
 ): ConditionalClauseInsertionPath {
   return {
     type: 'CONDITIONAL_CLAUSE_INSERTION',
     intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
     clause: clause,
-    slotBehavior: slotBehavior,
+    insertBehavior: insertBehavior,
   }
 }
 
@@ -91,7 +91,7 @@ export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
-  slotBehavior: SlotBehavior,
+  insertBehavior: ConditionalClauseInsertBehavior,
 ): InsertionPath | null {
   const closestSharedAncestor = EP.dynamicPathToStaticPath(
     forceNotNull(
@@ -121,7 +121,7 @@ export function commonInsertionPath(
     return conditionalClauseInsertionPath(
       closestSharedAncestor,
       closestSharedAncestorElement.conditionValue === true ? 'true-case' : 'false-case',
-      slotBehavior,
+      insertBehavior,
     )
   }
 
@@ -131,7 +131,7 @@ export function commonInsertionPath(
 export function commonInsertionPathFromArray(
   metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
-  slotBehavior: SlotBehavior,
+  insertBehavior: ConditionalClauseInsertBehavior,
 ): InsertionPath | null {
   let workingArray: Array<InsertionPath> = []
   for (const arrayElem of array) {
@@ -148,12 +148,12 @@ export function commonInsertionPathFromArray(
     if (working == null) {
       return working
     } else {
-      return commonInsertionPath(metadata, working, target, slotBehavior)
+      return commonInsertionPath(metadata, working, target, insertBehavior)
     }
   }, workingArray[0])
 }
 
-export function getDefaultInsertionPathForElementPathSlot(
+export function getInsertionPathWithSlotBehavior(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -175,7 +175,7 @@ export function getDefaultInsertionPathForElementPathSlot(
     : null
 }
 
-export function getDefaultInsertionPathForElementPathWrapIntoFragment(
+export function getInsertionPathWithWrapIntoFragmentBehavior(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,

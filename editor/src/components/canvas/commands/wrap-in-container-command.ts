@@ -27,7 +27,7 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import { ProjectContentTreeRoot } from '../../assets'
 import { JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
-import { getDefaultInsertionPathForElementPathSlot } from '../../editor/store/insertion-path'
+import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import { CSSProperties } from 'react'
 import { Property } from 'csstype'
@@ -85,7 +85,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
 
-      const insertionPath = getDefaultInsertionPathForElementPathSlot(
+      const insertionPath = getInsertionPathWithSlotBehavior(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,

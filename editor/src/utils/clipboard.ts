@@ -46,8 +46,8 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   childInsertionPath,
-  getDefaultInsertionPathForElementPathSlot,
-  getDefaultInsertionPathForElementPathWrapIntoFragment,
+  getInsertionPathWithSlotBehavior,
+  getInsertionPathWithWrapIntoFragmentBehavior,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
@@ -332,7 +332,7 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        return getDefaultInsertionPathForElementPathWrapIntoFragment(
+        return getInsertionPathWithWrapIntoFragmentBehavior(
           targetPath,
           projectContents,
           nodeModules,

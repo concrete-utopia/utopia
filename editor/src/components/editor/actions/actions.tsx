@@ -508,7 +508,7 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getDefaultInsertionPathForElementPathSlot,
+  getInsertionPathWithSlotBehavior,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -4842,7 +4842,7 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
-      const insertionPath = getDefaultInsertionPathForElementPathSlot(
+      const insertionPath = getInsertionPathWithSlotBehavior(
         action.targetParent,
         editor.projectContents,
         editor.nodeModules.files,

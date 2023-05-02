@@ -552,7 +552,7 @@ export function insertJSXElementChild(
       return modify(
         toClauseOptic,
         (clauseValue) => {
-          if (targetParent.slotBehavior === 'replace') {
+          if (targetParent.insertBehavior === 'replace') {
             return elementToInsert
           }
           if (isNullJSXAttributeValue(clauseValue)) {

@@ -43,7 +43,7 @@ import {
   ConditionalClauseInsertionPath,
   InsertionPath,
   childInsertionPath,
-  getDefaultInsertionPathForElementPathSlot,
+  getInsertionPathWithSlotBehavior,
   getElementPathFromInsertionPath,
   isChildInsertionPath,
 } from '../store/insertion-path'
@@ -153,7 +153,7 @@ export function unwrapTextContainingConditional(
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
 
-      const insertionPath = getDefaultInsertionPathForElementPathSlot(
+      const insertionPath = getInsertionPathWithSlotBehavior(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
