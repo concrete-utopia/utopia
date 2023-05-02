@@ -192,8 +192,13 @@ export function isTextContainingConditional(
 ): boolean {
   const element = MetadataUtils.findElementByElementPath(metadata, target)
   const conditional = findMaybeConditionalExpression(target, metadata)
-  if (conditional != null && element != null && MetadataUtils.isConditionalFromMetadata(element)) {
-    const currentValue = element.conditionValue
+  if (
+    conditional != null &&
+    element != null &&
+    MetadataUtils.isConditionalFromMetadata(element) &&
+    element.conditionValue !== 'not-a-conditional'
+  ) {
+    const currentValue = element.conditionValue.active
     if (currentValue === true) {
       return !isJSXElementLike(conditional.whenTrue)
     } else if (currentValue === false) {
