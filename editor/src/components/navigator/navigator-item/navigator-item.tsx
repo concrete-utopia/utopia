@@ -43,6 +43,7 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
+import { assertNever } from '../../../core/shared/utils'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -122,6 +123,8 @@ function getConditionalOverrideActions(
       return [EditorActions.setConditionalOverriddenCondition(targetPath, true)]
     case 'false-case':
       return [EditorActions.setConditionalOverriddenCondition(targetPath, false)]
+    default:
+      assertNever(conditionalOverrideUpdate)
   }
 }
 
