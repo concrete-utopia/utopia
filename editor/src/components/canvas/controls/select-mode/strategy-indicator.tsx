@@ -27,6 +27,7 @@ export const StrategyIndicator = React.memo(() => {
   return (
     <FlexRow
       style={{
+        ...UtopiaStyles.popup,
         pointerEvents: 'none',
         position: 'absolute',
         top: 4,
@@ -38,16 +39,13 @@ export const StrategyIndicator = React.memo(() => {
         alignItems: 'flex-end',
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
-        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
         opacity:
           indicatorFlagsInfo.dragStarted && indicatorFlagsInfo.indicatorFlags.showIndicator ? 1 : 0,
       }}
       data-testid='drag-strategy-indicator'
     >
       <MoveIndicatorItem dragType={indicatorFlagsInfo.indicatorFlags.dragType} />
-      <Divider />
       <ReparentIndicatorItem status={indicatorFlagsInfo.indicatorFlags.reparent} />
-      <Divider />
       <AncestorIndicatorItem enabled={indicatorFlagsInfo.indicatorFlags.ancestor} />
     </FlexRow>
   )
@@ -177,11 +175,6 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
       </div>
     </FlexColumn>
   )
-})
-
-const Divider = React.memo(() => {
-  const colorTheme = useColorTheme()
-  return <div style={{ height: '100%', width: 1, backgroundColor: colorTheme.fg8.value }} />
 })
 
 interface VisibilityWrapperProps {
