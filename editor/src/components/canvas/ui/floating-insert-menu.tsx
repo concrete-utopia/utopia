@@ -46,6 +46,7 @@ import {
   jsExpressionValue,
   JSXConditionalExpressionWithoutUID,
   jsxElement,
+  jsxElementName,
   JSXElementName,
   JSXFragmentWithoutUID,
   jsxTextBlock,
@@ -467,7 +468,10 @@ export var FloatingMenu = React.memo(() => {
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
   const onChangeConditionalOrFragment = React.useCallback(
-    (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
+    (
+      element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID,
+      pickedInsertableComponent: InsertMenuItemValue,
+    ): Array<EditorAction> => {
       let actionsToDispatch: Array<EditorAction> = []
       const selectedViews = selectedViewsref.current
       switch (floatingMenuState.insertMenuMode) {
@@ -506,7 +510,19 @@ export var FloatingMenu = React.memo(() => {
             ),
           ]
           break
-        case 'convert':
+        case 'convert': {
+          if (element.type === 'JSX_FRAGMENT') {
+            const targetsForUpdates = getElementsToTarget(selectedViews)
+            actionsToDispatch = targetsForUpdates.flatMap((path) => {
+              return updateJSXElementName(
+                path,
+                jsxElementName('React', ['fragment']),
+                pickedInsertableComponent.importsToAdd,
+              )
+            })
+          }
+          break
+        }
         case 'closed':
           break
         default:
@@ -614,7 +630,10 @@ export var FloatingMenu = React.memo(() => {
           switch (pickedInsertableComponent.element.type) {
             case 'JSX_CONDITIONAL_EXPRESSION':
             case 'JSX_FRAGMENT':
-              return onChangeConditionalOrFragment(pickedInsertableComponent.element)
+              return onChangeConditionalOrFragment(
+                pickedInsertableComponent.element,
+                pickedInsertableComponent,
+              )
             case 'JSX_ELEMENT':
               return onChangeElement(pickedInsertableComponent)
             default:

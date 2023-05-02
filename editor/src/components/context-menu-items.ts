@@ -1,6 +1,12 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { Either } from '../core/shared/either'
-import { ElementInstanceMetadataMap, isIntrinsicElement } from '../core/shared/element-template'
+import { Either, isRight } from '../core/shared/either'
+import {
+  ElementInstanceMetadataMap,
+  isIntrinsicElement,
+  isJSXElement,
+  isJSXElementLike,
+  isJSXFragment,
+} from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
@@ -268,7 +274,12 @@ export const insert: ContextMenuItem<CanvasData> = {
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Convert Element To…',
   shortcut: 'C',
-  enabled: true,
+  enabled: (data) => {
+    return data.selectedViews.every((path) => {
+      const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+      return element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+    })
+  },
   action: (data, dispatch) => {
     requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })])
   },

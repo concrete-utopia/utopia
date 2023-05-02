@@ -90,6 +90,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
+  jsxElementNameEquals,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
@@ -4225,12 +4226,35 @@ export const UPDATE_FNS = {
       editor,
     )
 
-    return modifyOpenJsxElementAtPath(
+    return modifyOpenJsxElementOrConditionalAtPath(
       action.target,
       (element) => {
-        return {
-          ...element,
-          name: action.elementName,
+        switch (element.type) {
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return element
+          case 'JSX_ELEMENT':
+            if (jsxElementNameEquals(jsxElementName('React', ['fragment']), action.elementName)) {
+              return jsxFragment(element.uid, element.children, true)
+            } else {
+              return {
+                ...element,
+                name: action.elementName,
+              }
+            }
+          case 'JSX_FRAGMENT':
+            if (jsxElementNameEquals(jsxElementName('React', ['fragment']), action.elementName)) {
+              return element
+            }
+            return jsxElement(
+              action.elementName,
+              element.uid,
+              jsxAttributesFromMap({
+                'data-uid': jsExpressionValue(element.uid, emptyComments),
+              }),
+              element.children,
+            )
+          default:
+            assertNever(element)
         }
       },
       updatedEditor,

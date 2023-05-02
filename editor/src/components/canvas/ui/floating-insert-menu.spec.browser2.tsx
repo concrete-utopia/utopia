@@ -412,6 +412,68 @@ describe('Floating insert menu', () => {
       )
     })
   })
+  describe('Floating menu converts element', () => {
+    it('can convert an element to a fragment', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <div data-uid='bbb' style={{backgroundColor: 'blue'}}>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </div>
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`),
+      ])
+
+      await convertViaAddElementPopup(editor, 'fragment')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <React.Fragment>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </React.Fragment>
+        </div>
+      `),
+      )
+    })
+    it('can convert a fragment to a div element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <React.Fragment data-uid='bbb'>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </React.Fragment>
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`),
+      ])
+
+      await convertViaAddElementPopup(editor, 'div')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <div data-uid='bbb'>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </div>
+        </div>
+      `),
+      )
+    })
+  })
 })
 
 async function clickEmptySlot(editor: EditorRenderResult) {
@@ -421,6 +483,15 @@ async function clickEmptySlot(editor: EditorRenderResult) {
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('a')
+  await searchInFloatingMenu(editor, query)
+}
+
+async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
+  await pressKey('c')
+  await searchInFloatingMenu(editor, query)
+}
+
+async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
   const floatingMenu = editor.renderedDOM.getByTestId(FloatingMenuTestId)
   const searchBox = queryByAttribute('type', floatingMenu, 'text')!
 

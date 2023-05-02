@@ -12,6 +12,7 @@ import {
 import {
   emptyComments,
   isJSXConditionalExpression,
+  isJSXFragment,
   jsExpressionValue,
   jsxElement,
   JSXElement,
@@ -59,7 +60,7 @@ describe('modifyUnderlyingTarget', () => {
       '/src/app.js',
       startingEditorModel,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
         }
         const updatedAttributes = setJSXAttributesAttribute(
@@ -144,7 +145,7 @@ describe('modifyUnderlyingTarget', () => {
       StoryboardFilePath,
       startingEditorModel,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
         }
         const updatedAttributes = setJSXAttributesAttribute(
@@ -198,7 +199,7 @@ describe('modifyUnderlyingTarget', () => {
         '/src/app.js',
         startingEditorModel,
         (element) => {
-          if (isJSXConditionalExpression(element)) {
+          if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
             return element
           }
           const updatedAttributes = setJSXAttributesAttribute(
@@ -219,7 +220,7 @@ describe('modifyUnderlyingTarget', () => {
         '/src/kitchen.js',
         startingEditorModel,
         (element) => {
-          if (isJSXConditionalExpression(element)) {
+          if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
             return element
           }
           const updatedAttributes = setJSXAttributesAttribute(
@@ -246,7 +247,7 @@ describe('Revision state management', () => {
       '/src/app.js',
       startingEditorModel,
       (element) => {
-        if (isJSXConditionalExpression(element)) {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
         }
         const updatedAttributes = setJSXAttributesAttribute(
