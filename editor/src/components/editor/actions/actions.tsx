@@ -508,7 +508,7 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getDefaultInsertionPathForElementPath,
+  getDefaultInsertionPathForElementPathSlot,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2287,6 +2287,7 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertElementAtPath(
+          editor.projectContents,
           childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
@@ -2343,6 +2344,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
+          'replace',
         )
         if (parentPath == null) {
           return editor
@@ -4840,7 +4842,7 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
-      const insertionPath = getDefaultInsertionPathForElementPath(
+      const insertionPath = getDefaultInsertionPathForElementPathSlot(
         action.targetParent,
         editor.projectContents,
         editor.nodeModules.files,
@@ -4926,6 +4928,7 @@ export const UPDATE_FNS = {
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               withMaybeUpdatedParent,
@@ -4945,6 +4948,7 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               utopiaComponents,
@@ -4962,6 +4966,7 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               childInsertionPath(action.targetParent),
               element,
               utopiaComponents,

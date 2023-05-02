@@ -23,6 +23,8 @@ import { ProjectContentTreeRoot } from '../../assets'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
+type SlotBehavior = 'replace' | 'wrap-into-fragment'
+
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
   intendedParentPath: StaticElementPath
@@ -42,17 +44,20 @@ export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   intendedParentPath: StaticElementPath
   clause: ConditionalCase
+  slotBehavior: SlotBehavior
 }
 
 // Insert element into the intended parent's true or false branch expression
 export function conditionalClauseInsertionPath(
   elementPath: ElementPath,
   clause: ConditionalCase,
+  slotBehavior: SlotBehavior,
 ): ConditionalClauseInsertionPath {
   return {
     type: 'CONDITIONAL_CLAUSE_INSERTION',
     intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
     clause: clause,
+    slotBehavior: slotBehavior,
   }
 }
 
@@ -86,6 +91,7 @@ export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
+  slotBehavior: SlotBehavior,
 ): InsertionPath | null {
   const closestSharedAncestor = EP.dynamicPathToStaticPath(
     forceNotNull(
@@ -115,6 +121,7 @@ export function commonInsertionPath(
     return conditionalClauseInsertionPath(
       closestSharedAncestor,
       closestSharedAncestorElement.conditionValue === true ? 'true-case' : 'false-case',
+      slotBehavior,
     )
   }
 
@@ -124,6 +131,7 @@ export function commonInsertionPath(
 export function commonInsertionPathFromArray(
   metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
+  slotBehavior: SlotBehavior,
 ): InsertionPath | null {
   let workingArray: Array<InsertionPath> = []
   for (const arrayElem of array) {
@@ -140,12 +148,12 @@ export function commonInsertionPathFromArray(
     if (working == null) {
       return working
     } else {
-      return commonInsertionPath(metadata, working, target)
+      return commonInsertionPath(metadata, working, target, slotBehavior)
     }
   }, workingArray[0])
 }
 
-export function getDefaultInsertionPathForElementPath(
+export function getDefaultInsertionPathForElementPathSlot(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -163,6 +171,28 @@ export function getDefaultInsertionPathForElementPath(
   )
     ? childInsertionPath(target)
     : conditionalClause != null && isEmptyConditionalBranch(target, metadata)
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause)
+    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'replace')
+    : null
+}
+
+export function getDefaultInsertionPathForElementPathWrapIntoFragment(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  metadata: ElementInstanceMetadataMap,
+): InsertionPath | null {
+  const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+
+  return MetadataUtils.targetSupportsChildren(
+    projectContents,
+    metadata,
+    nodeModules,
+    openFile,
+    target,
+  )
+    ? childInsertionPath(target)
+    : conditionalClause != null
+    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'wrap-into-fragment')
     : null
 }
