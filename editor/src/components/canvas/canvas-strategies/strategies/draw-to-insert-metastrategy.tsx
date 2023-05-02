@@ -6,7 +6,7 @@ import {
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { Either, foldEither } from '../../../../core/shared/either'
+import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
 import {
@@ -14,7 +14,6 @@ import {
   emptyComments,
   JSXAttributes,
   jsExpressionValue,
-  jsxConditionalExpression,
 } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
@@ -24,7 +23,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
+import { InsertionSubject } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { CanvasCommand, foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -63,13 +62,10 @@ import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { setJSXValuesAtPaths, ValueAtPath } from '../../../../core/shared/jsx-attributes'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { LayoutPinnedProp, LayoutPinnedProps } from '../../../../core/layout/layout-helpers-new'
-import { MapLike } from 'typescript'
-import { FullFrame } from '../../../frame'
 import { MaxContent } from '../../../inspector/inspector-common'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -194,6 +190,7 @@ export function drawToInsertStrategyFactory(
           )
           if (interactionSession.interactionData.drag != null) {
             const insertionCommand = getInsertionCommands(
+              getRootPath(canvasState.startingMetadata),
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
@@ -276,6 +273,7 @@ export function drawToInsertStrategyFactory(
           } else if (strategyLifecycle === 'end-interaction') {
             const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
             const insertionCommand = getInsertionCommands(
+              getRootPath(canvasState.startingMetadata),
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
@@ -378,6 +376,7 @@ const clearSelectionCommand: CanvasCommand = wildcardPatch('mid-interaction', {
 })
 
 function getInsertionCommands(
+  storyboardPath: ElementPath,
   subject: InsertionSubject,
   interactionSession: InteractionSession,
   insertionSubjectSize: Size,
@@ -414,8 +413,10 @@ function getInsertionCommands(
       updatedAttributesWithPosition,
     )
 
+    const insertionPath = childInsertionPath(storyboardPath)
+
     return {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     }
   } else if (interactionSession.interactionData.type === 'DRAG' && sizing === 'hug') {
@@ -437,8 +438,10 @@ function getInsertionCommands(
       updatedAttributesWithPosition,
     )
 
+    const insertionPath = childInsertionPath(storyboardPath)
+
     return {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     }
   } else if (interactionSession.interactionData.type === 'HOVER') {
@@ -461,8 +464,10 @@ function getInsertionCommands(
       updatedAttributesWithPosition,
     )
 
+    const insertionPath = childInsertionPath(storyboardPath)
+
     return {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     }
   }
@@ -554,8 +559,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
-  const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
+  const rootPath = getRootPath(startingMetadata)
 
   const element = insertionSubject.element
   const path = EP.appendToPath(rootPath, element.uid)
@@ -655,4 +659,9 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     resizeStrategy != null ? resizeStrategy.strategy.apply(strategyLifecycle).commands : []
 
   return foldAndApplyCommandsInner(editorState, [], resizeCommands, commandLifecycle).statePatches
+}
+
+export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath {
+  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
+  return storyboard != null ? storyboard.elementPath : elementPath([])
 }

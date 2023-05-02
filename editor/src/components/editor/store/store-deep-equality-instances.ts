@@ -492,6 +492,13 @@ import {
 } from '../../../core/shared/github/helpers'
 import { valueAtPath, ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { ConditionalCase } from '../../../core/model/conditionals'
+import {
+  childInsertionPath,
+  ChildInsertionPath,
+  ConditionalClauseInsertionPath,
+  conditionalClauseInsertionPath,
+  InsertionPath,
+} from './insertion-path'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -2874,6 +2881,55 @@ export const SizeKeepDeepEquality: KeepDeepEqualityCall<Size> = combine2Equality
 
 export const InsertionSubjectWrapperKeepDeepEquality: KeepDeepEqualityCall<InsertionSubjectWrapper> =
   createCallWithTripleEquals()
+
+export const ChildInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ChildInsertionPath> =
+  combine1EqualityCall(
+    (c) => c.intendedParentPath,
+    StaticElementPathKeepDeepEquality,
+    childInsertionPath,
+  )
+
+export function ConditionalCaseKeepDeepEquality(): KeepDeepEqualityCall<ConditionalCase> {
+  return (oldValue, newValue) => {
+    switch (oldValue) {
+      case 'true-case':
+      case 'false-case':
+        if (newValue === oldValue) {
+          return keepDeepEqualityResult(oldValue, true)
+        }
+    }
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
+export const ConditionalClauseInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseInsertionPath> =
+  combine2EqualityCalls(
+    (c) => c.intendedParentPath,
+    StaticElementPathKeepDeepEquality,
+    (c) => c.clause,
+    ConditionalCaseKeepDeepEquality(),
+    conditionalClauseInsertionPath,
+  )
+
+export function InsertionPathKeepDeepEquality(): KeepDeepEqualityCall<InsertionPath> {
+  return (oldValue, newValue) => {
+    switch (oldValue.type) {
+      case 'CHILD_INSERTION':
+        if (newValue.type === oldValue.type) {
+          return ChildInsertionPathKeepDeepEquality(oldValue, newValue)
+        }
+        break
+      case 'CONDITIONAL_CLAUSE_INSERTION':
+        if (newValue.type === oldValue.type) {
+          return ConditionalClauseInsertionPathKeepDeepEquality(oldValue, newValue)
+        }
+        break
+      default:
+        assertNever(oldValue)
+    }
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
 
 export const InsertionSubjectKeepDeepEquality: KeepDeepEqualityCall<InsertionSubject> =
   combine7EqualityCalls(
