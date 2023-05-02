@@ -199,6 +199,7 @@ function dragToInsertStrategyFactory(
         ? fitness
         : 0,
     apply: (strategyLifecycle) => {
+      const rootPath = getRootPath(canvasState.startingMetadata)
       if (
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
@@ -211,11 +212,10 @@ function dragToInsertStrategyFactory(
           )
         } else {
           const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
-            return getInsertionCommandsWithFrames(
-              getRootPath(canvasState.startingMetadata),
-              s.subject,
-              s.frame,
-            )
+            if (rootPath == null) {
+              throw new Error('missing root path')
+            }
+            return getInsertionCommandsWithFrames(rootPath, s.subject, s.frame)
           })
 
           const maybeWrapperWithUid = getWrapperWithGeneratedUid(
@@ -347,7 +347,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const rootPath = getRootPath(editorState.jsxMetadata)
+  const rootPath = getRootPath(editorState.jsxMetadata) ?? EP.elementPath([])
 
   const patchedMetadata: ElementInstanceMetadataMap = insertionCommandsWithFrames.reduce(
     (

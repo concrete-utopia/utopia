@@ -181,6 +181,7 @@ export function drawToInsertStrategyFactory(
     ], // Uses existing hooks in select-mode-hooks.tsx
     fitness: !insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? fitness : 0,
     apply: (strategyLifecycle) => {
+      const rootPath = getRootPath(canvasState.startingMetadata)
       if (interactionSession != null) {
         if (interactionSession.interactionData.type === 'DRAG') {
           const maybeWrapperWithUid = getWrapperWithGeneratedUid(
@@ -189,8 +190,11 @@ export function drawToInsertStrategyFactory(
             insertionSubjects,
           )
           if (interactionSession.interactionData.drag != null) {
+            if (rootPath == null) {
+              throw new Error('missing root path')
+            }
             const insertionCommand = getInsertionCommands(
-              getRootPath(canvasState.startingMetadata),
+              rootPath,
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
@@ -272,8 +276,11 @@ export function drawToInsertStrategyFactory(
             }
           } else if (strategyLifecycle === 'end-interaction') {
             const defaultSizeType = insertionSubject.textEdit ? 'hug' : 'default-size'
+            if (rootPath == null) {
+              throw new Error('missing root path')
+            }
             const insertionCommand = getInsertionCommands(
-              getRootPath(canvasState.startingMetadata),
+              rootPath,
               insertionSubject,
               interactionSession,
               insertionSubject.defaultSize,
@@ -559,7 +566,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const rootPath = getRootPath(startingMetadata)
+  const rootPath = getRootPath(startingMetadata) ?? elementPath([])
 
   const element = insertionSubject.element
   const path = EP.appendToPath(rootPath, element.uid)
@@ -661,7 +668,10 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   return foldAndApplyCommandsInner(editorState, [], resizeCommands, commandLifecycle).statePatches
 }
 
-export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath {
+export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath | null {
   const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
-  return storyboard != null ? storyboard.elementPath : elementPath([])
+  if (storyboard == null) {
+    return null
+  }
+  return storyboard.elementPath
 }
