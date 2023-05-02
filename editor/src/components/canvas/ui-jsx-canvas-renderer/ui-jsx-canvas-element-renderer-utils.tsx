@@ -353,7 +353,15 @@ export function renderCoreElement(
       if (elementPath != null) {
         clearOpposingConditionalSpyValues(metadataContext, element, conditionValue, elementPath)
 
-        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          conditionValue,
+        )
       }
 
       if (isJSXArbitraryBlock(actualElement)) {
