@@ -4232,20 +4232,20 @@ export const UPDATE_FNS = {
           case 'JSX_CONDITIONAL_EXPRESSION':
             return element
           case 'JSX_ELEMENT':
-            if (action.elementName === 'JSX_FRAGMENT') {
+            if (action.elementName.type === 'JSX_FRAGMENT') {
               return jsxFragment(element.uid, element.children, true)
             } else {
               return {
                 ...element,
-                name: action.elementName,
+                name: action.elementName.name,
               }
             }
           case 'JSX_FRAGMENT':
-            if (action.elementName === 'JSX_FRAGMENT') {
+            if (action.elementName.type === 'JSX_FRAGMENT') {
               return element
             }
             return jsxElement(
-              action.elementName,
+              action.elementName.name,
               element.uid,
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue(element.uid, emptyComments),

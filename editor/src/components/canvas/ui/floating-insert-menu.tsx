@@ -516,7 +516,7 @@ export var FloatingMenu = React.memo(() => {
             actionsToDispatch = targetsForUpdates.flatMap((path) => {
               return updateJSXElementName(
                 path,
-                element.type,
+                { type: 'JSX_FRAGMENT' },
                 pickedInsertableComponent.importsToAdd,
               )
             })
@@ -600,7 +600,11 @@ export var FloatingMenu = React.memo(() => {
           // this is taken from render-as.tsx
           const targetsForUpdates = getElementsToTarget(selectedViews)
           actionsToDispatch = targetsForUpdates.flatMap((path) => {
-            return updateJSXElementName(path, element.name, importsToAdd)
+            return updateJSXElementName(
+              path,
+              { type: 'JSX_ELEMENT', name: element.name },
+              importsToAdd,
+            )
           })
           break
         case 'closed':
