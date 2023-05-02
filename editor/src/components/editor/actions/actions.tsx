@@ -2355,8 +2355,12 @@ export const UPDATE_FNS = {
             EP.isRootElementOfInstance(elementPath) &&
             EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
         )
-        if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-          return editor
+
+        if (anyTargetIsARootElement) {
+          const showToastAction = showToast(
+            notice(`Root elements can't be wrapped into other elements.`),
+          )
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
         const detailsOfUpdate = null
