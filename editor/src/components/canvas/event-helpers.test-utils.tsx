@@ -806,32 +806,36 @@ export class MockClipboardHandlers {
   pasteDone: ReturnType<typeof defer> = defer()
   sandbox: Sinon.SinonSandbox | null = null
 
-  setup(): void {
-    this.sandbox = Sinon.createSandbox()
-    this.pasteDone = defer()
+  mock(): MockClipboardHandlers {
+    beforeEach(() => {
+      this.sandbox = Sinon.createSandbox()
+      this.pasteDone = defer()
 
-    const parseClipboardDataStub = this.sandbox.stub(Clipboard, 'parseClipboardData')
-    parseClipboardDataStub.callsFake(async (c) => {
-      if (this.mockClipBoard.data == null) {
-        throw new Error('Mock clipboard is empty')
-      }
-      this.pasteDone.resolve()
-      return {
-        files: [],
-        utopiaData: extractUtopiaDataFromHtml(this.mockClipBoard.data.html),
-      }
+      const parseClipboardDataStub = this.sandbox.stub(Clipboard, 'parseClipboardData')
+      parseClipboardDataStub.callsFake(async (c) => {
+        if (this.mockClipBoard.data == null) {
+          throw new Error('Mock clipboard is empty')
+        }
+        this.pasteDone.resolve()
+        return {
+          files: [],
+          utopiaData: extractUtopiaDataFromHtml(this.mockClipBoard.data.html),
+        }
+      })
+
+      const setClipboardDataStub = this.sandbox.stub(Clipboard, 'setClipboardData')
+      setClipboardDataStub.callsFake(async (c) => {
+        this.mockClipBoard.data = c
+      })
     })
 
-    const setClipboardDataStub = this.sandbox.stub(Clipboard, 'setClipboardData')
-    setClipboardDataStub.callsFake(async (c) => {
-      this.mockClipBoard.data = c
+    afterEach(() => {
+      this.sandbox?.restore()
+      this.mockClipBoard.data = null
+      this.sandbox = null
     })
-  }
 
-  teardown(): void {
-    this.sandbox?.restore()
-    this.mockClipBoard.data = null
-    this.sandbox = null
+    return this
   }
 }
 

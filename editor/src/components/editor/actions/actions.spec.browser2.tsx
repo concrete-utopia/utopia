@@ -1178,14 +1178,7 @@ describe('actions', () => {
     })
 
     describe('end-to-end copy paste', () => {
-      const clipboardMock = new MockClipboardHandlers()
-      beforeEach(() => {
-        clipboardMock.setup()
-      })
-
-      afterEach(() => {
-        clipboardMock.teardown()
-      })
+      const clipboardMock = new MockClipboardHandlers().mock()
 
       it('can copy-paste end-to-end', async () => {
         const testCode = `
