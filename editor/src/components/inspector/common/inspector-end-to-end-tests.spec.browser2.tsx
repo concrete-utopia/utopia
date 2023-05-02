@@ -3007,7 +3007,7 @@ describe('inspector tests with real metadata', () => {
         ConditionalsControlBranchFalseTestId,
       )
 
-      expect(branchElementTrue.innerText).toEqual('div')
+      expect(branchElementTrue.innerText).toEqual('Another div')
       expect(branchElementFalse.innerText).toEqual('h1')
     })
   })
