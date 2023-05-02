@@ -275,6 +275,7 @@ function createFakeMetadataForJSXElement(
   focused: boolean,
   rootOfInstance: boolean,
   frame: SimpleRectangle = Utils.zeroRectangle,
+  textContents: string | null = null,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
@@ -343,6 +344,7 @@ function createFakeMetadataForJSXElement(
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
       conditionValue: 'not-a-conditional',
+      textContent: textContents,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -378,6 +380,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     label: null,
     importInfo: null,
     conditionValue: 'not-a-conditional',
+    textContent: null,
   }
 }
 

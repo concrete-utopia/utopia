@@ -104,6 +104,7 @@ export function addFakeSpyEntry(
       element,
     ),
     conditionValue: conditionValue,
+    textContent: null,
   }
   const elementPathString = EP.toComponentId(elementPath)
   metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -149,6 +150,7 @@ export function buildSpyWrappedElement(
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
       conditionValue: 'not-a-conditional',
+      textContent: null,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

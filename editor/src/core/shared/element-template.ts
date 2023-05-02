@@ -1861,7 +1861,7 @@ export interface ElementInstanceMetadata {
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
-  textContent?: string | null
+  textContent: string | null
 }
 
 export function elementInstanceMetadata(
