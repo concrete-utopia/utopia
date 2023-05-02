@@ -806,6 +806,7 @@ describe('getElementLabel', () => {
     null,
     null,
     'not-a-conditional',
+    null,
   )
   const spanElementProps: ElementProps = {
     'data-uid': 'span-1',
@@ -829,6 +830,7 @@ describe('getElementLabel', () => {
     null,
     null,
     'not-a-conditional',
+    null,
   )
   const divElementProps: ElementProps = {
     'data-uid': 'div-1',

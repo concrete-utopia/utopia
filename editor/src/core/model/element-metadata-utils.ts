@@ -2287,6 +2287,7 @@ function findConditionalsAndCreateMetadata(
             'Conditional',
             null,
             'not-a-conditional',
+            null,
           )
         }
       },
@@ -2425,5 +2426,6 @@ export function createFakeMetadataForElement(
     null,
     null,
     'not-a-conditional',
+    null,
   )
 }

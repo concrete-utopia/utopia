@@ -1877,7 +1877,7 @@ export function elementInstanceMetadata(
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
-  textContent: string | null = null,
+  textContent: string | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
