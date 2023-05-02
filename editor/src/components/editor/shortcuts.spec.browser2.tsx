@@ -540,6 +540,138 @@ export var storyboard = (
       ])
     })
   })
+
+  describe('duplicate', () => {
+    it('duplicate element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+        <span data-uid='text'>Hello there</span>
+      </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
+      ])
+
+      await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+        <span data-uid='text'>Hello there</span>
+        <span data-uid='tex'>Hello there</span>
+      </div>`),
+      )
+    })
+
+    it('duplicate element in true branch of a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                <span data-uid='text'>Hello there</span>
+               ) : 'Test' 
+             }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/conditional/text`,
+        ),
+      ])
+
+      await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                <React.Fragment>
+                  <span data-uid='text'>Hello there</span>
+                  <span data-uid='tex'>Hello there</span>
+                </React.Fragment>
+               ) : 'Test' 
+             }
+           </div>`,
+        ),
+      )
+    })
+
+    it('duplicate element in false branch of a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                'Test'
+               ) : <span data-uid='text'>Hello there</span>
+             }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/conditional/text`,
+        ),
+      ])
+
+      await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                'Test'
+               ) : <React.Fragment>
+               <span data-uid='text'>Hello there</span>
+               <span data-uid='tex'>Hello there</span>
+             </React.Fragment>
+             }
+           </div>`,
+        ),
+      )
+    })
+
+    it('duplicate slot in a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                null
+               ) : <span data-uid='text'>Hello there</span>
+             }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const initialUiCode = editor.getEditorState()
+
+      const slot = editor.renderedDOM.getByText('Empty')
+      await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      await expectNoAction(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialUiCode)
+    })
+  })
 })
 
 const project = `import * as React from 'react'
