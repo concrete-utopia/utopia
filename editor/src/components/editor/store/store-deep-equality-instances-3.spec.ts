@@ -975,7 +975,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'new-label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
-      textContentsMaybe: null,
+      textContents: null,
     },
   }
 

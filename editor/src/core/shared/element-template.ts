@@ -1861,7 +1861,7 @@ export interface ElementInstanceMetadata {
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
-  textContentsMaybe?: string | null
+  textContents?: string | null
 }
 
 export function elementInstanceMetadata(
@@ -1892,7 +1892,7 @@ export function elementInstanceMetadata(
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
-    textContentsMaybe: textContentsMaybe,
+    textContents: textContentsMaybe,
   }
 }
 

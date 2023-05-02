@@ -1363,8 +1363,8 @@ export const MetadataUtils = {
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
               // Check for certain elements and check if they have text content within them.
               if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                if (element.textContentsMaybe != null) {
-                  return element.textContentsMaybe
+                if (element.textContents != null) {
+                  return element.textContents
                 }
 
                 const firstChild = jsxElement.children[0]
