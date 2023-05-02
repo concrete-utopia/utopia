@@ -21,8 +21,12 @@ import {
   isTextFile,
   NodeModules,
 } from '../core/shared/project-file-types'
-import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
-import { setLocalClipboardData } from './local-clipboard'
+import {
+  encodeUtopiaDataToHtml,
+  extractFiles,
+  extractUtopiaDataFromClipboardData,
+  PasteResult,
+} from './clipboard-utils'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint, isInfinityRectangle } from '../core/shared/math-utils'
@@ -58,31 +62,45 @@ type JSXElementsJson = string
 
 export type CopyData = JSXElementCopyData
 
-function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
-  return parsePasteEvent(clipboardData)
+async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
+  if (clipboardData == null) {
+    return {
+      files: [],
+      utopiaData: [],
+    }
+  }
+  const utopiaData = extractUtopiaDataFromClipboardData(clipboardData)
+  if (utopiaData.length > 0) {
+    return {
+      files: [],
+      utopiaData: utopiaData,
+    }
+  } else {
+    const items = clipboardData.items
+    const imageArray = await extractFiles(items)
+    return {
+      files: imageArray,
+      utopiaData: [],
+    }
+  }
+}
+
+export interface ClipboardDataPayload {
+  html: string
+  plainText: string
 }
 
 // This is required so we can mock the function in a test. Don't hate me, I already hate myself
 export const Clipboard = {
   parseClipboardData,
+  setClipboardData,
 }
 
-export function setClipboardData(
-  copyData: {
-    data: Array<CopyData>
-    plaintext: string
-    imageFilenames: Array<string>
-  } | null,
-): void {
-  // we also set the local clipboard here, used for style copy paste
-  setLocalClipboardData(copyData)
-  if (copyData != null) {
-    const utopiaDataHtml = encodeUtopiaDataToHtml(copyData.data)
-    const dt = new ClipboardPolyfill.DT()
-    dt.setData('text/plain', copyData.plaintext)
-    dt.setData('text/html', utopiaDataHtml)
-    void ClipboardPolyfill.write(dt)
-  }
+export function setClipboardData(copyData: ClipboardDataPayload): void {
+  const dt = new ClipboardPolyfill.DT()
+  dt.setData('text/plain', copyData.plainText)
+  dt.setData('text/html', copyData.html)
+  void ClipboardPolyfill.write(dt)
 }
 
 export function getActionsForClipboardItems(

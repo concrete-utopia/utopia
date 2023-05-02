@@ -443,7 +443,7 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -527,6 +527,7 @@ import {
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
 import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2355,8 +2356,12 @@ export const UPDATE_FNS = {
             EP.isRootElementOfInstance(elementPath) &&
             EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
         )
-        if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-          return editor
+
+        if (anyTargetIsARootElement) {
+          const showToastAction = showToast(
+            notice(`Root elements can't be wrapped into other elements.`),
+          )
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
         const detailsOfUpdate = null
@@ -2964,7 +2969,13 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        setClipboardData(createClipboardDataFromSelection(editorForAction, builtInDependencies))
+        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
+        if (copyData != null) {
+          Clipboard.setClipboardData({
+            plainText: copyData.plaintext,
+            html: encodeUtopiaDataToHtml(copyData.data),
+          })
+        }
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,

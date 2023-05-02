@@ -11,6 +11,7 @@ import {
 import { forElementOptic } from '../../core/model/common-optics'
 import {
   ConditionalCase,
+  conditionalClauseAsBoolean,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   jsxConditionalExpressionOptic,
@@ -38,6 +39,7 @@ import { selectComponents } from '../editor/actions/meta-actions'
 import {
   DerivedState,
   EditorState,
+  NavigatorEntry,
   conditionalClauseNavigatorEntry,
   navigatorEntryToKey,
   regularNavigatorEntry,
@@ -1145,7 +1147,7 @@ describe('conditionals in the navigator', () => {
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
               synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/${removedOriginalUID}-attribute
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/aae-attribute
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
@@ -1237,7 +1239,8 @@ describe('conditionals in the navigator', () => {
     const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
     const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
 
-    // Select the inactive entry in the navigator.
+    // Select the inactive entry in the navigator. This will add an override, which will replace the previously
+    // active entry with a synthetic element
     await act(async () => {
       await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
     })
@@ -1279,72 +1282,10 @@ describe('conditionals in the navigator', () => {
     regular-utopia-storyboard-uid/scene-aaa/containing-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
-          regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
-            conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/a25-attribute
+          synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-element-conditional2
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/${removedOriginalUID}-attribute
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`)
-  })
-  it('can select the true case clause by its label', async () => {
-    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
-
-    // Determine the entry we want to select.
-    const clausePath = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2/then-then-div`,
-    )
-
-    // Getting info relating to what element will be selected.
-    const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
-      NavigatorItemTestId(
-        varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(EP.parentPath(clausePath), 'true-case'),
-        ),
-      ),
-    )
-    const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
-    const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
-
-    // Select the false label entry in the navigator.
-    await act(async () => {
-      await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
-    })
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-    expect(selectedViewPaths).toEqual([EP.toString(clausePath)])
-  })
-  it('can select the false case clause by its label', async () => {
-    const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
-
-    // Determine the entry we want to select.
-    const clausePath = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
-    )
-
-    // Getting info relating to what element will be selected.
-    const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
-      NavigatorItemTestId(
-        varSafeNavigatorEntryToKey(
-          conditionalClauseNavigatorEntry(EP.parentPath(clausePath), 'false-case'),
-        ),
-      ),
-    )
-    const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
-    const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
-
-    // Select the false label entry in the navigator.
-    await act(async () => {
-      await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
-    })
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    const selectedViewPaths = renderResult.getEditorState().editor.selectedViews.map(EP.toString)
-    expect(selectedViewPaths).toEqual([EP.toString(clausePath)])
   })
   it('can be collapsed', async () => {
     const renderResult = await renderTestEditorWithCode(getProjectCode(), 'await-first-dom-report')
@@ -1437,9 +1378,9 @@ describe('conditionals in the navigator', () => {
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-true-case
           regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-true-case
-              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div
+              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/then-then-div-element-then-then-div
             conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2-false-case
-              synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib-element-sib
+              regular-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/conditional2/sib
         conditional-clause-utopia-storyboard-uid/scene-aaa/containing-div/conditional1-false-case
           synthetic-utopia-storyboard-uid/scene-aaa/containing-div/conditional1/else-div-element-else-div
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
@@ -1594,5 +1535,231 @@ describe('conditionals in the navigator', () => {
         expect(await getLabelColor('false-case')).toEqual(defaultLabelColor)
       }
     })
+  })
+})
+
+describe('Navigator conditional override toggling', () => {
+  function codeWithOverride(override?: ConditionalCase) {
+    const uidFlag = '// @utopia/uid=conditional'
+    const commentFlags =
+      override == null
+        ? uidFlag
+        : `${uidFlag}
+          // @utopia/conditional=${conditionalClauseAsBoolean(override)}`
+
+    return formatTestProjectCode(`
+      import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      
+      export var ${BakedInStoryboardVariableName} = (
+        <Storyboard data-uid='${BakedInStoryboardUID}'>
+          {
+            ${commentFlags}
+            [].length === 0 ? (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'lightblue',
+                }}
+                data-uid='true-div'
+                data-testid='true-div'
+              />
+            ) : (
+              <div
+                style={{
+                  height: 150,
+                  width: 150,
+                  position: 'absolute',
+                  left: 154,
+                  top: 134,
+                  backgroundColor: 'red',
+                }}
+                data-uid='false-div'
+                data-testid='false-div'
+              />
+            )
+          }
+        </Storyboard>
+      )
+    `)
+  }
+  const codeWithoutOverride = codeWithOverride()
+
+  async function clickNavigatorRow(
+    navigatorEntry: NavigatorEntry,
+    renderResult: EditorRenderResult,
+    expectedSelectedViews: Array<ElementPath>,
+  ) {
+    // Find the row for the element
+    const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
+      NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry)),
+    )
+
+    const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
+    const navigatorEntryToSelectCenter = getDomRectCenter(navigatorEntryToSelectRect)
+
+    // Click the row
+    await act(async () => {
+      await mouseClickAtPoint(navigatorEntryToSelect, navigatorEntryToSelectCenter)
+    })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // ensure selection was correctly updated
+    const selectedViewPaths = renderResult.getEditorState().editor.selectedViews
+    expect(selectedViewPaths).toEqual(expectedSelectedViews)
+  }
+
+  async function clickLabelForCase(
+    conditionalCase: ConditionalCase,
+    renderResult: EditorRenderResult,
+  ) {
+    // Determine the entry we want to select.
+    const clausePath = EP.fromString(`${BakedInStoryboardUID}/conditional/true-div`)
+    const navigatorEntry = conditionalClauseNavigatorEntry(
+      EP.parentPath(clausePath),
+      conditionalCase,
+    )
+
+    return clickNavigatorRow(navigatorEntry, renderResult, [])
+  }
+
+  async function clickChildOfClause(
+    elementUID: 'true-div' | 'false-div',
+    isActive: boolean,
+    renderResult: EditorRenderResult,
+  ) {
+    // Determine the entry we want to select.
+    const elementPath = EP.fromString(`${BakedInStoryboardUID}/conditional/${elementUID}`)
+
+    // Need the underlying value in the clause to be able to construct the navigator entry.
+    const inactiveElementOptic: Optic<EditorState, JSXElementChild> = compose3Optics(
+      forElementOptic(EP.parentPath(elementPath)),
+      jsxConditionalExpressionOptic,
+      elementUID === 'true-div' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic,
+    )
+
+    const navigatorEntry = isActive
+      ? regularNavigatorEntry(elementPath)
+      : syntheticNavigatorEntry(
+          elementPath,
+          unsafeGet(inactiveElementOptic, renderResult.getEditorState().editor),
+        )
+
+    return clickNavigatorRow(navigatorEntry, renderResult, [elementPath])
+  }
+
+  it('active clause label does nothing if it IS the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithoutOverride,
+      'await-first-dom-report',
+    )
+
+    // The true case is the default and active case
+    await clickLabelForCase('true-case', renderResult)
+
+    // No override should have been added
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+  })
+
+  it('active clause label clears override if it IS NOT the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithOverride('false-case'),
+      'await-first-dom-report',
+    )
+
+    // The false case is the active case, but not the default
+    await clickLabelForCase('false-case', renderResult)
+
+    // The override should have been removed
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+  })
+
+  it('inactive clause label clears the override if it IS the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithOverride('false-case'),
+      'await-first-dom-report',
+    )
+
+    // The true case is the default, but isn't active
+    await clickLabelForCase('true-case', renderResult)
+
+    // The override should have been removed
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+  })
+
+  it('inactive clause label sets the override if it IS NOT the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithoutOverride,
+      'await-first-dom-report',
+    )
+
+    // The false case is neither active nor the default
+    await clickLabelForCase('false-case', renderResult)
+
+    // The conditional should have been overriden to use the false case
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      codeWithOverride('false-case'),
+    )
+  })
+
+  it('active clause child just sets selection if it is the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithoutOverride,
+      'await-first-dom-report',
+    )
+
+    // The true case is the default and active case
+    await clickChildOfClause('true-div', true, renderResult)
+
+    // No override should have been added
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
+  })
+
+  it('active clause child also just sets selection if it is not the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithOverride('false-case'),
+      'await-first-dom-report',
+    )
+
+    // The false case is the active but not default case
+    await clickChildOfClause('false-div', true, renderResult)
+
+    // The override should remain unchanged
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      codeWithOverride('false-case'),
+    )
+  })
+
+  it('inactive clause child sets selection and adds an override if it IS NOT the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithoutOverride,
+      'await-first-dom-report',
+    )
+
+    // The false case is neither active nor the default
+    await clickChildOfClause('false-div', false, renderResult)
+
+    // The override should have been added
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      codeWithOverride('false-case'),
+    )
+  })
+
+  it('inactive clause child sets selection and clears the override if it IS the default clause', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      codeWithOverride('false-case'),
+      'await-first-dom-report',
+    )
+
+    // The true case is the default but not the active case
+    await clickChildOfClause('true-div', false, renderResult)
+
+    // No override should have been added
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(codeWithoutOverride)
   })
 })

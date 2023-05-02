@@ -51,6 +51,7 @@ export function clearOpposingConditionalSpyValues(
 }
 
 export function addFakeSpyEntry(
+  validPaths: Set<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
   elementOrAttribute: JSXElementChild,
@@ -58,56 +59,60 @@ export function addFakeSpyEntry(
   imports: Imports,
   conditionValue: ConditionValue,
 ): void {
-  let element: Either<string, JSXElementChild>
-  if (isJSXArbitraryBlock(elementOrAttribute)) {
-    const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
-    element = left(
-      foldEither(
-        () => '(unknown)',
-        (value) => {
-          if (value === null) {
-            return 'null'
-          } else if (value === undefined) {
-            return 'undefined'
+  // Ensure that entries are not created which aren't included in `validPaths`,
+  // so that ghost like entries are not created.
+  if (validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+    let element: Either<string, JSXElementChild>
+    if (isJSXArbitraryBlock(elementOrAttribute)) {
+      const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
+      element = left(
+        foldEither(
+          () => '(unknown)',
+          (value) => {
+            if (value === null) {
+              return 'null'
+            } else if (value === undefined) {
+              return 'undefined'
+            } else {
+              return value.toString()
+            }
+          },
+          simpleAttributeValue,
+        ),
+      )
+    } else {
+      element = right(elementOrAttribute)
+    }
+    const instanceMetadata: ElementInstanceMetadata = {
+      element: element,
+      elementPath: elementPath,
+      globalFrame: null,
+      localFrame: null,
+      componentInstance: false,
+      isEmotionOrStyledComponent: false,
+      specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
+      label: null,
+      importInfo: foldEither(
+        () => {
+          return null
+        },
+        (e) => {
+          if (isJSXElement(e)) {
+            return importInfoFromImportDetails(e.name, imports, filePath)
           } else {
-            return value.toString()
+            return null
           }
         },
-        simpleAttributeValue,
+        element,
       ),
-    )
-  } else {
-    element = right(elementOrAttribute)
+      conditionValue: conditionValue,
+      textContent: null,
+    }
+    const elementPathString = EP.toComponentId(elementPath)
+    metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
   }
-  const instanceMetadata: ElementInstanceMetadata = {
-    element: element,
-    elementPath: elementPath,
-    globalFrame: null,
-    localFrame: null,
-    componentInstance: false,
-    isEmotionOrStyledComponent: false,
-    specialSizeMeasurements: emptySpecialSizeMeasurements,
-    computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadatada,
-    label: null,
-    importInfo: foldEither(
-      () => {
-        return null
-      },
-      (e) => {
-        if (isJSXElement(e)) {
-          return importInfoFromImportDetails(e.name, imports, filePath)
-        } else {
-          return null
-        }
-      },
-      element,
-    ),
-    conditionValue: conditionValue,
-    textContent: null,
-  }
-  const elementPathString = EP.toComponentId(elementPath)
-  metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
 }
 
 export function buildSpyWrappedElement(
