@@ -1606,7 +1606,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(ImportInfoKeepDeepEquality),
     (metadata) => metadata.conditionValue,
     ConditionValueKeepDeepEquality,
-    (metadata) => metadata.textContents,
+    (metadata) => metadata.textContent,
     undefinableDeepEquality(nullableDeepEquality(StringKeepDeepEquality)),
     elementInstanceMetadata,
   )
