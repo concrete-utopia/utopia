@@ -1,22 +1,63 @@
-import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID, parseUID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import * as FastCheck from 'fast-check'
 import {
+  emptyComments,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
   JSExpression,
+  JSXElement,
   JSXElementChild,
+  TopLevelElement,
+  walkElements,
 } from '../../shared/element-template'
 import { isParseSuccess, ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
 import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
-import { jsxAttributeArbitrary, jsxElementChildArbitrary } from './parser-printer.test-utils'
+import {
+  elementsStructure,
+  jsxAttributeArbitrary,
+  jsxElementChildArbitrary,
+} from './parser-printer.test-utils'
 import { Arbitrary } from 'fast-check'
 import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
+import { foldEither } from '../../../core/shared/either'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
+}
+
+function validateJSXElementUID(jsxElement: JSXElement): void {
+  // Ensure that the `data-uid`attribute matches the `uid` property.
+  const uidAttribute = parseUID(jsxElement.props, emptyComments)
+  return foldEither(
+    () => {
+      throw new Error(`No data-uid field in element with uid ${jsxElement.uid}.`)
+    },
+    (fromProps) => {
+      if (fromProps !== jsxElement.uid) {
+        throw new Error(
+          `Got data-uid field for ${fromProps} in element (of type ${jsxElement.type}) with uid ${jsxElement.uid}.`,
+        )
+      }
+    },
+    uidAttribute,
+  )
+}
+
+function validateTopLevelElementsElementUIDs(topLevelElements: Array<TopLevelElement>): void {
+  walkElements(topLevelElements, (element) => {
+    if (isJSXElement(element)) {
+      validateJSXElementUID(element)
+    }
+  })
+}
+
+function validateParsedTextFileElementUIDs(parsedTextFile: ParsedTextFile): void {
+  if (isParseSuccess(parsedTextFile)) {
+    validateTopLevelElementsElementUIDs(parsedTextFile.topLevelElements)
+  }
 }
 
 describe('fixParseSuccessUIDs', () => {
@@ -28,6 +69,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -48,6 +90,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(newFile)
     const newFileFixed = lintAndParse(
       'test.js',
       baseFileWithTwoTopLevelComponentsUpdated,
@@ -55,6 +98,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(newFileFixed)
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
@@ -77,6 +121,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(fileWithFragment)
     const fileWithFragmentUpdated = lintAndParse(
       'test.js',
       fileWithTopLevelFragmentComponentUpdateContents,
@@ -84,6 +129,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(fileWithFragmentUpdated)
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
@@ -105,6 +151,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -125,6 +172,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -145,6 +193,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -166,6 +215,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(threeViews)
     const fourViews = lintAndParse(
       'test.js',
       fileWithTwoDuplicatesAndInsertion,
@@ -173,6 +223,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(fourViews)
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -195,6 +246,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(threeViews)
     const updatedThreeViews = lintAndParse(
       'test.js',
       fileWithTwoDuplicatedViewsWithChanges,
@@ -202,11 +254,13 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(updatedThreeViews)
     expect(getUidTree(updatedThreeViews)).toEqual(getUidTree(threeViews))
   })
 
   it('can handle text children fine', () => {
     const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet(), 'trim-bounds')
+    validateParsedTextFileElementUIDs(start)
     const end = lintAndParse(
       'test.js',
       fileWithTwoTextElementsWithChanges,
@@ -214,11 +268,13 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(end)
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('can handle changes to a parent and child', () => {
     const start = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
+    validateParsedTextFileElementUIDs(start)
     const end = lintAndParse(
       'test.js',
       fileWithChildAndParentUpdated,
@@ -226,6 +282,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(end)
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
@@ -237,6 +294,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(beforeReOrder)
     const afterReOrder = lintAndParse(
       'test.js',
       fileWithOneInsertedViewReOrdered,
@@ -244,6 +302,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(afterReOrder)
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -268,6 +327,7 @@ describe('fixParseSuccessUIDs', () => {
 
   it('uids should match including root element when root element changes', () => {
     const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
+    validateParsedTextFileElementUIDs(firstResult)
     const secondResult = lintAndParse(
       'test.js',
       baseFileContentsWithDifferentBackground,
@@ -275,6 +335,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(secondResult)
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
@@ -286,6 +347,7 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(firstResult)
     const secondResult = lintAndParse(
       'test.js',
       fileWithSlightlyDifferentArbitraryBlockInside,
@@ -293,11 +355,22 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(secondResult)
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles newly inserted duplicate elements without duplicating uids', () => {
     const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet(), 'trim-bounds')
+    expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
+      "4ed
+        4e0
+      434
+        c85
+          f9b
+      storyboard
+        scene
+          component"
+    `)
     const secondResult = lintAndParse(
       'test.js',
       fileWithBasicDivDuplicated,
@@ -305,12 +378,13 @@ describe('fixParseSuccessUIDs', () => {
       emptySet(),
       'trim-bounds',
     )
+    validateParsedTextFileElementUIDs(secondResult)
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
       "4ed
         4e0
       434
-        593
-          c85
+        aad
+          aaf
             f9b
       storyboard
         scene
@@ -320,7 +394,7 @@ describe('fixParseSuccessUIDs', () => {
 })
 
 describe('fixExpressionUIDs', () => {
-  it('if expressions are the same type, their uids will be copied over', () => {
+  it('uids will be copied over', () => {
     const arbitraryExpressionPair: Arbitrary<{ first: JSExpression; second: JSExpression }> =
       FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2)).map(([first, second]) => {
         return {
@@ -334,11 +408,7 @@ describe('fixExpressionUIDs', () => {
         mutableAllNewUIDs: emptySet(),
         mappings: [],
       })
-      if (first.type === second.type) {
-        return first.uid === afterFix.uid
-      } else {
-        return first.uid !== afterFix.uid
-      }
+      return first.uid === afterFix.uid
     }
     const prop = FastCheck.property(arbitraryExpressionPair, checkCall)
     FastCheck.assert(prop, { verbose: true })
@@ -346,7 +416,7 @@ describe('fixExpressionUIDs', () => {
 })
 
 describe('fixJSXElementChildUIDs', () => {
-  it('if expressions are the same type, their uids will be copied over', () => {
+  it('uids will be copied over', () => {
     const arbitraryElementPair: Arbitrary<{ first: JSXElementChild; second: JSXElementChild }> =
       FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3)).map(
         ([first, second]) => {
@@ -362,11 +432,7 @@ describe('fixJSXElementChildUIDs', () => {
         mutableAllNewUIDs: emptySet(),
         mappings: [],
       })
-      if (first.type === second.type) {
-        return first.uid === afterFix.uid
-      } else {
-        return first.uid !== afterFix.uid
-      }
+      return first.uid === afterFix.uid
     }
     const prop = FastCheck.property(arbitraryElementPair, checkCall)
     FastCheck.assert(prop, { verbose: true })

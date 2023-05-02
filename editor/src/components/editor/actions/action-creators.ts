@@ -1066,7 +1066,6 @@ export function removeFileConflict(path: string): RemoveFileConflict {
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
-  highlightBounds: HighlightBoundsForUids,
   parsed: ParsedTextFile,
   lastRevisedTime: number,
 ): WorkerCodeAndParsedUpdate {
@@ -1074,7 +1073,6 @@ export function workerCodeAndParsedUpdate(
     type: 'WORKER_CODE_AND_PARSED_UPDATE',
     filePath: filePath,
     code: code,
-    highlightBounds: highlightBounds,
     parsed: parsed,
     lastRevisedTime: lastRevisedTime,
   }

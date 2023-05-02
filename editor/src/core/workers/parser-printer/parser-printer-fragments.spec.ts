@@ -16,13 +16,13 @@ describe('JSX parser', () => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - View - aaa
-            JSX_FRAGMENT
+            JSX_FRAGMENT - ggg
               JSX_ELEMENT - div - bbb
-                JSX_TEXT_BLOCK
-                JSX_FRAGMENT
+                JSX_TEXT_BLOCK - 3ed
+                JSX_FRAGMENT - 33e
                   JSX_ELEMENT - div - ccc
             JSX_ELEMENT - div - ddd
-              JSX_TEXT_BLOCK
+              JSX_TEXT_BLOCK - 3d0
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee

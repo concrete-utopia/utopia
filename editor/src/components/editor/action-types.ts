@@ -666,7 +666,6 @@ export interface WorkerCodeAndParsedUpdate {
   type: 'WORKER_CODE_AND_PARSED_UPDATE'
   filePath: string
   code: string
-  highlightBounds: HighlightBoundsForUids
   parsed: ParsedTextFile
   lastRevisedTime: number
 }

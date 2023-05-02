@@ -4,8 +4,13 @@ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
 import {
+  ConditionalCase,
+  getConditionalCaseCorrespondingToBranchPath,
   getConditionalClausePath,
   getConditionalFlag,
+  isActiveBranchOfConditional,
+  isActiveOrDefaultBranchOfConditional,
+  isDefaultBranchOfConditional,
   maybeConditionalExpression,
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -19,7 +24,7 @@ import { FlexRow, IcnProps, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
-import { EditorDispatch } from '../../editor/action-types'
+import { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
 import {
@@ -38,6 +43,7 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
+import { assertNever } from '../../../core/shared/utils'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -81,6 +87,47 @@ export interface NavigatorItemInnerProps {
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
+function getSelectionActions(
+  getSelectedViewsInRange: (i: number) => Array<ElementPath>,
+  index: number,
+  elementPath: ElementPath,
+  selected: boolean,
+  event: React.MouseEvent<HTMLDivElement>,
+): Array<EditorAction> {
+  if (!selected) {
+    if (event.metaKey && !event.shiftKey) {
+      // adds to selection
+      return MetaActions.selectComponents([elementPath], true)
+    } else if (event.shiftKey) {
+      // selects range of items
+      const targets = getSelectedViewsInRange(index)
+      return MetaActions.selectComponents(targets, false)
+    } else {
+      return MetaActions.selectComponents([elementPath], false)
+    }
+  } else {
+    return []
+  }
+}
+
+function getConditionalOverrideActions(
+  targetPath: ElementPath,
+  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
+): Array<EditorAction> {
+  switch (conditionalOverrideUpdate) {
+    case 'no-update':
+      return []
+    case 'clear-override':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, null)]
+    case 'true-case':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, true)]
+    case 'false-case':
+      return [EditorActions.setConditionalOverriddenCondition(targetPath, false)]
+    default:
+      assertNever(conditionalOverrideUpdate)
+  }
+}
+
 function selectItem(
   dispatch: EditorDispatch,
   getSelectedViewsInRange: (i: number) => Array<ElementPath>,
@@ -88,29 +135,18 @@ function selectItem(
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
-  elementMetadata: ElementInstanceMetadata | null,
+  conditionalOverrideUpdate: ConditionalCase | 'clear-override' | 'no-update',
 ) {
-  const elementPath =
-    isConditionalClauseNavigatorEntry(navigatorEntry) && elementMetadata != null
-      ? getConditionalClausePathForNavigatorEntry(navigatorEntry, elementMetadata)
-      : navigatorEntry.elementPath
+  const elementPath = navigatorEntry.elementPath
+  const selectionActions = isConditionalClauseNavigatorEntry(navigatorEntry)
+    ? []
+    : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
-  if (elementPath == null) {
-    return
-  }
+  const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
+    ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
+    : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
 
-  if (!selected) {
-    if (event.metaKey && !event.shiftKey) {
-      // adds to selection
-      dispatch(MetaActions.selectComponents([elementPath], true), 'leftpane')
-    } else if (event.shiftKey) {
-      // selects range of items
-      const targets = getSelectedViewsInRange(index)
-      dispatch(MetaActions.selectComponents(targets, false), 'leftpane')
-    } else {
-      dispatch(MetaActions.selectComponents([elementPath], false), 'leftpane')
-    }
-  }
+  dispatch([...conditionalOverrideActions, ...selectionActions], 'leftpane')
 }
 
 const highlightItem = (
@@ -320,7 +356,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
     const flag = getConditionalFlag(conditional)
 
     // the final condition value, either from the original or from the override
-    const overriddenConditionValue: boolean = flag ?? originalConditionValue
+    const overriddenConditionValue: boolean = flag ?? originalConditionValue.active
 
     // when the condition is true, then the 'then' branch is not hidden
     if (overriddenConditionValue) {
@@ -414,11 +450,39 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditional',
   )
 
-  const elementMetadata = useEditorState(
+  const conditionalOverrideUpdate = useEditorState(
     Substores.metadata,
-    (store) =>
-      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, navigatorEntry.elementPath),
-    'NavigatorItem elementMetadata',
+    (store) => {
+      const path = navigatorEntry.elementPath
+      const metadata = store.editor.jsxMetadata
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        navigatorEntry.elementPath,
+      )
+      if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
+        if (isActiveOrDefaultBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
+          return 'clear-override'
+        } else {
+          return navigatorEntry.clause
+        }
+      } else {
+        const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
+        if (conditionalCase != null) {
+          const parentPath = EP.parentPath(path)
+          const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
+          if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
+            return 'no-update'
+          } else if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
+            return 'clear-override'
+          } else {
+            return conditionalCase
+          }
+        }
+
+        return 'no-update'
+      }
+    },
+    'NavigatorItem conditionalOverrideUpdate',
   )
 
   const isInsideComponent =
@@ -478,9 +542,9 @@ export const NavigatorItem: React.FunctionComponent<
         index,
         selected,
         event,
-        elementMetadata,
+        conditionalOverrideUpdate,
       ),
-    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, elementMetadata],
+    [dispatch, getSelectedViewsInRange, navigatorEntry, index, selected, conditionalOverrideUpdate],
   )
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry.elementPath, selected, isHighlighted),
@@ -521,10 +585,13 @@ export const NavigatorItem: React.FunctionComponent<
     }
   }, [isElementVisible, isHiddenConditionalBranch, isSlot])
 
+  const cursorStyle = isConditionalClauseNavigatorEntry(navigatorEntry) ? { cursor: 'pointer' } : {}
+
   const rowStyle = useKeepReferenceEqualityIfPossible({
     paddingLeft: getElementPadding(entryNavigatorDepth),
     height: getItemHeight(navigatorEntry),
     ...resultingStyle.style,
+    ...cursorStyle,
   })
 
   const showExpandableIndicator = React.useMemo(() => {
