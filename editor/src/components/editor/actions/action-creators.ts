@@ -47,11 +47,7 @@ import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/co
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../../shared/project-components'
+import { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,

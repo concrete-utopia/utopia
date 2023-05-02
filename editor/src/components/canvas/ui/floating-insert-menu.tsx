@@ -249,14 +249,11 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         return {
           // ...styles,
           position: 'relative',
-          maxHeight: 210,
+          maxHeight: 150,
+          padding: 4,
           paddingLeft: 8,
           paddingRight: 8,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-          paddingBottom: UtopiaTheme.layout.rowHeight.large,
+          overflowY: 'scroll',
         }
       },
       input: (styles): CSSObject => {
@@ -299,7 +296,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       group: (): CSSObject => {
         return {
           // ...styles,
-          // paddingTop: 6,
+          paddingTop: 6,
         }
       },
       groupHeading: (styles): CSSObject => {
@@ -449,22 +446,8 @@ export var FloatingMenu = React.memo(() => {
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
-  const shouldWrapContentsByDefault = useRefEditorState((store) => {
-    // We only care about this when the menu is first opened
-    const firstSelectedView = store.editor.selectedViews[0]
-    if (firstSelectedView != null) {
-      const selectedJSXElement = MetadataUtils.getJSXElementFromMetadata(
-        store.editor.jsxMetadata,
-        firstSelectedView,
-      )
-      return selectedJSXElement != null && elementOnlyHasSingleTextChild(selectedJSXElement)
-    }
-
-    return false
-  })
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
-
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
   const onChangeConditionalOrFragment = React.useCallback(

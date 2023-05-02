@@ -67,11 +67,7 @@ import {
 import { Notice } from '../common/notice'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../shared/project-components'
+import { InsertableComponent, StylePropOption } from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import { BuildType } from '../../core/workers/common/worker-types'
 import { ProjectContentTreeRoot } from '../assets'
