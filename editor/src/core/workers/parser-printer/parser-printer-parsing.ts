@@ -2144,15 +2144,10 @@ export function parseOutJSXElements(
       }
 
       function handleConditionalExpression(
-        containingExpression: TS.JsxExpression | null,
         expression: TS.ConditionalExpression,
         comments: ParsedComments,
       ): Either<string, SuccessfullyParsedElement> {
-        const possibleConditional = produceConditionalFromExpression(
-          containingExpression,
-          expression,
-          comments,
-        )
+        const possibleConditional = produceConditionalFromExpression(expression, comments)
         return mapEither((success) => {
           highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
           propsUsed.push(...success.propsUsed)
@@ -2202,7 +2197,6 @@ export function parseOutJSXElements(
           }
           case TS.SyntaxKind.ConditionalExpression: {
             const possibleCondition = handleConditionalExpression(
-              null,
               elem,
               getConditionalExpressionComments(elem),
             )
@@ -2219,14 +2213,13 @@ export function parseOutJSXElements(
             // Handle ternaries.
             if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
               parseResult = handleConditionalExpression(
-                elem,
                 elem.expression,
                 getConditionalElementComments(elem),
               )
             }
             // Fallback to arbitrary block parsing.
             if (isLeft(parseResult)) {
-              parseResult = produceArbitraryBlockFromJsxExpression(elem)
+              parseResult = produceArbitraryBlockFromExpression(elem)
             }
 
             if (isRight(parseResult)) {
@@ -2274,8 +2267,8 @@ export function parseOutJSXElements(
     return successfullyParsedElement(sourceFile, tsText, block.value)
   }
 
-  function produceArbitraryBlockFromJsxExpression(
-    tsExpression: TS.JsxExpression | LiteralLikeTypes,
+  function produceArbitraryBlockFromExpression(
+    tsExpression: TS.Expression | LiteralLikeTypes,
   ): Either<string, SuccessfullyParsedElement> {
     const result = parseJSXArbitraryBlock(
       sourceFile,
@@ -2428,7 +2421,6 @@ export function parseOutJSXElements(
   }
 
   function produceConditionalFromExpression(
-    containingExpression: TS.JsxExpression | null,
     expression: TS.ConditionalExpression,
     comments: ParsedComments,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
@@ -2484,8 +2476,12 @@ export function parseOutJSXElements(
     const parseAsFullConditionalExpression = (() => {
       const trueBlockJsxElementLike =
         isRight(whenTrueBlock) && isJSXElementLike(whenTrueBlock.value.value)
+      const trueBlockConditionalExpression =
+        isRight(whenTrueBlock) && isJSXConditionalExpression(whenTrueBlock.value.value)
       const falseBlockJsxElementLike =
         isRight(whenFalseBlock) && isJSXElementLike(whenFalseBlock.value.value)
+      const falseBlockConditionalExpression =
+        isRight(whenFalseBlock) && isJSXConditionalExpression(whenFalseBlock.value.value)
       const trueBlockNull =
         isRight(whenTrueBlock) &&
         isJSXAttributeValue(whenTrueBlock.value.value) &&
@@ -2496,8 +2492,13 @@ export function parseOutJSXElements(
         isJSXAttributeValue(whenFalseBlock.value.value) &&
         whenFalseBlock.value.value.value == null
 
-      if (trueBlockJsxElementLike || falseBlockJsxElementLike) {
-        // if either branches are element-like, let's show the full navigator
+      if (
+        trueBlockJsxElementLike ||
+        trueBlockConditionalExpression ||
+        falseBlockJsxElementLike ||
+        falseBlockConditionalExpression
+      ) {
+        // if either branches are element-like or recursive conditional expression, let's show the full navigator
         return true
       }
       if (trueBlockNull && falseBlockNull) {
@@ -2509,11 +2510,11 @@ export function parseOutJSXElements(
       return false
     })()
 
-    if (containingExpression != null && !parseAsFullConditionalExpression) {
+    if (!parseAsFullConditionalExpression) {
       // instead of parsing as conditional, return the value as ATTRIBUTE_OTHER_JAVASCRIPT so we can show it as an inline expression in text content
       return mapEither(
         (e) => withParserMetadata(e, {}, [], []),
-        produceArbitraryBlockFromJsxExpression(containingExpression),
+        produceArbitraryBlockFromExpression(expression),
       )
     }
 

@@ -186,7 +186,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - c58
+          ATTRIBUTE_OTHER_JAVASCRIPT - 793
       UNPARSED_CODE"
     `)
   })
@@ -211,7 +211,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - c58
+          ATTRIBUTE_OTHER_JAVASCRIPT - 793
       UNPARSED_CODE"
     `)
   })
@@ -236,7 +236,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 087
+          ATTRIBUTE_OTHER_JAVASCRIPT - 638
       UNPARSED_CODE"
     `)
   })
@@ -261,7 +261,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - f9b
+          ATTRIBUTE_OTHER_JAVASCRIPT - 6d5
       UNPARSED_CODE"
     `)
   })
@@ -311,7 +311,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 293
+          ATTRIBUTE_OTHER_JAVASCRIPT - fb6
       UNPARSED_CODE"
     `)
   })
@@ -336,7 +336,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 2df
+          ATTRIBUTE_OTHER_JAVASCRIPT - c11
       UNPARSED_CODE"
     `)
   })
@@ -361,7 +361,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 1b3
+          ATTRIBUTE_OTHER_JAVASCRIPT - 4f7
       UNPARSED_CODE"
     `)
   })
@@ -386,7 +386,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 1d1
+          ATTRIBUTE_OTHER_JAVASCRIPT - f68
       UNPARSED_CODE"
     `)
   })
@@ -411,7 +411,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 2fb
+          ATTRIBUTE_OTHER_JAVASCRIPT - 6a2
       UNPARSED_CODE"
     `)
   })
@@ -531,7 +531,7 @@ describe('Conditional elements text parsing cases', () => {
     `)
   })
 
-  it('string and nested conditional parses as text', () => {
+  it('string and string-only nested conditional parses as text', () => {
     const code = createCode(`
       {
         // @utopia/uid=conditional1
@@ -552,7 +552,36 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 1eb
+          ATTRIBUTE_OTHER_JAVASCRIPT - d6d
+      UNPARSED_CODE"
+    `)
+  })
+
+  it('string and div-containing nested conditional parses as text', () => {
+    const code = createCode(`
+      {
+        // @utopia/uid=conditional1
+        isTrue
+        ? 'The book is sealed'
+        : sacrificialAnimal === 'goat' /* @utopia/uid=conditional2 */
+        ? <div>the goat book is open</div>
+        : 'the book is open'
+      }
+    `)
+    const parseResult = testParseCode(code)
+    if (!isParseSuccess(parseResult)) {
+      throw new Error('expected parse success')
+    }
+
+    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
+      "IMPORT_STATEMENT
+      UNPARSED_CODE
+      UTOPIA_JSX_COMPONENT - App
+        JSX_ELEMENT - div - app
+          JSX_CONDITIONAL_EXPRESSION - conditional1
+            JSX_CONDITIONAL_EXPRESSION - conditional2
+              JSX_ELEMENT - div - 4cf
+                JSX_TEXT_BLOCK - c4d
       UNPARSED_CODE"
     `)
   })
@@ -576,7 +605,7 @@ describe('Conditional elements text parsing cases', () => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - App
         JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - bb5
+          ATTRIBUTE_OTHER_JAVASCRIPT - 90b
       UNPARSED_CODE"
     `)
   })
