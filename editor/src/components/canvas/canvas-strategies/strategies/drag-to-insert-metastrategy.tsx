@@ -1,6 +1,9 @@
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
-import { createFakeMetadataForElement } from '../../../../core/model/element-metadata-utils'
+import {
+  createFakeMetadataForElement,
+  getRootPath,
+} from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -55,7 +58,6 @@ import {
 } from '../../controls/select-mode/drag-outline-control'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
-import { getRootPath } from './draw-to-insert-metastrategy'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,

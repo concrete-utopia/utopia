@@ -2403,3 +2403,11 @@ export function createFakeMetadataForElement(
     'not-a-conditional',
   )
 }
+
+export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath | null {
+  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
+  if (storyboard == null) {
+    return null
+  }
+  return storyboard.elementPath
+}

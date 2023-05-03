@@ -2,6 +2,7 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
+  getRootPath,
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
@@ -666,12 +667,4 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
     resizeStrategy != null ? resizeStrategy.strategy.apply(strategyLifecycle).commands : []
 
   return foldAndApplyCommandsInner(editorState, [], resizeCommands, commandLifecycle).statePatches
-}
-
-export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath | null {
-  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
-  if (storyboard == null) {
-    return null
-  }
-  return storyboard.elementPath
 }
