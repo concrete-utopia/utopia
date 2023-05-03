@@ -129,7 +129,6 @@ import {
   NavigatorEntry,
   isSyntheticNavigatorEntry,
   insertElementAtPath,
-  insertElementWrapInFragmentWithSibling,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -188,9 +187,10 @@ import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
-import { childInsertionPath } from '../editor/store/insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import Hash from 'object-hash'
+import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2819,33 +2819,34 @@ export function duplicate(
                   assertNever(anchor)
               }
             }
-            const insertResult = (() => {
-              const conditionalCase = getConditionalCaseCorrespondingToBranchPath(
-                path,
-                editor.jsxMetadata,
-              )
-              if (conditionalCase != null) {
-                const hash = Hash(path)
-                const uidForWrapper = generateConsistentUID(new Set(existingIDs), hash)
-                return insertElementWrapInFragmentWithSibling(
-                  path,
-                  newElement!, // `newElement` is actually already null checked here, but TS cannot determine that yet, see https://github.com/microsoft/TypeScript/issues/9998
-                  utopiaComponents,
-                  uidForWrapper,
-                )
-              }
 
-              return insertElementAtPath(
-                childInsertionPath(EP.parentPath(newPath)),
-                newElement!, // `newElement` is actually already null checked here, but TS cannot determine that yet, see https://github.com/microsoft/TypeScript/issues/9998
-                utopiaComponents,
-                position(),
-              )
-            })()
+            const conditionalCase = getConditionalCaseCorrespondingToBranchPath(
+              path,
+              editor.jsxMetadata,
+            )
 
-            if (insertResult == null) {
-              throw new Error('Not implemented')
+            if (conditionalCase != null && isEmptyConditionalBranch(path, editor.jsxMetadata)) {
+              // can't duplicate empty conditional branch
+              return success
             }
+
+            const insertionPath =
+              conditionalCase != null
+                ? conditionalClauseInsertionPath(
+                    EP.parentPath(path),
+                    conditionalCase,
+                    'wrap-with-fragment',
+                  )
+                : childInsertionPath(EP.parentPath(newPath))
+
+            const insertResult = insertElementAtPath(
+              editor.projectContents,
+              insertionPath,
+              newElement,
+              utopiaComponents,
+              position(),
+            )
+
             utopiaComponents = insertResult.components
             detailsOfUpdate = insertResult.insertionDetails
 

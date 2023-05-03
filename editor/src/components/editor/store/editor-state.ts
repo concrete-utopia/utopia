@@ -1982,49 +1982,6 @@ export function insertElementAtPath(
   )
 }
 
-export function insertElementWrapInFragmentWithSibling(
-  targetSibling: ElementPath,
-  elementToInsert: JSXElementChild,
-  components: Array<UtopiaJSXComponent>,
-  wrapperId: string,
-): InsertChildAndDetails {
-  const sibling = findElementAtPath(targetSibling, components)
-  if (sibling == null) {
-    return insertChildAndDetails(components, null, {})
-  }
-
-  const withSiblingRemoved = removeElementAtPath(targetSibling, components)
-  const fragmentWithChildren = jsxFragment(wrapperId, [sibling, elementToInsert], true)
-
-  const parentPath = EP.parentPath(targetSibling)
-
-  const insertionPathForFragment = () => {
-    const maybeConditionalParent = findElementAtPath(parentPath, components)
-    if (maybeConditionalParent?.type === 'JSX_CONDITIONAL_EXPRESSION') {
-      const conditionalCase: ConditionalCase =
-        maybeConditionalParent.whenTrue.uid === EP.toUid(targetSibling) ? 'true-case' : 'false-case'
-      return conditionalClauseInsertionPath(parentPath, conditionalCase)
-    }
-    return childInsertionPath(parentPath)
-  }
-
-  const withGroupInserted = insertJSXElementChild(
-    insertionPathForFragment(),
-    fragmentWithChildren,
-    withSiblingRemoved,
-    absolute(0),
-  )
-
-  return insertChildAndDetails(withGroupInserted.components, withGroupInserted.insertionDetails, {
-    ...withGroupInserted.importsToAdd,
-    react: {
-      importedAs: 'React',
-      importedFromWithin: [],
-      importedWithName: null,
-    },
-  })
-}
-
 /** @deprecated reason: use insertElementAtPath instead! **/
 export function insertElementAtPath_DEPRECATED(
   projectContents: ProjectContentTreeRoot,
