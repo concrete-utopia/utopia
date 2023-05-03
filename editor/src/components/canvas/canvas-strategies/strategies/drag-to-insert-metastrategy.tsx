@@ -215,7 +215,7 @@ function dragToInsertStrategyFactory(
         } else {
           const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
             if (rootPath == null) {
-              throw new Error('missing root path')
+              throw new Error('Missing root path for drag interaction')
             }
             return getInsertionCommandsWithFrames(rootPath, s.subject, s.frame)
           })
@@ -349,7 +349,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
   }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const rootPath = getRootPath(editorState.jsxMetadata) ?? EP.elementPath([])
+  const rootPath = getRootPath(editorState.jsxMetadata)
+  if (rootPath == null) {
+    throw new Error('Missing root path when running drag strategy')
+  }
 
   const patchedMetadata: ElementInstanceMetadataMap = insertionCommandsWithFrames.reduce(
     (

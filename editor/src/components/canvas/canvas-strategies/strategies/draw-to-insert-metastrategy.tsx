@@ -192,7 +192,7 @@ export function drawToInsertStrategyFactory(
           )
           if (interactionSession.interactionData.drag != null) {
             if (rootPath == null) {
-              throw new Error('missing root path')
+              throw new Error('Missing root path for draw interaction')
             }
             const insertionCommand = getInsertionCommands(
               rootPath,
@@ -567,7 +567,10 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
 ): Array<EditorStatePatch> {
   const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
 
-  const rootPath = getRootPath(startingMetadata) ?? elementPath([])
+  const rootPath = getRootPath(startingMetadata)
+  if (rootPath == null) {
+    throw new Error('Missing root path when running draw strategy')
+  }
 
   const element = insertionSubject.element
   const path = EP.appendToPath(rootPath, element.uid)
