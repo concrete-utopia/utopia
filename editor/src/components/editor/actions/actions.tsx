@@ -508,7 +508,7 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getDefaultInsertionPathForElementPath,
+  getInsertionPathWithSlotBehavior,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2287,6 +2287,7 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertElementAtPath(
+          editor.projectContents,
           childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
@@ -2343,6 +2344,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
+          'replace',
         )
         if (parentPath == null) {
           return editor
@@ -2356,8 +2358,12 @@ export const UPDATE_FNS = {
             EP.isRootElementOfInstance(elementPath) &&
             EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
         )
-        if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-          return editor
+
+        if (anyTargetIsARootElement) {
+          const showToastAction = showToast(
+            notice(`Root elements can't be wrapped into other elements.`),
+          )
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
         const detailsOfUpdate = null
@@ -4916,6 +4922,7 @@ export const UPDATE_FNS = {
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               withMaybeUpdatedParent,
@@ -4935,6 +4942,7 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               utopiaComponents,
@@ -4952,6 +4960,7 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               utopiaComponents,

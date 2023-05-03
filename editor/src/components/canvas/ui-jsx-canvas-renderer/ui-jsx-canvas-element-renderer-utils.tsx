@@ -363,7 +363,7 @@ export function renderCoreElement(
           elementPath,
         )
 
-        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, {
+        addFakeSpyEntry(validPaths, metadataContext, elementPath, element, filePath, imports, {
           active: activeConditionValue,
           default: defaultConditionValue,
         })

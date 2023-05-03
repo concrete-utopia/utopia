@@ -604,6 +604,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
+          'replace',
         ),
         want: `
         <div data-uid='root'>
@@ -639,6 +640,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
+          'replace',
         ),
         want: `
         <div data-uid='root'>
@@ -718,6 +720,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
+          'replace',
         ),
         want: `
         <div data-uid='root'>
@@ -766,6 +769,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
+          'replace',
         ),
         want: `
         <div data-uid='root'>
@@ -810,6 +814,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
+          'replace',
         ),
         want: `
         <div data-uid='root'>
@@ -866,6 +871,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
+          'replace',
         ),
         want: `
       <div data-uid='root'>
