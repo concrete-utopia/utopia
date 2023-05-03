@@ -822,6 +822,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
+              'replace',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -859,6 +860,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
+              'replace',
             ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -948,6 +950,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'true-case',
+              'replace',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -985,6 +988,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
+              'replace',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })
@@ -1022,6 +1026,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
+              'replace',
             ),
             targets: [
               EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
@@ -1106,6 +1111,7 @@ describe('conditionals', () => {
             pasteInto: conditionalClauseInsertionPath(
               EP.appendNewElementPath(TestScenePath, ['aaa', 'cond']),
               'false-case',
+              'replace',
             ),
             targets: [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])],
           })

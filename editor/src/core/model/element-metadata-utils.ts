@@ -2021,9 +2021,9 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case', 'replace')
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case', 'replace')
         }
       }
       return childInsertionPath(parentElement.elementPath)

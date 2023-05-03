@@ -68,6 +68,7 @@ export const runAddElement: CommandFunction<AddElement> = (
       const insertionResult =
         command.useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
           ? insertElementAtPath(
+              editorState.projectContents,
               command.parentPath,
               command.element,
               componentsNewParent,

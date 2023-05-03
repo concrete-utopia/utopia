@@ -60,16 +60,47 @@ function validateParsedTextFileElementUIDs(parsedTextFile: ParsedTextFile): void
   }
 }
 
+function validateHighlightBoundsForUIDs(parsedTextFile: ParsedTextFile): void {
+  if (isParseSuccess(parsedTextFile)) {
+    for (const highlightBoundsUID of Object.keys(parsedTextFile.highlightBounds)) {
+      const highlightBounds = parsedTextFile.highlightBounds[highlightBoundsUID]
+      if (highlightBoundsUID !== highlightBounds.uid) {
+        throw new Error(
+          `A highlight bounds with a uid of ${highlightBounds.uid} was stored against a key of ${highlightBoundsUID}`,
+        )
+      }
+    }
+  }
+}
+
+function lintAndParseAndValidateResult(
+  filename: string,
+  content: string,
+  oldParseResultForUIDComparison: ParseSuccess | null,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+  shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
+): ParsedTextFile {
+  const result = lintAndParse(
+    filename,
+    content,
+    oldParseResultForUIDComparison,
+    alreadyExistingUIDs_MUTABLE,
+    shouldTrimBounds,
+  )
+  validateParsedTextFileElementUIDs(result)
+  validateHighlightBoundsForUIDs(result)
+  return result
+}
+
 describe('fixParseSuccessUIDs', () => {
   it('does not fix identical file', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       baseFileContents,
       asParseSuccessOrNull(baseFile),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -83,22 +114,20 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level element change', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTwoTopLevelComponents,
       null,
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(newFile)
-    const newFileFixed = lintAndParse(
+    const newFileFixed = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTwoTopLevelComponentsUpdated,
       asParseSuccessOrNull(newFile),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(newFileFixed)
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
@@ -114,22 +143,20 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level fragment element change', () => {
-    const fileWithFragment = lintAndParse(
+    const fileWithFragment = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTopLevelFragmentComponent,
       null,
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(fileWithFragment)
-    const fileWithFragmentUpdated = lintAndParse(
+    const fileWithFragmentUpdated = lintAndParseAndValidateResult(
       'test.js',
       fileWithTopLevelFragmentComponentUpdateContents,
       asParseSuccessOrNull(fileWithFragment),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(fileWithFragmentUpdated)
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
@@ -144,14 +171,13 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('founds and fixes a single line change', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithSingleUpdateContents,
       asParseSuccessOrNull(baseFile),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -165,14 +191,13 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedView,
       asParseSuccessOrNull(baseFile),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -186,14 +211,13 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('double duplication', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       asParseSuccessOrNull(baseFile),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(newFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -208,22 +232,20 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('insertion at the beginning', () => {
-    const threeViews = lintAndParse(
+    const threeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       null,
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(threeViews)
-    const fourViews = lintAndParse(
+    const fourViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatesAndInsertion,
       asParseSuccessOrNull(threeViews),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(fourViews)
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -239,70 +261,74 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('multiple uid changes but the number of elements stays the same', () => {
-    const threeViews = lintAndParse(
+    const threeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       null,
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(threeViews)
-    const updatedThreeViews = lintAndParse(
+    const updatedThreeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViewsWithChanges,
       asParseSuccessOrNull(threeViews),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(updatedThreeViews)
     expect(getUidTree(updatedThreeViews)).toEqual(getUidTree(threeViews))
   })
 
   it('can handle text children fine', () => {
-    const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet(), 'trim-bounds')
-    validateParsedTextFileElementUIDs(start)
-    const end = lintAndParse(
+    const start = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithTwoTextElements,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const end = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoTextElementsWithChanges,
       asParseSuccessOrNull(start),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(end)
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('can handle changes to a parent and child', () => {
-    const start = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
-    validateParsedTextFileElementUIDs(start)
-    const end = lintAndParse(
+    const start = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const end = lintAndParseAndValidateResult(
       'test.js',
       fileWithChildAndParentUpdated,
       asParseSuccessOrNull(start),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(end)
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('re-ordered elements should re-order the uid tree', () => {
-    const beforeReOrder = lintAndParse(
+    const beforeReOrder = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedView,
       null,
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(beforeReOrder)
-    const afterReOrder = lintAndParse(
+    const afterReOrder = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedViewReOrdered,
       asParseSuccessOrNull(beforeReOrder),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(afterReOrder)
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -326,41 +352,49 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('uids should match including root element when root element changes', () => {
-    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
-    validateParsedTextFileElementUIDs(firstResult)
-    const secondResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       baseFileContentsWithDifferentBackground,
       asParseSuccessOrNull(firstResult),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(secondResult)
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles elements within arbitrary blocks', () => {
-    const firstResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithArbitraryBlockInside,
       null,
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(firstResult)
-    const secondResult = lintAndParse(
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithSlightlyDifferentArbitraryBlockInside,
       asParseSuccessOrNull(firstResult),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(secondResult)
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles newly inserted duplicate elements without duplicating uids', () => {
-    const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet(), 'trim-bounds')
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithBasicDiv,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
     expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -371,14 +405,13 @@ describe('fixParseSuccessUIDs', () => {
         scene
           component"
     `)
-    const secondResult = lintAndParse(
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithBasicDivDuplicated,
       asParseSuccessOrNull(firstResult),
       emptySet(),
       'trim-bounds',
     )
-    validateParsedTextFileElementUIDs(secondResult)
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
       "4ed
         4e0
@@ -873,7 +906,13 @@ function createFileText(codeSnippet: string): string {
   `
 }
 
-const baseFile = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
+const baseFile = lintAndParseAndValidateResult(
+  'test.js',
+  baseFileContents,
+  null,
+  emptySet(),
+  'trim-bounds',
+)
 
 function getUidTree(parsedFile: ParsedTextFile): string {
   if (!isParseSuccess(parsedFile)) {

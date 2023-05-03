@@ -1370,6 +1370,7 @@ describe('conditionals in the navigator', () => {
           `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
         ),
         'false-case',
+        'replace',
       ),
       expectedToasts: [],
       expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
