@@ -50,7 +50,6 @@ import {
 } from '../../core/model/element-template-utils'
 import {
   fixUtopiaElement,
-  generateConsistentUID,
   generateUID,
   getUtopiaID,
   setUtopiaID,
@@ -189,7 +188,6 @@ import { treatElementAsContentAffecting } from './canvas-strategies/strategies/g
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import { childInsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
-import Hash from 'object-hash'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 
 export function getOriginalFrames(

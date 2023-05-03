@@ -1,9 +1,5 @@
 import * as json5 from 'json5'
-import {
-  findElementAtPath,
-  findJSXElementAtPath,
-  MetadataUtils,
-} from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -21,7 +17,6 @@ import {
   isJSXConditionalExpression,
   JSXConditionalExpression,
   isJSXArbitraryBlock,
-  jsxFragment,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild_DEPRECATED,
@@ -32,7 +27,6 @@ import {
   InsertChildAndDetails,
   insertChildAndDetails,
   insertJSXElementChild,
-  getIndexInParent,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -88,7 +82,7 @@ import {
 } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import Utils, { absolute, IndexPosition } from '../../../utils/utils'
+import Utils, { IndexPosition } from '../../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
