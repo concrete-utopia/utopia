@@ -2899,6 +2899,7 @@ export function reorderComponent(
     workingComponents =
       useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
         ? insertElementAtPath(
+            projectContents,
             childInsertionPath(parentPath),
             jsxElement,
             workingComponents,
