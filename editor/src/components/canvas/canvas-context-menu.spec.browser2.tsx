@@ -25,6 +25,7 @@ import {
   TestSceneUID,
 } from './ui-jsx.test-utils'
 import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 async function openContextMenuAndClickOnItem(
   renderResult: EditorRenderResult,
@@ -38,6 +39,16 @@ async function openContextMenuAndClickOnItem(
   const contextMenuItemBounds = contextMenuItem.getBoundingClientRect()
   await mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
   await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
+  expect(
+    editor
+      .getEditorState()
+      .editor.selectedViews.every((path) =>
+        MetadataUtils.findElementByElementPath(editor.getEditorState().editor.jsxMetadata, path),
+      ),
+  ).toEqual(true)
 }
 
 type Trigger = (editor: EditorRenderResult) => Promise<void>
@@ -205,9 +216,12 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        // await expectNoAction(editor, async () => {
-        await trigger(editor)
-        // })
+
+        // to ensure that the selected element is actually an element in the project
+        expectAllSelectedViewsToHaveMetadata(editor)
+        await expectNoAction(editor, async () => {
+          await trigger(editor)
+        })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
       }
@@ -256,9 +270,12 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        // await expectNoAction(editor, async () => {
-        await trigger(editor)
-        // })
+
+        // to ensure that the selected element is actually an element in the project
+        expectAllSelectedViewsToHaveMetadata(editor)
+        await expectNoAction(editor, async () => {
+          await trigger(editor)
+        })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
       }
@@ -376,9 +393,12 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        // await expectNoAction(editor, async () => {
-        await trigger(editor)
-        // })
+
+        // to ensure that the selected element is actually an element in the project
+        expectAllSelectedViewsToHaveMetadata(editor)
+        await expectNoAction(editor, async () => {
+          await trigger(editor)
+        })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
       }
@@ -432,9 +452,12 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        // await expectNoAction(editor, async () => {
-        await trigger(editor)
-        // })
+
+        // to ensure that the selected element is actually an element in the project
+        expectAllSelectedViewsToHaveMetadata(editor)
+        await expectNoAction(editor, async () => {
+          await trigger(editor)
+        })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
       }

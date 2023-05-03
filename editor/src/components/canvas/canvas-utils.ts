@@ -2294,6 +2294,7 @@ export function moveTemplate(
                   )
 
                   const insertResult = insertJSXElementChild(
+                    workingEditorState.projectContents,
                     childInsertionPath(underlyingNewParentPath),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,

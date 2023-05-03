@@ -1198,6 +1198,25 @@ function setZIndexOnSelected(
     selectedViews: [],
   }
   return selectedViews.reduce((working, selectedView) => {
+    const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
+    const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
+    const isFirstSiblingMovedBackwards =
+      currentIndex === 0 && (index === 'back' || index === 'backward')
+
+    const isLastSiblingMovedForward =
+      currentIndex === siblings.length - 1 && (index === 'front' || index === 'forward')
+
+    const isElementRootOfConditionalBranch =
+      getConditionalCaseCorrespondingToBranchPath(selectedView, editor.jsxMetadata) != null
+
+    if (
+      isFirstSiblingMovedBackwards ||
+      isLastSiblingMovedForward ||
+      isElementRootOfConditionalBranch
+    ) {
+      return working
+    }
+
     const indexPosition = indexPositionForAdjustment(selectedView, working, index)
     return editorMoveTemplate(
       selectedView,
