@@ -100,22 +100,6 @@ jobs:
       shard_number: 2
       branch: master
 
-  call-test-editor-karma-shard-3:
-    name: Test Editor Shard 3
-    uses: ./.github/workflows/editor-sharded-tests.yml
-    secrets: inherit
-    with:
-      shard_number: 3
-      branch: master
-
-  call-test-editor-karma-shard-4:
-    name: Test Editor Shard 4
-    uses: ./.github/workflows/editor-sharded-tests.yml
-    secrets: inherit
-    with:
-      shard_number: 4
-      branch: master
-
   test-server:
     name: Test Server
     runs-on: ubuntu-latest
