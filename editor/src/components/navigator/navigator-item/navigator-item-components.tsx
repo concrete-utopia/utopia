@@ -10,6 +10,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getMetadata,
+  isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   NavigatorEntry,
   varSafeNavigatorEntryToKey,
@@ -320,6 +321,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     'NavigatorItemActionSheet descendant of locked',
   )
 
+  const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
+
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -335,7 +338,8 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
             isLockedElement ||
             isLockedHierarchy ||
             isDescendantOfLocked) &&
-          !props.isSlot
+          !props.isSlot &&
+          !isConditionalClauseTitle
         }
         value={isLockedElement ? 'locked' : isLockedHierarchy ? 'locked-hierarchy' : 'selectable'}
         isDescendantOfLocked={isDescendantOfLocked}

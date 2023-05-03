@@ -21,8 +21,12 @@ import {
   isTextFile,
   NodeModules,
 } from '../core/shared/project-file-types'
-import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
-import { setLocalClipboardData } from './local-clipboard'
+import {
+  encodeUtopiaDataToHtml,
+  extractFiles,
+  extractUtopiaDataFromClipboardData,
+  PasteResult,
+} from './clipboard-utils'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint, isInfinityRectangle } from '../core/shared/math-utils'
@@ -42,10 +46,13 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   childInsertionPath,
-  getDefaultInsertionPathForElementPath,
+  getInsertionPathWithSlotBehavior,
+  getInsertionPathWithWrapWithFragmentBehavior,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
+import { optionalMap } from '../core/shared/optional-utils'
+import { isFeatureEnabled } from './feature-switches'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -57,31 +64,45 @@ type JSXElementsJson = string
 
 export type CopyData = JSXElementCopyData
 
-function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
-  return parsePasteEvent(clipboardData)
+async function parseClipboardData(clipboardData: DataTransfer | null): Promise<PasteResult> {
+  if (clipboardData == null) {
+    return {
+      files: [],
+      utopiaData: [],
+    }
+  }
+  const utopiaData = extractUtopiaDataFromClipboardData(clipboardData)
+  if (utopiaData.length > 0) {
+    return {
+      files: [],
+      utopiaData: utopiaData,
+    }
+  } else {
+    const items = clipboardData.items
+    const imageArray = await extractFiles(items)
+    return {
+      files: imageArray,
+      utopiaData: [],
+    }
+  }
+}
+
+export interface ClipboardDataPayload {
+  html: string
+  plainText: string
 }
 
 // This is required so we can mock the function in a test. Don't hate me, I already hate myself
 export const Clipboard = {
   parseClipboardData,
+  setClipboardData,
 }
 
-export function setClipboardData(
-  copyData: {
-    data: Array<CopyData>
-    plaintext: string
-    imageFilenames: Array<string>
-  } | null,
-): void {
-  // we also set the local clipboard here, used for style copy paste
-  setLocalClipboardData(copyData)
-  if (copyData != null) {
-    const utopiaDataHtml = encodeUtopiaDataToHtml(copyData.data)
-    const dt = new ClipboardPolyfill.DT()
-    dt.setData('text/plain', copyData.plaintext)
-    dt.setData('text/html', utopiaDataHtml)
-    void ClipboardPolyfill.write(dt)
-  }
+export function setClipboardData(copyData: ClipboardDataPayload): void {
+  const dt = new ClipboardPolyfill.DT()
+  dt.setData('text/plain', copyData.plainText)
+  dt.setData('text/html', copyData.html)
+  void ClipboardPolyfill.write(dt)
 }
 
 export function getActionsForClipboardItems(
@@ -104,12 +125,15 @@ export function getActionsForClipboardItems(
       componentMetadata,
       pasteTargetsToIgnore,
     )
-    const storyboard = getStoryboardElementPath(projectContents, openFile)
-    const target = possibleTarget ?? (storyboard != null ? childInsertionPath(storyboard) : null)
+    const target: InsertionPath | null =
+      possibleTarget == null
+        ? optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
+        : possibleTarget
     if (target == null) {
       console.warn(`Unable to find the storyboard path.`)
       return []
     }
+    const targetPath = MetadataUtils.resolveReparentTargetParentToPath(componentMetadata, target)
 
     // Create the actions for inserting JSX elements into the hierarchy.
     const utopiaActions = Utils.flatMapArray((data: CopyData) => {
@@ -122,9 +146,7 @@ export function getActionsForClipboardItems(
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
       const parentFrame =
-        target != null
-          ? MetadataUtils.getFrameInCanvasCoords(target.intendedParentPath, componentMetadata)
-          : null
+        target != null ? MetadataUtils.getFrameInCanvasCoords(targetPath, componentMetadata) : null
       const parentCenter =
         parentFrame == null || isInfinityRectangle(parentFrame)
           ? (Utils.point(100, 100) as CanvasPoint) // We should instead paste the top left at 0,0
@@ -311,13 +333,21 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        return getDefaultInsertionPathForElementPath(
-          targetPath,
-          projectContents,
-          nodeModules,
-          openFile,
-          metadata,
-        )
+        return isFeatureEnabled('Paste wraps into fragment')
+          ? getInsertionPathWithWrapWithFragmentBehavior(
+              targetPath,
+              projectContents,
+              nodeModules,
+              openFile,
+              metadata,
+            )
+          : getInsertionPathWithSlotBehavior(
+              targetPath,
+              projectContents,
+              nodeModules,
+              openFile,
+              metadata,
+            )
       }
     }
   }

@@ -1967,12 +1967,19 @@ export function removeElementAtPath(
 }
 
 export function insertElementAtPath(
+  projectContents: ProjectContentTreeRoot,
   targetParent: InsertionPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  return insertJSXElementChild(targetParent, elementToInsert, components, indexPosition)
+  return insertJSXElementChild(
+    projectContents,
+    targetParent,
+    elementToInsert,
+    components,
+    indexPosition,
+  )
 }
 
 export function insertElementWrapInFragmentWithSibling(
@@ -2306,7 +2313,11 @@ export function reparentTargetFromNavigatorEntry(
       )
 
       if (clausePath == null) {
-        return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+        return conditionalClauseInsertionPath(
+          navigatorEntry.elementPath,
+          navigatorEntry.clause,
+          'replace',
+        )
       }
 
       const supportsChildren = MetadataUtils.targetSupportsChildren(
@@ -2319,7 +2330,11 @@ export function reparentTargetFromNavigatorEntry(
 
       return supportsChildren
         ? childInsertionPath(clausePath)
-        : conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
+        : conditionalClauseInsertionPath(
+            navigatorEntry.elementPath,
+            navigatorEntry.clause,
+            'replace',
+          )
     default:
       assertNever(navigatorEntry)
   }

@@ -1178,7 +1178,7 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
           innerElementResult += ` - ${getJSXElementNameAsString(innerElement.name)} - ${getUtopiaID(
             innerElement,
           )}`
-        } else if (isJSXConditionalExpression(innerElement)) {
+        } else {
           innerElementResult += ` - ${getUtopiaID(innerElement)}`
         }
         structureResults.push(innerElementResult)
