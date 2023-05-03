@@ -666,7 +666,6 @@ export interface WorkerCodeAndParsedUpdate {
   type: 'WORKER_CODE_AND_PARSED_UPDATE'
   filePath: string
   code: string
-  highlightBounds: HighlightBoundsForUids
   parsed: ParsedTextFile
   lastRevisedTime: number
 }
@@ -1004,7 +1003,7 @@ export interface UpdateFormulaBarMode {
 
 export interface InsertInsertable {
   action: 'INSERT_INSERTABLE'
-  targetParent: ElementPath
+  insertionPath: InsertionPath | null
   toInsert: InsertableComponent
   styleProps: StylePropOption
   wrapContent: WrapContentOption

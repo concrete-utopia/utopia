@@ -1066,7 +1066,6 @@ export function removeFileConflict(path: string): RemoveFileConflict {
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
-  highlightBounds: HighlightBoundsForUids,
   parsed: ParsedTextFile,
   lastRevisedTime: number,
 ): WorkerCodeAndParsedUpdate {
@@ -1074,7 +1073,6 @@ export function workerCodeAndParsedUpdate(
     type: 'WORKER_CODE_AND_PARSED_UPDATE',
     filePath: filePath,
     code: code,
-    highlightBounds: highlightBounds,
     parsed: parsed,
     lastRevisedTime: lastRevisedTime,
   }
@@ -1592,7 +1590,7 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
 }
 
 export function insertInsertable(
-  targetParent: ElementPath,
+  insertionPath: InsertionPath | null,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
   wrapContent: WrapContentOption,
@@ -1600,7 +1598,7 @@ export function insertInsertable(
 ): InsertInsertable {
   return {
     action: 'INSERT_INSERTABLE',
-    targetParent: targetParent,
+    insertionPath: insertionPath,
     toInsert: toInsert,
     styleProps: styleProps,
     wrapContent: wrapContent,

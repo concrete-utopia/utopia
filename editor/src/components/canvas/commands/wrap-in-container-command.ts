@@ -27,7 +27,7 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import { ProjectContentTreeRoot } from '../../assets'
 import { JSXAttributesEntry } from '../../../core/shared/element-template'
 import { getIndexInParent } from '../../../core/model/element-template-utils'
-import { getDefaultInsertionPathForElementPath } from '../../editor/store/insertion-path'
+import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import { CSSProperties } from 'react'
 import { Property } from 'csstype'
@@ -85,7 +85,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
 
-      const insertionPath = getDefaultInsertionPathForElementPath(
+      const insertionPath = getInsertionPathWithSlotBehavior(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
@@ -96,7 +96,13 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         return // maybe this should throw instead?
       }
 
-      const insertionResult = insertElementAtPath(insertionPath, wrapper, withElementRemoved, index)
+      const insertionResult = insertElementAtPath(
+        editor.projectContents,
+        insertionPath,
+        wrapper,
+        withElementRemoved,
+        index,
+      )
 
       editorStatePatches.push(
         getPatchForComponentChange(

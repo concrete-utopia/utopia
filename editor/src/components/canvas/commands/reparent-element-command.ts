@@ -66,6 +66,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const insertionResult =
               command.useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
                 ? insertElementAtPath(
+                    editorState.projectContents,
                     command.newParent,
                     underlyingElementTarget,
                     withElementRemoved,

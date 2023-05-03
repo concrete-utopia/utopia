@@ -9,7 +9,6 @@ import {
   getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
-import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -22,6 +21,8 @@ import { isRight } from '../../../core/shared/either'
 import { ProjectContentTreeRoot } from '../../assets'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
+
+export type ConditionalClauseInsertBehavior = 'replace' | 'wrap-with-fragment'
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
@@ -42,17 +43,20 @@ export interface ConditionalClauseInsertionPath {
   type: 'CONDITIONAL_CLAUSE_INSERTION'
   intendedParentPath: StaticElementPath
   clause: ConditionalCase
+  insertBehavior: ConditionalClauseInsertBehavior
 }
 
 // Insert element into the intended parent's true or false branch expression
 export function conditionalClauseInsertionPath(
   elementPath: ElementPath,
   clause: ConditionalCase,
+  insertBehavior: ConditionalClauseInsertBehavior,
 ): ConditionalClauseInsertionPath {
   return {
     type: 'CONDITIONAL_CLAUSE_INSERTION',
     intendedParentPath: EP.dynamicPathToStaticPath(elementPath),
     clause: clause,
+    insertBehavior: insertBehavior,
   }
 }
 
@@ -86,6 +90,7 @@ export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
   first: InsertionPath,
   second: InsertionPath,
+  insertBehavior: ConditionalClauseInsertBehavior,
 ): InsertionPath | null {
   const closestSharedAncestor = EP.dynamicPathToStaticPath(
     forceNotNull(
@@ -115,6 +120,7 @@ export function commonInsertionPath(
     return conditionalClauseInsertionPath(
       closestSharedAncestor,
       closestSharedAncestorElement.conditionValue.active === true ? 'true-case' : 'false-case',
+      insertBehavior,
     )
   }
 
@@ -124,6 +130,7 @@ export function commonInsertionPath(
 export function commonInsertionPathFromArray(
   metadata: ElementInstanceMetadataMap,
   array: Array<InsertionPath | null>,
+  insertBehavior: ConditionalClauseInsertBehavior,
 ): InsertionPath | null {
   let workingArray: Array<InsertionPath> = []
   for (const arrayElem of array) {
@@ -140,12 +147,12 @@ export function commonInsertionPathFromArray(
     if (working == null) {
       return working
     } else {
-      return commonInsertionPath(metadata, working, target)
+      return commonInsertionPath(metadata, working, target, insertBehavior)
     }
   }, workingArray[0])
 }
 
-export function getDefaultInsertionPathForElementPath(
+export function getInsertionPathWithSlotBehavior(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -163,6 +170,28 @@ export function getDefaultInsertionPathForElementPath(
   )
     ? childInsertionPath(target)
     : conditionalClause != null && isEmptyConditionalBranch(target, metadata)
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause)
+    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'replace')
+    : null
+}
+
+export function getInsertionPathWithWrapWithFragmentBehavior(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  metadata: ElementInstanceMetadataMap,
+): InsertionPath | null {
+  const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+
+  return MetadataUtils.targetSupportsChildren(
+    projectContents,
+    metadata,
+    nodeModules,
+    openFile,
+    target,
+  )
+    ? childInsertionPath(target)
+    : conditionalClause != null
+    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'wrap-with-fragment')
     : null
 }
