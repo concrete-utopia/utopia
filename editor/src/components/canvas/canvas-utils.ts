@@ -189,8 +189,11 @@ import { treatElementAsContentAffecting } from './canvas-strategies/strategies/g
 import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
+  conditionalClauseInsertionPath,
   getInsertionPathWithSlotBehavior,
 } from '../editor/store/insertion-path'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
+import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2831,14 +2834,33 @@ export function duplicate(
               }
             }
 
-            const insertResult = insertElementAtPath_DEPRECATED(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              optionalMap(childInsertionPath, newParentPath),
+            const conditionalCase = getConditionalCaseCorrespondingToBranchPath(
+              path,
+              editor.jsxMetadata,
+            )
+
+            if (conditionalCase != null && isEmptyConditionalBranch(path, editor.jsxMetadata)) {
+              // can't duplicate empty conditional branch
+              return success
+            }
+
+            const insertionPath =
+              conditionalCase != null
+                ? conditionalClauseInsertionPath(
+                    EP.parentPath(path),
+                    conditionalCase,
+                    'wrap-with-fragment',
+                  )
+                : childInsertionPath(EP.parentPath(newPath))
+
+            const insertResult = insertElementAtPath(
+              editor.projectContents,
+              insertionPath,
               newElement,
               utopiaComponents,
               position(),
             )
+
             utopiaComponents = insertResult.components
             detailsOfUpdate = insertResult.insertionDetails
 

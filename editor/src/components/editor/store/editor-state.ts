@@ -1,5 +1,5 @@
 import * as json5 from 'json5'
-import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
