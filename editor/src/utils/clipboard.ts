@@ -46,11 +46,13 @@ import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import {
   childInsertionPath,
-  getDefaultInsertionPathForElementPath,
+  getInsertionPathWithSlotBehavior,
+  getInsertionPathWithWrapWithFragmentBehavior,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
 import { optionalMap } from '../core/shared/optional-utils'
+import { isFeatureEnabled } from './feature-switches'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
@@ -331,13 +333,21 @@ export function getTargetParentForPaste(
       // if so replace the target parent instead of trying to insert into it.
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
-        return getDefaultInsertionPathForElementPath(
-          targetPath,
-          projectContents,
-          nodeModules,
-          openFile,
-          metadata,
-        )
+        return isFeatureEnabled('Paste wraps into fragment')
+          ? getInsertionPathWithWrapWithFragmentBehavior(
+              targetPath,
+              projectContents,
+              nodeModules,
+              openFile,
+              metadata,
+            )
+          : getInsertionPathWithSlotBehavior(
+              targetPath,
+              projectContents,
+              nodeModules,
+              openFile,
+              metadata,
+            )
       }
     }
   }

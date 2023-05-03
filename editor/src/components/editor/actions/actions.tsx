@@ -508,7 +508,7 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getDefaultInsertionPathForElementPath,
+  getInsertionPathWithSlotBehavior,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -2287,6 +2287,7 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertElementAtPath(
+          editor.projectContents,
           childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
@@ -2343,6 +2344,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
+          'replace',
         )
         if (parentPath == null) {
           return editor
@@ -2356,8 +2358,12 @@ export const UPDATE_FNS = {
             EP.isRootElementOfInstance(elementPath) &&
             EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
         )
-        if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-          return editor
+
+        if (anyTargetIsARootElement) {
+          const showToastAction = showToast(
+            notice(`Root elements can't be wrapped into other elements.`),
+          )
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
         const detailsOfUpdate = null
@@ -4840,29 +4846,19 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
-      const insertionPath = getDefaultInsertionPathForElementPath(
-        action.targetParent,
-        editor.projectContents,
-        editor.nodeModules.files,
-        editor.canvas.openFile?.filename,
-        editor.jsxMetadata,
-      )
-
-      if (insertionPath == null) {
+      if (action.insertionPath == null) {
         return includeToast('Selected element does not support children', editor)
       }
 
-      function addNewSelectedView(parentPath: ElementPath, newUID: string) {
-        const isParentConditionalClause =
-          insertionPath != null && isConditionalClauseInsertionPath(insertionPath) != null
-        const newPath = isParentConditionalClause
-          ? EP.appendToPath(EP.parentPath(parentPath), newUID)
-          : EP.appendToPath(action.targetParent, newUID)
+      const { insertionPath } = action
+
+      function addNewSelectedView(newUID: string) {
+        const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
         newSelectedViews.push(newPath)
       }
 
       const withNewElement = modifyUnderlyingTargetElement(
-        action.targetParent,
+        insertionPath.intendedParentPath,
         openFilename,
         editor,
         (element) => element,
@@ -4905,7 +4901,7 @@ export const UPDATE_FNS = {
             if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
               withMaybeUpdatedParent = transformElementAtPath(
                 utopiaComponents,
-                action.targetParent,
+                insertionPath.intendedParentPath,
                 (parentElement) => {
                   if (isJSXElement(parentElement)) {
                     insertedElementChildren.push(...parentElement.children)
@@ -4926,6 +4922,7 @@ export const UPDATE_FNS = {
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               withMaybeUpdatedParent,
@@ -4933,7 +4930,7 @@ export const UPDATE_FNS = {
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            addNewSelectedView(action.targetParent, newUID)
+            addNewSelectedView(newUID)
           } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
             const element = jsxConditionalExpression(
               newUID,
@@ -4945,6 +4942,7 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               utopiaComponents,
@@ -4952,7 +4950,7 @@ export const UPDATE_FNS = {
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            const newPath = EP.appendToPath(action.targetParent, newUID)
+            const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
             newSelectedViews.push(newPath)
           } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
             const element = jsxFragment(
@@ -4962,14 +4960,15 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
-              childInsertionPath(action.targetParent),
+              editor.projectContents,
+              insertionPath,
               element,
               utopiaComponents,
               action.indexPosition,
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            addNewSelectedView(action.targetParent, newUID)
+            addNewSelectedView(newUID)
           } else {
             assertNever(action.toInsert.element)
           }
