@@ -7,7 +7,6 @@ import {
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { duplicate } from '../canvas-utils'
 import {
   BaseCommand,
   CommandFunction,

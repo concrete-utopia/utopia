@@ -131,6 +131,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { cssNumber } from '../../inspector/common/css-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { childInsertionPath } from '../store/insertion-path'
 
 const chaiExpect = Chai.expect
 
@@ -1073,7 +1074,7 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
     const action = insertInsertable(
-      targetPath,
+      childInsertionPath(targetPath),
       menuInsertable,
       'do-not-add',
       'do-now-wrap-content',
@@ -1177,7 +1178,7 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
     const action = insertInsertable(
-      targetPath,
+      childInsertionPath(targetPath),
       menuInsertable,
       'add-size',
       'do-now-wrap-content',
@@ -1280,7 +1281,7 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
     const action = insertInsertable(
-      targetPath,
+      childInsertionPath(targetPath),
       imgInsertable,
       'add-size',
       'do-now-wrap-content',
@@ -1376,9 +1377,15 @@ describe('INSERT_INSERTABLE', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertInsertable(targetPath, imgInsertable, 'add-size', 'do-now-wrap-content', {
-      type: 'back',
-    })
+    const action = insertInsertable(
+      childInsertionPath(targetPath),
+      imgInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      {
+        type: 'back',
+      },
+    )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
@@ -1469,7 +1476,13 @@ describe('INSERT_INSERTABLE', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertInsertable(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
+    const action = insertInsertable(
+      childInsertionPath(targetPath),
+      divInsertable,
+      'do-not-add',
+      'wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
