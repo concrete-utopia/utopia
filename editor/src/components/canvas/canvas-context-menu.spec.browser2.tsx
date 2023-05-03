@@ -24,7 +24,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from './ui-jsx.test-utils'
-import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 async function openContextMenuAndClickOnItem(
@@ -42,11 +42,19 @@ async function openContextMenuAndClickOnItem(
 }
 
 function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
+  const selectedViews = editor.getEditorState().editor.selectedViews
+
+  expect(selectedViews.length > 0).toEqual(true)
+
   expect(
     editor
       .getEditorState()
-      .editor.selectedViews.every((path) =>
-        MetadataUtils.findElementByElementPath(editor.getEditorState().editor.jsxMetadata, path),
+      .editor.selectedViews.every(
+        (path) =>
+          MetadataUtils.findElementByElementPath(
+            editor.getEditorState().editor.jsxMetadata,
+            path,
+          ) != null,
       ),
   ).toEqual(true)
 }
@@ -160,6 +168,51 @@ describe('canvas context menu', () => {
   })
 
   describe('Bring to Front / Send to Back', () => {
+    const testCaseElementInConditional: TemplatedTestWithTrigger = async (
+      trigger: (editor: EditorRenderResult) => Promise<void>,
+    ) => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+        {
+          // @utopia/uid=conditional
+          [].length === 0 ? (
+            <div
+              style={{
+              height: 150,
+                width: 150,
+                position: 'absolute',
+                left: 154,
+                top: 134,
+                backgroundColor: 'lightblue',
+              }}
+              data-uid='then-div'
+              data-testid='then-div'
+            />
+          ) : 'Test' 
+        }
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+      const targetPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/conditional/then-div`,
+      )
+
+      await selectComponentsForTest(editor, [targetPath])
+
+      // to ensure that the selected element is actually an element in the project
+      expectAllSelectedViewsToHaveMetadata(editor)
+      await expectNoAction(editor, async () => {
+        await trigger(editor)
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+    }
+
     describe('Bring Forward', () => {
       const BringForwardLabel = 'Bring Forward'
 
@@ -234,6 +287,9 @@ describe('canvas context menu', () => {
           expectTemplatedTestWithTrigger(testCaseElementInBack, contextMenuTrigger))
         it('clicking bring forward on element that is already on top', () =>
           expectTemplatedTestWithTrigger(testCaseElementOnTop, contextMenuTrigger))
+
+        it('clicking bring forward on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, contextMenuTrigger))
       })
 
       describe('shortcut', () => {
@@ -243,6 +299,9 @@ describe('canvas context menu', () => {
 
         it('clicking bring forward on element that is already on top', () =>
           expectTemplatedTestWithTrigger(testCaseElementOnTop, shortcutTrigger))
+
+        it('clicking bring forward on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, shortcutTrigger))
       })
     })
 
@@ -318,8 +377,13 @@ describe('canvas context menu', () => {
             openContextMenuAndClickOnItem(e, SendBackwardLabel),
           ))
 
-        it('clicking send backward on element that on top', () =>
+        it('clicking send backward on element that is on top', () =>
           expectTemplatedTestWithTrigger(testCaseElementOnTop, (e) =>
+            openContextMenuAndClickOnItem(e, SendBackwardLabel),
+          ))
+
+        it('clicking send backward on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, (e) =>
             openContextMenuAndClickOnItem(e, SendBackwardLabel),
           ))
       })
@@ -332,6 +396,11 @@ describe('canvas context menu', () => {
 
         it('clicking send backward on element that on top', () =>
           expectTemplatedTestWithTrigger(testCaseElementOnTop, () =>
+            pressKey('[', { modifiers: cmdModifier }),
+          ))
+
+        it('clicking send backward on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, () =>
             pressKey('[', { modifiers: cmdModifier }),
           ))
       })
@@ -413,6 +482,11 @@ describe('canvas context menu', () => {
           expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
             openContextMenuAndClickOnItem(e, BringToFrontLabel),
           ))
+
+        it('clicking bring to front on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, (e) =>
+            openContextMenuAndClickOnItem(e, BringToFrontLabel),
+          ))
       })
 
       describe('shortcut', () => {
@@ -423,6 +497,11 @@ describe('canvas context menu', () => {
 
         it('clicking bring to front on element in the back', () =>
           expectTemplatedTestWithTrigger(testCaseElementInBack, () =>
+            pressKey(']', { modifiers: altCmdModifier }),
+          ))
+
+        it('clicking bring to front on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, () =>
             pressKey(']', { modifiers: altCmdModifier }),
           ))
       })
@@ -506,6 +585,11 @@ describe('canvas context menu', () => {
           expectTemplatedTestWithTrigger(testCaseElementInFront, (e) =>
             openContextMenuAndClickOnItem(e, SendToBackLabel),
           ))
+
+        it('clicking send to back on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, (e) =>
+            openContextMenuAndClickOnItem(e, SendToBackLabel),
+          ))
       })
 
       describe('shortcut', () => {
@@ -516,6 +600,11 @@ describe('canvas context menu', () => {
 
         it('clicking send to back on element that is in the front', () =>
           expectTemplatedTestWithTrigger(testCaseElementInFront, () =>
+            pressKey('[', { modifiers: altCmdModifier }),
+          ))
+
+        it('clicking send to back on element in a conditional branch', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInConditional, () =>
             pressKey('[', { modifiers: altCmdModifier }),
           ))
       })
