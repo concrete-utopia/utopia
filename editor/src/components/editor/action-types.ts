@@ -1003,7 +1003,7 @@ export interface UpdateFormulaBarMode {
 
 export interface InsertInsertable {
   action: 'INSERT_INSERTABLE'
-  targetParent: ElementPath
+  insertionPath: InsertionPath | null
   toInsert: InsertableComponent
   styleProps: StylePropOption
   wrapContent: WrapContentOption

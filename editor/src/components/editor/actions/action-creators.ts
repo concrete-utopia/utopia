@@ -1590,7 +1590,7 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
 }
 
 export function insertInsertable(
-  targetParent: ElementPath,
+  insertionPath: InsertionPath | null,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
   wrapContent: WrapContentOption,
@@ -1598,7 +1598,7 @@ export function insertInsertable(
 ): InsertInsertable {
   return {
     action: 'INSERT_INSERTABLE',
-    targetParent: targetParent,
+    insertionPath: insertionPath,
     toInsert: toInsert,
     styleProps: styleProps,
     wrapContent: wrapContent,

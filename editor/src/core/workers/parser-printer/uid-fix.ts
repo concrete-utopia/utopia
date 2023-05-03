@@ -106,7 +106,10 @@ export function fixParseSuccessUIDs(
     if (originalUID in fixedHighlightBounds) {
       const bounds = fixedHighlightBounds[originalUID]
       delete fixedHighlightBounds[originalUID]
-      fixedHighlightBounds[newUID] = bounds
+      fixedHighlightBounds[newUID] = {
+        ...bounds,
+        uid: newUID,
+      }
     }
   }
 

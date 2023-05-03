@@ -2,12 +2,11 @@ import { BuiltInDependencies } from '../../../../core/es-modules/package-manager
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
-  MetadataUtils,
+  getRootPath,
 } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { elementPath } from '../../../../core/shared/element-path'
 import {
   ElementInstanceMetadataMap,
   getJSXElementNameLastPart,
@@ -20,7 +19,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor, Utils } from '../../../../uuiui-deps'
-import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
+import { InsertionSubject } from '../../../editor/editor-modes'
 import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import {
@@ -57,8 +56,8 @@ import {
   DragOutlineControl,
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -202,6 +201,7 @@ function dragToInsertStrategyFactory(
         ? fitness
         : 0,
     apply: (strategyLifecycle) => {
+      const rootPath = getRootPath(canvasState.startingMetadata)
       if (
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
@@ -214,7 +214,10 @@ function dragToInsertStrategyFactory(
           )
         } else {
           const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
-            return getInsertionCommandsWithFrames(s.subject, s.frame)
+            if (rootPath == null) {
+              throw new Error('Missing root path for drag interaction')
+            }
+            return getInsertionCommandsWithFrames(rootPath, s.subject, s.frame)
           })
 
           const maybeWrapperWithUid = getWrapperWithGeneratedUid(
@@ -285,6 +288,7 @@ function dragToInsertStrategyFactory(
 }
 
 function getInsertionCommandsWithFrames(
+  storyboardPath: ElementPath,
   subject: InsertionSubject,
   frame: CanvasRectangle,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
@@ -298,9 +302,11 @@ function getInsertionCommandsWithFrames(
     },
   }
 
+  const insertionPath = childInsertionPath(storyboardPath)
+
   return [
     {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     },
   ]
@@ -343,8 +349,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
   }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const storyboard = MetadataUtils.getStoryboardMetadata(editorState.jsxMetadata)
-  const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
+  const rootPath = getRootPath(editorState.jsxMetadata)
+  if (rootPath == null) {
+    throw new Error('Missing root path when running drag strategy')
+  }
 
   const patchedMetadata: ElementInstanceMetadataMap = insertionCommandsWithFrames.reduce(
     (
