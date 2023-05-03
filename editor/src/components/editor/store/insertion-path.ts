@@ -9,7 +9,6 @@ import {
   getConditionalCaseCorrespondingToBranchPath,
   isEmptyConditionalBranch,
 } from '../../../core/model/conditionals'
-import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { drop } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -23,7 +22,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-type ConditionalClauseInsertBehavior = 'replace' | 'wrap-with-fragment'
+export type ConditionalClauseInsertBehavior = 'replace' | 'wrap-with-fragment'
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
