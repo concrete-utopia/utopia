@@ -50,12 +50,7 @@ import {
   getNonEmptyComponentGroups,
   moveSceneToTheBeginningAndSetDefaultSize,
 } from '../shared/project-components'
-import { EditorDispatch } from './action-types'
-import {
-  closeFloatingInsertMenu,
-  enableInsertModeForJSXElement,
-  setRightMenuTab,
-} from './actions/action-creators'
+import { enableInsertModeForJSXElement, setRightMenuTab } from './actions/action-creators'
 import { defaultDivElement } from './defaults'
 import { InsertionSubject, Mode } from './editor-modes'
 import { RightMenuTab } from '../../components/editor/store/editor-state'
@@ -77,7 +72,6 @@ interface InsertMenuProps {
 }
 
 export const InsertMenu = React.memo(() => {
-  const dispatch = useDispatch()
   const restOfEditorProps = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -260,22 +254,26 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     setFilter(e.target.value.toLowerCase())
   }
 
-  const filterGroups = React.useCallback(
-    (g: InsertableComponentGroup): boolean => {
-      const type = `${g.source.type}`
-      const keywords = [type, ...g.insertableComponents.flatMap((c) => c.name)].map((k) =>
-        k.trim().toLowerCase(),
-      )
-      return keywords.some((k) => k.includes(filter))
-    },
+  const filterMatches = React.useCallback(
+    (keywords: string[]): boolean =>
+      keywords.map((k) => k.trim().toLowerCase()).some((k) => k.includes(filter)),
     [filter],
   )
 
-  const filterInsertableComponents = React.useCallback(
-    (g: InsertableComponent): boolean => {
-      return g.name.toLowerCase().trim().includes(filter)
-    },
-    [filter],
+  const filterGroups = React.useCallback(
+    (group: InsertableComponentGroup): boolean =>
+      filterMatches([
+        getInsertableGroupLabel(group.source),
+        ...group.insertableComponents.map((c) => c.name),
+      ]),
+    [filterMatches],
+  )
+
+  const filterComponents = React.useCallback(
+    (group: InsertableComponentGroup) =>
+      (component: InsertableComponent): boolean =>
+        filterMatches([getInsertableGroupLabel(group.source), component.name]),
+    [filterMatches],
   )
 
   const dispatch = useDispatch()
@@ -325,7 +323,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
             {insertableGroup.insertableComponents
-              .filter(filterInsertableComponents)
+              .filter(filterComponents(insertableGroup))
               .map((component, componentIndex) => {
                 const insertItemOnMouseDown = (event: React.MouseEvent) => {
                   const newUID = getNewUID()
