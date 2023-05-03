@@ -27,6 +27,7 @@ export interface StringInputProps
   className?: string
   DEPRECATED_labelBelow?: React.ReactChild
   controlStatus?: ControlStatus
+  ignoreHandlers?: boolean
 }
 
 export const StringInput = React.memo(
@@ -152,12 +153,13 @@ const LabelBelow = styled.label({
 export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
+  ignoreHandlers?: boolean
 }
 
 export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessStringInputProps>(
   (props, propsRef) => {
     const { onSubmitValue, onEscape, ...otherProps } = props
-    const { disabled, onKeyDown, onFocus } = otherProps
+    const { disabled, onKeyDown, onFocus, ignoreHandlers } = otherProps
 
     const ref = React.useRef<HTMLInputElement>(null)
 
@@ -165,6 +167,9 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (onKeyDown != null) {
           onKeyDown(e)
+        }
+        if (ignoreHandlers === true) {
+          return
         }
         if (e.key === 'Escape' || e.key === 'Enter') {
           e.preventDefault()
@@ -181,7 +186,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
           }
         }
       },
-      [onKeyDown, ref, onSubmitValue, onEscape],
+      [onKeyDown, ref, onSubmitValue, onEscape, ignoreHandlers],
     )
 
     const handleOnFocus = React.useCallback(

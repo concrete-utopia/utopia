@@ -2,72 +2,69 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  JSXElementName,
-  jsxElementNameEquals,
-  jsExpressionValue,
-  setJSXAttributesAttribute,
-  jsxElement,
-  emptyComments,
-  JSXAttributes,
-  JSXAttributesPart,
-  isJSXAttributesEntry,
-  getJSXAttribute,
-} from '../../core/shared/element-template'
-import { generateUID } from '../../core/shared/uid-utils'
-import {
-  ElementPath,
-  importDetails,
-  importAlias,
-  Imports,
-  importsEquals,
-} from '../../core/shared/project-file-types'
-import Utils from '../../utils/utils'
-import { FontSettings } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch } from './action-types'
-import { enableInsertModeForJSXElement } from './actions/action-creators'
-import { InsertionSubject, Mode } from './editor-modes'
-import { getOpenFilename } from './store/editor-state'
-import { Substores, useEditorState } from './store/store-hook'
-import { WarningIcon } from '../../uuiui/warning-icon'
-import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
-import {
-  PossiblyUnversionedNpmDependency,
-  PackageStatusMap,
-  PackageStatus,
-} from '../../core/shared/npm-dependency-types'
-import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
-import { PropertyControlsInfo } from '../custom-code/code-file'
-import { InspectorSubsectionHeader, useColorTheme, Icn, UtopiaStyles, UIRow } from '../../uuiui'
-import {
-  getInsertableGroupLabel,
-  getInsertableGroupPackageStatus,
-  getNonEmptyComponentGroups,
-  InsertableComponent,
-  moveSceneToTheBeginningAndSetDefaultSize,
-} from '../shared/project-components'
-import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
+import { isLeft } from '../../core/shared/either'
+import {
+  JSXAttributes,
+  JSXAttributesPart,
+  JSXElementName,
+  emptyComments,
+  getJSXAttribute,
+  isJSXAttributesEntry,
+  jsExpressionValue,
+  jsxElement,
+  jsxElementNameEquals,
+  setJSXAttributesAttribute,
+} from '../../core/shared/element-template'
+import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
+import {
+  PackageStatus,
+  PackageStatusMap,
+  PossiblyUnversionedNpmDependency,
+} from '../../core/shared/npm-dependency-types'
+import { ElementPath, Imports, importsEquals } from '../../core/shared/project-file-types'
+import * as PP from '../../core/shared/property-path'
+import { assertNever } from '../../core/shared/utils'
+import { Modifier } from '../../utils/modifiers'
+import Utils from '../../utils/utils'
+import { Icn, InspectorSubsectionHeader, StringInput, UIRow, useColorTheme } from '../../uuiui'
+import { WarningIcon } from '../../uuiui/warning-icon'
+import { ProjectContentTreeRoot } from '../assets'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { Modifier } from '../../utils/modifiers'
-import * as PP from '../../core/shared/property-path'
-import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
-import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
-import { isLeft } from '../../core/shared/either'
-import { useDispatch } from './store/dispatch-context'
-import { assertNever } from '../../core/shared/utils'
+import { PropertyControlsInfo } from '../custom-code/code-file'
+import { FontSettings } from '../inspector/common/css-utils'
+import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
+import {
+  InsertableComponent,
+  InsertableComponentGroup,
+  getInsertableGroupLabel,
+  getInsertableGroupPackageStatus,
+  getNonEmptyComponentGroups,
+  moveSceneToTheBeginningAndSetDefaultSize,
+} from '../shared/project-components'
+import { EditorDispatch } from './action-types'
+import {
+  closeFloatingInsertMenu,
+  enableInsertModeForJSXElement,
+  setRightMenuTab,
+} from './actions/action-creators'
 import { defaultDivElement } from './defaults'
+import { InsertionSubject, Mode } from './editor-modes'
+import { RightMenuTab } from '../../components/editor/store/editor-state'
+import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
+import { useDispatch } from './store/dispatch-context'
+import { Substores, useEditorState } from './store/store-hook'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
-  editorDispatch: EditorDispatch
   selectedViews: Array<ElementPath>
   mode: Mode
   currentlyOpenFilename: string | null
@@ -131,7 +128,6 @@ export const InsertMenu = React.memo(() => {
     selectedViews: selectedViews,
     canvasOffset: roundedCanvasOffset,
     projectContents: projectContents,
-    editorDispatch: dispatch,
     dependencies: dependencies,
   }
 
@@ -219,53 +215,108 @@ export function elementBeingInsertedEquals(
   return first.type === second.type
 }
 
-class InsertMenuInner extends React.Component<InsertMenuProps> {
-  shouldComponentUpdate(nextProps: InsertMenuProps) {
-    const shouldUpdate =
-      this.props.lastFontSettings !== nextProps.lastFontSettings ||
-      this.props.editorDispatch !== nextProps.editorDispatch ||
-      this.props.selectedViews !== nextProps.selectedViews ||
-      this.props.mode !== nextProps.mode ||
-      this.props.dependencies !== nextProps.dependencies ||
-      this.props.packageStatus !== nextProps.packageStatus ||
-      this.props.propertyControlsInfo !== nextProps.propertyControlsInfo
+const InsertMenuInner = React.memo((props: InsertMenuProps) => {
+  const getNewUID = React.useCallback(
+    () => generateUidWithExistingComponents(props.projectContents),
+    [props.projectContents],
+  )
 
-    return shouldUpdate
-  }
-
-  dispatchOne(action: EditorAction): void {
-    this.props.editorDispatch([action], 'everyone')
-  }
-
-  getNewUID = () => generateUidWithExistingComponents(this.props.projectContents)
-
-  render() {
-    let currentlyBeingInserted: ElementBeingInserted | null = null
-
-    if (this.props.mode.type === 'insert' && this.props.mode.subjects.length === 1) {
-      const insertionSubject: InsertionSubject = this.props.mode.subjects[0]
-      currentlyBeingInserted = componentBeingInserted(
-        insertionSubject.importsToAdd,
-        insertionSubject.element.name,
-        insertionSubject.element.props,
-      )
+  const currentlyBeingInserted = React.useMemo(() => {
+    if (props.mode.type !== 'insert' || props.mode.subjects.length !== 1) {
+      return null
     }
+    const insertionSubject: InsertionSubject = props.mode.subjects[0]
+    return componentBeingInserted(
+      insertionSubject.importsToAdd,
+      insertionSubject.element.name,
+      insertionSubject.element.props,
+    )
+  }, [props.mode])
 
-    const insertableGroups =
-      this.props.currentlyOpenFilename == null
-        ? []
-        : moveSceneToTheBeginningAndSetDefaultSize(
-            getNonEmptyComponentGroups(
-              this.props.packageStatus,
-              this.props.propertyControlsInfo,
-              this.props.projectContents,
-              this.props.dependencies,
-              this.props.currentlyOpenFilename,
-            ),
-          )
+  const insertableGroups = React.useMemo(() => {
+    if (props.currentlyOpenFilename == null) {
+      return []
+    }
+    return moveSceneToTheBeginningAndSetDefaultSize(
+      getNonEmptyComponentGroups(
+        props.packageStatus,
+        props.propertyControlsInfo,
+        props.projectContents,
+        props.dependencies,
+        props.currentlyOpenFilename,
+      ),
+    )
+  }, [
+    props.packageStatus,
+    props.propertyControlsInfo,
+    props.projectContents,
+    props.dependencies,
+    props.currentlyOpenFilename,
+  ])
 
-    return [
-      ...insertableGroups.map((insertableGroup, groupIndex) => {
+  const [filter, setFilter] = React.useState('')
+
+  function onFilterChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFilter(e.target.value.toLowerCase())
+  }
+
+  const filterGroups = React.useCallback(
+    (g: InsertableComponentGroup): boolean => {
+      const type = `${g.source.type}`
+      const keywords = [type, ...g.insertableComponents.flatMap((c) => c.name)].map((k) =>
+        k.trim().toLowerCase(),
+      )
+      return keywords.some((k) => k.includes(filter))
+    },
+    [filter],
+  )
+
+  const filterInsertableComponents = React.useCallback(
+    (g: InsertableComponent): boolean => {
+      return g.name.toLowerCase().trim().includes(filter)
+    },
+    [filter],
+  )
+
+  const dispatch = useDispatch()
+
+  const filterInputRef = React.useRef<HTMLInputElement | null>(null)
+
+  const onFilterKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        e.stopPropagation()
+      } else if (e.key === 'Escape') {
+        if (filter.length > 0) {
+          setFilter('')
+          e.stopPropagation()
+        } else if (filterInputRef.current != null) {
+          filterInputRef.current.blur()
+          dispatch([setRightMenuTab(RightMenuTab.Inspector)])
+        }
+      }
+    },
+    [filter, dispatch],
+  )
+
+  return (
+    <React.Fragment>
+      <div style={{ display: 'flex' }}>
+        <StringInput
+          ref={filterInputRef}
+          type='text'
+          style={{ flex: 1 }}
+          placeholder='Filter…'
+          autoFocus
+          value={filter}
+          onChange={onFilterChange}
+          onKeyDown={onFilterKeyDown}
+          ignoreHandlers={true}
+          testId={''}
+        />
+      </div>
+      {insertableGroups.filter(filterGroups).map((insertableGroup, groupIndex) => {
         return (
           <InsertGroup
             label={getInsertableGroupLabel(insertableGroup.source)}
@@ -273,132 +324,131 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             dependencyVersion={null}
             dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
-            {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              const insertItemOnMouseDown = (event: React.MouseEvent) => {
-                const newUID = this.getNewUID()
+            {insertableGroup.insertableComponents
+              .filter(filterInsertableComponents)
+              .map((component, componentIndex) => {
+                const insertItemOnMouseDown = (event: React.MouseEvent) => {
+                  const newUID = getNewUID()
 
-                const mousePoint = windowToCanvasCoordinates(
-                  this.props.canvasScale,
-                  this.props.canvasOffset,
-                  windowPoint(point(event.clientX, event.clientY)),
-                ).canvasPositionRounded
+                  const mousePoint = windowToCanvasCoordinates(
+                    props.canvasScale,
+                    props.canvasOffset,
+                    windowPoint(point(event.clientX, event.clientY)),
+                  ).canvasPositionRounded
 
-                const createInteractionSessionCommand = CanvasActions.createInteractionSession(
-                  createInteractionViaMouse(
-                    mousePoint,
-                    Modifier.modifiersForEvent(event),
-                    boundingArea(),
-                    'zero-drag-permitted',
-                  ),
-                )
-
-                switch (component.element.type) {
-                  case 'JSX_ELEMENT': {
-                    const newElement = jsxElement(
-                      component.element.name,
-                      newUID,
-                      setJSXAttributesAttribute(
-                        addPositionAbsoluteToProps(component.element.props),
-                        'data-uid',
-                        jsExpressionValue(newUID, emptyComments),
-                      ),
-                      component.element.children,
-                    )
-
-                    return this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          newElement,
-                          newUID,
-                          component.importsToAdd,
-                          component.defaultSize,
-                        ),
-                        createInteractionSessionCommand,
-                      ],
-                      'everyone',
-                    )
-                  }
-                  case 'JSX_CONDITIONAL_EXPRESSION': {
-                    return this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          defaultDivElement(newUID),
-                          newUID,
-                          component.importsToAdd,
-                          component.defaultSize,
-                          { wrapInContainer: 'conditional' },
-                        ),
-                        createInteractionSessionCommand,
-                      ],
-                      'everyone',
-                    )
-                  }
-                  case 'JSX_FRAGMENT':
-                    return this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          defaultDivElement(newUID),
-                          newUID,
-                          component.importsToAdd,
-                          component.defaultSize,
-                          { wrapInContainer: 'fragment' },
-                        ),
-                        createInteractionSessionCommand,
-                      ],
-                      'everyone',
-                    )
-                  default:
-                    assertNever(component.element)
-                }
-              }
-
-              const insertItemOnMouseUp = (event: React.MouseEvent) => {
-                const mousePoint = windowToCanvasCoordinates(
-                  this.props.canvasScale,
-                  this.props.canvasOffset,
-                  windowPoint(point(event.clientX, event.clientY)),
-                ).canvasPositionRounded
-
-                this.props.editorDispatch(
-                  [CanvasActions.clearInteractionSession(false)],
-                  'everyone',
-                )
-                this.props.editorDispatch(
-                  [
-                    CanvasActions.createInteractionSession(
-                      createHoverInteractionViaMouse(
-                        mousePoint,
-                        Modifier.modifiersForEvent(event),
-                        boundingArea(),
-                        'zero-drag-permitted',
-                      ),
+                  const createInteractionSessionCommand = CanvasActions.createInteractionSession(
+                    createInteractionViaMouse(
+                      mousePoint,
+                      Modifier.modifiersForEvent(event),
+                      boundingArea(),
+                      'zero-drag-permitted',
                     ),
-                  ],
-                  'everyone',
+                  )
+
+                  switch (component.element.type) {
+                    case 'JSX_ELEMENT': {
+                      const newElement = jsxElement(
+                        component.element.name,
+                        newUID,
+                        setJSXAttributesAttribute(
+                          addPositionAbsoluteToProps(component.element.props),
+                          'data-uid',
+                          jsExpressionValue(newUID, emptyComments),
+                        ),
+                        component.element.children,
+                      )
+
+                      return dispatch(
+                        [
+                          enableInsertModeForJSXElement(
+                            newElement,
+                            newUID,
+                            component.importsToAdd,
+                            component.defaultSize,
+                          ),
+                          createInteractionSessionCommand,
+                        ],
+                        'everyone',
+                      )
+                    }
+                    case 'JSX_CONDITIONAL_EXPRESSION': {
+                      return dispatch(
+                        [
+                          enableInsertModeForJSXElement(
+                            defaultDivElement(newUID),
+                            newUID,
+                            component.importsToAdd,
+                            component.defaultSize,
+                            { wrapInContainer: 'conditional' },
+                          ),
+                          createInteractionSessionCommand,
+                        ],
+                        'everyone',
+                      )
+                    }
+                    case 'JSX_FRAGMENT':
+                      return dispatch(
+                        [
+                          enableInsertModeForJSXElement(
+                            defaultDivElement(newUID),
+                            newUID,
+                            component.importsToAdd,
+                            component.defaultSize,
+                            { wrapInContainer: 'fragment' },
+                          ),
+                          createInteractionSessionCommand,
+                        ],
+                        'everyone',
+                      )
+                    default:
+                      assertNever(component.element)
+                  }
+                }
+
+                const insertItemOnMouseUp = (event: React.MouseEvent) => {
+                  const mousePoint = windowToCanvasCoordinates(
+                    props.canvasScale,
+                    props.canvasOffset,
+                    windowPoint(point(event.clientX, event.clientY)),
+                  ).canvasPositionRounded
+
+                  dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
+                  dispatch(
+                    [
+                      CanvasActions.createInteractionSession(
+                        createHoverInteractionViaMouse(
+                          mousePoint,
+                          Modifier.modifiersForEvent(event),
+                          boundingArea(),
+                          'zero-drag-permitted',
+                        ),
+                      ),
+                    ],
+                    'everyone',
+                  )
+                }
+                return (
+                  <InsertItem
+                    key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
+                    type={'component'}
+                    label={component.name}
+                    selected={elementBeingInsertedEquals(
+                      currentlyBeingInserted,
+                      elementBeingInserted(component),
+                    )}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onMouseDown={insertItemOnMouseDown}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onMouseUp={insertItemOnMouseUp}
+                  />
                 )
-              }
-              return (
-                <InsertItem
-                  key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
-                  type={'component'}
-                  label={component.name}
-                  selected={elementBeingInsertedEquals(
-                    currentlyBeingInserted,
-                    elementBeingInserted(component),
-                  )}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  onMouseDown={insertItemOnMouseDown}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  onMouseUp={insertItemOnMouseUp}
-                />
-              )
-            })}
+              })}
           </InsertGroup>
         )
-      }),
-    ]
-  }
-}
+      })}
+    </React.Fragment>
+  )
+})
 
 function addPositionAbsoluteToProps(props: JSXAttributes) {
   const styleAttributes = getJSXAttribute(props, 'style') ?? jsExpressionValue({}, emptyComments)
