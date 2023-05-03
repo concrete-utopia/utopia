@@ -63,7 +63,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
-import { getDefaultInsertionPathForElementPath } from '../../editor/store/insertion-path'
+import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -481,7 +481,7 @@ export var FloatingMenu = React.memo(() => {
 
   const getInsertionPath = React.useCallback(
     (target: ElementPath) => {
-      return getDefaultInsertionPathForElementPath(
+      return getInsertionPathWithSlotBehavior(
         target,
         projectContentsRef.current,
         nodeModules,
