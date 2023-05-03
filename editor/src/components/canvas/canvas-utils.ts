@@ -47,6 +47,7 @@ import {
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
+  insertJSXElementChild,
 } from '../../core/model/element-template-utils'
 import {
   fixUtopiaElement,
@@ -2292,9 +2293,7 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertResult = insertElementAtPath_DEPRECATED(
-                    workingEditorState.projectContents,
-                    workingEditorState.canvas.openFile?.filename ?? null,
+                  const insertResult = insertJSXElementChild(
                     childInsertionPath(underlyingNewParentPath),
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
