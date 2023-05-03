@@ -7,7 +7,7 @@ module.exports = function (config) {
 
   config.set({
     // list of files / patterns to load in the browser
-    files: [...config.files, './src/**/[d-fD-F]*.spec.browser2.+(ts|tsx)'],
+    files: [...config.files, './src/**/[g-nG-N]*.spec.browser2.+(ts|tsx)'],
     parallelOptions: {
       ...config.parallelOptions,
       executors: isGithubActionsEnvironment ? cpuCores : cpuCores / 4,
