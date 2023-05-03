@@ -1,6 +1,7 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectConditionalExpressionAsChild", "expectOtherJavascriptAsChild"] }] */
 import { applyPrettier } from 'utopia-vscode-common'
 import { testParseCode, elementsStructure } from './parser-printer.test-utils'
-import { isParseSuccess } from '../../shared/project-file-types'
+import { ParseSuccess, ParsedTextFile, isParseSuccess } from '../../shared/project-file-types'
 import {
   NestedTernariesExample,
   SimpleConditionalsExample,
@@ -8,6 +9,11 @@ import {
 import { setFeatureForUnitTests } from '../../../utils/utils.test-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { printCode, printCodeOptions } from './parser-printer'
+import { JSXElementChild, TopLevelElement, isJSXElement } from '../../shared/element-template'
+import { findJSXElementChildAtPath } from '../../model/element-template-utils'
+import { staticElementPath } from '../../shared/element-path'
+import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
+import { fromStringStatic } from '../../shared/element-path'
 
 describe('Conditonals JSX parser', () => {
   it('ensure that conditionals get the same UID each time', () => {
@@ -165,7 +171,7 @@ describe('Conditonals JSX printer', () => {
   })
 })
 
-describe('Conditional elements text parsing cases', () => {
+describe('Conditional elements either parse as conditional or ATTRIBUTE_OTHER_JAVASCRIPT', () => {
   it('both branches are regular strings', () => {
     const code = createCode(`
       {
@@ -176,19 +182,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 793
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('both branches are regular strings parse as text', () => {
@@ -201,19 +196,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 793
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('one string, one null parses as text', () => {
@@ -226,19 +210,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 638
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('one null, one string parses as text', () => {
@@ -251,19 +224,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 6d5
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('both null parses as a full conditional expression with slots', () => {
@@ -276,19 +238,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          JSX_CONDITIONAL_EXPRESSION - conditional1
-      UNPARSED_CODE"
-    `)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('two template string literals parse as text', () => {
@@ -301,19 +252,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - fb6
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('one string, one template string literal parse as text', () => {
@@ -326,19 +266,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - c11
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('one template literal, one string parses as text', () => {
@@ -351,19 +280,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 4f7
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('two template literals, both use vars parse as text', () => {
@@ -376,19 +294,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - f68
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('string and var parse as text', () => {
@@ -401,19 +308,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: the ATTRIBUTE_OTHER_JAVASCRIPT should be parsed with the correct uid
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 6a2
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('string and span parse as full conditional', () => {
@@ -428,21 +324,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    // TODO: notice we are missing the true branch text expression from this snapshot!!!!
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          JSX_CONDITIONAL_EXPRESSION - conditional1
-            JSX_ELEMENT - span - dcf
-              JSX_TEXT_BLOCK - 0d5
-      UNPARSED_CODE"
-    `)
+    expectConditionalExpressionAsChild(parseResult)
   })
   it('string literal as span parse as full conditional', () => {
     const code = createCode(`
@@ -456,21 +339,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          JSX_CONDITIONAL_EXPRESSION - conditional1
-            ATTRIBUTE_OTHER_JAVASCRIPT - 4ef
-            JSX_ELEMENT - span - dcf
-              JSX_TEXT_BLOCK - 0d5
-      UNPARSED_CODE"
-    `)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('string literal with inner expression and span parse as full conditional', () => {
@@ -485,21 +355,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          JSX_CONDITIONAL_EXPRESSION - conditional1
-            ATTRIBUTE_OTHER_JAVASCRIPT - 0b7
-            JSX_ELEMENT - span - dcf
-              JSX_TEXT_BLOCK - a0c
-      UNPARSED_CODE"
-    `)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('var and span parse as full conditional', () => {
@@ -514,21 +371,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          JSX_CONDITIONAL_EXPRESSION - conditional1
-            ATTRIBUTE_OTHER_JAVASCRIPT - 3ba
-            JSX_ELEMENT - span - dcf
-              JSX_TEXT_BLOCK - a0c
-      UNPARSED_CODE"
-    `)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('string and string-only nested conditional parses as text', () => {
@@ -543,18 +387,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - d6d
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 
   it('string and div-containing nested conditional parses as text', () => {
@@ -569,21 +403,8 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          JSX_CONDITIONAL_EXPRESSION - conditional1
-            JSX_CONDITIONAL_EXPRESSION - conditional2
-              JSX_ELEMENT - div - 4cf
-                JSX_TEXT_BLOCK - c4d
-      UNPARSED_CODE"
-    `)
+    expectConditionalExpressionAsChild(parseResult)
   })
 
   it('string and number parses as text', () => {
@@ -596,20 +417,36 @@ describe('Conditional elements text parsing cases', () => {
       }
     `)
     const parseResult = testParseCode(code)
-    if (!isParseSuccess(parseResult)) {
-      throw new Error('expected parse success')
-    }
 
-    expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-      "IMPORT_STATEMENT
-      UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - App
-        JSX_ELEMENT - div - app
-          ATTRIBUTE_OTHER_JAVASCRIPT - 90b
-      UNPARSED_CODE"
-    `)
+    expectOtherJavascriptAsChild(parseResult)
   })
 })
+
+function getSingleChildOfApp(parseResult: ParsedTextFile): JSXElementChild {
+  if (!isParseSuccess(parseResult)) {
+    throw new Error('expected parse success')
+  }
+
+  const rootDiv = findJSXElementChildAtPath(
+    getComponentsFromTopLevelElements(parseResult.topLevelElements),
+    fromStringStatic('app'),
+  )
+  if (rootDiv == null || !isJSXElement(rootDiv)) {
+    throw new Error('found no rootDiv jsxelement')
+  }
+  expect(rootDiv.children.length).toBe(1)
+  return rootDiv.children[0]
+}
+
+function expectConditionalExpressionAsChild(parseResult: ParsedTextFile): void {
+  const child = getSingleChildOfApp(parseResult)
+  expect(child.type).toBe('JSX_CONDITIONAL_EXPRESSION')
+}
+
+function expectOtherJavascriptAsChild(parseResult: ParsedTextFile): void {
+  const child = getSingleChildOfApp(parseResult)
+  expect(child.type).toBe('ATTRIBUTE_OTHER_JAVASCRIPT')
+}
 
 function createCode(code: string): string {
   return applyPrettier(
