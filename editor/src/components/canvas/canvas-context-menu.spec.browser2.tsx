@@ -152,7 +152,7 @@ describe('canvas context menu', () => {
     describe('Bring Forward', () => {
       const BringForwardLabel = 'Bring Forward'
 
-      const bringForwardElementInBackTest: TemplatedTestWithTrigger = async (
+      const testCaseElementInBack: TemplatedTestWithTrigger = async (
         trigger: (editor: EditorRenderResult) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
@@ -184,7 +184,7 @@ describe('canvas context menu', () => {
         )
       }
 
-      const bringForwardElementOnTop: TemplatedTestWithTrigger = async (
+      const testCaseElementOnTop: TemplatedTestWithTrigger = async (
         trigger: (editor: EditorRenderResult) => Promise<void>,
       ) => {
         const editor = await renderTestEditorWithCode(
@@ -217,25 +217,27 @@ describe('canvas context menu', () => {
           openContextMenuAndClickOnItem(e, BringForwardLabel)
 
         it('clicking bring forward on element that is in the back', () =>
-          expectTemplatedTestWithTrigger(bringForwardElementInBackTest, contextMenuTrigger))
+          expectTemplatedTestWithTrigger(testCaseElementInBack, contextMenuTrigger))
         it('clicking bring forward on element that is already on top', () =>
-          expectTemplatedTestWithTrigger(bringForwardElementOnTop, contextMenuTrigger))
+          expectTemplatedTestWithTrigger(testCaseElementOnTop, contextMenuTrigger))
       })
 
       describe('shortcut', () => {
         const shortcutTrigger = () => pressKey(']', { modifiers: cmdModifier })
         it('clicking bring forward on element that is in the back', () =>
-          expectTemplatedTestWithTrigger(bringForwardElementInBackTest, shortcutTrigger))
+          expectTemplatedTestWithTrigger(testCaseElementInBack, shortcutTrigger))
 
         it('clicking bring forward on element that is already on top', () =>
-          expectTemplatedTestWithTrigger(bringForwardElementOnTop, shortcutTrigger))
+          expectTemplatedTestWithTrigger(testCaseElementOnTop, shortcutTrigger))
       })
     })
 
     describe('Send Backward', () => {
       const SendBackwardLabel = 'Send Backward'
 
-      it('clicking send backward on element that is already in the back', async () => {
+      const testCaseElementInBack: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -255,13 +257,15 @@ describe('canvas context menu', () => {
 
         await selectComponentsForTest(editor, [targetPath])
         // await expectNoAction(editor, async () => {
-        await openContextMenuAndClickOnItem(editor, SendBackwardLabel)
+        await trigger(editor)
         // })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
-      })
+      }
 
-      it('clicking send backward on element that is in the front', async () => {
+      const testCaseElementOnTop: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -278,7 +282,7 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        await openContextMenuAndClickOnItem(editor, SendBackwardLabel)
+        await trigger(editor)
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -289,14 +293,71 @@ describe('canvas context menu', () => {
         </div>
         `),
         )
+      }
+
+      describe('context menu', () => {
+        it('clicking send backward on element that is already in the back', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
+            openContextMenuAndClickOnItem(e, SendBackwardLabel),
+          ))
+
+        it('clicking send backward on element that on top', () =>
+          expectTemplatedTestWithTrigger(testCaseElementOnTop, (e) =>
+            openContextMenuAndClickOnItem(e, SendBackwardLabel),
+          ))
       })
 
-      // TODO: split it like above to shortcut and context menu
+      describe('shortcut', () => {
+        it('clicking send backward on element that is already in the back', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInBack, () =>
+            pressKey('[', { modifiers: cmdModifier }),
+          ))
+
+        it('clicking send backward on element that on top', () =>
+          expectTemplatedTestWithTrigger(testCaseElementOnTop, () =>
+            pressKey('[', { modifiers: cmdModifier }),
+          ))
+      })
     })
 
     describe('Bring To Front', () => {
       const BringToFrontLabel = 'Bring To Front'
-      it('clicking bring to front on element that is already in the front', async () => {
+
+      const testCaseElementInBack: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='zero'>Zero</span>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/zero`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        await trigger(editor)
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='container'>
+              <span data-uid='first'>First</span>
+              <span data-uid='second'>Second</span>
+              <span data-uid='zero'>Zero</span>
+            </div>
+        `),
+        )
+      }
+
+      const testCaseElementInFront: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -316,48 +377,43 @@ describe('canvas context menu', () => {
 
         await selectComponentsForTest(editor, [targetPath])
         // await expectNoAction(editor, async () => {
-        await openContextMenuAndClickOnItem(editor, BringToFrontLabel)
+        await trigger(editor)
         // })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+      }
+
+      describe('context menu', () => {
+        it('clicking bring to front on element that is already in the front', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInFront, (e) =>
+            openContextMenuAndClickOnItem(e, BringToFrontLabel),
+          ))
+
+        it('clicking bring to front on element in the back', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
+            openContextMenuAndClickOnItem(e, BringToFrontLabel),
+          ))
       })
 
-      it('clicking bring to front on element front', async () => {
-        const editor = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
-          <span data-uid='zero'>Zero</span>
-          <span data-uid='first'>First</span>
-          <span data-uid='second'>Second</span>
-        </div>
-        `),
-          'await-first-dom-report',
-        )
+      describe('shortcut', () => {
+        it('clicking bring to front on element that is already in the front', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInFront, () =>
+            pressKey(']', { modifiers: altCmdModifier }),
+          ))
 
-        const targetPath = EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/zero`,
-        )
-
-        await selectComponentsForTest(editor, [targetPath])
-        await openContextMenuAndClickOnItem(editor, BringToFrontLabel)
-
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-          makeTestProjectCodeWithSnippet(`
-            <div data-uid='container'>
-              <span data-uid='first'>First</span>
-              <span data-uid='second'>Second</span>
-              <span data-uid='zero'>Zero</span>
-            </div>
-        `),
-        )
+        it('clicking bring to front on element in the back', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInBack, () =>
+            pressKey(']', { modifiers: altCmdModifier }),
+          ))
       })
-
-      // TODO: split it like above to shortcut and context menu
     })
 
     describe('Send To Back', () => {
       const SendToBackLabel = 'Send To Back'
-      it('clicking send to back on element that is already in the back', async () => {
+
+      const testCaseElementInBack: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -377,13 +433,15 @@ describe('canvas context menu', () => {
 
         await selectComponentsForTest(editor, [targetPath])
         // await expectNoAction(editor, async () => {
-        await openContextMenuAndClickOnItem(editor, SendToBackLabel)
+        await trigger(editor)
         // })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
-      })
+      }
 
-      it('clicking send to back on element that is in the front', async () => {
+      const testCaseElementInFront: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
         const editor = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -400,7 +458,9 @@ describe('canvas context menu', () => {
         )
 
         await selectComponentsForTest(editor, [targetPath])
-        await openContextMenuAndClickOnItem(editor, SendToBackLabel)
+        // await expectNoAction(editor, async () => {
+        await trigger(editor)
+        // })
 
         expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -411,9 +471,31 @@ describe('canvas context menu', () => {
         </div>
         `),
         )
+      }
+
+      describe('context menu', () => {
+        it('clicking send to back on element that is already in the back', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInBack, (e) =>
+            openContextMenuAndClickOnItem(e, SendToBackLabel),
+          ))
+
+        it('clicking send to back on element that is in the front', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInFront, (e) =>
+            openContextMenuAndClickOnItem(e, SendToBackLabel),
+          ))
       })
 
-      // TODO: split it like above to shortcut and context menu
+      describe('shortcut', () => {
+        it('clicking send to back on element that is already in the back', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInBack, () =>
+            pressKey('[', { modifiers: altCmdModifier }),
+          ))
+
+        it('clicking send to back on element that is in the front', () =>
+          expectTemplatedTestWithTrigger(testCaseElementInFront, () =>
+            pressKey('[', { modifiers: altCmdModifier }),
+          ))
+      })
     })
   })
 
