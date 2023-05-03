@@ -1361,19 +1361,26 @@ export const MetadataUtils = {
           switch (jsxElement.type) {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-              // Check for certain elements and check if they have text content within them.
-              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                if (element.textContent != null && element.textContent !== '') {
-                  return element.textContent
-                }
-
-                const firstChild = jsxElement.children[0]
-                if (firstChild != null) {
-                  if (isJSXTextBlock(firstChild)) {
-                    return firstChild.text
+              // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
+              const numberOfChildrenElements = MetadataUtils.getChildrenUnordered(
+                metadata,
+                element.elementPath,
+              ).length
+              if (numberOfChildrenElements === 0) {
+                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                  if (element.textContent != null && element.textContent !== '') {
+                    return element.textContent
                   }
-                  if (isJSExpressionOtherJavaScript(firstChild)) {
-                    return `{${firstChild.originalJavascript}}`
+
+                  // fall back to the old way of showing text content – this can probably be deleted now
+                  const firstChild = jsxElement.children[0]
+                  if (firstChild != null) {
+                    if (isJSXTextBlock(firstChild)) {
+                      return firstChild.text
+                    }
+                    if (isJSExpressionOtherJavaScript(firstChild)) {
+                      return `{${firstChild.originalJavascript}}`
+                    }
                   }
                 }
               }
