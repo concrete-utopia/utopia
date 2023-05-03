@@ -569,10 +569,11 @@ export function insertJSXElementChild(
                 importedWithName: null,
               },
             }
+
             return jsxFragment(
               generateUidWithExistingComponents(projectContents),
               [elementToInsert, clauseValue],
-              false,
+              true,
             )
           }
         },
@@ -582,7 +583,7 @@ export function insertJSXElementChild(
       assertNever(targetParent)
     }
   })
-  return insertChildAndDetails(updatedComponents, null) // TODO is this wrapper type needed?
+  return insertChildAndDetails(updatedComponents, null, importsToAdd) // TODO is this wrapper type needed?
 }
 
 /** @deprecated reason: use insertJSXElementChild instead! **/
