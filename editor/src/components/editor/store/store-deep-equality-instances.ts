@@ -497,6 +497,7 @@ import { ConditionalCase } from '../../../core/model/conditionals'
 import {
   childInsertionPath,
   ChildInsertionPath,
+  ConditionalClauseInsertBehavior,
   ConditionalClauseInsertionPath,
   conditionalClauseInsertionPath,
   InsertionPath,
@@ -2906,12 +2907,17 @@ export const ChildInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ChildInser
 export const ConditionalCaseKeepDeepEquality: KeepDeepEqualityCall<ConditionalCase> =
   createCallWithTripleEquals<ConditionalCase>()
 
+export const ConditionalClauseInsertBehaviorKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseInsertBehavior> =
+  createCallWithTripleEquals<ConditionalClauseInsertBehavior>()
+
 export const ConditionalClauseInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseInsertionPath> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (c) => c.intendedParentPath,
     StaticElementPathKeepDeepEquality,
     (c) => c.clause,
     ConditionalCaseKeepDeepEquality,
+    (c) => c.insertBehavior,
+    ConditionalClauseInsertBehaviorKeepDeepEquality,
     conditionalClauseInsertionPath,
   )
 
