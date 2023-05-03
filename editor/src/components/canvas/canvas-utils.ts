@@ -1979,7 +1979,7 @@ export function createDuplicationNewUIDs(
     false,
   )
 
-  let existingIDs = getAllUniqueUids(projectContents)
+  let existingIDs = getAllUniqueUids(projectContents).uniqueIDs
 
   let result: Array<DuplicateNewUID> = []
   Utils.fastForEach(targetViews, (targetView) => {
@@ -2718,7 +2718,7 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
-  const existingIDs = getAllUniqueUids(editor.projectContents)
+  const existingIDs = getAllUniqueUids(editor.projectContents).uniqueIDs
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,

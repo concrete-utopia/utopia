@@ -61,8 +61,7 @@ import {
   RegisteredCanvasStrategies,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import * as EP from '../../../core/shared/element-path'
-import { isTextEditMode } from '../editor-modes'
+import { notice } from '../../../components/common/notice'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -635,7 +634,7 @@ function maybeCullElementPathCache(
 }
 
 function cullElementPathCache() {
-  const allExistingUids = getAllUniqueUids(lastProjectContents)
+  const allExistingUids = getAllUniqueUids(lastProjectContents).uniqueIDs
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
@@ -742,6 +741,27 @@ function editorDispatchInner(
       }
     }
 
+    // Check for duplicate UIDs that have originated from actions being applied.
+    const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
+    if (uniqueIDsResult.duplicateIDs.length > 0) {
+      const actionNames = simpleStringifyActions(dispatchedActions)
+      const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
+        uniqueIDsResult.duplicateIDs,
+      )}.`
+      console.error(errorMessage)
+      const errorToast = EditorActions.addToast(
+        notice(
+          `Editor has suffered from an irrecoverable error, please reload the editor.`,
+          'ERROR',
+          true,
+        ),
+      )
+      result = {
+        ...result,
+        unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
+      }
+    }
+
     let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)
 
     let frozenDerivedState: DerivedState
@@ -755,9 +775,6 @@ function editorDispatchInner(
       const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
-
-    const actionNames = simpleStringifyActions(dispatchedActions)
-    getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (MeasureDispatchTime) {
       window.performance.mark('dispatch_end')

@@ -74,54 +74,101 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-import { insert } from '../shared/array-utils'
 
-function getAllUniqueUidsInner(
-  projectContents: ProjectContentTreeRoot,
-  throwErrorWithSuspiciousActions?: string,
-): Array<string> {
-  let uniqueIDs: Set<string> = Utils.emptySet()
+interface GetAllUniqueUIDsResult {
+  uniqueIDs: Array<string>
+  duplicateIDs: Array<string>
+}
+
+function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
+  const workingResult = {
+    uniqueIDs: Utils.emptySet<string>(),
+    duplicateIDs: Utils.emptySet<string>(),
+  }
+
+  function checkUID(uid: string): void {
+    if (!workingResult.duplicateIDs.has(uid)) {
+      if (workingResult.uniqueIDs.has(uid)) {
+        workingResult.uniqueIDs.delete(uid)
+        workingResult.duplicateIDs.add(uid)
+      } else {
+        workingResult.uniqueIDs.add(uid)
+      }
+    }
+  }
 
   function extractUid(element: JSXElementChild): void {
-    if (isJSXElement(element)) {
-      fastForEach(element.children, extractUid)
-      const uidProp = getJSXAttribute(element.props, 'data-uid')
-      if (uidProp != null && isJSXAttributeValue(uidProp)) {
-        const uid = uidProp.value
-        if (throwErrorWithSuspiciousActions != null) {
-          if (uniqueIDs.has(uid)) {
-            throw new Error(
-              `Found duplicate UID: '${uid}'. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
-            )
-          }
+    checkUID(element.uid)
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        fastForEach(element.children, extractUid)
+        break
+      case 'JSX_FRAGMENT':
+        fastForEach(element.children, extractUid)
+        break
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        extractUid(element.whenTrue)
+        extractUid(element.whenFalse)
+        break
+      case 'JSX_TEXT_BLOCK':
+        break
+      case 'ATTRIBUTE_VALUE':
+        break
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        for (const contentPart of element.content) {
+          extractUid(contentPart.value)
         }
-        uniqueIDs.add(uid)
-      } else {
-        if (throwErrorWithSuspiciousActions != null) {
-          throw new Error(
-            `Found JSXElement with missing UID. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
-          )
+        break
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        for (const contentPart of element.content) {
+          extractUid(contentPart.value)
         }
-      }
-    } else if (isJSXFragment(element)) {
-      fastForEach(element.children, extractUid)
-      uniqueIDs.add(element.uid)
-    } else if (isJSXConditionalExpression(element)) {
-      uniqueIDs.add(element.uid)
-      extractUid(element.whenTrue)
-      extractUid(element.whenFalse)
+        break
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        for (const elementWithin of Object.values(element.elementsWithin)) {
+          extractUid(elementWithin)
+        }
+        break
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        for (const parameter of element.parameters) {
+          extractUid(parameter)
+        }
+        break
+      default:
+        assertNever(element)
     }
   }
 
   walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
     fastForEach(parseSuccess.topLevelElements, (tle) => {
-      if (isUtopiaJSXComponent(tle)) {
-        extractUid(tle.rootElement)
+      switch (tle.type) {
+        case 'UTOPIA_JSX_COMPONENT':
+          extractUid(tle.rootElement)
+          if (tle.arbitraryJSBlock != null) {
+            for (const elementWithin of Object.values(tle.arbitraryJSBlock.elementsWithin)) {
+              extractUid(elementWithin)
+            }
+          }
+          break
+        case 'ARBITRARY_JS_BLOCK':
+          for (const elementWithin of Object.values(tle.elementsWithin)) {
+            extractUid(elementWithin)
+          }
+          break
+        case 'IMPORT_STATEMENT':
+          break
+        case 'UNPARSED_CODE':
+          break
+        default:
+          assertNever(tle)
       }
     })
   })
 
-  return Array.from(uniqueIDs)
+  return {
+    uniqueIDs: Array.from(workingResult.uniqueIDs),
+    duplicateIDs: Array.from(workingResult.duplicateIDs),
+  }
 }
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
@@ -129,7 +176,7 @@ export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents)
+    const existingUIDS = getAllUniqueUids(projectContents).uniqueIDs
     return generateUID(existingUIDS)
   } else {
     return mockUID
@@ -142,7 +189,7 @@ export function generateUidWithExistingComponentsAndExtraUids(
 ): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents)
+    const existingUIDSFromProject = getAllUniqueUids(projectContents).uniqueIDs
     return generateUID([...existingUIDSFromProject, ...additionalUids])
   } else {
     return mockUID
