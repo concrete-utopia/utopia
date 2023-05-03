@@ -40,7 +40,15 @@ async function openContextMenuAndClickOnItem(
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectNoAction"] }] */
+type Trigger = (editor: EditorRenderResult) => Promise<void>
+type TemplatedTestWithTrigger = (trigger: Trigger) => Promise<void>
+
+const expectTemplatedTestWithTrigger = async (
+  testWithTrigger: TemplatedTestWithTrigger,
+  trigger: Trigger,
+) => testWithTrigger(trigger)
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectNoAction", "expectTemplatedTestWithTrigger"] }] */
 
 describe('canvas context menu', () => {
   it('clicking on paste layout menu item pastes layout properties', async () => {
@@ -140,24 +148,275 @@ describe('canvas context menu', () => {
     )
   })
 
-  it('clicking bring to front on element that is already on top', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-    <div data-uid='container'>
-      <span data-uid='first'>First</span>
-      <span data-uid='second'>Second</span>
-    </div>
-    `),
-      'await-first-dom-report',
-    )
+  describe('Bring to Front / Send to Back', () => {
+    describe('Bring Forward', () => {
+      const BringForwardLabel = 'Bring Forward'
 
-    const targetPath = EP.fromString(
-      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
-    )
+      const bringForwardElementInBackTest: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+          <span data-uid='third'>Third</span>
+          </div>
+        `),
+          'await-first-dom-report',
+        )
 
-    await selectComponentsForTest(editor, [targetPath])
-    await expectNoAction(editor, () => openContextMenuAndClickOnItem(editor, 'Bring Forward'))
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/first`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        await trigger(editor)
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='container'>
+              <span data-uid='second'>Second</span>
+              <span data-uid='first'>First</span>
+              <span data-uid='third'>Third</span>
+            </div>
+        `),
+        )
+      }
+
+      const bringForwardElementOnTop: TemplatedTestWithTrigger = async (
+        trigger: (editor: EditorRenderResult) => Promise<void>,
+      ) => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+          <div data-uid='container'>
+            <span data-uid='third'>Third</span>
+            <span data-uid='second'>Second</span>
+            <span data-uid='first'>First</span>
+          </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/first`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        // await expectNoAction(editor, async () => {
+        await trigger(editor)
+        // })
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+      }
+
+      describe('context menu', () => {
+        const contextMenuTrigger = (e: EditorRenderResult) =>
+          openContextMenuAndClickOnItem(e, BringForwardLabel)
+
+        it('clicking bring forward on element that is in the back', () =>
+          expectTemplatedTestWithTrigger(bringForwardElementInBackTest, contextMenuTrigger))
+        it('clicking bring forward on element that is already on top', () =>
+          expectTemplatedTestWithTrigger(bringForwardElementOnTop, contextMenuTrigger))
+      })
+
+      describe('shortcut', () => {
+        const shortcutTrigger = () => pressKey(']', { modifiers: cmdModifier })
+        it('clicking bring forward on element that is in the back', () =>
+          expectTemplatedTestWithTrigger(bringForwardElementInBackTest, shortcutTrigger))
+
+        it('clicking bring forward on element that is already on top', () =>
+          expectTemplatedTestWithTrigger(bringForwardElementOnTop, shortcutTrigger))
+      })
+    })
+
+    describe('Send Backward', () => {
+      const SendBackwardLabel = 'Send Backward'
+
+      it('clicking send backward on element that is already in the back', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+          <span data-uid='third'>Third</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/first`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        // await expectNoAction(editor, async () => {
+        await openContextMenuAndClickOnItem(editor, SendBackwardLabel)
+        // })
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+      })
+
+      it('clicking send backward on element that is in the front', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='zero'>Zero</span>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/second`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        await openContextMenuAndClickOnItem(editor, SendBackwardLabel)
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='zero'>Zero</span>
+          <span data-uid='second'>Second</span>
+          <span data-uid='first'>First</span>
+        </div>
+        `),
+        )
+      })
+
+      // TODO: split it like above to shortcut and context menu
+    })
+
+    describe('Bring To Front', () => {
+      const BringToFrontLabel = 'Bring To Front'
+      it('clicking bring to front on element that is already in the front', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+          <span data-uid='third'>Third</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/third`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        // await expectNoAction(editor, async () => {
+        await openContextMenuAndClickOnItem(editor, BringToFrontLabel)
+        // })
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+      })
+
+      it('clicking bring to front on element front', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='zero'>Zero</span>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/zero`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        await openContextMenuAndClickOnItem(editor, BringToFrontLabel)
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='container'>
+              <span data-uid='first'>First</span>
+              <span data-uid='second'>Second</span>
+              <span data-uid='zero'>Zero</span>
+            </div>
+        `),
+        )
+      })
+
+      // TODO: split it like above to shortcut and context menu
+    })
+
+    describe('Send To Back', () => {
+      const SendToBackLabel = 'Send To Back'
+      it('clicking send to back on element that is already in the back', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+          <span data-uid='third'>Third</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const initialEditor = getPrintedUiJsCode(editor.getEditorState())
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/first`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        // await expectNoAction(editor, async () => {
+        await openContextMenuAndClickOnItem(editor, SendToBackLabel)
+        // })
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditor)
+      })
+
+      it('clicking send to back on element that is in the front', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='zero'>Zero</span>
+          <span data-uid='first'>First</span>
+          <span data-uid='second'>Second</span>
+        </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/second`,
+        )
+
+        await selectComponentsForTest(editor, [targetPath])
+        await openContextMenuAndClickOnItem(editor, SendToBackLabel)
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          <span data-uid='second'>Second</span>
+          <span data-uid='zero'>Zero</span>
+          <span data-uid='first'>First</span>
+        </div>
+        `),
+        )
+      })
+
+      // TODO: split it like above to shortcut and context menu
+    })
   })
+
   describe('wrap in from contextmenu', () => {
     it('wrap in div works inside a conditional on an expression', async () => {
       const renderResult = await renderTestEditorWithCode(
