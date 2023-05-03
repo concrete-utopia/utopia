@@ -1,5 +1,6 @@
 name: Screenshot Staging
 on:
+  pull_request:
   repository_dispatch:
     types: [trigger-staging-screenshot]
   workflow_dispatch:
