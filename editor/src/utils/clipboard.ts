@@ -47,7 +47,7 @@ import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in
 import {
   childInsertionPath,
   getInsertionPathWithSlotBehavior,
-  getInsertionPathWithWrapIntoFragmentBehavior,
+  getInsertionPathWithWrapWithFragmentBehavior,
   InsertionPath,
 } from '../components/editor/store/insertion-path'
 import { maybeBranchConditionalCase } from '../core/model/conditionals'
@@ -334,7 +334,7 @@ export function getTargetParentForPaste(
       const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
       if (conditionalCase != null) {
         return isFeatureEnabled('Paste wraps into fragment')
-          ? getInsertionPathWithWrapIntoFragmentBehavior(
+          ? getInsertionPathWithWrapWithFragmentBehavior(
               targetPath,
               projectContents,
               nodeModules,

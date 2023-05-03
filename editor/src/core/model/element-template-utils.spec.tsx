@@ -1339,7 +1339,7 @@ describe('insertJSXElementChild', () => {
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'true-case',
-        'wrap-into-fragment',
+        'wrap-with-fragment',
       ),
       jsxElement('div', 'hello2', [], []),
       components,
@@ -1427,7 +1427,7 @@ describe('insertJSXElementChild', () => {
       conditionalClauseInsertionPath(
         EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
         'false-case',
-        'wrap-into-fragment',
+        'wrap-with-fragment',
       ),
       jsxElement('div', 'hello', [], []),
       components,

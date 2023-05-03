@@ -23,7 +23,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-type ConditionalClauseInsertBehavior = 'replace' | 'wrap-into-fragment'
+type ConditionalClauseInsertBehavior = 'replace' | 'wrap-with-fragment'
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
@@ -175,7 +175,7 @@ export function getInsertionPathWithSlotBehavior(
     : null
 }
 
-export function getInsertionPathWithWrapIntoFragmentBehavior(
+export function getInsertionPathWithWrapWithFragmentBehavior(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -193,6 +193,6 @@ export function getInsertionPathWithWrapIntoFragmentBehavior(
   )
     ? childInsertionPath(target)
     : conditionalClause != null
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'wrap-into-fragment')
+    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'wrap-with-fragment')
     : null
 }
