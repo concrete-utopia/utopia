@@ -164,7 +164,7 @@ function isIndicatorBetweenSiblingsBBBCCC(
   }
 }
 
-const testDragToInsertImageAspectRatio = async (inputCode: string, expectedCode: string) => {
+const testDrawToInsertImageAspectRatio = async (inputCode: string, expectedCode: string) => {
   const renderResult = await setupInsertTest(makeTestProjectCodeWithSnippet(inputCode))
   await enterInsertModeFromInsertMenu(renderResult, 'img')
 
@@ -286,7 +286,7 @@ async function drawToInsertTestMaybeAddsFlexGrow(
   )
 }
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runInsertTest", "runClickToInsertTest", "drawToInsertTestMaybeAddsFlexGrow", "testDragToInsertImageAspectRatio" ] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runInsertTest", "runClickToInsertTest", "drawToInsertTestMaybeAddsFlexGrow", "testDrawToInsertImageAspectRatio" ] }] */
 
 describe('draw-to-insert', () => {
   describe('Inserting into absolute', () => {
@@ -2999,7 +2999,7 @@ describe('draw-to-insert', () => {
         />
       </div>
     `
-      await testDragToInsertImageAspectRatio(inputCode, expectedCode)
+      await testDrawToInsertImageAspectRatio(inputCode, expectedCode)
     })
 
     it('Draw to insert to a flex layout keeps aspect ratio', async () => {
@@ -3050,7 +3050,7 @@ describe('draw-to-insert', () => {
         </div>
       </div>
     `
-      await testDragToInsertImageAspectRatio(inputCode, expectedCode)
+      await testDrawToInsertImageAspectRatio(inputCode, expectedCode)
     })
   })
 

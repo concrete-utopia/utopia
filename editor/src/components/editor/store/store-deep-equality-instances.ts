@@ -2903,25 +2903,15 @@ export const ChildInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ChildInser
     childInsertionPath,
   )
 
-export function ConditionalCaseKeepDeepEquality(): KeepDeepEqualityCall<ConditionalCase> {
-  return (oldValue, newValue) => {
-    switch (oldValue) {
-      case 'true-case':
-      case 'false-case':
-        if (newValue === oldValue) {
-          return keepDeepEqualityResult(oldValue, true)
-        }
-    }
-    return keepDeepEqualityResult(newValue, false)
-  }
-}
+export const ConditionalCaseKeepDeepEquality: KeepDeepEqualityCall<ConditionalCase> =
+  createCallWithTripleEquals<ConditionalCase>()
 
 export const ConditionalClauseInsertionPathKeepDeepEquality: KeepDeepEqualityCall<ConditionalClauseInsertionPath> =
   combine2EqualityCalls(
     (c) => c.intendedParentPath,
     StaticElementPathKeepDeepEquality,
     (c) => c.clause,
-    ConditionalCaseKeepDeepEquality(),
+    ConditionalCaseKeepDeepEquality,
     conditionalClauseInsertionPath,
   )
 
