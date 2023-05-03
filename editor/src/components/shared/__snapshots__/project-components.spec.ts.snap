@@ -97,6 +97,71 @@ Array [
         "element": Object {
           "children": Array [],
           "name": Object {
+            "baseVariable": "img",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": Object {
+                  "height": "64px",
+                  "position": "absolute",
+                  "width": "64px",
+                },
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "src",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
+              },
+            },
+          ],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "img",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "name": Object {
             "baseVariable": "span",
             "propertyPath": Object {
               "propertyElements": Array [],
@@ -113,6 +178,58 @@ Array [
           },
         },
         "name": "span",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "button",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "button",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "input",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -191,58 +308,6 @@ Array [
           },
         },
         "name": "p",
-        "stylePropOptions": Array [
-          "do-not-add",
-          "add-size",
-        ],
-      },
-      Object {
-        "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "button",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
-        "importsToAdd": Object {
-          "react": Object {
-            "importedAs": "React",
-            "importedFromWithin": Array [],
-            "importedWithName": null,
-          },
-        },
-        "name": "button",
-        "stylePropOptions": Array [
-          "do-not-add",
-          "add-size",
-        ],
-      },
-      Object {
-        "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "input",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
-        "importsToAdd": Object {
-          "react": Object {
-            "importedAs": "React",
-            "importedFromWithin": Array [],
-            "importedWithName": null,
-          },
-        },
-        "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -364,71 +429,6 @@ Array [
           "add-size",
         ],
       },
-      Object {
-        "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "img",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "height": "64px",
-                  "position": "absolute",
-                  "width": "64px",
-                },
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "src",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
-        "importsToAdd": Object {
-          "react": Object {
-            "importedAs": "React",
-            "importedFromWithin": Array [],
-            "importedWithName": null,
-          },
-        },
-        "name": "img",
-        "stylePropOptions": Array [
-          "do-not-add",
-          "add-size",
-        ],
-      },
     ],
     "source": Object {
       "type": "HTML_GROUP",
@@ -479,13 +479,6 @@ Array [
           "do-not-add",
         ],
       },
-    ],
-    "source": Object {
-      "type": "CONDITIONALS_GROUP",
-    },
-  },
-  Object {
-    "insertableComponents": Array [
       Object {
         "defaultSize": null,
         "element": Object {
@@ -507,7 +500,7 @@ Array [
       },
     ],
     "source": Object {
-      "type": "FRAGMENT_GROUP",
+      "type": "CODE_CONSTRUCTS_GROUP",
     },
   },
   Object {
@@ -650,6 +643,71 @@ Array [
         "element": Object {
           "children": Array [],
           "name": Object {
+            "baseVariable": "img",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": Object {
+                  "height": "64px",
+                  "position": "absolute",
+                  "width": "64px",
+                },
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "src",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "uid": "",
+                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
+              },
+            },
+          ],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "img",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "name": Object {
             "baseVariable": "span",
             "propertyPath": Object {
               "propertyElements": Array [],
@@ -666,6 +724,58 @@ Array [
           },
         },
         "name": "span",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "button",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "button",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "defaultSize": null,
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "input",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -744,58 +854,6 @@ Array [
           },
         },
         "name": "p",
-        "stylePropOptions": Array [
-          "do-not-add",
-          "add-size",
-        ],
-      },
-      Object {
-        "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "button",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
-        "importsToAdd": Object {
-          "react": Object {
-            "importedAs": "React",
-            "importedFromWithin": Array [],
-            "importedWithName": null,
-          },
-        },
-        "name": "button",
-        "stylePropOptions": Array [
-          "do-not-add",
-          "add-size",
-        ],
-      },
-      Object {
-        "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "input",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
-        "importsToAdd": Object {
-          "react": Object {
-            "importedAs": "React",
-            "importedFromWithin": Array [],
-            "importedWithName": null,
-          },
-        },
-        "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -917,71 +975,6 @@ Array [
           "add-size",
         ],
       },
-      Object {
-        "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "img",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "height": "64px",
-                  "position": "absolute",
-                  "width": "64px",
-                },
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "src",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
-        "importsToAdd": Object {
-          "react": Object {
-            "importedAs": "React",
-            "importedFromWithin": Array [],
-            "importedWithName": null,
-          },
-        },
-        "name": "img",
-        "stylePropOptions": Array [
-          "do-not-add",
-          "add-size",
-        ],
-      },
     ],
     "source": Object {
       "type": "HTML_GROUP",
@@ -1032,13 +1025,6 @@ Array [
           "do-not-add",
         ],
       },
-    ],
-    "source": Object {
-      "type": "CONDITIONALS_GROUP",
-    },
-  },
-  Object {
-    "insertableComponents": Array [
       Object {
         "defaultSize": null,
         "element": Object {
@@ -1060,7 +1046,7 @@ Array [
       },
     ],
     "source": Object {
-      "type": "FRAGMENT_GROUP",
+      "type": "CODE_CONSTRUCTS_GROUP",
     },
   },
   Object {
