@@ -79,6 +79,8 @@ import {
   JSExpressionNestedObject,
   JSExpressionFunctionCall,
   JSXTextBlock,
+  isJSXElementLike,
+  isJSXAttributeValue,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -2142,12 +2144,12 @@ export function parseOutJSXElements(
       }
 
       function handleConditionalExpression(
-        fullElement: TS.JsxExpression,
+        containingExpression: TS.JsxExpression | null,
         expression: TS.ConditionalExpression,
         comments: ParsedComments,
       ): Either<string, SuccessfullyParsedElement> {
         const possibleConditional = produceConditionalFromExpression(
-          fullElement,
+          containingExpression,
           expression,
           comments,
         )
@@ -2200,7 +2202,7 @@ export function parseOutJSXElements(
           }
           case TS.SyntaxKind.ConditionalExpression: {
             const possibleCondition = handleConditionalExpression(
-              null as any,
+              null,
               elem,
               getConditionalExpressionComments(elem),
             )
@@ -2426,7 +2428,7 @@ export function parseOutJSXElements(
   }
 
   function produceConditionalFromExpression(
-    fullElement: TS.JsxExpression,
+    containingExpression: TS.JsxExpression | null,
     expression: TS.ConditionalExpression,
     comments: ParsedComments,
   ): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
@@ -2479,21 +2481,39 @@ export function parseOutJSXElements(
       : expression.whenFalse
     const whenFalseBlock = parseClause(innerWhenFalse)
 
-    const trueBlockString =
-      whenTrueBlock.type === 'RIGHT' &&
-      whenTrueBlock.value.value.type === 'ATTRIBUTE_VALUE' &&
-      typeof whenTrueBlock.value.value.value === 'string'
+    const parseAsFullConditionalExpression = (() => {
+      const trueBlockJsxElementLike =
+        isRight(whenTrueBlock) && isJSXElementLike(whenTrueBlock.value.value)
+      const falseBlockJsxElementLike =
+        isRight(whenFalseBlock) && isJSXElementLike(whenFalseBlock.value.value)
+      const trueBlockNull =
+        isRight(whenTrueBlock) &&
+        isJSXAttributeValue(whenTrueBlock.value.value) &&
+        whenTrueBlock.value.value.value == null
 
-    const falseBlockString =
-      whenFalseBlock.type === 'RIGHT' &&
-      whenFalseBlock.value.value.type === 'ATTRIBUTE_VALUE' &&
-      typeof whenFalseBlock.value.value.value === 'string'
+      const falseBlockNull =
+        isRight(whenFalseBlock) &&
+        isJSXAttributeValue(whenFalseBlock.value.value) &&
+        whenFalseBlock.value.value.value == null
 
-    if (trueBlockString && falseBlockString) {
-      // actually, do not parse this as a ternary, rather as an ordinary expression!
+      if (trueBlockJsxElementLike || falseBlockJsxElementLike) {
+        // if either branches are element-like, let's show the full navigator
+        return true
+      }
+      if (trueBlockNull && falseBlockNull) {
+        // if both branches are null, let's show the full navigator so we expose slots
+        return true
+      }
+
+      // otherwise, parse as ATTRIBUTE_OTHER_JAVASCRIPT so we can show it as an inline expression in text content
+      return false
+    })()
+
+    if (containingExpression != null && !parseAsFullConditionalExpression) {
+      // instead of parsing as conditional, return the value as ATTRIBUTE_OTHER_JAVASCRIPT so we can show it as an inline expression in text content
       return mapEither(
         (e) => withParserMetadata(e, {}, [], []),
-        produceArbitraryBlockFromJsxExpression(fullElement),
+        produceArbitraryBlockFromJsxExpression(containingExpression),
       )
     }
 
