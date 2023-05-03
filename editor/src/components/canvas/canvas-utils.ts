@@ -187,7 +187,10 @@ import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
-import { childInsertionPath } from '../editor/store/insertion-path'
+import {
+  childInsertionPath,
+  getInsertionPathWithSlotBehavior,
+} from '../editor/store/insertion-path'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -2293,9 +2296,21 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
+                  const insertionPath = getInsertionPathWithSlotBehavior(
+                    underlyingNewParentPath,
+                    workingEditorState.projectContents,
+                    workingEditorState.nodeModules.files,
+                    workingEditorState.canvas.openFile?.filename ?? null,
+                    workingEditorState.jsxMetadata,
+                  )
+
+                  if (insertionPath == null) {
+                    return workingSuccess
+                  }
+
                   const insertResult = insertJSXElementChild(
                     workingEditorState.projectContents,
-                    childInsertionPath(underlyingNewParentPath),
+                    insertionPath,
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
