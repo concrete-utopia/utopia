@@ -597,8 +597,8 @@ export var storyboard = (
                // @utopia/uid=conditional
                [].length === 0 ? (
                 <React.Fragment>
-                  <span data-uid='text'>Hello there</span>
                   <span data-uid='tex'>Hello there</span>
+                  <span data-uid='text'>Hello there</span>
                 </React.Fragment>
                ) : 'Test' 
              }
@@ -638,8 +638,8 @@ export var storyboard = (
                [].length === 0 ? (
                 'Test'
                ) : <React.Fragment>
-               <span data-uid='text'>Hello there</span>
                <span data-uid='tex'>Hello there</span>
+               <span data-uid='text'>Hello there</span>
              </React.Fragment>
              }
            </div>`,
@@ -662,10 +662,14 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      const initialUiCode = editor.getEditorState()
+      const initialUiCode = getPrintedUiJsCode(editor.getEditorState())
 
       const slot = editor.renderedDOM.getByText('Empty')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/a25',
+      ])
 
       await expectNoAction(editor, () => pressKey('d', { modifiers: cmdModifier }))
 
