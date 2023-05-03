@@ -1,27 +1,14 @@
 import { ProjectContentTreeRoot } from '../../../assets'
-import {
-  addImport,
-  emptyImports,
-  mergeImports,
-} from '../../../../core/workers/common/project-file-utils'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
 import { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
 import {
   ElementInstanceMetadataMap,
-  isIntrinsicElement,
-  isJSXElement,
-  JSXElement,
   JSXElementChild,
-  walkElement,
 } from '../../../../core/shared/element-template'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  getImportsFor,
-  getRequiredImportsForElement,
-  importedFromWhere,
-} from '../../../editor/import-utils'
+import { getRequiredImportsForElement } from '../../../editor/import-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { addImportsToFile } from '../../commands/add-imports-to-file-command'
 import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -30,11 +17,7 @@ import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-path
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
-import {
-  CustomStrategyState,
-  InteractionCanvasState,
-  InteractionLifecycle,
-} from '../canvas-strategy-types'
+import { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
@@ -46,7 +29,6 @@ import {
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
-import { UseNewInsertJsxElementChild } from '../../canvas-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -89,7 +71,6 @@ export function getReparentOutcome(
   toReparent: ToReparent,
   targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
   let newParent: InsertionPath
@@ -150,9 +131,7 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(
-        reparentElement(whenToRun, toReparent.target, newParent, useNewInsertJSXElementChild),
-      )
+      commands.push(reparentElement(whenToRun, toReparent.target, newParent))
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
