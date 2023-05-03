@@ -513,12 +513,14 @@ export function insertChildAndDetails(
 }
 
 export function insertJSXElementChild(
+  projectContents: ProjectContentTreeRoot,
   targetParent: InsertionPath,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
   const parentPath: StaticElementPath = targetParent.intendedParentPath
+  let importsToAdd: Imports = {}
   const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
     if (isChildInsertionPath(targetParent)) {
       if (!isJSXElementLike(parentElement)) {
@@ -547,12 +549,41 @@ export function insertJSXElementChild(
       const toClauseOptic =
         conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
 
-      return set(toClauseOptic, elementToInsert, parentElement)
+      return modify(
+        toClauseOptic,
+        (clauseValue) => {
+          if (targetParent.insertBehavior === 'replace') {
+            return elementToInsert
+          }
+          if (isNullJSXAttributeValue(clauseValue)) {
+            return elementToInsert
+          }
+          if (isJSXFragment(clauseValue)) {
+            return parentElement
+          } else {
+            // for wrapping multiple elements
+            importsToAdd = {
+              react: {
+                importedAs: 'React',
+                importedFromWithin: [],
+                importedWithName: null,
+              },
+            }
+
+            return jsxFragment(
+              generateUidWithExistingComponents(projectContents),
+              [elementToInsert, clauseValue],
+              true,
+            )
+          }
+        },
+        parentElement,
+      )
     } else {
       assertNever(targetParent)
     }
   })
-  return insertChildAndDetails(updatedComponents, null) // TODO is this wrapper type needed?
+  return insertChildAndDetails(updatedComponents, null, importsToAdd) // TODO is this wrapper type needed?
 }
 
 /** @deprecated reason: use insertJSXElementChild instead! **/

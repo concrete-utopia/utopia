@@ -172,6 +172,7 @@ export const CanvasToolbar = React.memo(() => {
         position: 'absolute',
         top: 12,
         left: 12,
+        gap: 6,
         alignItems: 'stretch',
         width: 64,
         borderRadius: 4,
@@ -183,32 +184,6 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Scale</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom to 100%' placement='bottom'>
-            <SquareButton highlight style={{ textAlign: 'center', width: 32 }} onClick={zoom100pct}>
-              {zoomLevel * 100}%
-            </SquareButton>
-          </Tooltip>
-        </FlexRow>
-
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom in' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-plus'
-              iconCategory='semantic'
-              onClick={zoomIn}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom out' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-minus'
-              iconCategory='semantic'
-              onClick={zoomOut}
-            />
-          </Tooltip>
-        </FlexRow>
-        <Divider />
         {/* ------------------------------------ */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
@@ -226,9 +201,32 @@ export const CanvasToolbar = React.memo(() => {
               onClick={insertTextCallback}
             />
           </Tooltip>
+          <Tooltip title='Zoom in' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-plus'
+              iconCategory='semantic'
+              onClick={zoomIn}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom out' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-minus'
+              iconCategory='semantic'
+              onClick={zoomOut}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom to 100%' placement='bottom'>
+            <SquareButton
+              highlight
+              style={{ textAlign: 'center', width: '100%' }}
+              onClick={zoom100pct}
+            >
+              {zoomLevel * 100}%
+            </SquareButton>
+          </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
+
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
@@ -271,7 +269,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Convert</header>
@@ -286,7 +283,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
+
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Organise</header>
@@ -304,7 +301,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Editor</header>
@@ -398,18 +394,5 @@ const Tooltip = (props: TooltipProps) => {
       {/* TODO why do we need to wrap the children in a span? */}
       <span>{props.children}</span>
     </TooltipWithoutSpanFixme>
-  )
-}
-
-const Divider = () => {
-  return (
-    <div
-      style={{
-        height: 1,
-        width: '100%',
-        marginTop: 8,
-        backgroundColor: colorTheme.fg9.value,
-      }}
-    />
   )
 }

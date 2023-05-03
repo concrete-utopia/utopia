@@ -293,7 +293,6 @@ function maybeRequestModelUpdate(
               return EditorActions.workerCodeAndParsedUpdate(
                 fileResult.filename,
                 fileResult.printResult,
-                fileResult.highlightBounds,
                 fileResult.parsedResult,
                 fileResult.lastRevisedTime,
               )

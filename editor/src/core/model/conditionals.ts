@@ -216,5 +216,44 @@ export function getConditionalActiveCase(
   if (spy.conditionValue === 'not-a-conditional') {
     return null
   }
-  return spy.conditionValue ? 'true-case' : 'false-case'
+  return spy.conditionValue.active ? 'true-case' : 'false-case'
+}
+
+export function conditionalClauseAsBoolean(clause: ConditionalCase): boolean {
+  return clause === 'true-case'
+}
+
+export function isActiveBranchOfConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  const conditionValue = metadata?.conditionValue
+  if (conditionValue == null || conditionValue === 'not-a-conditional') {
+    return false
+  } else {
+    const clauseValue = conditionalClauseAsBoolean(clause)
+    return clauseValue === conditionValue.active
+  }
+}
+
+export function isDefaultBranchOfConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  const conditionValue = metadata?.conditionValue
+  if (conditionValue == null || conditionValue === 'not-a-conditional') {
+    return false
+  } else {
+    const clauseValue = conditionalClauseAsBoolean(clause)
+    return clauseValue === conditionValue.default
+  }
+}
+
+export function isActiveOrDefaultBranchOfConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  return (
+    isActiveBranchOfConditional(clause, metadata) || isDefaultBranchOfConditional(clause, metadata)
+  )
 }

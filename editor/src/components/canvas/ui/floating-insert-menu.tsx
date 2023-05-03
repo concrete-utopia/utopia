@@ -4,7 +4,6 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import { CSSObject } from '@emotion/serialize'
 import WindowedSelect, {
-  ActionMeta,
   InputActionMeta,
   OptionProps,
   StylesConfig,
@@ -46,7 +45,6 @@ import {
   jsExpressionValue,
   JSXConditionalExpressionWithoutUID,
   jsxElement,
-  JSXElementName,
   JSXFragmentWithoutUID,
   jsxTextBlock,
   setJSXAttributesAttribute,
@@ -57,16 +55,15 @@ import {
 } from '../../inspector/common/inspector-utils'
 import { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
-import { when } from '../../../utils/react-conditionals'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { assertNever } from '../../../core/shared/utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
+import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -447,10 +444,39 @@ export var FloatingMenu = React.memo(() => {
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
+  const nodeModules = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.nodeModules.files,
+    'FloatingMenu nodeModules',
+  )
+  const openFile = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.openFile?.filename ?? null,
+    'FloatingMenu openFile',
+  )
+  const jsxMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'FloatingMenu jsxMetadata',
+  )
+
   const insertableComponents = useGetInsertableComponents()
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
+
+  const getInsertionPath = React.useCallback(
+    (target: ElementPath) => {
+      return getInsertionPathWithSlotBehavior(
+        target,
+        projectContentsRef.current,
+        nodeModules,
+        openFile,
+        jsxMetadata,
+      )
+    },
+    [nodeModules, openFile, jsxMetadata, projectContentsRef],
+  )
 
   const onChangeConditionalOrFragment = React.useCallback(
     (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
@@ -484,7 +510,7 @@ export var FloatingMenu = React.memo(() => {
 
           actionsToDispatch = [
             insertInsertable(
-              targetParent,
+              getInsertionPath(targetParent),
               insertableComponent(importsToAdd, element, '', [], null),
               fixedSizeForInsertion ? 'add-size' : 'do-not-add',
               floatingMenuState.indexPosition,
@@ -549,7 +575,7 @@ export var FloatingMenu = React.memo(() => {
             // TODO multiselect?
             actionsToDispatch = [
               insertInsertable(
-                targetParent,
+                getInsertionPath(targetParent),
                 elementToInsert,
                 fixedSizeForInsertion ? 'add-size' : 'do-not-add',
                 floatingMenuState.indexPosition,

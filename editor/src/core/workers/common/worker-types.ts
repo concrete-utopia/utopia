@@ -89,7 +89,6 @@ export interface PrintAndReparseResult {
   filename: string
   parsedResult: ParsedTextFile
   lastRevisedTime: number
-  highlightBounds: HighlightBoundsForUids
   printResult: string
 }
 
@@ -97,7 +96,6 @@ export function createPrintAndReparseResult(
   filename: string,
   parseResult: ParsedTextFile,
   lastRevisedTime: number,
-  highlightBounds: HighlightBoundsForUids,
   printResult: string,
 ): PrintAndReparseResult {
   return {
@@ -105,7 +103,6 @@ export function createPrintAndReparseResult(
     filename: filename,
     parsedResult: parseResult,
     lastRevisedTime: lastRevisedTime,
-    highlightBounds: highlightBounds,
     printResult: printResult,
   }
 }

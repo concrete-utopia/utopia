@@ -443,7 +443,7 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, setClipboardData } from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import { addButtonPressed, MouseButtonsPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -508,7 +508,7 @@ import {
   isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getDefaultInsertionPathForElementPath,
+  getInsertionPathWithSlotBehavior,
 } from '../store/insertion-path'
 import {
   findMaybeConditionalExpression,
@@ -527,6 +527,7 @@ import {
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
 import { ConditionalClauseInsertionPath } from '../store/insertion-path'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2286,6 +2287,7 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertElementAtPath(
+          editor.projectContents,
           childInsertionPath(targetParent),
           action.jsxElement,
           utopiaComponents,
@@ -2342,6 +2344,7 @@ export const UPDATE_FNS = {
               actionTarget,
             )
           }),
+          'replace',
         )
         if (parentPath == null) {
           return editor
@@ -2355,8 +2358,12 @@ export const UPDATE_FNS = {
             EP.isRootElementOfInstance(elementPath) &&
             EP.isParentOf(getElementPathFromInsertionPath(parentPath), elementPath),
         )
-        if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
-          return editor
+
+        if (anyTargetIsARootElement) {
+          const showToastAction = showToast(
+            notice(`Root elements can't be wrapped into other elements.`),
+          )
+          return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
         }
 
         const detailsOfUpdate = null
@@ -2857,7 +2864,8 @@ export const UPDATE_FNS = {
       }
 
       const existingIDs = getAllUniqueUids(editor.projectContents)
-      return elements.reduce((workingEditorState, currentValue, index) => {
+      let newPaths: Array<ElementPath> = []
+      const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
@@ -2874,6 +2882,7 @@ export const UPDATE_FNS = {
           return workingEditorState
         } else {
           const { commands: reparentCommands, newPath } = outcomeResult
+          newPaths.push(newPath)
 
           const reparentStrategy = reparentStrategyForPaste(
             workingEditorState.jsxMetadata,
@@ -2903,6 +2912,16 @@ export const UPDATE_FNS = {
           return foldAndApplyCommandsSimple(workingEditorState, allCommands)
         }
       }, editor)
+
+      // Update the selected views to what has just been created.
+      if (newPaths.length > 0) {
+        return {
+          ...updatedEditorState,
+          selectedViews: newPaths,
+        }
+      } else {
+        return updatedEditorState
+      }
     } else {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
@@ -2952,7 +2971,13 @@ export const UPDATE_FNS = {
       false,
       (editor) => {
         // side effect 😟
-        setClipboardData(createClipboardDataFromSelection(editorForAction, builtInDependencies))
+        const copyData = createClipboardDataFromSelection(editorForAction, builtInDependencies)
+        if (copyData != null) {
+          Clipboard.setClipboardData({
+            plainText: copyData.plaintext,
+            html: encodeUtopiaDataToHtml(copyData.data),
+          })
+        }
         return {
           ...editor,
           pasteTargetsToIgnore: editor.selectedViews,
@@ -4821,29 +4846,19 @@ export const UPDATE_FNS = {
       let detailsOfUpdate: string | null = null
       let withInsertedElement: InsertChildAndDetails | null = null
 
-      const insertionPath = getDefaultInsertionPathForElementPath(
-        action.targetParent,
-        editor.projectContents,
-        editor.nodeModules.files,
-        editor.canvas.openFile?.filename,
-        editor.jsxMetadata,
-      )
-
-      if (insertionPath == null) {
+      if (action.insertionPath == null) {
         return includeToast('Selected element does not support children', editor)
       }
 
-      function addNewSelectedView(parentPath: ElementPath, newUID: string) {
-        const isParentConditionalClause =
-          insertionPath != null && isConditionalClauseInsertionPath(insertionPath) != null
-        const newPath = isParentConditionalClause
-          ? EP.appendToPath(EP.parentPath(parentPath), newUID)
-          : EP.appendToPath(action.targetParent, newUID)
+      const { insertionPath } = action
+
+      function addNewSelectedView(newUID: string) {
+        const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
         newSelectedViews.push(newPath)
       }
 
       const withNewElement = modifyUnderlyingTargetElement(
-        action.targetParent,
+        insertionPath.intendedParentPath,
         openFilename,
         editor,
         (element) => element,
@@ -4887,6 +4902,7 @@ export const UPDATE_FNS = {
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               withMaybeUpdatedParent,
@@ -4894,7 +4910,7 @@ export const UPDATE_FNS = {
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            addNewSelectedView(action.targetParent, newUID)
+            addNewSelectedView(newUID)
           } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
             const element = jsxConditionalExpression(
               newUID,
@@ -4906,6 +4922,7 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
+              editor.projectContents,
               insertionPath,
               element,
               utopiaComponents,
@@ -4913,7 +4930,7 @@ export const UPDATE_FNS = {
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            const newPath = EP.appendToPath(action.targetParent, newUID)
+            const newPath = EP.appendToPath(insertionPath.intendedParentPath, newUID)
             newSelectedViews.push(newPath)
           } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
             const element = jsxFragment(
@@ -4923,14 +4940,15 @@ export const UPDATE_FNS = {
             )
 
             withInsertedElement = insertElementAtPath(
-              childInsertionPath(action.targetParent),
+              editor.projectContents,
+              insertionPath,
               element,
               utopiaComponents,
               action.indexPosition,
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
-            addNewSelectedView(action.targetParent, newUID)
+            addNewSelectedView(newUID)
           } else {
             assertNever(action.toInsert.element)
           }

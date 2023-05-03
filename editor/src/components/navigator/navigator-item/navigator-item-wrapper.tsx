@@ -27,8 +27,13 @@ import {
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import {
+  ConditionalClauseNavigatorItemContainer,
+  ConditionalClauseNavigatorItemContainerProps,
   NavigatorItemContainer,
   NavigatorItemDragAndDropWrapperProps,
+  NavigatorItemDragAndDropWrapperPropsBase,
+  SyntheticNavigatorItemContainer,
+  SyntheticNavigatorItemContainerProps,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
@@ -279,10 +284,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       'NavigatorItemWrapper',
     )
 
-  const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
+  const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     index: props.index,
     editorDispatch: dispatch,
-    navigatorEntry: props.navigatorEntry,
     entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
@@ -299,6 +303,31 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
 
-  return <NavigatorItemContainer {...navigatorItemProps} />
+  if (props.navigatorEntry.type === 'REGULAR') {
+    const entryProps: NavigatorItemDragAndDropWrapperProps = {
+      ...navigatorItemProps,
+      elementPath: props.navigatorEntry.elementPath,
+    }
+    return <NavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'SYNTHETIC') {
+    const entryProps: SyntheticNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      childOrAttribute: props.navigatorEntry.childOrAttribute,
+      elementPath: props.navigatorEntry.elementPath,
+    }
+    return <SyntheticNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'CONDITIONAL_CLAUSE') {
+    const entryProps: ConditionalClauseNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      navigatorEntry: props.navigatorEntry,
+    }
+    return <ConditionalClauseNavigatorItemContainer {...entryProps} />
+  }
+
+  assertNever(props.navigatorEntry)
 })
 NavigatorItemWrapper.displayName = 'NavigatorItemWrapper'

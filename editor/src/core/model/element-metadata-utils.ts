@@ -1990,9 +1990,9 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case', 'replace')
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
+          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case', 'replace')
         }
       }
       return childInsertionPath(parentElement.elementPath)
@@ -2402,4 +2402,12 @@ export function createFakeMetadataForElement(
     null,
     'not-a-conditional',
   )
+}
+
+export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath | null {
+  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
+  if (storyboard == null) {
+    return null
+  }
+  return storyboard.elementPath
 }

@@ -1,27 +1,100 @@
-import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID, parseUID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import * as FastCheck from 'fast-check'
 import {
+  emptyComments,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
   JSExpression,
+  JSXElement,
   JSXElementChild,
+  TopLevelElement,
+  walkElements,
 } from '../../shared/element-template'
 import { isParseSuccess, ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
 import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
-import { jsxAttributeArbitrary, jsxElementChildArbitrary } from './parser-printer.test-utils'
+import {
+  elementsStructure,
+  jsxAttributeArbitrary,
+  jsxElementChildArbitrary,
+} from './parser-printer.test-utils'
 import { Arbitrary } from 'fast-check'
 import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
+import { foldEither } from '../../../core/shared/either'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
 }
 
+function validateJSXElementUID(jsxElement: JSXElement): void {
+  // Ensure that the `data-uid`attribute matches the `uid` property.
+  const uidAttribute = parseUID(jsxElement.props, emptyComments)
+  return foldEither(
+    () => {
+      throw new Error(`No data-uid field in element with uid ${jsxElement.uid}.`)
+    },
+    (fromProps) => {
+      if (fromProps !== jsxElement.uid) {
+        throw new Error(
+          `Got data-uid field for ${fromProps} in element (of type ${jsxElement.type}) with uid ${jsxElement.uid}.`,
+        )
+      }
+    },
+    uidAttribute,
+  )
+}
+
+function validateTopLevelElementsElementUIDs(topLevelElements: Array<TopLevelElement>): void {
+  walkElements(topLevelElements, (element) => {
+    if (isJSXElement(element)) {
+      validateJSXElementUID(element)
+    }
+  })
+}
+
+function validateParsedTextFileElementUIDs(parsedTextFile: ParsedTextFile): void {
+  if (isParseSuccess(parsedTextFile)) {
+    validateTopLevelElementsElementUIDs(parsedTextFile.topLevelElements)
+  }
+}
+
+function validateHighlightBoundsForUIDs(parsedTextFile: ParsedTextFile): void {
+  if (isParseSuccess(parsedTextFile)) {
+    for (const highlightBoundsUID of Object.keys(parsedTextFile.highlightBounds)) {
+      const highlightBounds = parsedTextFile.highlightBounds[highlightBoundsUID]
+      if (highlightBoundsUID !== highlightBounds.uid) {
+        throw new Error(
+          `A highlight bounds with a uid of ${highlightBounds.uid} was stored against a key of ${highlightBoundsUID}`,
+        )
+      }
+    }
+  }
+}
+
+function lintAndParseAndValidateResult(
+  filename: string,
+  content: string,
+  oldParseResultForUIDComparison: ParseSuccess | null,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+  shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
+): ParsedTextFile {
+  const result = lintAndParse(
+    filename,
+    content,
+    oldParseResultForUIDComparison,
+    alreadyExistingUIDs_MUTABLE,
+    shouldTrimBounds,
+  )
+  validateParsedTextFileElementUIDs(result)
+  validateHighlightBoundsForUIDs(result)
+  return result
+}
+
 describe('fixParseSuccessUIDs', () => {
   it('does not fix identical file', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       baseFileContents,
       asParseSuccessOrNull(baseFile),
@@ -41,14 +114,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level element change', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTwoTopLevelComponents,
       null,
       emptySet(),
       'trim-bounds',
     )
-    const newFileFixed = lintAndParse(
+    const newFileFixed = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTwoTopLevelComponentsUpdated,
       asParseSuccessOrNull(newFile),
@@ -70,14 +143,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level fragment element change', () => {
-    const fileWithFragment = lintAndParse(
+    const fileWithFragment = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTopLevelFragmentComponent,
       null,
       emptySet(),
       'trim-bounds',
     )
-    const fileWithFragmentUpdated = lintAndParse(
+    const fileWithFragmentUpdated = lintAndParseAndValidateResult(
       'test.js',
       fileWithTopLevelFragmentComponentUpdateContents,
       asParseSuccessOrNull(fileWithFragment),
@@ -98,7 +171,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('founds and fixes a single line change', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithSingleUpdateContents,
       asParseSuccessOrNull(baseFile),
@@ -118,7 +191,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedView,
       asParseSuccessOrNull(baseFile),
@@ -138,7 +211,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('double duplication', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       asParseSuccessOrNull(baseFile),
@@ -159,14 +232,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('insertion at the beginning', () => {
-    const threeViews = lintAndParse(
+    const threeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       null,
       emptySet(),
       'trim-bounds',
     )
-    const fourViews = lintAndParse(
+    const fourViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatesAndInsertion,
       asParseSuccessOrNull(threeViews),
@@ -188,14 +261,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('multiple uid changes but the number of elements stays the same', () => {
-    const threeViews = lintAndParse(
+    const threeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       null,
       emptySet(),
       'trim-bounds',
     )
-    const updatedThreeViews = lintAndParse(
+    const updatedThreeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViewsWithChanges,
       asParseSuccessOrNull(threeViews),
@@ -206,8 +279,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('can handle text children fine', () => {
-    const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet(), 'trim-bounds')
-    const end = lintAndParse(
+    const start = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithTwoTextElements,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const end = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoTextElementsWithChanges,
       asParseSuccessOrNull(start),
@@ -218,8 +297,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('can handle changes to a parent and child', () => {
-    const start = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
-    const end = lintAndParse(
+    const start = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const end = lintAndParseAndValidateResult(
       'test.js',
       fileWithChildAndParentUpdated,
       asParseSuccessOrNull(start),
@@ -230,14 +315,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('re-ordered elements should re-order the uid tree', () => {
-    const beforeReOrder = lintAndParse(
+    const beforeReOrder = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedView,
       null,
       emptySet(),
       'trim-bounds',
     )
-    const afterReOrder = lintAndParse(
+    const afterReOrder = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedViewReOrdered,
       asParseSuccessOrNull(beforeReOrder),
@@ -267,8 +352,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('uids should match including root element when root element changes', () => {
-    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
-    const secondResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       baseFileContentsWithDifferentBackground,
       asParseSuccessOrNull(firstResult),
@@ -279,14 +370,14 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('handles elements within arbitrary blocks', () => {
-    const firstResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithArbitraryBlockInside,
       null,
       emptySet(),
       'trim-bounds',
     )
-    const secondResult = lintAndParse(
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithSlightlyDifferentArbitraryBlockInside,
       asParseSuccessOrNull(firstResult),
@@ -297,8 +388,24 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('handles newly inserted duplicate elements without duplicating uids', () => {
-    const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet(), 'trim-bounds')
-    const secondResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithBasicDiv,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
+      "4ed
+        4e0
+      434
+        c85
+          f9b
+      storyboard
+        scene
+          component"
+    `)
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithBasicDivDuplicated,
       asParseSuccessOrNull(firstResult),
@@ -309,8 +416,8 @@ describe('fixParseSuccessUIDs', () => {
       "4ed
         4e0
       434
-        593
-          c85
+        aad
+          aaf
             f9b
       storyboard
         scene
@@ -320,7 +427,7 @@ describe('fixParseSuccessUIDs', () => {
 })
 
 describe('fixExpressionUIDs', () => {
-  it('if expressions are the same type, their uids will be copied over', () => {
+  it('uids will be copied over', () => {
     const arbitraryExpressionPair: Arbitrary<{ first: JSExpression; second: JSExpression }> =
       FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2)).map(([first, second]) => {
         return {
@@ -334,11 +441,7 @@ describe('fixExpressionUIDs', () => {
         mutableAllNewUIDs: emptySet(),
         mappings: [],
       })
-      if (first.type === second.type) {
-        return first.uid === afterFix.uid
-      } else {
-        return first.uid !== afterFix.uid
-      }
+      return first.uid === afterFix.uid
     }
     const prop = FastCheck.property(arbitraryExpressionPair, checkCall)
     FastCheck.assert(prop, { verbose: true })
@@ -346,7 +449,7 @@ describe('fixExpressionUIDs', () => {
 })
 
 describe('fixJSXElementChildUIDs', () => {
-  it('if expressions are the same type, their uids will be copied over', () => {
+  it('uids will be copied over', () => {
     const arbitraryElementPair: Arbitrary<{ first: JSXElementChild; second: JSXElementChild }> =
       FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3)).map(
         ([first, second]) => {
@@ -362,11 +465,7 @@ describe('fixJSXElementChildUIDs', () => {
         mutableAllNewUIDs: emptySet(),
         mappings: [],
       })
-      if (first.type === second.type) {
-        return first.uid === afterFix.uid
-      } else {
-        return first.uid !== afterFix.uid
-      }
+      return first.uid === afterFix.uid
     }
     const prop = FastCheck.property(arbitraryElementPair, checkCall)
     FastCheck.assert(prop, { verbose: true })
@@ -807,7 +906,13 @@ function createFileText(codeSnippet: string): string {
   `
 }
 
-const baseFile = lintAndParse('test.js', baseFileContents, null, emptySet(), 'trim-bounds')
+const baseFile = lintAndParseAndValidateResult(
+  'test.js',
+  baseFileContents,
+  null,
+  emptySet(),
+  'trim-bounds',
+)
 
 function getUidTree(parsedFile: ParsedTextFile): string {
   if (!isParseSuccess(parsedFile)) {
