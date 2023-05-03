@@ -275,7 +275,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? <span data-uid='hello'></span> : null
+          [].length === 0 ? <span data-uid='hello'>Hello there</span> : null
         }
         </div>
         `),
