@@ -1354,7 +1354,7 @@ describe('insertJSXElementChild', () => {
           (
             "hello"
           ) : (
-            "world"
+            <div>"world"</div>
           )
         }
         <div data-uid='child-d' />
@@ -1440,7 +1440,7 @@ describe('insertJSXElementChild', () => {
           // @utopia/uid=child-c
           true ? 
           (
-            "hello"
+            <div>"hello"</div>
           ) : (
             "world"
           )
