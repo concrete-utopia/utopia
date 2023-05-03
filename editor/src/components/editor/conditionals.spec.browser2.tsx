@@ -665,7 +665,7 @@ describe('conditionals', () => {
         <div data-uid='aaa'>
         {
           // @utopia/uid=conditional
-          true ? 5 + 5 + 15: 'bello'
+          true ? 5 + 5 + 15: <div>'bello'</div>
         }
         </div>
       `

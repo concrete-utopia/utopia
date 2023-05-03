@@ -418,7 +418,7 @@ export var storyboard = (
     <div data-uid='group'>
       {
         // @utopia/uid=conditional
-        true ? 'Hello' : null
+        true ? <div>'Hello'</div> : null
       }
     </div>
   </Storyboard>
@@ -458,10 +458,10 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const dragMePath = EP.fromString('sb/group/conditional/0e3')
+      const dragMePath = EP.fromString('sb/group/conditional/33d')
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
-        'NavigatorItemTestId-synthetic_sb/group/conditional/0e3_attribute',
+        'NavigatorItemTestId-regular_sb/group/conditional/33d',
       )
 
       const dragMeElementRect = dragMeElement.getBoundingClientRect()

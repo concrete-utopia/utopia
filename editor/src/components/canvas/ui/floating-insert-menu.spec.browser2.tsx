@@ -202,7 +202,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? null : "Hello there"
+          [].length === 0 ? null : <div>"Hello there"</div>
         }
         </div>
         `),
@@ -229,7 +229,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? null : "Hello there"
+          [].length === 0 ? null : <span data-uid='hello'>Hello there</span>
         }
         </div>
         `),
@@ -261,7 +261,7 @@ describe('Floating insert menu', () => {
               data-uid='newly-added-img'
             />
           ) : (
-            'Hello there'
+            <span data-uid='hello'>Hello there</span>
           )
         }
         </div>
@@ -275,7 +275,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? "Hello there" : null
+          [].length === 0 ? <span data-uid='hello'></span> : null
         }
         </div>
         `),
@@ -297,7 +297,7 @@ describe('Floating insert menu', () => {
         // @utopia/uid=conditional
         // @utopia/conditional=false
         [].length === 0 ? (
-          'Hello there'
+          <span data-uid='hello'>Hello there</span>
         ) : (
           <img
             style={{
