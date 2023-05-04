@@ -865,6 +865,7 @@ export function editorMoveMultiSelectedTemplates(
       newParent,
       'on-complete', // TODO make sure this is the right pick here
       useNewInsertJSXElementChild,
+      null,
     )
     if (outcomeResult == null) {
       return working
@@ -1802,30 +1803,54 @@ export const UPDATE_FNS = {
     const dropTarget = action.dropTarget
     const dragSources = action.dragSources
 
-    const toReparent = reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived))
-
     function reparentToIndexPosition(
       newParentPath: InsertionPath,
       indexPosition: IndexPosition,
     ): EditorModel {
-      const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
+      const outcomeResult = getReparentOutcome(
         builtInDependencies,
-        toReparent,
-        indexPosition,
+        editor.projectContents,
+        editor.nodeModules.files,
+        editor.canvas.openFile?.filename,
+        pathToReparent(dragSources[0]),
         newParentPath,
-        editor,
+        'always',
         'use-new-insertJSXElementChild',
+        indexPosition,
       )
 
-      return {
-        ...withMovedTemplate,
-        selectedViews: newPaths,
-        highlightedViews: [],
-        canvas: {
-          ...withMovedTemplate.canvas,
-          domWalkerInvalidateCount: withMovedTemplate.canvas.domWalkerInvalidateCount + 1,
-        },
+      if (outcomeResult == null) {
+        return editor
       }
+
+      const { commands: reparentCommands, newPath } = outcomeResult
+
+      const reparentStrategy = reparentStrategyForPaste(
+        editor.jsxMetadata,
+        editor.allElementProps,
+        newParentPath.intendedParentPath,
+      )
+
+      const pastedElementMetadata = MetadataUtils.findElementByElementPath(
+        editor.jsxMetadata,
+        dragSources[0],
+      )
+
+      const propertyChangeCommands = getReparentPropertyChanges(
+        reparentStrategy.strategy,
+        newPath,
+        newParentPath.intendedParentPath,
+        editor.jsxMetadata,
+        editor.jsxMetadata,
+        editor.projectContents,
+        editor.canvas.openFile?.filename,
+        pastedElementMetadata?.specialSizeMeasurements.position ?? null,
+        pastedElementMetadata?.specialSizeMeasurements.display ?? null,
+      )
+
+      const allCommands = [...reparentCommands, ...propertyChangeCommands]
+
+      return foldAndApplyCommandsSimple(editor, allCommands)
     }
 
     if (dropTarget.type === 'MOVE_ROW_BEFORE' || dropTarget.type === 'MOVE_ROW_AFTER') {
