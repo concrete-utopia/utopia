@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
 import { zeroCanvasRect } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'

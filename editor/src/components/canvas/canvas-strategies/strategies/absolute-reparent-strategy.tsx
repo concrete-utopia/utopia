@@ -22,7 +22,10 @@ import {
 import { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
-import { replaceContentAffectingPathsWithTheirChildrenRecursive } from './group-like-helpers'
+import {
+  replaceContentAffectingPathsWithTheirChildrenRecursive,
+  retargetStrategyToChildrenOfContentAffectingElements,
+} from './group-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'

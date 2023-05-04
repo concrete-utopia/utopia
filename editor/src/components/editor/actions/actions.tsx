@@ -3,18 +3,21 @@ import update from 'immutability-helper'
 import localforage from 'localforage'
 import { LayoutSystem } from 'utopia-api/core'
 import { imagePathURL } from '../../../common/server'
+import { PinLayoutHelpers } from '../../../core/layout/layout-helpers'
 import {
   maybeSwitchChildrenLayoutProps,
   roundAttributeLayoutValues,
   switchLayoutMetadata,
 } from '../../../core/layout/layout-utils'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
   getAllUniqueUids,
   getIndexInParent,
+  insertChildAndDetails,
   InsertChildAndDetails,
   transformJSXComponentAtElementPath,
+  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -58,10 +61,12 @@ import {
   emptyComments,
   emptyJsxMetadata,
   getJSXAttribute,
+  isElementWithUid,
   isImportStatement,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
+  isJSXFragment,
   modifiableAttributeIsPartOfAttributeValue,
   jsExpressionOtherJavaScript,
   JSXAttributes,
@@ -69,20 +74,26 @@ import {
   jsExpressionValue,
   JSExpressionValue,
   jsxConditionalExpression,
+  JSXConditionalExpression,
   JSXElement,
   jsxElement,
   JSXElementChild,
   JSXElementChildren,
   jsxElementName,
+  JSXFragment,
   jsxFragment,
   jsxTextBlock,
   SettableLayoutSystem,
+  singleLineComment,
   UtopiaJSXComponent,
   walkElements,
   modifiableAttributeIsAttributeValue,
+  isUtopiaJSXComponent,
+  isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
@@ -129,7 +140,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import Utils, { IndexPosition, absolute } from '../../../utils/utils'
 import {
@@ -150,6 +161,7 @@ import {
   canvasFrameToNormalisedFrame,
   clearDragState,
   duplicate,
+  editorMultiselectReparentNoStyleChange,
   getFrameChange,
   moveTemplate,
   produceCanvasTransientState,
@@ -329,7 +341,7 @@ import {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
 } from '../action-types'
-import { defaultSceneElement } from '../defaults'
+import { defaultSceneElement, defaultTransparentViewElement } from '../defaults'
 import { EditorModes, isLiveMode, isSelectMode, Mode } from '../editor-modes'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -383,6 +395,7 @@ import {
   modifyUnderlyingTargetElement,
   packageJsonFileFromProjectContents,
   PersistentModel,
+  persistentModelFromEditorModel,
   removeElementAtPath,
   RightMenuTab,
   SimpleParseSuccess,
@@ -398,6 +411,8 @@ import {
   modifyOpenJsxElementOrConditionalAtPath,
   isRegularNavigatorEntry,
   NavigatorEntry,
+  regularNavigatorEntryOptic,
+  ConditionalClauseNavigatorEntry,
   reparentTargetFromNavigatorEntry,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -452,11 +467,13 @@ import { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
+  addToast,
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
   insertJSXElement,
   openCodeEditorFile,
+  removeToast,
   selectComponents,
   setAssetChecksum,
   setPackageStatus,
@@ -478,19 +495,29 @@ import { getReparentPropertyChanges } from '../../canvas/canvas-strategies/strat
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropsWithoutTLBR, StyleProperties } from '../../inspector/common/css-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { compose2Optics, Optic } from '../../../core/shared/optics/optics'
+import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { compose2Optics, compose3Optics, Optic } from '../../../core/shared/optics/optics'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
   InsertionPath,
   isConditionalClauseInsertionPath,
+  isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
+  getInsertionPathWithSlotBehavior,
 } from '../store/insertion-path'
-import { findMaybeConditionalExpression } from '../../../core/model/conditionals'
+import {
+  findMaybeConditionalExpression,
+  getClauseOptic,
+  getConditionalCaseCorrespondingToBranchPath,
+  isEmptyConditionalBranch,
+  maybeBranchConditionalCase,
+  maybeConditionalExpression,
+} from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
 import {
@@ -499,6 +526,7 @@ import {
   unwrapTextContainingConditional,
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
+import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
