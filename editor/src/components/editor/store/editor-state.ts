@@ -17,6 +17,8 @@ import {
   isJSXConditionalExpression,
   JSXConditionalExpression,
   isJSXArbitraryBlock,
+  isJSXFragment,
+  JSXFragment,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild_DEPRECATED,
@@ -1769,8 +1771,8 @@ export function modifyOpenJsxElementAtPath(
 export function modifyOpenJsxElementOrConditionalAtPath(
   path: ElementPath,
   transform: (
-    element: JSXElement | JSXConditionalExpression,
-  ) => JSXElement | JSXConditionalExpression,
+    element: JSXElement | JSXConditionalExpression | JSXFragment,
+  ) => JSXElement | JSXConditionalExpression | JSXFragment,
   model: EditorState,
 ): EditorState {
   return modifyUnderlyingTargetElement(
@@ -3417,10 +3419,10 @@ export function modifyUnderlyingTargetElement(
   currentFilePath: string,
   editor: EditorState,
   modifyElement: (
-    element: JSXElement | JSXConditionalExpression,
+    element: JSXElement | JSXConditionalExpression | JSXFragment,
     underlying: ElementPath,
     underlyingFilePath: string,
-  ) => JSXElement | JSXConditionalExpression = (element) => element,
+  ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
@@ -3452,7 +3454,11 @@ export function modifyUnderlyingTargetElement(
     } else {
       const nonNullNormalisedPath = targetSuccess.normalisedPath
       function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        if (isJSXElement(element) || isJSXConditionalExpression(element)) {
+        if (
+          isJSXElement(element) ||
+          isJSXConditionalExpression(element) ||
+          isJSXFragment(element)
+        ) {
           const updatedElement = modifyElement(
             element,
             nonNullNormalisedPath,
