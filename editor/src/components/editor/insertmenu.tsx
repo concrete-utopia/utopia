@@ -25,7 +25,7 @@ import {
   setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
-import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
+import { CanvasVector, canvasPoint, point, windowPoint } from '../../core/shared/math-utils'
 import {
   PackageStatus,
   PackageStatusMap,
@@ -34,7 +34,7 @@ import {
 import { ElementPath, Imports, importsEquals } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { assertNever } from '../../core/shared/utils'
-import { Modifier } from '../../utils/modifiers'
+import { Modifier, emptyModifiers } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import { Icn, InspectorSubsectionHeader, UIRow, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
@@ -45,6 +45,7 @@ import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
+  createInteractionViaKeyboard,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
@@ -63,6 +64,8 @@ import { Mode } from './editor-modes'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
+import { CanvasAction } from '../canvas/canvas-types'
+import { EditorDispatch } from './action-types'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -185,22 +188,90 @@ export function elementBeingInsertedEquals(
   return first.type === second.type
 }
 
+const makeInteraction = (
+  component: InsertableComponent,
+  newUID: string,
+  createInteractionSessionCommand: CanvasAction,
+  dispatch: EditorDispatch,
+) => {
+  switch (component.element.type) {
+    case 'JSX_ELEMENT': {
+      const newElement = jsxElement(
+        component.element.name,
+        newUID,
+        setJSXAttributesAttribute(
+          addPositionAbsoluteToProps(component.element.props),
+          'data-uid',
+          jsExpressionValue(newUID, emptyComments),
+        ),
+        component.element.children,
+      )
+
+      return dispatch(
+        [
+          enableInsertModeForJSXElement(
+            newElement,
+            newUID,
+            component.importsToAdd,
+            component.defaultSize,
+          ),
+          createInteractionSessionCommand,
+        ],
+        'everyone',
+      )
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      return dispatch(
+        [
+          enableInsertModeForJSXElement(
+            defaultDivElement(newUID),
+            newUID,
+            component.importsToAdd,
+            component.defaultSize,
+            { wrapInContainer: 'conditional' },
+          ),
+          createInteractionSessionCommand,
+        ],
+        'everyone',
+      )
+    }
+    case 'JSX_FRAGMENT':
+      return dispatch(
+        [
+          enableInsertModeForJSXElement(
+            defaultDivElement(newUID),
+            newUID,
+            component.importsToAdd,
+            component.defaultSize,
+            { wrapInContainer: 'fragment' },
+          ),
+          createInteractionSessionCommand,
+        ],
+        'everyone',
+      )
+    default:
+      assertNever(component.element)
+  }
+}
 const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
   const dispatch = useDispatch()
   const component: InsertableComponent = props.data.value
+
   const projectContents = useEditorState(
     Substores.projectContents,
     (store) => store.editor.projectContents,
-    '',
+    'CustomOption project contents',
   )
+
   const { canvasScale, canvasOffset } = useEditorState(
     Substores.canvasOffset,
     (store) => ({
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }),
-    '',
+    'CustomOption canvas offsets',
   )
+
   const getNewUID = React.useCallback(
     () => generateUidWithExistingComponents(projectContents),
     [projectContents],
@@ -208,13 +279,11 @@ const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
 
   const insertItemOnMouseDown = (event: React.MouseEvent) => {
     const newUID = getNewUID()
-
     const mousePoint = windowToCanvasCoordinates(
       canvasScale,
       canvasOffset,
       windowPoint(point(event.clientX, event.clientY)),
     ).canvasPositionRounded
-
     const createInteractionSessionCommand = CanvasActions.createInteractionSession(
       createInteractionViaMouse(
         mousePoint,
@@ -223,96 +292,20 @@ const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
         'zero-drag-permitted',
       ),
     )
-
-    switch (component.element.type) {
-      case 'JSX_ELEMENT': {
-        const newElement = jsxElement(
-          component.element.name,
-          newUID,
-          setJSXAttributesAttribute(
-            addPositionAbsoluteToProps(component.element.props),
-            'data-uid',
-            jsExpressionValue(newUID, emptyComments),
-          ),
-          component.element.children,
-        )
-
-        return dispatch(
-          [
-            enableInsertModeForJSXElement(
-              newElement,
-              newUID,
-              component.importsToAdd,
-              component.defaultSize,
-            ),
-            createInteractionSessionCommand,
-          ],
-          'everyone',
-        )
-      }
-      case 'JSX_CONDITIONAL_EXPRESSION': {
-        return dispatch(
-          [
-            enableInsertModeForJSXElement(
-              defaultDivElement(newUID),
-              newUID,
-              component.importsToAdd,
-              component.defaultSize,
-              { wrapInContainer: 'conditional' },
-            ),
-            createInteractionSessionCommand,
-          ],
-          'everyone',
-        )
-      }
-      case 'JSX_FRAGMENT':
-        return dispatch(
-          [
-            enableInsertModeForJSXElement(
-              defaultDivElement(newUID),
-              newUID,
-              component.importsToAdd,
-              component.defaultSize,
-              { wrapInContainer: 'fragment' },
-            ),
-            createInteractionSessionCommand,
-          ],
-          'everyone',
-        )
-      default:
-        assertNever(component.element)
-    }
+    makeInteraction(component, newUID, createInteractionSessionCommand, dispatch)
   }
 
   const insertItemOnMouseUp = (event: React.MouseEvent) => {
-    const mousePoint = windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint(point(event.clientX, event.clientY)),
-    ).canvasPositionRounded
-
     dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
-    dispatch(
-      [
-        CanvasActions.createInteractionSession(
-          createHoverInteractionViaMouse(
-            mousePoint,
-            Modifier.modifiersForEvent(event),
-            boundingArea(),
-            'zero-drag-permitted',
-          ),
-        ),
-      ],
-      'everyone',
-    )
   }
+
   return (
     <div ref={props.innerRef} {...props.innerProps}>
       <InsertItem
         key={`insert-item-third-party-${props.innerProps.id}`}
         type={'component'}
         label={component.name}
-        selected={false}
+        selected={props.isFocused}
         // eslint-disable-next-line react/jsx-no-bind
         onMouseDown={insertItemOnMouseDown}
         // eslint-disable-next-line react/jsx-no-bind
@@ -333,7 +326,7 @@ type ComponentItem = {
   value: InsertableComponent
 }
 
-function useStyles(): StylesConfig<GroupItem, false> {
+function useSelectStyles(): StylesConfig<GroupItem, false> {
   const colorTheme = useColorTheme()
   return React.useMemo(
     () => ({
@@ -415,6 +408,7 @@ function useStyles(): StylesConfig<GroupItem, false> {
 
 const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   const dispatch = useDispatch()
+  const styles = useSelectStyles()
   const [filter, setFilter] = React.useState('')
 
   function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
@@ -469,7 +463,35 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     })
   }, [insertableGroups])
 
-  const styles = useStyles()
+  const onChange = React.useCallback(
+    (e: ComponentItem) => {
+      makeInteraction(
+        e.value,
+        generateUidWithExistingComponents(props.projectContents),
+        CanvasActions.createInteractionSession(
+          createInteractionViaKeyboard([], emptyModifiers, null as any),
+        ),
+        dispatch,
+      )
+
+      dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
+
+      dispatch(
+        [
+          CanvasActions.createInteractionSession(
+            createHoverInteractionViaMouse(
+              canvasPoint({ x: 0, y: 0 }),
+              emptyModifiers,
+              boundingArea(),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ],
+        'everyone',
+      )
+    },
+    [dispatch, props.projectContents],
+  )
 
   return (
     <WindowedSelect
@@ -487,6 +509,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
       components={{
         Option: CustomOption,
       }}
+      onChange={onChange}
       styles={styles}
       filterOption={createFilter({
         ignoreAccents: true,
@@ -571,7 +594,7 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
     <Icn
       category={props.category ?? 'element'}
       type={props.type}
-      color={props.selected ? 'primary' : 'main'}
+      color={props.selected ? 'on-highlight-main' : 'main'}
       width={18}
       height={18}
     />
@@ -583,12 +606,15 @@ export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertI
     <UIRow
       rowHeight={'normal'}
       css={{
+        borderRadius: 2,
+        padding: 4,
         background: props.selected ? colorTheme.primary.value : undefined,
         color: props.selected ? colorTheme.white.value : undefined,
         opacity: props.disabled ? 0.3 : 1,
         gap: 8,
+        border: '1px solid transparent',
         '&:hover': {
-          border: `1px solid ${colorTheme.primary.value}`,
+          borderColor: `${colorTheme.primary.value}`,
         },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
