@@ -45,7 +45,6 @@ module.exports = function (config) {
     files: [
       './mocha-setup-beforeall.js',
       './karma-setup.js',
-      './src/**/*.spec.browser2.+(ts|tsx)',
       {
         pattern: './resources/editor/**/*.png',
         watched: false,

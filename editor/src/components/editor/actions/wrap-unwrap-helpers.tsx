@@ -254,13 +254,7 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement(
-                'always',
-                staticTarget,
-                elementToInsert,
-                { importsToAdd, indexPosition },
-                'use-deprecated-insertJSXElementChild',
-              ),
+              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
           }
@@ -282,13 +276,7 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement(
-                'always',
-                staticTarget,
-                elementToInsert,
-                { importsToAdd, indexPosition },
-                'use-deprecated-insertJSXElementChild',
-              ),
+              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
           }
@@ -310,13 +298,7 @@ export function wrapElementInsertions(
         case 'CHILD_INSERTION':
           return {
             updatedEditor: foldAndApplyCommandsSimple(editor, [
-              addElement(
-                'always',
-                staticTarget,
-                elementToInsert,
-                { importsToAdd, indexPosition },
-                'use-deprecated-insertJSXElementChild',
-              ),
+              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
           }
