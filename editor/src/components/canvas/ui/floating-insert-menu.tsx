@@ -525,7 +525,13 @@ export var FloatingMenu = React.memo(() => {
       }
       return actionsToDispatch
     },
-    [selectedViewsref, floatingMenuState, projectContentsRef, fixedSizeForInsertion],
+    [
+      selectedViewsref,
+      floatingMenuState,
+      projectContentsRef,
+      getInsertionPath,
+      fixedSizeForInsertion,
+    ],
   )
 
   const onChangeElement = React.useCallback(
@@ -600,11 +606,12 @@ export var FloatingMenu = React.memo(() => {
       return actionsToDispatch
     },
     [
+      selectedViewsref,
       floatingMenuState,
       projectContentsRef,
-      selectedViewsref,
-      fixedSizeForInsertion,
       addContentForInsertion,
+      getInsertionPath,
+      fixedSizeForInsertion,
     ],
   )
 
