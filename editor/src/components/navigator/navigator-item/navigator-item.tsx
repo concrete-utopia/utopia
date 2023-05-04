@@ -15,7 +15,12 @@ import {
 } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  isJSXElementLike,
+  isJSXTextBlock,
+} from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { getValueFromComplexMap } from '../../../utils/map'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -432,9 +437,18 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem entryNavigatorDepth',
   )
 
+  const containsExpressions: boolean = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return elementContainsExpressions(navigatorEntry.elementPath, store.editor.jsxMetadata)
+    },
+    'NavigatorItem entryNavigatorDepth',
+  )
+
   const childComponentCount = props.noOfChildren
 
-  const isDynamic = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
+  const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
+  const isDynamic = isGenerated || containsExpressions
   const isConditional = useEditorState(
     Substores.metadata,
     (store) => {
@@ -731,3 +745,10 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
     </React.Fragment>
   )
 })
+
+function elementContainsExpressions(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  return MetadataUtils.isGeneratedTextFromMetadata(path, metadata)
+}

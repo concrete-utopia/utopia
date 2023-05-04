@@ -621,10 +621,13 @@ function collectMetadataForElement(
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
+  textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+
+  const textContentsMaybe = element.textContent
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(
     element,
@@ -638,6 +641,7 @@ function collectMetadataForElement(
     globalFrame: globalFrame,
     localFrame: localFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
+    textContentsMaybe: textContentsMaybe,
   }
 }
 
@@ -720,7 +724,7 @@ function collectAndCreateMetadataForElement(
   pathsForElement: ElementPath[],
   globalProps: DomWalkerInternalGlobalProps,
 ) {
-  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
+  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject, textContentsMaybe } =
     collectMetadataForElement(
       element,
       parentPoint,
@@ -754,6 +758,7 @@ function collectAndCreateMetadataForElement(
       null,
       null,
       'not-a-conditional',
+      textContentsMaybe,
     )
   })
 
@@ -1055,6 +1060,7 @@ function walkCanvasRootFragment(
       null,
       null, // this comes from the Spy Wrapper
       'not-a-conditional',
+      null,
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata

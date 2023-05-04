@@ -1483,7 +1483,7 @@ describe('actions', () => {
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
-              true ? 'hello' : 'goodbye'
+              true ? 'hello' : <span>'goodbye'</span>
             }
           </div>
         `
@@ -1571,7 +1571,7 @@ describe('actions', () => {
             {
               // @utopia/uid=conditional
               true
-              ? true /* @utopia/uid=conditional2 */ ? 'foo' : 'bar'
+              ? true /* @utopia/uid=conditional2 */ ? 'foo' : <span>'bar'</span>
               : <div data-uid='ddd'>baz</div>
             }
           </div>
