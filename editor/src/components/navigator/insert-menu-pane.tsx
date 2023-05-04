@@ -54,7 +54,12 @@ export const InsertMenuPane = React.memo(() => {
   }, [dispatch])
 
   return (
-    <Section data-name='InsertMenu' onFocus={onFocus} tabIndex={-1} style={{ width: '100%' }}>
+    <Section
+      data-name='InsertMenu'
+      onFocus={onFocus}
+      tabIndex={-1}
+      style={{ width: '100%', height: '100%' }}
+    >
       <SectionTitleRow minimised={false} toggleMinimised={NO_OP} hideButton={true}>
         <FlexRow flexGrow={1} style={{ position: 'relative' }}>
           <Title>Insert</Title>
@@ -63,10 +68,7 @@ export const InsertMenuPane = React.memo(() => {
           <Icons.Cross onMouseDown={onClickClose} onClick={onClickClose} />
         </Button>
       </SectionTitleRow>
-      <SectionBodyArea
-        minimised={false}
-        style={{ paddingLeft: 8, paddingRight: 8, overflow: 'auto' }}
-      >
+      <SectionBodyArea minimised={false} style={{ paddingLeft: 8, paddingRight: 8, flex: 1 }}>
         <InsertMenu />
       </SectionBodyArea>
     </Section>
