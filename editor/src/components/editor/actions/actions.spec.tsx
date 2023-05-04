@@ -1072,7 +1072,12 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
 
-    const action = insertInsertable(targetPath, menuInsertable, 'do-not-add', null)
+    const action = insertInsertable(
+      childInsertionPath(targetPath),
+      menuInsertable,
+      'do-not-add',
+      null,
+    )
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
@@ -1172,7 +1177,12 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
 
-    const action = insertInsertable(targetPath, menuInsertable, 'add-size', null)
+    const action = insertInsertable(
+      childInsertionPath(targetPath),
+      menuInsertable,
+      'add-size',
+      null,
+    )
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
@@ -1271,7 +1281,7 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
 
-    const action = insertInsertable(targetPath, imgInsertable, 'add-size', null)
+    const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', null)
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
@@ -1364,7 +1374,7 @@ describe('INSERT_INSERTABLE', () => {
       ['card-outer-div'],
     ])
 
-    const action = insertInsertable(targetPath, imgInsertable, 'add-size', {
+    const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', {
       type: 'back',
     })
 
