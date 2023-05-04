@@ -1198,6 +1198,25 @@ function setZIndexOnSelected(
     selectedViews: [],
   }
   return selectedViews.reduce((working, selectedView) => {
+    const siblings = MetadataUtils.getSiblingsUnordered(editor.jsxMetadata, selectedView)
+    const currentIndex = MetadataUtils.getIndexInParent(editor.jsxMetadata, selectedView)
+    const isFirstSiblingMovedBackwards =
+      currentIndex === 0 && (index === 'back' || index === 'backward')
+
+    const isLastSiblingMovedForward =
+      currentIndex === siblings.length - 1 && (index === 'front' || index === 'forward')
+
+    const isElementRootOfConditionalBranch =
+      getConditionalCaseCorrespondingToBranchPath(selectedView, editor.jsxMetadata) != null
+
+    if (
+      isFirstSiblingMovedBackwards ||
+      isLastSiblingMovedForward ||
+      isElementRootOfConditionalBranch
+    ) {
+      return working
+    }
+
     const indexPosition = indexPositionForAdjustment(selectedView, working, index)
     return editorMoveTemplate(
       selectedView,
@@ -4231,12 +4250,35 @@ export const UPDATE_FNS = {
       editor,
     )
 
-    return modifyOpenJsxElementAtPath(
+    return modifyOpenJsxElementOrConditionalAtPath(
       action.target,
       (element) => {
-        return {
-          ...element,
-          name: action.elementName,
+        switch (element.type) {
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return element
+          case 'JSX_ELEMENT':
+            if (action.elementName.type === 'JSX_FRAGMENT') {
+              return jsxFragment(element.uid, element.children, true)
+            } else {
+              return {
+                ...element,
+                name: action.elementName.name,
+              }
+            }
+          case 'JSX_FRAGMENT':
+            if (action.elementName.type === 'JSX_FRAGMENT') {
+              return element
+            }
+            return jsxElement(
+              action.elementName.name,
+              element.uid,
+              jsxAttributesFromMap({
+                'data-uid': jsExpressionValue(element.uid, emptyComments),
+              }),
+              element.children,
+            )
+          default:
+            assertNever(element)
         }
       },
       updatedEditor,

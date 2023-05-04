@@ -279,7 +279,7 @@ async function clickOnce(
 ): Promise<boolean> {
   await page.waitForXPath(xpath)
   const [button] = await page.$x(xpath)
-  await button!.click()
+  await (button as puppeteer.ElementHandle<HTMLButtonElement>)!.click()
   return consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
 }
 

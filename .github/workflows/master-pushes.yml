@@ -154,8 +154,8 @@ jobs:
       [
         test-editor-code,
         test-editor-jest,
-        test-editor-karma-shard-1,
-        test-editor-karma-shard-2,
+        call-test-editor-karma-shard-1,
+        call-test-editor-karma-shard-2,
         test-server,
       ]
     runs-on: ubuntu-latest
