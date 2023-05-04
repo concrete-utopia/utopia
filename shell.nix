@@ -531,13 +531,15 @@ let
 
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
 
-  # TODO Come back to these when trying to use nix to build a docker container - https://stackoverflow.com/questions/58421505/how-do-i-apply-a-nix-shell-config-in-a-docker-image
   releaseScripts = [
     (pkgs.writeScriptBin "build-editor" ''
       #!/usr/bin/env bash
       set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
+      pnpm install
+      install-utopia-api
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      pnpm install --unsafe-perm
+      pnpm install
       pnpm run production
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
@@ -548,23 +550,9 @@ let
       pnpm install
       CI=false pnpm run export
     '')
-    (pkgs.writeScriptBin "build-server" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-build utopia-web
-      cp --verbose $(${pkgs.haskellPackages.cabal-plan}/bin/cabal-plan list-bin exe:utopia-web) .
-    '')
-    (pkgs.writeScriptBin "build-all" ''
-      #!/usr/bin/env bash
-      set -e
-      build-editor
-      build-website
-      build-server
-    '')
   ];
 
-  scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
+  scripts = withCustomDevScripts ++ releaseScripts;
 
   linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.xlibsWrapper pkgs.xorg.libxkbfile pkgs.google-chrome ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
