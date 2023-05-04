@@ -4940,26 +4940,6 @@ export const UPDATE_FNS = {
             let withMaybeUpdatedParent = utopiaComponents
             let insertedElementChildren: JSXElementChildren = []
 
-            if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
-              withMaybeUpdatedParent = transformElementAtPath(
-                utopiaComponents,
-                insertionPath.intendedParentPath,
-                (parentElement) => {
-                  if (isJSXElement(parentElement)) {
-                    insertedElementChildren.push(...parentElement.children)
-                    return jsxElement(
-                      parentElement.name,
-                      parentElement.uid,
-                      parentElement.props,
-                      [],
-                    )
-                  } else {
-                    throw new Error(`Not handled yet.`)
-                  }
-                },
-              )
-            }
-
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
