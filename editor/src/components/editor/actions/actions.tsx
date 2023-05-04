@@ -488,6 +488,7 @@ import {
   InsertionPath,
   isConditionalClauseInsertionPath,
   childInsertionPath,
+  conditionalClauseInsertionPath,
 } from '../store/insertion-path'
 import { findMaybeConditionalExpression } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
@@ -2364,11 +2365,15 @@ export const UPDATE_FNS = {
           type: 'back',
         }
 
+        const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
+          ? conditionalClauseInsertionPath(newPath, 'true-case', 'wrap-with-fragment')
+          : childInsertionPath(newPath)
+
         const withElementsAdded = editorMoveMultiSelectedTemplates(
           builtInDependencies,
           orderedActionTargets,
           indexPosition,
-          childInsertionPath(newPath),
+          insertionPath,
           includeToast(detailsOfUpdate, withWrapperViewAdded),
           'use-deprecated-insertJSXElementChild',
         )
