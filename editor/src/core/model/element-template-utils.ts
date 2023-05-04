@@ -97,16 +97,33 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
     }
   }
 
+  function extractUidFromAttributes(attributes: JSXAttributes): void {
+    for (const attributePart of attributes) {
+      switch (attributePart.type) {
+        case 'JSX_ATTRIBUTES_ENTRY':
+          extractUid(attributePart.value)
+          break
+        case 'JSX_ATTRIBUTES_SPREAD':
+          extractUid(attributePart.spreadValue)
+          break
+        default:
+          assertNever(attributePart)
+      }
+    }
+  }
+
   function extractUid(element: JSXElementChild): void {
     checkUID(element.uid)
     switch (element.type) {
       case 'JSX_ELEMENT':
         fastForEach(element.children, extractUid)
+        extractUidFromAttributes(element.props)
         break
       case 'JSX_FRAGMENT':
         fastForEach(element.children, extractUid)
         break
       case 'JSX_CONDITIONAL_EXPRESSION':
+        extractUid(element.condition)
         extractUid(element.whenTrue)
         extractUid(element.whenFalse)
         break

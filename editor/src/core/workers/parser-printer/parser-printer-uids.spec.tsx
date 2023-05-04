@@ -76,7 +76,7 @@ describe('parseCode', () => {
           ),
         )
         const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(117)
+        expect(result.uniqueIDs).toHaveLength(469)
         expect(result.duplicateIDs).toHaveLength(0)
       },
       (_) => {
@@ -109,7 +109,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(4)
+    expect(result.uniqueIDs).toHaveLength(7)
     expect(result.duplicateIDs).toHaveLength(0)
   })
 
@@ -152,7 +152,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(8)
+    expect(result.uniqueIDs).toHaveLength(14)
     expect(result.duplicateIDs).toHaveLength(0)
   })
 
@@ -227,7 +227,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(result.uniqueIDs).toHaveLength(11)
+    expect(result.uniqueIDs).toHaveLength(26)
     expect(result.duplicateIDs).toHaveLength(0)
   })
 
@@ -287,7 +287,7 @@ describe('parseCode', () => {
     )
 
     const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultBefore.uniqueIDs).toHaveLength(6)
+    expect(resultBefore.uniqueIDs).toHaveLength(17)
     expect(resultBefore.duplicateIDs).toHaveLength(0)
 
     await renderResult.dispatch(
@@ -316,7 +316,7 @@ describe('parseCode', () => {
     )
 
     const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultAfter.uniqueIDs).toHaveLength(11)
+    expect(resultAfter.uniqueIDs).toHaveLength(25)
     expect(resultAfter.duplicateIDs).toHaveLength(0)
   })
 })
