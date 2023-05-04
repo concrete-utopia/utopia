@@ -18,12 +18,14 @@ import {
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
 import { UseNewInsertJsxElementChild } from '../canvas-utils'
+import { IndexPosition } from '../../../utils/utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
   newParent: InsertionPath
   useNewInsertJSXElementChild: UseNewInsertJsxElementChild
+  indexPosition: IndexPosition | null
 }
 
 export function reparentElement(
@@ -31,6 +33,7 @@ export function reparentElement(
   target: ElementPath,
   newParent: InsertionPath,
   useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
+  indexPosition?: IndexPosition | null,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
@@ -38,6 +41,7 @@ export function reparentElement(
     target: target,
     newParent: newParent,
     useNewInsertJSXElementChild: useNewInsertJSXElementChild,
+    indexPosition: indexPosition ?? null,
   }
 }
 
@@ -70,7 +74,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
                     command.newParent,
                     underlyingElementTarget,
                     withElementRemoved,
-                    null,
+                    command.indexPosition,
                   )
                 : insertElementAtPath_DEPRECATED(
                     editorState.projectContents,
@@ -78,7 +82,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
                     command.newParent,
                     underlyingElementTarget,
                     withElementRemoved,
-                    null,
+                    command.indexPosition,
                   )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,

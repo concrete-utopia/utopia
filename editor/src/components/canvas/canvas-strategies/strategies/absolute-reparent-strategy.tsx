@@ -124,6 +124,7 @@ export function baseAbsoluteReparentStrategy(
                   childInsertionPath(newParent),
                   'always',
                   'use-deprecated-insertJSXElementChild',
+                  null,
                 )
 
                 if (reparentResult == null) {
