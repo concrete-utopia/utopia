@@ -104,6 +104,7 @@ import {
   REMOVE_ABSOLUTE_POSITIONING,
   RESIZE_TO_FIT,
   JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
+  OPEN_INSERT_MENU,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -966,6 +967,12 @@ export function handleKeyDown(
           return []
         }
         return [EditorActions.applyCommandsAction(commands)]
+      },
+      [OPEN_INSERT_MENU]: () => {
+        return [
+          EditorActions.setPanelVisibility('rightmenu', true),
+          EditorActions.setRightMenuTab(RightMenuTab.Insert),
+        ]
       },
     })
   }
