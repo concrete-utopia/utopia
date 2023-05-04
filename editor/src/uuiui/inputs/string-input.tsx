@@ -27,7 +27,8 @@ export interface StringInputProps
   className?: string
   DEPRECATED_labelBelow?: React.ReactChild
   controlStatus?: ControlStatus
-  ignoreHandlers?: boolean
+  containerStyle?: React.CSSProperties
+  onEscape?: () => void
 }
 
 export const StringInput = React.memo(
@@ -40,6 +41,8 @@ export const StringInput = React.memo(
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
+        containerStyle,
+        onEscape,
         ...inputProps
       },
       propsRef,
@@ -123,6 +126,7 @@ export const StringInput = React.memo(
                   hasLabel: false,
                 }),
               ]}
+              style={containerStyle}
               onKeyDown={onKeyDown}
               className={inputProps.className}
               ref={composeRefs(ref, propsRef)}
@@ -130,6 +134,7 @@ export const StringInput = React.memo(
               disabled={disabled}
               autoComplete='off'
               spellCheck={false}
+              onEscape={onEscape}
             />
             {labelBelow == null ? null : (
               <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
@@ -153,13 +158,12 @@ const LabelBelow = styled.label({
 export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
-  ignoreHandlers?: boolean
 }
 
 export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessStringInputProps>(
   (props, propsRef) => {
     const { onSubmitValue, onEscape, ...otherProps } = props
-    const { disabled, onKeyDown, onFocus, ignoreHandlers } = otherProps
+    const { disabled, onKeyDown, onFocus } = otherProps
 
     const ref = React.useRef<HTMLInputElement>(null)
 
@@ -167,9 +171,6 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (onKeyDown != null) {
           onKeyDown(e)
-        }
-        if (ignoreHandlers === true) {
-          return
         }
         if (e.key === 'Escape' || e.key === 'Enter') {
           e.preventDefault()
@@ -186,7 +187,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
           }
         }
       },
-      [onKeyDown, ref, onSubmitValue, onEscape, ignoreHandlers],
+      [onKeyDown, ref, onSubmitValue, onEscape],
     )
 
     const handleOnFocus = React.useCallback(
