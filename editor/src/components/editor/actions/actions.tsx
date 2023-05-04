@@ -2920,6 +2920,7 @@ export const UPDATE_FNS = {
           action.pasteInto,
           'always', // TODO Before merge make sure this is the right pick here
           'use-new-insertJSXElementChild',
+          null,
         )
 
         if (outcomeResult == null) {
