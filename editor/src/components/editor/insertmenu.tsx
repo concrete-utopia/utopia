@@ -469,7 +469,12 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         e.value,
         generateUidWithExistingComponents(props.projectContents),
         CanvasActions.createInteractionSession(
-          createInteractionViaKeyboard([], emptyModifiers, null as any),
+          createInteractionViaMouse(
+            canvasPoint({ x: 0, y: 0 }),
+            emptyModifiers,
+            boundingArea(),
+            'zero-drag-permitted',
+          ),
         ),
         dispatch,
       )
@@ -483,7 +488,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
               canvasPoint({ x: 0, y: 0 }),
               emptyModifiers,
               boundingArea(),
-              'zero-drag-not-permitted',
+              'zero-drag-permitted',
             ),
           ),
         ],
