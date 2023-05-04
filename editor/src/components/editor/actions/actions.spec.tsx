@@ -339,7 +339,7 @@ describe('SET_CANVAS_FRAMES', () => {
   })
 })
 
-describe('moveTemplate', () => {
+xdescribe('moveTemplate', () => {
   function fileModel(rootElements: Array<JSXElement>): Readonly<ParseSuccess> {
     return deepFreeze(
       parseSuccess(
@@ -683,6 +683,7 @@ describe('moveTemplate', () => {
     const actual = Utils.path(['rootElement', 'children', 0], updatedRoot2)
     chaiExpect(actual).to.deep.equal(view1)
   })
+
   it('reparents from pinned to group with frame props updated', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),

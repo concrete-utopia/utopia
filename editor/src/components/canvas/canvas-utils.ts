@@ -47,6 +47,7 @@ import {
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
+  insertJSXElementChild,
 } from '../../core/model/element-template-utils'
 import {
   fixUtopiaElement,
@@ -186,7 +187,11 @@ import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsContentAffecting } from './canvas-strategies/strategies/group-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
-import { childInsertionPath, conditionalClauseInsertionPath } from '../editor/store/insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getInsertionPathWithSlotBehavior,
+} from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 
@@ -2294,10 +2299,21 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertResult = insertElementAtPath_DEPRECATED(
+                  const insertionPath = getInsertionPathWithSlotBehavior(
+                    underlyingNewParentPath,
                     workingEditorState.projectContents,
+                    workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
-                    childInsertionPath(underlyingNewParentPath),
+                    workingEditorState.jsxMetadata,
+                  )
+
+                  if (insertionPath == null) {
+                    return workingSuccess
+                  }
+
+                  const insertResult = insertJSXElementChild(
+                    workingEditorState.projectContents,
+                    insertionPath,
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
                     indexPosition,
