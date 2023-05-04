@@ -1136,6 +1136,7 @@ export function elementChildSupportsChildrenAlsoText(
           ? 'supportsChildren'
           : 'doesNotSupportChildren'
       }
+      return element.children.length > 0 ? 'supportsChildren' : 'doesNotSupportChildren'
     }
     // We don't know at this stage.
     return null
