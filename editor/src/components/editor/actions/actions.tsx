@@ -528,6 +528,8 @@ import {
 } from './wrap-unwrap-helpers'
 import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
+import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
+import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1881,14 +1883,14 @@ export const UPDATE_FNS = {
           switch (dropTarget.target.type) {
             case 'REGULAR':
             case 'CONDITIONAL_CLAUSE': {
-              const newParent = reparentTargetFromNavigatorEntry(
+              const newParentPath = reparentTargetFromNavigatorEntry(
                 dropTarget.target,
                 editor.projectContents,
                 editor.jsxMetadata,
                 editor.nodeModules.files,
                 editor.canvas.openFile?.filename,
               )
-              return reparentToIndexPosition(newParent, absolute(0))
+              return reparentToIndexPosition(newParentPath, absolute(0))
             }
             case 'SYNTHETIC': {
               // Find the containing conditional clause, which should be an immediate parent,
@@ -2913,6 +2915,7 @@ export const UPDATE_FNS = {
       let newPaths: Array<ElementPath> = []
       const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
+
         const outcomeResult = getReparentOutcome(
           builtInDependencies,
           workingEditorState.projectContents,
