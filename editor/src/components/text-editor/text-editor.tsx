@@ -69,7 +69,9 @@ export function escapeHTML(s: string): string {
   return encoded.replace(/\n/g, '\n<br />')
 }
 
-// This is a very veer
+// This is a very basic function to separate the real text content and the JS content in curly brackets
+// We only want to html encode in text content, but not in js content
+// E.g. we don't want to encode the < in `{ 2>3 ? "foo" : "bar" }
 function encodeHTMLWhenNotInJsCode(s: string): string {
   let result = ''
   let parenCounter = 0
