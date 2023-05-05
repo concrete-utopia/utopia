@@ -388,7 +388,6 @@ function collectReparentCommands(
     pathToReparent(path),
     childInsertionPath(targetParent),
     'always',
-    'use-deprecated-insertJSXElementChild',
     null,
   )
   if (outcomeResult == null) {

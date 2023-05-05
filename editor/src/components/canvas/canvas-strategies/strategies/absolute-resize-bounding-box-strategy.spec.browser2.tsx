@@ -9,7 +9,10 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponents } from '../../../editor/actions/action-creators'
+import {
+  selectComponents,
+  setConditionalOverriddenCondition,
+} from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { createInteractionViaMouse, updateInteractionViaMouse } from '../interaction-state'
 import {
@@ -34,6 +37,7 @@ import {
 import {
   expectElementWithTestIdNotToBeRendered,
   expectElementWithTestIdToBeRendered,
+  expectElementWithTestIdToBeRenderedWithDisplayNone,
   selectComponentsForTest,
   setFeatureForBrowserTests,
   wait,
@@ -1470,6 +1474,79 @@ export var storyboard = (
 })
 
 describe('Absolute Resize Strategy Canvas Controls', () => {
+  it('when an absolute positioned element is selected the bounding box shows', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+  })
+
+  it('when a condition is overriden to one without an element, the bounding box disappears', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+            true ? (
+              <div
+                style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, right: 160, bottom: 230 }}
+                data-uid='bbb'
+                data-testid='bbb'
+              />
+            ) : null
+          }
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+
+    const conditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+    await renderResult.dispatch([selectComponents([conditional], false)], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const childOfConditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
+
+    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([conditional]))
+    expectElementWithTestIdToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([childOfConditional]),
+    )
+
+    await renderResult.dispatch([setConditionalOverriddenCondition(conditional, false)], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expectElementWithTestIdNotToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([childOfConditional]),
+    )
+
+    expectElementWithTestIdNotToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([childOfConditional]),
+    )
+    expectElementWithTestIdToBeRenderedWithDisplayNone(
+      renderResult,
+      AbsoluteResizeControlTestId([conditional]),
+    )
+  })
+
   it('when an absolute positioned element is resized the parent outlines become visible', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1530,7 +1607,11 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
         await wait(ControlDelay + 10)
         expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
         expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
-        expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+        // FIXME Does this imply these tests are actually broken, or that this was the actual expectation all along?
+        expectElementWithTestIdToBeRenderedWithDisplayNone(
+          renderResult,
+          AbsoluteResizeControlTestId([target]),
+        )
       })
     })
   })

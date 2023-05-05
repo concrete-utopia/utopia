@@ -864,7 +864,6 @@ export function editorMoveMultiSelectedTemplates(
       pathToReparent(target),
       newParent,
       'on-complete', // TODO make sure this is the right pick here
-      useNewInsertJSXElementChild,
       null,
     )
     if (outcomeResult == null) {
@@ -1815,7 +1814,6 @@ export const UPDATE_FNS = {
         pathToReparent(dragSources[0]),
         newParentPath,
         'always',
-        'use-new-insertJSXElementChild',
         indexPosition,
       )
 
@@ -2438,11 +2436,15 @@ export const UPDATE_FNS = {
           type: 'back',
         }
 
+        const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
+          ? conditionalClauseInsertionPath(newPath, 'true-case', 'wrap-with-fragment')
+          : childInsertionPath(newPath)
+
         const withElementsAdded = editorMoveMultiSelectedTemplates(
           builtInDependencies,
           orderedActionTargets,
           indexPosition,
-          childInsertionPath(newPath),
+          insertionPath,
           includeToast(detailsOfUpdate, withWrapperViewAdded),
           'use-deprecated-insertJSXElementChild',
         )
@@ -2919,7 +2921,6 @@ export const UPDATE_FNS = {
           elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
           action.pasteInto,
           'always', // TODO Before merge make sure this is the right pick here
-          'use-new-insertJSXElementChild',
           null,
         )
 
@@ -4965,26 +4966,6 @@ export const UPDATE_FNS = {
             const insertedElementName = action.toInsert.element.name
             let withMaybeUpdatedParent = utopiaComponents
             let insertedElementChildren: JSXElementChildren = []
-
-            if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
-              withMaybeUpdatedParent = transformElementAtPath(
-                utopiaComponents,
-                insertionPath.intendedParentPath,
-                (parentElement) => {
-                  if (isJSXElement(parentElement)) {
-                    insertedElementChildren.push(...parentElement.children)
-                    return jsxElement(
-                      parentElement.name,
-                      parentElement.uid,
-                      parentElement.props,
-                      [],
-                    )
-                  } else {
-                    throw new Error(`Not handled yet.`)
-                  }
-                },
-              )
-            }
 
             insertedElementChildren.push(...action.toInsert.element.children)
             const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)

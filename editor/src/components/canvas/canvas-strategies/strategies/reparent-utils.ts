@@ -46,7 +46,6 @@ import {
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
-import { UseNewInsertJsxElementChild } from '../../canvas-utils'
 import { IndexPosition } from '../../../../utils/utils'
 
 interface GetReparentOutcomeResult {
@@ -90,7 +89,6 @@ export function getReparentOutcome(
   toReparent: ToReparent,
   targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
   indexPosition: IndexPosition | null,
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
@@ -140,15 +138,7 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(
-        reparentElement(
-          whenToRun,
-          toReparent.target,
-          newParent,
-          useNewInsertJSXElementChild,
-          indexPosition,
-        ),
-      )
+      commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':

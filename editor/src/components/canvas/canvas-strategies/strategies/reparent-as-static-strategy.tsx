@@ -163,7 +163,6 @@ function applyStaticReparent(
             pathToReparent(target),
             childInsertionPath(newParent),
             'always',
-            'use-deprecated-insertJSXElementChild',
             null,
           )
           let duplicatedElementNewUids: { [elementPath: string]: string } = {}
