@@ -964,6 +964,37 @@ describe('findJSXElementChildAtPath', () => {
     ])
   })
 
+  it('conditional expressions with one branch that are JSXAttribute', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {
+              // @utopia/uid=conditional-1
+              true ? 
+              (
+                "hello"
+              ) : (
+                <span data-uid='false'>"world"</span>
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false',
+    ])
+  })
+
   it('conditional expressions with branches that are JSXAttribute', () => {
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
@@ -989,9 +1020,7 @@ describe('findJSXElementChildAtPath', () => {
     expectElementAtPathHasMatchingUIDForPaths(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/831',
+      // conditionals with only text are not parsed as conditional expressions anymore, rather they are treated as expressions embedded in the text content of their parent
     ])
   })
 
@@ -1282,7 +1311,7 @@ describe('insertJSXElementChild', () => {
           (
             "hello-will be deleteed"
           ) : (
-            "world"
+            <span>"world"</span>
           )
         }
         <div data-uid='child-d' />
@@ -1325,7 +1354,7 @@ describe('insertJSXElementChild', () => {
           (
             "hello"
           ) : (
-            "world"
+            <div>"world"</div>
           )
         }
         <div data-uid='child-d' />
@@ -1371,7 +1400,7 @@ describe('insertJSXElementChild', () => {
           (
             "hello"
           ) : (
-            "world-will be deleted"
+            <span>"world-will be deleted"</span>
           )
         }
         <div data-uid='child-d' />
@@ -1411,7 +1440,7 @@ describe('insertJSXElementChild', () => {
           // @utopia/uid=child-c
           true ? 
           (
-            "hello"
+            <div>"hello"</div>
           ) : (
             "world"
           )

@@ -286,7 +286,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     }
   }, [dispatch, elementPath, elementState, metadataRef])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (myElement.current == null) {
       return
     }

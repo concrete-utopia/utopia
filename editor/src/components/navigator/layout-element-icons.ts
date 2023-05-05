@@ -53,10 +53,15 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
   ) // TODO Memoize Icon Result
 }
 
-export function createComponentOrElementIconProps(element: ElementInstanceMetadata): IcnPropsBase {
+export function createComponentOrElementIconProps(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  navigatorEntry: NavigatorEntry | null,
+): IcnPropsBase {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   return (
     createComponentIconPropsFromMetadata(element) ??
-    createElementIconPropsFromMetadata(null, element)
+    createElementIconPropsFromMetadata(elementPath, metadata, navigatorEntry)
   )
 }
 
@@ -177,9 +182,11 @@ function createLayoutIconProps(
 }
 
 export function createElementIconPropsFromMetadata(
+  elementPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
   navigatorEntry: NavigatorEntry | null,
-  element: ElementInstanceMetadata | null,
 ): IcnPropsBase {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   const isConditional =
     navigatorEntry != null &&
     isRegularNavigatorEntry(navigatorEntry) &&
@@ -213,7 +220,17 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
-  const isConditionalBranchText =
+  const isGeneratedText = MetadataUtils.isGeneratedTextFromMetadata(elementPath, metadata)
+  if (isGeneratedText) {
+    return {
+      category: 'element',
+      type: 'text-generated',
+      width: 18,
+      height: 18,
+    }
+  }
+
+  const isConditionalBranchText = // Balazs: this is probably dormant since my PR #3605
     navigatorEntry != null &&
     isSyntheticNavigatorEntry(navigatorEntry) &&
     isJSXAttributeValue(navigatorEntry.childOrAttribute) &&
@@ -270,8 +287,7 @@ export function createElementIconProps(
   navigatorEntry: NavigatorEntry,
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByElementPath(metadata, navigatorEntry.elementPath)
-  return createElementIconPropsFromMetadata(navigatorEntry, element)
+  return createElementIconPropsFromMetadata(navigatorEntry.elementPath, metadata, navigatorEntry)
 }
 
 function createComponentIconPropsFromMetadata(

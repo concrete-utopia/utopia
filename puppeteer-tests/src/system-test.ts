@@ -35,7 +35,7 @@ async function clickOnce(
     page.on('console', handler)
   })
 
-  await button!.click()
+  await (button as puppeteer.ElementHandle<HTMLButtonElement>)!.click()
 
   return timeLimitPromise(
     consoleDonePromise,

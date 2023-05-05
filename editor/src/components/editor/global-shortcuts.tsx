@@ -120,6 +120,7 @@ import {
   JSXElement,
   jsxElement,
   jsxFragment,
+  isJSXElementLike,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -162,6 +163,7 @@ import { parentPath } from '../../core/shared/element-path'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { isRight } from '../../core/shared/either'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -740,7 +742,13 @@ export function handleKeyDown(
         return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('navigator')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode)) {
+        const possibleToConvert = editor.selectedViews.every((path) => {
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+          return (
+            element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+          )
+        })
+        if (isSelectMode(editor.mode) && possibleToConvert) {
           return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
         } else {
           return []

@@ -202,7 +202,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? null : "Hello there"
+          [].length === 0 ? null : <div>"Hello there"</div>
         }
         </div>
         `),
@@ -229,7 +229,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? null : "Hello there"
+          [].length === 0 ? null : <span data-uid='hello'>Hello there</span>
         }
         </div>
         `),
@@ -261,7 +261,7 @@ describe('Floating insert menu', () => {
               data-uid='newly-added-img'
             />
           ) : (
-            'Hello there'
+            <span data-uid='hello'>Hello there</span>
           )
         }
         </div>
@@ -275,7 +275,7 @@ describe('Floating insert menu', () => {
         <div data-uid='container'>
         {
           // @utopia/uid=conditional
-          [].length === 0 ? "Hello there" : null
+          [].length === 0 ? <span data-uid='hello'>Hello there</span> : null
         }
         </div>
         `),
@@ -297,7 +297,7 @@ describe('Floating insert menu', () => {
         // @utopia/uid=conditional
         // @utopia/conditional=false
         [].length === 0 ? (
-          'Hello there'
+          <span data-uid='hello'>Hello there</span>
         ) : (
           <img
             style={{
@@ -412,6 +412,68 @@ describe('Floating insert menu', () => {
       )
     })
   })
+  describe('Floating menu converts element', () => {
+    it('can convert an element to a fragment', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <div data-uid='bbb' style={{backgroundColor: 'blue'}}>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </div>
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`),
+      ])
+
+      await convertViaAddElementPopup(editor, 'fragment')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <React.Fragment>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </React.Fragment>
+        </div>
+      `),
+      )
+    })
+    it('can convert a fragment to a div element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <React.Fragment data-uid='bbb'>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </React.Fragment>
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`),
+      ])
+
+      await convertViaAddElementPopup(editor, 'div')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          <div data-uid='bbb'>
+            <div data-uid='ccc'>hello</div>
+            <div data-uid='ddd'>hello2</div>
+          </div>
+        </div>
+      `),
+      )
+    })
+  })
 })
 
 async function clickEmptySlot(editor: EditorRenderResult) {
@@ -421,6 +483,15 @@ async function clickEmptySlot(editor: EditorRenderResult) {
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('a')
+  await searchInFloatingMenu(editor, query)
+}
+
+async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
+  await pressKey('c')
+  await searchInFloatingMenu(editor, query)
+}
+
+async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
   const floatingMenu = editor.renderedDOM.getByTestId(FloatingMenuTestId)
   const searchBox = queryByAttribute('type', floatingMenu, 'text')!
 
