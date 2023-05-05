@@ -543,7 +543,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     const filtered = options
       .flatMap((g) => g.options)
       .filter((o) => filterOption({ data: o } as any, filter))
-    return { hasResults: filtered.length > 0, value: filtered[0] }
+    return { hasResults: filtered.length > 0, value: filter.length > 0 ? filtered[0] : undefined }
   }, [options, filter, filterOption])
 
   const styles = useSelectStyles(hasResults)
