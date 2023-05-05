@@ -539,16 +539,20 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     return true
   }
 
-  const hasResults = React.useMemo(() => {
-    return options.flatMap((g) => g.options).some((o) => filterOption({ data: o } as any, filter))
+  const { value, hasResults } = React.useMemo(() => {
+    const filtered = options
+      .flatMap((g) => g.options)
+      .filter((o) => filterOption({ data: o } as any, filter))
+    return { hasResults: filtered.length > 0, value: filtered[0] }
   }, [options, filter, filterOption])
 
   const styles = useSelectStyles(hasResults)
 
   return (
     <WindowedSelect
-      key={`insert-menu-select-${filter}`} // required to programmatically set the filter
       autoFocus
+      key={`insert-menu-select-${filter}`} // required to programmatically set the filter
+      value={value}
       inputValue={filter}
       onInputChange={onFilterChange}
       isMulti={false}
