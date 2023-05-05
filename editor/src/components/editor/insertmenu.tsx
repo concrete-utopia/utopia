@@ -10,15 +10,12 @@ import WindowedSelect, {
 } from 'react-windowed-select'
 import { RightMenuTab } from '../../components/editor/store/editor-state'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { isLeft } from '../../core/shared/either'
 import {
   JSXAttributes,
-  JSXAttributesPart,
   JSXElementName,
   emptyComments,
   getJSXAttribute,
-  isJSXAttributesEntry,
   jsExpressionValue,
   jsxElement,
   jsxElementNameEquals,
@@ -45,9 +42,9 @@ import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
-  createInteractionViaKeyboard,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import { CanvasAction } from '../canvas/canvas-types'
 import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import { FontSettings } from '../inspector/common/css-utils'
@@ -58,14 +55,13 @@ import {
   getNonEmptyComponentGroups,
   moveSceneToTheBeginningAndSetDefaultSize,
 } from '../shared/project-components'
+import { EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement, setRightMenuTab } from './actions/action-creators'
 import { defaultDivElement } from './defaults'
 import { InsertionSubject, Mode } from './editor-modes'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
-import { CanvasAction } from '../canvas/canvas-types'
-import { EditorDispatch } from './action-types'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -268,7 +264,8 @@ const makeInteraction = (
       assertNever(component.element)
   }
 }
-const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
+
+const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const dispatch = useDispatch()
   const component: InsertableComponent = props.data.value
 
@@ -350,18 +347,18 @@ const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
   )
 })
 
-type GroupItem = {
+type GroupOptionItem = {
   label: string
-  options: ComponentItem[]
+  options: ComponentOptionItem[]
 }
 
-type ComponentItem = {
+type ComponentOptionItem = {
   label: string
   source: string
   value: InsertableComponent
 }
 
-function useSelectStyles(): StylesConfig<GroupItem, false> {
+function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, false> {
   const colorTheme = useColorTheme()
   return React.useMemo(
     () => ({
@@ -415,7 +412,7 @@ function useSelectStyles(): StylesConfig<GroupItem, false> {
           display: 'flex',
           alignItems: 'center',
           cursor: 'text',
-          border: `1px solid transparent`,
+          border: `1px solid ${hasResults ? 'transparent' : colorTheme.error.value}`,
         }
       },
       placeholder: (styles): CSSObject => {
@@ -433,18 +430,17 @@ function useSelectStyles(): StylesConfig<GroupItem, false> {
         }
       },
     }),
-    [colorTheme],
+    [colorTheme, hasResults],
   )
 }
 
 const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   const dispatch = useDispatch()
-  const styles = useSelectStyles()
   const [filter, setFilter] = React.useState('')
 
   function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
-      setFilter(newValue.toLowerCase())
+      setFilter(newValue.trim())
     }
   }
 
@@ -478,12 +474,12 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     props.currentlyOpenFilename,
   ])
 
-  const listOptions = React.useMemo((): GroupItem[] => {
+  const options = React.useMemo((): GroupOptionItem[] => {
     return insertableGroups.map((g) => {
       const groupLabel = getInsertableGroupLabel(g.source)
       return {
         label: groupLabel,
-        options: g.insertableComponents.map((c): ComponentItem => {
+        options: g.insertableComponents.map((c): ComponentOptionItem => {
           return {
             label: c.name,
             source: groupLabel,
@@ -495,7 +491,9 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   }, [insertableGroups])
 
   const onChange = React.useCallback(
-    (e: ComponentItem) => {
+    (e: ComponentOptionItem) => {
+      onFilterChange(e.label, { action: 'input-change' })
+
       makeInteraction(
         e.value,
         generateUidWithExistingComponents(props.projectContents),
@@ -529,8 +527,27 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     [dispatch, props.projectContents],
   )
 
+  const filterOption = createFilter({
+    ignoreAccents: true,
+    stringify: (c) => c.data.source + c.data.label,
+    ignoreCase: true,
+    trim: true,
+    matchFrom: 'any',
+  })
+
+  function alwaysTrue() {
+    return true
+  }
+
+  const hasResults = React.useMemo(() => {
+    return options.flatMap((g) => g.options).some((o) => filterOption({ data: o } as any, filter))
+  }, [options, filter, filterOption])
+
+  const styles = useSelectStyles(hasResults)
+
   return (
     <WindowedSelect
+      key={`insert-menu-select-${filter}`} // required to programmatically set the filter
       autoFocus
       inputValue={filter}
       onInputChange={onFilterChange}
@@ -540,21 +557,13 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
       menuIsOpen
       placeholder='Filter…'
       tabSelectsValue={false}
-      options={listOptions}
+      options={options}
       onKeyDown={onKeyDown}
       mode={props.mode}
-      components={{
-        Option: CustomOption,
-      }}
+      components={{ Option: Option }}
       onChange={onChange}
       styles={styles}
-      filterOption={createFilter({
-        ignoreAccents: true,
-        stringify: (c) => c.data.source + c.data.label,
-        ignoreCase: true,
-        trim: true,
-        matchFrom: 'any',
-      })}
+      filterOption={!hasResults ? alwaysTrue : filterOption}
     />
   )
 })
