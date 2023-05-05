@@ -94,12 +94,12 @@ function encodeHTMLWhenNotInJsCode(s: string): string {
         }
         break
       case '<':
-        if (isInJSExpression()) {
+        if (!isInJSExpression()) {
           characterToPrint = entities.lesserThan
         }
         break
       case '>':
-        if (isInJSExpression()) {
+        if (!isInJSExpression()) {
           characterToPrint = entities.greaterThan
         }
         break
