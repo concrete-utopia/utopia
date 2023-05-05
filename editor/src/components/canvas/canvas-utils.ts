@@ -2300,7 +2300,7 @@ export function moveTemplate(
                   )
 
                   const insertionPath = getInsertionPathWithSlotBehavior(
-                    underlyingNewParentPath,
+                    newParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
