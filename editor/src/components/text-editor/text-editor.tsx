@@ -58,16 +58,64 @@ const entities = {
 
 // canvas → editor
 export function escapeHTML(s: string): string {
-  return (
-    s
-      // a trailing newline is added by contenteditable for multiline strings, so get rid of it
-      .replace(/\n$/, '')
-      // clean up angular braces
-      .replace('<', entities.lesserThan)
-      .replace('>', entities.greaterThan)
-      // restore br tags
-      .replace(/\n/g, '\n<br />')
-  )
+  const withoutNewLines = s
+    // a trailing newline is added by contenteditable for multiline strings, so get rid of it
+    .replace(/\n$/, '')
+
+  //encode < and > when necessary
+  const encoded = encodeHTMLWhenNotInJsCode(withoutNewLines)
+
+  // restore br tags
+  return encoded.replace(/\n/g, '\n<br />')
+}
+
+// This is a very veer
+function encodeHTMLWhenNotInJsCode(s: string): string {
+  let result = ''
+  let parenCounter = 0
+  let inSingleQuotation = false
+  let inDoubleQuotation = false
+
+  const isInJSExpression = () => parenCounter > 0
+
+  for (let ch of s) {
+    let characterToPrint = ch
+    switch (ch) {
+      case '{':
+        if (!inSingleQuotation && !inDoubleQuotation) {
+          parenCounter++
+        }
+        break
+      case '}':
+        if (!inSingleQuotation && !inDoubleQuotation) {
+          parenCounter--
+        }
+        break
+      case '<':
+        if (isInJSExpression()) {
+          characterToPrint = entities.lesserThan
+        }
+        break
+      case '>':
+        if (isInJSExpression()) {
+          characterToPrint = entities.greaterThan
+        }
+        break
+      case '"':
+        if (!inSingleQuotation) {
+          inDoubleQuotation = !inDoubleQuotation
+        }
+        break
+      case "'":
+        if (!inDoubleQuotation) {
+          inSingleQuotation = !inSingleQuotation
+        }
+        break
+    }
+    result += characterToPrint
+  }
+
+  return result
 }
 
 // editor → canvas
