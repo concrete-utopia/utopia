@@ -68,7 +68,7 @@ export const InsertMenuPane = React.memo(() => {
           <Icons.Cross onMouseDown={onClickClose} onClick={onClickClose} />
         </Button>
       </SectionTitleRow>
-      <SectionBodyArea minimised={false} style={{ paddingLeft: 8, paddingRight: 8, flex: 1 }}>
+      <SectionBodyArea minimised={false} style={{ height: '100%' }}>
         <InsertMenu />
       </SectionBodyArea>
     </Section>

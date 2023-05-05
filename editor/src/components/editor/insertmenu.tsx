@@ -332,10 +332,6 @@ function useSelectStyles(): StylesConfig<GroupItem, false> {
     () => ({
       container: (styles): CSSObject => ({
         height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        paddingLeft: 8,
-        paddingRight: 8,
       }),
       control: (styles): CSSObject => ({
         background: 'transparent',
@@ -344,8 +340,7 @@ function useSelectStyles(): StylesConfig<GroupItem, false> {
           outline: 'none',
           border: 'none',
         },
-        paddingBottom: 20,
-        paddingTop: 10,
+        padding: 8,
       }),
       valueContainer: (styles): CSSObject => ({
         display: 'flex',
@@ -360,16 +355,17 @@ function useSelectStyles(): StylesConfig<GroupItem, false> {
       }),
       menu: (styles): CSSObject => {
         return {
-          flex: 1,
-          maxHeight: '100%',
-          display: 'flex',
-          flexDirection: 'column',
+          marginTop: 8,
+          paddingLeft: 8,
+          paddingRight: 8,
+          height: '100%',
         }
       },
       menuList: (styles): CSSObject => {
         return {
-          maxHeight: '100%',
+          height: '100%',
           overflow: 'scroll',
+          paddingBottom: 100,
         }
       },
       input: (styles): CSSObject => {
@@ -388,7 +384,7 @@ function useSelectStyles(): StylesConfig<GroupItem, false> {
         }
       },
       placeholder: (styles): CSSObject => {
-        return { ...styles, marginLeft: 5 }
+        return { ...styles, position: 'absolute', marginLeft: 5 }
       },
       group: (): CSSObject => {
         return {
