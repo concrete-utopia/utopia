@@ -60,7 +60,7 @@ import {
 } from '../shared/project-components'
 import { enableInsertModeForJSXElement, setRightMenuTab } from './actions/action-creators'
 import { defaultDivElement } from './defaults'
-import { Mode } from './editor-modes'
+import { InsertionSubject, Mode } from './editor-modes'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
@@ -151,18 +151,34 @@ type ElementBeingInserted =
       type: 'conditional'
     }
 
-function isUidProp(prop: JSXAttributesPart): boolean {
-  return isJSXAttributesEntry(prop) && prop.key === UTOPIA_UID_KEY
+function componentBeingInserted(
+  importsToAdd: Imports,
+  elementName: JSXElementName,
+  props: JSXAttributes,
+): ElementBeingInserted {
+  return {
+    type: 'component',
+    importsToAdd: importsToAdd,
+    elementName: elementName,
+    props: props,
+  }
 }
 
-const isNonUidProp = (prop: JSXAttributesPart) => !isUidProp(prop)
-
-function nonUidPropsEqual(l: JSXAttributes, r: JSXAttributes): boolean {
-  const nonUidL = l.filter(isNonUidProp)
-  const nonUidR = r.filter(isNonUidProp)
-  return (
-    nonUidL.length === nonUidR.length && nonUidL.every((v, i) => isUidProp(v) || nonUidR[i] === v)
-  )
+function elementBeingInserted(insertableComponent: InsertableComponent): ElementBeingInserted {
+  switch (insertableComponent.element.type) {
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return { type: 'conditional' }
+    case 'JSX_FRAGMENT':
+      return { type: 'fragment' }
+    case 'JSX_ELEMENT':
+      return componentBeingInserted(
+        insertableComponent.importsToAdd,
+        insertableComponent.element.name,
+        insertableComponent.element.props,
+      )
+    default:
+      assertNever(insertableComponent.element)
+  }
 }
 
 export function elementBeingInsertedEquals(
@@ -180,8 +196,7 @@ export function elementBeingInsertedEquals(
   if (first.type === 'component' && second.type === 'component') {
     return (
       importsEquals(first.importsToAdd, second.importsToAdd) &&
-      jsxElementNameEquals(first.elementName, second.elementName) &&
-      nonUidPropsEqual(first.props, second.props)
+      jsxElementNameEquals(first.elementName, second.elementName)
     )
   }
 
@@ -277,6 +292,22 @@ const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
     [projectContents],
   )
 
+  const mode = React.useMemo(() => props.selectProps.mode, [props.selectProps])
+
+  const currentlyBeingInserted = React.useMemo(() => {
+    if (mode == null || mode.type !== 'insert' || mode.subjects.length !== 1) {
+      return null
+    }
+
+    const insertionSubject: InsertionSubject = mode.subjects[0]
+
+    return componentBeingInserted(
+      insertionSubject.importsToAdd,
+      insertionSubject.element.name,
+      insertionSubject.element.props,
+    )
+  }, [mode])
+
   const insertItemOnMouseDown = (event: React.MouseEvent) => {
     const newUID = getNewUID()
     const mousePoint = windowToCanvasCoordinates(
@@ -295,9 +326,13 @@ const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
     makeInteraction(component, newUID, createInteractionSessionCommand, dispatch)
   }
 
-  const insertItemOnMouseUp = (event: React.MouseEvent) => {
+  const insertItemOnMouseUp = (_event: React.MouseEvent) => {
     dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
   }
+
+  const beingInserted = React.useMemo(() => {
+    return elementBeingInsertedEquals(currentlyBeingInserted, elementBeingInserted(component))
+  }, [component, currentlyBeingInserted])
 
   return (
     <div ref={props.innerRef} {...props.innerProps}>
@@ -305,7 +340,7 @@ const CustomOption = React.memo((props: OptionProps<ComponentItem, false>) => {
         key={`insert-item-third-party-${props.innerProps.id}`}
         type={'component'}
         label={component.name}
-        selected={props.isFocused}
+        selected={beingInserted || (props.isFocused && currentlyBeingInserted == null)}
         // eslint-disable-next-line react/jsx-no-bind
         onMouseDown={insertItemOnMouseDown}
         // eslint-disable-next-line react/jsx-no-bind
@@ -413,7 +448,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     }
   }
 
-  const onFilterEscape = React.useCallback(
+  const onKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {
         dispatch([setRightMenuTab(RightMenuTab.Inspector)])
@@ -506,7 +541,8 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
       placeholder='Filter…'
       tabSelectsValue={false}
       options={listOptions}
-      onKeyDown={onFilterEscape}
+      onKeyDown={onKeyDown}
+      mode={props.mode}
       components={{
         Option: CustomOption,
       }}
