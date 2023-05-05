@@ -1707,6 +1707,7 @@ export function parseCode(
       jsxFactoryFunction,
       combinedTopLevelArbitraryBlock,
       detailOfExports,
+      highlightBounds,
     )
     const fixedParseSuccess = fixParseSuccessUIDs(
       oldParseResultForUIDComparison,

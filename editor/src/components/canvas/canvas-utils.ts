@@ -1979,7 +1979,7 @@ export function createDuplicationNewUIDs(
     false,
   )
 
-  let existingIDs = getAllUniqueUids(projectContents).uniqueIDs
+  let existingIDs = getAllUniqueUids(projectContents).allIDs
 
   let result: Array<DuplicateNewUID> = []
   Utils.fastForEach(targetViews, (targetView) => {
@@ -2718,12 +2718,12 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
-  const existingIDs = getAllUniqueUids(editor.projectContents).uniqueIDs
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
     ) => metadata
     let detailsOfUpdate: string | null = null
+    const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
@@ -2754,26 +2754,7 @@ export function duplicate(
             // Helps to keep the model consistent because otherwise the dom walker
             // goes into a frenzy.
             newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
-            if (isJSXElementLike(newElement)) {
-              newElement = {
-                ...newElement,
-                children: guaranteeUniqueUids(newElement.children, [
-                  ...existingIDs,
-                  duplicateNewUID.newUID,
-                ]),
-              }
-            } else if (isJSXConditionalExpression(newElement))
-              newElement = {
-                ...newElement,
-                whenTrue: fixUtopiaElement(newElement.whenTrue, [
-                  ...existingIDs,
-                  duplicateNewUID.newUID,
-                ]),
-                whenFalse: fixUtopiaElement(newElement.whenFalse, [
-                  ...existingIDs,
-                  duplicateNewUID.newUID,
-                ]),
-              }
+            newElement = guaranteeUniqueUids([newElement], existingIDs)[0]
             uid = duplicateNewUID.newUID
           }
           let newPath: ElementPath

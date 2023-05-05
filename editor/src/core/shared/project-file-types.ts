@@ -382,6 +382,7 @@ export interface ParseSuccess {
   imports: Imports
   topLevelElements: Array<TopLevelElement>
   highlightBounds: HighlightBoundsForUids
+  fullHighlightBounds: HighlightBoundsForUids
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
   exportsDetail: ExportsDetail
@@ -394,6 +395,7 @@ export function parseSuccess(
   jsxFactoryFunction: string | null,
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
   exportsDetail: ExportsDetail,
+  fullHighlightBounds: HighlightBoundsForUids,
 ): ParseSuccess {
   return {
     type: 'PARSE_SUCCESS',
@@ -403,6 +405,7 @@ export function parseSuccess(
     jsxFactoryFunction: jsxFactoryFunction,
     combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     exportsDetail: exportsDetail,
+    fullHighlightBounds: fullHighlightBounds,
   }
 }
 

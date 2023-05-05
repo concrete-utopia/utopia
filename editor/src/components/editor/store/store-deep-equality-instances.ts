@@ -2561,7 +2561,7 @@ export const HighlightBoundsForUidsKeepDeepEquality: KeepDeepEqualityCall<Highli
   objectDeepEquality(HighlightBoundsKeepDeepEquality)
 
 export const ParseSuccessKeepDeepEquality: KeepDeepEqualityCall<ParseSuccess> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (success) => success.imports,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     (success) => success.topLevelElements,
@@ -2574,6 +2574,8 @@ export const ParseSuccessKeepDeepEquality: KeepDeepEqualityCall<ParseSuccess> =
     nullableDeepEquality(ArbitraryJSBlockKeepDeepEquality()),
     (success) => success.exportsDetail,
     arrayDeepEquality(ExportDetailKeepDeepEquality),
+    (success) => success.fullHighlightBounds,
+    HighlightBoundsForUidsKeepDeepEquality,
     parseSuccess,
   )
 

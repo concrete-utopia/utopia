@@ -272,6 +272,7 @@ export var whatever = props => (
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -373,6 +374,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -476,6 +478,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -580,6 +583,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -672,6 +676,7 @@ export var whatever = (props) => {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -776,6 +781,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -868,6 +874,7 @@ export var whatever = (props) => {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -972,6 +979,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1267,6 +1275,7 @@ export var storyboard = (
       expect.objectContaining({}),
       null,
       null,
+      expect.objectContaining({}),
       expect.objectContaining({}),
     )
 

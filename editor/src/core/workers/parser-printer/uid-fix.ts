@@ -101,12 +101,23 @@ export function fixParseSuccessUIDs(
   const fixedHighlightBounds: HighlightBoundsForUids = {
     ...newParsed.highlightBounds,
   }
+  const fixedFullHighlightBounds: HighlightBoundsForUids = {
+    ...newParsed.fullHighlightBounds,
+  }
   for (const { originalUID, newUID } of fixUIDsState.mappings) {
     // Protect against highlight bounds not being defined for this case.
     if (originalUID in fixedHighlightBounds) {
       const bounds = fixedHighlightBounds[originalUID]
       delete fixedHighlightBounds[originalUID]
       fixedHighlightBounds[newUID] = {
+        ...bounds,
+        uid: newUID,
+      }
+    }
+    if (originalUID in fixedFullHighlightBounds) {
+      const bounds = fixedFullHighlightBounds[originalUID]
+      delete fixedFullHighlightBounds[originalUID]
+      fixedFullHighlightBounds[newUID] = {
         ...bounds,
         uid: newUID,
       }
@@ -119,6 +130,7 @@ export function fixParseSuccessUIDs(
     topLevelElements: fixedTopLevelElements,
     combinedTopLevelArbitraryBlock: fixedCombinedTopLevelArbitraryBlock,
     highlightBounds: fixedHighlightBounds,
+    fullHighlightBounds: fixedFullHighlightBounds,
   }
 }
 
@@ -139,13 +151,13 @@ function updateUID<T>(
     // - Add the old one to the set, as it will become used.
     // - Add a mapping for this change.
     uidToUse = generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
-    fixUIDsState.mutableAllNewUIDs.add(uidToUse)
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   } else {
     // The UID has changed, add a mapping so the highlight bounds can be updated.
     uidToUse = oldUID
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   }
+  fixUIDsState.mutableAllNewUIDs.add(uidToUse)
 
   if (newUID === uidToUse) {
     // As there's no change, don't create a new object.

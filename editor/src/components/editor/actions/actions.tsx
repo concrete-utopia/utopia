@@ -2863,9 +2863,9 @@ export const UPDATE_FNS = {
         ]
       }
 
-      const existingIDs = getAllUniqueUids(editor.projectContents).uniqueIDs
       let newPaths: Array<ElementPath> = []
       const updatedEditorState = elements.reduce((workingEditorState, currentValue, index) => {
+        const existingIDs = getAllUniqueUids(workingEditorState.projectContents).allIDs
         const elementWithUniqueUID = fixUtopiaElement(currentValue.element, existingIDs)
         const outcomeResult = getReparentOutcome(
           builtInDependencies,

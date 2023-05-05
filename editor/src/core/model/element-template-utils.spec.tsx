@@ -80,7 +80,7 @@ describe('guaranteeUniqueUids', () => {
 
     const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
+    expect(child0UID).toEqual(jsExpressionValue('aab', emptyComments, 'aac'))
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
@@ -108,7 +108,7 @@ describe('guaranteeUniqueUids', () => {
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
     const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
+    expect(child0UID).toEqual(jsExpressionValue('aac', emptyComments, 'aad'))
     expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments, 'aab'))
   })
 

@@ -78,15 +78,18 @@ import { isNullJSXAttributeValue } from '../shared/element-template'
 interface GetAllUniqueUIDsResult {
   uniqueIDs: Array<string>
   duplicateIDs: Array<string>
+  allIDs: Array<string>
 }
 
 function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
   const workingResult = {
     uniqueIDs: Utils.emptySet<string>(),
     duplicateIDs: Utils.emptySet<string>(),
+    allIDs: Utils.emptySet<string>(),
   }
 
-  function checkUID(uid: string): void {
+  function checkUID(uid: string, value: any): void {
+    workingResult.allIDs.add(uid)
     if (!workingResult.duplicateIDs.has(uid)) {
       if (workingResult.uniqueIDs.has(uid)) {
         workingResult.uniqueIDs.delete(uid)
@@ -113,7 +116,7 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
   }
 
   function extractUid(element: JSXElementChild): void {
-    checkUID(element.uid)
+    checkUID(element.uid, element)
     switch (element.type) {
       case 'JSX_ELEMENT':
         fastForEach(element.children, extractUid)
@@ -185,6 +188,7 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
   return {
     uniqueIDs: Array.from(workingResult.uniqueIDs),
     duplicateIDs: Array.from(workingResult.duplicateIDs),
+    allIDs: Array.from(workingResult.allIDs),
   }
 }
 
@@ -193,7 +197,7 @@ export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents).uniqueIDs
+    const existingUIDS = getAllUniqueUids(projectContents).allIDs
     return generateUID(existingUIDS)
   } else {
     return mockUID
@@ -206,7 +210,7 @@ export function generateUidWithExistingComponentsAndExtraUids(
 ): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents).uniqueIDs
+    const existingUIDSFromProject = getAllUniqueUids(projectContents).allIDs
     return generateUID([...existingUIDSFromProject, ...additionalUids])
   } else {
     return mockUID

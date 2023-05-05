@@ -1,4 +1,8 @@
-import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
+import {
+  IS_TEST_ENVIRONMENT,
+  PERFORMANCE_MARKS_ALLOWED,
+  PRODUCTION_ENV,
+} from '../../../common/env-vars'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
@@ -270,7 +274,7 @@ function maybeRequestModelUpdate(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
       } else if (isParseSuccess(file.fileContents.parsed)) {
-        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
         fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       }
     }
@@ -634,7 +638,7 @@ function maybeCullElementPathCache(
 }
 
 function cullElementPathCache() {
-  const allExistingUids = getAllUniqueUids(lastProjectContents).uniqueIDs
+  const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
@@ -741,24 +745,31 @@ function editorDispatchInner(
       }
     }
 
+    const actionNames = simpleStringifyActions(dispatchedActions)
+
     // Check for duplicate UIDs that have originated from actions being applied.
     const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
     if (uniqueIDsResult.duplicateIDs.length > 0) {
-      const actionNames = simpleStringifyActions(dispatchedActions)
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
       )}.`
-      console.error(errorMessage)
-      const errorToast = EditorActions.addToast(
-        notice(
-          `Editor has suffered from an irrecoverable error, please reload the editor.`,
-          'ERROR',
-          true,
-        ),
-      )
-      result = {
-        ...result,
-        unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
+      if (IS_TEST_ENVIRONMENT) {
+        // In tests blow out with an exception so that the error is correctly attributed.
+        throw new Error(errorMessage)
+      } else {
+        // When running in the browser log the error and tell the user to restart the editor.
+        console.error(errorMessage)
+        const errorToast = EditorActions.addToast(
+          notice(
+            `Utopia has suffered from an irrecoverable error, please reload the editor.`,
+            'ERROR',
+            true,
+          ),
+        )
+        result = {
+          ...result,
+          unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
+        }
       }
     }
 

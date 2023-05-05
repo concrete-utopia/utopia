@@ -1,9 +1,10 @@
+import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
-import { Either, flatMapEither, isLeft, left, right } from './either'
+import { Either, flatMapEither, foldEither, isLeft, left, right } from './either'
 import * as EP from './element-path'
 import {
   ElementInstanceMetadata,
@@ -45,6 +46,7 @@ import {
   JSExpression,
   JSXArrayElement,
   JSXProperty,
+  isJSExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -120,22 +122,22 @@ export function generateConsistentUID(
           return possibleUID
         }
       }
+    }
 
-      for (let firstChar of atoz) {
-        for (let secondChar of atoz) {
-          for (let thirdChar of atoz) {
-            const possibleUID = `${firstChar}${secondChar}${thirdChar}`
+    for (let firstChar of atoz) {
+      for (let secondChar of atoz) {
+        for (let thirdChar of atoz) {
+          const possibleUID = `${firstChar}${secondChar}${thirdChar}`
 
-            if (!existingIDs.has(possibleUID)) {
-              return possibleUID
-            }
+          if (!existingIDs.has(possibleUID)) {
+            return possibleUID
           }
         }
       }
     }
 
     // Fallback bailout.
-    throw new Error(`Unable to generate a UID from ${possibleStartingValue}`)
+    throw new Error(`Unable to generate a UID from '${possibleStartingValue}'.`)
   } else {
     return mockUID
   }
@@ -204,10 +206,45 @@ export function getUtopiaIDFromJSXElement(element: JSXElementChild): string {
   return element.uid
 }
 
+export function fixUtopiaExpression(
+  expressionToFix: JSExpression,
+  uniqueIDs: Array<string>,
+): JSExpression {
+  const fixedAsElement = fixUtopiaElement(expressionToFix, uniqueIDs)
+  if (isJSExpression(fixedAsElement)) {
+    return fixedAsElement
+  } else {
+    throw new Error(`Got an element back instead of an expression unexpectedly.`)
+  }
+}
+
 export function fixUtopiaElement(
   elementToFix: JSXElementChild,
   uniqueIDs: Array<string>,
 ): JSXElementChild {
+  let uniqueIDsSet: Set<string> = new Set(uniqueIDs)
+
+  function fixAttributes(attributesToFix: JSXAttributes): JSXAttributes {
+    return attributesToFix.map((attributeToFix) => {
+      switch (attributeToFix.type) {
+        case 'JSX_ATTRIBUTES_ENTRY':
+          const updatedValue = fixJSExpression(attributeToFix.value)
+          return {
+            ...attributeToFix,
+            value: updatedValue,
+          }
+        case 'JSX_ATTRIBUTES_SPREAD':
+          const updatedSpreadValue = fixJSExpression(attributeToFix.spreadValue)
+          return {
+            ...attributeToFix,
+            spreadValue: updatedSpreadValue,
+          }
+        default:
+          assertNever(attributeToFix)
+      }
+    })
+  }
+
   function fixJSXElement(element: JSXElement): JSXElement {
     let fixedChildren = element.children.map((elem) => fixUtopiaElementInner(elem))
     if (shallowEqual(element.children, fixedChildren)) {
@@ -215,40 +252,51 @@ export function fixUtopiaElement(
       fixedChildren = element.children
     }
 
+    let fixedProps = keepDeepReferenceEqualityIfPossible(
+      element.props,
+      fixAttributes(element.props),
+    )
+
+    const uid = element.uid
     const uidProp = getJSXAttribute(element.props, 'data-uid')
-    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDs.includes(uidProp.value)) {
-      const seedUID = uidProp != null && isJSXAttributeValue(uidProp) ? uidProp.value : 'aaa'
-      const newUID = generateConsistentUID(new Set(uniqueIDs), seedUID)
-      const fixedProps = setJSXValueAtPath(
-        element.props,
+    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDsSet.has(uid)) {
+      const newUID = generateConsistentUID(uniqueIDsSet, uid)
+      uniqueIDsSet.add(newUID)
+      const newUIDForProp = generateConsistentUID(uniqueIDsSet, uid)
+      uniqueIDsSet.add(newUIDForProp)
+      const elementPropsWithNewUID = setJSXValueAtPath(
+        fixedProps,
         UtopiaIDPropertyPath,
-        jsExpressionValue(newUID, emptyComments),
+        jsExpressionValue(newUID, emptyComments, newUIDForProp),
       )
 
-      if (isLeft(fixedProps)) {
-        console.error(`Failed to add a uid to an element missing one ${fixedProps.value}`)
-        return element
-      } else {
-        uniqueIDs.push(newUID)
-        return jsxElement(element.name, newUID, fixedProps.value, fixedChildren)
-      }
-    } else if (element.children !== fixedChildren) {
-      uniqueIDs.push(uidProp.value)
+      return foldEither(
+        (error) => {
+          throw new Error(`Failed to add a uid to an element missing one ${error}`)
+        },
+        (propsWithNewUID) => {
+          return jsxElement(element.name, newUID, propsWithNewUID, fixedChildren)
+        },
+        elementPropsWithNewUID,
+      )
+    } else if (element.children !== fixedChildren || element.props !== fixedProps) {
+      uniqueIDsSet.add(uid)
       return {
         ...element,
         children: fixedChildren,
+        props: fixedProps,
       }
     } else {
-      uniqueIDs.push(uidProp.value)
+      uniqueIDsSet.add(uid)
       return element
     }
   }
 
   function addAndMaybeUpdateUID(currentUID: string): string {
-    const fixedUID = uniqueIDs.includes(currentUID)
-      ? generateConsistentUID(new Set(uniqueIDs), currentUID)
+    const fixedUID = uniqueIDsSet.has(currentUID)
+      ? generateConsistentUID(uniqueIDsSet, currentUID)
       : currentUID
-    uniqueIDs.push(fixedUID)
+    uniqueIDsSet.add(fixedUID)
     return fixedUID
   }
 
@@ -269,6 +317,7 @@ export function fixUtopiaElement(
     return {
       ...conditional,
       uid: fixedUID,
+      condition: fixJSExpression(conditional.condition),
       whenTrue: fixUtopiaElementInner(conditional.whenTrue),
       whenFalse: fixUtopiaElementInner(conditional.whenFalse),
     }
