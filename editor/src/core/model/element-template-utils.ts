@@ -75,6 +75,10 @@ import {
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
 import { insert } from '../shared/array-utils'
+import {
+  elementPathRelativeToRoot as elementPathRelativeToComponentRoot,
+  ElementPathRelativeToComponentRoot,
+} from '../../components/custom-code/code-file'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -171,24 +175,27 @@ export function isSceneElement(
 
 export function transformJSXComponentAtPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticElementPath,
+  path: ElementPathRelativeToComponentRoot<StaticElementPath>,
   transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
-  const lastElementPathPart = EP.lastElementPathForPath(path)
-  return lastElementPathPart == null
-    ? components
-    : transformJSXComponentAtElementPath(components, lastElementPathPart, transform)
+  return transformJSXComponentAtElementPath(components, path, transform)
 }
 
 export function transformJSXComponentAtElementPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticElementPathPart,
+  path: ElementPathRelativeToComponentRoot<StaticElementPath>,
   transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
+  if (path.path == null) {
+    throw new Error(`null passed as path`)
+  }
+
   const transformResult = transformAtPathOptionally(components, path, transform)
 
   if (transformResult.transformedElement == null) {
-    throw new Error(`Did not find element to transform ${EP.elementPathPartToString(path)}`)
+    throw new Error(
+      `Did not find element to transform ${EP.toString(path.path ?? EP.emptyElementPath)}`,
+    )
   } else {
     return transformResult.elements
   }
@@ -196,12 +203,12 @@ export function transformJSXComponentAtElementPath(
 
 function transformAtPathOptionally(
   components: Array<UtopiaJSXComponent>,
-  path: StaticElementPathPart,
+  path: ElementPathRelativeToComponentRoot<StaticElementPath>,
   transform: (elem: JSXElementChild) => JSXElementChild,
 ): EP.ElementsTransformResult<UtopiaJSXComponent> {
   function findAndTransformAtPathInner(
     element: JSXElementChild,
-    workingPath: string[],
+    workingPath: ElementPathRelativeToComponentRoot<StaticElementPath>,
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
     if (isJSXElementLike(element)) {
@@ -307,6 +314,10 @@ function transformAtPathOptionally(
     return null
   }
 
+  if (path.path == null) {
+    return { elements: components, transformedElement: null }
+  }
+
   let transformedElement: UtopiaJSXComponent | null = null
   const transformedElements = components.map((component) => {
     const updatedElement = findAndTransformAtPathInner(component.rootElement, path)
@@ -330,11 +341,11 @@ function transformAtPathOptionally(
 
 export function findJSXElementChildAtPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticElementPath,
+  path: ElementPathRelativeToComponentRoot<StaticElementPath>,
 ): JSXElementChild | null {
   function findAtPathInner(
     element: JSXElementChild,
-    workingPath: Array<string>,
+    workingPath: ElementPathRelativeToComponentRoot<StaticElementPath>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
     if (isJSExpressionOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
@@ -375,10 +386,10 @@ export function findJSXElementChildAtPath(
     return null
   }
 
-  const pathElements = EP.lastElementPathForPath(path)
+  const pathElements = path.path
   for (const component of components) {
     const topLevelResult =
-      pathElements == null ? null : findAtPathInner(component.rootElement, pathElements)
+      pathElements == null ? null : findAtPathInner(component.rootElement, path)
     if (topLevelResult != null) {
       return topLevelResult
     }
@@ -409,7 +420,7 @@ export function rearrangeJsxChildren(
     ? rootElements
     : transformAtPathOptionally(
         rootElements,
-        lastElementPathPart,
+        elementPathRelativeToComponentRoot(lastElementPathPart),
         (parentElement: JSXElementChild) => {
           if (isJSXElementLike(parentElement)) {
             const originalChildren = parentElement.children
@@ -487,7 +498,7 @@ export function removeJSXElementChild(
     ? rootElements
     : transformAtPathOptionally(
         rootElements,
-        lastElementPathPart,
+        elementPathRelativeToComponentRoot(lastElementPathPart),
         (parentElement: JSXElementChild) => {
           return removeRelevantChild(parentElement, true)
         },

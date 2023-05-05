@@ -2275,7 +2275,7 @@ export function moveTemplate(
               editorState.allElementProps,
             )
             const updatedUnderlyingElement = findElementAtPath(
-              underlyingTarget,
+              underlyingTarget.path,
               withLayoutUpdatedForNewContext,
             )
             if (updatedUnderlyingElement == null) {

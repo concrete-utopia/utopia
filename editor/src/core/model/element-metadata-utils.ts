@@ -118,7 +118,11 @@ import {
   getSubTree,
   reorderTree,
 } from '../shared/element-path-tree'
-import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
+import {
+  ElementPathRelativeToComponentRoot,
+  elementPathRelativeToRoot,
+  findUnderlyingTargetComponentImplementationFromImportInfo,
+} from '../../components/custom-code/code-file'
 import {
   Direction,
   FlexDirection,
@@ -2305,19 +2309,18 @@ function findConditionalsAndCreateMetadata(
 }
 
 export function findElementAtPath(
-  target: ElementPath | null,
+  target: ElementPathRelativeToComponentRoot<ElementPath>,
   components: Array<UtopiaJSXComponent>,
 ): JSXElementChild | null {
-  if (target == null) {
+  if (target.path == null) {
     return null
-  } else {
-    const staticTarget = EP.dynamicPathToStaticPath(target)
-    return findJSXElementChildAtPath(components, staticTarget)
   }
+  const staticTarget = elementPathRelativeToRoot(EP.dynamicPathToStaticPath(target.path))
+  return findJSXElementChildAtPath(components, staticTarget)
 }
 
 export function findJSXElementAtPath(
-  target: ElementPath | null,
+  target: ElementPathRelativeToComponentRoot<ElementPath>,
   components: Array<UtopiaJSXComponent>,
 ): JSXElement | null {
   const elem = findElementAtPath(target, components)

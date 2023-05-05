@@ -15,6 +15,7 @@ import {
   ParseSuccess,
   Imports,
   getParsedContentsFromTextFile,
+  StaticElementPathPart,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -306,17 +307,17 @@ export function codeCacheToBuildResult(cache: { [filename: string]: CodeResult }
 
 export interface NormalisePathSuccess {
   type: 'NORMALISE_PATH_SUCCESS'
-  normalisedPath: StaticElementPath | null
+  normalisedPath: ElementPathRelativeToComponentRoot<StaticElementPath> | null
   filePath: string
   textFile: TextFile
-  normalisedDynamicPath: ElementPath | null
+  normalisedDynamicPath: ElementPathRelativeToComponentRoot<ElementPath> | null
 }
 
 export function normalisePathSuccess(
-  normalisedPath: StaticElementPath | null,
+  normalisedPath: ElementPathRelativeToComponentRoot<StaticElementPath> | null,
   filePath: string,
   textFile: TextFile,
-  normalisedDynamicPath: ElementPath | null,
+  normalisedDynamicPath: ElementPathRelativeToComponentRoot<ElementPath> | null,
 ): NormalisePathSuccess {
   return {
     type: 'NORMALISE_PATH_SUCCESS',
@@ -421,6 +422,20 @@ export function normalisePathSuccessOrThrowError(
   }
 }
 
+export interface ElementPathRelativeToComponentRoot<
+  T extends ElementPath | StaticElementPath | StaticElementPathPart,
+> {
+  path: T | null
+}
+
+export const elementPathRelativeToRoot = <
+  T extends ElementPath | StaticElementPath | StaticElementPathPart,
+>(
+  path: T | null,
+): ElementPathRelativeToComponentRoot<T> => ({
+  path,
+})
+
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -434,7 +449,12 @@ export function normalisePathToUnderlyingTarget(
       const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
       if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
         // As the scene path is empty, there's no more traversing to do, the target is in this file.
-        return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
+        return normalisePathSuccess(
+          elementPathRelativeToRoot(staticPath),
+          currentFilePath,
+          currentFile,
+          elementPathRelativeToRoot(elementPath),
+        )
       } else {
         const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
         if (droppedPathPart.length === 0) {
@@ -465,12 +485,14 @@ export function normalisePathToUnderlyingTarget(
             // Handle things like divs.
             if (isIntrinsicElement(targetElement.name)) {
               return normalisePathSuccess(
-                potentiallyDroppedFirstPathElementResult.newPath == null
-                  ? null
-                  : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
+                elementPathRelativeToRoot(
+                  potentiallyDroppedFirstPathElementResult.newPath == null
+                    ? null
+                    : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
+                ),
                 currentFilePath,
                 currentFile,
-                potentiallyDroppedFirstPathElementResult.newPath,
+                elementPathRelativeToRoot(potentiallyDroppedFirstPathElementResult.newPath),
               )
             } else {
               return lookupElementImport(

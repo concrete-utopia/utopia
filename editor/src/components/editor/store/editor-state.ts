@@ -118,6 +118,7 @@ import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
+  ElementPathRelativeToComponentRoot,
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -1661,7 +1662,7 @@ export interface ParseSuccessAndEditorChanges<T> {
 export function modifyOpenParseSuccess(
   transform: (
     parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
+    underlying: ElementPathRelativeToComponentRoot<StaticElementPath> | null,
     underlyingFilePath: string,
   ) => ParseSuccess,
   model: EditorState,
@@ -1999,10 +2000,14 @@ export function insertElementAtPath_DEPRECATED(
 
 export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,
-  target: ElementPath,
+  target: ElementPathRelativeToComponentRoot<ElementPath>,
   transform: (elem: JSXElementChild) => JSXElementChild,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = EP.dynamicPathToStaticPath(target)
+  if (target.path == null) {
+    return components
+  }
+
+  const staticTarget = elementPathRelativeToComponentRoot(EP.dynamicPathToStaticPath(target.path))
   if (staticTarget == null) {
     return components
   } else {
@@ -3346,7 +3351,7 @@ export function modifyUnderlyingTarget(
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
-    underlying: ElementPath,
+    underlying: ElementPathRelativeToComponentRoot<ElementPath>,
     underlyingFilePath: string,
   ) => JSXElementChild,
 ): EditorState {
@@ -3402,7 +3407,7 @@ export function modifyUnderlyingForOpenFile(
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
-    underlying: ElementPath,
+    underlying: ElementPathRelativeToComponentRoot<ElementPath>,
     underlyingFilePath: string,
   ) => JSXElementChild,
 ): EditorState {
@@ -3420,12 +3425,12 @@ export function modifyUnderlyingTargetElement(
   editor: EditorState,
   modifyElement: (
     element: JSXElement | JSXConditionalExpression | JSXFragment,
-    underlying: ElementPath,
+    underlying: ElementPathRelativeToComponentRoot<ElementPath>,
     underlyingFilePath: string,
   ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
+    underlying: ElementPathRelativeToComponentRoot<StaticElementPath> | null,
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
@@ -3500,12 +3505,12 @@ export function modifyUnderlyingElementForOpenFile(
   editor: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: ElementPath,
+    underlying: ElementPathRelativeToComponentRoot<ElementPath>,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
+    underlying: ElementPathRelativeToComponentRoot<StaticElementPath> | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
@@ -3528,9 +3533,9 @@ export function withUnderlyingTarget<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElementChild,
-    underlyingTarget: StaticElementPath,
+    underlyingTarget: ElementPathRelativeToComponentRoot<StaticElementPath>,
     underlyingFilePath: string,
-    underlyingDynamicTarget: ElementPath,
+    underlyingDynamicTarget: ElementPathRelativeToComponentRoot<ElementPath>,
   ) => T,
 ): T {
   const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -3542,14 +3547,14 @@ export function withUnderlyingTarget<T>(
 
   if (
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-    underlyingTarget.normalisedPath != null &&
+    underlyingTarget.normalisedPath?.path != null &&
     underlyingTarget.normalisedDynamicPath != null
   ) {
     const parsed = underlyingTarget.textFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
       const element = findJSXElementChildAtPath(
         getUtopiaJSXComponentsFromSuccess(parsed),
-        underlyingTarget.normalisedPath,
+        underlyingTarget.normalisedPath.path,
       )
       if (element != null) {
         return withTarget(
@@ -3573,7 +3578,7 @@ export function withUnderlyingTargetFromEditorState<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElementChild,
-    underlyingTarget: StaticElementPath,
+    underlyingTarget: ElementPathRelativeToComponentRoot<StaticElementPath>,
     underlyingFilePath: string,
   ) => T,
 ): T {
@@ -3593,7 +3598,7 @@ export function forUnderlyingTargetFromEditorState(
   withTarget: (
     success: ParseSuccess,
     element: JSXElementChild,
-    underlyingTarget: StaticElementPath,
+    underlyingTarget: ElementPathRelativeToComponentRoot<StaticElementPath>,
     underlyingFilePath: string,
   ) => void,
 ): void {
@@ -3608,7 +3613,7 @@ export function forUnderlyingTarget(
   withTarget: (
     success: ParseSuccess,
     element: JSXElementChild,
-    underlyingTarget: StaticElementPath,
+    underlyingTarget: ElementPathRelativeToComponentRoot<StaticElementPath>,
     underlyingFilePath: string,
   ) => void,
 ): void {
@@ -3669,4 +3674,7 @@ export function getNewSceneName(editor: EditorState): string {
 
   // Fallback.
   return 'New Scene'
+}
+function elementPathRelativeToComponentRoot(arg0: StaticElementPath) {
+  throw new Error('Function not implemented.')
 }

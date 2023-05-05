@@ -174,6 +174,7 @@ import { openMenu } from '../../context-menu-side-effect'
 import {
   codeCacheToBuildResult,
   CodeResultCache,
+  elementPathRelativeToRoot,
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -619,13 +620,17 @@ function setPropertyOnTargetAtElementPath(
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJSXElements((components) => {
-    return transformJSXComponentAtElementPath(components, target, (e: JSXElementChild) => {
-      if (isJSXElement(e)) {
-        return applyUpdateToJSXElement(e, updateFn)
-      } else {
-        return e
-      }
-    })
+    return transformJSXComponentAtElementPath(
+      components,
+      elementPathRelativeToRoot(target),
+      (e: JSXElementChild) => {
+        if (isJSXElement(e)) {
+          return applyUpdateToJSXElement(e, updateFn)
+        } else {
+          return e
+        }
+      },
+    )
   }, editor)
 }
 
@@ -2854,6 +2859,7 @@ export const UPDATE_FNS = {
         }
         return false
       }
+
       // when targeting a conditional, wrap multiple elements into a fragment
       if (action.elements.length > 1 && isConditionalTarget()) {
         const fragmentUID = generateUidWithExistingComponents(editor.projectContents)
