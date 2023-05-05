@@ -864,7 +864,6 @@ export function editorMoveMultiSelectedTemplates(
       pathToReparent(target),
       newParent,
       'on-complete', // TODO make sure this is the right pick here
-      useNewInsertJSXElementChild,
     )
     if (outcomeResult == null) {
       return working
@@ -2413,11 +2412,15 @@ export const UPDATE_FNS = {
           type: 'back',
         }
 
+        const insertionPath = isJSXConditionalExpression(action.whatToWrapWith.element)
+          ? conditionalClauseInsertionPath(newPath, 'true-case', 'wrap-with-fragment')
+          : childInsertionPath(newPath)
+
         const withElementsAdded = editorMoveMultiSelectedTemplates(
           builtInDependencies,
           orderedActionTargets,
           indexPosition,
-          childInsertionPath(newPath),
+          insertionPath,
           includeToast(detailsOfUpdate, withWrapperViewAdded),
           'use-deprecated-insertJSXElementChild',
         )
@@ -2894,7 +2897,6 @@ export const UPDATE_FNS = {
           elementToReparent(elementWithUniqueUID, currentValue.importsToAdd),
           action.pasteInto,
           'always', // TODO Before merge make sure this is the right pick here
-          'use-new-insertJSXElementChild',
         )
 
         if (outcomeResult == null) {

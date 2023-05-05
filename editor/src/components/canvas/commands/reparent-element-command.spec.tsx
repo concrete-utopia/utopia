@@ -28,12 +28,7 @@ describe('runReparentElement', () => {
     ])
     const originalEditorState = renderResult.getEditorState().editor
 
-    const reparentCommand = reparentElement(
-      'always',
-      targetPath,
-      childInsertionPath(newParentPath),
-      'use-deprecated-insertJSXElementChild',
-    )
+    const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 
@@ -83,12 +78,7 @@ describe('runReparentElement', () => {
     ])
     const originalEditorState = renderResult.getEditorState().editor
 
-    const reparentCommand = reparentElement(
-      'always',
-      targetPath,
-      childInsertionPath(newParentPath),
-      'use-deprecated-insertJSXElementChild',
-    )
+    const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 

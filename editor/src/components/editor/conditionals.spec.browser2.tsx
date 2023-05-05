@@ -47,7 +47,7 @@ describe('conditionals', () => {
       const editor = await renderTestEditorWithCode(
         `import * as React from 'react'
       import { Storyboard } from 'utopia-api'
-      
+
       export var storyboard = (
         <Storyboard data-uid='sb'>
           {
@@ -468,10 +468,10 @@ describe('conditionals', () => {
             <div data-uid='aaa'>
               {
                 true ? (
-                  <>
+                  <React.Fragment>
                     <div data-uid='bbb'>hello there</div>
                     <div data-uid='ccc'>another div</div>
-                  </>
+                  </React.Fragment>
                 ) : null
               }
               <div data-uid='ddd'>yet another one</div>
