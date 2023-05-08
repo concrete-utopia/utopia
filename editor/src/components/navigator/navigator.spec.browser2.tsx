@@ -554,9 +554,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -632,9 +630,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
@@ -710,9 +706,7 @@ describe('Navigator', () => {
         y: dragTo.y - dragMeElementCenter.y,
       })
 
-      const targetElement = EP.fromString(
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-      )
+      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await act(async () => {
         const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
