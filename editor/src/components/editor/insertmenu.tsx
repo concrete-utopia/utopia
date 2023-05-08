@@ -199,7 +199,7 @@ export function elementBeingInsertedEquals(
   return first.type === second.type
 }
 
-const makeInteraction = (
+const enableInsertMode = (
   component: InsertableComponent,
   newUID: string,
   createInteractionSessionCommand: CanvasAction,
@@ -285,11 +285,6 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
     'CustomOption canvas offsets',
   )
 
-  const getNewUID = React.useCallback(
-    () => generateUidWithExistingComponents(projectContents),
-    [projectContents],
-  )
-
   const mode = React.useMemo(() => (props.selectProps as any).mode as Mode, [props.selectProps])
 
   const currentlyBeingInserted = React.useMemo(() => {
@@ -307,21 +302,24 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   }, [mode])
 
   const insertItemOnMouseDown = (event: React.MouseEvent) => {
-    const newUID = getNewUID()
     const mousePoint = windowToCanvasCoordinates(
       canvasScale,
       canvasOffset,
       windowPoint(point(event.clientX, event.clientY)),
     ).canvasPositionRounded
-    const createInteractionSessionCommand = CanvasActions.createInteractionSession(
-      createInteractionViaMouse(
-        mousePoint,
-        Modifier.modifiersForEvent(event),
-        boundingArea(),
-        'zero-drag-permitted',
+    enableInsertMode(
+      component,
+      generateUidWithExistingComponents(projectContents),
+      CanvasActions.createInteractionSession(
+        createInteractionViaMouse(
+          mousePoint,
+          Modifier.modifiersForEvent(event),
+          boundingArea(),
+          'zero-drag-permitted',
+        ),
       ),
+      dispatch,
     )
-    makeInteraction(component, newUID, createInteractionSessionCommand, dispatch)
   }
 
   const insertItemOnMouseUp = (_event: React.MouseEvent) => {
@@ -445,21 +443,6 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
   const dispatch = useDispatch()
   const [filter, setFilter] = React.useState('')
 
-  function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
-    if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
-      setFilter(newValue.trim())
-    }
-  }
-
-  const onKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        dispatch([setRightMenuTab(RightMenuTab.Inspector)])
-      }
-    },
-    [dispatch],
-  )
-
   const insertableGroups = React.useMemo(() => {
     if (props.currentlyOpenFilename == null) {
       return []
@@ -497,25 +480,57 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
     })
   }, [insertableGroups])
 
+  const filterOption = createFilter({
+    ignoreAccents: true,
+    stringify: (c) => c.data.source + c.data.label,
+    ignoreCase: true,
+    trim: true,
+    matchFrom: 'any',
+  })
+
+  const { value, hasResults } = React.useMemo(() => {
+    const filteredOptions = options
+      .flatMap((g) => g.options)
+      .filter((o) => filterOption({ data: o } as any, filter))
+    return {
+      hasResults: filteredOptions.length > 0,
+      value: filter.length > 0 && filteredOptions.length > 0 ? filteredOptions[0] : undefined,
+    }
+  }, [options, filter, filterOption])
+
+  function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
+    if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
+      setFilter(newValue.trim())
+    }
+  }
+
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        dispatch([setRightMenuTab(RightMenuTab.Inspector)])
+      }
+      if (e.key === 'Enter' && value != null) {
+        enableInsertMode(
+          value.value,
+          generateUidWithExistingComponents(props.projectContents),
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              canvasPoint({ x: 0, y: 0 }),
+              emptyModifiers,
+              boundingArea(),
+              'zero-drag-permitted',
+            ),
+          ),
+          dispatch,
+        )
+      }
+    },
+    [dispatch, props.projectContents, value],
+  )
+
   const onChange = React.useCallback(
     (e: ComponentOptionItem) => {
       onFilterChange(e.label, { action: 'input-change' })
-
-      makeInteraction(
-        e.value,
-        generateUidWithExistingComponents(props.projectContents),
-        CanvasActions.createInteractionSession(
-          createInteractionViaMouse(
-            canvasPoint({ x: 0, y: 0 }),
-            emptyModifiers,
-            boundingArea(),
-            'zero-drag-permitted',
-          ),
-        ),
-        dispatch,
-      )
-
-      dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
 
       dispatch(
         [
@@ -531,30 +546,12 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         'everyone',
       )
     },
-    [dispatch, props.projectContents],
+    [dispatch],
   )
-
-  const filterOption = createFilter({
-    ignoreAccents: true,
-    stringify: (c) => c.data.source + c.data.label,
-    ignoreCase: true,
-    trim: true,
-    matchFrom: 'any',
-  })
 
   function alwaysTrue() {
     return true
   }
-
-  const { value, hasResults } = React.useMemo(() => {
-    const filteredOptions = options
-      .flatMap((g) => g.options)
-      .filter((o) => filterOption({ data: o } as any, filter))
-    return {
-      hasResults: filteredOptions.length > 0,
-      value: filter.length > 0 && filteredOptions.length > 0 ? filteredOptions[0] : undefined,
-    }
-  }, [options, filter, filterOption])
 
   const styles = useSelectStyles(hasResults)
 
