@@ -268,6 +268,7 @@ const makeInteraction = (
 const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const dispatch = useDispatch()
   const component: InsertableComponent = props.data.value
+  const { isFocused } = props
 
   const projectContents = useEditorState(
     Substores.projectContents,
@@ -327,9 +328,13 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
     dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
   }
 
-  const beingInserted = React.useMemo(() => {
-    return elementBeingInsertedEquals(currentlyBeingInserted, elementBeingInserted(component))
-  }, [component, currentlyBeingInserted])
+  const isSelected = React.useMemo(() => {
+    const beingInserted = elementBeingInsertedEquals(
+      currentlyBeingInserted,
+      elementBeingInserted(component),
+    )
+    return beingInserted || (isFocused && currentlyBeingInserted == null)
+  }, [component, currentlyBeingInserted, isFocused])
 
   return (
     <div ref={props.innerRef} {...props.innerProps}>
@@ -337,7 +342,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         key={`insert-item-third-party-${props.innerProps.id}`}
         type={'component'}
         label={component.name}
-        selected={beingInserted || (props.isFocused && currentlyBeingInserted == null)}
+        selected={isSelected}
         // eslint-disable-next-line react/jsx-no-bind
         onMouseDown={insertItemOnMouseDown}
         // eslint-disable-next-line react/jsx-no-bind
@@ -364,6 +369,8 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
     () => ({
       container: (styles): CSSObject => ({
         height: '100%',
+        paddingLeft: 8,
+        paddingRight: 8,
       }),
       control: (styles): CSSObject => ({
         background: 'transparent',
@@ -426,7 +433,7 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
       groupHeading: (styles): CSSObject => {
         return {
           fontWeight: 700,
-          paddingBottom: 5,
+          paddingBottom: 16,
         }
       },
     }),
