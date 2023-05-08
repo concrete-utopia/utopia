@@ -149,8 +149,8 @@ describe('insert menu', () => {
             style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 5,
-                top: 5,
+                left: 6,
+                top: 6,
                 width: 95,
                 height: 145,
             }}
