@@ -27,8 +27,6 @@ export interface StringInputProps
   className?: string
   DEPRECATED_labelBelow?: React.ReactChild
   controlStatus?: ControlStatus
-  containerStyle?: React.CSSProperties
-  onEscape?: () => void
 }
 
 export const StringInput = React.memo(
@@ -41,8 +39,6 @@ export const StringInput = React.memo(
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
-        containerStyle,
-        onEscape,
         ...inputProps
       },
       propsRef,
@@ -126,7 +122,6 @@ export const StringInput = React.memo(
                   hasLabel: false,
                 }),
               ]}
-              style={containerStyle}
               onKeyDown={onKeyDown}
               className={inputProps.className}
               ref={composeRefs(ref, propsRef)}
@@ -134,7 +129,6 @@ export const StringInput = React.memo(
               disabled={disabled}
               autoComplete='off'
               spellCheck={false}
-              onEscape={onEscape}
             />
             {labelBelow == null ? null : (
               <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
