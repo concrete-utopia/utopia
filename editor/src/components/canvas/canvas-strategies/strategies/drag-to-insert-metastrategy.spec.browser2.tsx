@@ -1,7 +1,4 @@
-import {
-  FOR_TESTS_setNextGeneratedUid,
-  FOR_TESTS_setNextGeneratedUids,
-} from '../../../../core/model/element-template-utils.test-utils'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 import { emptyModifiers, Modifiers } from '../../../../utils/modifiers'
 import {
   expectSingleUndo2Saves,
@@ -27,12 +24,15 @@ import {
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
 
-async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
+async function setupInsertTest(
+  inputCode: string,
+  setFakeUids: (_: string[]) => void,
+): Promise<EditorRenderResult> {
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
   await renderResult.dispatch([setRightMenuTab(RightMenuTab.Insert)], false)
 
   const newUID = 'ddd'
-  FOR_TESTS_setNextGeneratedUid(newUID)
+  setFakeUids([newUID])
 
   return renderResult
 }
@@ -101,6 +101,8 @@ async function dragFromInsertMenuDivButtonToPoint(
 }
 
 describe('drag-to-insert', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   describe('Dragging from the insert menu into an absolute layout', () => {
     const inputCode = makeTestProjectCodeWithSnippet(`
     <div
@@ -140,7 +142,7 @@ describe('drag-to-insert', () => {
   `)
 
     it('Should insert a div into an absolute layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
@@ -209,7 +211,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert into a smaller element', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('smaller')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
@@ -278,7 +280,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert a conditional into an absolute layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
@@ -287,7 +289,7 @@ describe('drag-to-insert', () => {
         y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
       }
 
-      FOR_TESTS_setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
+      setNextGeneratedUids(['ddd', 'skip1', 'skip2', 'false-branch'])
 
       await dragFromInsertMenuDivButtonToPoint(
         targetPoint,
@@ -365,7 +367,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert a fragment into an absolute layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
@@ -474,7 +476,7 @@ describe('drag-to-insert', () => {
   `)
 
     it('Should insert a div into a flex layout at zero position', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetNextSibling = renderResult.renderedDOM.getByTestId('bbb')
       const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
@@ -539,7 +541,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert a wrapped element into a flex layout at zero position', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetNextSibling = renderResult.renderedDOM.getByTestId('bbb')
       const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
@@ -607,7 +609,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert a div into a flex layout with absolute positioning', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetSibling = renderResult.renderedDOM.getByTestId('bbb')
       const targetSiblingBounds = targetSibling.getBoundingClientRect()
@@ -672,7 +674,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should forcibly insert a div into a flex layout that does not provide bounds with absolute positioning', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetParent = renderResult.renderedDOM.getByTestId('ccc')
       const targetParentBounds = targetParent.getBoundingClientRect()
@@ -738,7 +740,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert a div into a flex layout at the next position', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetPrevSibling = renderResult.renderedDOM.getByTestId('bbb')
       const targetPrevSiblingBounds = targetPrevSibling.getBoundingClientRect()
@@ -803,7 +805,7 @@ describe('drag-to-insert', () => {
     })
 
     it('Should insert a div into a child of a flex layout which provides absolute bounds', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetParentElement = renderResult.renderedDOM.getByTestId('bbb')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()

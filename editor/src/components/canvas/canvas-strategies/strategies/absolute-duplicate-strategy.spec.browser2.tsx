@@ -8,7 +8,7 @@ import {
   TestScenePath,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
 import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -50,6 +50,8 @@ async function dragElement(
 }
 
 describe('Absolute Duplicate Strategy', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   it('duplicates the selected absolute element when pressing alt', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -69,7 +71,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     const target = EP.appendNewElementPath(TestScenePath, ['container', 'aaa', 'bbb'])
 
-    FOR_TESTS_setNextGeneratedUid('hello')
+    setNextGeneratedUids(['hello'])
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier, () => {
       expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
@@ -110,7 +112,7 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUid('hello')
+    setNextGeneratedUids(['hello'])
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier)
 

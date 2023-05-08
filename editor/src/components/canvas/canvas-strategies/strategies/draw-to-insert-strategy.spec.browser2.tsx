@@ -18,10 +18,6 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { RightMenuTab } from '../../../editor/store/editor-state'
-import {
-  FOR_TESTS_setNextGeneratedUid,
-  FOR_TESTS_setNextGeneratedUids,
-} from '../../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
@@ -36,6 +32,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Direction } from '../../../inspector/common/css-utils'
 import { expectSingleUndo2Saves } from '../../../../utils/utils.test-utils'
 import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 
 // FIXME These tests will probably start to fail if the insert menu becomes too long, at which point we may
 // have to insert some mocking to restrict the available items there
@@ -46,12 +43,15 @@ function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: n
   return { x: point.x - 0.001, y: point.y - 0.001 }
 }
 
-async function setupInsertTest(inputCode: string): Promise<EditorRenderResult> {
+async function setupInsertTest(
+  inputCode: string,
+  setFakeUids: (_: string[]) => void,
+): Promise<EditorRenderResult> {
   const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
   await renderResult.dispatch([setRightMenuTab(RightMenuTab.Insert)], false)
 
   const newUID = 'ddd'
-  FOR_TESTS_setNextGeneratedUid(newUID)
+  setFakeUids([newUID])
 
   return renderResult
 }
@@ -164,8 +164,12 @@ function isIndicatorBetweenSiblingsBBBCCC(
   }
 }
 
-const testDrawToInsertImageAspectRatio = async (inputCode: string, expectedCode: string) => {
-  const renderResult = await setupInsertTest(makeTestProjectCodeWithSnippet(inputCode))
+const testDrawToInsertImageAspectRatio = async (
+  inputCode: string,
+  expectedCode: string,
+  setFakeUids: (_: string[]) => void,
+) => {
+  const renderResult = await setupInsertTest(makeTestProjectCodeWithSnippet(inputCode), setFakeUids)
   await enterInsertModeFromInsertMenu(renderResult, 'img')
 
   const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -202,6 +206,7 @@ async function drawToInsertTestMaybeAddsFlexGrow(
   dragDelta: CanvasPoint,
   expectedStyle: React.CSSProperties,
   flexDirection: 'row' | 'column',
+  setFakeUids: (_: string[]) => void,
   parentSize: number | null = null,
 ) {
   const flexElementWithChildren = (insertedSibling: string = '') =>
@@ -250,7 +255,7 @@ async function drawToInsertTestMaybeAddsFlexGrow(
     </div>
   `)
 
-  const renderResult = await setupInsertTest(flexElementWithChildren())
+  const renderResult = await setupInsertTest(flexElementWithChildren(), setFakeUids)
   await enterInsertModeFromInsertMenu(renderResult)
 
   const targetElement = renderResult.renderedDOM.getByTestId('bb3')
@@ -289,6 +294,8 @@ async function drawToInsertTestMaybeAddsFlexGrow(
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runInsertTest", "runClickToInsertTest", "drawToInsertTestMaybeAddsFlexGrow", "testDrawToInsertImageAspectRatio" ] }] */
 
 describe('draw-to-insert', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   describe('Inserting into absolute', () => {
     const inputCode = makeTestProjectCodeWithSnippet(`
     <div
@@ -332,7 +339,7 @@ describe('draw-to-insert', () => {
         modifiers: Modifiers,
         expectedSize: { width: number; height: number },
       ) {
-        const renderResult = await setupInsertTest(inputCode)
+        const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
         await enterInsertModeFromInsertMenu(renderResult)
 
         const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -445,10 +452,10 @@ describe('draw-to-insert', () => {
       })
 
       it('Should insert a conditional', async () => {
-        const renderResult = await setupInsertTest(inputCode)
+        const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
         await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
 
-        FOR_TESTS_setNextGeneratedUids([
+        setNextGeneratedUids([
           'skip1',
           'skip2',
           'skip3',
@@ -553,7 +560,7 @@ describe('draw-to-insert', () => {
       })
 
       it('Should insert a fragment', async () => {
-        const renderResult = await setupInsertTest(inputCode)
+        const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
         await enterInsertModeFromInsertMenu(renderResult, 'Fragment')
 
         const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -638,7 +645,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Should drag to insert into targets smaller than the element', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -792,13 +799,13 @@ describe('draw-to-insert', () => {
       }
 
       it('works from the insert menu', async () => {
-        const renderResult = await setupInsertTest(inputCode)
+        const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
         await enterInsertModeFromInsertMenu(renderResult)
         await runClickToInsertTest(renderResult)
       })
 
       it('works with the keyboard shortcut', async () => {
-        const renderResult = await setupInsertTest(inputCode)
+        const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
         await pressKey('d')
         ensureInInsertMode(renderResult)
         await runClickToInsertTest(renderResult)
@@ -831,6 +838,7 @@ describe('draw-to-insert', () => {
           />
         </div>
     `),
+        setNextGeneratedUids,
       )
       await enterInsertModeFromInsertMenu(renderResult)
 
@@ -896,7 +904,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Should not clear the intended target when dragging to insert past the scene boundary', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -976,7 +984,7 @@ describe('draw-to-insert', () => {
     })
 
     it('when drag ends outside the canvas in insert mode, it is cancelled', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
@@ -1023,7 +1031,7 @@ describe('draw-to-insert', () => {
         />
       </div>
     `)
-      const renderResult = await setupInsertTest(testCode)
+      const renderResult = await setupInsertTest(testCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1107,7 +1115,7 @@ describe('draw-to-insert', () => {
           />
         </div>
     `)
-      const renderResult = await setupInsertTest(testCode)
+      const renderResult = await setupInsertTest(testCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1229,7 +1237,7 @@ describe('draw-to-insert', () => {
       </div>
     `)
 
-      const renderResult = await setupInsertTest(inputWithFragments)
+      const renderResult = await setupInsertTest(inputWithFragments, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('aaa')
@@ -1367,7 +1375,7 @@ describe('draw-to-insert', () => {
   `)
 
     it('By default, it inserts as absolute into a flow parent', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1444,7 +1452,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Using the strategy picker, it happily inserts into a static element', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1558,7 +1566,7 @@ describe('draw-to-insert', () => {
   `)
 
     it('Insert into zero position in flex', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1641,7 +1649,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Click to insert into zero position in flex', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1720,10 +1728,10 @@ describe('draw-to-insert', () => {
     })
 
     it('Inserting a wrapped element into the 0th position in flex', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult, 'Conditional')
 
-      FOR_TESTS_setNextGeneratedUids([
+      setNextGeneratedUids([
         'skip1',
         'skip2',
         'skip3',
@@ -1824,7 +1832,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Insert into first position in flex', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1908,7 +1916,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Click to insert into first position in flex', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -1986,7 +1994,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Insert into first position in flex, backwards drag', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2071,7 +2079,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Insert inside a flex child with absolute layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2148,7 +2156,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Click to insert inside a flex child with absolute layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2221,7 +2229,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Drag inside a flex child close to the edge, which inserts as a sibling', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2305,7 +2313,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Click inside a flex child close to the edge, which inserts as a sibling', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2391,7 +2399,12 @@ describe('draw-to-insert', () => {
           contain: 'layout',
           flexGrow: 1,
         }
-        await drawToInsertTestMaybeAddsFlexGrow(canvasPoint({ x: 60, y: 25 }), expectedStyle, 'row')
+        await drawToInsertTestMaybeAddsFlexGrow(
+          canvasPoint({ x: 60, y: 25 }),
+          expectedStyle,
+          'row',
+          setNextGeneratedUids,
+        )
       })
       it('inserting into the end of flex row adds width when not reaching parent`s edge', async () => {
         const expectedStyle = {
@@ -2400,7 +2413,12 @@ describe('draw-to-insert', () => {
           height: 25,
           contain: 'layout',
         }
-        await drawToInsertTestMaybeAddsFlexGrow(canvasPoint({ x: 50, y: 25 }), expectedStyle, 'row')
+        await drawToInsertTestMaybeAddsFlexGrow(
+          canvasPoint({ x: 50, y: 25 }),
+          expectedStyle,
+          'row',
+          setNextGeneratedUids,
+        )
       })
       it('inserting into the end of flex row only adds width when siblings are shrinked already (no open space for insertion)', async () => {
         const expectedStyle = {
@@ -2413,6 +2431,7 @@ describe('draw-to-insert', () => {
           canvasPoint({ x: 60, y: 25 }),
           expectedStyle,
           'row',
+          setNextGeneratedUids,
           100,
         )
       })
@@ -2455,7 +2474,7 @@ describe('draw-to-insert', () => {
   `)
 
     it('Insert into zero position in flex, column layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2540,7 +2559,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Click to insert into zero position in flex, column layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2621,7 +2640,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Insert into first position in flex, column layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2707,7 +2726,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Click to insert into first position in flex, column layout', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2788,7 +2807,7 @@ describe('draw-to-insert', () => {
     })
 
     it('Insert into first position in flex, column layout, backwards drag', async () => {
-      const renderResult = await setupInsertTest(inputCode)
+      const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
       await enterInsertModeFromInsertMenu(renderResult)
 
       const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -2883,6 +2902,7 @@ describe('draw-to-insert', () => {
           canvasPoint({ x: 60, y: 136 }),
           expectedStyle,
           'column',
+          setNextGeneratedUids,
         )
       })
       it('inserting into the end of flex column adds width when not reaching parent`s edge', async () => {
@@ -2896,6 +2916,7 @@ describe('draw-to-insert', () => {
           canvasPoint({ x: 50, y: 130 }),
           expectedStyle,
           'column',
+          setNextGeneratedUids,
         )
       })
       it('inserting into the end of flex column only adds width when siblings are shrinked already (no open space for insertion)', async () => {
@@ -2909,6 +2930,7 @@ describe('draw-to-insert', () => {
           canvasPoint({ x: 60, y: 136 }),
           expectedStyle,
           'column',
+          setNextGeneratedUids,
           100,
         )
       })
@@ -2999,7 +3021,7 @@ describe('draw-to-insert', () => {
         />
       </div>
     `
-      await testDrawToInsertImageAspectRatio(inputCode, expectedCode)
+      await testDrawToInsertImageAspectRatio(inputCode, expectedCode, setNextGeneratedUids)
     })
 
     it('Draw to insert to a flex layout keeps aspect ratio', async () => {
@@ -3050,7 +3072,7 @@ describe('draw-to-insert', () => {
         </div>
       </div>
     `
-      await testDrawToInsertImageAspectRatio(inputCode, expectedCode)
+      await testDrawToInsertImageAspectRatio(inputCode, expectedCode, setNextGeneratedUids)
     })
   })
 
@@ -3097,7 +3119,7 @@ describe('draw-to-insert', () => {
     `)
 
         it('Draw to insert into a sibling of the conditional', async () => {
-          const renderResult = await setupInsertTest(inputCode)
+          const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
           await enterInsertModeFromInsertMenu(renderResult)
 
           const targetElement = renderResult.renderedDOM.getByTestId('bbb')
@@ -3189,7 +3211,7 @@ describe('draw-to-insert', () => {
         })
 
         it('Draw to insert into the parent of a conditional works', async () => {
-          const renderResult = await setupInsertTest(inputCode)
+          const renderResult = await setupInsertTest(inputCode, setNextGeneratedUids)
           await enterInsertModeFromInsertMenu(renderResult)
 
           const targetElement = renderResult.renderedDOM.getByTestId('aaa')

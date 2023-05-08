@@ -17,7 +17,6 @@ import {
 } from '../components/canvas/ui-jsx.test-utils'
 import { setLeftMenuTab, setPanelVisibility } from '../components/editor/actions/action-creators'
 import { LeftMenuTab } from '../components/editor/store/editor-state'
-import { FOR_TESTS_setNextGeneratedUids } from '../core/model/element-template-utils.test-utils'
 import { correctProjectContentsPath } from '../core/model/project-file-utils'
 import { defer } from '../utils/utils'
 import * as ImageDrop from './image-drop'
@@ -26,6 +25,7 @@ import {
   imgBase642x2,
   makeImageFile,
 } from '../components/canvas/image-insert.test-utils'
+import { mockGenerateUid } from '../core/model/element-template-utils.test-utils'
 
 const contents = {
   'package.json': {
@@ -251,6 +251,8 @@ describe('image drag and drop', () => {
     sandbox.restore()
   })
 
+  const setNextGeneratedUids = mockGenerateUid()
+
   describe('filebrowser and canvas combined interactions', () => {
     it('dragging from the filebrowser to the canvas inserts the image', async () => {
       const editor = await renderTestEditorWithProjectContent(contents, 'await-first-dom-report')
@@ -292,7 +294,7 @@ describe('image drag and drop', () => {
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
       await editor.getDispatchFollowUpActionsFinished()
 
-      FOR_TESTS_setNextGeneratedUids(['dragged-image'])
+      setNextGeneratedUids(['dragged-image'])
 
       await dropElementAtPoint(canvasControlsLayer, endPoint, [])
 
@@ -499,7 +501,7 @@ describe('image drag and drop', () => {
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
     expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
 
-    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
+    setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -575,7 +577,7 @@ export var storyboard = (
     expect(editor.getEditorState().editor.imageDragSessionState.type).toEqual('DRAGGING_FROM_FS')
     expect(editor.getEditorState().editor.canvas.cursor).not.toBeNull()
 
-    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
+    setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -649,7 +651,7 @@ export var storyboard = (
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
 
-    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
+    setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -715,7 +717,7 @@ export var storyboard = (
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, [file])
 
-    FOR_TESTS_setNextGeneratedUids(['dragged-image'])
+    setNextGeneratedUids(['dragged-image'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, [file])
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -785,7 +787,7 @@ export var storyboard = (
     }
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
-    FOR_TESTS_setNextGeneratedUids(['dragged-image1', 'dragged-image2', 'dragged-image3'])
+    setNextGeneratedUids(['dragged-image1', 'dragged-image2', 'dragged-image3'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()
@@ -883,7 +885,7 @@ export var storyboard = (
     }
 
     await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, endPoint, files)
-    FOR_TESTS_setNextGeneratedUids(['dragged-image1', 'dragged-image2', 'dragged-image3'])
+    setNextGeneratedUids(['dragged-image1', 'dragged-image2', 'dragged-image3'])
     await dropElementAtPoint(canvasControlsLayer, endPoint, files)
 
     await editor.getDispatchFollowUpActionsFinished()

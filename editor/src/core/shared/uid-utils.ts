@@ -57,22 +57,6 @@ import { ElementPath } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
 
-export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
-export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
-
-export function generateMockNextGeneratedUID(): string | null {
-  if (
-    MOCK_NEXT_GENERATED_UIDS.current.length > 0 &&
-    MOCK_NEXT_GENERATED_UIDS_IDX.current < MOCK_NEXT_GENERATED_UIDS.current.length
-  ) {
-    const nextID = MOCK_NEXT_GENERATED_UIDS.current[MOCK_NEXT_GENERATED_UIDS_IDX.current]
-    MOCK_NEXT_GENERATED_UIDS_IDX.current += 1
-    return nextID
-  } else {
-    return null
-  }
-}
-
 export const UtopiaIDPropertyPath = PP.create('data-uid')
 
 const atoz = [
@@ -105,64 +89,56 @@ const atoz = [
 ]
 
 // Assumes possibleStartingValue consists only of characters that are valid to begin with.
-export function generateConsistentUID(
-  existingIDs: Set<string>,
-  possibleStartingValue: string,
-): string {
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    if (possibleStartingValue.length >= 3) {
-      const maxSteps = Math.floor(possibleStartingValue.length / 3)
-      for (let step = 0; step < maxSteps; step++) {
-        const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
+function generateConsistentUID(existingIDs: Set<string>, possibleStartingValue: string): string {
+  if (possibleStartingValue.length >= 3) {
+    const maxSteps = Math.floor(possibleStartingValue.length / 3)
+    for (let step = 0; step < maxSteps; step++) {
+      const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
 
-        if (!existingIDs.has(possibleUID)) {
-          return possibleUID
-        }
+      if (!existingIDs.has(possibleUID)) {
+        return possibleUID
       }
+    }
 
-      for (let firstChar of atoz) {
-        for (let secondChar of atoz) {
-          for (let thirdChar of atoz) {
-            const possibleUID = `${firstChar}${secondChar}${thirdChar}`
+    for (let firstChar of atoz) {
+      for (let secondChar of atoz) {
+        for (let thirdChar of atoz) {
+          const possibleUID = `${firstChar}${secondChar}${thirdChar}`
 
-            if (!existingIDs.has(possibleUID)) {
-              return possibleUID
-            }
+          if (!existingIDs.has(possibleUID)) {
+            return possibleUID
           }
         }
       }
     }
-
-    // Fallback bailout.
-    throw new Error(`Unable to generate a UID from ${possibleStartingValue}`)
-  } else {
-    return mockUID
   }
+
+  // Fallback bailout.
+  throw new Error(`Unable to generate a UID from ${possibleStartingValue}`)
 }
 
-export function generateUID(existingIDs: Array<string> | Set<string>): string {
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    const fullUid = UUID().replace(/\-/g, '')
-    // trying to find a new 3 character substring from the full uid
-    for (let i = 0; i < fullUid.length - 3; i++) {
-      const id = fullUid.substring(i, i + 3)
-      if (Array.isArray(existingIDs)) {
-        if (!existingIDs.includes(id)) {
-          return id
-        }
-      } else {
-        if (!existingIDs.has(id)) {
-          return id
-        }
+function generateUID(existingIDs: Array<string> | Set<string>): string {
+  const fullUid = UUID().replace(/\-/g, '')
+  // trying to find a new 3 character substring from the full uid
+  for (let i = 0; i < fullUid.length - 3; i++) {
+    const id = fullUid.substring(i, i + 3)
+    if (Array.isArray(existingIDs)) {
+      if (!existingIDs.includes(id)) {
+        return id
+      }
+    } else {
+      if (!existingIDs.has(id)) {
+        return id
       }
     }
-    // if all the substrings are already used as ids, let's try again with a new full uid
-    return generateUID(existingIDs)
-  } else {
-    return mockUID
   }
+  // if all the substrings are already used as ids, let's try again with a new full uid
+  return generateUID(existingIDs)
+}
+
+export const GenerateUID = {
+  generateConsistentUID,
+  generateUID,
 }
 
 export const GeneratedUIDSeparator = `~~~`

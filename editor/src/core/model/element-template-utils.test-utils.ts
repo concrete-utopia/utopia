@@ -1,21 +1,31 @@
-import { MOCK_NEXT_GENERATED_UIDS, MOCK_NEXT_GENERATED_UIDS_IDX } from '../shared/uid-utils'
+import { GenerateUID } from '../shared/uid-utils'
+import Sinon from 'sinon'
 
-export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
-  MOCK_NEXT_GENERATED_UIDS.current = [nextUid]
-  MOCK_NEXT_GENERATED_UIDS_IDX.current = 0
+function* fakeUids(uids: string[]): Generator<string, any, never> {
+  for (const uid of uids) {
+    yield uid
+  }
+
+  throw new Error('Ran out of mocked uids')
 }
 
-export function FOR_TESTS_setNextGeneratedUids(uids: Array<string>): void {
-  MOCK_NEXT_GENERATED_UIDS.current = uids
-  MOCK_NEXT_GENERATED_UIDS_IDX.current = 0
-}
+export const mockGenerateUid = () => {
+  let sandbox: Sinon.SinonSandbox | null = null
 
-export function FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS(): void {
-  MOCK_NEXT_GENERATED_UIDS.current = []
-  MOCK_NEXT_GENERATED_UIDS_IDX.current = 0
-}
+  afterEach(() => {
+    sandbox?.restore()
+    sandbox = null
+  })
 
-// automatic cleanup after tests
-afterEach(() => {
-  FOR_TESTS_CLEAR_MOCK_NEXT_GENERATED_UIDS()
-})
+  return (mockUids: string[]) => {
+    sandbox = Sinon.createSandbox()
+
+    const generateUidStub = sandbox.stub(GenerateUID, 'generateUID')
+    const generateUidsSource = fakeUids(mockUids)
+    generateUidStub.callsFake(() => generateUidsSource.next().value)
+
+    // const generateConsistentUIDStub = sandbox.stub(GenerateUID, 'generateConsistentUID')
+    // const generateConsistentUIDStubSource = fakeUids(mockUids)
+    // generateConsistentUIDStub.callsFake(() => generateConsistentUIDStubSource.next().value)
+  }
+}

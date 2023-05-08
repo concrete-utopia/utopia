@@ -1,5 +1,4 @@
 import { act, fireEvent, queryByAttribute } from '@testing-library/react'
-import { FOR_TESTS_setNextGeneratedUid } from '../../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
@@ -14,8 +13,11 @@ import {
 } from '../ui-jsx.test-utils'
 import { FloatingMenuTestId } from './floating-insert-menu'
 import { expectNoAction } from '../../../utils/utils.test-utils'
+import { mockGenerateUid } from '../../../core/model/element-template-utils.test-utils'
 
 describe('Floating insert menu', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   it('can insert a conditional via the floating insert menu', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div
@@ -122,7 +124,7 @@ describe('Floating insert menu', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUid('new-div')
+    setNextGeneratedUids(['new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -173,7 +175,7 @@ describe('Floating insert menu', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUid('sample-text')
+    setNextGeneratedUids(['sample-text'])
 
     await insertViaAddElementPopup(editor, 'sampl')
 
@@ -236,7 +238,7 @@ describe('Floating insert menu', () => {
         'await-first-dom-report',
       )
 
-      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+      setNextGeneratedUids(['newly-added-img'])
 
       await clickEmptySlot(editor)
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
@@ -283,7 +285,7 @@ describe('Floating insert menu', () => {
       )
 
       await clickEmptySlot(editor) // This click will add an override
-      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+      setNextGeneratedUids(['newly-added-img'])
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -377,7 +379,7 @@ describe('Floating insert menu', () => {
       const slot = editor.renderedDOM.getByText('div')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
-      FOR_TESTS_setNextGeneratedUid('newly-added-img')
+      setNextGeneratedUids(['newly-added-img'])
 
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 

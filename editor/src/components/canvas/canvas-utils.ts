@@ -51,7 +51,7 @@ import {
 } from '../../core/model/element-template-utils'
 import {
   fixUtopiaElement,
-  generateUID,
+  GenerateUID,
   getUtopiaID,
   setUtopiaID,
 } from '../../core/shared/uid-utils'
@@ -1988,7 +1988,7 @@ export function createDuplicationNewUIDs(
 
   let result: Array<DuplicateNewUID> = []
   Utils.fastForEach(targetViews, (targetView) => {
-    const newUID = generateUID(existingIDs)
+    const newUID = GenerateUID.generateUID(existingIDs)
     existingIDs.push(newUID)
     result.push({
       originalPath: targetView,

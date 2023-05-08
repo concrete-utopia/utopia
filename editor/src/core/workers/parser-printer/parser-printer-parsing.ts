@@ -90,12 +90,7 @@ import {
   PropertyPathPart,
   HighlightBoundsForUids,
 } from '../../shared/project-file-types'
-import {
-  generateConsistentUID,
-  generateUID,
-  getUtopiaIDFromJSXElement,
-  parseUID,
-} from '../../shared/uid-utils'
+import { GenerateUID, getUtopiaIDFromJSXElement, parseUID } from '../../shared/uid-utils'
 import { fastForEach, RETURN_TO_PREPEND } from '../../shared/utils'
 import {
   transpileJavascriptFromCode,
@@ -1165,7 +1160,7 @@ function generateUIDAndAddToExistingUIDs(
     fileName: sourceFile.fileName,
     value: value,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = GenerateUID.generateConsistentUID(alreadyExistingUIDs, hash)
   alreadyExistingUIDs.add(uid)
   return uid
 }
@@ -1978,7 +1973,7 @@ function getUIDBasedOnElement(
     name: elementName,
     props: cleansedProps,
   })
-  const uid = generateConsistentUID(alreadyExistingUIDs, hash)
+  const uid = GenerateUID.generateConsistentUID(alreadyExistingUIDs, hash)
   alreadyExistingUIDs.add(uid)
   return uid
 }

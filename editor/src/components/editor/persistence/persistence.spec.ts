@@ -1,7 +1,7 @@
 import { PersistentModel, StoryboardFilePath } from '../store/editor-state'
 import { fastForEach, NO_OP } from '../../../core/shared/utils'
 import { createPersistentModel, delay } from '../../../utils/utils.test-utils'
-import { generateUID } from '../../../core/shared/uid-utils'
+import { GenerateUID } from '../../../core/shared/uid-utils'
 import {
   AssetFile,
   isAssetFile,
@@ -45,7 +45,7 @@ const ThirdRevision = updateModel(SecondRevision)
 const FourthRevision = updateModel(ThirdRevision)
 
 function mockRandomProjectID(): string {
-  const newId = generateUID(allProjectIds)
+  const newId = GenerateUID.generateUID(allProjectIds)
   allProjectIds.push(newId)
   return newId
 }

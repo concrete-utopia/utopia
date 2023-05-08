@@ -7,7 +7,6 @@ import {
   SimpleConditionalsExample,
 } from './parser-printer-conditionals.test-utils'
 import { setFeatureForUnitTests } from '../../../utils/utils.test-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { printCode, printCodeOptions } from './parser-printer'
 import { JSXElementChild, TopLevelElement, isJSXElement } from '../../shared/element-template'
 import { findJSXElementChildAtPath } from '../../model/element-template-utils'

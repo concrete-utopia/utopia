@@ -67,10 +67,10 @@ import {
   getOpeningGroupLikeTag,
   GroupLikeElementUid,
 } from './group-like-helpers.test-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 
 async function resizeElement(
   renderResult: EditorRenderResult,
@@ -1766,8 +1766,9 @@ describe('double click on resize corner', () => {
 async function makeResizeInGroupProject(
   type: ContentAffectingType,
   targets: Array<ElementPath>,
+  setFakeUids: (_: string[]) => void,
 ): Promise<string> {
-  FOR_TESTS_setNextGeneratedUids([
+  setFakeUids([
     'skip1',
     'skip2',
     'skip3',
@@ -1854,26 +1855,35 @@ async function makeResizeInGroupProject(
 }
 
 describe('Absolute Resize Group-like behaviors', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   AllContentAffectingTypes.forEach((type) => {
     describe(`group-like ${type} element`, () => {
       it('resizing a group is the same as multiselect resizing the children', async () => {
-        const groupResizeResult = await makeResizeInGroupProject(type, [
-          EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting']),
-        ])
-        const multiselectResult = await makeResizeInGroupProject(type, [
-          EP.appendNewElementPath(TestScenePath, [
-            'aaa',
-            'children-affecting',
-            'inner-fragment',
-            'ccc',
-          ]),
-          EP.appendNewElementPath(TestScenePath, [
-            'aaa',
-            'children-affecting',
-            'inner-fragment',
-            'ddd',
-          ]),
-        ])
+        const groupResizeResult = await makeResizeInGroupProject(
+          type,
+          [EP.appendNewElementPath(TestScenePath, ['aaa', 'children-affecting'])],
+          setNextGeneratedUids,
+        )
+
+        const multiselectResult = await makeResizeInGroupProject(
+          type,
+          [
+            EP.appendNewElementPath(TestScenePath, [
+              'aaa',
+              'children-affecting',
+              'inner-fragment',
+              'ccc',
+            ]),
+            EP.appendNewElementPath(TestScenePath, [
+              'aaa',
+              'children-affecting',
+              'inner-fragment',
+              'ddd',
+            ]),
+          ],
+          setNextGeneratedUids,
+        )
 
         expect(groupResizeResult).toEqual(multiselectResult)
       })

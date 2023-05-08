@@ -1,4 +1,4 @@
-import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
+import { mockGenerateUid } from '../../core/model/element-template-utils.test-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import * as EP from '../../core/shared/element-path'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
@@ -21,6 +21,8 @@ function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: n
 }
 
 describe('canvas toolbar', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   it('can insert conditionals via the canvas toolbar', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -85,7 +87,7 @@ describe('canvas toolbar', () => {
       y: targetElementBounds.y + 1005,
     })
 
-    FOR_TESTS_setNextGeneratedUids(['new-div'])
+    setNextGeneratedUids(['new-div'])
 
     const insertConditionalButton = editor.renderedDOM.getByTestId(InsertConditionalButtonTestId)
     const insertConditionalButtonRect = insertConditionalButton.getBoundingClientRect()
@@ -97,7 +99,7 @@ describe('canvas toolbar', () => {
     // Highlight should show the candidate parent
     expect(editor.getEditorState().editor.highlightedViews.map(EP.toUid)).toEqual(['bbb'])
 
-    FOR_TESTS_setNextGeneratedUids([
+    setNextGeneratedUids([
       'skip1',
       'skip2',
       'skip3',

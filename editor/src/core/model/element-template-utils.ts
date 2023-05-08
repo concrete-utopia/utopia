@@ -46,12 +46,7 @@ import {
 } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
-import {
-  fixUtopiaElement,
-  generateMockNextGeneratedUID,
-  generateUID,
-  getUtopiaID,
-} from '../shared/uid-utils'
+import { fixUtopiaElement, GenerateUID, getUtopiaID } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
@@ -127,26 +122,16 @@ function getAllUniqueUidsInner(
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents)
-    return generateUID(existingUIDS)
-  } else {
-    return mockUID
-  }
+  const existingUIDS = getAllUniqueUids(projectContents)
+  return GenerateUID.generateUID(existingUIDS)
 }
 
 export function generateUidWithExistingComponentsAndExtraUids(
   projectContents: ProjectContentTreeRoot,
   additionalUids: Array<string>,
 ): string {
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents)
-    return generateUID([...existingUIDSFromProject, ...additionalUids])
-  } else {
-    return mockUID
-  }
+  const existingUIDSFromProject = getAllUniqueUids(projectContents)
+  return GenerateUID.generateUID([...existingUIDSFromProject, ...additionalUids])
 }
 
 export function guaranteeUniqueUids(

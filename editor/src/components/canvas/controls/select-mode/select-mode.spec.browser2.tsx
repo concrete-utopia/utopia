@@ -28,8 +28,8 @@ import {
 } from '../../event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
 import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -467,8 +467,10 @@ describe('Select Mode Double Clicking With Fragments', () => {
   // elements. These are special cases because these fragments and their components
   // do not appear in the dom.
 
+  const setNextGeneratedUids = mockGenerateUid()
+
   it('One click to select child of Card Scene Root', async () => {
-    FOR_TESTS_setNextGeneratedUids([
+    setNextGeneratedUids([
       'cardlistfragment',
       'manuallistfragment',
       'cardlistfragment',
@@ -504,7 +506,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
   })
 
   it('Single click and then double click to select Button on a Card Scene Root', async () => {
-    FOR_TESTS_setNextGeneratedUids([
+    setNextGeneratedUids([
       'cardlistfragment',
       'manuallistfragment',
       'cardlistfragment',

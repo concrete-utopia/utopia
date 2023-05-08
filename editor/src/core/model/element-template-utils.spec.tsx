@@ -54,8 +54,7 @@ import {
   rearrangeJsxChildren,
   removeJSXElementChild,
 } from './element-template-utils'
-import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
-import { FOR_TESTS_setNextGeneratedUid } from './element-template-utils.test-utils'
+import { mockGenerateUid } from './element-template-utils.test-utils'
 import { getComponentFromCode } from './element-template.test-utils'
 import { getComponentsFromTopLevelElements } from './project-file-utils'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -1060,6 +1059,8 @@ describe('findJSXElementChildAtPath', () => {
 })
 
 describe('insertJSXElementChild', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   function findElement(components: Array<UtopiaJSXComponent>, pathString: string) {
     const path = fromStringStatic(pathString)
     const foundElement = findJSXElementChildAtPath(
@@ -1362,7 +1363,7 @@ describe('insertJSXElementChild', () => {
     </div>
     `)
 
-    FOR_TESTS_setNextGeneratedUid('fragment')
+    setNextGeneratedUids(['fragment'])
     const withInsertedElement = insertJSXElementChild(
       projectContents,
       conditionalClauseInsertionPath(
@@ -1450,7 +1451,7 @@ describe('insertJSXElementChild', () => {
     </div>
     `)
 
-    FOR_TESTS_setNextGeneratedUid('fragment')
+    setNextGeneratedUids(['fragment'])
     const withInsertedElement = insertJSXElementChild(
       projectContents,
       conditionalClauseInsertionPath(

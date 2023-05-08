@@ -23,7 +23,6 @@ import {
   AllContentAffectingTypes,
   ContentAffectingType,
 } from './group-like-helpers'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import { fromString } from '../../../../core/shared/element-path'
 
 const TestProject = (direction: string) => `

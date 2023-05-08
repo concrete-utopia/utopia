@@ -46,7 +46,7 @@ import {
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import { mockGenerateUid } from '../../../core/model/element-template-utils.test-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -70,6 +70,8 @@ function makeTargetPath(suffix: string): ElementPath {
 }
 
 describe('actions', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   describe('DELETE_SELECTED', () => {
     const tests: {
       name: string
@@ -1170,7 +1172,7 @@ describe('actions', () => {
 
         const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
-        FOR_TESTS_setNextGeneratedUids(['child1', 'child2', 'parent'])
+        setNextGeneratedUids(['child1', 'child2', 'parent'])
 
         firePasteEvent(canvasRoot)
 

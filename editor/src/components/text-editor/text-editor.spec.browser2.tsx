@@ -14,13 +14,15 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
-import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
+import { mockGenerateUid } from '../../core/model/element-template-utils.test-utils'
 
 describe('Use the text editor', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   it('Click to edit text', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor)
+    await enterTextEditMode(editor, setNextGeneratedUids)
     typeText(' Utopia')
     await expectSingleUndo2Saves(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
@@ -53,7 +55,7 @@ describe('Use the text editor', () => {
   it('Add new text', async () => {
     const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor)
+    await enterTextEditMode(editor, setNextGeneratedUids)
     typeText('Utopia')
     await expectSingleUndo2Saves(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
@@ -86,7 +88,7 @@ describe('Use the text editor', () => {
   it('Do not save content before exiting the text editor', async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor)
+    await enterTextEditMode(editor, setNextGeneratedUids)
     typeText(' Utopia')
     await editor.getDispatchFollowUpActionsFinished()
 
@@ -118,7 +120,7 @@ describe('Use the text editor', () => {
   it('Escapes HTML entities', async () => {
     const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor)
+    await enterTextEditMode(editor, setNextGeneratedUids)
     typeText('this is a <test> with bells & whistles')
     await expectSingleUndo2Saves(editor, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
@@ -151,7 +153,7 @@ describe('Use the text editor', () => {
   it(`ensure that a bunch of the text editor properties are set to 'inherit'`, async () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-    await enterTextEditMode(editor)
+    await enterTextEditMode(editor, setNextGeneratedUids)
     const textEditorElement = document.getElementById(TextEditorSpanId)
     if (textEditorElement == null) {
       throw new Error('A text editor should exist at this point.')
@@ -198,7 +200,7 @@ describe('Use the text editor', () => {
   })
   describe('formatting shortcuts', () => {
     it('supports bold', async () => {
-      const { before, after } = await testModifier(cmdModifier, 'b')
+      const { before, after } = await testModifier(cmdModifier, 'b', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyle({ fontWeight: 'bold' }))
       expect(after).toEqual(projectWithStyle({}))
     })
@@ -207,6 +209,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'b',
+        setNextGeneratedUids,
         projectWithoutTextWithExtraStyle({ font: 'bold 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
@@ -217,7 +220,7 @@ describe('Use the text editor', () => {
       )
     })
     it('supports italic', async () => {
-      const { before, after } = await testModifier(cmdModifier, 'i')
+      const { before, after } = await testModifier(cmdModifier, 'i', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyle({ fontStyle: 'italic' }))
       expect(after).toEqual(projectWithStyle({}))
     })
@@ -226,6 +229,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'i',
+        setNextGeneratedUids,
         projectWithoutTextWithExtraStyle({ font: 'italic 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
@@ -236,43 +240,43 @@ describe('Use the text editor', () => {
       )
     })
     it('supports underline', async () => {
-      const { before, after } = await testModifier(cmdModifier, 'u')
+      const { before, after } = await testModifier(cmdModifier, 'u', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyle({ textDecoration: 'underline' }))
       expect(after).toEqual(projectWithStyle({}))
     })
 
     it('supports strikethrough', async () => {
-      const { before, after } = await testModifier(shiftCmdModifier, 'x')
+      const { before, after } = await testModifier(shiftCmdModifier, 'x', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyle({ textDecoration: 'line-through' }))
       expect(after).toEqual(projectWithStyle({}))
     })
 
     xit('supports increasing font size', async () => {
-      const { before, after } = await testModifier(shiftCmdModifier, '.')
+      const { before, after } = await testModifier(shiftCmdModifier, '.', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyle({ fontSize: '17px' }))
       expect(after).toEqual(projectWithStyle({ fontSize: '18px' }))
     })
 
     xit('supports increasing font weight', async () => {
-      const { before, after } = await testModifier(altCmdModifier, '.')
+      const { before, after } = await testModifier(altCmdModifier, '.', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '500'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '600'))
     })
     xit('supports decreasing font size', async () => {
-      const { before, after } = await testModifier(shiftCmdModifier, ',')
+      const { before, after } = await testModifier(shiftCmdModifier, ',', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyle({ fontSize: '15px' }))
       expect(after).toEqual(projectWithStyle({ fontSize: '14px' }))
     })
 
     xit('supports decreasing font weight', async () => {
-      const { before, after } = await testModifier(altCmdModifier, ',')
+      const { before, after } = await testModifier(altCmdModifier, ',', setNextGeneratedUids)
       expect(before).toEqual(projectWithStyleNoQuotes('fontWeight', '300'))
       expect(after).toEqual(projectWithStyleNoQuotes('fontWeight', '200'))
     })
 
     it("doesn't care about selection", async () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
-      await prepareTestModifierEditor(editor)
+      await prepareTestModifierEditor(editor, setNextGeneratedUids)
 
       const textEditorElement = document.getElementById(TextEditorSpanId)
       expect(textEditorElement).not.toBe(null)
@@ -351,7 +355,7 @@ describe('Use the text editor', () => {
       it('keeps existing elements', async () => {
         const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-        await enterTextEditMode(editor)
+        await enterTextEditMode(editor, setNextGeneratedUids)
 
         deleteTypedText()
 
@@ -531,7 +535,7 @@ describe('Use the text editor', () => {
     it('renders and escapes newlines', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor)
+      await enterTextEditMode(editor, setNextGeneratedUids)
       typeText('\nHow are you?')
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
@@ -565,7 +569,7 @@ describe('Use the text editor', () => {
         )`),
       )
 
-      await enterTextEditMode(editor)
+      await enterTextEditMode(editor, setNextGeneratedUids)
       typeText('\n\nblablabla')
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
@@ -605,7 +609,7 @@ describe('Use the text editor', () => {
     it('does not trim trailing newlines', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor)
+      await enterTextEditMode(editor, setNextGeneratedUids)
       typeText('\n\n')
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
@@ -639,7 +643,7 @@ describe('Use the text editor', () => {
         )`),
       )
 
-      await enterTextEditMode(editor)
+      await enterTextEditMode(editor, setNextGeneratedUids)
       typeText('test')
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
@@ -708,7 +712,7 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await enterTextEditMode(editor)
+      await enterTextEditMode(editor, setNextGeneratedUids)
       typeText('\n\n')
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
@@ -770,7 +774,7 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await enterTextEditMode(editor)
+      await enterTextEditMode(editor, setNextGeneratedUids)
       await closeTextEditor()
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -853,7 +857,7 @@ describe('Use the text editor', () => {
       it(`${t.label}`, async () => {
         const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-        await enterTextEditMode(editor)
+        await enterTextEditMode(editor, setNextGeneratedUids)
         typeText(t.writtenText)
         await closeTextEditor()
 
@@ -980,8 +984,11 @@ function deleteTypedText() {
   typeText('')
 }
 
-async function prepareTestModifierEditor(editor: EditorRenderResult) {
-  await enterTextEditMode(editor)
+async function prepareTestModifierEditor(
+  editor: EditorRenderResult,
+  setFakeUids: (_: string[]) => void,
+) {
+  await enterTextEditMode(editor, setFakeUids)
   typeText('Hello Utopia')
 }
 
@@ -1004,11 +1011,12 @@ async function pressShortcut(
 async function testModifier(
   mod: Modifiers,
   key: string,
+  setFakeUids: (_: string[]) => void,
   startingProject: string = projectWithoutText,
 ) {
   const editor = await renderTestEditorWithCode(startingProject, 'await-first-dom-report')
 
-  await prepareTestModifierEditor(editor)
+  await prepareTestModifierEditor(editor, setFakeUids)
   await pressShortcut(editor, mod, key)
   const before = getPrintedUiJsCode(editor.getEditorState())
 
@@ -1022,11 +1030,12 @@ async function testModifier(
 async function testModifierExpectingWayTooManySavesTheFirstTime(
   mod: Modifiers,
   key: string,
+  setFakeUids: (_: string[]) => void,
   startingProject: string = projectWithoutText,
 ) {
   const editor = await renderTestEditorWithCode(startingProject, 'await-first-dom-report')
 
-  await prepareTestModifierEditor(editor)
+  await prepareTestModifierEditor(editor, setFakeUids)
   await pressShortcut(editor, mod, key, true)
   const before = getPrintedUiJsCode(editor.getEditorState())
 
@@ -1036,7 +1045,10 @@ async function testModifierExpectingWayTooManySavesTheFirstTime(
   return { before, after }
 }
 
-async function enterTextEditMode(editor: EditorRenderResult): Promise<void> {
+async function enterTextEditMode(
+  editor: EditorRenderResult,
+  setFakeUids: (_: string[]) => void,
+): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('div')
   const divBounds = div.getBoundingClientRect()
@@ -1045,7 +1057,7 @@ async function enterTextEditMode(editor: EditorRenderResult): Promise<void> {
     y: divBounds.y + 40,
   }
 
-  FOR_TESTS_setNextGeneratedUid('text-span')
+  setFakeUids(['text-span'])
 
   await pressKey('t')
   await editor.getDispatchFollowUpActionsFinished()

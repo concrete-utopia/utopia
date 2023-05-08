@@ -16,7 +16,6 @@ import {
   conditionalWhenTrueOptic,
   jsxConditionalExpressionOptic,
 } from '../../core/model/conditionals'
-import { FOR_TESTS_setNextGeneratedUids } from '../../core/model/element-template-utils.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import * as EP from '../../core/shared/element-path'
@@ -55,6 +54,7 @@ import {
 import { navigatorDepth } from './navigator-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { wait } from '../../utils/utils.test-utils'
+import { mockGenerateUid } from '../../core/model/element-template-utils.test-utils'
 
 const ASYNC_NOOP = async () => NO_OP()
 
@@ -497,6 +497,8 @@ async function ensureNoopDrag({
 }
 
 describe('conditionals in the navigator', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   it('keeps conditionals position', async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCodeTree(),
@@ -594,7 +596,7 @@ describe('conditionals in the navigator', () => {
       y: navigatorEntryToTargetCenter.y - navigatorEntryToDragCenter.y,
     }
 
-    FOR_TESTS_setNextGeneratedUids(['fragment'])
+    setNextGeneratedUids(['fragment'])
 
     await act(async () =>
       dragElement(
@@ -777,7 +779,7 @@ describe('conditionals in the navigator', () => {
       y: dragTo.y - navigatorEntryToDragCenter.y,
     }
 
-    FOR_TESTS_setNextGeneratedUids(['fragment'])
+    setNextGeneratedUids(['fragment'])
 
     await act(async () =>
       dragElement(

@@ -11,7 +11,6 @@ import {
 } from '../../components/editor/actions/action-creators'
 import * as EP from '../shared/element-path'
 import { ElementInstanceMetadataMap } from '../shared/element-template'
-import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils.test-utils'
 import { isLeft } from '../shared/either'
 import { emptyImports } from '../workers/common/project-file-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'

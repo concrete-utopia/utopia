@@ -1,4 +1,3 @@
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
@@ -25,6 +24,7 @@ import {
   getOpeningGroupLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -267,11 +267,13 @@ describe('Flex Reparent To Absolute Strategy', () => {
 })
 
 describe('Flex Reparent to Absolute – children affecting elements', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   AllContentAffectingTypes.forEach((type) => {
     describe(`– ${type} parents`, () => {
       it('reparents regular child from a children-affecting flex parent to absolute', async () => {
         const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
+          makeTestProjectCodeWithSnippet(fragmentTestCode(type, setNextGeneratedUids)),
           'await-first-dom-report',
         )
 
@@ -313,7 +315,7 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
 
       it('reparents children-affecting element from flex to absolute', async () => {
         const renderResult = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(fragmentTestCode(type)),
+          makeTestProjectCodeWithSnippet(fragmentTestCode(type, setNextGeneratedUids)),
           'await-first-dom-report',
         )
 
@@ -388,9 +390,9 @@ describe('Flex Reparent to Absolute – children affecting elements', () => {
   })
 })
 
-function fragmentTestCode(type: ContentAffectingType) {
+function fragmentTestCode(type: ContentAffectingType, setFakeUids: (_: string[]) => void) {
   if (type === 'conditional') {
-    FOR_TESTS_setNextGeneratedUids([
+    setFakeUids([
       'skip1',
       'skip2',
       'skip3',
@@ -401,13 +403,7 @@ function fragmentTestCode(type: ContentAffectingType) {
       'inner-fragment-2',
     ])
   } else {
-    FOR_TESTS_setNextGeneratedUids([
-      'skip1',
-      'skip2',
-      'inner-fragment',
-      'skip3',
-      'children-affecting',
-    ])
+    setFakeUids(['skip1', 'skip2', 'inner-fragment', 'skip3', 'children-affecting'])
   }
 
   return `

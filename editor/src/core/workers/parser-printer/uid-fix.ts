@@ -34,7 +34,7 @@ import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
-import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { GenerateUID } from '../../../core/shared/uid-utils'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -138,7 +138,7 @@ function updateUID<T>(
     // - Generate a new consistent UID.
     // - Add the old one to the set, as it will become used.
     // - Add a mapping for this change.
-    uidToUse = generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
+    uidToUse = GenerateUID.generateConsistentUID(fixUIDsState.mutableAllNewUIDs, oldUID)
     fixUIDsState.mutableAllNewUIDs.add(uidToUse)
     fixUIDsState.mappings.push({ originalUID: newUID, newUID: uidToUse })
   } else {

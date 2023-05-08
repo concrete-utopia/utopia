@@ -1,7 +1,6 @@
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
@@ -36,6 +35,7 @@ import {
   getOpeningGroupLikeTag,
   getRegularNavigatorTargets,
 } from './group-like-helpers.test-utils'
+import { mockGenerateUid } from '../../../../core/model/element-template-utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -1066,11 +1066,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 })
 
 describe('children-affecting reparent tests', () => {
+  const setNextGeneratedUids = mockGenerateUid()
+
   AllContentAffectingTypes.forEach((type) => {
     describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
       it('cannot reparent into a children-affecting div', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
+          testProjectWithUnstyledDivOrFragment(type, setNextGeneratedUids),
           'await-first-dom-report',
         )
 
@@ -1105,7 +1107,7 @@ describe('children-affecting reparent tests', () => {
 
       it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
+          testProjectWithUnstyledDivOrFragment(type, setNextGeneratedUids),
           'await-first-dom-report',
         )
 
@@ -1124,7 +1126,7 @@ describe('children-affecting reparent tests', () => {
 
       it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
+          testProjectWithUnstyledDivOrFragment(type, setNextGeneratedUids),
           'await-first-dom-report',
         )
 
@@ -1151,7 +1153,7 @@ describe('children-affecting reparent tests', () => {
 
       it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
+          testProjectWithUnstyledDivOrFragment(type, setNextGeneratedUids),
           'await-first-dom-report',
         )
 
@@ -1178,7 +1180,7 @@ describe('children-affecting reparent tests', () => {
 
     it(`reparenting the children-affecting ${type} to an absolute parent works`, async () => {
       const renderResult = await renderTestEditorWithCode(
-        testProjectWithUnstyledDivOrFragment(type),
+        testProjectWithUnstyledDivOrFragment(type, setNextGeneratedUids),
         'await-first-dom-report',
       )
 
@@ -1255,9 +1257,12 @@ describe('children-affecting reparent tests', () => {
   })
 })
 
-function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
+function testProjectWithUnstyledDivOrFragment(
+  type: ContentAffectingType,
+  setFakeUids: (_: string[]) => void,
+): string {
   if (type === 'conditional') {
-    FOR_TESTS_setNextGeneratedUids([
+    setFakeUids([
       'skip1',
       'skip2',
       'skip3',
@@ -1271,7 +1276,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
       'children-affecting',
     ])
   } else {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+    setFakeUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
   }
 
   return makeTestProjectCodeWithSnippet(`

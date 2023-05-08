@@ -45,7 +45,7 @@ import { stripNulls } from '../shared/array-utils'
 import { UTOPIA_UID_KEY } from './utopia-constants'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
-import { generateConsistentUID, generateUID, getUtopiaID } from '../shared/uid-utils'
+import { GenerateUID, getUtopiaID } from '../shared/uid-utils'
 import { emptySet } from '../shared/set-utils'
 
 export const PathForSceneComponent = PP.create('component')
@@ -163,7 +163,7 @@ export function createSceneFromComponent(
     name: componentImportedAs,
     props: jsxAttributesFromMap({}),
   })
-  const componentUID = generateConsistentUID(emptySet(), hash)
+  const componentUID = GenerateUID.generateConsistentUID(emptySet(), hash)
   return jsxElement('Scene', uid, sceneProps, [
     jsxElement(
       componentImportedAs,
