@@ -275,7 +275,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         }
       },
       placeholder: (styles): CSSObject => {
-        return { ...styles, position: 'absolute', marginLeft: 4 }
+        return { ...styles, marginLeft: 4 }
       },
       option: (styles, { data, isDisabled, isFocused, isSelected }): CSSObject => {
         // a single entry in the options list
