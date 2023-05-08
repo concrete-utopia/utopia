@@ -33,6 +33,7 @@ import {
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { defaultTransparentViewElement } from './editor/defaults'
+import { treatElementAsContentAffecting } from './canvas/canvas-strategies/strategies/group-like-helpers'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -56,6 +57,7 @@ export interface CanvasData {
   scale: number
   focusedElementPath: ElementPath | null
   allElementProps: AllElementProps
+  openFile: string | null
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -307,7 +309,18 @@ export const group: ContextMenuItem<CanvasData> = {
 export const unwrap: ContextMenuItem<CanvasData> = {
   name: 'Unwrap',
   shortcut: '⇧⌘G',
-  enabled: true,
+  enabled: (data) => {
+    return data.selectedViews.some(
+      (path) =>
+        MetadataUtils.targetSupportsChildren(
+          data.projectContents,
+          data.jsxMetadata,
+          data.nodeModules,
+          data.openFile,
+          path,
+        ) || treatElementAsContentAffecting(data.jsxMetadata, data.allElementProps, path),
+    )
+  },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       requireDispatch(dispatch)([EditorActions.unwrapElement(data.selectedViews[0])], 'everyone')
