@@ -4,8 +4,10 @@ import { CSSObject, jsx } from '@emotion/react'
 import React from 'react'
 import WindowedSelect, {
   InputActionMeta,
+  InputProps,
   OptionProps,
   StylesConfig,
+  components,
   createFilter,
 } from 'react-windowed-select'
 import { RightMenuTab } from '../../components/editor/store/editor-state'
@@ -62,6 +64,8 @@ import { InsertionSubject, Mode } from './editor-modes'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
+
+export const InsertMenuFilterTestId = 'insert-menu-filter'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -263,6 +267,10 @@ const enableInsertMode = (
     default:
       assertNever(component.element)
   }
+}
+
+const Input = (props: InputProps) => {
+  return <components.Input {...props} data-testid={InsertMenuFilterTestId} />
 }
 
 const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
@@ -571,7 +579,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
       options={options}
       onKeyDown={onKeyDown}
       mode={props.mode}
-      components={{ Option: Option }}
+      components={{ Option: Option, Input: Input }}
       onChange={onChange}
       styles={styles}
       filterOption={!hasResults ? alwaysTrue : filterOption}
