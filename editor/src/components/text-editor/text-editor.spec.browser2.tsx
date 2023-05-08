@@ -803,19 +803,66 @@ describe('Use the text editor', () => {
     })
   })
   describe('inline expressions', () => {
-    it('handles expressions', async () => {
-      const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+    const tests = [
+      {
+        label: 'handles expressions',
+        writtenText: 'the answer is {41 + 1}',
+        codeResult: 'the answer is {41 + 1}',
+        renderedText: 'the answer is 42',
+      },
+      {
+        label: 'handles conditionals',
+        writtenText: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
+        codeResult: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
+        renderedText: 'The user name is Bob',
+      },
+      {
+        label: 'htmlencodes angular brackets in text parts',
+        writtenText: 'The <username> is {1 === 1 ? "Bob" : "Sam"}',
+        codeResult: 'The &lt;username&gt; is {1 === 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob',
+      },
+      {
+        label: 'does not htmlencode angular brackets in js parts',
+        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
+        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
+        renderedText: 'The username is Bob',
+      },
+      {
+        label: 'handles angular brackets in text and js parts both',
+        writtenText: 'The <username> is {1 >= 1 ? "Bob" : "Sam"}',
+        codeResult: 'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob',
+      },
+      {
+        label: 'handles angular brackets in multiple text and js parts',
+        writtenText:
+          'The <username> is {1 >= 1 ? "Bob" : "Sam"} The <username> is {1 < 1 ? "Bob" : "Sam"}',
+        codeResult:
+          'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"} The &lt;username&gt; is {1 < 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob The <username> is Sam',
+      },
+      {
+        label: 'ignores closing curly bracket when inside quotation marks',
+        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
+        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
+        renderedText: 'The username is Bob',
+      },
+    ]
+    tests.forEach((t) => {
+      it(`${t.label}`, async () => {
+        const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor)
-      typeText('the answer is {41 + 1}')
-      await closeTextEditor()
+        await enterTextEditMode(editor)
+        typeText(t.writtenText)
+        await closeTextEditor()
 
-      await editor.getDispatchFollowUpActionsFinished()
-      await wait(50)
+        await editor.getDispatchFollowUpActionsFinished()
+        await wait(50)
 
-      expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        formatTestProjectCode(`
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
               import * as React from 'react'
               import { Storyboard } from 'utopia-api'
 
@@ -834,12 +881,13 @@ describe('Use the text editor', () => {
                     }}
                     data-uid='39e'
                   >
-                    ${textSpan('the answer is {41 + 1}')}
+                    ${textSpan(t.codeResult)}
                   </div>
                 </Storyboard>
               )`),
-      )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
+        )
+        expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(t.renderedText)
+      })
     })
   })
 })
