@@ -1912,19 +1912,13 @@ function modifyOpenScenes_INTERNAL(
 export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
   return modifyOpenScenes_INTERNAL(
     (components) =>
-      addSceneToJSXComponents(
-        model.projectContents,
-        model.canvas.openFile?.filename ?? null,
-        components,
-        newSceneElement,
-      ).components,
+      addSceneToJSXComponents(model.projectContents, components, newSceneElement).components,
     model,
   )
 }
 
 export function addSceneToJSXComponents(
   projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
   components: UtopiaJSXComponent[],
   newSceneElement: JSXElement,
 ): InsertChildAndDetails {
@@ -1937,9 +1931,8 @@ export function addSceneToJSXComponents(
     const storyboardComponentElementPath = EP.elementPath([
       staticElementPath([storyboardComponentUID]),
     ])
-    return insertJSXElementChild_DEPRECATED(
+    return insertJSXElementChild(
       projectContents,
-      openFile,
       childInsertionPath(storyboardComponentElementPath),
       newSceneElement,
       components,
