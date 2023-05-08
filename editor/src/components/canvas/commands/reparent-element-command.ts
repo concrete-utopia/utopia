@@ -17,27 +17,23 @@ import {
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
-import { UseNewInsertJsxElementChild } from '../canvas-utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
   newParent: InsertionPath
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   newParent: InsertionPath,
-  useNewInsertJSXElementChild: UseNewInsertJsxElementChild,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
     whenToRun: whenToRun,
     target: target,
     newParent: newParent,
-    useNewInsertJSXElementChild: useNewInsertJSXElementChild,
   }
 }
 
@@ -63,23 +59,13 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const insertionResult =
-              command.useNewInsertJSXElementChild === 'use-new-insertJSXElementChild'
-                ? insertElementAtPath(
-                    editorState.projectContents,
-                    command.newParent,
-                    underlyingElementTarget,
-                    withElementRemoved,
-                    null,
-                  )
-                : insertElementAtPath_DEPRECATED(
-                    editorState.projectContents,
-                    underlyingFilePathTarget,
-                    command.newParent,
-                    underlyingElementTarget,
-                    withElementRemoved,
-                    null,
-                  )
+            const insertionResult = insertElementAtPath(
+              editorState.projectContents,
+              command.newParent,
+              underlyingElementTarget,
+              withElementRemoved,
+              null,
+            )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
               insertionResult.components,

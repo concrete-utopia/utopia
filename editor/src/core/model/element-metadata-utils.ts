@@ -27,6 +27,7 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  isLeft,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -373,12 +374,31 @@ export const MetadataUtils = {
     const isTextElement = foldEither(
       (elementString) => TextElements.includes(elementString),
       (elementInstance) =>
-        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable), // TODO this should include a check to make sure the element is a leaf
       element.element,
     )
     {
       return isTextElement
     }
+  },
+  isGeneratedTextFromMetadata(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      return false
+    }
+    if (isLeft(element.element)) {
+      return false
+    }
+    if (!isJSXElementLike(element.element.value)) {
+      return false
+    }
+    const jsxElement = element.element.value
+    // to mark something as text-like, we need to make sure it's a leaf in the metadata graph
+    const childrenElementsFromMetadata = MetadataUtils.getChildrenUnordered(metadata, target)
+    if (childrenElementsFromMetadata.length !== 0) {
+      return false
+    }
+    return !jsxElement.children.every((c) => isJSXElementLike(c) || isJSXTextBlock(c))
   },
   getYogaSizeProps(
     target: ElementPath,
@@ -1341,15 +1361,26 @@ export const MetadataUtils = {
           switch (jsxElement.type) {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-              // Check for certain elements and check if they have text content within them.
-              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                const firstChild = jsxElement.children[0]
-                if (firstChild != null) {
-                  if (isJSXTextBlock(firstChild)) {
-                    return firstChild.text
+              // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
+              const numberOfChildrenElements = MetadataUtils.getChildrenUnordered(
+                metadata,
+                element.elementPath,
+              ).length
+              if (numberOfChildrenElements === 0) {
+                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                  if (element.textContent != null && element.textContent !== '') {
+                    return element.textContent
                   }
-                  if (isJSExpressionOtherJavaScript(firstChild)) {
-                    return `{${firstChild.originalJavascript}}`
+
+                  // fall back to the old way of showing text content – this can probably be deleted now
+                  const firstChild = jsxElement.children[0]
+                  if (firstChild != null) {
+                    if (isJSXTextBlock(firstChild)) {
+                      return firstChild.text
+                    }
+                    if (isJSExpressionOtherJavaScript(firstChild)) {
+                      return `{${firstChild.originalJavascript}}`
+                    }
                   }
                 }
               }
@@ -2263,6 +2294,7 @@ function findConditionalsAndCreateMetadata(
             'Conditional',
             null,
             'not-a-conditional',
+            null,
           )
         }
       },
@@ -2401,6 +2433,7 @@ export function createFakeMetadataForElement(
     null,
     null,
     'not-a-conditional',
+    null,
   )
 }
 

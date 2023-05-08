@@ -246,11 +246,14 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         return {
           // ...styles,
           position: 'relative',
-          maxHeight: 150,
-          padding: 4,
+          maxHeight: 210,
           paddingLeft: 8,
           paddingRight: 8,
-          overflowY: 'scroll',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
+          paddingBottom: UtopiaTheme.layout.rowHeight.large,
         }
       },
       input: (styles): CSSObject => {
@@ -293,7 +296,6 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       group: (): CSSObject => {
         return {
           // ...styles,
-          paddingTop: 6,
         }
       },
       groupHeading: (styles): CSSObject => {
@@ -459,24 +461,8 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const insertableComponents = useGetInsertableComponents()
-  const shouldWrapContentsByDefault = useRefEditorState((store) => {
-    // We only care about this when the menu is first opened
-    const firstSelectedView = store.editor.selectedViews[0]
-    if (firstSelectedView != null) {
-      const selectedJSXElement = MetadataUtils.getJSXElementFromMetadata(
-        store.editor.jsxMetadata,
-        firstSelectedView,
-      )
-      return selectedJSXElement != null && elementOnlyHasSingleTextChild(selectedJSXElement)
-    }
-
-    return false
-  })
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
-  const [wrapContentForInsertion, setWrapContentForInsertion] = React.useState(
-    shouldWrapContentsByDefault.current,
-  )
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
   const getInsertionPath = React.useCallback(
@@ -493,7 +479,10 @@ export var FloatingMenu = React.memo(() => {
   )
 
   const onChangeConditionalOrFragment = React.useCallback(
-    (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
+    (
+      element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID,
+      pickedInsertableComponent: InsertMenuItemValue,
+    ): Array<EditorAction> => {
       let actionsToDispatch: Array<EditorAction> = []
       const selectedViews = selectedViewsref.current
       switch (floatingMenuState.insertMenuMode) {
@@ -527,12 +516,23 @@ export var FloatingMenu = React.memo(() => {
               getInsertionPath(targetParent),
               insertableComponent(importsToAdd, element, '', [], null),
               fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-              wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
               floatingMenuState.indexPosition,
             ),
           ]
           break
-        case 'convert':
+        case 'convert': {
+          if (element.type === 'JSX_FRAGMENT') {
+            const targetsForUpdates = getElementsToTarget(selectedViews)
+            actionsToDispatch = targetsForUpdates.flatMap((path) => {
+              return updateJSXElementName(
+                path,
+                { type: 'JSX_FRAGMENT' },
+                pickedInsertableComponent.importsToAdd,
+              )
+            })
+          }
+          break
+        }
         case 'closed':
           break
         default:
@@ -544,9 +544,8 @@ export var FloatingMenu = React.memo(() => {
       selectedViewsref,
       floatingMenuState,
       projectContentsRef,
-      fixedSizeForInsertion,
-      wrapContentForInsertion,
       getInsertionPath,
+      fixedSizeForInsertion,
     ],
   )
 
@@ -600,7 +599,6 @@ export var FloatingMenu = React.memo(() => {
                 getInsertionPath(targetParent),
                 elementToInsert,
                 fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-                wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
                 floatingMenuState.indexPosition,
               ),
             ]
@@ -611,7 +609,11 @@ export var FloatingMenu = React.memo(() => {
           // this is taken from render-as.tsx
           const targetsForUpdates = getElementsToTarget(selectedViews)
           actionsToDispatch = targetsForUpdates.flatMap((path) => {
-            return updateJSXElementName(path, element.name, importsToAdd)
+            return updateJSXElementName(
+              path,
+              { type: 'JSX_ELEMENT', name: element.name },
+              importsToAdd,
+            )
           })
           break
         case 'closed':
@@ -623,13 +625,12 @@ export var FloatingMenu = React.memo(() => {
       return actionsToDispatch
     },
     [
+      selectedViewsref,
       floatingMenuState,
       projectContentsRef,
-      selectedViewsref,
-      fixedSizeForInsertion,
       addContentForInsertion,
-      wrapContentForInsertion,
       getInsertionPath,
+      fixedSizeForInsertion,
     ],
   )
 
@@ -642,7 +643,10 @@ export var FloatingMenu = React.memo(() => {
           switch (pickedInsertableComponent.element.type) {
             case 'JSX_CONDITIONAL_EXPRESSION':
             case 'JSX_FRAGMENT':
-              return onChangeConditionalOrFragment(pickedInsertableComponent.element)
+              return onChangeConditionalOrFragment(
+                pickedInsertableComponent.element,
+                pickedInsertableComponent,
+              )
             case 'JSX_ELEMENT':
               return onChangeElement(pickedInsertableComponent)
             default:
@@ -717,46 +721,34 @@ export var FloatingMenu = React.memo(() => {
           components={{ Option: CustomOption }}
         />
         {showInsertionControls ? (
-          <FlexColumn>
-            <FlexRow
-              css={{
-                height: UtopiaTheme.layout.rowHeight.smaller,
-                paddingLeft: 8,
-                paddingRight: 8,
-                borderTop: `1px solid ${colorTheme.border1.value}`,
-              }}
+          <FlexRow
+            css={{
+              height: UtopiaTheme.layout.rowHeight.smaller,
+              paddingLeft: 8,
+              paddingRight: 8,
+              position: 'absolute',
+              bottom: 0,
+              width: '100%',
+              background: colorTheme.bg0.value,
+              borderRadius: '0 0 6px 6px',
+              borderTop: '1px solid var(--utopitheme-border1)',
+            }}
+          >
+            <CheckboxRow
+              id='add-content-label'
+              checked={addContentForInsertion}
+              onChange={setAddContentForInsertion}
             >
-              <CheckboxRow
-                id='wrap-parents-content-label'
-                checked={wrapContentForInsertion}
-                onChange={setWrapContentForInsertion}
-              >
-                Wrap content
-              </CheckboxRow>
-            </FlexRow>
-            <FlexRow
-              css={{
-                height: UtopiaTheme.layout.rowHeight.smaller,
-                paddingLeft: 8,
-                paddingRight: 8,
-              }}
+              Add content
+            </CheckboxRow>
+            <CheckboxRow
+              id='fixed-dimensions-label'
+              checked={fixedSizeForInsertion}
+              onChange={setFixedSizeForInsertion}
             >
-              <CheckboxRow
-                id='add-content-label'
-                checked={addContentForInsertion}
-                onChange={setAddContentForInsertion}
-              >
-                Add content
-              </CheckboxRow>
-              <CheckboxRow
-                id='fixed-dimensions-label'
-                checked={fixedSizeForInsertion}
-                onChange={setFixedSizeForInsertion}
-              >
-                Fixed dimensions
-              </CheckboxRow>
-            </FlexRow>
-          </FlexColumn>
+              Fixed dimensions
+            </CheckboxRow>
+          </FlexRow>
         ) : null}
       </FlexColumn>
     </div>

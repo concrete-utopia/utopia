@@ -38,7 +38,11 @@ export const RenderAsRow = React.memo(() => {
   const onElementTypeChange = React.useCallback(
     (newElementName: JSXElementName, importsToAdd: Imports) => {
       const actions = refElementsToTargetForUpdates.current.flatMap((path) => {
-        return EditorActions.updateJSXElementName(path, newElementName, importsToAdd)
+        return EditorActions.updateJSXElementName(
+          path,
+          { type: 'JSX_ELEMENT', name: newElementName },
+          importsToAdd,
+        )
       })
       dispatch(actions, 'everyone')
     },

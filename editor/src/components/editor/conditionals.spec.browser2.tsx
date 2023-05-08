@@ -47,24 +47,24 @@ describe('conditionals', () => {
       const editor = await renderTestEditorWithCode(
         `import * as React from 'react'
       import { Storyboard } from 'utopia-api'
-      
+
       export var storyboard = (
         <Storyboard data-uid='sb'>
           {
             // @utopia/uid=cond1
-            true ? null : null
+            true ? null : <>null</>
           }
           {
             // @utopia/uid=cond2
-            true ? 'hello' : null
+            true ? <span>hello</span> : null
           }
           {
             // @utopia/uid=cond3
-            true ? null : 'world'
+            true ? null : <span>world</span>
           }
           {
             // @utopia/uid=cond4
-            true ? 'hello' : 'world'
+            true ? 'hello' : <span>world</span>
           }
           </Storyboard>
       )
@@ -78,13 +78,13 @@ describe('conditionals', () => {
           editor.renderedDOM.getByTestId(ConditionalSectionTestId),
         ).queryAllByText('Empty')
 
-        expect(emptyLabelsInConditionalInspector.length).toEqual(2)
+        expect(emptyLabelsInConditionalInspector.length).toEqual(1)
 
-        const helloLabelsInInspector = within(
+        const fragmentLabelsInInspector = within(
           editor.renderedDOM.getByTestId(ConditionalSectionTestId),
-        ).queryAllByText('hello')
+        ).queryAllByText('Fragment')
 
-        expect(helloLabelsInInspector.length).toEqual(0)
+        expect(fragmentLabelsInInspector.length).toEqual(1)
       }
 
       await selectComponentsForTest(editor, [EP.fromString('sb/cond2')])
@@ -110,11 +110,11 @@ describe('conditionals', () => {
 
         expect(emptyLabelsInConditionalInspector.length).toEqual(1)
 
-        const worldLabelsInInspector = within(
+        const spanLabelsInInspector = within(
           editor.renderedDOM.getByTestId(ConditionalSectionTestId),
-        ).queryAllByText('world')
+        ).queryAllByText('span')
 
-        expect(worldLabelsInInspector.length).toEqual(1)
+        expect(spanLabelsInInspector.length).toEqual(1)
       }
 
       await selectComponentsForTest(editor, [EP.fromString('sb/cond4')])
@@ -131,11 +131,11 @@ describe('conditionals', () => {
 
         expect(helloLabelsInInspector.length).toEqual(1)
 
-        const worldLabelsInInspector = within(
+        const spanLabelsInInspector = within(
           editor.renderedDOM.getByTestId(ConditionalSectionTestId),
-        ).queryAllByText('world')
+        ).queryAllByText('span')
 
-        expect(worldLabelsInInspector.length).toEqual(1)
+        expect(spanLabelsInInspector.length).toEqual(1)
       }
     })
   })
@@ -185,7 +185,7 @@ describe('conditionals', () => {
         <div data-uid='aaa'>
         {
           // @utopia/uid=conditional
-          true ? 'hello' : 'there'
+          true ? 'hello' : <div>'there'</div>
         }
         </div>
       `
@@ -225,7 +225,7 @@ describe('conditionals', () => {
             <div data-uid='aaa'>
               {
                 // @utopia/uid=conditional
-                true ? null : 'there'
+                true ? null : <div data-uid='33d'>'there'</div>
               }
             </div>
          `),
@@ -468,10 +468,10 @@ describe('conditionals', () => {
             <div data-uid='aaa'>
               {
                 true ? (
-                  <>
+                  <React.Fragment>
                     <div data-uid='bbb'>hello there</div>
                     <div data-uid='ccc'>another div</div>
-                  </>
+                  </React.Fragment>
                 ) : null
               }
               <div data-uid='ddd'>yet another one</div>
@@ -598,7 +598,7 @@ describe('conditionals', () => {
         <div data-uid='aaa'>
         {
           // @utopia/uid=conditional
-          true ? 'hello': 'bello'
+          true ? 'hello': <span>'bello'</span>
         }
         </div>
       `
@@ -665,7 +665,7 @@ describe('conditionals', () => {
         <div data-uid='aaa'>
         {
           // @utopia/uid=conditional
-          true ? 5 + 5 + 15: 'bello'
+          true ? 5 + 5 + 15: <div>'bello'</div>
         }
         </div>
       `

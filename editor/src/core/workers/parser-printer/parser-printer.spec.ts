@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID"] }] */
 import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
 import {
@@ -4694,9 +4695,9 @@ export var whatever = props => {
 import {
   View
 } from "utopia-api";
-const a = (n) => n > 0 ? n : b(10)
+const a = (n) => n > 0 ? <div>n</div> : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
+const b = (n) => n > 0 ? <div>n</div> : a(10)
 `
     const actualResult = simplifyParsedTextFileAttributes(
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),

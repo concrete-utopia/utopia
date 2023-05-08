@@ -71,6 +71,10 @@ function getNameAndIconResult(
       allElementProps,
       elementInstanceMetadata,
     ),
-    iconProps: createComponentOrElementIconProps(elementInstanceMetadata),
+    iconProps: createComponentOrElementIconProps(
+      elementInstanceMetadata.elementPath,
+      metadata,
+      null,
+    ),
   }
 }

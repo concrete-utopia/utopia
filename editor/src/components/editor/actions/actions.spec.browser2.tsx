@@ -37,6 +37,7 @@ import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
+  setFeatureForBrowserTests,
   wait,
 } from '../../../utils/utils.test-utils'
 import {
@@ -652,43 +653,6 @@ describe('actions', () => {
     	</div>
 		`,
       },
-      // commented out because the non-empty test is outside of the action now
-      //   {
-      //     name: 'an element inside a non-empty conditional branch (does nothing)',
-      //     generatesUndoStep: false,
-      //     startingCode: `
-      //     <div data-uid='root'>
-      //         {
-      //             // @utopia/uid=conditional
-      //             true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-      //         }
-      //         <div data-uid='ccc'>baz</div>
-      //     </div>
-      // `,
-      //     elements: (renderResult) => {
-      //       const path = EP.appendNewElementPath(TestScenePath, ['root', 'ccc'])
-      //       return [
-      //         {
-      //           element: getElementFromRenderResult(renderResult, path),
-      //           originalElementPath: path,
-      //           importsToAdd: {},
-      //         },
-      //       ]
-      //     },
-      //     pasteInto: conditionalClauseInsertionPath(
-      //       EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
-      //       'true-case',
-      //     ),
-      //     want: `
-      //     <div data-uid='root'>
-      //         {
-      //             // @utopia/uid=conditional
-      //             true ? <div data-uid='aaa'>foo</div> : <div data-uid='bbb'>bar</div>
-      //         }
-      //         <div data-uid='ccc'>baz</div>
-      //     </div>
-      // `,
-      //   },
       {
         name: 'multiple elements into an empty conditional branch (true)',
         startingCode: `
@@ -1255,6 +1219,181 @@ describe('actions', () => {
   `),
         )
       })
+      describe('paste into a conditional', () => {
+        setFeatureForBrowserTests('Paste wraps into fragment', true)
+        describe('root', () => {
+          it('pastes the element below the conditional', async () => {
+            const testCode = `
+              <div data-uid='root'>
+                {
+                  // @utopia/uid=conditional
+                  true ? <div data-uid='aaa' /> : null
+                }
+                <div data-uid='bbb'>foo</div>
+              </div>
+            `
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(testCode),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+            await pressKey('c', { modifiers: cmdModifier })
+
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional')])
+
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(`
+                <div data-uid='root'>
+                  {
+                    // @utopia/uid=conditional
+                    true ? <div data-uid='aaa' /> : null
+                  }
+                  <div data-uid='bbb'>foo</div>
+                  <div data-uid='aab'>foo</div>
+                </div>
+              `),
+            )
+          })
+        })
+        describe('non-empty branch', () => {
+          it(`when it supports children, it's inserted as a child`, async () => {
+            const testCode = `
+              <div data-uid='root'>
+                {
+                  // @utopia/uid=conditional
+                  true ? <div data-uid='aaa' /> : null
+                }
+                <div data-uid='bbb'>foo</div>
+              </div>
+            `
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(testCode),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+            await pressKey('c', { modifiers: cmdModifier })
+
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
+
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(`
+                <div data-uid='root'>
+                  {
+                    // @utopia/uid=conditional
+                    true ? (
+                      <div data-uid='aaa'>
+                        <div data-uid='aab'>foo</div>
+                      </div>
+                    ) : null
+                  }
+                  <div data-uid='bbb'>foo</div>
+                </div>
+              `),
+            )
+          })
+          it(`when it does not support children, it's wrapped in a fragment`, async () => {
+            const testCode = `
+              <div data-uid='root'>
+                {
+                  // @utopia/uid=conditional
+                  true ? <img data-uid='aaa' src='https://placekitten.com/100/100' /> : null
+                }
+                <div data-uid='bbb'>foo</div>
+              </div>
+            `
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(testCode),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+            await pressKey('c', { modifiers: cmdModifier })
+
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/aaa')])
+
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(`
+                <div data-uid='root'>
+                  {
+                    // @utopia/uid=conditional
+                    true ? (
+                      <React.Fragment>
+                        <div data-uid='aab'>foo</div>
+                        <img data-uid='aaa' src='https://placekitten.com/100/100' />
+                      </React.Fragment>
+                    ) : null
+                  }
+                  <div data-uid='bbb'>foo</div>
+                </div>
+              `),
+            )
+          })
+        })
+        describe('empty branch', () => {
+          it(`replaces the slot`, async () => {
+            const testCode = `
+              <div data-uid='root'>
+                {
+                  // @utopia/uid=conditional
+                  true ? <div data-uid='aaa' /> : null
+                }
+                <div data-uid='bbb'>foo</div>
+              </div>
+            `
+            const renderResult = await renderTestEditorWithCode(
+              makeTestProjectCodeWithSnippet(testCode),
+              'await-first-dom-report',
+            )
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+            await pressKey('c', { modifiers: cmdModifier })
+
+            await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+
+            const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+            firePasteEvent(canvasRoot)
+
+            // Wait for the next frame
+            await clipboardMock.pasteDone
+            await renderResult.getDispatchFollowUpActionsFinished()
+
+            expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+              makeTestProjectCodeWithSnippet(`
+                <div data-uid='root'>
+                  {
+                    // @utopia/uid=conditional
+                    true ? <div data-uid='aaa' /> : <div data-uid='aab'>foo</div>
+                  }
+                  <div data-uid='bbb'>foo</div>
+                </div>
+              `),
+            )
+          })
+        })
+      })
     })
   })
   describe('UNWRAP_ELEMENT', () => {
@@ -1483,7 +1622,7 @@ describe('actions', () => {
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
             {
               // @utopia/uid=conditional
-              true ? 'hello' : 'goodbye'
+              true ? 'hello' : <span>'goodbye'</span>
             }
           </div>
         `
@@ -1571,7 +1710,7 @@ describe('actions', () => {
             {
               // @utopia/uid=conditional
               true
-              ? true /* @utopia/uid=conditional2 */ ? 'foo' : 'bar'
+              ? true /* @utopia/uid=conditional2 */ ? 'foo' : <span>'bar'</span>
               : <div data-uid='ddd'>baz</div>
             }
           </div>
