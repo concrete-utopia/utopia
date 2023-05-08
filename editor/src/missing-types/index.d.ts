@@ -1,5 +1,3 @@
-import type { Mode } from '../components/editor/editor-modes'
-
 declare module '@storybook/react'
 declare module '@storybook/addon-actions'
 
@@ -93,9 +91,3 @@ declare module 'eslint-plugin-import/lib/rules/no-amd'
 declare module 'eslint-plugin-import/lib/rules/no-webpack-loader-syntax'
 declare module 'domtoimage'
 declare module 'keycode'
-
-declare module 'react-select/src/Select' {
-  export interface Props<Option, IsMulti extends boolean, Group extends GroupBase<Option>> {
-    mode?: Mode
-  }
-}

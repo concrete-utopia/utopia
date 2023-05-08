@@ -290,7 +290,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
     [projectContents],
   )
 
-  const mode = React.useMemo(() => props.selectProps.mode, [props.selectProps])
+  const mode = React.useMemo(() => (props.selectProps as any).mode as Mode, [props.selectProps])
 
   const currentlyBeingInserted = React.useMemo(() => {
     if (mode == null || mode.type !== 'insert' || mode.subjects.length !== 1) {
